@@ -44,6 +44,14 @@ tested on Linux), plus its own IR and plug-in backends.
 Sea is in the pre-design phase. The current work is on the Baysick side: MAT (matrix) support,
 which builds the matrix runtime that Sea will rely on.
 
+## Workloads
+
+`workloads/` holds five original MATLAB engineering scripts (shaft sizing, truss FEM, quarter-car
+RK4, plate heat conduction, Monte Carlo tolerance stack-up). They are Sea's acceptance targets: a
+Sea port of each must reproduce the reference numbers and report, faster. `workloads/README.md`
+describes them, the language features they stress, and how the reference values are produced and
+compared.
+
 ## Roadmap
 
 In order, without dates:
