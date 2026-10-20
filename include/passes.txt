@@ -1,0 +1,305 @@
+; passes.txt -- record formats of Sea's intermediate files.
+; Contract file: changes only together with DESIGN.md section 3 (format of this file: 3.9).
+; Comment lines start with a semicolon; empty lines are ignored.
+;
+; enum <name> <word>...
+; head <name> <field>...                  header record, written with a leading number sign
+; rec <set> <code> <op> <pops> <field>...
+;   set: A sea.ast; H both HIR files; H1 sea.hir1 only; HF sea.hir only;
+;        L both LIR files; LF sea.lir only
+;   field: name:type, then optionally ? (the field may be -), then optionally *count
+;          (the field is repeated count times, count = an earlier u field): name:type?*count
+
+; ---------------------------------------------------------------- enumerations
+enum target arm64-macos x86_64-linux
+enum shape s v m fv fm
+enum asgop set add sub mul div
+enum binop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or
+enum scalar f64 i64 bool str
+enum hbinop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or cat
+enum unop neg not
+enum view T flat col row
+enum conv d i f F e E g G s
+enum fkind main fn elem
+enum pmode val ref
+enum lmut let var for
+enum lkind main fn
+enum rcls i f p
+enum delt i64 f64 bool
+enum cc eq ne lt le gt ge
+enum feat avx2
+
+; ---------------------------------------------------------------- header records (3.2)
+head sea ver:u
+head target t:target
+head file path:s
+head end
+
+; ---------------------------------------------------------------- sea.ast (3.4)
+rec A 1 prog n n:u
+rec A 2 const 1+t pos:pos name:s t:u
+rec A 3 struct n pos:pos name:s n:u
+rec A 4 field 1 pos:pos name:s
+rec A 5 fn np+nr+1 pos:pos name:s el:u np:u nr:u
+rec A 6 param 1+d pos:pos name:s rf:u d:u
+rec A 7 type nd pos:pos base:s shape:shape nd:u
+rec A 8 let 2+t pos:pos t:u
+rec A 9 var 2+t pos:pos t:u
+rec A 10 pname 0 pos:pos name:s
+rec A 11 pskip 0 pos:pos
+rec A 12 ptuple n pos:pos n:u
+rec A 13 asg 2 pos:pos op:asgop
+rec A 14 tasg n+1 pos:pos n:u
+rec A 15 cstmt 1 pos:pos
+rec A 16 if 2+e pos:pos e:u
+rec A 17 while 2 pos:pos
+rec A 18 for 2 pos:pos name:s
+rec A 19 match n+1 pos:pos n:u
+rec A 20 arm k+1 pos:pos k:u
+rec A 21 break 0 pos:pos
+rec A 22 continue 0 pos:pos
+rec A 23 return k pos:pos k:u
+rec A 24 block n pos:pos n:u
+rec A 25 int 0 pos:pos v:i
+rec A 26 float 0 pos:pos v:f
+rec A 27 str 0 pos:pos v:s
+rec A 28 true 0 pos:pos
+rec A 29 false 0 pos:pos
+rec A 30 name 0 pos:pos name:s
+rec A 31 dollar 0 pos:pos
+rec A 32 neg 1 pos:pos
+rec A 33 not 1 pos:pos
+rec A 34 bin 2 pos:pos op:binop
+rec A 35 call n+1 pos:pos n:u
+rec A 36 narg 1 pos:pos name:s
+rec A 37 ref 1 pos:pos
+rec A 38 conv 1 pos:pos t:scalar
+rec A 39 index n+1 pos:pos n:u
+rec A 40 all 0 pos:pos
+rec A 41 range 2+st pos:pos incl:u st:u
+rec A 42 rangev 1 pos:pos
+rec A 43 dot 1 pos:pos name:s
+rec A 44 array r pos:pos r:u
+rec A 45 row n pos:pos n:u
+rec A 46 slit n pos:pos name:s n:u
+rec A 47 rlit n pos:pos n:u
+rec A 48 init 1 pos:pos name:s
+rec A 49 ifx 3 pos:pos
+
+; ---------------------------------------------------------------- sea.hir1 and sea.hir (3.5)
+; types (3.5.1)
+rec H 1 tvec 0 id:u elt:ty
+rec H 2 tmat 0 id:u elt:ty
+rec H 3 tfvec 0 id:u elt:ty n:u
+rec H 4 tfmat 0 id:u elt:ty r:u c:u
+rec H 5 tstruct 0 id:u name:s n:u
+rec H 6 trec 0 id:u n:u
+rec H 7 fd 0 name:s ty:ty
+rec H 8 ttuple 0 id:u n:u t:ty*n
+; constants (3.5.2) and elemental instances (3.5.3)
+rec H1 9 cn 1 cid:u name:s ty:ty pos:pos
+rec HF 10 inst 0 iid:u fid:fid rty:ty n:u t:ty*n
+; functions (3.5.4)
+rec H 11 fn 0 fid:u name:s kind:fkind rty:ty np:u nl:u pos:pos
+rec H 12 par 0 name:s ty:ty mode:pmode
+rec H 13 loc 0 name:s ty:ty mut:lmut pos:pos
+rec H 14 end 1
+; expressions (3.5.5)
+rec H 15 ci 0 pos:pos ty:ty v:i
+rec H 16 cf 0 pos:pos ty:ty v:f
+rec H 17 cb 0 pos:pos ty:ty v:u
+rec H 18 cs 0 pos:pos ty:ty v:s
+rec H 19 lv 0 pos:pos ty:ty lid:lid
+rec H1 20 cref 0 pos:pos ty:ty cid:cid
+rec H 21 dol 0 pos:pos ty:ty dim:u
+rec H 22 cvt 1 pos:pos ty:ty
+rec H 23 dyn 1 pos:pos ty:ty
+rec H 24 fix 1 pos:pos ty:ty
+rec H 25 un 1 pos:pos ty:ty op:unop
+rec H 26 bin 2 pos:pos ty:ty op:hbinop
+rec H 27 powk 1 pos:pos ty:ty k:i
+rec H 28 call n pos:pos ty:ty fid:fid n:u
+rec H 29 rarg 1 pos:pos ty:ty
+rec HF 30 emap n pos:pos ty:ty iid:iid n:u
+rec H 31 lib n pos:pos ty:ty name:s n:u
+rec H 32 fmt k pos:pos ty:ty k:u
+rec H 33 ftext 0 pos:pos ty:ty v:s
+rec H 34 fconv 1 pos:pos ty:ty fl:fl w:u? p:u? conv:conv
+rec H 35 view 1 pos:pos ty:ty k:view
+rec H 36 fld 1 pos:pos ty:ty i:u
+rec H 37 proj 1 pos:pos ty:ty i:u
+rec H 38 idx n+1 pos:pos ty:ty n:u
+rec H 39 all 0 pos:pos ty:ty
+rec H 40 rng 2+st pos:pos ty:ty incl:u st:u
+rec H 41 arr r pos:pos ty:ty r:u
+rec H 42 row n pos:pos ty:ty n:u
+rec H 43 slit n pos:pos ty:ty n:u
+rec H 44 ifx 3 pos:pos ty:ty
+rec H 45 skip 0 pos:pos ty:ty
+rec H 46 seq n+1 pos:pos ty:ty n:u
+; statements (3.5.5)
+rec H 47 bind 1 pos:pos lid:lid
+rec H 48 tbind 1 pos:pos n:u lid:lid?*n
+rec H 49 eval 1 pos:pos
+rec H 50 asg 2 pos:pos op:asgop
+rec H 51 tasg n+1 pos:pos n:u
+rec H 52 if 2+e pos:pos e:u
+rec H 53 while 2 pos:pos
+rec H 54 forr 2 pos:pos lid:lid
+rec H 55 fore 2 pos:pos lid:lid
+rec H 56 match n+1 pos:pos n:u
+rec H 57 arm k+1 pos:pos k:u
+rec H 58 break 0 pos:pos
+rec H 59 cont 0 pos:pos
+rec H 60 ret k pos:pos k:u
+rec H 61 block n pos:pos n:u
+; JSON output, from the write_json expansion of pass 2b (3.5.7)
+rec HF 62 jopen 1 pos:pos
+rec HF 63 jclose 0 pos:pos
+rec HF 64 jobj 0 pos:pos
+rec HF 65 jarr 0 pos:pos
+rec HF 66 jend 0 pos:pos
+rec HF 67 jkey 0 pos:pos v:s
+rec HF 68 jval 1 pos:pos
+rec HF 69 jvec 1 pos:pos
+rec HF 70 jmat 1 pos:pos
+
+; ---------------------------------------------------------------- sea.lir1 and sea.lir (3.6)
+; data (3.6.2)
+rec L 1 str 0 lab:lab v:s
+rec L 2 fmt 0 lab:lab k:u
+rec L 3 ftext 0 v:s
+rec L 4 fconv 0 fl:fl w:u? p:u? conv:conv cls:rcls
+rec L 5 dat 0 lab:lab elt:delt n:u
+rec L 6 dvi 0 v:i
+rec L 7 dvf 0 v:f
+; functions (3.6.3)
+rec L 8 func 0 name:s kind:lkind pos:pos np:u par:reg*np nr:u cls:rcls*nr
+rec L 9 slot 0 id:slot size:u align:u
+rec L 10 endfunc 0
+; constants and moves (3.6.4)
+rec L 11 li 0 d:ri v:i
+rec L 12 lf 0 d:rf v:f
+rec L 13 la 0 d:rp lab:lab
+rec L 14 sa 0 d:rp slot:slot
+rec L 15 mov 0 d:reg a:reg
+; integers
+rec L 16 iadd 0 d:ri a:ri b:ri
+rec L 17 isub 0 d:ri a:ri b:ri
+rec L 18 imul 0 d:ri a:ri b:ri
+rec L 19 iaddc 0 d:ri a:ri b:ri site:site
+rec L 20 isubc 0 d:ri a:ri b:ri site:site
+rec L 21 imulc 0 d:ri a:ri b:ri site:site
+rec L 22 ineg 0 d:ri a:ri
+rec L 23 inegc 0 d:ri a:ri site:site
+rec L 24 idivf 0 d:ri a:ri b:ri site:site
+rec L 25 imodf 0 d:ri a:ri b:ri site:site
+rec L 26 imulh 0 d:ri a:ri b:ri
+rec L 27 iand 0 d:ri a:ri b:ri
+rec L 28 ior 0 d:ri a:ri b:ri
+rec L 29 ixor 0 d:ri a:ri b:ri
+rec L 30 ishl 0 d:ri a:ri b:ri
+rec L 31 ishr 0 d:ri a:ri b:ri
+rec L 32 isar 0 d:ri a:ri b:ri
+rec L 33 bnot 0 d:ri a:ri
+rec L 34 icmp 0 cc:cc d:ri a:ri b:ri
+rec L 35 isel 0 d:ri c:ri a:ri b:ri
+rec L 36 fsel 0 d:rf c:ri a:rf b:rf
+rec L 37 psel 0 d:rp c:ri a:rp b:rp
+rec L 38 rcount 0 d:ri lo:ri hi:ri st:ri incl:u site:site
+; floating point
+rec L 39 fadd 0 d:rf a:rf b:rf
+rec L 40 fsub 0 d:rf a:rf b:rf
+rec L 41 fmul 0 d:rf a:rf b:rf
+rec L 42 fdiv 0 d:rf a:rf b:rf
+rec L 43 fneg 0 d:rf a:rf
+rec L 44 fabs 0 d:rf a:rf
+rec L 45 fsqrt 0 d:rf a:rf
+rec L 46 fmin 0 d:rf a:rf b:rf
+rec L 47 fmax 0 d:rf a:rf b:rf
+rec L 48 ffloor 0 d:rf a:rf
+rec L 49 fceil 0 d:rf a:rf
+rec L 50 ftrunc 0 d:rf a:rf
+rec L 51 fround 0 d:rf a:rf
+rec L 52 fcmp 0 cc:cc d:ri a:rf b:rf
+rec L 53 fnan 0 d:ri a:rf
+rec L 54 itof 0 d:rf a:ri
+rec L 55 ftoi 0 d:ri a:rf site:site
+rec L 56 padd 0 d:rp a:rp b:ri
+; memory
+rec L 57 ldi 0 d:ri base:rp idx:ri? scale:u off:i
+rec L 58 ldb 0 d:ri base:rp idx:ri? scale:u off:i
+rec L 59 ldf 0 d:rf base:rp idx:ri? scale:u off:i
+rec L 60 ldp 0 d:rp base:rp idx:ri? scale:u off:i
+rec LF 61 ldx 0 d:rx base:rp idx:ri? scale:u off:i
+rec LF 62 ldy 0 d:ry base:rp idx:ri? scale:u off:i
+rec LF 63 ldm2 0 d:rm base:rp idx:ri? scale:u off:i
+rec LF 64 ldm4 0 d:rm base:rp idx:ri? scale:u off:i
+rec L 65 sti 0 s:ri base:rp idx:ri? scale:u off:i
+rec L 66 stb 0 s:ri base:rp idx:ri? scale:u off:i
+rec L 67 stf 0 s:rf base:rp idx:ri? scale:u off:i
+rec L 68 stp 0 s:rp base:rp idx:ri? scale:u off:i
+rec LF 69 stx 0 s:rx base:rp idx:ri? scale:u off:i
+rec LF 70 sty 0 s:ry base:rp idx:ri? scale:u off:i
+rec LF 71 stm2 0 s:rm base:rp idx:ri? scale:u off:i
+rec LF 72 stm4 0 s:rm base:rp idx:ri? scale:u off:i
+; 2-lane vectors
+rec LF 73 xadd 0 d:rx a:rx b:rx
+rec LF 74 xsub 0 d:rx a:rx b:rx
+rec LF 75 xmul 0 d:rx a:rx b:rx
+rec LF 76 xdiv 0 d:rx a:rx b:rx
+rec LF 77 xmin 0 d:rx a:rx b:rx
+rec LF 78 xmax 0 d:rx a:rx b:rx
+rec LF 79 xneg 0 d:rx a:rx
+rec LF 80 xabs 0 d:rx a:rx
+rec LF 81 xsqrt 0 d:rx a:rx
+rec LF 82 xfloor 0 d:rx a:rx
+rec LF 83 xceil 0 d:rx a:rx
+rec LF 84 xtrunc 0 d:rx a:rx
+rec LF 85 xround 0 d:rx a:rx
+rec LF 86 xcmp 0 cc:cc d:rm a:rx b:rx
+rec LF 87 xsel 0 d:rx m:rm a:rx b:rx
+rec LF 88 xsplat 0 d:rx a:rf
+rec LF 89 xlane 0 d:rf a:rx k:u
+; 4-lane vectors
+rec LF 90 yadd 0 d:ry a:ry b:ry
+rec LF 91 ysub 0 d:ry a:ry b:ry
+rec LF 92 ymul 0 d:ry a:ry b:ry
+rec LF 93 ydiv 0 d:ry a:ry b:ry
+rec LF 94 ymin 0 d:ry a:ry b:ry
+rec LF 95 ymax 0 d:ry a:ry b:ry
+rec LF 96 yneg 0 d:ry a:ry
+rec LF 97 yabs 0 d:ry a:ry
+rec LF 98 ysqrt 0 d:ry a:ry
+rec LF 99 yfloor 0 d:ry a:ry
+rec LF 100 yceil 0 d:ry a:ry
+rec LF 101 ytrunc 0 d:ry a:ry
+rec LF 102 yround 0 d:ry a:ry
+rec LF 103 ycmp 0 cc:cc d:rm a:ry b:ry
+rec LF 104 ysel 0 d:ry m:rm a:ry b:ry
+rec LF 105 ysplat 0 d:ry a:rf
+rec LF 106 ylane 0 d:rf a:ry k:u
+; masks and the variant flag
+rec LF 107 mand 0 d:rm a:rm b:rm
+rec LF 108 mor 0 d:rm a:rm b:rm
+rec LF 109 mnot 0 d:rm a:rm
+rec LF 110 vfeat 0 d:ri f:feat
+; structured control
+rec L 111 loop 0 b:blk ind:ri start:ri count:ri step:ri
+rec L 112 endloop 0 b:blk
+rec L 113 do 0 b:blk
+rec L 114 enddo 0 b:blk
+rec L 115 if 0 b:blk c:ri
+rec L 116 ifz 0 b:blk c:ri
+rec L 117 else 0 b:blk
+rec L 118 endif 0 b:blk
+rec L 119 exit 0 b:blk
+rec L 120 next 0 b:blk
+rec L 121 ret 0 n:u v:reg*n
+; calls, checks, reference counts
+rec L 122 call 0 name:s nr:u d:reg*nr na:u a:reg*na
+rec L 123 rcall 0 entry:s site:site? nr:u d:reg*nr na:u a:reg*na
+rec L 124 chkb 0 idx:ri ext:ri dim:u site:site
+rec L 125 chk 0 c:ri err:s site:site n:u a:reg*n
+rec L 126 retain 0 a:rp
+rec L 127 release 0 a:rp

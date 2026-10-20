@@ -5,8 +5,8 @@ with modern C/Rust-like syntax. It is the child project of
 [Baysick](https://github.com/frgmt0/Baysick), a faithful rebuild of Dartmouth BASIC (1964) written
 in assembly, and Sea is written in Baysick.
 
-**Status: design agreed (docs/DESIGN.md); implementation not started.** The language is
-specified in docs/DESIGN.md.
+**Status: design agreed; implementation not started.** The language is specified in
+docs/LANGUAGE.md, the compiler, runtime, tests and plan in docs/DESIGN.md.
 
 ## Why
 
@@ -39,8 +39,12 @@ tested on Linux), plus its own IR and plug-in backends.
 
 ## Status
 
-The Sea design is agreed (2026-10-20, docs/DESIGN.md). Baysick has the matrix runtime and
-language growth Sea needs to start. Implementation has not started.
+The Sea design is agreed (2026-10-20) and split into docs/LANGUAGE.md and docs/DESIGN.md. The
+compiler's intermediate file formats (docs/DESIGN.md §3, include/passes.txt) and the contract
+files (include/limits.inc, errors.inc, rt.inc) are written; they, and every item marked pinned in
+docs/DESIGN.md, await the user's agreement (listed in docs/DESIGN.md §0, with the open language
+questions). Baysick has the matrix runtime and language growth Sea needs to start.
+Implementation has not started.
 
 ## Workloads
 
@@ -56,9 +60,9 @@ In order, without dates:
 
 1. Done: Baysick's MAT statements and matrix runtime.
 2. Done: Baysick grown through the Sixth Edition plus extensions (v0.6.0).
-3. Done: the Sea design document, agreed.
+3. Done: the Sea design, agreed, and split into the language specification and the design document.
 
-The rest follows the milestones in docs/DESIGN.md §19.
+The rest follows the milestones in docs/DESIGN.md §8.
 
 ## Getting it
 
