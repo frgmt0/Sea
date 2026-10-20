@@ -83,17 +83,50 @@ Open MATLAB R2026a and set the current folder to `sea/workloads` (any folder wor
 paths are taken from the files' own locations). Then:
 
 ```matlab
-run_all            % each workload 3 times, no figures; writes reference/*.json + timings
-run_all(true)      % same, plus figures saved to output/
-run_all(false, 5)  % 5 repetitions for timing
-w3_quarter_car     % one workload on its own: report + figures, writes nothing
+run_all               % each workload 5 times, no figures; writes reference/* + timings
+run_all(true)         % same, plus figures saved to output/
+run_all(false, 5)     % 5 repetitions for timing (the default)
+run_all(false, 5, 1)  % the same with MATLAB limited to one computational thread
+w3_quarter_car        % one workload on its own: report + figures, writes nothing
 ```
 
-`run_all` runs each script in its own function workspace with
-`SEA_EXPORT_REFERENCE = true`. It prints a timing table (total wall time and the script's own
-compute time, first run and best of N; the first run includes JIT warm-up) and the folder it
-wrote to. It writes `reference/<name>.json` for each workload and
-`reference/baseline_timings_matlab.json` (MATLAB version, architecture, all timings).
+`run_all(makePlots, nRepeat, threads)` runs each script in its own function workspace with
+`SEA_EXPORT_REFERENCE = true`. Arguments: `makePlots` (default `false`), `nRepeat` (default
+`5`), `threads` (`'default'`, or `1` for `maxNumCompThreads(1)` during the run, restored
+afterwards, also on error). Outputs, all under `reference/`:
+
+* `<name>.json`, written on every repetition (the results are deterministic);
+* `<name>.txt`, the printed report of the script, captured with `diary` on the **last**
+  repetition only (an existing file is deleted first, so the file holds only that script's
+  output and not `run_all`'s own prints);
+* the timing file: `baseline_timings_matlab.json` (default threads) or
+  `baseline_timings_matlab_1thread.json` (`threads = 1`). It records MATLAB version,
+  architecture, `max_num_comp_threads` (the value in effect during the run), `machine_model`
+  (`sysctl -n hw.model` on macOS, the `/proc/cpuinfo` model name on Linux, else an empty string
+  with a `machine_note`), `cpu_brand`, and the total and compute times of every repetition
+  plus their medians and bests. The printed table shows first, median and best. Runs with
+  fewer than 5 repetitions (a quick figure run, say) are allowed but write **no** timing
+  file; `run_all` prints a note.
+* The report capture never shares a repetition with figure drawing (plot warnings would leak
+  into the text): with `makePlots` true it is made on repetition `nRepeat - 1`, and with
+  `makePlots` true and `nRepeat == 1` no report is captured (a note is printed). The user's
+  own `diary` state is saved and restored.
+
+The first repetition includes JIT warm-up.
+
+### Regenerating the MATLAB references
+
+Run both, in this order, in the MATLAB desktop, then commit the regenerated `reference/` files:
+
+```matlab
+run_all(false, 5, 1)   % single-threaded timings -> baseline_timings_matlab_1thread.json
+run_all(false, 5)      % default threads: the JSON and report texts written last
+```
+
+The second call comes last so that `reference/<name>.json` and `reference/<name>.txt` come from
+the default-threaded run (the single-threaded run also writes them, and is overwritten).
+Afterwards `compare.py` (NumPy mode) should still report no failure, and the self-tests below
+should pass.
 
 To export from a single script by hand: `SEA_EXPORT_REFERENCE = true; w2_truss_fem`.
 
@@ -118,6 +151,120 @@ uv run --no-project --with numpy python reference_py/compare.py   # MATLAB vs Nu
 `compare.py` reports every key as `ok` or `FAIL` and exits non-zero on any failure. A
 workload with no MATLAB file yet is reported as `MISSING`. `--self-test` compares the NumPy
 files with themselves, which checks the tooling.
+
+### Comparing a Sea port
+
+`compare.py --candidate <dir> [name ...]` compares `<dir>/<name>.json` (a port's
+`--export-reference` output) with the MATLAB `reference/<name>.json`, with the same `RULES`
+except for the near-tie keys:
+
+```sh
+uv run --no-project --with numpy python reference_py/compare.py --candidate OUT_DIR w2_truss_fem
+```
+
+* For an `argmax_tol` / `argmin_tol` key (W2 `r_worst` over `util_removed`, `e_crit0` over
+  `fos0`) the candidate's index must be **exactly** the first 1-based position of the extremum
+  of the candidate's own exported array (NaN ignored; with an exact duplicate extremum, the
+  first position), and the MATLAB array's value at that index must be within the rule's `rel` of
+  the MATLAB extremum. A port that forgot to add 1 points at the element before its own extremum
+  and fails even if that element is a near-tie of MATLAB's.
+* A missing MATLAB reference or a missing candidate file is a **failure** (in NumPy mode a
+  missing MATLAB file is only reported `MISSING`).
+
+`compare_report.py` judges a candidate text report against the MATLAB report
+`reference/<name>.txt` with a token map:
+
+```sh
+uv run --no-project --with numpy python reference_py/compare_report.py \
+    w5_tolerance_mc OUT/report.txt ../ports/w5_tolerance_mc.tokens \
+    --candidate-json OUT/w5_tolerance_mc.json
+```
+
+Exit status: 0 equivalent, 1 not equivalent (one diagnostic per failing token or line),
+2 usage or token-map error. The reference JSON `reference/<name>.json` is read for `json` rules;
+`--candidate-json` is only needed for the `argmax_tol`/`argmin_tol` keys.
+
+**Equivalence.** Same number of lines; the line `Compute time: ... s` (`^Compute time: .* s$`)
+is skipped on both sides (at the same line position); per line, the same number of
+blank-separated tokens; non-numeric tokens identical; numeric tokens pass their rule. A token
+is numeric if it parses as a number (Python float syntax including `inf`/`nan`, and forms like
+`+3`) after removing at most one trailing `,` `;` or `:`; the removed character (or none) must
+be the same on both sides. Only a trailing `,` `;` `:` is removed; nothing else is stripped.
+Consequently a token with a bracket, a `%` or a `..` attached is **non-numeric** and must be
+identical text on both sides (it can not carry a numeric rule). Every such report token in the
+current scripts (found by checking each `fprintf` format):
+
+| Script, line | Format fragment | Example text |
+|---|---|---|
+| W1, 200 | `(ke = %.3f)` | `0.897)` |
+| W1, 222 | `(%d x %d points` | `(90` |
+| W2, 211 | `left (%.2f, %.2f) kN` | `(847.70,` and `847.70)` |
+| W2, 213 | `Load-angle sweep (%d angles` | `(1441` |
+| W3, 155 | `%.2f..%.2f cycles/m` | `0.30..12.00` |
+| W3, 166 | `(J = %.4f), refined` | `1.2345),` |
+| W4, 186 and 194 | `(x, y) = (%.4f, %.4f) m` | `(0.1000,` and `0.0500)` |
+| W5, 171 | `(%d samples)` | `(1000000` |
+| W5, 175 | `%8.2f%%` (contribution table) | `12.50%` |
+| W5, 188 | `P%-7.3f` (percentile label) | `P2.500` |
+
+(The examples show the shape, not the values.) These are compared as text, so a port must print
+them with the same digits as MATLAB, and the token map can not relax them. Percentages written
+with a blank before the sign (W1's `%.2f %%` and `%.0f %%`, W5's `yield %.4f %%`) have a numeric
+number token. Whether the token rule should treat brackets and `..` differently is a pending
+design decision; the tools implement the rule as stated.
+
+**Default rule limit.** The default rule compares mantissas only when the exponent text is
+identical, so an exponent carry (`9.99e-05` vs `1.00e-04`) or a difference in exponent spelling
+or case (`1.0e-05` vs `1.0E-05`, `e-05` vs `e-5`) fails. A token like that needs an explicit map
+entry (`num` or `json`).
+
+**Token map file.** One entry per line, fields separated by runs of blanks:
+
+```
+<line regex>  <token number>  <rule>
+```
+
+* The regex dialect is Python `re` (not a full POSIX ERE engine) with POSIX bracket classes
+  added: `[:alpha:]`, `[:digit:]`, `[:alnum:]`, `[:upper:]`, `[:lower:]`, `[:space:]`,
+  `[:blank:]`, `[:xdigit:]`, `[:word:]`, `[:punct:]`, `[:print:]`, `[:graph:]`, `[:cntrl:]` are
+  translated **only inside a bracket expression** (`[[:digit:]x]` becomes `[0-9x]`; a bare
+  `[:digit:]` is an ordinary set of the characters `:digit`). It is matched with `re.match`,
+  i.e. anchored at the start of the line only, not the end (`^Rejects:` and `Rejects:` are
+  the same; add `$` to anchor the end). It **may not contain blanks** (the fields are split on
+  blanks): write `[ ]` or `[[:space:]]`.
+* The token number counts blank-separated tokens of the line from 1 and must name a numeric
+  token of the reference line.
+* Blank lines and lines starting with `#` are comments.
+* Rules: `exact` (identical numbers); `int n` (`|a-b| <= n`); `num atol rtol`
+  (`|a-b| <= atol + rtol*|a|`, `a` the MATLAB value); `json <key>` (the rule of that key in
+  `RULES[name]`: for `num` the scale for `rtol` is the largest magnitude of that key in the
+  reference JSON; `int`, `exact`, `small` apply directly to the two token values; for
+  `argmax_tol`/`argmin_tol` the reference token must equal the MATLAB JSON value, the candidate
+  token must equal the candidate JSON value, and the candidate JSON must pass the
+  own-extremum rule above).
+* **Default rule** for a numeric token without an entry: equal as text, or the same number of
+  fractional digits and the same exponent part, with mantissa digit strings (decimal point
+  removed, read as signed integers) differing by at most 1. `0.999` vs `1.000` passes; `1.5` vs
+  `1.50` fails.
+* The map is validated against all lines of the reference report (the `Compute time` line
+  included) before any candidate comparison, so a broken map is exit status 2 whatever the
+  candidate looks like. Exit status 2 is: a malformed entry, a bad token number or rule
+  argument, an unknown rule, an unknown `json` key, an invalid regex, an unknown POSIX class
+  inside brackets, two entries giving different rules to the same token of the same line, a
+  token number beyond the line's token count, a token that is not numeric, a missing reference
+  report `reference/<name>.txt`, candidate report, token map or `--candidate-json` file, a
+  `json` rule whose reference JSON `reference/<name>.json` is missing or lacks the key, and a
+  `json` rule on an `argmax_tol`/`argmin_tol` key when `--candidate-json` was not given. An
+  entry that matches no reference line only prints a warning. When `--candidate-json` is given
+  but lacks the key or has a bad index, that is a judgement failure (exit 1), not a map error.
+
+Both tools have self-tests (no MATLAB needed; `compare.py --self-test` also checks the
+candidate mode against the real MATLAB JSON files, then corrupts some of them):
+
+```sh
+uv run --no-project --with numpy python reference_py/compare.py --self-test
+uv run --no-project --with numpy python reference_py/compare_report.py --self-test
+```
 
 ### MATLAB semantics reproduced in the NumPy versions
 
@@ -176,9 +323,9 @@ Done without MATLAB:
   (0.037990 mm) within sampling error.
 * W1: the scalar and vectorized bisections agree to 7e-8 m, inside the 1e-7 m tolerance.
 
-The MATLAB scripts themselves have **not yet been run** (there is no MATLAB command-line
-launcher on the development machine). The first `run_all` in the MATLAB desktop produces the
-authoritative JSON. Then run `compare.py`.
+The MATLAB reference JSON comes from a `run_all` run in the MATLAB desktop (there is no MATLAB
+command-line launcher on the development machine). The report texts `reference/<name>.txt`
+exist only after the rerun described under "Regenerating the MATLAB references".
 
 ## Expected timings
 
@@ -202,10 +349,12 @@ NumPy 2.5). Those times are not a baseline for Sea.
 ```
 workloads/
   README.md               this file
-  run_all.m               MATLAB driver: export references, time everything
+  run_all.m               MATLAB driver: export references and report texts, time everything
   w1_shaft_design.m       ... w5_tolerance_mc.m: the workloads
-  reference/              <name>.json (MATLAB, authority), <name>.py.json (NumPy cross-check),
-                          baseline_timings_matlab.json (from run_all.m)
-  reference_py/           common.py, w1..w5 *.py, run_all.py, compare.py
+  reference/              <name>.json (MATLAB, authority), <name>.txt (MATLAB report),
+                          <name>.py.json (NumPy cross-check), baseline_timings_matlab.json and
+                          baseline_timings_matlab_1thread.json (from run_all.m)
+  reference_py/           common.py, w1..w5 *.py, run_all.py, compare.py (also --candidate),
+                          compare_report.py (report comparison with token maps)
   output/                 figures, only when SEA_SAVE_FIGURES is true (not committed)
 ```
