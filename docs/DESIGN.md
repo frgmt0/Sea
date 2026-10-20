@@ -2185,8 +2185,8 @@ Baysick's `KV_NAME`s, which `SEA_KERNELS` and `_bsk_kern_use` take.
 
 **Baysick version** (§4.3, §7.2): Baysick 0.6.0, whose `libbaysickrt.a` and `include/runtime.inc` the
 runtime is built and checked against. The GEMM update entry `_bsk_kern_gemm_sub` and IEEE
-propagation of §7.2 are a requirement on a later Baysick version (before phase 8); `rt.inc`
-names that version when the change has landed in Baysick and Sea's runtime starts to use it.
+propagation of §7.2 landed in Baysick 0.6.0 (Baysick commit `4c9b87a`, 2026-10-20) without a
+version change, so 0.6.0 with that commit or later is the version `rt.inc` names.
 
 | Name | Value | Meaning |
 |------|------:|---------|
