@@ -5,7 +5,8 @@ with modern C/Rust-like syntax. It is the child project of
 [Baysick](https://github.com/frgmt0/Baysick), a faithful rebuild of Dartmouth BASIC (1964) written
 in assembly, and Sea is written in Baysick.
 
-**Status: pre-design.** No Sea syntax, semantics or code exists yet.
+**Status: design agreed (docs/DESIGN.md); implementation not started.** The language is
+specified in docs/DESIGN.md.
 
 ## Why
 
@@ -29,20 +30,17 @@ Sea is bootstrapped: it is written in Baysick. Sea lives in its own repository a
 the Baysick repository as a git submodule at `sea/`.
 
 When Sea needs something Baysick lacks, Baysick grows it. Where possible that follows the later
-Dartmouth editions:
-
-* 2nd edition: MAT statements (in progress)
-* 3rd edition: `INPUT`
-* 4th edition: strings and `CHANGE`
-* files, later
+Dartmouth editions. Baysick now implements the Second through Sixth Editions (MAT statements,
+`INPUT`, strings and `CHANGE`, sequential files, string functions, `CALL`/`SUB`) plus its own
+labelled extensions (version 0.6.0).
 
 Baysick currently has two targets, `arm64-macos` (native) and `x86_64-linux` (cross-compiled and
 tested on Linux), plus its own IR and plug-in backends.
 
 ## Status
 
-Sea is in the pre-design phase. The current work is on the Baysick side: MAT (matrix) support,
-which builds the matrix runtime that Sea will rely on.
+The Sea design is agreed (2026-10-20, docs/DESIGN.md). Baysick has the matrix runtime and
+language growth Sea needs to start. Implementation has not started.
 
 ## Workloads
 
@@ -56,13 +54,11 @@ compared.
 
 In order, without dates:
 
-1. Finish Baysick's MAT statements and matrix runtime.
-2. Grow Baysick with the other capabilities Sea needs (`INPUT`, strings and `CHANGE`, files).
-3. Write the Sea language design document and agree on it.
-4. Implement the Sea compiler in Baysick.
-5. Write the SIMD kernels for arm64 and x86_64, with CPU-feature dispatch.
-6. Add fused element-wise expression compilation.
-7. Benchmark against Apple Accelerate and OpenBLAS, and publish the methodology and results.
+1. Done: Baysick's MAT statements and matrix runtime.
+2. Done: Baysick grown through the Sixth Edition plus extensions (v0.6.0).
+3. Done: the Sea design document, agreed.
+
+The rest follows the milestones in docs/DESIGN.md §19.
 
 ## Getting it
 

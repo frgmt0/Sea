@@ -2,21 +2,20 @@
 
 ## 0. Status, scope and how this document is agreed
 
-**Status: proposal, second draft (revised after the first review).** Nothing here is
-implemented. This document proposes
+**Status: Agreed 2026-10-20: the user accepted every recommendation of §20.** Nothing here is
+implemented. This document specifies
 the whole of Sea: the language, its standard library, its output and plotting model, the
 compiler (written in Baysick), the runtime, the performance model, the tests and the plan. It
-is written normatively ("must") so that every rule can become a test once it is agreed, but no
-rule binds anyone until the user has agreed it.
+is written normatively ("must") so that every rule can become a test.
 
-**How it is agreed.** The user reads the document and either accepts each decision of §20
-(Open decisions) or picks another option there. Every other rule is the architect's proposal
-and is accepted with the document unless the user changes it. After agreement:
+**How it was agreed.** The user read the document and accepted each decision of §20
+(Decisions), choosing the option recommended there. Every other rule was accepted with the
+document. A change to the design is made in this file together with the user's agreement. Next:
 
 1. this file is split, as Baysick's documents are, into `sea/docs/LANGUAGE.md` (normative:
    what programs mean, their output bytes, errors, exit statuses; §3–§13 here) and
    `sea/docs/DESIGN.md` (normative: compiler passes, file formats, runtime ABI, tests, work
-   packages; §14–§19 here). The compiler half gains, in that step, what this proposal
+   packages; §14–§19 here). The compiler half gains, in that step, what this document
    deliberately leaves at the level of principles: the exact record formats of the
    intermediate files (`sea.ast`, `sea.hir1`, `sea.hir`, `sea.lir1`, `sea.lir`, §14.4), each
    with an `--emit` dump test, as Baysick's IR.md does for its IR;
@@ -111,7 +110,7 @@ to name its machine, and the comparison is valid only on the same one (the user'
 Sea's compile time is reported next to these numbers but not counted: an AOT binary is
 compiled once and run many times. The methodology is §17.5; its known asymmetries (MATLAB ran
 multithreaded, three repetitions with visible variance) are stated in §16.7, and Decision 7 in
-§20 proposes a MATLAB rerun that removes them.
+§20 adds a MATLAB rerun that removes them.
 
 ### 1.3 Non-goals for v1
 
@@ -974,8 +973,8 @@ Sea therefore guarantees, for everything that is not class R:
    `(a + b) + c`; `2 * pi * rpm / 60` is `((2 * pi) * rpm) / 60`). `sqrt` is the correctly
    rounded square root.
 2. **No reassociation, no contraction.** The compiler never reassociates, never forms a fused
-   multiply-add from `a * b + c` (Sea v1 has no FMA at all; Decision 1 in §20 weighs an opt-in
-   fast mode), never computes `x / c` as
+   multiply-add from `a * b + c` (Sea v1 has no FMA at all; Decision 1 in §20 considered an opt-in
+   fast mode and rejected it for v1), never computes `x / c` as
    `x * (1 / c)` unless `c` is a constant power of two (then both are the same correctly
    rounded value), never uses flush-to-zero or approximate reciprocal instructions, and never
    evaluates an `f64` expression in a wider precision.
@@ -998,7 +997,7 @@ fixed-size matrices whose every extent is at most 8 is class E too: it is evalua
 
 **What this costs** is a design decision, not a free property: forbidding contraction and
 using FMA-free elementary functions gives up some speed on compute-bound scalar chains. Decision
-1 in §20 states the options and the estimated cost; the rules above are its recommended answer.
+1 in §20 states the options and the estimated cost; the rules above are the option decided.
 
 ### 6.9 Array literals and concatenation
 
@@ -2028,7 +2027,7 @@ factor applied to the later passes, sized by the rules they implement in this do
 
 The uncertainty is large (±50 % on the later passes); the estimate is recalibrated when pass 1
 exists (phase 1, §19). Passes 2a and 3a may approach the 10 000-line limit; the response is
-Decision 2 in §20 (split further, or grow Baysick). Runtime assembly per target, by analogy with
+Decision 2 in §20 (split further, or grow Baysick, by the policy of §18.3). Runtime assembly per target, by analogy with
 Baysick's runtimes (9 000 and 11 000 lines): core runtime 8 000–12 000 lines, plotting and JSON
 2 500–4 000, Sea's own kernels (GEMV, LU/Cholesky panels, triangular solves, eigenvalues, sort,
 elementary functions in scalar and vector forms) 6 000–10 000 — all estimates.
@@ -2129,7 +2128,7 @@ neither is its Gauss–Jordan `inv`.
 `C = A·B` (no accumulation, no α/β), so it cannot do the trailing update `C ← C − A·B` of a
 blocked LU or Cholesky; its preconditions require every input element to be finite and every
 extent ≥ 1, while Sea arrays may hold ∞/NaN and may be empty. Sea handles this as follows
-(Decision 5 in §20 chooses between this and owning a GEMM in Sea):
+(Decision 5 in §20 chose this over owning a GEMM in Sea):
 
 * **Empty operands** never reach a kernel: Sea's runtime returns the zero matrix of the result
   shape for an empty inner dimension, and an empty result for an empty outer one.
@@ -2435,7 +2434,7 @@ with `exact` rules (`rank`, `k_worst`, `i_best`, `lcg_final`, counts, …) check
 
 **Reference text.** The MATLAB report text is not stored yet. Decision 7 in §20 adds a
 `diary`-based capture to `run_all.m` (each script's report written to
-`reference/<name>.txt` on the last repetition) and asks the user to rerun MATLAB once.
+`reference/<name>.txt` on the last repetition) and a one-time MATLAB rerun by the user.
 
 **Token map.** Each port has a file `sea/ports/<name>.tokens` that says how each numeric token
 of the report is judged. One line per report-line pattern:
@@ -2539,7 +2538,7 @@ LANGUAGE.md), with the calibration of §14.7:
 **Conclusion.** No Baysick language change is needed to start, and none is proposed now. The
 honest risk is size: the line limit and the absence of globals make the larger passes long and
 repetitive, and the estimate of §14.7 could put a pass near 10 000 lines. §18.3 states the
-policy for that case; Decision 2 in §20 asks the user to agree it in advance.
+policy for that case; Decision 2 in §20 agrees it in advance.
 
 ### 18.2 Changes to Baysick's runtime kernel contract
 
@@ -2556,7 +2555,7 @@ The GEMM reuse of §15.3 needs a **runtime contract change in Baysick** (no lang
 
 The link-isolation property Sea relies on (`rt_kinit.o` + `rt_k*.o` pulled alone from
 `libbaysickrt.a`, §15.3) is already a Baysick rule; a Sea link test watches it. No new archive
-or build target is needed. Decision 5 in §20 offers the alternatives (Sea owns its GEMM, or a
+or build target is needed. Decision 5 in §20 rejected the alternatives (Sea owns its GEMM, or a
 shared kernel repository).
 
 ### 18.3 Growth policy for the language
@@ -2600,7 +2599,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 
 | # | Phase | Done when |
 |---|-------|-----------|
-| 0 | **Agreement and contracts.** The decisions of §20 are taken; the document is split into LANGUAGE.md and DESIGN.md with the intermediate record formats (§0); `sea/include/*.inc`, `passes.txt`; the Baysick kernel contract change of §18.2 (in Baysick, by its own process); `compare.py --candidate`, the token maps' format, and `run_all.m` report capture, with the MATLAB rerun if chosen (Decision 7) | the user has agreed the documents; include checks pass on both assemblers; Baysick's tests pass with the new GEMM entry |
+| 0 | **Agreement and contracts.** The decisions of §20 are taken; the document is split into LANGUAGE.md and DESIGN.md with the intermediate record formats (§0); `sea/include/*.inc`, `passes.txt`; the Baysick kernel contract change of §18.2 (in Baysick, by its own process); `compare.py --candidate`, the token maps' format, and `run_all.m` report capture, with the MATLAB rerun (Decision 7) | the user has agreed the documents; include checks pass on both assemblers; Baysick's tests pass with the new GEMM entry |
 | 1 | **Scalar core, arm64.** Driver with the `#end` discipline; passes 1–4 for: `i64`/`f64`/`bool`, `let`/`var`, arithmetic with the §6.8 rules, `if`/`while`/`for` ranges, functions with scalar parameters, `ref`, multiple results, `printf` with `%d %f %e %g %s`, `now()`; runtime start-up, formatting, errors; float-literal conversion; **recalibration** of the size estimate of §14.7 from the real pass 1 | a Sea program running W5's LCG for 11 M steps prints `lcg_final` = 2145635252 (the reference value) and the first uniforms bit-exact; spec tests for this subset pass; the estimate is updated in the document |
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets |
@@ -2612,10 +2611,11 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
 | 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §17.5 passes for all five workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
 
-## 20. Open decisions for the user
+## 20. Decisions (agreed)
 
-Each item: the options, the recommendation, and what it affects. Everything else in this
-document follows from the recommendations; choosing another option changes the sections named.
+Agreed 2026-10-20: the user accepted every recommendation. Each item: the options, the option
+decided, and what it affects. Everything else in this document follows from the decisions;
+changing one changes the sections named, and is made in this file with the user's agreement.
 Ordered by impact. (Column-major layout and the prelude's delivery are decided in the body,
 §4.5 and §14.5, because no option argued otherwise.)
 
@@ -2632,7 +2632,7 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
    elementary functions without FMA about 10–30 % slower per call than FMA-based ones. Whether
    MATLAB's own JIT contracts is not known, so (a) does not necessarily reproduce MATLAB
    better; it reproduces *itself* across targets.
-   **Recommendation: (a) for v1**, and revisit (b) with phase-10 measurements: the speed goal
+   **Decided: (a) for v1**, and revisit (b) with phase-10 measurements: the speed goal
    has an estimated margin on every workload (§16.5), byte-identical outputs on both targets
    make every test simpler and stronger, and (b) can be added later without changing any
    program. Affects §6.8, §10.4, §15.5, §16, §17.6.
@@ -2642,19 +2642,19 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
    and no Baysick language change now; (b) raise Baysick's line limit and add a `COMMON` block
    now, before the compiler exists, so passes can be fewer and larger; (c) forbid any Baysick
    change: the compiler must fit Baysick 0.6.0 as it is, whatever the number of passes.
-   **Recommendation: (a).** The calibration (§14.7) says Baysick 0.6.0 is sufficient with an
+   **Decided: (a).** The calibration (§14.7) says Baysick 0.6.0 is sufficient with an
    estimated 26 000–42 000 lines in eight programs, but the estimate is ±50 %; (a) commits to
    nothing unmeasured and pre-agrees how a measured need is handled. Affects §14.1, §14.7, §18.
 3. **Index base.**
    Options: (a) 0-based with half-open ranges `a..b`; (b) 1-based with inclusive ranges, like
-   MATLAB and Baysick's MAT. **Recommendation: (a).** It matches the C/Rust family Sea's syntax
+   MATLAB and Baysick's MAT. **Decided: (a).** It matches the C/Rust family Sea's syntax
    comes from, half-open ranges compose without `±1`, linear and DOF indices are plain products.
    Cost: ports add 1 to exported indices, which the acceptance checks catch structurally
    (§17.3). Affects §5, every example, Appendix D.
 4. **Array semantics.**
    Options: (a) values (copy-on-write) with explicit `ref` parameters for in-place updates, and
    runtime handle types for figures and factorizations; (b) references (NumPy-like aliasing);
-   (c) ownership and borrowing (Rust-like moves). **Recommendation: (a).** MATLAB users'
+   (c) ownership and borrowing (Rust-like moves). **Decided: (a).** MATLAB users'
    expectations, no aliasing bugs, O(1) passing, and `ref` makes in-place updates explicit and
    checkable. (c) is the fastest in theory but adds a borrow checker to a compiler written in
    BASIC. Affects §4.1, §4.5, §8.2–§8.3, §15.2.
@@ -2662,7 +2662,7 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
    Options: (a) link Baysick's `libbaysickrt.a` for GEMM and grow Baysick's kernel contract by
    the update entry and IEEE propagation of §18.2; Sea owns every other kernel; (b) Sea writes
    and owns its own GEMM (both targets, all variants), no Baysick change; (c) move all matrix
-   kernels into a third shared repository used by both. **Recommendation: (a).** One copy of the
+   kernels into a third shared repository used by both. **Decided: (a).** One copy of the
    hardest kernel (the register-blocked GEMM in three variants), a small and testable change to
    Baysick (the micro-kernel loading `C` instead of zero), no new repository. Cost: a
    cross-repository contract (`include/runtime.inc`, §14.6) and a Baysick change before phase 8.
@@ -2672,7 +2672,7 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
    Options: (a) Sea's own `log exp sin cos pow hypot` (≤ 1 ulp, identical bits on every target,
    scalar and SIMD), only these in v1 (§10.4, §10.13); (b) the host libm (Apple libm, glibc),
    like Baysick; (c) (a) with the full C set (`tan asin … tanh log2 log10`) in v1.
-   **Recommendation: (a).** It makes every output except linear algebra byte-identical across
+   **Decided: (a).** It makes every output except linear algebra byte-identical across
    targets (W1, W4, W5 entirely), and fused SIMD loops need vector forms, which the host libms do
    not provide on both targets. Six functions are what the workloads use; each further function
    is weeks of careful work and is added when a program needs it. With (b), §6.8 gains a
@@ -2685,48 +2685,48 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
    the **user reruns MATLAB once** (with the default thread count, and once more with
    `maxNumCompThreads(1)` for a single-threaded comparison), regenerating the reference files;
    (b) only `compare.py --candidate`, no rerun: reports are compared by hand, timings against the
-   current 3-run multithreaded baseline. **Recommendation: (a).** Without stored MATLAB reports
+   current 3-run multithreaded baseline. **Decided: (a).** Without stored MATLAB reports
    §17.4 cannot be automated, and the current baseline's variance (W2: 1.05–1.74 s) makes a
    best-of-3 comparison noisy. Which baseline (default or single-threaded) is the pass
-   criterion is part of this decision; recommended: the default-threaded one, as users run
+   criterion is part of this decision; decided: the default-threaded one, as users run
    MATLAB, with the single-threaded one reported. Affects §1.2, §16.7, §17.3–§17.5.
 8. **Typing strictness and untyped integer literals.**
    Options: (a) static, signatures annotated, locals inferred, only `i64 → f64` implicit, untyped
    integer constants typed by context and a `var` initialised by one typed by its assignments
    (§4.2); (b) as (a) but untyped integer constants always `i64` unless used directly with an
    `f64` (so `var dMax = 0` followed by `dMax = d` is a type error asking for `0.0`); (c) all
-   numbers `f64`, no `i64` (MATLAB's model). **Recommendation: (a).** It gives MATLAB
+   numbers `f64`, no `i64` (MATLAB's model). **Decided: (a).** It gives MATLAB
    programmers the obvious meaning of `var dMax = 0` and still keeps integer counters `i64`; the
    cost is one flow-insensitive pass over each function's assignments. Affects §4.2, §4.10, §9.1.
 9. **Vectors as their own rank.**
    Options: (a) rank-1 `T[]` distinct from rank-2 `T[,]`, orientation written with `.col`/`.row`
-   where broadcasting needs it; (b) MATLAB's model, everything 2-D. **Recommendation: (a).**
+   where broadcasting needs it; (b) MATLAB's model, everything 2-D. **Decided: (a).**
    Static loop shapes, no orientation bugs; the price is writing `.col`/`.row` in the rare
    outer-product broadcasts (W3's road grid). Affects §4.5, §5, §6.3, §6.9.
 10. **Shape polymorphism.**
     Options: (a) `elemental fn`; (b) generic functions over array shapes; (c) every scalar
-    function implicitly elemental. **Recommendation: (a).** Covers every workload use, keeps
+    function implicitly elemental. **Decided: (a).** Covers every workload use, keeps
     type checking simple, and is the form fusion needs; (c) hides allocation and loops behind
     ordinary-looking calls. Affects §8.5, §16.1.
 11. **Surface syntax.**
     Options, as a package: (a) `*` element-wise, `@` matrix product, `.T` transpose,
     `solve(A, B)`; `^` right-associative binding tighter than unary minus; newline-terminated
     statements with the three rules of §3.7; (b) MATLAB's `.*` / `*` / `'` / `\`, left-associative
-    `^`, `;` required. Individual items can be changed. **Recommendation: (a).** One meaning per
+    `^`, `;` required. Individual items can be changed. **Decided: (a).** One meaning per
     symbol removes MATLAB's commonest bug (`*` for `.*`); `\` reads as an escape in a C-like
     language; right-associative `^` is the mathematical convention; newline statements read
     cleanly in long engineering scripts, and the one trap (a line starting with a binary
     operator) is a compile error. Affects §3.7, §6.1–§6.2, Appendix A.
 12. **Can bounds checks be disabled?**
     Options: (a) no: always on, eliminated by analysis; (b) a `--unchecked` build option;
-    (c) a per-block `unchecked { }` construct. **Recommendation: (a)** for v1. The checks that
+    (c) a per-block `unchecked { }` construct. **Decided: (a)** for v1. The checks that
     survive elimination are a compare and an untaken branch off the critical path; an option
     would create a second behaviour to test. If phase 10 shows a workload losing more than 5 %
     to checks, revisit with that measurement. Affects §5.4, §16.2.
 13. **Plot format and fidelity.**
     Options: (a) SVG with embedded PNG images, geometry specified (§12.5) but v1 tests structural
     plus cross-target byte identity; (b) as (a) with every SVG byte specified and hand-derived
-    byte-exact plot tests; (c) PNG files through a rasterizer. **Recommendation: (a).** It
+    byte-exact plot tests; (c) PNG files through a rasterizer. **Decided: (a).** It
     tests what matters for v1 (the right figure, deterministic on both targets) without
     freezing layout details before anyone has looked at the figures; (b) can follow without an
     API change. Affects §12, §17.2.
@@ -2734,13 +2734,13 @@ Ordered by impact. (Column-major layout and the prelude's delivery are decided i
     Options: (a) `args()` returns the command-line arguments, and the ports take
     `--export-reference` and `--figures` (Appendix D); (b) `getenv`, keeping the workloads'
     environment variables `SEA_EXPORT_REFERENCE`, `SEA_PLOT`, `SEA_SAVE_FIGURES`; (c) both.
-    **Recommendation: (a).** Arguments are explicit at the call site and need one tiny library
+    **Decided: (a).** Arguments are explicit at the call site and need one tiny library
     function; environment variables leak into child processes and are invisible in a command
     line. The acceptance and benchmark scripts pass the flags. Affects §10.10, §17.3, §17.5,
     Appendix D.
 15. **File extension and command name.**
     Options: (a) `.sea` and `sea`; (b) `.sea` and `seac`; (c) another name.
-    **Recommendation: (a).** Short and obvious; check for a clash with an existing `sea` command
+    **Decided: (a).** Short and obvious; check for a clash with an existing `sea` command
     on the user's systems before release. Affects §14.2, tests, docs.
 
 ## 21. Appendices

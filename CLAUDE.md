@@ -6,8 +6,8 @@ BASIC (1964) rebuild hand-written in assembly, with targets `arm64-macos` (nativ
 `x86_64-linux` (cross-compiled, tested on Linux), its own IR and plug-in backends.
 
 ## Status
-**Pre-design.** No Sea syntax, semantics or code exists. The current work is Baysick's MAT
-(2nd edition matrix) support, which builds the matrix runtime Sea will rely on.
+**Design agreed** (2026-10-20). Read `docs/DESIGN.md` first; implementation follows its §19
+milestones. No Sea code exists yet.
 
 ## Goals, in priority order
 1. Raw speed: ahead-of-time compiled to native code; fused element-wise expressions without
@@ -23,10 +23,10 @@ authority on the toolchain Sea is built with.
 
 ## Invariants
 - **Sea is written in Baysick.** If Sea needs a language feature Baysick lacks, add it to Baysick
-  (in its repo) rather than working around it in Sea. Prefer following later Dartmouth editions:
-  2nd MAT (in progress), 3rd INPUT, 4th strings/CHANGE, files later.
-- **Design before code.** Sea's language design is not decided. Write it as a design doc and
-  agree it with the user before any implementation.
+  (in its repo) rather than working around it in Sea. Prefer following later Dartmouth editions;
+  Baysick implements Editions 2-6 plus extensions (v0.6.0).
+- **Design before code.** Sea's design is agreed (`docs/DESIGN.md`). Changes to it are made in
+  DESIGN.md together with the user's agreement, before the code that depends on them.
 - **Performance claims need benchmarks** with stated methodology (hardware, sizes, baselines,
   how timed). No claim without a measurement behind it.
 - **Follow Baysick's workflow:** spec/contract first (normative docs, shared contract files), then
