@@ -1,0 +1,56 @@
+#sea 1
+#target arm64-macos
+#file stmt_loops.sea
+tvec 10 3
+fn 1 .main main 1 0 2 0:1:1
+loc a 3 let 0:20:5
+loc b 3 let 0:21:5
+ci 0:20:14 3 10
+call 0:20:9 3 2 1
+bind 0:20:1 1
+ci 0:21:14 3 7
+call 0:21:9 3 2 1
+bind 0:21:1 2
+block 0:1:1 2
+end
+fn 2 walk fn 3 1 2 0:4:1
+par n 3 val
+loc k 3 var 0:5:9
+loc i 3 for 0:9:9
+ci 0:5:13 3 0
+bind 0:5:5 2
+lv 0:6:11 3 2
+lv 0:6:15 3 1
+bin 0:6:11 2 lt
+lv 0:7:9 3 2
+ci 0:7:14 3 3
+asg 0:7:9 add
+block 0:6:17 1
+while 0:6:5
+lv 0:9:14 3 1
+ci 0:9:18 3 0
+ci 0:9:26 3 2
+un 0:9:25 3 neg
+rng 0:9:14 10 1 1
+lv 0:10:12 3 3
+ci 0:10:17 3 4
+bin 0:10:12 2 eq
+cont 0:11:13
+block 0:10:19 1
+if 0:10:9 0
+lv 0:13:12 3 3
+ci 0:13:16 3 2
+bin 0:13:12 2 lt
+break 0:14:13
+block 0:13:18 1
+if 0:13:9 0
+lv 0:16:9 3 2
+lv 0:16:14 3 3
+asg 0:16:9 sub
+block 0:9:28 3
+forr 0:9:5 3
+lv 0:18:12 3 2
+ret 0:18:5 1
+block 0:4:24 4
+end
+#end

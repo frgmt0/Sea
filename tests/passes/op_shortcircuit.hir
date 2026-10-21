@@ -1,0 +1,67 @@
+#sea 1
+#target arm64-macos
+#file op_shortcircuit.sea
+tvec 10 3
+fn 1 .main main 1 0 2 0:1:1
+loc x 3 let 0:15:5
+loc y 3 let 0:16:5
+ci 0:15:14 3 5
+ci 0:15:17 3 3
+call 0:15:9 3 2 2
+bind 0:15:1 1
+ci 0:16:14 3 2
+ci 0:16:17 3 2
+call 0:16:9 3 2 2
+bind 0:16:1 2
+block 0:1:1 2
+end
+fn 2 pick fn 3 2 2 0:3:1
+par a 3 val
+par b 3 val
+loc r 3 var 0:4:9
+loc i 3 for 0:5:9
+ci 0:4:13 3 0
+bind 0:4:5 3
+ci 0:5:14 3 0
+lv 0:5:17 3 1
+rng 0:5:14 10 0 0
+lv 0:6:12 3 4
+ci 0:6:16 3 1
+bin 0:6:12 2 gt
+lv 0:6:21 3 4
+lv 0:6:25 3 2
+bin 0:6:21 2 lt
+bin 0:6:12 2 and
+lv 0:7:13 3 3
+ci 0:7:18 3 1
+asg 0:7:13 add
+block 0:6:27 1
+if 0:6:9 0
+lv 0:9:12 3 4
+ci 0:9:17 3 0
+bin 0:9:12 2 eq
+lv 0:9:22 3 3
+ci 0:9:26 3 3
+bin 0:9:22 2 gt
+bin 0:9:12 2 or
+lv 0:10:13 3 3
+lv 0:10:17 3 3
+ci 0:10:21 3 2
+bin 0:10:17 3 mul
+lv 0:10:28 3 3
+ci 0:10:32 3 4
+bin 0:10:28 2 gt
+ci 0:10:36 3 1
+ci 0:10:47 3 0
+ifx 0:10:25 3
+bin 0:10:17 3 add
+asg 0:10:13 set
+block 0:9:28 1
+if 0:9:9 0
+block 0:5:19 2
+forr 0:5:5 4
+lv 0:13:12 3 3
+ret 0:13:5 1
+block 0:3:32 3
+end
+#end
