@@ -1055,8 +1055,10 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   visible everywhere in the file, before and after their declaration.
 * **`const NAME [: type] = expr`** declares a compile-time constant at top level; `expr` must be
   a constant expression (literals, other constants, operators, the constants `pi inf nan eps`,
-  and `sqrt`; nothing else: conversions, `if` expressions and other calls are not constant
-  expressions). A constant whose expression refers back to itself, directly or through other
+  and the calls `sqrt` and `pow`; nothing else: conversions, `if` expressions and other calls,
+  `log exp sin cos hypot` included, are not constant expressions).
+  (`pow(x, y)` is admitted because `x ^ y` with a non-integer exponent is that same function,
+  §6.5; DESIGN.md §9 Decision 16.) A constant whose expression refers back to itself, directly or through other
   constants, is `not a constant expression`, reported at the name that closes the cycle.
   Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
   whose expression is an untyped integer constant is `i64` (`const N = 4` is the `i64` 4); with an
@@ -1065,7 +1067,7 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   §0), whether it is used or not, with exactly the semantics of §6 that the program would have at
   run time: `i64` `+ - *` and unary `-` exactly, `%` floored (§6.6); `f64` arithmetic, `%` and
   `sqrt` as IEEE binary64 (±∞ and NaN included); `^` as §6.5 says (the pinned multiplications,
-  otherwise `pow` of §10.4 with the run time's bits); the implicit `i64` → `f64` conversion of
+  otherwise `pow` of §10.4 with the run time's bits), and a `pow(x, y)` call with the same bits; the implicit `i64` → `f64` conversion of
   §4.2; comparisons, `&&`, `||`, `!`, `&`, `|` on `bool`. A constant whose evaluation overflows
   `i64` or divides an `i64` by zero (`%` by 0) is the **compile error** `integer overflow` or
   `integer division by zero`, reported at the operator whose evaluation fails (as in Rust),

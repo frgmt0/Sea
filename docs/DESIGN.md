@@ -121,6 +121,14 @@ The user also decided the language questions that phase 0 raised:
     symbols limit and what the types and constants limits count (§2.6.2, §2.7); `let _: T = f()`
     (LANGUAGE.md §7.2).
 
+**Specified for phase 3 (elementary functions, §8).** §4.10 defines `log exp sin cos pow hypot`
+operation by operation (constants, the generated `include/math_tables.inc`, special values with
+every NaN result `#7FF8000000000000`, the ABI of the six `rt.inc` entries 3–8), their lowering
+(§3.6.6 rule 14), the `math/` tests and the measured accuracy (≤ 0.512 ulp on the model). The
+user decided Decision 16 (a) on 2026-10-21: a `const` may use `^` and `pow` (LANGUAGE.md §7.2),
+evaluated by pass 2a with `FEPOW` of `f64emu.bas` and the generated `mtab` `DATA` block
+(§4.10.5, §2.6.3); `log exp sin cos hypot` stay outside constant expressions.
+
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
@@ -468,6 +476,7 @@ change only together with the matching doc section:
 | `sea/include/errors.inc` | every compile-time and run-time error text, with codes | passes (messages), runtime (`_sea_err`) |
 | `sea/include/rt.inc` | array, string and handle layouts, entry-point names, error-site table layout, kernel variant ids | pass 4 (both), runtime (both targets) |
 | `sea/include/passes.txt` | the record opcodes and fields of every intermediate file | all passes |
+| `sea/include/math_tables.inc` | the constants and tables of the elementary functions (§4.10.3), **generated** by `tools/math_tables.py` from their definitions in §4.10 and committed; no contract names (`SEA_*` `.equiv`s) other than its guard, so `make check-contracts` does not read it, while `make check-includes` assembles it on both assemblers | both runtimes (`rt_math.s`); `tools/gendata.bas`, for the `mtab` `DATA` block of pass 2a (§2.6.3) |
 | **Baysick's `include/runtime.inc`** (cross-repository) | `MV_*` (matrix views), `KS_*` (kernel statuses), `KV_*` (variant records), `KF_*` (feature bits), and the `_bsk_kern_*` entry points of Baysick DESIGN.md §6.6 | Sea's runtime, which `.include`s it from the Baysick checkout; a change there is a change to Sea's contract too, so Baysick's contract rule (CLAUDE.md) covers it, and a Sea test assembles Sea's runtime against the current file |
 
 The `.inc` files follow Baysick's dual-assembler rules (Baysick DESIGN.md §3.4). Baysick programs
@@ -757,9 +766,8 @@ reported any more; the message is retired and its code stays reserved, never reu
 | a named argument | `named arguments` |
 | a parameter default (reported at the `param` node) | `default arguments` |
 | `%` with an `f64` operand (it needs the exact `fmod` of LANGUAGE.md §6.6) | `f64 %` |
-| `^` that is not a `powk` (it needs `pow`, phase 3) | `pow` |
 | a handle type | `handle types` |
-| a call of a library function other than `printf`, `now`, `f64`, `i64` and `idiv` (LANGUAGE.md §10–§13) | its name, e.g. `sqrt` |
+| a call of a library function other than `printf`, `now`, `f64`, `i64` and `idiv` (LANGUAGE.md §10–§13), and from phase 3 `log`, `exp`, `sin`, `cos`, `pow` and `hypot` (§4.10.5) | its name, e.g. `sqrt` |
 
 Included in phase 1, so not reported: `const` items, the constants `pi inf nan eps`, `i64`, `f64`
 and `bool` scalars, every scalar operator except those above, `if`/`while`/`for` over ranges,
@@ -895,14 +903,15 @@ read where the next record's first number would be.
 
 **The generator's protocol** (`tools/gendata.bas`). It runs with `include/` as working
 directory and opens the contract files under their fixed names (Baysick `FILES`): 1
-`limits.inc`, 2 `errors.inc`, 3 `rt.inc`, 4 `passes.txt`. Its standard input is the selection:
-one block name per line, each at most once, in the order `errors errno exits consts entries
-records`. It writes the `DATA` lines of the selected blocks to standard output, numbered
+`limits.inc`, 2 `errors.inc`, 3 `rt.inc`, 4 `passes.txt`, 5 `math_tables.inc`. Its standard
+input is the selection: one block name per line, each at most once, in the order `errors errno
+exits consts entries records mtab`. It writes the `DATA` lines of the selected blocks to standard output, numbered
 consecutively from 89 000 across the blocks, each table followed by its sentinel. `errors` and
 `errno` are the lists of `errors.inc`, `exits` its `SEA_EXIT_*` constants (NAME = the text after
 `SEA_EXIT_`), `consts` the constants of `limits.inc` and then those of `rt.inc` in one table (NAME
 = the text after `SEA_`; the other constants of `errors.inc` are not emitted), `entries` the
-entry list of `rt.inc`, `records` the lines of `passes.txt`. A malformed record, a line over 255
+entry list of `rt.inc`, `records` the lines of `passes.txt`, `mtab` the `pow` tables of
+`math_tables.inc` (below). A malformed record, a line over 255
 bytes, a bad selection or a missing file is reported on standard error as `gendata: <file>:<line>:
 <message> (record <id>)` (or without the parts that do not apply), and the generator stops with
 status 1.
@@ -918,7 +927,18 @@ strings quoted in the `DATA` escaping of §2.6.2:
   `<line> DATA -1`;
 * `passes.txt` line: `<line> DATA "<kind>",<n>,"<f1>",…,"<fn>"`, where kind is `enum`, `head` or
   `rec` and f1 … fn are the line's other fields in order (for `rec`: set, code, opcode, pops, then
-  the field specifications); ending with `<line> DATA "end",0`.
+  the field specifications); ending with `<line> DATA "end",0`;
+* `mtab` (the words `FEPOW` needs, §4.10.5): first `<line> DATA 32,128,128` (the counts of the
+  `sea_mt_const` words, `sea_mt_exp` records and `sea_mt_log` records), then the 672 words of
+  `sea_mt_const` (32), `sea_mt_exp` (128 × 2) and `sea_mt_log` (128 × 3) in file order, each as
+  its four 16-bit limbs `<l3>,<l2>,<l1>,<l0>` (most significant first, each 0 … 65 535), **eight
+  words (32 numbers) per line**, so 84 lines (4, 32 and 48 per table: no line mixes two
+  tables), then the sentinel `<line> DATA -1`: 86 lines, each at most 11 + 32·5 + 31 = 202
+  bytes. The `sea_mt_trig` and `sea_mt_tpi` tables are not emitted (no constant expression
+  needs them). Input line shapes of `math_tables.inc` (§4.10.3): a label line is exactly
+  `sea_mt_<name>:` from column 1; a word line is four spaces, `.quad 0x` and 16 upper-case
+  hexadecimal digits; every other line is ignored; a table with a word count other than
+  §4.10.3's is reported like a malformed record.
 
 Every generated line, line number included, is at most 255 bytes (Baysick's physical line
 limit); the generator stops with status 1 and a message naming the record if one would be longer.
@@ -927,9 +947,10 @@ limit); the generator stops with status 1 and a message naming the record if one
 order, of: the pass's own files `passes/<pass>/*.bas` (in name order); the shared modules of
 `passes/lib/` it uses, in the order `io diag tables limb f64emu fltlit`; the generated `DATA`
 blocks it uses, among `errors`, `errno`, `exits`,
-`consts`, `entries` and `records`, always in this order; and the line `99999 END`. The file
+`consts`, `entries`, `records` and `mtab`, always in this order; and the line `99999 END`. The file
 `passes/<pass>/build.list` names the modules and blocks: lines `lib <module>…` (among `io diag
-tables limb f64emu fltlit`) and `data <block>…`, comment lines starting with `#`; the parts are
+tables limb f64emu fltlit`) and `data <block>…` (among `errors errno exits consts entries records
+mtab`; only pass 2a lists `mtab`, §4.10.5), comment lines starting with `#`; the parts are
 concatenated in the order above whatever the order of the list, and a name outside the two sets
 is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`. The
 build regenerates `build/gen/` every time and compiles each result with `baysick`; nothing in
@@ -1138,7 +1159,11 @@ stay small because text lives in `DATA`.
 8 800–10 400 after phase 6, so it is the first pass likely to reach the limit, in phase 6 (and
 above 9 000 already after phase 4 at the high end). Pass 3a: about 5 700–6 900 after phase 4, 6 700–8 400 after
 phase 6 and 7 500–9 900 after phase 7, reaching the limit only at the high end, in phases 8–9. No
-other pass comes near it. The
+other pass comes near it. **Phase 3 adds to pass 2a** (Decision 16 (a), §4.10.5): `FEPOW` and its
+cores in `f64emu.bas`, an estimated 400–600 lines (counted in pass 2b too, which loads `f64emu`
+but never calls `FEPOW`; 2b stays far below the limit), and the 86 `mtab` `DATA` lines, so pass
+2a's v1 estimate becomes about 9 800–12 000 lines and the split described next is expected
+during phase 4 rather than phase 6. The
 response is the one §7.3 orders first and Decision 2 in §9 pre-agrees: **split the pass into two
 programs with an intermediate file** (pass 2a, for example, into name resolution and typing of
 statements and expressions, then the library-call and format checks; pass 3a into the lowering of
@@ -1212,8 +1237,9 @@ is also the point of the Baysick project.
 | `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
 | `passes/<pass>/build.list` | the modules and `DATA` blocks of each pass (§2.6.3) |
 | `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
+| `tools/math_tables.py` | the generator of `include/math_tables.inc` (§4.10.3, §4.10.6), run with `uv run --with mpmath`; `--check` verifies the committed file |
 | `std/std.sea` | the prelude (§2.5) |
-| `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4, §4.7.1); in phases 1 and 2 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s` |
+| `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4, §4.7.1); in phases 1 and 2 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s`; phase 3 adds `rt_math.s` (§4.10) |
 | `Makefile.linux` | on the Linux host: `check-includes`, `all` (`build-x86_64-linux/libsea.a`), `test-rt` (§4.7.1, §6.6.1) |
 | `include/` | the contract files (§2.6) |
 | `tests/` | the tests (§6.2) |
@@ -1758,7 +1784,7 @@ The program of §3.4 needs no temporary: its struct literal's values are
 constants, and its named argument `k: i` is already in parameter order.
 
 **Constant exponents** (pass 2a). For every `^` whose exponent is a constant
-expression (LANGUAGE.md §7.2: literals, constants, operators, `pi inf nan eps`, `sqrt`), pass 2a
+expression (LANGUAGE.md §7.2: literals, constants, operators, `pi inf nan eps`, `sqrt`, `pow`), pass 2a
 computes the exponent's value exactly as the run time would: `f64` operations by exact
 multi-limb arithmetic emulating IEEE binary64 round-to-nearest-even (`+ − × ÷`, `%` by the
 exact `fmod` rule of LANGUAGE.md §6.6, `cvt`, unary `−`), `i64` operations exactly with the range
@@ -1770,7 +1796,8 @@ operations (§2.8), so nothing can stop the pass. If the value is an integer k w
 error. An exponent that contains a call (`sqrt` or any other) or a `^` that is itself not a
 `powk` is not integral, whatever its value (LANGUAGE.md §6.5), so it is not evaluated. Constant
 extents (§3.5.1) and the `i64` values of constant
-expressions use the same exact evaluator.
+expressions use the same exact evaluator. In a `const` item's expression, a `^` that is not a `powk` and a call `pow(x, y)` are
+evaluated with `FEPOW` (§4.10.5; Decision 16), which gives the run time's bits.
 
 **Decided language rules that pass 2a applies** (LANGUAGE.md): `write_json` of a value whose
 type is or contains a handle type is `no overload of 'write_json' accepts (…)`, at the `call`
@@ -2152,7 +2179,8 @@ So that LIR dumps are reproducible, pass 3a lowers the scalar subset (scalar `i6
 `bool` parameters, locals and results; constants, `lv`, `cvt`, `un`, `bin` on scalars, `ifx`,
 `seq`, calls, `rarg` of a scalar local, `bind`, `tbind`, `eval` of a call, `asg` to a local, `if`,
 `while`, `forr`, `break`, `cont`, `ret`, `tret`, `block`; the library calls `printf`, `now`, `f64`,
-`i64` and `idiv` and string constants as `printf` arguments) exactly as follows; pass 3a inlines
+`i64` and `idiv` and string constants as `printf` arguments; from phase 3 the elementary functions
+`log exp sin cos pow hypot` and `bin pow`, rule 14) exactly as follows; pass 3a inlines
 exactly the calls LANGUAGE.md §8.6 requires and the calls of prelude functions (§3.6.4, "Sites"),
 and no others.
 
@@ -2260,6 +2288,11 @@ rule (c) covers, no elemental function).
     `fmul t x x`, `fmul d t x`; k = 4 `fmul t x x`, `fmul d t t` (t a new register). For k < 0,
     x^|k| is computed as above into a new register t (t is x itself when |k| = 1), then `lf o
     1.0` into a new register o and `fdiv d o t`.
+14. **Elementary functions** (phase 3, §4.10.5). The arguments are lowered left to right by rule
+    1, then one `rcall` into a new register d of class `f` (or the destination of rule 2), with no
+    site: `lib log(x)` is `rcall sea_log - 1 d 1 x`, and `lib exp`, `lib sin`, `lib cos` the same
+    with `sea_exp`, `sea_sin`, `sea_cos`; `lib pow(x, y)` and `bin pow x y` (a `^` that is not a
+    `powk`) are `rcall sea_pow - 1 d 2 x y`; `lib hypot(x, y)` is `rcall sea_hypot - 1 d 2 x y`.
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8 and 12), and their `slot`
 records come at the start of the function in that order (§3.6.3).
@@ -2486,7 +2519,7 @@ changes speed, never output, except for class-R results.
 | plotting | `Figure`/`Axes` objects, layout, SVG writer, PNG (stored deflate, CRC-32, Adler-32) and base64 (LANGUAGE.md §12) |
 | I/O | buffered stdout/stderr; `make_dir`; errno → fixed message table |
 | clock | `now()` via `clock_gettime(CLOCK_MONOTONIC)` |
-| math | `log exp sin cos pow hypot`, scalar and vector forms with identical results (Decision 6): table-driven range reduction and polynomials, one algorithm for both targets, using only IEEE `+ − × ÷ sqrt` and exact integer operations (no FMA, which SSE2 lacks — the cost is part of Decision 1), verified ≤ 1 ulp against high-precision references (§6.2); `round` on x86_64 (LANGUAGE.md §6.7) |
+| math | `log exp sin cos pow hypot`, scalar and vector forms with identical results (Decision 6): table-driven range reduction and polynomials, one algorithm for both targets, using only IEEE `+ − × ÷ sqrt` and exact integer operations (no FMA, which SSE2 lacks — the cost is part of Decision 1), verified ≤ 1 ulp against high-precision references (§6.2); the exact algorithms, tables and entry points are §4.10; `round` on x86_64 (LANGUAGE.md §6.7) |
 | sort | radix sort of `f64`/`i64`/`str` keys with stable permutation |
 | linear algebra | §4.3 |
 
@@ -2649,7 +2682,8 @@ arguments and failure codes.
 
 **Symbols.** Mach-O names; on `x86_64-linux` the ELF names drop the leading `_` (`main`,
 `sea_main`, `sea_err`, `sea_sites`, `sea_variant`, `sea_stack_limit`, and the entry points
-`sea_printf`, `sea_now`), as Baysick's do.
+`sea_printf`, `sea_now`, `sea_log`, `sea_exp`, `sea_sin`, `sea_cos`, `sea_pow`, `sea_hypot`), as
+Baysick's do.
 
 | Symbol | Defined by | Contract |
 |--------|------------|----------|
@@ -2664,16 +2698,22 @@ arguments and failure codes.
 ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
 means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
 integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
-results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 2.
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 8.
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
 | 1 | `PRINTF` | `sea_printf` | `S` | `pp` | `-` | `_sea_printf(fmt, slots, site)`: arm64 `x0` / x86_64 `%rdi` = the address of a pre-parsed format (`SEA_FMT_*`, below), `x1` / `%rsi` = the address of its argument slots (one `SEA_SLOT_SIZE` slot per conversion, in order: an `i64` or `bool` value, the bits of an `f64`, or a string object pointer, by the conversion's `SEA_CLS_*`), `x2` / `%rdx` = the site index; formats as LANGUAGE.md §11.1 says into the standard-output buffer (an `i` slot of an `f`/`F`/`e`/`E`/`g`/`G` conversion is converted to `f64` with round-to-nearest-even: pass 2a writes no `cvt` for a typed `i64` argument of those conversions, so its `fconv` has class `i`; the runtime trusts the compiler's checks of LANGUAGE.md §11.1 and does not re-check flags or classes); a failed write of the buffer is `_sea_err(SEA_E_CANNOT_WRITE, site, slots "<stdout>", errno)` (§4.6); no result |
 | 2 | `NOW` | `sea_now` | `-` | `-` | `f` | `_sea_now()`: the monotonic clock (`clock_gettime(CLOCK_MONOTONIC)`) in seconds as an `f64` in `d0` / `%xmm0` (LANGUAGE.md §13); cannot fail |
+| 3 | `LOG` | `sea_log` | `-` | `f` | `f` | `_sea_log(x)`: the natural logarithm, §4.10 (argument and result in `d0` / `%xmm0`, the clobbers of §4.10.1); cannot fail |
+| 4 | `EXP` | `sea_exp` | `-` | `f` | `f` | `_sea_exp(x)`: eˣ, §4.10; as `LOG` |
+| 5 | `SIN` | `sea_sin` | `-` | `f` | `f` | `_sea_sin(x)`: §4.10; as `LOG` |
+| 6 | `COS` | `sea_cos` | `-` | `f` | `f` | `_sea_cos(x)`: §4.10; as `LOG` |
+| 7 | `POW` | `sea_pow` | `-` | `ff` | `f` | `_sea_pow(x, y)`: xʸ, §4.10 (x in `d0` / `%xmm0`, y in `d1` / `%xmm1`, result in `d0` / `%xmm0`); cannot fail |
+| 8 | `HYPOT` | `sea_hypot` | `-` | `ff` | `f` | `_sea_hypot(x, y)`: √(x² + y²) without undue overflow or underflow, §4.10; as `POW` |
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_ENT_COUNT` | 2 | number of entry records |
+| `SEA_ENT_COUNT` | 8 | number of entry records |
 | `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
 | `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 
@@ -2910,7 +2950,7 @@ their results, and the named sequences are the ones to use.
 sea.s -- written by seagen_x64 from sea.lir (Sea DESIGN.md 4.8, 4.9)`. Symbols carry no leading
 `_` (§4.8): the output defines `sea_main` (`.globl sea_main`, `.type sea_main, @function`) and
 `sea_sites` (`.globl sea_sites`, `.type sea_sites, @object`) and refers to `sea_err`,
-`sea_stack_limit` and the entry points by their ELF symbols (`sea_printf`, `sea_now`). Every
+`sea_stack_limit` and the entry points by their ELF symbols (`sea_printf`, `sea_now`, `sea_log`, …). Every
 arm64 local label `L…` is the assembler-local `.L…` (`.Lfn_<name>` for a function other than
 `.main`, `.L<f>_ret`, `.L<f>_so`, `.L<f>_c<k>`, `.L<f>_e<k>`, `.L<f>_<b>_<what>`, `.Ld<N>` and
 `.Ld<N>_t<k>` for data, `.Lsf<k>` for the site file strings); numeric labels `1:` … only inside
@@ -3007,6 +3047,518 @@ meaning; operands are in the scratch registers in operand order, the result in t
 
 The vector, mask and `vfeat` instructions and `retain`/`release` are `BAD_RECORD` in phase 2, as
 in phase 1 (§4.9).
+
+### 4.10 Elementary functions
+
+`log exp sin cos pow hypot` (LANGUAGE.md §10.4, Decision 6 in §9) are Sea's own, in
+`runtime/<target>/rt_math.s` of each runtime. This section is their complete definition: every
+operation, constant and table entry is given exactly, so that the two runtimes, the vector forms
+of phase 7 and the compile-time evaluation of `pow` in constants (§4.10.5) compute **the same
+bits for every input**. Whatever an implementation does differently from the text below (register
+use, scheduling, branches turned into selects, which of two independent values it computes
+first) must not change a single result bit.
+
+**Rules every step obeys** (Decision 1, LANGUAGE.md §6.8):
+
+* the only floating-point operations are IEEE binary64 `+ − × ÷` and `sqrt`, each correctly
+  rounded to nearest, ties to even, plus the exact operations: sign flip and sign clear on the bit
+  pattern, reinterpretation of a pattern, and conversion of an integer of at most 53 significant
+  bits to `f64` (exact; `scvtf` / `cvtsi2sdq`). **No FMA** (SSE2 has none, and arm64 must not
+  contract: every `×` followed by `+` below is two instructions), no x87, no long double, no
+  approximate reciprocal, no flush-to-zero (FPCR and MXCSR are never changed; their exception
+  flags may be set and are never read);
+* integer operations are exact operations on 64-bit patterns: `+ − ×` modulo 2⁶⁴, the 128-bit
+  unsigned product of two 64-bit values (arm64 `mul`/`umulh`, x86_64 `mulq`), `& | ^`, shifts by
+  0 … 63 (`<<`, `>>` logical, `>>ₐ` arithmetic), unsigned and signed comparisons;
+* results are within **1 ulp** of the correctly rounded value, and are **< 1 ulp** from the
+  exact value everywhere (measured: §4.10.7), which also makes every exactly representable result
+  exact (`exp(0)`, `log(1)`, `pow(2, 10)`, `pow(9, 0.5)`, `hypot(3, 4)`);
+* special values follow C99 Annex F (F.9.1.6, F.9.3.1, F.9.3.7, F.9.4.3, F.9.4.4): ±0, ±∞,
+  NaN and subnormals; **every NaN result is the pattern `#7FF8000000000000`** (Sea's `nan`),
+  whatever the inputs' NaN payloads, so even the unobservable NaN bits (LANGUAGE.md §6.5) agree
+  between the targets and with constant evaluation;
+* the functions never fail, never trap, never write memory outside their own stack frame, read
+  only their arguments and the tables, and call nothing outside `rt_math.s`.
+
+#### 4.10.1 Entry points and ABI
+
+The scalar entries are the `rt.inc` entries 3–8 of §4.8 (`SEA_ENT_LOG` … `SEA_ENT_HYPOT`;
+symbols `_sea_log` … on `arm64-macos`, `sea_log` … on `x86_64-linux`). They follow the platform
+ABI exactly, so they are also callable from C as `double sea_log(double)` and `double
+sea_pow(double, double)` (the test harness of §4.10.6 does so):
+
+| Entry | arm64-macos | x86_64-linux |
+|-------|-------------|--------------|
+| `sea_log` `sea_exp` `sea_sin` `sea_cos` | x in `d0`, result in `d0` | x in `%xmm0`, result in `%xmm0` |
+| `sea_pow` `sea_hypot` | x in `d0`, y in `d1`, result in `d0` | x in `%xmm0`, y in `%xmm1`, result in `%xmm0` |
+| may clobber | `x0`–`x17`, `v0`–`v7`, `v16`–`v31`, the upper 64 bits of `v8`–`v15`, NZCV, the FPSR flags | `%rax %rcx %rdx %rsi %rdi %r8`–`%r11`, `%xmm0`–`%xmm15`, the status flags, the MXCSR exception flags |
+| preserves | `x19`–`x29`, `sp`, `d8`–`d15`, FPCR; never touches `x18` | `%rbx %rbp %r12`–`%r15`, `%rsp`, the MXCSR control bits, the x87 state; the direction flag stays clear |
+| stack | at most 256 bytes below the incoming `sp`, so the call fits inside `SEA_STACK_MARGIN` (§4.6) | the same, below the return address |
+
+The entries are leaf code in `rt_math.s`, which references no symbol of another runtime file, so
+a program that links `libsea.a` pulls in only `rt_math.o` for them. They share internal helpers
+(the logarithm and exponential cores below) under `_sea_`/`sea_` names that are not contract
+(§4.5, "Internal runtime symbols").
+
+**Vector forms** (phase 7, §5.1) compute, in each lane, exactly the scalar sequence of this
+section: the branches of the scalar text become per-lane selects, table lookups become per-lane
+loads, and the paths marked *rare* below (special inputs, `exp` with |x| ≥ 512, the Payne–Hanek
+reduction of `sin`/`cos` for |x| ≥ 2²³, subnormal inputs) may be done by calling the scalar
+entry for the lanes that need them (NEON and SSE2 have no 64 × 64-bit vector multiply). Their
+entry points and register conventions are added to `rt.inc` and §4.8 by phase 7; their results
+are bit-identical to the scalar entries for every input, which the tests of §4.10.6 check.
+
+#### 4.10.2 Notation and shared primitives
+
+`bits(x)` is the 64-bit pattern of `f64` x, `f64(u)` the `f64` with pattern u; `neg(x)` flips
+and `abs(x)` clears bit 63; `itof(i)` converts a signed integer (every use is exact). `RN` is the
+rounding of one operation; every `+ − × ÷` written below is one rounded operation, evaluated in
+the order the parentheses give (without parentheses, left to right: `a + b + c` is `(a + b) +
+c`). A hexadecimal number written `#…` is a 64-bit pattern; `2^k` is the exact power of two.
+
+```
+two_sum(a, b):      s = a + b;  bb = s - a;  e = (a - (s - bb)) + (b - bb);  return (s, e)
+fast_two_sum(a, b): s = a + b;  e = b - (s - a);  return (s, e)
+split(a):           g = 134217729.0 * a;  h = g - (g - a);  l = a - h;  return (h, l)
+two_prod(a, b):     p = a * b;  (ah, al) = split(a);  (bh, bl) = split(b)
+                    e = (((ah * bh - p) + ah * bl) + al * bh) + al * bl;  return (p, e)
+```
+
+`two_sum` gives s + e = a + b exactly for any finite a, b; `fast_two_sum` the same when a = 0 or
+the exponent of a is at least that of b (each use below says why that holds); `two_prod` gives
+p + e = a·b exactly when |a|, |b| < 2⁹⁹⁵ and no partial product underflows (each use is in that
+range, or its error term is negligible where noted). `134217729.0` is 2²⁷ + 1 (`#41A0000002000000`).
+
+The constants are given below as patterns; the column "definition" says what each one is, so
+that the generator (§4.10.6) can recompute and check them. `RN₅₃(v)` is v rounded to the nearest
+`f64`, `RNb(v)` to b significant bits, `RNgrid(v, e)` to the nearest multiple of 2⁻ᵉ, all ties to
+even; v is the exact mathematical value.
+
+#### 4.10.3 The tables: `include/math_tables.inc`
+
+The tables are generated by `tools/math_tables.py` (§4.10.6), which computes every entry from
+its definition with mpmath at 600 bits and rounds it as stated, and writes
+`include/math_tables.inc`. The file is committed and is included by both runtimes'
+`rt_math.s`; it is shared by Apple `as` and GNU `as` under the rules of §2.6 (Baysick DESIGN.md
+§3.4: `//` comments only at the start of a line, no trailing comments, guarded by
+`.ifndef SEA_MATH_TABLES_INC` / `.equiv SEA_MATH_TABLES_INC, 1` / `.endif`). It defines one
+macro, `SEA_EMIT_MATH_TABLES`, which the including file invokes once in its read-only data
+section (`__TEXT,__const` / `.section .rodata`); the macro emits `.p2align 6`, then the labels
+and `.quad` lines below in this order, every value as `.quad 0x` and 16 upper-case hexadecimal
+digits, one per line (a record of several words is several lines). Exact line shapes, which
+`tools/gendata.bas` reads for the `mtab` block (§2.6.3): a label line is `sea_mt_<name>:` from
+column 1 with nothing after it; a word line is four spaces, `.quad 0x` and the 16 digits. The labels are file-local
+(`sea_mt_…`, never `.globl`); the macro defines no `.equiv` name other than the guard (the
+counts below are fixed by this section, not by the contract tables of §2.6).
+
+| Label | Records | Words per record | Record i |
+|-------|--------:|-----------------:|----------|
+| `sea_mt_const` | 1 | 32 | the constants of §4.10.4, in the order of the constant table there |
+| `sea_mt_exp` | 128 | 2 | `EXP_TAIL[i]`, `EXP_SBITS[i]` |
+| `sea_mt_log` | 128 | 3 | `LOG_INVC[i]`, `LOG_LOGC_HI[i]`, `LOG_LOGC_LO[i]` |
+| `sea_mt_trig` | 52 | 4 | `TRIG_SH[j]`, `TRIG_SL[j]`, `TRIG_CH[j]`, `TRIG_CL[j]` |
+| `sea_mt_tpi` | 20 | 1 | `TPI[w]` |
+
+**`exp` table** (i = 0 … 127): T = 2^(i/128); `EXP_TAIL[i]` = `bits(RN₅₃((T − Tₕ)/Tₕ))` with Tₕ =
+`RN₅₃(T)`; `EXP_SBITS[i]` = `bits(Tₕ) − (i << 45)` (mod 2⁶⁴). Spot values: record 0 = `#0`,
+`#3FF0000000000000`; record 1 = `#3C9B3B4F1A88BF6E`, `#3FEFF63DA9FB3335`; record 127 =
+`#3C5305C14160CC89`, `#3FEFF3C22B8F71F1`.
+
+**`log` table** (i = 0 … 127). Block i is the set of patterns
+[`LOG_OFF` + i·2⁴⁵, `LOG_OFF` + (i+1)·2⁴⁵) with `LOG_OFF` = `#3FE5F00000000000`, i.e. the values
+z of that range; c is the arithmetic midpoint (a + b)/2 of the block's first value a and the
+first value b after it. For the block that contains `#3FF0000000000000` (i = 80) `LOG_INVC` =
+1.0 and both `LOGC` words are 0; otherwise `LOG_INVC[i]` = `RN26(1/c)` (26 significant bits),
+and with L = −ln(`LOG_INVC[i]`) (exactly, from the rounded value), `LOG_LOGC_HI[i]` =
+`RNgrid(L, 42)` and `LOG_LOGC_LO[i]` = `RN₅₃(L − LOG_LOGC_HI[i])`. Spot values: record 0 =
+`#3FF745D178000000`, `#BFD7FAFA45D81000`, `#BD346C979BF72820`; record 79 = `#3FF0101010000000`,
+`#BF70080549580000`, `#BD2166AECB31C67A`; record 81 = `#3FEFC07F00000000`, `#3F7FE02B6B100000`,
+`#3D19E43F0DDA563A`; record 127 = `#3FE767DCE8000000`, `#3FD404307C26A000`,
+`#3D3F925150499AC3`.
+
+**`sin`/`cos` table** (j = 0 … 51): a = j/64; `TRIG_SH[j]` = `RN₅₃(sin a)`, `TRIG_SL[j]` =
+`RN₅₃(sin a − TRIG_SH[j])`, `TRIG_CH[j]` = `RN₅₃(cos a)`, `TRIG_CL[j]` = `RN₅₃(cos a −
+TRIG_CH[j])`. Spot values: record 0 = `#0`, `#0`, `#3FF0000000000000`, `#0`; record 1 =
+`#3F8FFFAAAAEEEED5`, `#BC02AB639A9F0776`, `#3FEFFF000155549F`, `#3C828A28A03A5EF3`; record 51 =
+`#3FE6E2B77C40BDE1`, `#BC70E729857FAD53`, `#3FE65DC1FDEB8CBA`, `#BC597C1B47337C77`.
+
+**The 2/π table** (w = 0 … 19): the 1280-bit integer ⌊2/π · 2¹²¹⁶⌋, as 20 64-bit words, most
+significant first; word 0 is zero, so bit g (counting from 0 at the most significant bit of word
+0) is bit g − 63 after the binary point of 2/π. 1216 bits of 2/π are enough for every finite
+argument (§4.10.4, `sin`/`cos`, step R2). The words, in order:
+
+```
+0000000000000000 A2F9836E4E441529 FC2757D1F534DDC0 DB6295993C439041
+FE5163ABDEBBC561 B7246E3A424DD2E0 06492EEA09D1921C FE1DEB1CB129A73E
+E88235F52EBB4484 E99C7026B45F7E41 3991D639835339F4 9C845F8BBDF9283B
+1FF897FFDE05980F EF2F118B5A0A6D1F 6D367ECF27CB09B7 4F463F669E5FEA2D
+7527BAC7EBE5F17B 3D0739F78A5292EA 6BFB5FB11F8D5D08 56033046FC7B6BAB
+```
+
+#### 4.10.4 The algorithms
+
+**Constants** (the 32 words of `sea_mt_const`, in this order):
+
+| Name | Word | Pattern | Definition |
+|------|-----:|---------|------------|
+| `EXP_INVLN2N` | 0 | `#40671547652B82FE` | `RN₅₃(128/ln 2)` |
+| `EXP_SHIFT` | 1 | `#4338000000000000` | 1.5·2⁵² (also the shift of `sin`/`cos`) |
+| `EXP_NLN2HI_N` | 2 | `#BF762E42FEFC0000` | −`RN35(ln 2/128)` (35 significant bits) |
+| `EXP_NLN2LO_N` | 3 | `#3D3C610CA86C3899` | −`RN₅₃(ln 2/128 − RN35(ln 2/128))` |
+| `EXP_C2` | 4 | `#3FE0000000000000` | 1/2 |
+| `EXP_C3` | 5 | `#3FC5555555555555` | `RN₅₃(1/6)` |
+| `EXP_C4` | 6 | `#3FA5555555555555` | `RN₅₃(1/24)` |
+| `EXP_C5` | 7 | `#3F81111111111111` | `RN₅₃(1/120)` |
+| `LOG_LN2HI` | 8 | `#3FE62E42FEFA3800` | `RNgrid(ln 2, 42)` |
+| `LOG_LN2LO` | 9 | `#3D2EF35793C76730` | `RN₅₃(ln 2 − LOG_LN2HI)` |
+| `LOG_A3` | 10 | `#3FD5555555555555` | `RN₅₃(1/3)` |
+| `LOG_A4` | 11 | `#BFD0000000000000` | −1/4 |
+| `LOG_A5` | 12 | `#3FC999999999999A` | `RN₅₃(1/5)` |
+| `LOG_A6` | 13 | `#BFC5555555555555` | `RN₅₃(−1/6)` |
+| `LOG_A7` | 14 | `#3FC2492492492492` | `RN₅₃(1/7)` |
+| `LOG_A8` | 15 | `#BFC0000000000000` | −1/8 |
+| `LOG_A9` | 16 | `#3FBC71C71C71C71C` | `RN₅₃(1/9)` |
+| `TRIG_INVPIO2` | 17 | `#3FE45F306DC9C883` | `RN₅₃(2/π)` |
+| `TRIG_P1` | 18 | `#3FF921FB54800000` | `RN30(π/2)` |
+| `TRIG_P2` | 19 | `#BE0DE973DC800000` | `RN30(π/2 − P1)` |
+| `TRIG_P3` | 20 | `#BC19D9CCEB800000` | `RN30(π/2 − P1 − P2)` |
+| `TRIG_P4` | 21 | `#BA21FC8F8CBB5BF7` | `RN₅₃(π/2 − P1 − P2 − P3)` |
+| `TRIG_PIO2_HI` | 22 | `#3FF921FB54442D18` | `RN₅₃(π/2)` |
+| `TRIG_PIO2_LO` | 23 | `#3C91A62633145C07` | `RN₅₃(π/2 − PIO2_HI)` |
+| `TRIG_S3` | 24 | `#BFC5555555555555` | `RN₅₃(−1/6)` |
+| `TRIG_S5` | 25 | `#3F81111111111111` | `RN₅₃(1/120)` |
+| `TRIG_S7` | 26 | `#BF2A01A01A01A01A` | `RN₅₃(−1/5040)` |
+| `TRIG_C2` | 27 | `#BFE0000000000000` | −1/2 |
+| `TRIG_C4` | 28 | `#3FA5555555555555` | `RN₅₃(1/24)` |
+| `TRIG_C6` | 29 | `#BF56C16C16C16C17` | `RN₅₃(−1/720)` |
+| `SPLIT` | 30 | `#41A0000002000000` | 2²⁷ + 1 |
+| `NAN` | 31 | `#7FF8000000000000` | the NaN result |
+
+The other constants are powers of two and small integers, written in the text (`2^1009` is
+`#7F00000000000000`, `2^-1022` is `#0010000000000000`, `2^52` is `#4330000000000000`, `2^-422`
+is `#2590000000000000`, `2^±600` are `#6570000000000000` and `#1A70000000000000`, `2^-53`,
+`2^-106`, `2^-159` are `#3CA0000000000000`, `#3950000000000000`, `#3600000000000000`).
+
+The polynomials are truncated Taylor series with the coefficients rounded to nearest (no
+minimax fitting, so every coefficient is defined by the table above alone); their truncation
+errors are below 2⁻⁶⁰ relative on the reduced intervals, far inside the budget of §4.10.7.
+
+---
+
+**`exp(x)`**
+
+1. If x is NaN, the result is `NAN`.
+2. Otherwise the result is `exp_core(x, 0.0)`.
+
+`exp_core(x, xt)` computes e^(x + xt) for any x that is not NaN and a tail xt with |xt| ≤
+2⁻²⁵·|x| (it is 0.0 for `exp`); `pow` calls it too. With `top` = (`bits(x)` >> 52) & `#7FF`:
+
+1. If `top` < `#3C9` (|x| < 2⁻⁵⁴): the result is `1.0 + x`.
+2. If `top` ≥ `#409` (|x| ≥ 1024, ±∞ included): the result is +0.0 if bit 63 of `bits(x)` is
+   set, else +∞.
+3. Reduction: `z = EXP_INVLN2N * x`; `kd = z + EXP_SHIFT`; `ki = bits(kd)`;
+   `kd = kd - EXP_SHIFT` (kd is now the integer nearest x·128/ln 2, ties to even, |kd| < 2¹⁸);
+   `r = (x + kd * EXP_NLN2HI_N) + kd * EXP_NLN2LO_N` (the product with the 35-bit constant and the
+   first sum are exact); `r = r + xt`.
+4. Table: `i = ki & 127`; `tail = f64(EXP_TAIL[i])`; `sbits = EXP_SBITS[i] + (ki << 45)`
+   (mod 2⁶⁴; this adds k = ki >>ₐ 7 to the exponent field).
+5. Polynomial: `r2 = r * r`;
+   `tmp = ((tail + r) + r2 * (EXP_C2 + r * EXP_C3)) + (r2 * r2) * (EXP_C4 + r * EXP_C5)`.
+6. If `top` < `#408` (|x| < 512): `scale = f64(sbits)`; the result is `scale + scale * tmp`.
+7. Otherwise (*rare*, 512 ≤ |x| < 1024), by bit 31 of `ki` (the sign of k):
+   * clear (k > 0): `scale = f64(sbits − (1009 << 52))`; the result is
+     `2^1009 * (scale + scale * tmp)` (the final product overflows to +∞ exactly when the
+     result does);
+   * set (k < 0): `scale = f64(sbits + (1022 << 52))`; `y = scale + scale * tmp`; if `y < 1.0`
+     (the result is subnormal or zero), round once at the subnormal precision:
+     `lo = (scale - y) + scale * tmp`; `hi = 1.0 + y`; `lo = ((1.0 - hi) + y) + lo`;
+     `y = (hi + lo) - 1.0`; then (in both cases) the result is `2^-1022 * y`.
+
+---
+
+**`log(x)`**, in this order, with `ix = bits(x)`:
+
+1. x is NaN: `NAN`. x = ±0: −∞. x < 0 (bit 63 set, x ≠ −0, −∞ included): `NAN`. x = +∞: +∞.
+2. x subnormal (*rare*; `ix` >> 52 = 0): `ix = bits(x * 2^52) − (52 << 52)` (mod 2⁶⁴).
+3. The result is h of `(h, l) = log_core(ix)`.
+
+`log_core(ix)`, for the pattern of a positive normal value (an unbiased exponent may be below
+−1022 after step 2), returns h + l ≈ ln x with h = `RN(h + l)` and |error| below 2⁻⁶⁸·|ln x|
+(`pow` uses l; `log` returns h; measured 2⁻⁶⁹·⁴):
+
+1. `t = ix − LOG_OFF` (mod 2⁶⁴, `LOG_OFF` = `#3FE5F00000000000`); `i = (t >> 45) & 127`;
+   `k = t >>ₐ 52`; `iz = ix − (t & #FFF0000000000000)`; `z = f64(iz)`
+   (so x = 2ᵏ·z with z in [`f64(LOG_OFF)`, 2·`f64(LOG_OFF)`) ≈ [0.6855, 1.371), and z = 1 for
+   x = 1 lies in the middle of block 80).
+2. `invc = f64(LOG_INVC[i])`; `zhi = f64(iz & #FFFFFFFFFC000000)`; `zlo = z - zhi`;
+   `rhi = zhi * invc - 1.0`; `rlo = zlo * invc` (zhi has 27 and zlo at most 26 significant bits,
+   `invc` 26, so both products and the subtraction are exact);
+   `(rh, rl) = two_sum(rhi, rlo)` (r = z·invc − 1 = rh + rl exactly, |r| < 2⁻⁸).
+3. `kd = itof(k)`; `t1 = kd * LOG_LN2HI + f64(LOG_LOGC_HI[i])` (exact: both terms are multiples
+   of 2⁻⁴², |t1| < 2¹⁰); `(t2, e1) = two_sum(t1, rh)`.
+4. `(s, se) = two_prod(rh, rh)`; `hs = -0.5 * s`; `(t3, e2) = two_sum(t2, hs)`.
+5. `r2 = rh * rh`;
+   `p = (rh * r2) * (LOG_A3 + rh * (LOG_A4 + rh * (LOG_A5 + rh * (LOG_A6 + rh * (LOG_A7 + rh * (LOG_A8 + rh * LOG_A9))))))`.
+6. `lo = (kd * LOG_LN2LO + f64(LOG_LOGC_LO[i])) + rl`; `lo = lo + (e1 + e2)`;
+   `lo = lo + ((-0.5 * se) - rh * rl)`; `lo = lo + p`.
+7. `(h, l) = fast_two_sum(t3, lo)` (|lo| < 2⁻⁵⁰·|t3| unless both are 0).
+
+---
+
+**`pow(x, y)`**, in this order (C99 F.9.4.4), with `ix = bits(x)`, `iy = bits(y)`:
+
+1. y = ±0: 1.0 (even for a NaN x).
+2. x = +1.0: 1.0 (even for a NaN y).
+3. x or y NaN: `NAN`.
+4. y = ±∞: if x = −1, 1.0; else if (|x| < 1 and y = −∞) or (|x| > 1 and y = +∞), +∞; else
+   +0.0.
+5. Classify y (finite, non-zero) with e = (`iy` >> 52) & `#7FF`: e < 1023 → *not an integer*;
+   e > 1075 → *even integer*; otherwise with b = 1075 − e: bits 0 … b−1 of `iy` not all zero →
+   *not an integer*, else bit b set → *odd integer*, else *even integer*.
+6. x = ±0: if y < 0: −∞ if x = −0 and y is an odd integer, else +∞; if y > 0: x itself (±0)
+   if y is an odd integer, else +0.0.
+7. x = ±∞: x = +∞: +0.0 if y < 0, else +∞; x = −∞: if y < 0, −0.0 for an odd integer y, else
+   +0.0; if y > 0, −∞ for an odd integer y, else +∞.
+8. x < 0 (finite): if y is not an integer, `NAN`; otherwise remember *negate* = (y is an odd
+   integer) and clear bit 63 of `ix`.
+9. x subnormal (*rare*; `ix` >> 52 = 0): `ix = bits(f64(ix) * 2^52) − (52 << 52)`.
+10. `(lh, lt) = log_core(ix)`;
+    `yhi = f64(iy & #FFFFFFFFF8000000)`; `ylo = y - yhi`;
+    `lhi = f64(bits(lh) & #FFFFFFFFF8000000)`; `llo = (lh - lhi) + lt`;
+    `ehi = yhi * lhi` (exact: 26 × 26 significant bits); `elo = ylo * lhi + y * llo`
+    (`(ylo * lhi) + (y * llo)`).
+11. `v = exp_core(ehi, elo)` (ehi is never NaN: lhi ≠ 0 because x ≠ 1; when |ehi| ≥ 1024
+    `exp_core` returns from its step 2 before it reads elo, which may then be infinite).
+12. The result is `neg(v)` if *negate*, else v (an overflow gives −∞, an underflow −0.0).
+
+---
+
+**`sin(x)` and `cos(x)`**, with `ix = bits(x)` and `ax = f64(ix & #7FFFFFFFFFFFFFFF)`:
+
+1. |x| is ∞ or NaN (`bits(ax)` ≥ `#7FF0000000000000`): `NAN`.
+2. |x| < 2⁻²⁷ (`bits(ax)` < `#3E40000000000000`): `sin` gives x (±0 and subnormals included),
+   `cos` gives 1.0.
+3. `(q, rh, rl) = reduce(ax)`: ax = q·π/2 + r (mod 2π) with q in 0 … 3 and r = rh + rl,
+   |r| ≤ π/4 (+ a few ulps in R1).
+4. `sin`: *use_cos* = q & 1. `cos`: *use_cos* = 1 − (q & 1).
+   `(v, sr) = trig_core(rh, rl, use_cos)`.
+5. With *odd* = sr ∧ ¬*use_cos* (sin is odd, cos even): `sin`: *negate* = (q >> 1) ⊕ *odd* ⊕
+   (bit 63 of `ix`); `cos`: *negate* = (((q + 1) >> 1) & 1) ⊕ *odd*. The result is `neg(v)` if
+   *negate*, else v.
+
+`reduce(ax)` (ax ≥ 2⁻²⁷, finite):
+
+* **R1, Cody–Waite**, if `bits(ax)` < `#4160000000000000` (ax < 2²³):
+  `z = ax * TRIG_INVPIO2`; `kd = z + EXP_SHIFT`; `q = bits(kd) & 3`; `kd = kd - EXP_SHIFT`;
+  `t1 = ax - kd * TRIG_P1` (product and difference exact: kd < 2²³);
+  `(s, e) = two_sum(t1, neg(kd * TRIG_P2))`; `(h, l1) = two_sum(s, neg(kd * TRIG_P3))`;
+  `l = l1 + (e - kd * TRIG_P4)`; `(rh, rl) = two_sum(h, l)`.
+  (P1 + P2 + P3 + P4 is π/2 to 2⁻¹⁴³; the products with P1–P3 are exact.)
+* **R2, Payne–Hanek** (*rare*), otherwise (ax ≥ 2²³):
+  1. `m = (bits(ax) & #000FFFFFFFFFFFFF) | #0010000000000000`;
+     `E = ((bits(ax) >> 52) & #7FF) − 1075` (ax = m·2ᴱ, −29 ≤ E ≤ 971);
+     `G = E + 62`; `w = G >> 6`; `sh = G & 63`.
+  2. The 192-bit window of 2/π starting at bit G of the table:
+     `word(n) = (TPI[n] << sh) | ((TPI[n+1] >> 1) >> (63 − sh))` (the double shift avoids a
+     shift by 64 when sh = 0); `W2 = word(w)`, `W1 = word(w+1)`, `W0 = word(w+2)` (w ≤ 16, so
+     n + 1 ≤ 19).
+  3. 64 × 64 → 128-bit unsigned products: (hi, lo) of m·W0 = (c0, a0); of m·W1 = (c1, a1); the
+     low half of m·W2 = a2. `P0 = a0`; `P1 = c0 + a1` (mod 2⁶⁴), `k1 = 1` if `P1 < a1` (unsigned)
+     else 0; `P2 = c1 + a2 + k1` (mod 2⁶⁴). P2:P1:P0 is m·window mod 2¹⁹², whose bits 191–190 are
+     the quadrant and bits 189–0 the fraction of x·2/π (error < 2⁻¹³⁶; the earlier bits of 2/π
+     contribute multiples of 4).
+  4. `q = ((P2 >> 62) + ((P2 >> 61) & 1)) & 3` (rounded to the nearest quadrant);
+     `T2 = (P2 << 2) | (P1 >> 62)`; `T1 = (P1 << 2) | (P0 >> 62)`; `T0 = P0 << 2`
+     (T2 read as a signed integer is the fraction f ∈ [−1/2, 1/2) times 2⁶⁴).
+  5. `A = T2 >>ₐ 11`; `B = ((T2 & #7FF) << 42) | (T1 >> 22)`;
+     `C = ((T1 & #3FFFFF) << 31) | (T0 >> 33)` (53 bits each);
+     `a = itof(A) * 2^-53`; `b = itof(B) * 2^-106`; `c = itof(C) * 2^-159`;
+     `(h, l) = two_sum(a, b)`; `(h, t) = two_sum(h, c)`; `l = l + t`.
+  6. r = f·π/2: `(p, pe) = two_prod(h, TRIG_PIO2_HI)`;
+     `pl = pe + ((h * TRIG_PIO2_LO) + (l * TRIG_PIO2_HI))`; `(rh, rl) = fast_two_sum(p, pl)`.
+
+`trig_core(rh, rl, use_cos)` returns (v, sr), v = sin |r| (use_cos = 0) or cos |r|
+(use_cos = 1), sr = bit 63 of `bits(rh)`:
+
+1. `ar = abs(rh)`; `al = neg(rl)` if sr, else `rl`.
+2. `jd = ar * 64.0 + EXP_SHIFT`; `j = bits(jd) & #FF` (0 … 51); `jd = jd - EXP_SHIFT`;
+   `th = ar - jd * 0.015625` (exact; |th| ≤ 1/128).
+3. `t2 = th * th`; `sinp = (th * t2) * (TRIG_S3 + t2 * (TRIG_S5 + t2 * TRIG_S7))`;
+   `cosp = t2 * (TRIG_C2 + t2 * (TRIG_C4 + t2 * TRIG_C6))`.
+4. For use_cos = 0: (A, AL, B, BL) = (`TRIG_SH[j]`, `TRIG_SL[j]`, `TRIG_CH[j]`, `TRIG_CL[j]`);
+   for use_cos = 1: (A, AL, B, BL) = (`TRIG_CH[j]`, `TRIG_CL[j]`, `neg(TRIG_SH[j])`,
+   `neg(TRIG_SL[j])`). (sin(a + t) = sin a + cos a·t + …, cos(a + t) = cos a − sin a·t + …: one
+   sequence serves both, which the vector forms use.)
+5. `(p, pe) = two_prod(B, th)`; `(h, e) = fast_two_sum(A, p)` (A = 0 or |A| ≥ sin(1/64) >
+   |p|); `lo = (e + pe) + (AL + BL * th)`; `lo = lo + B * (sinp + al)`;
+   `lo = lo + A * (cosp - al * th)`; v = `h + lo`.
+
+---
+
+**`hypot(x, y)`**:
+
+1. x or y is ±∞: +∞ (even if the other is NaN). Otherwise x or y NaN: `NAN`.
+2. `ax = abs(x)`, `ay = abs(y)`; if `bits(ax) < bits(ay)` swap them (so ax ≥ ay).
+   If ay = 0: the result is ax.
+3. Scale: if `bits(ax)` > `#5F30000000000000` (ax > 2⁵⁰⁰): `ax = ax * 2^-600`,
+   `ay = ay * 2^-600`, *scale* = 2⁶⁰⁰; else if `bits(ax)` < `#20B0000000000000` (ax < 2⁻⁵⁰⁰):
+   `ax = ax * 2^600`, `ay = ay * 2^600`, *scale* = 2⁻⁶⁰⁰; else *scale* = 1.0.
+4. `(p, pe) = two_prod(ax, ax)`; `(q, qe) = two_prod(ay, ay)`; `(sh, sl) = two_sum(p, q)`;
+   `sl = sl + (pe + qe)`; `(sh, sl) = fast_two_sum(sh, sl)`.
+5. `h = sqrt(sh)`; `(hh, he) = two_prod(h, h)`; `d = ((sh - hh) - he) + sl`;
+   `corr = d / (h + h)`.
+6. If *scale* = 2⁻⁶⁰⁰ and `bits(h)` < `#2590000000000000` (the result is subnormal; *rare*),
+   round once at the subnormal precision: `(u, ue) = two_sum(2^-422, h)`; `lo = ue + corr`;
+   the result is `((u + lo) - 2^-422) * 2^-600`. Otherwise the result is `(h + corr) * scale`.
+
+#### 4.10.5 Compiler support
+
+**Pass 2a.** The library table of pass 2a gains `log(f64) -> f64`, `exp`, `sin`, `cos` (the same
+signature), `pow(f64, f64) -> f64` and `hypot(f64, f64) -> f64` (their scalar overloads; the
+elemental array overloads arrive with arrays in phase 4 and are `arrays` under the phase rule
+until then). An `i64` argument is converted (`cvt`) and an untyped integer constant is typed
+`f64`, as for every `f64` parameter (LANGUAGE.md §4.2). Phase 3 removes the row "`^` that is not
+a `powk`" from the phase-rule table of §2.6.2 and the six names from its library row. A `^`
+that is not a `powk` stays `bin pow` (§3.5.5), whose two operands pass 2a has already converted
+to `f64`; a call `pow(x, y)` is `lib pow`. Neither is folded by pass 2b (§3.5.7: no
+transcendental function is folded), so outside `const` items they are always evaluated at run
+time.
+
+**Pass 3a** lowers them by the canonical rules (§3.6.6, rule 14): `lib log(x)` is `rcall sea_log
+- 1 d 1 a`, and likewise `lib exp`, `lib sin`, `lib cos`; `lib pow(x, y)` and `bin pow x y` are
+`rcall sea_pow - 1 d 2 a b`; `lib hypot(x, y)` is `rcall sea_hypot - 1 d 2 a b` (arguments
+lowered left to right first, d a new register of class `f` or the destination of rule 2; no
+site: the entries cannot fail). §3.6.4 has no LIR instruction for any of them, and none is added:
+an instruction would only save the call, and pass 4 would then have to expand 60–150
+instructions inline. **Passes 3b and 4** need no change: they validate and emit `rcall` from the
+`entries` block generated from `rt.inc` (§2.6.3), which now holds the six records; the calling
+convention of §4.8 already maps `f` arguments and results to `d0`/`d1` and `%xmm0`/`%xmm1`.
+
+**`pow` in constants (pass 2a; Decision 16 (a), decided by the user 2026-10-21).** LANGUAGE.md
+§7.2 lets a `const` use `^` and `pow`, evaluated with the run time's bits, and pass 2a evaluates
+every constant to one literal (§3.5.2). In a constant expression a `^` that is not a `powk` (its
+operands converted to `f64` as §6.5 says) and a call `pow(x, y)` (an `i64` or untyped argument
+converted to `f64`) are evaluated with **`FEPOW`** of `passes/lib/f64emu.bas`: the operation
+sequence of `pow` in §4.10.4 (steps 1–12, with `log_core` and `exp_core`) on f64emu bit
+patterns. `log exp sin cos hypot` stay outside constant expressions (LANGUAGE.md §7.2 keeps
+listing only `sqrt` and now `pow` among calls): `pow` is admitted because `x ^ y` already is
+`pow`, so refusing the call while accepting the operator would be arbitrary; the others have no
+such tie, would need the `sin`/`cos` tables and the Payne–Hanek integer path in pass 2a, and no
+program needs them. They are `not a constant expression` (code 237) as before.
+
+* **Exactly the same sequence.** Every `+ − × ÷` of §4.10.4 is the corresponding `FEADD FESUB
+  FEMUL FEDIV` call with the same operands in the same order (a negated constant is the stored
+  negative constant, `neg` is `FENEG`, `abs` clears bit 15 of the top limb), the primitives
+  `two_sum`, `fast_two_sum`, `split` and `two_prod` are internal SUBs built from those calls in
+  the order of §4.10.2, and each integer step (the `>>`, `>>ₐ`, `<<`, `&`, `+`/`−` mod 2⁶⁴ on
+  patterns, the table index, `itof(k)`) is done exactly on the four 16-bit limbs (`LMADD`/`LMSUB`
+  for the wrapping sums, new internal limb helpers for shifts and masks, `FEFRI` for `itof(k)`,
+  which is exact). No step may be replaced by a Baysick floating-point operation or by an
+  "equivalent" shortcut: the result must be the runtime's bits for every input, NaN results
+  included (`#7FF8000000000000`, step 3 of `pow`).
+* **Tables.** `FEMTI` reads the `mtab` block (§2.6.3) into a list `MT()` that the caller
+  dimensions with 4·672 + 1 = 2689 elements: `MT(0)` = 672, word w (0-based, in the block's order:
+  the 32 constants, then the `exp` table, then the `log` table) at `MT(4w+1)` … `MT(4w+4)`, most
+  significant limb first. `FEPOW` takes `MT()` as its first parameter. Pass 2a lists `data … mtab`
+  in its `build.list`, reads its other `DATA` blocks first and calls `FEMTI` once at start-up; a
+  count, limb or sentinel that disagrees is `BAD_DATA` (code 504, §2.6.2).
+* **Pass 2b does not fold `pow`.** Outside `const` items, a `^` that is not a `powk` and a call
+  `pow` with constant operands stay run-time `rcall`s (§3.5.7 keeps folding only the operations it
+  lists): the result has the same bits either way, folding them would make pass 2b load `mtab` too,
+  and the workloads' `pow` calls have run-time operands. So `mtab` is loaded by pass 2a only; pass
+  2b carries the `FEPOW` code in its copy of `f64emu.bas` without calling it.
+* **Cost**: about 400–600 lines in `f64emu.bas` (75 000 – 81 999 has room) and 86 `DATA` lines,
+  counted against pass 2a's 10 000 lines (§2.7).
+* **Tests**: `tests/vectors/fepow.txt` (written by `math_vectors.py`, §4.10.6) holds `pow #X #Y
+  #R` lines in the shape of `f64emu.txt`; the `f64emu` harness of `tests/harness/` reads it with
+  the `mtab` block appended to its build, and `arith_check.sh` compares every result bit for bit;
+  `tests/programs/` gets `const` tests whose printed values are the model's bits (`%.17g`), and
+  `tests/errors/` a `const` using `log` (`not a constant expression`).
+
+#### 4.10.6 Tests (`tests/math/`)
+
+Two oracles: **mpmath is the oracle for accuracy, the Python model is the oracle for identity.**
+
+* `tools/math_tables.py` (run with `uv run --with mpmath`) writes `include/math_tables.inc` from
+  the definitions of §4.10.3 and §4.10.4; with `--check` it recomputes everything, compares it
+  with the committed file and with the patterns written in this section, and exits 1 on any
+  difference. It is a developer tool: the build and the tests read only the committed file.
+* `tests/vectors/math_model.py` is the bit-exact model: §4.10.2–§4.10.4 transcribed operation
+  by operation with Python floats (IEEE binary64, round to nearest, no FMA) and Python integers
+  masked to 64 bits, importing its tables by parsing `include/math_tables.inc`. It is the oracle
+  for the expected bits.
+* `tests/vectors/math_vectors.py` (run with `uv run --with mpmath`) writes the committed vector
+  files `tests/math/<fn>.vec` for fn in `log exp sin cos pow hypot`: one case per line, the
+  argument patterns and the expected result pattern as 16 upper-case hexadecimal digits each,
+  separated by one space (`3FF0000000000000 0000000000000000` for `log 1`; `pow` and `hypot`
+  lines have three fields), then LF. Before it writes a case it checks, at 320 bits (sin/cos
+  with 1100 more for the large arguments) with mpmath, that the model's result is within 1 ulp
+  of the exact value (the ulp of the binade of the exact value, 2⁻¹⁰⁷⁴ below 2⁻¹⁰²²; an exact
+  value ≥ 2¹⁰²⁴(1 − 2⁻⁵⁴) must give ∞), that every special case of §4.10.4 gives the Annex F
+  value, and that exactly representable results are exact; any failure stops it with status 1.
+  Each file holds at most 10 000 cases: every special value of the function, the exact cases
+  (`pow(2, k)` for every k from −1074 to 1023 that `pow` covers, `pow(10, k)` for 0 ≤ k ≤ 22,
+  `exp(0)`, `log(1)`, `log(2^k)`, Pythagorean `hypot`s), the hard cases of §4.10.7 (log near 1;
+  exp near the overflow, underflow and subnormal thresholds; sin/cos at the continued-fraction
+  nearest multiples of π/2 in every binade and on both sides of the R1/R2 boundary 2²³; pow with
+  huge exponents, near 1, integer exponents, subnormal and near-overflow results; hypot at the
+  scaling thresholds and with subnormal results), and seeded random cases over the whole
+  range, with every *rare* path of §4.10.4 represented. With `--accuracy N` it instead measures
+  the maximum error of the model on N random cases per function and the hard-case sets (the
+  measurement of §4.10.7); that run is never part of `make test`.
+* `tests/math/math_check.c` is the runtime harness (C, built with `xcrun cc` on the Mac and `gcc`
+  on Linux, like Baysick's `tests/kern/kern_check.c`; a test tool, never part of Sea): it links
+  `libsea.a`, reads each `.vec` file, calls the scalar entry through its C prototype and compares
+  the result's pattern with the expected one, every bit, NaN included (`#7FF8000000000000`). It
+  prints `math <fn>: <n> cases ok` per file, or each mismatch as `math <fn>: <args> expected <e>
+  got <g>` and exits 1. `make test-math` (part of `make test`) runs it on the Mac; the cross
+  bundle carries the `.vec` files and the harness source, and `cross_run.sh` runs it on the
+  Linux host against `build-x86_64-linux/libsea.a` (§6.6.1). Phase 7 extends the harness to
+  call every vector form (every lane position, with the vector lanes holding different cases)
+  under each kernel variant (`SEA_KERNELS`), with the same expected bits.
+* **Identity** is checked by the harness: both runtimes must reproduce the model's bits for
+  every case, so they agree with each other. **Accuracy** is checked by the generator against
+  mpmath for every committed case, and by the `--accuracy` measurement for the model. **The
+  compiler path** is checked by Sea programs in `tests/programs/` (`lib_math_*.sea`): calls of
+  each function, `^` with a non-`powk` exponent, `i64` and untyped arguments, special values,
+  each result printed with `%.17g` (which identifies every `f64` except a NaN's payload),
+  expected output from the model's bits formatted by `vectors/progfmt.py`; they run on both
+  targets through `run.sh` and the cross run, so both code generators' `rcall`s are covered;
+  plus `passes/` dumps of the canonical `rcall` lowering (`.lir1`, §3.8) and `const` tests whose
+  literals (`FEPOW`, §4.10.5) are the model's bits.
+* `math_vectors.py` also writes `tests/vectors/fepow.txt` for the compile-time `pow` (§4.10.5):
+  `pow #X #Y #R` lines (the shape of `f64emu.txt`), every special case and exact case of
+  `pow.vec` and 500 of its other cases (seeded choice, every *rare* path of `pow` represented),
+  at most 1 500 lines because each `FEPOW` costs a few hundred limb operations in Baysick;
+  `arith_check.sh` checks them bit for bit (§6.2, `tests/harness/`).
+
+#### 4.10.7 Measured accuracy
+
+Measured on the Python model of §4.10.6 against mpmath (320 bits; 1420 bits for `sin`/`cos`),
+as the maximum over the cases of |result − exact| in ulps of the exact value (definition in
+§4.10.6). Random cases are drawn per function over the whole range with emphasis on the
+regions named; hard cases are the sets of §4.10.6.
+
+| Function | Random cases | Max error | Hard cases | Max error |
+|----------|-------------:|----------:|-----------:|----------:|
+| `exp` | 2 000 000 | 0.5100 ulp | 24 538 | 0.5000 ulp |
+| `log` | 2 000 000 | 0.5000 ulp | 8 616 | 0.5000 ulp |
+| `sin` | 2 000 000 | 0.5000 ulp | 1 947 | 0.4998 ulp |
+| `cos` | 1 000 000 | 0.5000 ulp | 1 947 | 0.4999 ulp |
+| `pow` | 2 000 000 | 0.5116 ulp | 35 465 | 0.5049 ulp |
+| `hypot` | 2 000 000 | 0.5000 ulp | 17 196 | 0.4999 ulp |
+
+(0.5000 means 0.5 plus less than 0.0001: these functions are correctly rounded except in
+near-ties.) The bound of LANGUAGE.md §10.4 is 1 ulp; the design keeps a margin of almost half an
+ulp because the cores carry 2⁻⁶⁶ … 2⁻¹⁰⁰ relative accuracy in double-double before the one final
+rounding. The worst inputs found: `exp(#C08504512C2C4AF6)` (x ≈ −672.54, 0.5100 ulp) and
+`pow(#3FFCF498194B378A, #C0913D26A9D53182)` (x ≈ 1.8097, y ≈ −1103.29, 0.5116 ulp).
+
+**Cost** (estimates, not measurements, to be measured in phase 10 with the methodology of §5.7):
+about 30 operations for `exp`, 60 for `log` (its double-double core is shared with `pow`, so
+`log` is correctly rounded almost always, at about twice the cost of a 0.52-ulp `log`; one core
+instead of two is less code to keep identical on two targets), 90 for `pow`, 70 for `sin`/`cos`
+with |x| < 2²³, 40 for `hypot`.
 
 ## 5. Performance model
 
@@ -3183,7 +3735,10 @@ sea/tests/
   passes/NAME.sea     + NAME.ast | NAME.hir1 | NAME.hir | NAME.lir1 | NAME.lir (the --emit
                       dumps of §3, built with --no-prelude, §3.8; pinned like Baysick's tests/ir)
   plots/NAME.sea      + NAME.struct (the expected structure of each SVG it writes, LANGUAGE.md §12.8)
-  math/               elementary-function accuracy and identity tests
+  math/               elementary-function identity tests (§4.10.6): <fn>.vec vectors written by
+                      vectors/math_vectors.py from the model vectors/math_model.py, and the
+                      C harness math_check.c that checks libsea.a against them (`make
+                      test-math`, also in the cross run)
   link/               the link-map check of §4.3
   include_check.s, include_check_x86_64.s, include_asserts.inc
                       the contract-file checks of §2.6: Sea's .inc files assembled after
@@ -3580,7 +4135,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 0 | **Agreement and contracts.** The decisions of §9 are taken; the document is split into LANGUAGE.md and DESIGN.md with the intermediate record formats (§0, §3); `sea/include/*.inc`, `passes.txt`; the Baysick kernel contract change of §7.2 (in Baysick, by its own process); `compare.py --candidate`, the token maps' format, and `run_all.m` report capture, with the MATLAB rerun (Decision 7) | the user has agreed the documents; include checks pass on both assemblers; Baysick's tests pass with the new GEMM entry |
 | 1 | **Scalar core, arm64.** Driver with the `#end` discipline; passes 1–4 for: `i64`/`f64`/`bool`, `let`/`var`, arithmetic with the LANGUAGE.md §6.8 rules, `if`/`while`/`for` ranges, functions with scalar parameters, `ref`, multiple results, `const` items and `pi inf nan eps`, `printf` with `%d %i %f %F %e %E %g %G %s` (string literals only as `%s` arguments), `now()`, `f64()`, `i64()`, `idiv`; every other construct is `not supported yet` (§2.6.2, phase rule); no inlining (§3.6.6), pass 3b validates and copies (§3.6.5), the phase-1 allocator and the stack check (§4.9, §4.6), `std.sea` comments only (§2.5); runtime start-up, formatting, errors (`sea_printf`, `sea_now`, §4.8); float-literal conversion; the build of §2.6.3 and the layout of §2.10; **recalibration** of the size estimate of §2.7 from the real passes | a Sea program running W5's LCG for 11 M steps prints `lcg_final` = 2145635252 (the reference value) and the first uniforms bit-exact; spec tests for this subset pass; the estimate is updated in §2.7 |
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
-| 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets |
+| 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()` | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D |
 | 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output); a micro-benchmark of each is recorded |
 | 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) | W1 and W5 complete (without figures): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
@@ -3726,3 +4281,19 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
     Options: (a) `.sea` and `sea`; (b) `.sea` and `seac`; (c) another name.
     **Decided: (a).** Short and obvious; check for a clash with an existing `sea` command
     on the user's systems before release. Affects §2.2, tests, docs.
+16. **`pow` in `const` items** (raised by phase 3's design, §4.10.5). LANGUAGE.md §7.2 lets a constant use `^` with the run time's bits, and pass 2a
+    evaluates every constant to one literal, so a `^` that is not a `powk` needs `pow` at compile
+    time. Options: (a) `FEPOW` in `f64emu.bas`: the operation sequence of §4.10.4 on the exact
+    IEEE emulation, with the tables from a generated `DATA` block `mtab`; bit-identical to the
+    runtimes by construction and tested against the same vectors; about 400–600 Baysick lines
+    and 110 `DATA` lines in pass 2a (and 2b, unless it is a separate module), bringing pass 2a's
+    pre-agreed split (§2.7) forward by about a phase; no language change; (b) such a `^` is
+    `not a constant expression` (LANGUAGE.md §7.2 changes; constants keep `powk`, `sqrt` and
+    the arithmetic operators), no compiler cost, and a program writes a `let` (not visible inside
+    functions) or `sqrt` instead; (c) evaluate such constants at program start (changes "every
+    `const` is evaluated at compile time", Decision U2 in §0, and needs a new kind of global).
+    **Decided: (a)** (the user, 2026-10-21): it keeps the language as agreed, and its cost lands
+    where pass 2a's split is already planned. A `const` may use `^` and the call `pow`
+    (LANGUAGE.md §7.2 now lists `pow` beside `sqrt`); `log exp sin cos hypot` stay outside
+    constant expressions; pass 2b still folds no `pow` (§3.5.7). Affects LANGUAGE.md §7.2;
+    §2.6.3, §2.7, §3.5.2, §3.5.5, §4.10.5, §4.10.6.

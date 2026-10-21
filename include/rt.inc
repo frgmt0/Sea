@@ -38,7 +38,8 @@
 // or 0x + upper-case hex; entry records as described at SEA_ENTRY_LIST.
 // The entry points that LIR rcall records name (DESIGN.md 3.6.4) are listed
 // in SEA_ENTRY_LIST below, with DESIGN.md 4.8, by the phase that implements
-// each one.
+// each one. The elementary functions (ids 3 .. 8, DESIGN.md 4.10) read their
+// tables from the generated include/math_tables.inc.
 // =====================================================================
 .ifndef SEA_RT_INC
 .equiv SEA_RT_INC, 1
@@ -154,8 +155,14 @@
 .macro SEA_ENTRY_LIST m
     \m 1, PRINTF, sea_printf, S, pp, -
     \m 2, NOW, sea_now, -, -, f
+    \m 3, LOG, sea_log, -, f, f
+    \m 4, EXP, sea_exp, -, f, f
+    \m 5, SIN, sea_sin, -, f, f
+    \m 6, COS, sea_cos, -, f, f
+    \m 7, POW, sea_pow, -, ff, f
+    \m 8, HYPOT, sea_hypot, -, ff, f
 .endm
-.equiv SEA_ENT_COUNT,           2   /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           8   /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm
