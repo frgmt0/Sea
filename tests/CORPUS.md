@@ -71,6 +71,11 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `const_shortcircuit` | §7.2 (`&&`/`||` in a constant skip the right operand) |
 | `const_cvt_ties` | §4.2, §7.2 (i64 → f64 constants round ties to even; `%.17g`) |
 | `const_cmp_ieee` | §7.2 (`-0.0 == 0.0`, NaN comparisons in constants) |
+| `op_mod_idiv_edges` | §6.6 (floored `%` and `idiv`, every sign combination, −2⁶³ and 2⁶³−1 operands; run time on both targets) |
+| `op_ftoi_edges` | §10.1, §4.2 (`i64()` of −2⁶³, 2⁶³−1024, −0.0, 2⁵³+2, −2⁶²) |
+| `op_itof_round` | §4.2, §10.1 (`f64()` of i64 rounds ties to even; `%.17g`) |
+| `op_cmp_nan_zero` | §6.5 (six comparisons with NaN on either side, ±0 equality) |
+| `op_neg_zero` | §6.5 (unary `-` of ±0, IEEE zero signs at run time) |
 | `fmt_d`, `fmt_d_f64`, `fmt_f`, `fmt_e`, `fmt_g`, `fmt_s`, `fmt_pct`, `fmt_nonfinite` | §11.1 |
 | `lex_crlf` | §3.1 (CR before LF and at end of file removed) |
 | `lex_long_line` | §3.1; DESIGN.md §2.2 step 2 (4096 bytes allowed, also followed by CR) |
@@ -249,6 +254,7 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_result_count_tasg` | `wrong number of results: expected 3, found 2` | a tuple assignment with one target too few: at the tasg (LANGUAGE.md 7.3, 8.4) |
 | `err_result_count_void` | `wrong number of results: expected 0, found 2` | return f() of a 2-result call in a function without results (LANGUAGE.md 8.4) |
 | `err_result_count_void_value` | `wrong number of results: expected 0, found 1` | a call without results used as a value: at the call (LANGUAGE.md 8.4) |
+| `err_rt_conv_below` | `conversion to i64: -9.22337e+18 is not an integer` | i64() of the f64 just below -2^63 is out of range (LANGUAGE.md 9.2) |
 | `err_rt_conv_frac` | `conversion to i64: 1.5 is not an integer` | i64() of a non-integral value (LANGUAGE.md 4.2; %g spelling) |
 | `err_rt_conv_inf` | `conversion to i64: Inf is not an integer` | i64() of +Inf (LANGUAGE.md 9.2; Inf spelled as printf %g) |
 | `err_rt_conv_nan` | `conversion to i64: NaN is not an integer` | i64() of NaN (LANGUAGE.md 4.2; NaN spelled as printf %g) |
@@ -258,7 +264,9 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_rt_div_zero_mod` | `integer division by zero` | i64 % by zero (LANGUAGE.md 6.5) |
 | `err_rt_epipe_final` | `cannot write '<stdout>': Broken pipe` (.meta) | the final flush to a closed pipe fails: no location (LANGUAGE.md 9.2) |
 | `err_rt_epipe_loop` | `cannot write '<stdout>': Broken pipe` (.meta) | a buffer flush during printf fails: at that printf's line (LANGUAGE.md 9.2) |
+| `err_rt_idiv_zero_min` | `integer division by zero` | idiv(-2^63, 0) is a division by zero, not an overflow (LANGUAGE.md 6.6) |
 | `err_rt_in_fn` | `integer division by zero` | a run-time error in a function reports the line of the failing expression |
+| `err_rt_mod_zero_min` | `integer division by zero` | -2^63 % 0 is a division by zero (LANGUAGE.md 6.6) |
 | `err_rt_overflow_add` | `integer overflow` | i64 + overflow (LANGUAGE.md 6.5) |
 | `err_rt_overflow_compound` | `integer overflow` | x += 1 overflows like x + 1 (LANGUAGE.md 7.3, 6.5) |
 | `err_rt_overflow_const` | `integer overflow` | a constant i64 sum that overflows is not folded: it fails at run time |
@@ -310,3 +318,5 @@ the `at` position of DESIGN.md §2.6.2.
 | `lcg_w5.py` | `programs/op_lcg_w5.{sea,out}`, `lcg_w5.out` |
 | `f64emu.py` | `f64emu.txt`, `limb.txt` (read by `arith_check.sh` through `harness/f64emu_h.bas`, `harness/limb_h.bas`) |
 | `wave2_gen.py` | the wave-2 and round-3 `programs/` and `errors/` tests listed above |
+| `edges_gen.py` | the phase-2 edge tests `op_mod_idiv_edges`, `op_ftoi_edges`, `op_itof_round`, `op_cmp_nan_zero`, `op_neg_zero`, `err_rt_mod_zero_min`, `err_rt_idiv_zero_min`, `err_rt_conv_below` (min/max, floor/ceil/round/trunc, abs and sqrt are `not supported yet` in phases 1–2, Sea has no shifts) |
+| `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

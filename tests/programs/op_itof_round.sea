@@ -1,0 +1,9 @@
+// op_itof_round -- f64() of i64 values rounds to nearest, ties to even (LANGUAGE.md 4.2, 10.1)
+let n0 = 9007199254740993
+let n1 = 9007199254740995
+let n2 = 9223372036854775296
+let n3 = 9223372036854775295
+let n4 = 9223372036854775807
+let n5 = -9223372036854775808
+let n6 = -9007199254740993
+printf("%.17g %.17g %.17g %.17g %.17g %.17g %.17g\n", f64(n0), f64(n1), f64(n2), f64(n3), f64(n4), f64(n5), f64(n6))

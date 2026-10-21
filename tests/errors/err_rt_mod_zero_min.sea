@@ -1,0 +1,4 @@
+// err_rt_mod_zero_min -- -2^63 % 0 is a division by zero (LANGUAGE.md 6.6)
+let m = -9223372036854775808
+let z = 0
+printf("%d\n", m % z)

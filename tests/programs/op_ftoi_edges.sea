@@ -1,0 +1,8 @@
+// op_ftoi_edges -- i64() of f64 values at the edges of the i64 range, and of -0.0
+// (LANGUAGE.md 10.1, 4.2)
+let x0 = -9223372036854775808.0
+let x1 = 9223372036854774784.0
+let x2 = -0.0
+let x3 = 9007199254740994.0
+let x4 = -4611686018427387904.0
+printf("%d %d %d %d %d\n", i64(x0), i64(x1), i64(x2), i64(x3), i64(x4))

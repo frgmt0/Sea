@@ -1,0 +1,68 @@
+// op_mod_idiv_edges -- floored % and idiv with every sign combination and the i64 extremes
+// (LANGUAGE.md 6.6); all operands are locals, so the compiled code computes them
+let a0 = 7
+let b0 = 2
+printf("%d %d\n", a0 % b0, idiv(a0, b0))
+let a1 = -7
+let b1 = 2
+printf("%d %d\n", a1 % b1, idiv(a1, b1))
+let a2 = 7
+let b2 = -2
+printf("%d %d\n", a2 % b2, idiv(a2, b2))
+let a3 = -7
+let b3 = -2
+printf("%d %d\n", a3 % b3, idiv(a3, b3))
+let a4 = 6
+let b4 = 3
+printf("%d %d\n", a4 % b4, idiv(a4, b4))
+let a5 = -6
+let b5 = 3
+printf("%d %d\n", a5 % b5, idiv(a5, b5))
+let a6 = 6
+let b6 = -3
+printf("%d %d\n", a6 % b6, idiv(a6, b6))
+let a7 = -6
+let b7 = -3
+printf("%d %d\n", a7 % b7, idiv(a7, b7))
+let a8 = 1
+let b8 = 7
+printf("%d %d\n", a8 % b8, idiv(a8, b8))
+let a9 = -1
+let b9 = 7
+printf("%d %d\n", a9 % b9, idiv(a9, b9))
+let a10 = 1
+let b10 = -7
+printf("%d %d\n", a10 % b10, idiv(a10, b10))
+let a11 = -1
+let b11 = -7
+printf("%d %d\n", a11 % b11, idiv(a11, b11))
+let a12 = -9223372036854775808
+let b12 = 2
+printf("%d %d\n", a12 % b12, idiv(a12, b12))
+let a13 = -9223372036854775808
+let b13 = -1
+printf("%d\n", a13 % b13)
+let a14 = -9223372036854775808
+let b14 = 3
+printf("%d %d\n", a14 % b14, idiv(a14, b14))
+let a15 = -9223372036854775808
+let b15 = -3
+printf("%d %d\n", a15 % b15, idiv(a15, b15))
+let a16 = -9223372036854775808
+let b16 = 9223372036854775807
+printf("%d %d\n", a16 % b16, idiv(a16, b16))
+let a17 = -9223372036854775808
+let b17 = -9223372036854775808
+printf("%d %d\n", a17 % b17, idiv(a17, b17))
+let a18 = 9223372036854775807
+let b18 = -2
+printf("%d %d\n", a18 % b18, idiv(a18, b18))
+let a19 = 9223372036854775807
+let b19 = -9223372036854775808
+printf("%d %d\n", a19 % b19, idiv(a19, b19))
+let a20 = 9223372036854775807
+let b20 = 9223372036854775807
+printf("%d %d\n", a20 % b20, idiv(a20, b20))
+let a21 = 0
+let b21 = -9223372036854775808
+printf("%d %d\n", a21 % b21, idiv(a21, b21))

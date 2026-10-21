@@ -1,0 +1,6 @@
+// op_neg_zero -- unary minus and IEEE signs of zero computed at run time (LANGUAGE.md 6.5)
+let z = 0.0
+let mz = -0.0
+let m1 = -1.0
+printf("%g %g %g %g\n", -z, -mz, z - z, z * m1)
+printf("%f %f\n", -z, -mz)

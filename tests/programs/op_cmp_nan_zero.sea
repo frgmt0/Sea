@@ -1,0 +1,11 @@
+// op_cmp_nan_zero -- the six comparisons with NaN on either side and between -0.0 and 0.0
+// (LANGUAGE.md 6.5); every operand is a local
+let n = nan
+let one = 1.0
+let mz = -0.0
+let z = 0.0
+printf("%d %d %d %d %d %d\n", n == one, n != one, n < one, n <= one, n > one, n >= one)
+printf("%d %d %d %d %d %d\n", one == n, one != n, one < n, one <= n, one > n, one >= n)
+printf("%d %d %d %d %d %d\n", n == n, n != n, n < n, n <= n, n > n, n >= n)
+printf("%d %d %d %d %d %d\n", mz == z, mz != z, mz < z, mz <= z, mz > z, mz >= z)
+printf("%d %d %d %d %d %d\n", z == mz, z != mz, z < mz, z <= mz, z > mz, z >= mz)
