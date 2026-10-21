@@ -186,37 +186,39 @@ Exit status: 0 equivalent, 1 not equivalent (one diagnostic per failing token or
 
 **Equivalence.** Same number of lines; the line `Compute time: ... s` (`^Compute time: .* s$`)
 is skipped on both sides (at the same line position); per line, the same number of
-blank-separated tokens; non-numeric tokens identical; numeric tokens pass their rule. A token
-is numeric if it parses as a number (Python float syntax including `inf`/`nan`, and forms like
-`+3`) after removing at most one trailing `,` `;` or `:`; the removed character (or none) must
-be the same on both sides. Only a trailing `,` `;` `:` is removed; nothing else is stripped.
-Consequently a token with a bracket, a `%` or a `..` attached is **non-numeric** and must be
-identical text on both sides (it can not carry a numeric rule). Every such report token in the
-current scripts (found by checking each `fprintf` format):
+blank-separated tokens; non-numeric tokens identical; numeric tokens pass their rule.
+
+*Token layers.* Before a token is parsed as a number, **one trailing `,` `;` or `:` is stripped,
+then one trailing `)`, then one leading `(`**. Each stripped character (or none) must be the same
+on both sides, else the token fails (`1.2345),` is the number `1.2345` with layers `,` `)`).
+A core containing `..` is split there into two parts (`0.30..12.00`), and each part is judged as
+a numeric token of its own; a token-map entry naming such a token applies its rule to both
+parts, and a candidate with a range where MATLAB has none (or the reverse) fails. A token is
+numeric if every part parses as a number (Python float syntax including `inf`/`nan`, and forms
+like `+3`); otherwise the whole token must be identical on both sides. `%` is not stripped.
+
+In the current scripts this leaves exactly two report tokens non-numeric, both compared as text
+(a port must print them with the same digits as MATLAB, and no map rule can relax them):
 
 | Script, line | Format fragment | Example text |
 |---|---|---|
-| W1, 200 | `(ke = %.3f)` | `0.897)` |
-| W1, 222 | `(%d x %d points` | `(90` |
-| W2, 211 | `left (%.2f, %.2f) kN` | `(847.70,` and `847.70)` |
-| W2, 213 | `Load-angle sweep (%d angles` | `(1441` |
-| W3, 155 | `%.2f..%.2f cycles/m` | `0.30..12.00` |
-| W3, 166 | `(J = %.4f), refined` | `1.2345),` |
-| W4, 186 and 194 | `(x, y) = (%.4f, %.4f) m` | `(0.1000,` and `0.0500)` |
-| W5, 171 | `(%d samples)` | `(1000000` |
 | W5, 175 | `%8.2f%%` (contribution table) | `12.50%` |
 | W5, 188 | `P%-7.3f` (percentile label) | `P2.500` |
 
-(The examples show the shape, not the values.) These are compared as text, so a port must print
-them with the same digits as MATLAB, and the token map can not relax them. Percentages written
-with a blank before the sign (W1's `%.2f %%` and `%.0f %%`, W5's `yield %.4f %%`) have a numeric
-number token. Whether the token rule should treat brackets and `..` differently is a pending
-design decision; the tools implement the rule as stated.
+(The examples show the shape, not the values.) The tokens that carry brackets or `..` are
+numeric under the layer rule: W1 line 200 `(ke = %.3f)` and line 222 `(%d x %d points`; W2
+lines 211 and 213 `left (%.2f, %.2f) kN` and `(%d angles`; W3 line 155 `%.2f..%.2f cycles/m`
+and line 166 `(J = %.4f),`; W4 lines 186 and 194 `(x, y) = (%.4f, %.4f) m`; W5 line 171
+`(%d samples)`. Percentages written with a blank before the sign (W1's `%.2f %%` and `%.0f %%`,
+W5's `yield %.4f %%`) have a numeric number token.
 
-**Default rule limit.** The default rule compares mantissas only when the exponent text is
-identical, so an exponent carry (`9.99e-05` vs `1.00e-04`) or a difference in exponent spelling
-or case (`1.0e-05` vs `1.0E-05`, `e-05` vs `e-5`) fails. A token like that needs an explicit map
-entry (`num` or `json`).
+*Default rule.* A numeric token (or part) without a map entry passes if the two texts are equal,
+or if `|a - b| <= u`, where `u` is one unit in the last printed digit of the **coarser** of the
+two tokens: the unit of a token is `10^(e - d)`, `e` its printed exponent (0 if none) and `d` its
+number of fractional digits in the mantissa. The arithmetic is exact decimal, so boundary cases
+are exact. `9.99e-05` vs `1.00e-04`, `9.9999` vs `10`, `0.999` vs `1.000`, `1.5` vs `1.50` and
+`1E+05` vs `1e+05` pass; `1.5` vs `1.7` and `10` vs `12` fail. A coarse token tolerates more
+than a fine one (`1.0` vs `1.04` passes). `inf`/`nan` tokens pass only if equal as text.
 
 **Token map file.** One entry per line, fields separated by runs of blanks:
 
@@ -242,10 +244,8 @@ entry (`num` or `json`).
   `argmax_tol`/`argmin_tol` the reference token must equal the MATLAB JSON value, the candidate
   token must equal the candidate JSON value, and the candidate JSON must pass the
   own-extremum rule above).
-* **Default rule** for a numeric token without an entry: equal as text, or the same number of
-  fractional digits and the same exponent part, with mantissa digit strings (decimal point
-  removed, read as signed integers) differing by at most 1. `0.999` vs `1.000` passes; `1.5` vs
-  `1.50` fails.
+* **Default rule** for a numeric token (or `..` part) without an entry: see *Default rule*
+  above.
 * The map is validated against all lines of the reference report (the `Compute time` line
   included) before any candidate comparison, so a broken map is exit status 2 whatever the
   candidate looks like. Exit status 2 is: a malformed entry, a bad token number or rule

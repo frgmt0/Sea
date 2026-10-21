@@ -5,7 +5,7 @@ with modern C/Rust-like syntax. It is the child project of
 [Baysick](https://github.com/frgmt0/Baysick), a faithful rebuild of Dartmouth BASIC (1964) written
 in assembly, and Sea is written in Baysick.
 
-**Status: design agreed; implementation not started.** The language is specified in
+**Status: design and contracts agreed (phase 0); implementation not started.** The language is specified in
 docs/LANGUAGE.md, the compiler, runtime, tests and plan in docs/DESIGN.md.
 
 ## Why
@@ -39,12 +39,11 @@ tested on Linux), plus its own IR and plug-in backends.
 
 ## Status
 
-The Sea design is agreed (2026-10-20) and split into docs/LANGUAGE.md and docs/DESIGN.md. The
-compiler's intermediate file formats (docs/DESIGN.md §3, include/passes.txt) and the contract
-files (include/limits.inc, errors.inc, rt.inc) are written; they, and every item marked pinned in
-docs/DESIGN.md, await the user's agreement (listed in docs/DESIGN.md §0, with the open language
-questions). Baysick has the matrix runtime and language growth Sea needs to start.
-Implementation has not started.
+Phase 0 is agreed and complete (2026-10-20), except a MATLAB rerun by the user: the design is
+split into docs/LANGUAGE.md and docs/DESIGN.md, and the compiler's intermediate file formats
+(docs/DESIGN.md §3, include/passes.txt) and contract files (include/limits.inc, errors.inc,
+rt.inc) are written and agreed. Baysick has the matrix runtime and language growth Sea needs to
+start. Next is phase 1, the scalar core on arm64; implementation has not started.
 
 ## Workloads
 

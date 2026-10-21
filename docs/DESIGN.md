@@ -22,85 +22,61 @@ section of LANGUAGE.md and the second one of this document.
 **How it was agreed.** The user read the design, then a single document, and accepted each
 decision of §9 (Decisions), choosing the option recommended there. Every other rule was accepted
 with the document. A change to the design is made in LANGUAGE.md or in this file together with
-the user's agreement. Next:
+the user's agreement. Phase 0 (§8) did:
 
 1. the single document is split into LANGUAGE.md and DESIGN.md, and the compiler half gains what
    the agreed text deliberately left at the level of principles: the exact record formats of the
    intermediate files (`sea.ast`, `sea.hir1`, `sea.hir`, `sea.lir1`, `sea.lir`, §3), each with
    an `--emit` dump example that becomes its dump test (§3.8), as Baysick's IR.md does for its
    IR, and their machine-readable form `sea/include/passes.txt` (§3.9). The split moves and
-   renumbers the agreed text; the rules it adds or changes are listed below ("Awaiting the
-   user's agreement") and are agreed with the user before the passes are written;
+   renumbers the agreed text; the rules it adds or changes are listed below and were agreed
+   with the user on 2026-10-20;
 2. the contract files of §2.6 (`sea/include/*.inc`) are written with the matching doc
    sections, under the same contract rule as Baysick's (`CLAUDE.md`: a shared layout, code,
    limit or symbol changes only in the include file and its doc section together);
-3. implementation follows the milestones of §8.
+3. implementation follows the milestones of §8: next is phase 1 (phase 0 is complete except
+   the user's MATLAB rerun of Decision 7).
 
-Steps 1 and 2 are written. Text marked **pinned** in this document is new with them: it is not
-part of the agreed design and is the implementation's proposal until the user agrees.
+**Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
+to the design:
 
-**Awaiting the user's agreement** (each item is marked **pinned** where it is stated):
+1. the intermediate record formats, all of §3 and `passes.txt`;
+2. the driver details of §2.2 (`--emit` for all five files; `--no-prelude`, under which the
+   prelude's names are not declared; `#file` paths as escaped strings; the line check counting
+   4096 bytes after removing a trailing CR, as LANGUAGE.md §3.1 says; the `line too long` text
+   read from the installed `errors.inc`);
+3. evaluation order kept with `seq` and `.t` temporaries (§3.5.5);
+4. constant exponents decided by pass 2a with exact evaluation (§3.5.5, §2.8);
+5. the positions of the nodes pass 2a writes, the −2⁶³ constant rule, and
+   `-(9223372036854775808)` accepted (§3.4, §3.5.5);
+6. prelude calls always inlined, with run-time errors in prelude code reported at the program's
+   call site (§3.6.4);
+7. `nan` = `#7FF8000000000000` (§3.5.5);
+8. `limits.inc` (§2.6.1), including `SEA_LIM_RESULTS` and the `SEA_LIM_LIR_*` limits;
+9. the table layout of the LIR passes and the file index in table `N` (§2.7);
+10. `errors.inc` (§2.6.2): the texts defined there, the `at` column, the spellings of
+    substituted values, the errno table, the uses of existing messages, and the `DATA` line
+    shapes and escaping;
+11. `rt.inc` (§4.8): every layout, symbol and convention of that section;
+12. report equivalence (§6.4), with the token reading and the default rule as decided below.
 
-1. **The intermediate record formats**, all of §3 and `passes.txt`, including: the LIR data
-   records after the functions and the `pos` of LIR `func` (§3.6.2, §3.6.3); the `arm`
-   patterns as child nodes (§3.5.5); the numbering of the locals `.t`*n* and `.j`*n* (§3.5.4,
-   §3.5.7).
-2. **Driver details** (§2.2): `--emit` for all five files; `--no-prelude`, under which the
-   prelude's names are not declared (a use is `undeclared name`); `#file` paths as escaped
-   strings; the line check removing a trailing CR before counting 4096 bytes (a correction: the
-   agreed text counted before CR removal, against LANGUAGE.md §3.1); the `line too long` text
-   read from the installed `errors.inc`.
-3. **Evaluation order** (§3.5.5): `seq` and the `.t` temporaries that keep source order when
-   pass 2a reorders named arguments, named options or struct-literal values (LANGUAGE.md §6.8
-   rule 5).
-4. **Constant exponents** (§3.5.5, §2.8): pass 2a evaluates the exponent of every `^` with exact
-   IEEE emulation and writes `powk` itself; pass 2b no longer decides it.
-5. **Positions of the nodes pass 2a writes** (§3.5.5) and the `ci`/`cf` −2⁶³ rule;
-   `-(9223372036854775808)` accepted (§3.4).
-6. **Prelude error sites** (§3.6.4, "Sites"): every call of a prelude function is inlined, and a
-   run-time error in prelude code reports the program's call site.
-7. **`nan`** is `#7FF8000000000000` (§3.5.5).
-8. **`limits.inc`** (§2.6.1): the names and values, including the new `SEA_LIM_RESULTS` and the
-   `SEA_LIM_LIR_*` limits.
-9. **The table layout of the LIR passes** (§2.7) and the change to the agreed table `N`: its
-   sixth field holds the file index with the line (F·10⁹ + L), because positions need a file
-   (§3.1) and the agreed table had no file column.
-10. **`errors.inc`** (§2.6.2): the texts marked pinned in the error table; the whole `at` column
-    (including `SHAPE_MISMATCH_C` for values stored into fixed-size types and `here` for passes
-    3a–4); the spellings of substituted values and the `program too large` words; the errno
-    table; the uses of existing messages (`bincount`, `sub2ind`: dimension 0); the line shapes
-    and the `DATA` escaping of the generated `DATA` lines.
-11. **`rt.inc`** (§4.8): the common object header, tags and `SEA_RC_STATIC`; the 64-byte array
-    header; the struct layout rule and descriptor; the string offsets; the pre-parsed format
-    layout; the `_sea_err` interface and argument slots; the error-site table; the variant ids;
-    the extra result registers of the calling convention.
-12. **Report equivalence** (§6.4): the default rule (same number of fractional digits, same
-    exponent part, mantissas within 1) and the `argmax_tol`/`argmin_tol` clause are new or
-    stricter than the agreed text (`%g` printing `9.9999` against `10` fails). The workload
-    tool implements §6.4 as written.
+The user also decided the language questions that phase 0 raised:
 
-**Open questions for the user** (language gaps; the documents keep the interim rule named here
-until the user decides, and nothing resolves them silently):
-
-1. `bool(x)`: the grammar and the AST accept it (`conv bool`), LANGUAGE.md §10.1 defines no
-   `bool` conversion, and HIR has no form for it. Interim: pass 2a reports `no overload of
-   'bool' accepts (T)` (§3.5.5).
-2. `write_json` of a value whose type contains a handle type (`Figure`, `Axes`, `Lu`, `Chol`):
-   LANGUAGE.md §11.4 has no row for it. Interim: `no overload of 'write_json' accepts (…)`.
-3. Is the dimension in `index %d out of bounds for dimension %d of extent %d` counted from 0 or
-   from 1? LIR `chkb` and the reuses in §2.6.2 carry it from 0 (§3.6.4).
-4. `return f()` where `f` has several results: allowed (passing the results on) or `multiple-
-   result call used as a value`? Interim: the latter (§3.5.5).
-5. When standard output fails at the final flush, which path and site does `cannot write '%s':
-   %s` report (LANGUAGE.md §9.2, §9.4; §4.6)?
-6. Report tokens such as `(0.1000,` (W4) are not numeric under §6.4's token rule, which removes
-   only one trailing `,`, `;` or `:`, so numbers inside brackets or ranges (`..`) are compared as
-   text.
-7. Exponent carry: `9.99e-05` against `1.00e-04` fails the default rule of §6.4 (different
-   exponent parts) although the values are within rounding of a print boundary.
-8. A constant exponent that contains a `pow` of constants (`x ^ (4 ^ 0.5)`): LANGUAGE.md §6.5
-   asks for `powk` whenever the value is an integer with \|k\| ≤ 4, which needs Sea's `pow` in
-   the compiler. Interim: such an exponent is treated as not integral (§3.5.5).
+1. `bool(x)` is not a conversion: only `f64()`, `i64()` and `str()` are; `bool` stays a type name,
+   and `bool` in expression position is `unexpected token 'bool'` (LANGUAGE.md Appendix A).
+2. `write_json` of a value whose type contains a handle type is the compile error `no overload of
+   'write_json' accepts (…)` (LANGUAGE.md §11.4).
+3. The dimension in the bounds message counts from 0 (LANGUAGE.md §5.4).
+4. `return f(…)` of a multiple-result call is allowed when `f`'s result types equal the function's
+   exactly; otherwise `type mismatch` (LANGUAGE.md §8.4; HIR `tret`, §3.5.5).
+5. A failed final flush of standard output reports `cannot write '<stdout>': %s` with no location,
+   exit status 1 (LANGUAGE.md §9.2; §4.6; `SEA_SITE_NONE`, §4.8).
+6. Report tokens are read after stripping one trailing `,`/`;`/`:`, one trailing `)` and one
+   leading `(`, and are split at `..` (§6.4).
+7. The default report rule is "within one unit of the last printed digit of the coarser token"
+   (§6.4).
+8. An exponent that contains a call or a non-multiplicative `^` is not a constant integer for
+   `powk` (LANGUAGE.md §6.5).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -254,7 +230,7 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    would stop pass 1 with a Baysick error instead of a Sea diagnostic. The message text is read
    from the installed `errors.inc`, never written into the script: `awk` takes the error record
    (§2.6.2, "Line shapes") whose second field is `LINE_TOO_LONG`, and its text between the quotes,
-   with `\"` read as `"` and `\\` as `\` (**pinned**).
+   with `\"` read as `"` and `\\` as `\`.
 3. `mktemp -d` a temporary directory; `cd` into it.
 4. Write the **pass-1 input stream** to the standard input of `seaparse`:
 
@@ -276,8 +252,8 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    diagnostics unchanged. This is the "options on stdin" protocol (Baysick has no command-line
    arguments, by decision, Baysick LANGUAGE.md §15.1). With `--no-prelude` the `std.sea` file
    and its lines are left out; the option exists for the dump tests of §3.8, whose programs then
-   cannot use the prelude's functions (**pinned**: a use is the compile error `undeclared name`,
-   because the prelude's names are then not declared at all).
+   cannot use the prelude's functions (a use is the compile error `undeclared name`, because the
+   prelude's names are then not declared at all).
 5. Run the passes in order. Pass 1 writes the header records of §3.2 at the start of its
    output and every later pass copies those of its input, so every pass knows the target and the
    file names for diagnostics.
@@ -460,8 +436,8 @@ files by absolute path for the same reason).
 **Contents.** The error table (every message of the compiler, the driver's `line too long`, the
 passes' internal checks and the runtime), the errno text table, the exit statuses, the layout of
 the two tables the runtime emits, and two macros that emit them. Texts are byte-identical to
-LANGUAGE.md wherever LANGUAGE.md gives the text (column "Source" below); the texts marked
-**pinned** are new: LANGUAGE.md states the condition as an error, or the condition follows from
+LANGUAGE.md wherever LANGUAGE.md gives the text (column "Source" below); the texts whose
+Source is "defined here" are defined by this table: LANGUAGE.md states the condition as an error, or the condition follows from
 the grammar or the type rules, but gives no text, and LANGUAGE.md §9.1 delegates "the full list"
 to this table. A code is never reused or renumbered; a new message is appended in its range.
 
@@ -475,7 +451,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 * `phase`: `R` a run-time error (`_sea_err`, exit status 1); `D` reported by the driver before any
   pass (§2.2 step 2); `C1` pass 1; `C2` pass 2a or 2b; `CX` any pass (a capacity limit of §2.7);
   `P` a pass's internal consistency check (pass status 11, §2.2).
-* `at` (**pinned**, the whole column: LANGUAGE.md §9.1 requires a position but names none): the
+* `at` (LANGUAGE.md §9.1 requires a position but names none; this column names it): the
   position a compile-time diagnostic `<file>:<line>:<col>` reports (LANGUAGE.md §9.1); `-` for
   `R` and `P` (a run-time error reports the line of its LIR site, §3.6.4). The words:
 
@@ -503,7 +479,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
   errno table). In `_sea_err`'s argument slots (§4.8) `i` and `e` take one slot (an `i64`; `e` the
   host errno value), `f` one (the bits), `s` one (a string object), `h` two (rows; cols, or −1 for
   a vector).
-* `text`: the message. Substituted values (**pinned**: the spellings below), where the text has
+* `text`: the message. Substituted values, where the text has
   `%s`/`%d` and LANGUAGE.md does not say what they are: a **type** is written as in Sea source
   (`f64`, `i64[]`, `f64[,]`, `f64[4]`, `f64[4,4]` — no spaces inside brackets —, a struct's name, `Figure`, an anonymous record as
   `{name: T, …}` with `, ` between fields, a tuple as `(T1, T2, …)`); a **name** as written;
@@ -550,7 +526,7 @@ name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-t
 | 18 | `CANNOT_MKDIR` | R | - | `se` | `cannot create directory '%s': %s` | LANGUAGE.md §9.2 |
 | 19 | `LINE_STYLE` | R | - | `s` | `invalid line style "%s"` | LANGUAGE.md §9.2, §12.3 |
 | 20 | `COLOR` | R | - | `s` | `invalid color "%s"` | LANGUAGE.md §9.2 |
-| 21 | `USER` | R | - | `s` | `%s` | LANGUAGE.md §9.2 ("the formatted message"); the text `%s` is pinned |
+| 21 | `USER` | R | - | `s` | `%s` | LANGUAGE.md §9.2 ("the formatted message"); the text `%s` is defined here |
 | 100 | `LINE_TOO_LONG` | D | over | - | `line too long` | LANGUAGE.md §3.1 |
 | 101 | `ILLEGAL_CHAR` | C1 | byte | - | `illegal character` | LANGUAGE.md §3.1 |
 | 102 | `UNTERMINATED_COMMENT` | C1 | token | - | `unterminated comment` | LANGUAGE.md §3.2 |
@@ -560,12 +536,12 @@ name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-t
 | 106 | `FLOAT_RANGE` | C1 | token | - | `float literal out of range` | LANGUAGE.md §3.4 |
 | 107 | `BAD_ESCAPE` | C1 | byte | - | `invalid escape` | LANGUAGE.md §3.5 |
 | 108 | `UNTERMINATED_STRING` | C1 | token | - | `unterminated string` | LANGUAGE.md §3.5 |
-| 109 | `CHAINED_COMPARE` | C1 | token | - | `comparisons cannot be chained` | **pinned** (LANGUAGE.md §6.1: `a < b < c` is a compile error) |
+| 109 | `CHAINED_COMPARE` | C1 | token | - | `comparisons cannot be chained` | defined here (LANGUAGE.md §6.1: `a < b < c` is a compile error) |
 | 110 | `DOLLAR_OUTSIDE` | C1 | token | - | `'$' outside an index` | LANGUAGE.md §5.3 |
 | 111 | `NO_EFFECT` | C1 | stmt | - | `expression statement has no effect` | LANGUAGE.md §3.7, §7.1 |
-| 112 | `UNEXPECTED_TOKEN` | C1 | token | `s` | `unexpected token '%s'` | **pinned** (any other violation of LANGUAGE.md Appendix A) |
-| 113 | `UNEXPECTED_NEWLINE` | C1 | token | - | `unexpected newline` | **pinned** (an NL token where LANGUAGE.md Appendix A allows none) |
-| 114 | `UNEXPECTED_EOF` | C1 | token | - | `unexpected end of file` | **pinned** (the input ends inside a construct) |
+| 112 | `UNEXPECTED_TOKEN` | C1 | token | `s` | `unexpected token '%s'` | defined here (any other violation of LANGUAGE.md Appendix A) |
+| 113 | `UNEXPECTED_NEWLINE` | C1 | token | - | `unexpected newline` | defined here (an NL token where LANGUAGE.md Appendix A allows none) |
+| 114 | `UNEXPECTED_EOF` | C1 | token | - | `unexpected end of file` | defined here (the input ends inside a construct) |
 | 200 | `UNDECLARED` | C2 | name | `s` | `undeclared name '%s'` | LANGUAGE.md §9.1 |
 | 201 | `TYPE_MISMATCH` | C2 | expr | `ss` | `type mismatch: expected %s, found %s` | LANGUAGE.md §9.1 |
 | 202 | `VEC_MAT` | C2 | expr | - | `cannot combine a vector with a matrix: use .col or .row` | LANGUAGE.md §6.3, §9.1 |
@@ -596,50 +572,50 @@ name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-t
 | 227 | `REF_TARGET` | C2 | ref | - | `ref argument must be a mutable variable, element or field` | LANGUAGE.md §8.3 |
 | 228 | `ELEM_EFFECTS` | C2 | effect | - | `effects in elemental function` | LANGUAGE.md §8.5 |
 | 229 | `UNKNOWN_STRUCT` | C2 | type | - | `unknown struct type` | LANGUAGE.md Appendix A |
-| 230 | `MATMUL_VECTORS` | C2 | expr | - | `vector @ vector is not defined: use sum(a * b)` | **pinned** (LANGUAGE.md §6.2) |
-| 231 | `INDEX_COUNT` | C2 | index | `ii` | `wrong number of indices: expected %d, found %d` | **pinned** (LANGUAGE.md §5.2: `A[k]` on a matrix) |
-| 232 | `ELEM_RECURSIVE` | C2 | call | - | `elemental function cannot be recursive` | **pinned** (LANGUAGE.md §8.5) |
-| 233 | `FORMAT_LITERAL` | C2 | expr | - | `format must be a string literal` | **pinned** (LANGUAGE.md §11.1) |
-| 234 | `FORMAT_BAD` | C2 | str | `s` | `invalid format conversion "%s"` | **pinned** (LANGUAGE.md §11.1: other conversions, undefined flag combinations) |
-| 235 | `REDEFINITION` | C2 | binding | `s` | `redefinition of '%s'` | **pinned** (two items, parameters or struct fields of one name, LANGUAGE.md §4.6, §8.1) |
-| 236 | `DEFAULT_MISSING` | C2 | param | - | `parameter needs a default value` | **pinned** (LANGUAGE.md §8.1) |
-| 237 | `NOT_CONSTANT` | C2 | expr | - | `not a constant expression` | **pinned** (LANGUAGE.md §4.5, §7.2, §8.1: `const`, fixed extents, defaults) |
-| 238 | `ASSIGN_IMMUTABLE` | C2 | target | `s` | `cannot assign to immutable '%s'` | **pinned** (LANGUAGE.md §7.2, §7.5, §8.2: `let`, loop variables, parameters) |
-| 239 | `BAD_TARGET` | C2 | target | - | `invalid assignment target` | **pinned** (LANGUAGE.md §4.7, §7.3: projections, constants, functions) |
-| 240 | `BAD_OPERANDS` | C2 | expr | `sss` | `operator '%s' cannot be applied to %s and %s` | **pinned** (LANGUAGE.md §4.1, §4.6, §6.4, Appendix B) |
-| 241 | `BAD_OPERAND` | C2 | expr | `ss` | `operator '%s' cannot be applied to %s` | **pinned** (LANGUAGE.md §6.4, Appendix B) |
-| 242 | `TOO_MANY_ARGS` | C2 | call | - | `too many arguments` | **pinned** (LANGUAGE.md §8.1) |
-| 243 | `NO_OVERLOAD` | C2 | call | `ss` | `no overload of '%s' accepts (%s)` | **pinned** (LANGUAGE.md §8.1, §10) |
-| 244 | `NOT_FUNCTION` | C2 | call | `s` | `'%s' is not a function` | **pinned** |
-| 245 | `MULTI_VALUE` | C2 | call | - | `multiple-result call used as a value` | **pinned** (LANGUAGE.md §8.4) |
-| 246 | `RESULT_COUNT` | C2 | results | `ii` | `wrong number of results: expected %d, found %d` | **pinned** (LANGUAGE.md §7.3, §8.4) |
-| 247 | `BREAK_OUTSIDE` | C2 | break | - | `break outside a loop` | **pinned** (LANGUAGE.md §7.5) |
-| 248 | `CONTINUE_OUTSIDE` | C2 | continue | - | `continue outside a loop` | **pinned** (LANGUAGE.md §7.5) |
-| 249 | `NO_FIELD` | C2 | dot | `ss` | `no field '%s' in %s` | **pinned** (LANGUAGE.md §4.6) |
-| 250 | `NOT_INDEXABLE` | C2 | index | `s` | `%s cannot be indexed` | **pinned** (LANGUAGE.md §5.2) |
-| 251 | `NOT_ITERABLE` | C2 | expr | `s` | `cannot iterate over %s` | **pinned** (LANGUAGE.md §7.5) |
-| 252 | `CANNOT_INFER` | C2 | binding | - | `type cannot be inferred: add a type annotation` | **pinned** (LANGUAGE.md §4.10) |
-| 253 | `ELEM_RESULT` | C2 | fn | - | `elemental function result must be f64, i64 or bool` | **pinned** (LANGUAGE.md §8.5) |
-| 254 | `REF_NEEDED` | C2 | expr | `s` | `argument for ref parameter '%s' must be marked ref` | **pinned** (LANGUAGE.md §8.3) |
-| 255 | `REF_UNEXPECTED` | C2 | ref | `s` | `'%s' is not a ref parameter` | **pinned** (LANGUAGE.md §8.3) |
-| 256 | `PROJECTION` | C2 | dot | `ss` | `cannot project field '%s' of type %s` | **pinned** (LANGUAGE.md §4.7) |
-| 257 | `VIEW_RANK` | C2 | dot | `ss` | `view .%s is not defined for %s` | **pinned** (LANGUAGE.md §5.6) |
-| 258 | `ELEMENT_TYPE` | C2 | type | `s` | `arrays cannot hold %s` | **pinned** (LANGUAGE.md §4.1: handles) |
+| 230 | `MATMUL_VECTORS` | C2 | expr | - | `vector @ vector is not defined: use sum(a * b)` | defined here (LANGUAGE.md §6.2) |
+| 231 | `INDEX_COUNT` | C2 | index | `ii` | `wrong number of indices: expected %d, found %d` | defined here (LANGUAGE.md §5.2: `A[k]` on a matrix) |
+| 232 | `ELEM_RECURSIVE` | C2 | call | - | `elemental function cannot be recursive` | defined here (LANGUAGE.md §8.5) |
+| 233 | `FORMAT_LITERAL` | C2 | expr | - | `format must be a string literal` | defined here (LANGUAGE.md §11.1) |
+| 234 | `FORMAT_BAD` | C2 | str | `s` | `invalid format conversion "%s"` | defined here (LANGUAGE.md §11.1: other conversions, undefined flag combinations) |
+| 235 | `REDEFINITION` | C2 | binding | `s` | `redefinition of '%s'` | defined here (two items, parameters or struct fields of one name, LANGUAGE.md §4.6, §8.1) |
+| 236 | `DEFAULT_MISSING` | C2 | param | - | `parameter needs a default value` | defined here (LANGUAGE.md §8.1) |
+| 237 | `NOT_CONSTANT` | C2 | expr | - | `not a constant expression` | defined here (LANGUAGE.md §4.5, §7.2, §8.1: `const`, fixed extents, defaults) |
+| 238 | `ASSIGN_IMMUTABLE` | C2 | target | `s` | `cannot assign to immutable '%s'` | defined here (LANGUAGE.md §7.2, §7.5, §8.2: `let`, loop variables, parameters) |
+| 239 | `BAD_TARGET` | C2 | target | - | `invalid assignment target` | defined here (LANGUAGE.md §4.7, §7.3: projections, constants, functions) |
+| 240 | `BAD_OPERANDS` | C2 | expr | `sss` | `operator '%s' cannot be applied to %s and %s` | defined here (LANGUAGE.md §4.1, §4.6, §6.4, Appendix B) |
+| 241 | `BAD_OPERAND` | C2 | expr | `ss` | `operator '%s' cannot be applied to %s` | defined here (LANGUAGE.md §6.4, Appendix B) |
+| 242 | `TOO_MANY_ARGS` | C2 | call | - | `too many arguments` | defined here (LANGUAGE.md §8.1) |
+| 243 | `NO_OVERLOAD` | C2 | call | `ss` | `no overload of '%s' accepts (%s)` | defined here (LANGUAGE.md §8.1, §10) |
+| 244 | `NOT_FUNCTION` | C2 | call | `s` | `'%s' is not a function` | defined here |
+| 245 | `MULTI_VALUE` | C2 | call | - | `multiple-result call used as a value` | defined here (LANGUAGE.md §8.4) |
+| 246 | `RESULT_COUNT` | C2 | results | `ii` | `wrong number of results: expected %d, found %d` | defined here (LANGUAGE.md §7.3, §8.4) |
+| 247 | `BREAK_OUTSIDE` | C2 | break | - | `break outside a loop` | defined here (LANGUAGE.md §7.5) |
+| 248 | `CONTINUE_OUTSIDE` | C2 | continue | - | `continue outside a loop` | defined here (LANGUAGE.md §7.5) |
+| 249 | `NO_FIELD` | C2 | dot | `ss` | `no field '%s' in %s` | defined here (LANGUAGE.md §4.6) |
+| 250 | `NOT_INDEXABLE` | C2 | index | `s` | `%s cannot be indexed` | defined here (LANGUAGE.md §5.2) |
+| 251 | `NOT_ITERABLE` | C2 | expr | `s` | `cannot iterate over %s` | defined here (LANGUAGE.md §7.5) |
+| 252 | `CANNOT_INFER` | C2 | binding | - | `type cannot be inferred: add a type annotation` | defined here (LANGUAGE.md §4.10) |
+| 253 | `ELEM_RESULT` | C2 | fn | - | `elemental function result must be f64, i64 or bool` | defined here (LANGUAGE.md §8.5) |
+| 254 | `REF_NEEDED` | C2 | expr | `s` | `argument for ref parameter '%s' must be marked ref` | defined here (LANGUAGE.md §8.3) |
+| 255 | `REF_UNEXPECTED` | C2 | ref | `s` | `'%s' is not a ref parameter` | defined here (LANGUAGE.md §8.3) |
+| 256 | `PROJECTION` | C2 | dot | `ss` | `cannot project field '%s' of type %s` | defined here (LANGUAGE.md §4.7) |
+| 257 | `VIEW_RANK` | C2 | dot | `ss` | `view .%s is not defined for %s` | defined here (LANGUAGE.md §5.6) |
+| 258 | `ELEMENT_TYPE` | C2 | type | `s` | `arrays cannot hold %s` | defined here (LANGUAGE.md §4.1: handles) |
 | 400 | `TOO_LARGE` | CX | here | `s` | `program too large: %s` | LANGUAGE.md §3.1; §2.7 |
 | 500 | `TRUNCATED` | P | - | - | `internal error: truncated input` | §2.2 |
-| 501 | `BAD_HEADER` | P | - | - | `internal error: bad header` | **pinned** (§3.2) |
-| 502 | `BAD_RECORD` | P | - | - | `internal error: bad record` | **pinned** (§3.1: unknown opcode, wrong fields) |
-| 503 | `BAD_TREE` | P | - | - | `internal error: bad tree` | **pinned** (§3.3: a pop from an empty stack, a non-empty stack at a section end) |
-| 504 | `BAD_DATA` | P | - | - | `internal error: bad DATA table` | **pinned** (§2.2: a `DATA` table count disagrees with its sentinel) |
+| 501 | `BAD_HEADER` | P | - | - | `internal error: bad header` | defined here (§3.2) |
+| 502 | `BAD_RECORD` | P | - | - | `internal error: bad record` | defined here (§3.1: unknown opcode, wrong fields) |
+| 503 | `BAD_TREE` | P | - | - | `internal error: bad tree` | defined here (§3.3: a pop from an empty stack, a non-empty stack at a section end) |
+| 504 | `BAD_DATA` | P | - | - | `internal error: bad DATA table` | defined here (§2.2: a `DATA` table count disagrees with its sentinel) |
 
-Uses of an existing message, so no further text is needed (**pinned**): `&&`/`||` with an array
+Uses of an existing message, so no further text is needed: `&&`/`||` with an array
 operand, a `match` scrutinee that is not `str`, and a `return` value of the wrong type are `type
 mismatch`; an out-of-range `bincount` value v (prelude code) is `INDEX_OOB` with v, dimension 0
 and extent n, at the site of the program's call (§3.6.4, "Sites"); `sub2ind(r, i, j)` checks only
-i against r (LANGUAGE.md §10.7) and reports `INDEX_OOB` with i, dimension 0 and extent r. The
-dimension is written as LIR `chkb` writes it (§3.6.4; its base is an open question in §0).
+i against r (LANGUAGE.md §10.7) and reports `INDEX_OOB` with i, dimension 0 and extent r
+(dimensions count from 0, LANGUAGE.md §5.4).
 
-**The errno table** (**pinned**: ids, the errno values covered and the texts; LANGUAGE.md §9.2:
+**The errno table** (LANGUAGE.md §9.2:
 "a fixed table of errno texts so both targets print the same bytes"). A host errno value that is not in the table prints the text of id 0. Names
 `SEA_ERRNO_<NAME>`, `SEA_ERRNO_COUNT` = 18.
 
@@ -713,7 +689,7 @@ records have fixed shapes (they are also valid assembler):
   (with a leading `-` only for −1); inside `"text"`, `\"` stands for `"` and `\\` for `\`, and no
   other escape occurs; every other line (comments start with `//`) is ignored by the generator.
 
-**The generated `DATA` lines** (**pinned**). A Baysick string constant cannot contain `"` (Baysick
+**The generated `DATA` lines.** A Baysick string constant cannot contain `"` (Baysick
 LANGUAGE.md §4.3), and texts 19, 20, 210, 211 and 234 do. So every string the generator writes into
 a `DATA` statement is a quoted Baysick string holding the **`DATA` escaping** of its bytes: the
 escaping of §3.1 in which `"` is written `%22` as well (so a `DATA` string holds only `%`-escapes
@@ -766,7 +742,7 @@ expression nesting ≤ 64, ≤ 64 parameters and ≤ 64 results per function, �
 (A node's position needs its file, §3.1: the sixth field of `N` holds the file index and the line
 as F·10⁹ + L, exact in a Baysick number.)
 
-**Tables of the LIR passes** (**pinned**). Pass 3a keeps the HIR of the whole program in the
+**Tables of the LIR passes.** Pass 3a keeps the HIR of the whole program in the
 six tables above and, in two more, the current function's LIR and the data items it collects
 (it writes each function when the function is lowered, because its `slot` records come first,
 and the data records at the end of the file, §3.6). Passes 3b and 4 hold one LIR function at a
@@ -1048,7 +1024,7 @@ them in order):
 | `call` | `n:u` | `n+1` | callee, n arguments | `callee(a1, …, an)` |
 | `narg` | `name:s` | `1` | expr | a named argument `name: expr` |
 | `ref` | — | `1` | target | a `ref target` argument |
-| `conv` | `t:scalar` | `1` | expr | `f64(e)`, `i64(e)`, `bool(e)`, `str(e)` |
+| `conv` | `t:cvtype` | `1` | expr | `f64(e)`, `i64(e)`, `str(e)` (there is no `bool(e)`: LANGUAGE.md Appendix A) |
 | `index` | `n:u` | `n+1` | base, n indices (each an expression, `all` or `range`) | `base[i]`, `base[i, j]` |
 | `all` | — | `0` | — | `:` as an index |
 | `range` | `incl:u st:u` | `2+st` | lo, hi, [step if st = 1] | `lo..hi` (incl 0), `lo..=hi` (incl 1), `step` |
@@ -1066,8 +1042,8 @@ LANGUAGE.md Appendix A and its disambiguation rules is reported by pass 1, so a 
 syntactically valid: the child of `cstmt` is a `call` (otherwise `expression statement has no
 effect`), `dollar` occurs only inside the index list of an `index` node (array-literal brackets
 do not count, LANGUAGE.md §5.3), the operand `#8000000000000000` of `int` occurs only directly
-under `neg` (parentheses produce no node, so `-(9223372036854775808)` is accepted too:
-**pinned**, LANGUAGE.md §3.4 does not say), and
+under `neg` (parentheses produce no node, so `-(9223372036854775808)` is accepted too),
+and
 `a < b < c` has been rejected (comparisons are non-associative; a parenthesized comparison is an
 ordinary operand). Everything that depends on names or types is reported by pass 2a.
 
@@ -1262,7 +1238,7 @@ constants (LANGUAGE.md §4.2) are written with their decided type (`ci` for `i64
 | Record | Fields after `pos` | Pops | Children | Meaning |
 |--------|--------------------|------|----------|---------|
 | `ci` | `ty v:i` | `0` | — | an `i64` constant |
-| `cf` | `ty v:f` | `0` | — | an `f64` constant (also `pi` `#400921FB54442D18`, `inf` `#7FF0000000000000`, `nan` `#7FF8000000000000` (**pinned**: the quiet NaN LANGUAGE.md §10.1 leaves unspecified), `eps` `#3CB0000000000000`, LANGUAGE.md §10.1) |
+| `cf` | `ty v:f` | `0` | — | an `f64` constant (also `pi` `#400921FB54442D18`, `inf` `#7FF0000000000000`, `nan` `#7FF8000000000000` (the quiet NaN that LANGUAGE.md §10.1 leaves unspecified), `eps` `#3CB0000000000000`, LANGUAGE.md §10.1) |
 | `cb` | `ty v:u` | `0` | — | `false` (0) or `true` (1) |
 | `cs` | `ty v:s` | `0` | — | a `str` constant |
 | `lv` | `ty lid` | `0` | — | a local or parameter of the current function |
@@ -1306,6 +1282,7 @@ constants (LANGUAGE.md §4.2) are written with their decided type (`ci` for `i64
 | `arm` | `k:u` | `k+1` | k `cs` patterns, block | the arm's string patterns, in source order; k = 0 for `_` |
 | `break`, `cont` | — | `0` | — | |
 | `ret` | `k:u` | `k` | k values | |
+| `tret` | — | `1` | a multiple-result application | `return f(…)` of a call whose results are returned unchanged (LANGUAGE.md §8.4); the child as for `tbind`, its type the function's result `ttuple` exactly |
 | `block` | `n:u` | `n` | n statements | a scope (LANGUAGE.md §7.7) |
 | `jopen` | — | `1` | path | start a JSON file (`sea.hir`, §3.5.7) |
 | `jclose` | — | `0` | — | end the JSON file: final LF, flush, close |
@@ -1319,8 +1296,8 @@ A node made from one AST node takes that node's position: `lv`, `cref`, `call` a
 position of the `name` or `call` node they come from (for a call, the callee's first token), `fld`,
 `proj` and `view` that of the `dot`, `rarg` that of the `ref`, `dol` that of the `dollar`, `slit`
 that of the `slit` or `rlit`, `forr`/`fore` that of the `for`, `bind`, `tbind`, `asg` and `tasg`
-that of the `let`, `var`, `asg` or `tasg` statement, `eval` that of the `cstmt`, `cs` patterns
-those of the `str` patterns. Nodes that pass 2a adds:
+that of the `let`, `var`, `asg` or `tasg` statement, `eval` that of the `cstmt`, `ret` and `tret`
+that of the `return`, `cs` patterns those of the `str` patterns. Nodes that pass 2a adds:
 
 * `cvt`, `dyn`, `fix`: the position of the operand they convert;
 * `fmt`, and each of its `ftext` and `fconv` pieces: the position of the format string literal
@@ -1338,7 +1315,7 @@ those of the `str` patterns. Nodes that pass 2a adds:
 **Evaluation order.** LANGUAGE.md §6.8 rule 5 evaluates operands and arguments left to right, in
 source order. Where pass 2a writes the children of a `call`, `lib` or `slit` in another order
 than the source (named arguments in parameter order, named options in signature order, literal
-values in declaration order), it keeps the source order with temporaries (**pinned**):
+values in declaration order), it keeps the source order with temporaries:
 
 * if the written order of the source's argument (or value) expressions differs from their source
   order, every such expression that is not a constant (`ci`, `cf`, `cb`, `cs`) or a `rarg` is
@@ -1392,26 +1369,28 @@ end
 The program of §3.4 needs no temporary: its struct literal's values are
 constants, and its named argument `k: i` is already in parameter order.
 
-**Constant exponents** (pass 2a, **pinned**). For every `^` whose exponent is a constant
+**Constant exponents** (pass 2a). For every `^` whose exponent is a constant
 expression (LANGUAGE.md §7.2: literals, constants, operators, `pi inf nan eps`, `sqrt`), pass 2a
 computes the exponent's value exactly as the run time would: `f64` operations by exact
-multi-limb arithmetic emulating IEEE binary64 round-to-nearest-even (`+ − × ÷ sqrt`, `%` by the
+multi-limb arithmetic emulating IEEE binary64 round-to-nearest-even (`+ − × ÷`, `%` by the
 exact `fmod` rule of LANGUAGE.md §6.6, `cvt`, unary `−`), `i64` operations exactly with the range
 check, on infinities and NaN as on any other value, and never with Baysick's floating-point
 operations (§2.8), so nothing can stop the pass. If the value is an integer k with \|k\| ≤ 4
 (`SEA_LIM_POWK`; `2`, `2.0`, `6 % 4`, `const K = 6 % 4`, `-0.0` as k = 0), the `^` becomes
 `powk k`; otherwise it stays `bin pow` with its exponent. An exponent whose evaluation overflows
 `i64` or divides an `i64` by zero is not integral here; it stays, and the run time reports the
-error. An exponent containing a `^` that is itself not a `powk` (a `pow` of constants) is treated
-as not integral: open question in §0. Constant extents (§3.5.1) and the `i64` values of constant
+error. An exponent that contains a call (`sqrt` or any other) or a `^` that is itself not a
+`powk` is not integral, whatever its value (LANGUAGE.md §6.5), so it is not evaluated. Constant
+extents (§3.5.1) and the `i64` values of constant
 expressions use the same exact evaluator.
 
-**Rules awaiting a language decision** (open questions of §0; the docs stay consistent with these
-interim rules until the user decides): `bool(x)` (parsed as `conv bool`, not defined by
-LANGUAGE.md §10.1) is reported by pass 2a as `no overload of 'bool' accepts (T)`; `write_json` of
-a value whose type contains a handle type is reported as `no overload of 'write_json' accepts
-(T, U)`; `return f()` of a multiple-result call is reported as `multiple-result call used as a
-value`.
+**Decided language rules that pass 2a applies** (LANGUAGE.md): `write_json` of a value whose
+type is or contains a handle type is `no overload of 'write_json' accepts (…)`, at the `call`
+(LANGUAGE.md §11.4); `return f(…)` of a multiple-result call is a `tret` when `f`'s result
+types equal the function's result types exactly, otherwise `type mismatch` (expected the
+function's results, found `f`'s, at the call) or `wrong number of results: expected 0, found n`
+(at the `return`) in a function without results (LANGUAGE.md §8.4). (`bool(x)` does not parse:
+pass 1 reports `unexpected token 'bool'`, LANGUAGE.md Appendix A.)
 
 **What pass 2a has checked.** Every rule of LANGUAGE.md §3–§13 that is not lexical or
 syntactic: names, scopes, types, ranks, untyped constants and the `var` typing rule (Decision 8,
@@ -1467,7 +1446,7 @@ In this order:
    structs or records → `jarr`, `fore K in e { emit(lv K) }`, `jend`; a matrix of structs or
    records → `jarr`, `forr R in 0..rows(e) { jarr; forr C in 0..cols(e) { emit(idx e
    (lv R) (lv C)) }; jend }`, `jend`. Every loop body is one `block`. A handle type has no
-   case: pass 2a has rejected it (interim rule of §3.5.5, open question in §0). The runtime writes
+   case: pass 2a has rejected it (LANGUAGE.md §11.4). The runtime writes
    the layout of LANGUAGE.md §11.4 (indentation, one member or element per line, `[]` for an
    empty array).
 5. **Reachability.** Functions reachable from `.main` through `call` records and through the
@@ -1636,7 +1615,10 @@ array parameter is a `p` to the caller's memory, read-only for the callee. A `re
 `p` to the caller's variable in memory (a scalar `ref` argument lives in a stack slot of the caller
 for the call). A struct or fixed-size array result is written by the callee to memory whose
 address the caller passes as an extra parameter in front of the others, one per such result in
-result order; it is not a register result. Several results are several result registers.
+result order; it is not a register result. Several results are several result registers. A
+`tret` (§3.5.5) is a `call` whose register results are returned by a `ret` of the same
+registers; for results returned in memory, the function passes its own hidden result addresses
+on to the callee in their place. LIR needs no record of its own for it.
 
 #### 3.6.4 Instructions
 
@@ -1710,14 +1692,14 @@ The destination comes first. Operands are registers; constants are loaded with `
 | `ret` | `n:u v:reg*n` | return the results |
 | `call` | `name:s nr:u d:reg*nr na:u a:reg*na` | call a Sea function; nr is the callee's result count, or 0 to discard its results |
 | `rcall` | `entry:s site:site? nr:u d:reg*nr na:u a:reg*na` | call a runtime entry point, named as `rt.inc` lists it (§4.8); `site` for entries that can fail (allocation, I/O, the checks of library functions) |
-| `chkb` | `idx:ri ext:ri dim:u site:site` | if idx < 0 or idx ≥ ext: `index … out of bounds for dimension … of extent …` (LANGUAGE.md §5.4) with idx, the dimension and ext; `dim` is 0 for the rows (or a vector's only dimension) and 1 for the columns, and whether the message prints it as is or from 1 is an open question (§0) |
+| `chkb` | `idx:ri ext:ri dim:u site:site` | if idx < 0 or idx ≥ ext: `index … out of bounds for dimension … of extent …` (LANGUAGE.md §5.4) with idx, `dim` and ext; `dim` counts from 0 (LANGUAGE.md §5.4): 0 for the rows (or a vector's only dimension), 1 for the columns, printed as is |
 | `chk` | `c:ri err:s site:site n:u a:reg*n` | if c ≠ 0, stop with the run-time error whose code name in `errors.inc` is `err`, the arguments substituted |
 | `retain` / `release` | `a:rp` | count one more / one fewer reference to a runtime object; `release` frees it at zero (§4.2) |
 
 Blocks (`loop`, `do`, `if`, `ifz`) are numbered per function from 1 in the order of their opening
 records and nest properly; `exit`/`next` name an enclosing `loop` or `do`.
 
-**Sites** (**pinned**). An instruction's site is the file index and line of the position of the
+**Sites.** An instruction's site is the file index and line of the position of the
 HIR node whose check or call it implements. **Code from the prelude** never reports a prelude
 line: pass 3a inlines every call of a prelude function, at every call site and recursively (the
 prelude has no recursion), in addition to the calls LANGUAGE.md §8.6 requires, so no prelude
@@ -1748,7 +1730,7 @@ instructions (§5.2–§5.3).
 So that LIR dumps are reproducible, pass 3a lowers the scalar subset (scalar `i64`, `f64` and
 `bool` parameters, locals and results; constants, `lv`, `cvt`, `un`, `bin` on scalars, `ifx`,
 `seq`, calls, `bind`, `tbind`, `eval` of a call, `asg` to a local, `if`, `while`, `forr`, `break`,
-`cont`, `ret`, `block`) exactly as follows; pass 3a inlines exactly the calls LANGUAGE.md §8.6
+`cont`, `ret`, `tret`, `block`) exactly as follows; pass 3a inlines exactly the calls LANGUAGE.md §8.6
 requires and the calls of prelude functions (§3.6.4, "Sites"), and no others.
 
 1. Each local and parameter has one register of its class. Expressions are lowered in post-order,
@@ -1770,7 +1752,8 @@ requires and the calls of prelude functions (§3.6.4, "Sites"), and no others.
    st or (if absent) `li` 1, then `rcount C lo hi st incl site` (the `for` line), `loop B L lo C
    st`, body, `endloop B`. `break` is `exit` and `cont` is `next` of the innermost loop.
 5. Calls: the arguments left to right, then `call` with the result registers (rule 2); `eval` of
-   a call with results uses nr 0. `ret k` is `ret k` of the values' registers. `seq`: its `bind`
+   a call with results uses nr 0. `ret k` is `ret k` of the values' registers. `tret`: the call
+   with a new register for each result, then `ret` of those registers in order. `seq`: its `bind`
    nodes in order (rule 2), then its value, which is lowered as if it stood in the `seq`'s place.
 6. A function whose result type is `void` ends with `ret 0` unless its last statement is a
    `ret`; `.main` always ends with `ret 0`. `block` emits nothing for scalar locals.
@@ -2004,7 +1987,9 @@ changes speed, never output, except for class-R results.
 technique, Baysick DESIGN.md §6.9), with an alternate signal stack and a `SIGSEGV`/`SIGBUS` handler that
 turns a fault in the guard page into the run-time error `stack overflow`. Any other signal keeps
 its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
-(status 1).
+(status 1): a failed write of standard output as `cannot write '<stdout>': <reason>`, at the site
+of the output call whose buffer flush failed, or with no site (`SEA_SITE_NONE`, §4.8) when the
+final flush after `_sea_main` returns fails (LANGUAGE.md §9.2).
 
 ### 4.7 Two targets, one behaviour
 
@@ -2025,26 +2010,21 @@ scalar and vector forms, sorting, linear algebra, plotting) are added to `rt.inc
 section, under the contract rule, by the phase of §8 that implements each one, with their
 arguments and failure codes.
 
-**What is new.** §4.1 fixed only the fields of the array and string headers and their order in
-words; every value of this section, and every rule below marked **pinned**, is new with
-`rt.inc` and awaits the user's agreement (§0): the common object header, its tags and
-`SEA_RC_STATIC`; the 64-byte array header; the struct layout rule and descriptor; the string
-object offsets; the pre-parsed format layout; the `_sea_err` interface and the argument slots;
-the error-site table; the kernel variant ids; the extra result registers of the calling
-convention.
+§4.1 fixes the fields of the array and string headers in words; this section fixes every value
+(agreed with `rt.inc` in phase 0, §0).
 
 **Symbols.** Mach-O names; on `x86_64-linux` the ELF names drop the leading `_` (`main`,
 `sea_main`, `sea_err`, `sea_sites`, `sea_variant`), as Baysick's do.
 
 | Symbol | Defined by | Contract |
 |--------|------------|----------|
-| `main` | runtime | process entry (§4.5): stack (§4.6), kernel selection (§4.4), stdout buffer, then `_sea_main`; when it returns, flushes and exits with `SEA_EXIT_RUN_OK` (or `SEA_EXIT_RUN_ERROR` if a write failed, LANGUAGE.md §9.4) |
+| `main` | runtime | process entry (§4.5): stack (§4.6), kernel selection (§4.4), stdout buffer, then `_sea_main`; when it returns, flushes and exits with `SEA_EXIT_RUN_OK`; if that final flush fails, it calls `_sea_err` with `SEA_E_CANNOT_WRITE`, site `SEA_SITE_NONE`, and the slots `<stdout>` (a static string) and the errno (LANGUAGE.md §9.2, §9.4) |
 | `_sea_main` | program | the LIR function `.main`: no parameters, no result |
-| `_sea_err` | runtime | (**pinned**) noreturn run-time error (LANGUAGE.md §9.2): arm64 `x0` / x86_64 `%rdi` = the code (`SEA_E_*`, 1 … `SEA_E_RT_END` − 1), `x1` / `%rsi` = the site index into `_sea_sites`, `x2` / `%rdx` = the address of the argument slots that the code's `args` letters describe (§2.6.2), unused when it has none |
+| `_sea_err` | runtime | noreturn run-time error (LANGUAGE.md §9.2): arm64 `x0` / x86_64 `%rdi` = the code (`SEA_E_*`, 1 … `SEA_E_RT_END` − 1), `x1` / `%rsi` = the site index into `_sea_sites`, or `SEA_SITE_NONE` for an error with no location (the line is then `error: <message>`, LANGUAGE.md §9.2), `x2` / `%rdx` = the address of the argument slots that the code's `args` letters describe (§2.6.2), unused when it has none |
 | `_sea_sites` | program | the error-site table (below) |
 | `_sea_variant` | runtime | u64: the `SEA_VAR_*` id of the selected kernel variant, set before `_sea_main`; LIR `vfeat avx2` is `_sea_variant == SEA_VAR_AVX2` |
 
-**Reference-counted objects** (**pinned**: the header, the tags and `SEA_RC_STATIC`). Every
+**Reference-counted objects.** Every
 array, string and handle begins with the same 16-byte header, so `retain`/`release` (§3.6.4) work on any of them. A count of `SEA_RC_STATIC` (0) marks a
 static object (the string objects of LIR `str` records): `retain` and `release` leave it unchanged,
 it is never freed, and it may live in read-only data; a dynamic object starts at count 1, and
@@ -2064,7 +2044,7 @@ fields of struct elements, a handle's private references).
 | `SEA_TAG_LU` | 5 | `Lu` handle |
 | `SEA_TAG_CHOL` | 6 | `Chol` handle |
 
-**Dynamic array header**, 64 bytes (§4.1; **pinned**: the offsets, sizes and element kinds). Element (i, j) of an r × c matrix is element i + j·r of
+**Dynamic array header**, 64 bytes (§4.1). Element (i, j) of an r × c matrix is element i + j·r of
 the buffer, at `DATA + ESIZE·(i + j·r)`; a vector has `COLS` = 1. Unused header bytes are 0.
 
 | Name | Value | Meaning |
@@ -2091,7 +2071,7 @@ the buffer, at `DATA + ESIZE·(i + j·r)`; a vector has `COLS` = 1. Unused heade
 | `SEA_ESIZE_BOOL` | 1 | size of a `bool` |
 | `SEA_ESIZE_PTR` | 8 | size of a `str`, dynamic array or handle value |
 
-**Struct layout rule** (**pinned**; pass 3a's addressing, pass 4's descriptors and the runtime's copies agree
+**Struct layout rule** (pass 3a's addressing, pass 4's descriptors and the runtime's copies agree
 on it): fields in declaration order, each at the next offset that is a multiple of its alignment;
 `f64`, `i64` and reference values (`str`, dynamic arrays, handles) have size 8 and alignment 8,
 `bool` size 1 and alignment 1; a fixed-size array `T[n]` or `T[r,c]` is n or r·c elements of `T`
@@ -2099,7 +2079,7 @@ inline, column-major, with `T`'s alignment; a nested struct has its own size and
 struct's alignment is the largest of its fields' (1 if it has none) and its size is rounded up to
 it. The same layout holds in stack slots and inside arrays.
 
-**Struct layout descriptor** (**pinned**), read-only, emitted by pass 4 once per struct type that is the
+**Struct layout descriptor**, read-only, emitted by pass 4 once per struct type that is the
 element type of a dynamic array:
 
 | Name | Value | Meaning |
@@ -2108,7 +2088,7 @@ element type of a dynamic array:
 | `SEA_SL_NREF` | 8 | u64: number of reference fields, those of nested structs and fixed-size arrays included |
 | `SEA_SL_REFS` | 16 | u64 × `SEA_SL_NREF`: their byte offsets in the struct, ascending |
 
-**String object** (§4.1; **pinned**: the offsets). The static string objects pass 4 emits for LIR `str` records have count
+**String object** (§4.1). The static string objects pass 4 emits for LIR `str` records have count
 `SEA_RC_STATIC` and live in read-only data, 8-byte aligned.
 
 | Name | Value | Meaning |
@@ -2125,7 +2105,7 @@ element type of a dynamic array:
 `f64` (the record's bit patterns) and 1 byte (0 or 1) for `bool`, in read-only data aligned to
 `SEA_DATA_ALIGN`; no header.
 
-**Pre-parsed formats** (**pinned**; LIR `fmt` records, LANGUAGE.md §11.1), read-only: a header and one piece
+**Pre-parsed formats** (LIR `fmt` records, LANGUAGE.md §11.1), read-only: a header and one piece
 per `ftext`/`fconv` record, in order. A text piece points at its bytes (read-only, no NUL); a
 conversion piece carries the letter, flags, width, precision and argument class of its `fconv`.
 
@@ -2154,7 +2134,7 @@ conversion piece carries the letter, flags, width, precision and argument class 
 | `SEA_CLS_F` | 1 | LIR class `f` (`f64`) |
 | `SEA_CLS_P` | 2 | LIR class `p` (`str`) |
 
-**Argument slots** (**pinned**). `_sea_err`, and every entry point that takes a variable list of arguments
+**Argument slots.** `_sea_err`, and every entry point that takes a variable list of arguments
 (formatting), receives them as consecutive 8-byte slots in argument order, which the caller
 builds in its frame: an `i64` value, the bits of an `f64`, or an object pointer. A shape (`args`
 letter `h`) takes two slots: the rows, then the cols of a matrix or `SEA_SHAPE_VEC` for a vector.
@@ -2164,7 +2144,7 @@ letter `h`) takes two slots: the rows, then the cols of a matrix or `SEA_SHAPE_V
 | `SEA_SLOT_SIZE` | 8 | bytes per slot |
 | `SEA_SHAPE_VEC` | -1 | the second slot of a vector's shape |
 
-**Error-site table** `_sea_sites` (**pinned**), read-only, emitted by pass 4: one record per distinct LIR site
+**Error-site table** `_sea_sites`, read-only, emitted by pass 4: one record per distinct LIR site
 `F:L` (§3.1), numbered from 0 in order of first occurrence in `sea.lir`; that number is the site
 index passed to `_sea_err`, which prints `<file>:<line>: error: …` from the record.
 
@@ -2173,8 +2153,9 @@ index passed to `_sea_err`, which prints `<file>:<line>: error: …` from the re
 | `SEA_SITE_FILE` | 0 | ptr: a static string object holding the `#file` path of `F` (§3.2) |
 | `SEA_SITE_LINE` | 8 | u64: the line `L`, from 1 |
 | `SEA_SITE_SIZE` | 16 | record size |
+| `SEA_SITE_NONE` | -1 | the site index of an error with no location (all bits set); `_sea_err` then prints `error: <message>` without `<file>:<line>: ` |
 
-**Kernel variants** (§4.4; **pinned**: the ids). The ids of the variants Sea's runtime can select; their names are
+**Kernel variants** (§4.4). The ids of the variants Sea's runtime can select; their names are
 Baysick's `KV_NAME`s, which `SEA_KERNELS` and `_bsk_kern_use` take.
 
 | Name | Value | Variant | Target |
@@ -2197,9 +2178,9 @@ version change, so 0.6.0 with that commit or later is the version `rt.inc` names
 **Calling convention** (§3.6.3) on each target. Runtime entry points follow the platform ABI
 exactly (AAPCS64 in its Darwin variant; System V AMD64), whose register assignments are those
 of the table where the ABI has them; calls between Sea functions in `sea.s` use the whole table,
-which extends the ABI's result registers (**pinned**: the `i`/`p` result registers beyond
-`x0`–`x1` and `%rax %rdx`, the `f` result registers beyond `d0`–`d3` and `%xmm0`–`%xmm1`, and the
-area for further results):
+which extends the ABI's result registers (the `i`/`p` result registers beyond `x0`–`x1` and
+`%rax %rdx`, the `f` result registers beyond `d0`–`d3` and `%xmm0`–`%xmm1`, and the area for
+further results):
 
 | LIR | arm64-macos | x86_64-linux |
 |-----|-------------|--------------|
@@ -2466,20 +2447,33 @@ of the report is judged. One line per report-line pattern:
 
 where the regex matches the report line (POSIX extended, anchored), the token number counts
 blank-separated tokens from 1, and the rule is one of `compare.py`'s rule kinds applied to the
-two tokens read as numbers. A token is **numeric** if it parses as a number after removing at
-most one trailing `,`, `;` or `:` (the removed character must be the same on both sides).
+two tokens read as numbers.
+
+**Reading a token.** Before a token is parsed, three characters are stripped, in this order: one
+trailing `,`, `;` or `:`; then one trailing `)`; then one leading `(`. Each stripped character, or
+its absence, must be the same on both sides (otherwise the lines differ). A stripped token that
+contains `..` is split at its first `..` into two parts, each judged as a token of its own (so
+`(0.1000,` is the number `0.1000`, and `0..5` the numbers `0` and `5`). A token or part is
+**numeric** if it then parses as a decimal number (optional sign, digits with an optional
+decimal point, optional exponent `e`/`E` with sign); a non-numeric token or part must be identical
+as text on both sides. A token-map entry that names a token split at `..` applies its rule to
+both parts.
+
 The rules are: `exact`, `int n`, `num atol rtol`, or `json <key>`. A `num atol rtol` rule
 passes when |c − r| ≤ atol + rtol·|r|, where r is the reference token's number and c the
 candidate's (`rtol` is scaled by the magnitude of the reference token). A `json <key>` rule uses
 the rule of that JSON key; for a key whose rule is relative to the key's largest magnitude, the
 scale is taken from the reference JSON; for a key whose JSON rule is `argmax_tol` or
-`argmin_tol` (**pinned**, §0), the token passes when the reference token equals the MATLAB JSON value of that key,
+`argmin_tol`, the token passes when the reference token equals the MATLAB JSON value of that key,
 the candidate token equals the candidate JSON value of that key, and the candidate JSON passes the
-own-extremum rule of §6.3. A numeric token not listed is judged by the **default rule**
-(**pinned**: new with the split, §0) (a value within rounding of a print boundary): the two tokens are equal as text, or both have the same
-number of fractional digits and the same exponent part (if any), and their mantissa digit
-strings, read as signed integers with the decimal point removed, differ by at most 1 (so `0.999`
-and `1.000` pass). Example (W5; the report lines are those of LANGUAGE.md Appendix D):
+own-extremum rule of §6.3. A numeric token not listed is judged by the **default rule** (a value
+within one unit of the last printed digit): the two tokens pass if they are equal as text, or if
+|a − b| ≤ u, where a and b are their values and u is the larger of their two **units**; the unit of
+a token is 10^(e − d), where e is its printed exponent (0 if it has none) and d the number of
+digits after its decimal point (0 if it has none). The comparison is exact decimal arithmetic on
+the printed digits, never floating point. So `9.99e-05` against `1.00e-04` (u = 10⁻⁶),
+`9.9999` against `10` (u = 1) and `0.999` against `1.000` (u = 10⁻³) pass, and `1.5` against
+`1.7` (u = 0.1) fails. Example (W5; the report lines are those of LANGUAGE.md Appendix D):
 
 ```
 ^Rejects:              2   int 2

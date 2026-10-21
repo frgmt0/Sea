@@ -15,13 +15,15 @@
 // Symbols (Mach-O names; the x86_64-linux ELF names drop the leading _):
 //   main          runtime   process entry (DESIGN.md 4.5): stack, kernel
 //                           selection, stdout buffer, then _sea_main;
-//                           flushes and exits SEA_EXIT_RUN_OK when it returns
-//                           (SEA_EXIT_RUN_ERROR if a write failed)
+//                           flushes and exits SEA_EXIT_RUN_OK when it returns;
+//                           a failed final flush is _sea_err(SEA_E_CANNOT_WRITE,
+//                           SEA_SITE_NONE, "<stdout>", errno)
 //   _sea_main     program   the program's main function (LIR .main): no
 //                           parameters, no result
 //   _sea_err      runtime   noreturn: run-time error. arm64 x0 / x86_64 %rdi
 //                           = code (SEA_E_*, 1 .. SEA_E_RT_END-1), x1 / %rsi
-//                           = site index into _sea_sites, x2 / %rdx = address
+//                           = site index into _sea_sites (SEA_SITE_NONE: no
+//                           location), x2 / %rdx = address
 //                           of the argument slots (the code's args letters,
 //                           errors.inc), unused when it has none
 //   _sea_sites    program   the error-site table (SEA_SITE_* records)
@@ -128,6 +130,7 @@
 .equiv SEA_SITE_FILE,           0   /* ptr  static string object: the #file path F */
 .equiv SEA_SITE_LINE,           8   /* u64  line L, from 1 */
 .equiv SEA_SITE_SIZE,           16
+.equiv SEA_SITE_NONE,           -1  /* site index of an error with no location: "error: <message>" */
 
 // ---- Kernel variants (DESIGN.md 4.4); names as Baysick's KV_NAME ----------
 .equiv SEA_VAR_NEON,            1   /* "neon", arm64-macos */

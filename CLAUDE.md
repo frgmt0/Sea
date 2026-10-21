@@ -6,13 +6,13 @@ BASIC (1964) rebuild hand-written in assembly, with targets `arm64-macos` (nativ
 `x86_64-linux` (cross-compiled, tested on Linux), its own IR and plug-in backends.
 
 ## Status
-**Design agreed** (2026-10-20) and split into `docs/LANGUAGE.md` and `docs/DESIGN.md`; the
-intermediate record formats (DESIGN.md §3, `include/passes.txt`) are written. The contract
-files `include/limits.inc`, `errors.inc`, `rt.inc` are written with their tables (DESIGN.md
-§2.6.1, §2.6.2, §4.8); their include checks pass on both assemblers and the drift check passes.
-Everything marked **pinned** in DESIGN.md awaits the user's agreement (consolidated list in
-DESIGN.md §0, with the open language questions). Next: the
-milestones of DESIGN.md §8. No compiler or runtime code exists yet.
+**Phase 0 agreed and complete** (2026-10-20) except the user's MATLAB rerun (Decision 7): the
+design is split into `docs/LANGUAGE.md` and `docs/DESIGN.md`; the intermediate record formats
+(DESIGN.md §3, `include/passes.txt`) and the contract files `include/limits.inc`, `errors.inc`,
+`rt.inc` (DESIGN.md §2.6.1, §2.6.2, §4.8) are written and agreed, with the language questions
+phase 0 raised decided (record in DESIGN.md §0). The include checks pass on both assemblers and
+the drift check passes. **Next: phase 1** of DESIGN.md §8 (scalar core, arm64). No compiler or
+runtime code exists yet.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

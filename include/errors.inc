@@ -7,7 +7,7 @@
 // tests. Changes only together with docs/DESIGN.md 2.6.2, which holds the
 // same tables, the meaning of every field and the line shapes below. The
 // message texts are byte-identical to docs/LANGUAGE.md where LANGUAGE.md
-// gives them (DESIGN.md 2.6.2 says which texts are pinned here).
+// gives them (DESIGN.md 2.6.2 says which texts are defined here).
 //
 // Shared by Apple as (arm64) and GNU as (x86_64): `//` comments only at
 // the start of a line, trailing comments as /* ... */ (Baysick DESIGN.md

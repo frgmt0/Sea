@@ -15,7 +15,7 @@ enum target arm64-macos x86_64-linux
 enum shape s v m fv fm
 enum asgop set add sub mul div
 enum binop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or
-enum scalar f64 i64 bool str
+enum cvtype f64 i64 str
 enum hbinop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or cat
 enum unop neg not
 enum view T flat col row
@@ -73,7 +73,7 @@ rec A 34 bin 2 pos:pos op:binop
 rec A 35 call n+1 pos:pos n:u
 rec A 36 narg 1 pos:pos name:s
 rec A 37 ref 1 pos:pos
-rec A 38 conv 1 pos:pos t:scalar
+rec A 38 conv 1 pos:pos t:cvtype
 rec A 39 index n+1 pos:pos n:u
 rec A 40 all 0 pos:pos
 rec A 41 range 2+st pos:pos incl:u st:u
@@ -152,17 +152,18 @@ rec H 57 arm k+1 pos:pos k:u
 rec H 58 break 0 pos:pos
 rec H 59 cont 0 pos:pos
 rec H 60 ret k pos:pos k:u
-rec H 61 block n pos:pos n:u
+rec H 61 tret 1 pos:pos
+rec H 62 block n pos:pos n:u
 ; JSON output, from the write_json expansion of pass 2b (3.5.7)
-rec HF 62 jopen 1 pos:pos
-rec HF 63 jclose 0 pos:pos
-rec HF 64 jobj 0 pos:pos
-rec HF 65 jarr 0 pos:pos
-rec HF 66 jend 0 pos:pos
-rec HF 67 jkey 0 pos:pos v:s
-rec HF 68 jval 1 pos:pos
-rec HF 69 jvec 1 pos:pos
-rec HF 70 jmat 1 pos:pos
+rec HF 63 jopen 1 pos:pos
+rec HF 64 jclose 0 pos:pos
+rec HF 65 jobj 0 pos:pos
+rec HF 66 jarr 0 pos:pos
+rec HF 67 jend 0 pos:pos
+rec HF 68 jkey 0 pos:pos v:s
+rec HF 69 jval 1 pos:pos
+rec HF 70 jvec 1 pos:pos
+rec HF 71 jmat 1 pos:pos
 
 ; ---------------------------------------------------------------- sea.lir1 and sea.lir (3.6)
 ; data (3.6.2)

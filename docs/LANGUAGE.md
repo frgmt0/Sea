@@ -740,7 +740,10 @@ is one past the last index, and a symbol that means "one past the end" should no
 
 Every index is checked: a scalar index must satisfy `0 <= i < extent`; a range must be empty
 or have every position in `0 … extent − 1`; every element of an index vector must be in range.
-A failure is the run-time error `index i out of bounds for dimension d of extent n` (§9.2).
+A failure is the run-time error `index i out of bounds for dimension d of extent n` (§9.2), where
+`i` is the offending index value, `n` the extent, and `d` the dimension **counted from 0**: 0 for
+the rows of a matrix and for a vector's only dimension, 1 for the columns (`v[5]` on a 5-element
+vector reports `index 5 out of bounds for dimension 0 of extent 5`).
 There are no negative indices that count from the end (`v[-1]` is an error, not the last
 element).
 
@@ -869,7 +872,10 @@ converted (§4.2), so `2 ^ 10` is 1024.0 and `n ^ 2` with `n: i64` is an `f64`.
 
 * If `y` is a **constant** (a literal, a `const`, or a constant expression, possibly with a
   unary minus) whose value is an integer `k` with `|k| <= 4` — whether written `2` or `2.0` —
-  `x ^ y` is evaluated by multiplication in this pinned order: `x^0 = 1`, `x^1 = x`,
+  `x ^ y` is evaluated by multiplication in this pinned order (the value of `y` is computed
+  exactly, as the run time would compute it; an exponent that contains a call of any function,
+  such as `sqrt(4.0)`, or a `^` that is itself not evaluated by multiplication, such as
+  `4 ^ 0.5`, does not count as an integer here, whatever its value): `x^0 = 1`, `x^1 = x`,
   `x^2 = x*x`, `x^3 = (x*x)*x`, `x^4 = (x*x)*(x*x)`, `x^-k = 1/(x^k)`. So `x ^ 2` and `x ^ 2.0`
   are the same operation. (W1's `d ^ 3` and the squares in `shaft_safety` take this path.)
 * Otherwise `x ^ y` is `pow(x, y)` of §10.4.
@@ -1148,8 +1154,12 @@ let u = lcg_fill(ref s, 2 * nSample)       // advances the caller's s
 ### 8.4 Multiple results
 
 `-> (R1, R2, …)` declares several results; `return (e1, e2, …)` returns them; the caller must
-destructure them (`let (a, b) = f()`, `(x, y) = f()`) or discard the whole call as a statement
-(`f()`). A multiple-result call cannot appear inside an expression. MATLAB's "ask for fewer
+destructure them (`let (a, b) = f()`, `(x, y) = f()`), discard the whole call as a statement
+(`f()`), or return them unchanged: `return f(…)` in a function whose result types equal `f`'s
+result types exactly, in order (no conversion applies), returns `f`'s results. Otherwise
+`return f(…)` of a multiple-result call is `type mismatch: expected …, found …` (each side written
+as a type or a tuple `(T1, T2, …)`), or `wrong number of results: expected 0, found n` in a
+function without results. A multiple-result call cannot appear inside an expression. MATLAB's "ask for fewer
 outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 
 ### 8.5 Elemental functions (shape polymorphism)
@@ -1224,11 +1234,18 @@ A run-time error stops the program:
 3. open output files are flushed and closed;
 4. the process exits with status **1**.
 
+A failed write of standard output is the run-time error `cannot write '<stdout>': %s` (the path is
+written `<stdout>`, the reason from the errno table): at the line of the output call whose write
+failed, or, if the write that fails is the final flush after the last statement, with **no
+location**: the line on standard error is then `error: cannot write '<stdout>': %s` + LF (for
+example `error: cannot write '<stdout>': Broken pipe`). The exit status is 1 in both cases
+(§9.4).
+
 The run-time error messages (texts in `errors.inc`, with substitutions):
 
 | Condition | Message |
 |-----------|---------|
-| index out of range | `index %d out of bounds for dimension %d of extent %d` |
+| index out of range | `index %d out of bounds for dimension %d of extent %d` (the index, the dimension counted from 0, the extent: §5.4) |
 | extent mismatch | `shape mismatch: %s vs %s` (shapes written `16001x60`, `60`) |
 | `i64` overflow | `integer overflow` |
 | `i64` division or `%` by zero | `integer division by zero` |
@@ -1261,7 +1278,8 @@ workload ends with a status other than 0 or 1.)
 | 1 | run-time error, including `error` |
 
 A write error on standard output at any time (including the final flush) makes the status 1
-(the Baysick rule, Baysick LANGUAGE.md §15.4: a status 0 always means every byte arrived).
+and is reported as §9.2 says (the Baysick rule, Baysick LANGUAGE.md §15.4: a status 0 always means
+every byte arrived).
 
 ## 10. Standard library
 
@@ -1521,7 +1539,9 @@ for the static type of `value`, into a sequence of calls to the runtime's JSON e
 (`object begin`, `key`, `f64`, `i64`, `bool`, `str`, `array begin`, …), recursively over struct
 and record fields in declaration order and over array elements. No generics or reflection are
 needed in the language, and any struct, record or array type can be written. The file is
-written through a 64 KiB buffer, followed by LF.
+written through a 64 KiB buffer, followed by LF. A value whose type is or contains a handle type
+(`Figure`, `Axes`, `Lu`, `Chol`, §4.1) cannot be written: it is the compile error `no overload of
+'write_json' accepts (%s)` (the argument types, §9.1).
 
 | Sea value | JSON |
 |-----------|------|
@@ -1764,9 +1784,9 @@ index_list   = index [ "," index ] .
 index        = ":" | range | expr .
 primary      = INT | FLOAT | STRING | "true" | "false" | IDENT | "$"
              | "(" expr ")" | "(" range ")"
-             | scalar_type "(" expr ")"
+             | conv_type "(" expr ")"
              | array_lit | struct_lit | record_lit | if_expr .
-scalar_type  = "f64" | "i64" | "bool" | "str" .
+conv_type    = "f64" | "i64" | "str" .
 array_lit    = "[" [ row { ";" row } [ ";" ] ] "]" .
 row          = expr { "," expr } [ "," ] .
 struct_lit   = IDENT "{" nl [ init { "," nl init } [ "," ] ] nl "}" .
@@ -1797,7 +1817,9 @@ if_expr      = "if" head_expr "{" nl expr nl "}" "else" ( if_expr | "{" nl expr 
 * `"." IDENT` is a field access, a struct-array projection (§4.7), or one of the view suffixes
   `T flat col row` (§5.6) — the suffixes on any array, since they cannot be field names (§4.6) —
   decided by the operand's type in pass 2.
-* `scalar_type "(" expr ")"` is a conversion (`f64(b)`, `i64(x)`, `str(x)`).
+* `conv_type "(" expr ")"` is a conversion (`f64(b)`, `i64(x)`, `str(x)`). `bool` is only a type
+  name: there is no `bool(x)`, and `bool` where an expression is expected is `unexpected token
+  'bool'`.
 
 ### Appendix B. Operator precedence
 
@@ -1832,8 +1854,8 @@ panel plot pow print printf rcond round rows save_svg setdiff sign sin solve sor
 sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim y_reverse
 y_ticks ylabel ylim zeros`.
 
-(`str` is both a type name and the conversion `str(x)`; `f64`, `i64`, `bool` are conversions
-through the `scalar_type "(" expr ")"` form. The later library of §10.13 adds names to this
+(`str` is both a type name and the conversion `str(x)`; `f64` and `i64` are conversions through
+the `conv_type "(" expr ")"` form; `bool` is only a type name, with no conversion. The later library of §10.13 adds names to this
 list; adding a predeclared name can break a program that uses it as a local, which is why
 §10.13 lists the planned names now.)
 

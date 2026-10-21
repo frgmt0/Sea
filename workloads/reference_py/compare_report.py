@@ -28,21 +28,28 @@ Token map: one entry per line, fields separated by runs of blanks:
 
 Equivalence: same number of lines; the line matching `^Compute time: .* s$` is skipped on both
 sides (it must be at the same line position on both sides); per line the same number of
-blank-separated tokens; non-numeric tokens identical; numeric tokens pass their rule. A token is
-numeric if it parses as a number (Python float syntax incl. inf/nan, and forms like `+3`) after
-removing at most one trailing `,` `;` or `:`; the removed character (or none) must be the same
-on both sides. A `%` suffix is not stripped, so `12.50%` is a non-numeric token and must be
-identical.
+blank-separated tokens; non-numeric tokens identical; numeric tokens pass their rule.
 
-Default rule (numeric token with no map entry): equal as text, or the same number of fractional
-digits and the same exponent part, with mantissa digit strings (decimal point removed, read as
-signed integers) differing by at most 1 (0.999 vs 1.000 passes; 1.5 vs 1.50 fails).
+Token layers. Before a token is parsed as a number, one trailing `,` `;` or `:` is stripped,
+then one trailing `)`, then one leading `(`. Each stripped character (or none) must be the same
+on both sides, else the token fails. A core containing `..` is split there into two parts
+(`0.30..12.00`); each part is judged as a numeric token of its own (a token-map entry naming the
+token applies its rule to both parts). A token is numeric if every part parses as a number
+(Python float syntax incl. inf/nan, and forms like `+3`). A `%` suffix is not stripped, so
+`12.50%` and `P2.500` are non-numeric tokens and must be identical.
+
+Default rule (numeric token or part with no map entry): equal as text, or |a - b| <= u, where u
+is one unit in the last printed digit of the coarser of the two tokens: the unit of a token is
+10^(e - d), e its printed exponent (0 if none), d its number of fractional mantissa digits. The
+arithmetic is exact (decimal). 9.99e-05 vs 1.00e-04, 9.9999 vs 10 and 0.999 vs 1.000 pass;
+1.5 vs 1.7 and 10 vs 12 fail. inf/nan pass only if equal as text.
 
 Exit status: 0 equivalent, 1 not equivalent, 2 usage or token-map error.
 """
 
 import json
 import math
+from decimal import Decimal
 import os
 import re
 import sys
@@ -108,19 +115,36 @@ def posix_to_python(src):
     return "".join(out)
 
 
-def parse_number(tok):
-    """Return (value, text_without_suffix, suffix) when tok is numeric, else None."""
-    body, suffix = tok, ""
-    if body and body[-1] in ",;:":
-        body, suffix = body[:-1], body[-1]
-    if not body or "_" in body:
+def parse_core(text):
+    """A bare number text -> (float, text), else None."""
+    if not text or "_" in text:
         return None
-    if not (NUM_SYNTAX.match(body) or SPECIAL_RE.match(body)):
+    if not (NUM_SYNTAX.match(text) or SPECIAL_RE.match(text)):
         return None
     try:
-        return float(body), body, suffix
+        return float(text), text
     except ValueError:
         return None
+
+
+def parse_number(tok):
+    """Token -> (layers, parts) when numeric, else None.
+
+    layers = (trailing punctuation, closing paren, opening paren), each '' when absent: one
+    trailing , ; : is stripped, then one trailing ), then one leading (. The core is split at
+    '..' (exactly one) into two parts; parts is a list of (float, text), all must be numeric."""
+    body, punct, close, opn = tok, "", "", ""
+    if body and body[-1] in ",;:":
+        body, punct = body[:-1], body[-1]
+    if body and body[-1] == ")":
+        body, close = body[:-1], ")"
+    if body and body[0] == "(":
+        body, opn = body[1:], "("
+    texts = body.split("..") if body.count("..") == 1 and "..." not in body else [body]
+    parts = [parse_core(t) for t in texts]
+    if any(x is None for x in parts):
+        return None
+    return (punct, close, opn), parts
 
 
 def parse_rule(fields, lineno, rules):
@@ -179,21 +203,28 @@ def parse_map(text, rules):
     return entries
 
 
+def decimal_unit(text):
+    """(exact Decimal value, unit of the last printed digit) of a finite number text."""
+    m = DEC_RE.match(text)
+    if not m:
+        return None
+    _sign, _int, frac, exp = m.groups()
+    e = int(exp[1:]) if exp else 0
+    d = len(frac or "")
+    return Decimal(text), Decimal(10) ** (e - d)
+
+
 def default_rule(ta, tb):
-    """Default rule on two numeric token texts (suffix already removed)."""
+    """Default rule on two numeric token texts: equal as text, or |a-b| <= the unit of the last
+    printed digit of the coarser token (exact decimal arithmetic). inf/nan: equal text only."""
     if ta == tb:
         return True
-    ma, mb = DEC_RE.match(ta), DEC_RE.match(tb)
-    if not (ma and mb) or SPECIAL_RE.match(ta) or SPECIAL_RE.match(tb):
+    if SPECIAL_RE.match(ta) or SPECIAL_RE.match(tb):
         return False
-    sa, ia, fa, ea = ma.groups()
-    sb, ib, fb, eb = mb.groups()
-    fa, fb = fa or "", fb or ""
-    if len(fa) != len(fb) or (ea or "") != (eb or ""):
+    da, db = decimal_unit(ta), decimal_unit(tb)
+    if da is None or db is None:
         return False
-    va = int((ia + fa) or "0") * (-1 if sa == "-" else 1)
-    vb = int((ib + fb) or "0") * (-1 if sb == "-" else 1)
-    return abs(va - vb) <= 1
+    return abs(da[0] - db[0]) <= max(da[1], db[1])
 
 
 def same_number(a, b):
@@ -362,16 +393,23 @@ def judge_reports(ref_text, cand_text, entries, judge):
                     fails.append("line %d token %d: %r vs %r (numeric on one side only)" % (
                         lno, t, rt, ct))
                 continue
-            if pr[2] != pc[2]:
-                fails.append("line %d token %d: %r vs %r (trailing punctuation differs)" % (
+            if pr[0] != pc[0]:
+                fails.append("line %d token %d: %r vs %r (stripped punctuation or parentheses "
+                             "differ: %r vs %r)" % (lno, t, rt, ct, pr[0], pc[0]))
+                continue
+            if len(pr[1]) != len(pc[1]):
+                fails.append("line %d token %d: %r vs %r (range '..' on one side only)" % (
                     lno, t, rt, ct))
                 continue
-            if t in assigned:
-                ok, detail = judge.judge(assigned[t][0], pr[0], pc[0], pr[1], pc[1])
-            else:
-                ok, detail = default_rule(pr[1], pc[1]), "default rule"
-            if not ok:
-                fails.append("line %d token %d: %r vs %r (%s)" % (lno, t, rt, ct, detail))
+            for j, (xr, xc) in enumerate(zip(pr[1], pc[1])):
+                where = "line %d token %d%s" % (lno, t, "" if len(pr[1]) == 1 else
+                                                 (" part %d" % (j + 1)))
+                if t in assigned:
+                    ok, detail = judge.judge(assigned[t][0], xr[0], xc[0], xr[1], xc[1])
+                else:
+                    ok, detail = default_rule(xr[1], xc[1]), "default rule"
+                if not ok:
+                    fails.append("%s: %r vs %r (%s)" % (where, xr[1], xc[1], detail))
     return fails
 
 
@@ -438,7 +476,8 @@ def self_test():
     case("identical", R, R, "", True)
     # default rule
     case("default: 0.999 vs 1.000 (carry) passes", "x 0.999\n", "x 1.000\n", "", True)
-    case("default: 1.5 vs 1.50 fails (digit count)", "x 1.5\n", "x 1.50\n", "", False)
+    case("default: 1.5 vs 1.50 passes (changed by the unit-of-coarser rule; was a fail)",
+         "x 1.5\n", "x 1.50\n", "", True)
     case("default: last digit +1 passes", "x 3.14\n", "x 3.15\n", "", True)
     case("default: last digit +2 fails", "x 3.14\n", "x 3.16\n", "", False)
     case("default: same exponent, mantissa +1 passes", "x 1.23e-05\n", "x 1.24e-05\n", "", True)
@@ -449,6 +488,62 @@ def self_test():
     case("default: Inf vs NaN fails", "x Inf\n", "x NaN\n", "", False)
     case("default: +3 vs +3 passes", "x +3\n", "x +3\n", "", True)
     case("default: +3 vs 4 passes (last digit +1)", "x +3\n", "x 4\n", "", True)
+    # default rule: exact decimal unit of the coarser token
+    case("default: 9.99e-05 vs 1.00e-04 passes (exactly one unit)", "x 9.99e-05\n", "x 1.00e-04\n", "", True)
+    case("default: 9.9999 vs 10 passes", "x 9.9999\n", "x 10\n", "", True)
+    case("default: 1E+05 vs 1e+05 passes (exponent case)", "x 1E+05\n", "x 1e+05\n", "", True)
+    case("default: 1.5 vs 1.7 fails", "x 1.5\n", "x 1.7\n", "", False)
+    case("default: 10 vs 12 fails", "x 10\n", "x 12\n", "", False)
+    case("default: exactly one unit passes (1.00 vs 1.01)", "x 1.00\n", "x 1.01\n", "", True)
+    case("default: just over one unit fails (1.00 vs 1.0101)", "x 1.00\n", "x 1.0101\n", "", False)
+    case("default: just over one unit fails, exponent (9.99e-05 vs 1.01e-04)",
+         "x 9.99e-05\n", "x 1.01e-04\n", "", False)
+    case("default: coarse side decides (1.0 vs 1.04 passes: unit 0.1)", "x 1.0\n", "x 1.04\n", "", True)
+    case("default: coarse side decides (1.0 vs 1.2 fails)", "x 1.0\n", "x 1.2\n", "", False)
+    case("default: mixed exponent/non-exponent (0.0001 vs 1.0e-04) passes", "x 0.0001\n",
+         "x 1.0e-04\n", "", True)
+    case("default: mixed exponent/non-exponent fails (0.0001 vs 2.5e-04)", "x 0.0001\n",
+         "x 2.5e-04\n", "", False)
+    case("default: exact boundary uses decimals not floats (0.3 vs 0.2)", "x 0.3\n", "x 0.2\n", "", True)
+    case("default: Inf vs Inf equal text passes", "x Inf\n", "x Inf\n", "", True)
+    case("default: Inf vs inf fails (text differs)", "x Inf\n", "x inf\n", "", False)
+    # token layers
+    case("layer: parenthesis same on both sides", "x (1.5 y\n", "x (1.5 y\n", "", True)
+    case("layer: opening parenthesis on one side only", "x (1.5 y\n", "x 1.5 y\n", "", False)
+    case("layer: closing parenthesis on one side only", "x 1.5) y\n", "x 1.5 y\n", "", False)
+    case("layer: parentheses with number tolerance applied (0.999) vs (1.000)", "x (0.999)\n",
+         "x (1.000)\n", "", True)
+    case("layer: ) then , combined 1.2345), same", "x 1.2345),\n", "x 1.2346),\n", "", True)
+    case("layer: ) then , combined, comma differs", "x 1.2345),\n", "x 1.2345);\n", "", False)
+    case("layer: ) then , combined, paren missing on candidate", "x 1.2345),\n", "x 1.2345,\n", "", False)
+    case("layer: ( and trailing comma (847.70, same", "x (847.70,\n", "x (847.70,\n", "", True)
+    case("layer: rule applies to the stripped number", "x (10.00)\n", "x (10.02)\n",
+         "^x 2 num 0.02 0\n", True)
+    case("layer: rule fails on the stripped number", "x (10.00)\n", "x (10.05)\n",
+         "^x 2 num 0.02 0\n", False)
+    case("layer: P2.500 stays non-numeric (identical required)", "P2.500 1\n", "P2.500 1\n", "", True)
+    case("layer: P2.500 vs P2.501 fails", "P2.500 1\n", "P2.501 1\n", "", False)
+    case("layer: a map entry on a non-numeric P2.500 token is a map error", "P2.500 1\n",
+         "P2.500 1\n", "^P 1 exact\n", False, expect_map_error=True)
+    # '..' ranges
+    case("range: 0.30..12.00 identical", "R 0.30..12.00 c\n", "R 0.30..12.00 c\n", "", True)
+    case("range: default rule on both parts (0.30..12.00 vs 0.31..12.01)", "R 0.30..12.00\n",
+         "R 0.31..12.01\n", "", True)
+    case("range: second part fails by default", "R 0.30..12.00\n", "R 0.30..12.05\n", "", False)
+    case("range: first part fails by default", "R 0.30..12.00\n", "R 0.35..12.00\n", "", False)
+    case("range: rule applies to both parts (num 0.06 passes 0.05)", "R 0.30..12.00\n",
+         "R 0.35..12.05\n", "^R 2 num 0.06 0\n", True)
+    case("range: rule applies to both parts (second part outside)", "R 0.30..12.00\n",
+         "R 0.35..12.10\n", "^R 2 num 0.06 0\n", False)
+    case("range: exact rule on both parts", "R 1..2\n", "R 1..3\n", "^R 2 exact\n", False)
+    case("range: range on one side only", "R 0.30..12.00\n", "R 0.30\n", "", False)
+    case("range: combined with parentheses and comma (1.0..2.0),", "R (1.0..2.0),\n",
+         "R (1.0..2.0),\n", "", True)
+    case("range: non-numeric part makes the token non-numeric (identical required)", "R a..1\n",
+         "R a..1\n", "", True)
+    case("range: non-numeric part, text differs", "R a..1\n", "R a..2\n", "", False)
+    case("range: map entry on a token whose part is non-numeric is a map error", "R a..1\n",
+         "R a..1\n", "^R 2 exact\n", False, expect_map_error=True)
     # trailing punctuation
     case("trailing comma same on both sides", "a 1.5, b\n", "a 1.5, b\n", "", True)
     case("trailing punctuation differs (, vs ;)", "a 1.5, b\n", "a 1.5; b\n", "", False)
@@ -473,7 +568,8 @@ def self_test():
          "^Q 2 num 0.02 0\n", True)
     case("num outside", "Q 10.00\n", "Q 10.03\n", "^Q 2 num 0.01 0\n", False)
     case("num rtol uses reference magnitude", "Q 1000\n", "Q 1004\n", "^Q 2 num 0 1e-2\n", True)
-    case("json num uses largest magnitude of key (100)", "T 50.0\n", "T 50.09\n", "^T 2 json v\n", True)
+    case("json num uses largest magnitude of key (100); default rejects", "T 50.00\n",
+         "T 50.09\n", "^T 2 json v\n", True)
     case("json num outside", "T 50.0\n", "T 50.2\n", "^T 2 json v\n", False)
     case("json int", "n 10\n", "n 12\n", "^n 2 json cnt\n", True)
     case("json int outside", "n 10\n", "n 13\n", "^n 2 json cnt\n", False)
@@ -559,7 +655,9 @@ def self_test():
     case("class outside brackets is an ordinary set: no translation, matches no line (warning only)",
          "k1 5\n", "k1 6\n", "^k[:digit:] 2 exact\n", True)
     # parse_number unit checks
-    unit = [("1.5", True), ("+3", True), ("-inf", True), ("nan", True), ("1e5", True),
+    unit = [("(1.5)", True), ("1.2345),", True), ("0.30..12.00", True), ("1..2", True),
+            ("(", False), ("..", False), ("1...2", False), ("P2.500", False), ("1.5))", False),
+            ("1.5", True), ("+3", True), ("-inf", True), ("nan", True), ("1e5", True),
             ("1.5,", True), ("1.5,,", False), ("abc", False), ("12.5%", False), ("", False),
             ("-", False), ("1_0", False), (":", False), ("0x10", False)]
     for tok, want in unit:
