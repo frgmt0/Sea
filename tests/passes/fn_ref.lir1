@@ -26,21 +26,25 @@ endfunc
 func bump fn 0:5:1 2 p1 i2 0
 li i3 0
 li i4 1
-rcount i5 i3 i2 i4 0 0:6
-loop 1 i6 i3 i5 i4
-ldi i7 p1 - 0 0
-iaddc i8 i7 i6 0:7
-sti i8 p1 - 0 0
-endloop 1
+rcount i5 i6 i3 i2 i4 0 0:6
+if 1 i6
+loop 2 i7 i3 i5 i4
+ldi i8 p1 - 0 0
+iaddc i9 i8 i7 0:7
+sti i9 p1 - 0 0
+endloop 2
+endif 1
 ret 0
 endfunc
 func bump2 fn 0:10:1 2 p1 i2 0
 li i3 0
 li i4 1
-rcount i5 i3 i2 i4 0 0:11
-loop 1 i6 i3 i5 i4
-call bump 0 2 p1 i6
-endloop 1
+rcount i5 i6 i3 i2 i4 0 0:11
+if 1 i6
+loop 2 i7 i3 i5 i4
+call bump 0 2 p1 i7
+endloop 2
+endif 1
 ret 0
 endfunc
 #end

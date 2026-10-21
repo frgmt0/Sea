@@ -20,20 +20,22 @@ iaddc i2 i2 i4 0:7
 enddo 1
 li i5 0
 li i6 -2
-rcount i7 i1 i5 i6 1 0:9
-loop 3 i8 i1 i7 i6
-li i9 4
-icmp eq i10 i8 i9
-if 4 i10
-next 3
-endif 4
-li i11 2
-icmp lt i12 i8 i11
-if 5 i12
-exit 3
+rcount i7 i8 i1 i5 i6 1 0:9
+if 3 i8
+loop 4 i9 i1 i7 i6
+li i10 4
+icmp eq i11 i9 i10
+if 5 i11
+next 4
 endif 5
-isubc i2 i2 i8 0:16
-endloop 3
+li i12 2
+icmp lt i13 i9 i12
+if 6 i13
+exit 4
+endif 6
+isubc i2 i2 i9 0:16
+endloop 4
+endif 3
 ret 1 i2
 endfunc
 #end

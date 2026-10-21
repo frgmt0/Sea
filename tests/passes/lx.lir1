@@ -13,12 +13,14 @@ func tri fn 0:1:1 2 i1 f2 1 f
 lf f3 #0000000000000000
 li i4 0
 li i5 1
-rcount i6 i4 i1 i5 0 0:3
-loop 1 i7 i4 i6 i5
-itof f8 i7
-fmul f9 f2 f8
-fadd f3 f3 f9
-endloop 1
+rcount i6 i7 i4 i1 i5 0 0:3
+if 1 i7
+loop 2 i8 i4 i6 i5
+itof f9 i8
+fmul f10 f2 f9
+fadd f3 f3 f10
+endloop 2
+endif 1
 ret 1 f3
 endfunc
 #end

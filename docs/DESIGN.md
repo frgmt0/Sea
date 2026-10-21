@@ -78,6 +78,11 @@ The user also decided the language questions that phase 0 raised:
 8. An exponent that contains a call or a non-multiplicative `^` is not a constant integer for
    `powk` (LANGUAGE.md §6.5).
 
+**Decided in phase 1.**
+
+1. Full-range loops: `rcount` yields last + non-empty flag (user decision 2026-10-21); d = 0 for
+   an empty range (§3.6.4, §3.6.6).
+
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
@@ -1850,7 +1855,7 @@ The destination comes first. Operands are registers; constants are loaded with `
 | `isel` | `d:ri c:ri a:ri b:ri` | d = a if c ≠ 0, else b |
 | `fsel` | `d:rf c:ri a:rf b:rf` | the same for `f64` |
 | `psel` | `d:rp c:ri a:rp b:rp` | the same for addresses |
-| `rcount` | `d:ri lo:ri hi:ri st:ri incl:u site:site` | the number of elements of `lo..hi step st` (incl 0) or `lo..=hi step st` (incl 1), LANGUAGE.md §5.1, exactly, as an unsigned 64-bit count; `st` = 0 is `range step is zero` |
+| `rcount` | `d:ri e:ri lo:ri hi:ri st:ri incl:u site:site` | for the range `lo..hi step st` (incl 0) or `lo..=hi step st` (incl 1), LANGUAGE.md §5.1, whose exact number of elements n is 0 … 2⁶⁴: `e` = 1 if n > 0, else 0; `d` = (n − 1) mod 2⁶⁴ as an unsigned 64-bit value when n > 0 (the `last` of a `loop` over the range; a full-range loop such as `-2^63..=2^63-1` has n = 2⁶⁴ and `d` = 2⁶⁴ − 1), and `d` = 0 when n = 0 (the empty range); `st` = 0 is `range step is zero`, checked before anything is written |
 | `fadd fsub fmul fdiv` | `d:rf a:rf b:rf` | one IEEE binary64 operation, round to nearest even (LANGUAGE.md §6.8) |
 | `fneg fabs` | `d:rf a:rf` | flip / clear the sign bit |
 | `fsqrt` | `d:rf a:rf` | correctly rounded square root |
@@ -1888,12 +1893,12 @@ The destination comes first. Operands are registers; constants are loaded with `
 | `mand mor` | `d:rm a:rm b:rm` | lane-wise mask logic |
 | `mnot` | `d:rm a:rm` | lane-wise negation |
 | `vfeat` | `d:ri f:feat` | 1 if the selected kernel variant (§4.4) is `avx2` (feat `avx2`; `x86_64-linux` only) |
-| `loop` | `b:blk ind:ri start:ri count:ri step:ri` | a counted loop: start, count and step are read once on entry; for k = 0 … count − 1 (count unsigned) the body runs with `ind` = start + k·step; the body never writes `ind` |
-| `endloop` | `b:blk` | the end of loop `b` |
+| `loop` | `b:blk ind:ri start:ri last:ri step:ri` | a counted loop that runs at least once: start, last and step are read once on entry; for k = 0 … last inclusive, k and last compared as unsigned 64-bit values (last + 1 iterations, up to 2⁶⁴), the body runs with `ind` = start + k·step computed modulo 2⁶⁴ (two's complement); the body never writes `ind`; an empty range is excluded by an enclosing `if` on `rcount`'s flag (§3.6.6 rule 4) |
+| `endloop` | `b:blk` | the end of loop `b`: if k = last the loop ends, else k + 1 and the body runs again |
 | `do` / `enddo` | `b:blk` | a loop left only by `exit`, and its end |
 | `if` / `ifz` | `b:blk c:ri` | the first part runs if the register is not 0 (`if`) or is 0 (`ifz`), the `else` part otherwise |
 | `else` / `endif` | `b:blk` | the start of the `else` part, the end of the construct |
-| `exit` / `next` | `b:blk` | leave loop `b` / start its next iteration (`loop`: k + 1; `do`: the top) |
+| `exit` / `next` | `b:blk` | leave loop `b` / start its next iteration (`loop`: as at `endloop`, so `next` after k = last ends the loop; `do`: the top) |
 | `ret` | `n:u v:reg*n` | return the results |
 | `call` | `name:s nr:u d:reg*nr na:u a:reg*na` | call a Sea function; nr is the callee's result count, or 0 to discard its results |
 | `rcall` | `entry:s site:site? nr:u d:reg*nr na:u a:reg*na` | call a runtime entry point, named as `rt.inc` lists it (§4.8); `site` for entries that can fail (allocation, I/O, the checks of library functions) |
@@ -1985,8 +1990,10 @@ rule (c) covers, no elemental function).
    `lv M` is `mov R M`, any other root's instruction writes R.
 4. `if c then [else]`: c, `if B c`, then, [`else B`, else], `endif B`. `while c body`: `do B`,
    c, `ifz B2 c`, `exit B`, `endif B2`, body, `enddo B`. `forr L (rng lo hi [st])`: lo, hi, then
-   st or (if absent) `li` 1, then `rcount C lo hi st incl site` (the `for` line), `loop B L lo C
-   st`, body, `endloop B`. `break` is `exit` and `cont` is `next` of the innermost loop.
+   st or (if absent) `li` 1, then `rcount C E lo hi st incl site` (C and E new registers, in that
+   order; site the `for` line), `if B E`, `loop B2 L lo C st`, body, `endloop B2`, `endif B`, so
+   the `if` is block B and the `loop` block B2 = B + 1. `break` is `exit` and `cont` is `next` of
+   the innermost loop (B2 of its `forr`).
 5. Calls: the arguments left to right, then `call` with the result registers (rule 2); `eval` of
    a call with results uses nr 0. `ret k` is `ret k` of the values' registers. `tret`: the call
    with a new register for each result, then `ret` of those registers in order. `seq`: its `bind`
@@ -2077,12 +2084,14 @@ func tri fn 0:1:1 2 i1 f2 1 f
 lf f3 #0000000000000000
 li i4 0
 li i5 1
-rcount i6 i4 i1 i5 0 0:3
-loop 1 i7 i4 i6 i5
-itof f8 i7
-fmul f9 f2 f8
-fadd f3 f3 f9
-endloop 1
+rcount i6 i7 i4 i1 i5 0 0:3
+if 1 i7
+loop 2 i8 i4 i6 i5
+itof f9 i8
+fmul f10 f2 f9
+fadd f3 f3 f10
+endloop 2
+endif 1
 ret 1 f3
 endfunc
 #end
@@ -2090,7 +2099,7 @@ endfunc
 
 `sea build --emit lir --no-prelude lx.sea` is identical: there is no array access (no bounds
 check to remove), no instruction in the loop whose operands are all defined outside it (each reads
-`i7`, `f8`, `f9` or `f3`), no addressing to strength-reduce, no slot to scalar-replace and no array
+`i8`, `f9`, `f10` or `f3`), no addressing to strength-reduce, no slot to scalar-replace and no array
 loop to vectorize, and LANGUAGE.md §6.8 forbids rewriting `s + x * i` in any other form.
 
 ### 3.7 Numbers of records

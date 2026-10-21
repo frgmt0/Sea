@@ -710,6 +710,12 @@
 5170 IF D2 <> 2 THEN 5174
 5172 LET Z2$ = "d16"
 5174 GOSUB 9020
+5176 IF E1 = 0 THEN 5200
+5178 LET Z1$ = "str"
+5180 LET Z4$ = "sp"
+5182 LET Z3 = A5 + 8 * (E1 - 1)
+5184 LET Z2$ = "x10"
+5186 GOSUB 9020
 5200 IF W0 = 1 THEN 5290
 5205 IF M(T5,4) = 0 THEN 5240
 5210 LET X$ = L9$ & "e" & STR$(J) & ":"
@@ -767,7 +773,7 @@
 5445 LET Z2$ = "x9"
 5448 GOSUB 5960
 5449 GOTO 5290
-5450 REM ---- loop b ind start count step: the count and step in the block's hidden slots ----
+5450 REM ---- loop b ind start last step: ind, remaining last - k and step stored; no entry test ----
 5451 IF W0 = 2 THEN 5290
 5452 LET Y7 = VAL(G$(2))
 5453 LET Y6$ = L9$ & STR$(Y7) & "_"
@@ -794,16 +800,8 @@
 5474 GOSUB 9020
 5475 LET X$ = Y6$ & "top:"
 5476 GOSUB 9000
-5477 LET Z1$ = "ldr"
-5478 LET Z2$ = "x10"
-5479 LET Z3 = B(Y7,3)
-5480 GOSUB 9020
-5481 LET Z1$ = "cbz"
-5482 LET Z2$ = "x10, "
-5483 LET Z3$ = Y6$ & "exit"
-5484 GOSUB 9100
 5485 GOTO 5290
-5500 REM ---- endloop b: count down, ind + step, back to the top --------------------------------
+5500 REM ---- endloop b: done when k = last (remaining 0), else count down, ind + step, the top --
 5501 IF W0 = 2 THEN 5290
 5502 LET Y7 = VAL(G$(2))
 5503 LET Y6$ = L9$ & STR$(Y7) & "_"
@@ -814,28 +812,35 @@
 5508 LET Z3 = B(Y7,3)
 5509 LET Z4$ = "sp"
 5510 GOSUB 9020
-5511 LET X$ = "sub x10, x10, #1"
-5512 GOSUB 9010
-5513 LET Z1$ = "str"
-5514 GOSUB 9020
-5515 LET Z1$ = "ldr"
-5516 LET Z2$ = "x9"
-5517 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
-5518 GOSUB 9020
-5519 LET Z2$ = "x11"
-5520 LET Z3 = B(Y7,3) + 8
+5511 LET Z1$ = "cbz"
+5512 LET Z2$ = "x10, "
+5513 LET Z3$ = Y6$ & "exit"
+5514 GOSUB 9100
+5515 LET Z2$ = "x10"
+5516 LET Z3 = B(Y7,3)
+5517 LET Z4$ = "sp"
+5518 LET X$ = "sub x10, x10, #1"
+5519 GOSUB 9010
+5520 LET Z1$ = "str"
 5521 GOSUB 9020
-5522 LET X$ = "add x9, x9, x11"
-5523 GOSUB 9010
-5524 LET Z1$ = "str"
-5525 LET Z2$ = "x9"
-5526 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
-5527 GOSUB 9020
-5528 LET X$ = "b " & Y6$ & "top"
-5529 GOSUB 9010
-5530 LET X$ = Y6$ & "exit:"
-5531 GOSUB 9000
-5532 GOTO 5290
+5522 LET Z1$ = "ldr"
+5523 LET Z2$ = "x9"
+5524 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
+5525 GOSUB 9020
+5526 LET Z2$ = "x11"
+5527 LET Z3 = B(Y7,3) + 8
+5528 GOSUB 9020
+5529 LET X$ = "add x9, x9, x11"
+5530 GOSUB 9010
+5531 LET Z1$ = "str"
+5532 LET Z2$ = "x9"
+5533 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
+5534 GOSUB 9020
+5535 LET X$ = "b " & Y6$ & "top"
+5536 GOSUB 9010
+5537 LET X$ = Y6$ & "exit:"
+5538 GOSUB 9000
+5539 GOTO 5290
 5550 REM ---- do b: the top label -----------------------------------------------------------------
 5552 IF W0 = 2 THEN 5290
 5554 LET Y6$ = L9$ & G$(2) & "_"
@@ -1580,11 +1585,13 @@
 9393 LET X$ = "bl _sea_err"
 9395 GOTO 9010
 9400 REM ---- the fields of G$(1..C0) against record row I0 (DESIGN 3.1, passes.txt): checks, ----
-9401 REM registers (D1 D2 the destination d, Q P J$ the sources, B1 B2 base / idx), site X0,
-9402 REM cc K1$, first u U0, scale U2, off limbs L() (O1 = 1 if not 0), label H0, slot H1
+9401 REM registers (D1 D2 the destination d, E1 a second destination e, Q P J$ the sources, B1 B2
+9402 REM base / idx), site X0, cc K1$, first u U0, scale U2, off limbs L() (O1 = 1 if not 0),
+9403 REM label H0, slot H1
 9404 LET T0 = 1
 9406 LET P0 = 0
 9408 LET D1 = 0
+9409 LET E1 = 0
 9410 LET D2 = 0
 9412 LET B1 = 0
 9414 LET B2 = 0
@@ -1657,6 +1664,7 @@
 9528 LET K1$ = Z$
 9529 GOTO 9540
 9530 GOSUB 9550
+9531 IF F$(J2) = "e" THEN 9546
 9532 IF F$(J2) <> "d" THEN 9536
 9533 LET D1 = R0
 9534 LET D2 = R1
@@ -1667,7 +1675,10 @@
 9539 GOSUB 9590
 9540 NEXT J3
 9542 NEXT J1
-9544 IF T0 <> C0 THEN 9990
+9544 IF T0 = C0 THEN 9549
+9545 GOTO 9990
+9546 LET E1 = R0
+9547 GOTO 9540
 9549 RETURN
 9550 REM ---- the register Z$ of field type T1 (16 reg, 17 ri, 18 rf, 19 rp): R0 number, R1 class
 9551 REM (1 i, 2 f, 3 p); one class per register (D), M0 the highest number (DESIGN 3.6.1)

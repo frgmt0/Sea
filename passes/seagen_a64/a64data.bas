@@ -69,17 +69,18 @@
 50675 DATA "imodf","INT_DIV_ZERO","-",8,0,"cbz x10, $C","sdiv x11, x9, x10"
 50680 DATA "msub x9, x11, x10, x9","cbz x9, 1f","eor x11, x9, x10","tbz x11, #63, 1f"
 50685 DATA "add x9, x9, x10","1:"
-50690 REM rcount: the exact unsigned count of lo..hi step st (0) and lo..=hi step st (1)
-50695 REM (LANGUAGE 5.1): the distance |hi - lo| as an unsigned number, divided by |st|
-50700 DATA "rcount0","RANGE_STEP_ZERO","-",23,0,"cbz x11, $C","tbnz x11, #63, 1f","cmp x9, x10"
-50705 DATA "b.ge 3f","sub x10, x10, x9","udiv x9, x10, x11","msub x10, x9, x11, x10"
-50710 DATA "cmp x10, #0","cinc x9, x9, ne","b 4f","1:","cmp x9, x10","b.le 3f"
-50715 DATA "sub x10, x9, x10","neg x11, x11","udiv x9, x10, x11","msub x10, x9, x11, x10"
-50720 DATA "cmp x10, #0","cinc x9, x9, ne","b 4f","3:","mov x9, #0","4:"
-50725 DATA "rcount1","RANGE_STEP_ZERO","-",19,0,"cbz x11, $C","tbnz x11, #63, 1f","cmp x9, x10"
-50730 DATA "b.gt 3f","sub x10, x10, x9","udiv x9, x10, x11","add x9, x9, #1","b 4f","1:"
+50690 REM rcount: last = (n - 1) mod 2^64 in x9 (stored to d) and the non-empty flag in x10
+50695 REM (stored to e) for lo..hi step st (0) and lo..=hi step st (1), LANGUAGE 5.1, DESIGN 3.6.4:
+50697 REM last = the distance (hi - lo - 1 or hi - lo, unsigned) divided by |st|, unsigned
+50700 DATA "rcount0","RANGE_STEP_ZERO","-",22,0,"cbz x11, $C","tbnz x11, #63, 1f","cmp x9, x10"
+50705 DATA "b.ge 3f","sub x10, x10, x9","sub x10, x10, #1","udiv x9, x10, x11","mov x10, #1"
+50710 DATA "b 4f","1:","cmp x9, x10","b.le 3f","sub x10, x9, x10","sub x10, x10, #1"
+50715 DATA "neg x11, x11","udiv x9, x10, x11","mov x10, #1","b 4f","3:","mov x9, #0"
+50720 DATA "mov x10, #0","4:"
+50725 DATA "rcount1","RANGE_STEP_ZERO","-",20,0,"cbz x11, $C","tbnz x11, #63, 1f","cmp x9, x10"
+50730 DATA "b.gt 3f","sub x10, x10, x9","udiv x9, x10, x11","mov x10, #1","b 4f","1:"
 50735 DATA "cmp x9, x10","b.lt 3f","sub x10, x9, x10","neg x11, x11","udiv x9, x10, x11"
-50740 DATA "add x9, x9, #1","b 4f","3:","mov x9, #0","4:"
+50740 DATA "mov x10, #1","b 4f","3:","mov x9, #0","mov x10, #0","4:"
 50800 REM ---- f64: one IEEE instruction each (DESIGN 3.6.4: no FMA, no contraction) ------------
 50805 DATA "fadd","-","-",1,0,"fadd d16, d16, d17"
 50810 DATA "fsub","-","-",1,0,"fsub d16, d16, d17"

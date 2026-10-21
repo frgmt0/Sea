@@ -14,36 +14,38 @@ func pick fn 0:3:1 2 i1 i2 1 i
 li i3 0
 li i4 0
 li i5 1
-rcount i6 i4 i1 i5 0 0:5
-loop 1 i7 i4 i6 i5
-li i8 1
-icmp gt i9 i7 i8
-if 2 i9
-icmp lt i9 i7 i2
-endif 2
-if 3 i9
-li i10 1
-iaddc i3 i3 i10 0:7
+rcount i6 i7 i4 i1 i5 0 0:5
+if 1 i7
+loop 2 i8 i4 i6 i5
+li i9 1
+icmp gt i10 i8 i9
+if 3 i10
+icmp lt i10 i8 i2
 endif 3
-li i11 0
-icmp eq i12 i7 i11
-ifz 4 i12
-li i13 3
-icmp gt i12 i3 i13
+if 4 i10
+li i11 1
+iaddc i3 i3 i11 0:7
 endif 4
-if 5 i12
-li i14 2
-imulc i15 i3 i14 0:10
-li i16 4
-icmp gt i17 i3 i16
-if 6 i17
-li i18 1
-else 6
-li i18 0
-endif 6
-iaddc i3 i15 i18 0:10
+li i12 0
+icmp eq i13 i8 i12
+ifz 5 i13
+li i14 3
+icmp gt i13 i3 i14
 endif 5
-endloop 1
+if 6 i13
+li i15 2
+imulc i16 i3 i15 0:10
+li i17 4
+icmp gt i18 i3 i17
+if 7 i18
+li i19 1
+else 7
+li i19 0
+endif 7
+iaddc i3 i16 i19 0:10
+endif 6
+endloop 2
+endif 1
 ret 1 i3
 endfunc
 #end

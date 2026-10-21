@@ -207,7 +207,7 @@ rec L 34 icmp 0 cc:cc d:ri a:ri b:ri
 rec L 35 isel 0 d:ri c:ri a:ri b:ri
 rec L 36 fsel 0 d:rf c:ri a:rf b:rf
 rec L 37 psel 0 d:rp c:ri a:rp b:rp
-rec L 38 rcount 0 d:ri lo:ri hi:ri st:ri incl:u site:site
+rec L 38 rcount 0 d:ri e:ri lo:ri hi:ri st:ri incl:u site:site
 ; floating point
 rec L 39 fadd 0 d:rf a:rf b:rf
 rec L 40 fsub 0 d:rf a:rf b:rf
@@ -286,7 +286,7 @@ rec LF 108 mor 0 d:rm a:rm b:rm
 rec LF 109 mnot 0 d:rm a:rm
 rec LF 110 vfeat 0 d:ri f:feat
 ; structured control
-rec L 111 loop 0 b:blk ind:ri start:ri count:ri step:ri
+rec L 111 loop 0 b:blk ind:ri start:ri last:ri step:ri
 rec L 112 endloop 0 b:blk
 rec L 113 do 0 b:blk
 rec L 114 enddo 0 b:blk

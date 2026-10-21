@@ -87,6 +87,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `op_fold` | hir1 hir | §3.5.7 step 2, §2.8 folding checks |
 | `op_shortcircuit` | hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
 | `stmt_loops` | hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
+| `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
 | `fn_reach` | hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call

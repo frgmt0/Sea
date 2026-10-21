@@ -53,27 +53,31 @@ func g fn 0:4:1 1 p1 1 i
 li i2 0
 li i3 2
 li i4 1
-rcount i5 i2 i3 i4 0 0:5
-loop 1 i6 i2 i5 i4
-ldi i7 p1 - 0 0
-li i8 5
-iaddc i9 i7 i8 0:6
-sti i9 p1 - 0 0
-endloop 1
-ldi i10 p1 - 0 0
-li i11 2
-imulc i12 i10 i11 0:8
-ret 1 i12
+rcount i5 i6 i2 i3 i4 0 0:5
+if 1 i6
+loop 2 i7 i2 i5 i4
+ldi i8 p1 - 0 0
+li i9 5
+iaddc i10 i8 i9 0:6
+sti i10 p1 - 0 0
+endloop 2
+endif 1
+ldi i11 p1 - 0 0
+li i12 2
+imulc i13 i11 i12 0:8
+ret 1 i13
 endfunc
 func f fn 0:10:1 2 i1 i2 1 i
 mov i3 i2
 li i4 0
 li i5 3
 li i6 1
-rcount i7 i4 i5 i6 0 0:12
-loop 1 i8 i4 i7 i6
+rcount i7 i8 i4 i5 i6 0 0:12
+if 1 i8
+loop 2 i9 i4 i7 i6
 iaddc i3 i3 i1 0:13
-endloop 1
+endloop 2
+endif 1
 ret 1 i3
 endfunc
 fmt d1 8

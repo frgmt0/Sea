@@ -1,5 +1,5 @@
 // stmt_loops -- while as do / ifz / exit; a range loop with ..= and a negative step through
-// rcount and loop; continue is next and break is exit of the innermost loop (DESIGN.md 3.6.6
+// rcount, if on its flag and loop; continue/break are next/exit of the loop (DESIGN.md 3.6.6
 // rule 4); the step -2 reaches LIR folded (3.5.7)
 fn walk(n: i64) -> i64 {
     var k = 0

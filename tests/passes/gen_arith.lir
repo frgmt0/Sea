@@ -4,7 +4,7 @@
 func .main main 0:1:1 0 0
 slot s1 64 8
 slot s2 40 8
-slot s3 88 8
+slot s3 192 8
 slot s4 32 8
 slot s5 208 8
 slot s6 56 8
@@ -52,159 +52,177 @@ rcall sea_printf 0:9 0 2 p26 p25
 li i27 0
 li i28 10
 li i29 3
-rcount i30 i27 i28 i29 0 0:10
-rcount i31 i27 i28 i29 1 0:10
-li i32 -3
-rcount i33 i28 i27 i32 0 0:10
-rcount i34 i28 i27 i32 1 0:10
-li i35 1
-rcount i36 i28 i35 i32 1 0:10
-rcount i37 i28 i35 i32 0 0:10
-li i38 5
-rcount i39 i38 i38 i35 0 0:10
-rcount i40 i38 i38 i35 1 0:10
-li i41 6
-rcount i42 i41 i38 i35 0 0:10
-li i43 #7FFFFFFFFFFFFFFF
-li i44 #4000000000000000
-rcount i45 i15 i43 i44 0 0:10
-rcount i46 i27 i15 i15 1 0:10
-sa p47 s3
-sti i30 p47 - 0 0
-sti i31 p47 - 0 8
-sti i33 p47 - 0 16
-sti i34 p47 - 0 24
-sti i36 p47 - 0 32
-sti i37 p47 - 0 40
-sti i39 p47 - 0 48
-sti i40 p47 - 0 56
-sti i42 p47 - 0 64
-sti i45 p47 - 0 72
-sti i46 p47 - 0 80
-la p48 d3
-rcall sea_printf 0:11 0 2 p48 p47
-li i49 0
-li i50 1
-rcount i51 i27 i28 i50 0 0:12
-loop 1 i52 i27 i51 i50
-li i53 3
-icmp eq i54 i52 i53
-if 2 i54
-next 1
-endif 2
-li i55 7
-icmp eq i56 i52 i55
-if 3 i56
-exit 1
+rcount i30 i31 i27 i28 i29 0 0:10
+rcount i32 i33 i27 i28 i29 1 0:10
+li i34 -3
+rcount i35 i36 i28 i27 i34 0 0:10
+rcount i37 i38 i28 i27 i34 1 0:10
+li i39 1
+rcount i40 i41 i28 i39 i34 1 0:10
+rcount i42 i43 i28 i39 i34 0 0:10
+li i44 5
+rcount i45 i46 i44 i44 i39 0 0:10
+rcount i47 i48 i44 i44 i39 1 0:10
+li i49 6
+rcount i50 i51 i49 i44 i39 0 0:10
+li i52 #7FFFFFFFFFFFFFFF
+li i53 #4000000000000000
+rcount i54 i55 i15 i52 i53 0 0:10
+rcount i56 i57 i27 i15 i15 1 0:10
+rcount i58 i59 i15 i52 i39 1 0:10
+sa p60 s3
+sti i30 p60 - 0 0
+sti i32 p60 - 0 8
+sti i35 p60 - 0 16
+sti i37 p60 - 0 24
+sti i40 p60 - 0 32
+sti i42 p60 - 0 40
+sti i45 p60 - 0 48
+sti i47 p60 - 0 56
+sti i50 p60 - 0 64
+sti i54 p60 - 0 72
+sti i56 p60 - 0 80
+sti i58 p60 - 0 88
+sti i31 p60 - 0 96
+sti i33 p60 - 0 104
+sti i36 p60 - 0 112
+sti i38 p60 - 0 120
+sti i41 p60 - 0 128
+sti i43 p60 - 0 136
+sti i46 p60 - 0 144
+sti i48 p60 - 0 152
+sti i51 p60 - 0 160
+sti i55 p60 - 0 168
+sti i57 p60 - 0 176
+sti i59 p60 - 0 184
+la p61 d3
+rcall sea_printf 0:11 0 2 p61 p60
+li i62 0
+li i63 1
+rcount i64 i65 i27 i28 i63 0 0:12
+if 1 i65
+loop 2 i66 i27 i64 i63
+li i67 3
+icmp eq i68 i66 i67
+if 3 i68
+next 2
 endif 3
-iaddc i49 i49 i52 0:13
-endloop 1
-li i57 0
-do 4
-iaddc i57 i57 i29 0:14
-icmp ge i58 i57 i28
-if 5 i58
-exit 4
-endif 5
-enddo 4
-li i59 0
-loop 6 i60 i28 i36 i32
-iaddc i59 i59 i60 0:15
-endloop 6
-li i61 0
-ifz 7 i61
-li i62 100
-else 7
-li i62 200
+li i69 7
+icmp eq i70 i66 i69
+if 4 i70
+exit 2
+endif 4
+iaddc i62 i62 i66 0:13
+endloop 2
+endif 1
+li i71 0
+do 5
+iaddc i71 i71 i29 0:14
+icmp ge i72 i71 i28
+if 6 i72
+exit 5
+endif 6
+enddo 5
+li i73 0
+if 7 i41
+loop 8 i74 i28 i40 i34
+iaddc i73 i73 i74 0:15
+endloop 8
 endif 7
-sa p63 s4
-sti i49 p63 - 0 0
-sti i57 p63 - 0 8
-sti i59 p63 - 0 16
-sti i62 p63 - 0 24
-la p64 d4
-rcall sea_printf 0:16 0 2 p64 p63
-lf f65 #7FF8000000000000
-lf f66 #3FF0000000000000
-lf f67 #4000000000000000
-fcmp eq i68 f65 f66
-fcmp ne i69 f65 f66
-fcmp lt i70 f65 f66
-fcmp le i71 f65 f66
-fcmp gt i72 f65 f66
-fcmp ge i73 f65 f66
-fcmp eq i74 f66 f67
-fcmp ne i75 f66 f67
-fcmp lt i76 f66 f67
-fcmp le i77 f66 f67
-fcmp gt i78 f66 f67
-fcmp ge i79 f66 f67
-fcmp eq i80 f67 f67
-fcmp ne i81 f67 f67
-fcmp lt i82 f67 f67
-fcmp le i83 f67 f67
-fcmp gt i84 f67 f67
-fcmp ge i85 f67 f67
-icmp eq i86 i16 i35
-icmp ne i87 i16 i35
-icmp lt i88 i16 i35
-icmp le i89 i16 i35
-icmp gt i90 i16 i35
-icmp ge i91 i16 i35
-bnot i92 i27
-bnot i93 i22
-sa p94 s5
-sti i68 p94 - 0 0
-sti i69 p94 - 0 8
-sti i70 p94 - 0 16
-sti i71 p94 - 0 24
-sti i72 p94 - 0 32
-sti i73 p94 - 0 40
-sti i74 p94 - 0 48
-sti i75 p94 - 0 56
-sti i76 p94 - 0 64
-sti i77 p94 - 0 72
-sti i78 p94 - 0 80
-sti i79 p94 - 0 88
-sti i80 p94 - 0 96
-sti i81 p94 - 0 104
-sti i82 p94 - 0 112
-sti i83 p94 - 0 120
-sti i84 p94 - 0 128
-sti i85 p94 - 0 136
-sti i86 p94 - 0 144
-sti i87 p94 - 0 152
-sti i88 p94 - 0 160
-sti i89 p94 - 0 168
-sti i90 p94 - 0 176
-sti i91 p94 - 0 184
-sti i92 p94 - 0 192
-sti i93 p94 - 0 200
-la p95 d5
-rcall sea_printf 0:17 0 2 p95 p94
-lf f96 #C3E0000000000000
-ftoi i97 f96 0:18
-lf f98 #8000000000000000
-ftoi i99 f98 0:18
-lf f100 #4008000000000000
-ftoi i101 f100 0:18
-lf f102 #43DFFFFFFFFFFFFF
-ftoi i103 f102 0:18
-li i104 #0020000000000001
-itof f105 i104
-lf f106 #0000000000000000
-fneg f107 f106
-fdiv f108 f66 f106
-sa p109 s6
-sti i97 p109 - 0 0
-sti i99 p109 - 0 8
-sti i101 p109 - 0 16
-sti i103 p109 - 0 24
-stf f105 p109 - 0 32
-stf f107 p109 - 0 40
-stf f108 p109 - 0 48
-la p110 d6
-rcall sea_printf 0:19 0 2 p110 p109
+li i75 0
+ifz 9 i75
+li i76 100
+else 9
+li i76 200
+endif 9
+sa p77 s4
+sti i62 p77 - 0 0
+sti i71 p77 - 0 8
+sti i73 p77 - 0 16
+sti i76 p77 - 0 24
+la p78 d4
+rcall sea_printf 0:16 0 2 p78 p77
+lf f79 #7FF8000000000000
+lf f80 #3FF0000000000000
+lf f81 #4000000000000000
+fcmp eq i82 f79 f80
+fcmp ne i83 f79 f80
+fcmp lt i84 f79 f80
+fcmp le i85 f79 f80
+fcmp gt i86 f79 f80
+fcmp ge i87 f79 f80
+fcmp eq i88 f80 f81
+fcmp ne i89 f80 f81
+fcmp lt i90 f80 f81
+fcmp le i91 f80 f81
+fcmp gt i92 f80 f81
+fcmp ge i93 f80 f81
+fcmp eq i94 f81 f81
+fcmp ne i95 f81 f81
+fcmp lt i96 f81 f81
+fcmp le i97 f81 f81
+fcmp gt i98 f81 f81
+fcmp ge i99 f81 f81
+icmp eq i100 i16 i39
+icmp ne i101 i16 i39
+icmp lt i102 i16 i39
+icmp le i103 i16 i39
+icmp gt i104 i16 i39
+icmp ge i105 i16 i39
+bnot i106 i27
+bnot i107 i22
+sa p108 s5
+sti i82 p108 - 0 0
+sti i83 p108 - 0 8
+sti i84 p108 - 0 16
+sti i85 p108 - 0 24
+sti i86 p108 - 0 32
+sti i87 p108 - 0 40
+sti i88 p108 - 0 48
+sti i89 p108 - 0 56
+sti i90 p108 - 0 64
+sti i91 p108 - 0 72
+sti i92 p108 - 0 80
+sti i93 p108 - 0 88
+sti i94 p108 - 0 96
+sti i95 p108 - 0 104
+sti i96 p108 - 0 112
+sti i97 p108 - 0 120
+sti i98 p108 - 0 128
+sti i99 p108 - 0 136
+sti i100 p108 - 0 144
+sti i101 p108 - 0 152
+sti i102 p108 - 0 160
+sti i103 p108 - 0 168
+sti i104 p108 - 0 176
+sti i105 p108 - 0 184
+sti i106 p108 - 0 192
+sti i107 p108 - 0 200
+la p109 d5
+rcall sea_printf 0:17 0 2 p109 p108
+lf f110 #C3E0000000000000
+ftoi i111 f110 0:18
+lf f112 #8000000000000000
+ftoi i113 f112 0:18
+lf f114 #4008000000000000
+ftoi i115 f114 0:18
+lf f116 #43DFFFFFFFFFFFFF
+ftoi i117 f116 0:18
+li i118 #0020000000000001
+itof f119 i118
+lf f120 #0000000000000000
+fneg f121 f120
+fdiv f122 f80 f120
+sa p123 s6
+sti i111 p123 - 0 0
+sti i113 p123 - 0 8
+sti i115 p123 - 0 16
+sti i117 p123 - 0 24
+stf f119 p123 - 0 32
+stf f121 p123 - 0 40
+stf f122 p123 - 0 48
+la p124 d6
+rcall sea_printf 0:19 0 2 p124 p123
 ret 0
 endfunc
 fmt d1 16
@@ -235,7 +253,33 @@ fconv - - - d i
 ftext %20
 fconv - - - d i
 ftext %0A
-fmt d3 22
+fmt d3 48
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fconv - - - d i
+ftext %20
 fconv - - - d i
 ftext %20
 fconv - - - d i
