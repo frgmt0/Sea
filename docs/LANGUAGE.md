@@ -420,6 +420,8 @@ exponent  := ( "e" | "E" ) [ "+" | "-" ] digit { digit }
 
 * `_` separates digit groups (`1_000_000`) and is ignored; it may not start the literal, end
   it, follow `0x`, or stand next to `.` or the exponent letter (`invalid numeric literal`).
+* Hexadecimal digits may be written in either case (`0xFF`, `0xff`, `0xFf`); the prefix is `0x`
+  only.
 * There is no `1.` and no `.5`: both are `invalid numeric literal` (so `a.b` field access and
   ranges `0..n` are never ambiguous).
 * A literal is unsigned; `-` is an operator. An `int_lit` must be at most 2⁶³ − 1
@@ -517,9 +519,12 @@ every workload result bit-identical to the MATLAB arithmetic (§6.8).
   from `int_lit`s with `+ - *` and unary `-`, takes the type `f64` when it is (a) an operand of
   an arithmetic or comparison operator whose other operand has an `f64` element type,
   (b) assigned, initialised, passed or returned where `f64` (or an `f64` array) is expected,
-  (c) an element of an array literal that has an `f64` element, or (d) an operand of `^`
-  (§6.5); otherwise it is `i64`. The value must be exactly representable in `f64` (`integer
-  constant not exact in f64`). So `let n = 5` is an `i64`, `var Fbs = 0.0` is an `f64`,
+  (c) an element of an array literal that has an `f64` element, (d) an operand of `^` (§6.5),
+  (e) the argument of an `f`, `F`, `e`, `E`, `g` or `G` conversion of `printf` or `format`
+  (§11.1), or (f) an arm of an `if` expression (§6.10) whose other arm has an `f64` type;
+  otherwise it is `i64`. The value must be exactly representable in `f64` (`integer
+  constant not exact in f64`, also in contexts (e) and (f): `printf("%f", 9007199254740993)` is
+  that error). So `let n = 5` is an `i64`, `if c { 0.5 } else { 2 }` is `f64` (the 2 is 2.0), `var Fbs = 0.0` is an `f64`,
   `4 * (Kf * Ma) ^ 2` multiplies by the `f64` 4, and `2 ^ 10` is the `f64` 1024.
 * **A `var` initialised by an untyped constant** takes its type from all its uses in the
   function: if any assignment to it (`=`, `op=`, or as a `ref` argument to an `f64`
@@ -888,9 +893,12 @@ There is no integer power; `i64` results are computed with `*`.
 `%`), for `i64` and `f64`:
 
 * `i64`: `a - b * floor(a / b)` computed exactly; `b == 0` → `integer division by zero`.
-* `f64`: `r = fmod(a, b)` (exact); if `r != 0` and `r` and `b` have different signs then
-  `r = r + b`. Special cases as MATLAB: `b == 0` → `a`; `a` infinite or NaN → NaN; `b = ±Inf`
-  falls out of the rule (`-1 % inf = inf`).
+* `f64`, in this order: if `b == 0` the result is `a` (so `inf % 0` is `inf` and `nan % 0` is
+  NaN); otherwise if `a` is infinite or either operand is NaN the result is NaN; otherwise
+  `r = fmod(a, b)` (exact, with the sign of `a`); if `r != 0` and `r` and `b` have different signs
+  then `r = r + b` (rounded once). A zero result keeps the sign `fmod` gives it, the sign of `a`:
+  `-6.0 % 3.0` is −0.0 and `6.0 % -3.0` is +0.0. `b = ±Inf` falls out of the rule
+  (`-1 % inf = inf`, `1 % inf = 1`). These are MATLAB's `mod` results.
 
 `idiv(a, b)` (`i64`) is `floor(a / b)` exactly, with the same overflow (`idiv(-2⁶³, -1)`) and
 zero-divisor errors. A truncated remainder (MATLAB `rem`) is later library work (§10.13): for
@@ -1031,7 +1039,9 @@ An expression that is not a call, used as a statement, is the compile error
   visible everywhere in the file, before and after their declaration.
 * **`const NAME [: type] = expr`** declares a compile-time constant at top level; `expr` must be
   a constant expression (literals, other constants, operators, the constants `pi inf nan eps`,
-  and `sqrt`). Constants may size fixed arrays (`f64[N]`).
+  and `sqrt`). Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
+  whose expression is an untyped integer constant is `i64` (`const N = 4` is the `i64` 4); with an
+  annotation it has the annotated type (`const G: f64 = 9` is 9.0).
 
 ### 7.3 Assignment
 
@@ -1159,7 +1169,11 @@ destructure them (`let (a, b) = f()`, `(x, y) = f()`), discard the whole call as
 result types exactly, in order (no conversion applies), returns `f`'s results. Otherwise
 `return f(…)` of a multiple-result call is `type mismatch: expected …, found …` (each side written
 as a type or a tuple `(T1, T2, …)`), or `wrong number of results: expected 0, found n` in a
-function without results. A multiple-result call cannot appear inside an expression. MATLAB's "ask for fewer
+function without results. A multiple-result call cannot appear inside an expression (`two() + 1`,
+`f(two())`): that is `multiple-result call used as a value`, reported at the call. Binding it to
+one name (`let y = two()`), or destructuring or assigning it to a tuple of another number of
+names, is `wrong number of results: expected n, found m`, with n the number of `f`'s results and
+m the number of names. MATLAB's "ask for fewer
 outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 
 ### 8.5 Elemental functions (shape polymorphism)
@@ -1233,6 +1247,9 @@ A run-time error stops the program:
    1-based line of the expression or statement that failed);
 3. open output files are flushed and closed;
 4. the process exits with status **1**.
+
+If standard output cannot be written in step 1, the line of step 2 still reports the original
+error (not `cannot write`), and the status is 1.
 
 A failed write of standard output is the run-time error `cannot write '<stdout>': %s` (the path is
 written `<stdout>`, the reason from the errno table): at the line of the output call whose write
@@ -1499,12 +1516,14 @@ the number of conversions (`format "…" expects 3 arguments, found 2`); loops p
 
 | conv | Argument types | Output |
 |------|----------------|--------|
-| `d`, `i` | `i64`; `f64` | `i64`: decimal. `f64` (MATLAB rule): an integral finite value prints as the integer it is (exactly, any magnitude); NaN, Inf, −Inf print as `NaN`, `Inf`, `-Inf` padded with spaces to the width (non-finite values below); a non-integral value prints as `%e` with the same flags and width and precision 6 (MATLAB prints `1.500000e+00` for `sprintf('%d', 1.5)`; W1 prints `L10h`, which can be NaN, with `%8d`) |
+| `d`, `i` | `i64`; `f64`; `bool` | `i64`: decimal. `bool`: `0` or `1`. `f64` (MATLAB rule): an integral finite value prints as the integer it is (exactly, any magnitude; −0.0 is the integer 0, so it prints `0`, or `+0` with the `+` flag), with C's integer rules for the flags and the precision (`%.3d` of 7.0 is `007`, `%.0d` of 0.0 prints no digits); NaN, Inf, −Inf print as `NaN`, `Inf`, `-Inf` padded with spaces to the width (non-finite values below); a non-integral value prints as `%e` with the same flags and width and precision 6, whatever precision was given (MATLAB prints `1.500000e+00` for `sprintf('%d', 1.5)`; W1 prints `L10h`, which can be NaN, with `%8d`) |
 | `f`, `F`, `e`, `E`, `g`, `G` | `f64`; `i64` (converted) | C99 semantics for finite values; NaN/Inf as for `d` (MATLAB spelling, not C's `nan`/`inf`) |
 | `s` | `str` | the bytes; precision truncates to that many bytes; width pads with spaces (counts bytes) |
 | `%%` | — | `%` |
 
-Any other conversion, flag combination C leaves undefined, or argument type is a compile error.
+Any other conversion, flag combination C leaves undefined (such as `0` with `%s`, or `#` with
+`%d`, `%i` or `%s`), or argument type is a compile error. Width and precision are at most
+999 999 999.
 
 **Non-finite values** (every numeric conversion, MATLAB spelling): −∞ prints `-Inf`; +∞ prints
 `Inf`, or `+Inf` with the `+` flag, or ` Inf` with the space flag (as C signs `inf`); NaN prints

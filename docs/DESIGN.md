@@ -220,8 +220,15 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
 
 **Steps of `sea build`:**
 
-1. Locate the installation directory (the script's own directory, resolved) holding the pass
-   executables, `std.sea`, `errors.inc`, and per target `libsea.a` and `libbaysickrt.a`.
+1. Locate the installation directory (the script's own directory with symbolic links resolved,
+   or `$SEA_HOME`, which the test runners set) holding the pass executables, `std.sea`,
+   `errors.inc`, `limits.inc`, `libsea.a` and `libbaysickrt.a` (§2.10; run from the source tree,
+   the driver takes `errors.inc` and `limits.inc` from `../include` when the directory has no
+   copy). A file the build needs that is missing (`std.sea` unless `--no-prelude`, a pass
+   executable, `errors.inc`, `limits.inc`, and for a linked program `libsea.a` and
+   `libbaysickrt.a`) is an incomplete installation: driver status 4 (`SEA_EXIT_INTERNAL`). The
+   driver reads `SEA_LIM_LINE_BYTES` and `SEA_FILE_VERSION` from `limits.inc` and the exit
+   statuses from `errors.inc`.
 2. Check the source lines (`LC_ALL=C awk`) of the program's file: one CR at the end of a line
    (before its LF, or at the very end of the file) is removed first, as LANGUAGE.md §3.1 says,
    and a line that then has more than `SEA_LIM_LINE_BYTES` (4096) bytes is reported as the
@@ -283,6 +290,24 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    the tools' environment). `x86_64-linux` is a cross target: `sea build` writes the `.s`, and
    `sea/tests/cross*.sh` assemble and link it on the Linux host (§6.6).
 9. Remove the temporary directory unless `--keep-temps`.
+
+**Driver output and messages.** `--emit X` without `-o` writes the dump to standard output; `-S`
+without `-o` writes `<stem>.s` and a linked program goes to `<stem>`, where `<stem>` is the
+program's path without its `.sea` suffix (or the path followed by `.out` if it has none); `-S` and
+`--emit` cannot be combined. `sea run <file.sea> [--keep-temps] [--no-prelude] [-- arguments…]`
+builds into the temporary directory and runs the program with the arguments. The `#file` record
+of `std.sea` holds its absolute installed path, that of the program the path as given (so
+diagnostics read as the user wrote the path). A pass's standard output is sent to the driver's
+standard error (a pass writes nothing there); its standard error passes through. `sea
+--version` prints `sea 0.1.0`. The driver's own messages, each `sea: ` + text + LF on standard
+error: the usage text (`usage: sea build <file.sea> …`, after a message naming the bad option,
+status 2); `unknown target '%s'`, `unknown emit kind '%s'`, `-S and --emit cannot be combined`
+(2); `cannot read '%s': <reason>` for the program file (2); `cannot create temporary directory`,
+`cannot write in '%s'`, `cannot write '%s'` (2); `cannot find '%s'` and `cannot find runtime
+library '%s'` (4); `internal error: pass executable '%s' not found (run make)`, `internal error:
+%s failed with exit status %d`, `internal error: %s wrote no complete %s (no final #end)`,
+`internal error: %s wrote no %s` (4); `cannot determine macOS SDK path`, `cannot run '%s': not
+found`, `'%s' failed with exit status %d` (3); with `--keep-temps`, `temporary files kept in %s`.
 
 **Driver exit statuses** (the meanings of Baysick DESIGN.md §4.2): 0 success; 1 Sea compile
 error; 2 usage or file error; 3 toolchain error (`as`/`ld`/`xcrun` missing or failing); 4
@@ -408,7 +433,7 @@ files by absolute path for the same reason).
 | `SEA_LIM_TYPES` | 19999 | types (`… types`) | §2.7 |
 | `SEA_LIM_CONSTS` | 19999 | numeric constants (`… constants`) | §2.7 |
 | `SEA_LIM_STRINGS` | 199999 | distinct strings (`… strings`) | §2.7 |
-| `SEA_LIM_NESTING` | 64 | expression nesting depth (`… nesting`) | §2.7 |
+| `SEA_LIM_NESTING` | 64 | nesting depth of blocks and expressions, §2.7 (`… nesting`) | §2.7 |
 | `SEA_LIM_PARAMS` | 64 | parameters per function (`… parameters`) | §2.7 |
 | `SEA_LIM_FIELDS` | 64 | fields per struct (`… fields`) | §2.7 |
 | `SEA_LIM_RESULTS` | 64 | results per function (`… results`) | §2.7 |
@@ -459,10 +484,10 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `at` | Position reported |
 |------|-------------------|
 | `byte` | the offending byte; for `invalid escape` the `\` that starts the escape |
-| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file) |
+| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
-| `here` | pass 1: the token whose addition exceeds the limit; passes 2a, 2b and 3a: the position of the node being read, created or lowered when the limit is exceeded (for a record without a position, the next node of the same function or constant that has one); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
+| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the node being read, created or lowered when the limit is exceeded (for a record without a position, the next node of the same function or constant that has one); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
 | `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
@@ -471,7 +496,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `effect` | the `param` node of a `ref` parameter, or the `call` that has effects |
 | `type` | the `type` node; for a literal, its `slit` (`unknown struct type`) or `array` (`arrays cannot hold %s`) node |
 | `target` | the assignment target (the position of its text) |
-| `results` | the `return` node, the `call` whose result is used or bound, or the `ptuple`/`tasg` node whose count differs |
+| `results` | the `return` node (also for `return f(…)` of a multiple-result call in a function without results), the `call` bound to a single name (`let y = two()`), or the `ptuple`/`tasg` node whose count differs; the texts read `expected` the number of the call's results (or the function's, at a `return`) and `found` the number of names (or values) |
 | `construct` | the AST node (§3.4) of the first construct, in source order, that the compiler does not implement yet (`not supported yet: %s`, the phase rule below) |
 
 * `args`: one letter per substitution, in text order, or `-` for none: `i` a decimal integer
@@ -501,8 +526,11 @@ to this table. A code is never reused or renumbered; a new message is appended i
 
 **Output.** A compile-time message is written by the pass (or the driver) as LANGUAGE.md §9.1
 says; a `P` message as `<pass>: <text>` + LF on standard error, where `<pass>` is the program's
-name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-time message by
-`_sea_err` as LANGUAGE.md §9.2 says.
+name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`, except `TRUNCATED` and
+`BAD_HEADER`, which are written as their text alone (exactly one line, no prefix); a run-time
+message by `_sea_err` as LANGUAGE.md §9.2 says. One text is copied outside `errors.inc`: the
+text of `BAD_DATA` is needed before a pass has read its `DATA` tables, so `passes/lib/diag.bas`
+holds it as a constant, and `tests/lib_check.sh` checks that it equals the error record.
 
 **The error table.**
 
@@ -613,9 +641,15 @@ name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-t
 
 **The phase rule: `not supported yet`.** While Sea v1 is built phase by phase (§8), a program that
 uses a construct the current compiler does not implement yet stops with the compile error `not
-supported yet: %s` (code 259, `NOT_SUPPORTED`; driver status 1), reported by pass 2a at the first
-such construct in source order (pass 1 parses the whole grammar of LANGUAGE.md Appendix A from
-phase 1 on, so syntax errors are always the real ones). The `%s` is one of the words below. It is
+supported yet: %s` (code 259, `NOT_SUPPORTED`; driver status 1), reported by pass 2a (pass 1
+parses the whole grammar of LANGUAGE.md Appendix A from phase 1 on, so syntax errors are always
+the real ones). It takes part in pass 2a's plain source order with every other pass-2 error: the
+first error in source order is reported, whichever kind it is. Its position is the AST node that
+the table's row names, and of several such nodes the first in source order: for a `str` local
+its declaring `pname` (or `for` node), for a `str` parameter its `param` node, for a `str` result
+the result's `type` node, for a default argument the `param` node, for a named argument the
+`narg` node, for a library function the `call`. The format literal of `printf` is not a
+`strings` construct. The `%s` is one of the words below. It is
 not a rule of the language: LANGUAGE.md describes v1 complete, and a phase's compiler is a
 conforming v1 compiler for the programs it accepts. When v1 is complete (phase 10) no construct is
 reported any more; the message is retired and its code stays reserved, never reused. In phase 1
@@ -630,7 +664,7 @@ reported any more; the message is retired and its code stays reserved, never reu
 | a `str` other than a string literal that is the argument of a `%s` conversion of `printf`: the `str` type, a `str` local, parameter or result, `+`, comparisons or `str(x)` on strings, a string literal anywhere else | `strings` |
 | an `elemental fn` | `elemental functions` |
 | a named argument | `named arguments` |
-| a parameter default | `default arguments` |
+| a parameter default (reported at the `param` node) | `default arguments` |
 | `%` with an `f64` operand (it needs the exact `fmod` of LANGUAGE.md §6.6) | `f64 %` |
 | `^` that is not a `powk` (it needs `pow`, phase 3) | `pow` |
 | a handle type | `handle types` |
@@ -640,7 +674,15 @@ Included in phase 1, so not reported: `const` items, the constants `pi inf nan e
 and `bool` scalars, every scalar operator except those above, `if`/`while`/`for` over ranges,
 `break`/`continue`, functions with scalar parameters and results, `ref` parameters of scalar
 locals, multiple results, and `printf` with `%d %i %f %F %e %E %g %G %s`. Each later phase of §8
-removes the rows it implements from this table, together with its tests.
+removes the rows it implements from this table, together with its tests. Because named
+arguments, struct literals and fixed-size arrays are reported first, the errors 204–208,
+216–222, 224 and 225 cannot occur in phase 1.
+
+**Within one formatting call** (`printf`, `format`, `error`) pass 2a first parses the format
+literal (`format must be a string literal`, `invalid format conversion`), then compares the
+number of arguments with the number of conversions (`format "%s" expects %d arguments, found
+%d`), then checks each argument against its conversion in order (`format "%s" expects %s, found
+%s`); an argument's own errors come before all three, in source order.
 
 Uses of an existing message, so no further text is needed: `&&`/`||` with an array
 operand, a `match` scrutinee that is not `str`, and a `return` value of the wrong type are `type
@@ -721,7 +763,11 @@ records have fixed shapes (they are also valid assembler):
   and a `/* … */` comment;
 * fields are separated by a comma and one space; `code`, `id`, `darwin`, `linux` are decimal
   (with a leading `-` only for −1); inside `"text"`, `\"` stands for `"` and `\\` for `\`, and no
-  other escape occurs; every other line (comments start with `//`) is ignored by the generator.
+  other escape occurs; `code`, `id`, `darwin`, `linux` are canonical decimal numbers of at most 9
+  digits (no leading zeros, no `+`); in an `.equiv` line the comma may be followed by one or more
+  blanks. A line between a `SEA_*_LIST` macro and its `.endm` that is neither a record of the
+  shape above nor a comment (`//`) is an error of the generator; every other line outside those
+  lists is ignored.
 
 **The generated `DATA` lines.** A Baysick string constant cannot contain `"` (Baysick
 LANGUAGE.md §4.3), and texts 19, 20, 210, 211 and 234 do. So every string the generator writes into
@@ -751,6 +797,20 @@ read where the next record's first number would be.
   `rt.inc`: four spaces, `\m`, one space, then `id, NAME, symbol, site, args, results` (§4.8);
 * a **`passes.txt` line** is an `enum`, `head` or `rec` line of §3.9.
 
+**The generator's protocol** (`tools/gendata.bas`). It runs with `include/` as working
+directory and opens the contract files under their fixed names (Baysick `FILES`): 1
+`limits.inc`, 2 `errors.inc`, 3 `rt.inc`, 4 `passes.txt`. Its standard input is the selection:
+one block name per line, each at most once, in the order `errors errno exits consts entries
+records`. It writes the `DATA` lines of the selected blocks to standard output, numbered
+consecutively from 89 000 across the blocks, each table followed by its sentinel. `errors` and
+`errno` are the lists of `errors.inc`, `exits` its `SEA_EXIT_*` constants (NAME = the text after
+`SEA_EXIT_`), `consts` the constants of `limits.inc` and then those of `rt.inc` in one table (NAME
+= the text after `SEA_`; the other constants of `errors.inc` are not emitted), `entries` the
+entry list of `rt.inc`, `records` the lines of `passes.txt`. A malformed record, a line over 255
+bytes, a bad selection or a missing file is reported on standard error as `gendata: <file>:<line>:
+<message> (record <id>)` (or without the parts that do not apply), and the generator stops with
+status 1.
+
 **Generated `DATA` lines** (in addition to those of §2.6.2), one per record, numbers in decimal,
 strings quoted in the `DATA` escaping of §2.6.2:
 
@@ -769,10 +829,19 @@ limit); the generator stops with status 1 and a message naming the record if one
 
 **How a pass is built.** Each pass program `build/gen/<pass>.bas` is the concatenation, in this
 order, of: the pass's own files `passes/<pass>/*.bas` (in name order); the shared modules of
-`passes/lib/` it uses; the generated `DATA` blocks it uses, among `errors`, `errno`, `exits`,
-`consts`, `entries` and `records`, always in this order; and the line `99999 END`. The `Makefile`
-names each pass's modules and blocks, regenerates `build/gen/` on every build and compiles the
-result with `baysick`; nothing in `build/` is committed. The line numbers keep the parts apart:
+`passes/lib/` it uses, in the order `io diag tables limb f64emu fltlit`; the generated `DATA`
+blocks it uses, among `errors`, `errno`, `exits`,
+`consts`, `entries` and `records`, always in this order; and the line `99999 END`. The file
+`passes/<pass>/build.list` names the modules and blocks: lines `lib <module>…` (among `io diag
+tables limb f64emu fltlit`) and `data <block>…`, comment lines starting with `#`; the parts are
+concatenated in the order above whatever the order of the list, and a name outside the two sets
+is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`. The
+build regenerates `build/gen/` every time and compiles each result with `baysick`; nothing in
+`build/` is committed. The modules' interfaces are internal to the compiler (not contract
+files): `passes/lib/API.md` documents the `SUB`s of `io`, `diag` and `tables`, and
+`passes/lib/API-arith.md` those of `limb`, `f64emu` and `fltlit` (each module's prerequisites
+included); the `.bas` files carry one summary line per `SUB`. The line numbers keep the parts
+apart:
 
 | Part | Line numbers |
 |------|--------------|
@@ -821,7 +890,15 @@ tables; every other pass uses a subset of the same layout:
 Six tables, passed to every `SUB` (6 of 16 parameters). Hence the **capacity limits**
 (compile errors `program too large: %s`): at most 99 999 AST nodes, 49 999 symbols, 19 999
 types, 19 999 numeric constants and 199 999 distinct strings per compilation (prelude included);
-expression nesting ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
+nesting depth ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
+Pass 1 enforces the nesting, parameter, result and field limits as it parses (and the node and
+string limits as it builds the tree); pass 2a the symbol, type and constant limits; passes 3a,
+3b and 4 the LIR limits. **Nesting depth** counts the constructs that make pass 1 recurse: a
+block `{ … }` (of any statement or function), a parenthesized expression, the argument list of a
+call, an index list, an array literal, a struct or record literal, an `if` expression, a unary
+operator and the right operand of `^`; the top level is depth 0, and each such construct
+contained in another adds 1. A construct at depth 65 is `program too large: nesting`, reported
+at its opening token (`{`, `(`, `[`, `if`, the unary operator, or the `^`).
 (A node's position needs its file, §3.1: the sixth field of `N` holds the file index and the line
 as F·10⁹ + L, exact in a Baysick number.)
 
@@ -918,9 +995,17 @@ the result could run (Baysick LANGUAGE.md §5.4); `SQR` takes `sqrt(|x|)`. There
   * the constants `inf` and `nan`, and any operation whose operand is one of them, are never
     folded; neither are transcendental functions, `pow`, or `%`.
 
-  Underflow is harmless (Baysick produces subnormals silently, as IEEE does). Folding uses
-  Baysick's own IEEE operations, which are exactly the run-time operations, and folds only
-  subtrees that are constant on their own (`2 * pi * rpm / 60` folds `2 * pi` only, LANGUAGE.md §6.8).
+  These checks only decide **whether** to fold (the exponent of x is the e with 2^e ≤ |x| <
+  2^(e+1); a zero operand passes every check). The folded value itself is computed with the exact
+  IEEE emulation of `passes/lib/f64emu.bas` (the operations `FEADD`, `FESUB`, `FEMUL`, `FEDIV`,
+  `FESQR` on bit patterns), never with Baysick's doubles, which cannot hold −0 (and `SQR` of −0
+  gives +0): so `-0.0 * 1.0` folds to −0.0 and `sqrt(-0.0)` to −0.0, as at run time. Underflow is
+  harmless (the emulation rounds to subnormals as IEEE does). Folding folds only subtrees that
+  are constant on their own (`2 * pi * rpm / 60` folds `2 * pi` only, LANGUAGE.md §6.8).
+* **NaN in the emulation.** The emulation's NaN result is always the canonical
+  `#7FF8000000000000`, while hardware propagates an operand's payload. No folded value is ever a
+  NaN (the checks above), and a NaN met while evaluating a constant exponent only decides that it
+  is not integral (§3.5.5), so the difference is never visible.
 * **`i64` arithmetic** beyond 2⁵³ (literals, overflow checks of folded constants, the magic
   numbers for division by a constant) uses multi-limb integer routines in the pass that needs it.
 * **Constant exponents and extents** (pass 2a, §3.5.5) are evaluated, not folded: pass 2a computes
@@ -942,15 +1027,17 @@ is also the point of the Baysick project.
 | `driver/sea` | the driver (§2.2), a POSIX `sh` script |
 | `passes/lib/io.bas`, `diag.bas`, `tables.bas` | shared pass modules: the header protocol and record reading and writing (§2.2, §3.1–§3.3), diagnostics (§2.6.2), the tables of §2.7 |
 | `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | multi-limb integers, the exact IEEE binary64 emulation and the float-literal conversion (§2.8) |
+| `passes/lib/API.md`, `API-arith.md` | the interfaces of the shared modules (§2.6.3): `io`, `diag`, `tables`; `limb`, `f64emu`, `fltlit` |
 | `passes/seaparse/`, `seacheck/`, `seaexpand/`, `sealower/`, `seaopt/`, `seagen_a64/` (later `seagen_x64/`) | each pass's own Baysick files (§2.1), built as §2.6.3 says |
 | `tools/gendata.bas` | the `DATA` generator (§2.6.3) |
-| `tools/seaval.bas` | a validator of intermediate files against `passes.txt` (§3), used by the tests |
+| `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
+| `passes/<pass>/build.list` | the modules and `DATA` blocks of each pass (§2.6.3) |
 | `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
 | `std/std.sea` | the prelude (§2.5) |
 | `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4); in phase 1 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s` |
 | `include/` | the contract files (§2.6) |
 | `tests/` | the tests (§6.2) |
-| `build/` | the build output and installation directory (pass executables, `sea`, `std.sea`, `errors.inc`, `libsea.a`, the generated `build/gen/`); never committed |
+| `build/` | the build output and installation directory: the pass executables, `sea`, `std.sea`, `errors.inc`, `limits.inc`, `libsea.a` and `libbaysickrt.a` (one of each, for the build's target), and the generated `build/gen/`; never committed |
 
 `make` builds `build/`; `make test` runs the tests of §6.2; `make test-rt`, `make test-stage`
 and `make check-data` run single groups of them (§6.2); `make lines` reports each built pass's
@@ -1070,7 +1157,8 @@ earliest-written first. A reader therefore needs one stack: for each node record
 many entries, builds the node with them as children in order, and pushes the node. Records never
 refer to other nodes by number; the structure is given by the order alone. The header records
 and the declaration records of §3.5 (`t…`, `fd`, `inst`, `fn`, `par`, `loc`) are not nodes and
-do not touch the stack. The records that end a section (`prog`, `cn`, `end`) pop their nodes and
+do not touch the stack; this list, not `passes.txt`, says which records are not nodes, and tools
+take it from here. The records that end a section (`prog`, `cn`, `end`) pop their nodes and
 push nothing, and the stack must then be empty; anything else is an internal error (status 11).
 
 **Positions.** Every node of `sea.ast` and `sea.hir*` carries a `pos`: the position of the first
@@ -1404,7 +1492,8 @@ position of the `name` or `call` node they come from (for a call, the callee's f
 `proj` and `view` that of the `dot`, `rarg` that of the `ref`, `dol` that of the `dollar`, `slit`
 that of the `slit` or `rlit`, `forr`/`fore` that of the `for`, `bind`, `tbind`, `asg` and `tasg`
 that of the `let`, `var`, `asg` or `tasg` statement, `eval` that of the `cstmt`, `ret` and `tret`
-that of the `return`, `cs` patterns those of the `str` patterns. Nodes that pass 2a adds:
+that of the `return`, `cs` patterns those of the `str` patterns, and a `lib f64`, `lib i64` or
+`lib str` made from a `conv` node that of the `conv` (its type keyword). Nodes that pass 2a adds:
 
 * `cvt`, `dyn`, `fix`: the position of the operand they convert;
 * `fmt`, and each of its `ftext` and `fconv` pieces: the position of the format string literal
@@ -1413,6 +1502,10 @@ that of the `return`, `cs` patterns those of the `str` patterns. Nodes that pass
   `ci` −2⁶³ (`#8000000000000000`), or `cf` −2⁶³ (`#C3E0000000000000`) where the untyped constant
   is `f64` (LANGUAGE.md §4.2);
 * a copied default argument: the default expression's own positions (§3.5.4);
+* untyped integer constants keep their own shape: a `/` whose operands are untyped constants
+  writes each as a `ci` under a `cvt` (they are `i64` by LANGUAGE.md §4.2, and `/` converts both),
+  and a unary minus of an untyped constant stays `un neg` of the `ci` (or of the `cf` in an `f64`
+  context), except the 2⁶³ case below; pass 2b folds them (§3.5.7);
 * `powk`: the position of the `bin pow` it replaces; the exponent's nodes are not written;
 * `seq`: the position of the `call`, `lib` or `slit` it wraps; each of its `bind` nodes, the
   `loc` record of its `.t` local and the `lv` written in the expression's place: the position of
@@ -1869,10 +1962,16 @@ rule (c) covers, no elemental function).
    stored into a local L (`bind`, `tbind`, `asg` to `lv L`), the instruction computing the root
    of the value writes L's register directly; a root that is `lv M` becomes `mov L M`. `asg op`
    with op ≠ `set` to `lv L` is the instruction for `L op value` with L's register as
-   destination and first operand.
+   destination and first operand. A root that is an `ifx`, `and` or `or` is the exception: it is
+   computed into its new register R (rule 3) and then copied with `mov L R`, so that L still
+   holds its old value while the operands are evaluated. `tbind` and `tasg` give the call the
+   registers of their target locals as result registers, and a new register for each `-` or
+   `skip` (`_`).
 3. `a && b` and `a || b`: a new register R; a with destination R; then `if B R` (for `&&`) or
    `ifz B R` (for `||`), b with destination R, `endif B`. `ifx c a b`: c, then `if B c`, a with a
-   new destination R, `else B`, b with destination R, `endif B`.
+   new destination R, `else B`, b with destination R, `endif B`. "With destination R" follows
+   rule 2: an operand or arm whose root is a constant is its `li`/`lf` into R directly, one that is
+   `lv M` is `mov R M`, any other root's instruction writes R.
 4. `if c then [else]`: c, `if B c`, then, [`else B`, else], `endif B`. `while c body`: `do B`,
    c, `ifz B2 c`, `exit B`, `endif B2`, body, `enddo B`. `forr L (rng lo hi [st])`: lo, hi, then
    st or (if absent) `li` 1, then `rcount C lo hi st incl site` (the `for` line), `loop B L lo C
@@ -1907,7 +2006,9 @@ rule (c) covers, no elemental function).
     unchanged (no slot, no store, no reload). In the callee a `ref` parameter's register is a `p`
     (§3.6.3): a use of it is `ldi`/`ldf` into a new register from `P - 0 0`, and a store into it
     (`asg`, rule 2) computes the value into a new register and writes it with `sti`/`stf V P - 0
-    0` (for `asg op`, the load, the operation, then the store).
+    0`. For `asg op` the parameter's current value is loaded first (it is the left operand,
+    LANGUAGE.md §6.8 rule 5), then the value is computed, then the operation into a new register,
+    then the store.
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8 and 12), and their `slot`
 records come at the start of the function in that order (§3.6.3).
@@ -2136,6 +2237,14 @@ changes speed, never output, except for class-R results.
 | sort | radix sort of `f64`/`i64`/`str` keys with stable permutation |
 | linear algebra | §4.3 |
 
+**Internal runtime symbols (not contract).** Inside `libsea.a` the runtime files share helper
+symbols with the `_sea_` prefix that compiled code never calls: in the phase-1 arm64 runtime
+`_sea_out_write`, `_sea_out_repeat`, `_sea_out_bytes`, `_sea_out_flush` and `_sea_out_fail` (the
+standard-output buffer), `_sea_write_all` (a complete `write`), `_sea_fmt_g` (`%g` text for
+`_sea_err`'s `f` arguments) and `_sea_stdout_name` (the static string `<stdout>`). They are
+documented in the runtime files' headers, may change without a contract change, and never
+appear in `rt.inc` or in `sea.s`.
+
 ### 4.6 Stack and process
 
 `main` runs the program on a 64 MiB stack mapped with a guard page (Baysick's program-stack
@@ -2148,11 +2257,14 @@ line: the `F:L` of its LIR `func` record's `pos` (§3.6.3), which pass 4 adds to
 (§4.8, §4.9). So `stack overflow` reports `<file>:<line>` of the `fn` whose call did not fit
 (LANGUAGE.md §8.6, §9.2). The margin leaves room for unchecked leaf frames and for `_sea_err`
 itself. The guard page stays as a safety net: an alternate signal stack and a `SIGSEGV`/`SIGBUS`
-handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`). Any other
-signal keeps its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
+handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`); a
+`SIGSEGV`/`SIGBUS` at any other address, and any other signal, keeps its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
 (status 1): a failed write of standard output as `cannot write '<stdout>': <reason>`, at the site
 of the output call whose buffer flush failed, or with no site (`SEA_SITE_NONE`, §4.8) when the
-final flush after `_sea_main` returns fails (LANGUAGE.md §9.2).
+final flush after `_sea_main` returns fails (LANGUAGE.md §9.2). A write that fails with `EAGAIN`
+(standard output set non-blocking by the caller) is not a failure: the runtime waits with
+`poll(POLLOUT)` and retries. While `_sea_err` reports a run-time error, a failure of the flush of
+step 1 of LANGUAGE.md §9.2 is ignored: the original error's line is written and the status is 1.
 
 ### 4.7 Two targets, one behaviour
 
@@ -2183,9 +2295,9 @@ arguments and failure codes.
 |--------|------------|----------|
 | `main` | runtime | process entry (§4.5): stack (§4.6), kernel selection (§4.4), stdout buffer, then `_sea_main`; when it returns, flushes and exits with `SEA_EXIT_RUN_OK`; if that final flush fails, it calls `_sea_err` with `SEA_E_CANNOT_WRITE`, site `SEA_SITE_NONE`, and the slots `<stdout>` (a static string) and the errno (LANGUAGE.md §9.2, §9.4) |
 | `_sea_main` | program | the LIR function `.main`: no parameters, no result |
-| `_sea_err` | runtime | noreturn run-time error (LANGUAGE.md §9.2): arm64 `x0` / x86_64 `%rdi` = the code (`SEA_E_*`, 1 … `SEA_E_RT_END` − 1), `x1` / `%rsi` = the site index into `_sea_sites`, or `SEA_SITE_NONE` for an error with no location (the line is then `error: <message>`, LANGUAGE.md §9.2), `x2` / `%rdx` = the address of the argument slots that the code's `args` letters describe (§2.6.2), unused when it has none |
+| `_sea_err` | runtime | noreturn run-time error (LANGUAGE.md §9.2): arm64 `x0` / x86_64 `%rdi` = the code (`SEA_E_*`, 1 … `SEA_E_RT_END` − 1), `x1` / `%rsi` = the site index into `_sea_sites`, or `SEA_SITE_NONE` for an error with no location (the line is then `error: <message>`, LANGUAGE.md §9.2), `x2` / `%rdx` = the address of the argument slots that the code's `args` letters describe (§2.6.2), unused when it has none; a code outside 1 … `SEA_E_RT_END` − 1 (a compiler bug) prints nothing and exits with status 1 |
 | `_sea_sites` | program | the error-site table (below) |
-| `_sea_variant` | runtime | u64: the `SEA_VAR_*` id of the selected kernel variant, set before `_sea_main`; LIR `vfeat avx2` is `_sea_variant == SEA_VAR_AVX2` |
+| `_sea_variant` | runtime | u64: the `SEA_VAR_*` id of the selected kernel variant, set before `_sea_main`; LIR `vfeat avx2` is `_sea_variant == SEA_VAR_AVX2`; on `arm64-macos` always `SEA_VAR_NEON` (Baysick's `baseline` variant has no Sea id: Sea's own arm64 code is NEON only) |
 | `_sea_stack_limit` | runtime | u64: the lowest address sp may reach, the top of the guard page plus `SEA_STACK_MARGIN`, set before `_sea_main`; read by the prologue check of §4.6 |
 
 **Runtime entry points** (`SEA_ENTRY_LIST` in `rt.inc`; LIR `rcall` records name them by their
@@ -2196,7 +2308,7 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
-| 1 | `PRINTF` | `sea_printf` | `S` | `pp` | `-` | `_sea_printf(fmt, slots, site)`: arm64 `x0` / x86_64 `%rdi` = the address of a pre-parsed format (`SEA_FMT_*`, below), `x1` / `%rsi` = the address of its argument slots (one `SEA_SLOT_SIZE` slot per conversion, in order: an `i64` or `bool` value, the bits of an `f64`, or a string object pointer, by the conversion's `SEA_CLS_*`), `x2` / `%rdx` = the site index; formats as LANGUAGE.md §11.1 says into the standard-output buffer; a failed write of the buffer is `_sea_err(SEA_E_CANNOT_WRITE, site, slots "<stdout>", errno)` (§4.6); no result |
+| 1 | `PRINTF` | `sea_printf` | `S` | `pp` | `-` | `_sea_printf(fmt, slots, site)`: arm64 `x0` / x86_64 `%rdi` = the address of a pre-parsed format (`SEA_FMT_*`, below), `x1` / `%rsi` = the address of its argument slots (one `SEA_SLOT_SIZE` slot per conversion, in order: an `i64` or `bool` value, the bits of an `f64`, or a string object pointer, by the conversion's `SEA_CLS_*`), `x2` / `%rdx` = the site index; formats as LANGUAGE.md §11.1 says into the standard-output buffer (an `i` slot of an `f`/`F`/`e`/`E`/`g`/`G` conversion is converted to `f64` with round-to-nearest-even: pass 2a writes no `cvt` for a typed `i64` argument of those conversions, so its `fconv` has class `i`; the runtime trusts the compiler's checks of LANGUAGE.md §11.1 and does not re-check flags or classes); a failed write of the buffer is `_sea_err(SEA_E_CANNOT_WRITE, site, slots "<stdout>", errno)` (§4.6); no result |
 | 2 | `NOW` | `sea_now` | `-` | `-` | `f` | `_sea_now()`: the monotonic clock (`clock_gettime(CLOCK_MONOTONIC)`) in seconds as an `f64` in `d0` / `%xmm0` (LANGUAGE.md §13); cannot fail |
 
 | Name | Value | Meaning |
@@ -2592,7 +2704,15 @@ sea/tests/
                       error, errno and entry record of the .inc files equals the tables of §2.6.1,
                       §2.6.2 and §4.8, and every record format of passes.txt equals the tables
                       of §3.2–§3.6 (§3.9), in both directions
-  run.sh              Mac runner;  cross.sh, cross_pack.sh, cross_run.sh: Linux, as Baysick's
+  run.sh              Mac runner of programs/, errors/ and the passes/ dumps (it compiles with
+                      the test's directory as working directory, so diagnostics name NAME.sea);
+                      cross.sh, cross_pack.sh, cross_run.sh: Linux, as Baysick's
+  NAME.status         the expected exit status: a decimal number and LF
+  harness/            Baysick test programs of the shared modules (limb, f64emu, fltlit) that
+                      read the committed vectors
+  arith_check.sh      runs harness/ on vectors/ (exact arithmetic and float literals)
+  lib_check.sh        checks passes/lib against the contract (e.g. the BAD_DATA copy, §2.6.2)
+  driver_check.sh     the driver's options, messages and statuses (§2.2)
   passes/NAME.out     (optional, beside a dump test) the program's expected standard output when
                       built and run
   NAME.meta           (optional, beside a programs/ or errors/ test) `key=value` lines for the
