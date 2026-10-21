@@ -222,4 +222,146 @@ err('err_rt_stdout_closed', 'standard output closed (>&-): the final flush fails
     'printf("hello\\n")\n', None, None, "cannot write '<stdout>': Bad file descriptor",
     meta='stdout=closed\n')
 
+# ------------------------------------------------------------------ round 3: U2 (every const is
+# evaluated once at compile time, LANGUAGE.md 7.2; DESIGN.md 3.5.2), R9
+
+def fmod_floor(a, b):
+    """i64 % (LANGUAGE.md 6.6): floored; None for a zero divisor."""
+    return None if b == 0 else a - b * (a // b)
+
+
+# The reviewer's chain C1 = 7 % 3, Ck = C(k-1) % C(k-1): C1 = 1, C2 = 1 % 1 = 0, and C3 = 0 % 0
+# divides by zero, so by U2 it does not compile: error 261 at C3's `%` node, whose position is
+# its first token, the left operand C2 (DESIGN.md 3.3, 2.6.2 expr).
+vals = [fmod_floor(7, 3)]
+for k in range(2, 19):
+    vals.append(fmod_floor(vals[-1], vals[-1]) if vals[-1] is not None else None)
+assert vals[:3] == [1, 0, None]
+lines = ['const C1 = 7 % 3'] + ['const C%d = C%d %% C%d' % (k, k - 1, k - 1) for k in range(2, 19)]
+lines.append('printf("%d\\n", C18)')
+err('err_const_mod_chain', "the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time "
+    '(LANGUAGE.md 7.2 U2; at the operator)', '\n'.join(lines) + '\n', 4,
+    col_of('const C3 = C2 % C2', 'C2'), 'integer division by zero')
+
+# A % chain that compiles: C1 = 7 % 3 = 1, Ck = (C(k-1) * 7 + 3) % 1000 (floored, exact).
+v = fmod_floor(7, 3)
+lines = ['const C1 = 7 % 3']
+for k in range(2, 19):
+    lines.append('const C%d = (C%d * 7 + 3) %% 1000' % (k, k - 1))
+    v = fmod_floor(v * 7 + 3, 1000)
+lines.append('printf("%d\\n", C18)')
+prog('const_mod_chain', 'an 18-constant i64 % chain is evaluated once per constant '
+     '(LANGUAGE.md 7.2 U2, 6.6)', '\n'.join(lines) + '\n', '%d\n' % v)
+
+# B1 = 1 < 2 (true), Bk = B(k-1) && B(k-1): every Bk is true; %d of a bool prints 1 (11.1).
+lines = ['const B1 = 1 < 2'] + ['const B%d = B%d && B%d' % (k, k - 1, k - 1) for k in range(2, 19)]
+lines.append('printf("%d %d\\n", B18, !B18)')
+prog('const_bool_chain', 'an 18-constant bool && chain evaluates to one value (LANGUAGE.md 7.2 U2)',
+     '\n'.join(lines) + '\n', '1 0\n')
+
+# Mixed constants: N * 2 + 0.5 converts the i64 6 to f64 (LANGUAGE.md 4.2, 6.5): 6.5; an
+# annotated f64 constant of the i64 9 is 9.0. %g prints 6.5 and 9.
+prog('const_mixed', 'i64 constants converted in f64 constants (LANGUAGE.md 7.2, 4.2)',
+     'const N = 3\nconst H = N * 2 + 0.5\nconst G: f64 = N * 3\nprintf("%g %g\\n", H, G)\n',
+     '6.5 9\n')
+
+# 260: an overflowing constant, never used: reported anyway (every const is evaluated).
+err('err_const_overflow_unused', 'a constant that overflows i64 is a compile error even unused '
+    '(LANGUAGE.md 7.2 U2; at the operator)', 'const BIG = 9223372036854775807 + 1\nprintf("x\\n")\n',
+    2, col_of('const BIG = 9223372036854775807 + 1', '9'), 'integer overflow')
+
+# 260 innermost first: (2^62 * 2) overflows before (0 % 0) is evaluated (left operand first);
+# the inner `*` node starts at 4611686018427387904 (column 12), the outer at the `(`.
+err('err_const_overflow_inner', 'the innermost failing operation in evaluation order is reported '
+    '(DESIGN.md 2.6.2 expr; LANGUAGE.md 7.2)',
+    'const A = (4611686018427387904 * 2) * (0 % 0)\nlet x = A\n', 2, 12, 'integer overflow')
+
+# 260 at a neg: -(-2^63) overflows; the neg node is at its `-` (column 11).
+err('err_const_overflow_neg', 'unary minus of -2^63 in a constant (LANGUAGE.md 7.2, 6.5)',
+    'const N = -(-9223372036854775807 - 1)\nlet x = N\n', 2, 11, 'integer overflow')
+
+# 261: % by a zero divisor computed from constants; the % node is at the 5 (column 11).
+err('err_const_mod_zero', 'a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6)',
+    'const Z = 5 % (3 - 3)\nlet x = Z\n', 2, 11, 'integer division by zero')
+
+# R9: an annotated _ is a single-value binding (LANGUAGE.md 7.2, 8.4).
+body = 'fn two() -> (i64, i64) {\n    return (1, 2)\n}\nlet _: f64 = two()\n'
+err('err_result_count_skip_annot', 'let _: f64 = two() binds one value: at the call '
+    '(LANGUAGE.md 7.2 R9, 8.4)', body, 5, col_of('let _: f64 = two()', 'two'),
+    'wrong number of results: expected 2, found 1')
+
+# ------------------------------------------------------------------ round 3b: const probes
+import progfmt  # noqa: E402
+from float_oracle import i_to_f  # noqa: E402
+
+
+def err_tail(name, header, body, line, col, msg):
+    """A compile-time error whose source keeps the reviewer's exact line layout: the header
+    comment goes last instead of first."""
+    src = body + '// %s -- %s\n' % (name, header)
+    d = os.path.join(TESTS, 'errors')
+    with open(os.path.join(d, name + '.sea'), 'w') as f:
+        f.write(src)
+    with open(os.path.join(d, name + '.err'), 'w') as f:
+        f.write('%s.sea:%d:%d: error: %s\n' % (name, line, col, msg))
+    with open(os.path.join(d, name + '.status'), 'w') as f:
+        f.write('1\n')
+
+
+# MN % -1: floored % is exact (LANGUAGE.md 6.6), -2^63 - (-1) * floor(-2^63 / -1) = 0, no overflow
+# (only idiv overflows); the comparison is the bool true (%d prints 1).
+MN = -(1 << 63)
+assert fmod_floor(MN, -1) == 0
+prog('const_mod_min', 'in a constant -2^63 % -1 is 0, not an overflow (LANGUAGE.md 6.6, 7.2)',
+     'const MN = -9223372036854775808\nconst R = MN % -1\nconst Z = MN % -1 == 0\n'
+     'printf("%d %d\\n", R, Z)\n', '0 1\n')
+
+# && and || short-circuit in constants as at run time (LANGUAGE.md 6.4, 7.2 "exactly the
+# semantics of 6"): the 1 % 0 is never evaluated. false && ... = false, true || ... = true.
+prog('const_shortcircuit', 'a constant && / || does not evaluate its right operand when the left '
+     'decides (LANGUAGE.md 7.2)',
+     'const A = false && (1 % 0 == 0)\nconst B = true || (1 % 0 == 0)\nprintf("%d %d\\n", A, B)\n',
+     '0 1\n')
+
+# & evaluates both operands: 1 % 0 fails (261) at its % node, which starts at the 1.
+body = 'const A = false & (1 % 0 == 0)\nprintf("%d\\n", A)\n'
+err('err_const_band_eval', 'a constant & evaluates both operands: 1 % 0 fails (LANGUAGE.md 7.2, 6.6)',
+    body, 2, col_of('const A = false & (1 % 0 == 0)', '1 %'), 'integer division by zero')
+
+# i64 -> f64 in constants rounds to nearest, ties to even (LANGUAGE.md 4.2): 2^53 + 1 is a tie
+# -> 2^53; 2^63 - 512 is the midpoint of 2^63 - 1024 (odd significand) and 2^63 (even) -> 2^63;
+# 2^63 - 513 is below it -> 2^63 - 1024. Printed with %.17g by the printf oracle.
+ints = [(1 << 53) + 1, (1 << 63) - 512, (1 << 63) - 513]
+bits = [i_to_f(v) for v in ints]
+assert bits == [0x4340000000000000, 0x43E0000000000000, 0x43DFFFFFFFFFFFFF]
+out = progfmt.format_all('%.17g %.17g %.17g\n', [('f', b) for b in bits]).decode()
+prog('const_cvt_ties', 'i64 constants converted to f64 constants round ties to even '
+     '(LANGUAGE.md 4.2, 7.2)',
+     'const I1 = %d\nconst I2 = %d\nconst I3 = %d\n' % tuple(ints)
+     + 'const F1: f64 = I1\nconst F2: f64 = I2\nconst F3: f64 = I3\n'
+     'printf("%.17g %.17g %.17g\\n", F1, F2, F3)\n', out)
+
+# IEEE comparisons in constants (LANGUAGE.md 6.3/6.5, 7.2): -0.0 == 0.0 is true; every ordered
+# comparison with a NaN is false and != is true.
+prog('const_cmp_ieee', 'constant comparisons follow IEEE: -0.0 == 0.0, NaN unordered '
+     '(LANGUAGE.md 7.2)',
+     'const Z = -0.0 == 0.0\nconst N1 = nan != nan\nconst N2 = nan == nan\nconst N3 = nan < nan\n'
+     'const N4 = nan <= 1.0\nconst N5 = nan > 0.0\nconst N6 = nan >= nan\n'
+     'printf("%d %d %d %d %d %d %d\\n", Z, N1, N2, N3, N4, N5, N6)\n', '1 1 0 0 0 0 0\n')
+
+# A failed constant poisons its users (the reviewer's layout, header comment last): A needs B,
+# B's (2^63 - 1) + 1 overflows at its + node, which starts at the 9 on line 2, column 12; A's
+# 1 % 0 is never reached.
+err_tail('err_const_poison_and', 'a constant whose operand constant failed reports only that '
+         'failure (LANGUAGE.md 7.2 U2)',
+         'const A = B && (1 % 0 == 0)\nconst B = (9223372036854775807 + 1) < 0\nprintf("%d\\n", A)\n',
+         2, 12, 'integer overflow')
+
+# x ^ K with a failing K: the overflow (3:12, the + node) is reported, not `not supported yet: pow`
+# for a K that is not a small integer (LANGUAGE.md 7.2, 6.5; DESIGN.md 3.5.5).
+err_tail('err_const_poison_pow', 'a constant exponent whose evaluation overflows reports the '
+         'overflow (LANGUAGE.md 7.2 U2)',
+         'let x = 2.0\nprintf("%g\\n", x ^ K)\nconst K = (9223372036854775807 + 1) * 0 + 2\n',
+         3, 12, 'integer overflow')
+
 print('wave2_gen: written')

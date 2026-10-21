@@ -876,7 +876,7 @@ written as `null` (§11.4), and comparisons and `isnan` treat every NaN alike; s
 (and constant folding) may produce different NaN bits for the same operation.
 
 **`i64`**: `+ - *` and unary `-` are exact; a result outside the `i64` range is the run-time
-error `integer overflow`. `/` on two `i64` operands converts both to `f64` and divides (so
+error `integer overflow` (in the evaluation of a `const`, the compile error of §7.2). `/` on two `i64` operands converts both to `f64` and divides (so
 `nnz(pass) / nSample` is a fraction, as in MATLAB). `idiv(a, b)` is the floored integer
 quotient. `%` is the floored modulo (below). Division or modulo by zero: `integer division by
 zero`.
@@ -901,7 +901,8 @@ There is no integer power; `i64` results are computed with `*`.
 `a % b` is the **floored** modulo, whose result has the sign of `b` (MATLAB `mod`, Python
 `%`), for `i64` and `f64`:
 
-* `i64`: `a - b * floor(a / b)` computed exactly; `b == 0` → `integer division by zero`.
+* `i64`: `a - b * floor(a / b)` computed exactly; `b == 0` → `integer division by zero` (in the
+  evaluation of a `const`, a compile error, §7.2).
 * `f64`, in this order: if `b == 0` the result is `a` (so `inf % 0` is `inf` and `nan % 0` is
   NaN); otherwise if `a` is infinite or either operand is NaN the result is NaN; otherwise
   `r = fmod(a, b)` (exact, with the sign of `a`); if `r != 0` and `r` and `b` have different signs
@@ -1060,6 +1061,17 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
   whose expression is an untyped integer constant is `i64` (`const N = 4` is the `i64` 4); with an
   annotation it has the annotated type (`const G: f64 = 9` is 9.0).
+* **Every `const` is evaluated once, at compile time, to one value** (Decision U2 in DESIGN.md
+  §0), whether it is used or not, with exactly the semantics of §6 that the program would have at
+  run time: `i64` `+ - *` and unary `-` exactly, `%` floored (§6.6); `f64` arithmetic, `%` and
+  `sqrt` as IEEE binary64 (±∞ and NaN included); `^` as §6.5 says (the pinned multiplications,
+  otherwise `pow` of §10.4 with the run time's bits); the implicit `i64` → `f64` conversion of
+  §4.2; comparisons, `&&`, `||`, `!`, `&`, `|` on `bool`. A constant whose evaluation overflows
+  `i64` or divides an `i64` by zero (`%` by 0) is the **compile error** `integer overflow` or
+  `integer division by zero`, reported at the operator whose evaluation fails (as in Rust),
+  instead of the run-time errors of §6.5 and §6.6. A use of the constant is that one value.
+* `let _: T = e` (an annotated `_`) is a single-value binding: e must have one value of type T,
+  and a multiple-result call there is `wrong number of results: expected n, found 1` (§8.4).
 
 ### 7.3 Assignment
 

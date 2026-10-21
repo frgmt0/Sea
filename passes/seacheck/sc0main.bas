@@ -11,7 +11,7 @@
 55 REM S$ strings, X X$ state, H the hash of C, O that of S$. Layouts: see the REM block of sc2util.
 60 REM ====================================================================================
 65 DIM E(299), E$(299,5), J(20), J$(20), K(299,4), K$(299), F$(100), A$(3)
-70 DIM N(99999,9), M(99999,9), Y(49999,9), T(20099,9), W(199999), C(19999,4)
+70 DIM N(99999,9), M(99999,9), Y(49999,9), T(51209,9), W(199999), C(19999,4)
 75 DIM S$(199999), X(60), X$(20), H(39989), O(399989)
 80 FILES "sea.ast"; "sea.hir1"
 85 LET P$ = "seacheck"
@@ -23,67 +23,74 @@
 115 CALL "sc_read": P$, E(), E$(), E0, N(), M(), C(), S$(), W(), X(), X$(), F$(), N1, T$, H(), O()
 120 LET X(18) = N1 - 1
 125 CALL "sc_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H()
-130 IF X(6) = 0 THEN 175
+130 IF X(6) = 0 THEN 205
 135 REM the first error (or a capacity overflow): one diagnostic line, status of a compile error
 140 LET I = X(7)
-145 LET F = INT(N(I, 4) / 1E9)
-150 LET L = N(I, 4) - F * 1E9
-155 FOR J = 1 TO X(8)
-160 LET A$(J) = X$(J + 1)
-165 NEXT J
-170 CALL "dg_compile": P$, F$(), N1, F, L, N(I, 5), X$(1), A$(), X(8), E(), E$(), E0
-175 SCRATCH #2
-180 CALL "io_hdr_put": 2, X(34), T$, F$(), N1
-185 CALL "sc_emit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
-190 CALL "io_fin": 2
-195 GOTO 99999
-200 REM ---- sc_lim: the limits of limits.inc this pass needs, checked against the table sizes ----
-205 SUB "sc_lim": P$, K(), K$(), K0, X()
-210 DIM Q$(9)
-215 LET Q$(1) = "FILE_VERSION"
-220 LET Q$(2) = "LIM_SYMBOLS"
-225 LET Q$(3) = "LIM_TYPES"
-230 LET Q$(4) = "LIM_CONSTS"
-235 LET Q$(5) = "LIM_NODES"
-240 LET Q$(6) = "LIM_STRINGS"
-245 LET Q$(7) = "LIM_POWK"
-250 LET Q$(8) = "LIM_DEC_FIELD"
-255 FOR I = 1 TO 8
-260 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
-265 IF T = 0 THEN 275
-270 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
-275 IF I = 1 THEN 305
-280 IF I = 8 THEN 295
-285 LET X(18 + I) = V
-290 GOTO 310
-295 LET X(35) = V
-300 GOTO 310
-305 LET X(34) = V
-310 NEXT I
-315 IF X(20) > 49999 THEN 345
-320 IF X(21) > 20089 THEN 345
-325 IF X(22) > 19999 THEN 345
-330 IF X(23) > 99999 THEN 345
-335 IF X(24) > 199999 THEN 345
-340 GOTO 350
-345 CALL "dg_bug": P$, "a capacity limit is larger than the pass tables"
-350 SUBEND
-355 REM ---- sc_pd: the predeclared names (LANGUAGE 3.3, Appendix C) in X$(10), 12-byte slots ------
-360 REM slots 1-4 constants, 5-8 handle types, 9- functions; a name is found as "|name " (pdx)
-365 SUB "sc_pd": X$()
-370 LET L$ = "pi inf nan eps Figure Axes Lu Chol abs all any args argmax argmin argsort axis_equal "
-375 LET L$ = L$ & "bar barh bincount ceil chol cols contour cos eig_sym error exp figure filled find "
-380 LET L$ = L$ & "find_first find_last floor format grid hypot idiv image ind2sub isnan legend len "
-385 LET L$ = L$ & "linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel plot "
-390 LET L$ = L$ & "pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str "
-395 LET L$ = L$ & "sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim "
-400 LET L$ = L$ & "y_reverse y_ticks ylabel ylim zeros "
-405 LET R$ = ""
-410 LET S = 1
-415 LET P = POS(L$, " ", S)
-420 IF P = 0 THEN 440
-425 LET R$ = R$ & SEG$("|" & SEG$(L$, S, P - 1) & "            ", 1, 12)
-430 LET S = P + 1
-435 GOTO 415
-440 LET X$(10) = R$
-445 SUBEND
+145 LET Q = N(I, 4)
+150 LET Q1 = N(I, 5)
+155 IF X(36) = 0 THEN 175
+160 REM a loop variable that exceeds the symbols limit: its npos (fsym)
+165 LET Q = X(36)
+170 LET Q1 = X(37)
+175 LET F = INT(Q / 1E9)
+180 LET L = Q - F * 1E9
+185 FOR J = 1 TO X(8)
+190 LET A$(J) = X$(J + 1)
+195 NEXT J
+200 CALL "dg_compile": P$, F$(), N1, F, L, Q1, X$(1), A$(), X(8), E(), E$(), E0
+205 SCRATCH #2
+210 CALL "io_hdr_put": 2, X(34), T$, F$(), N1
+215 CALL "sc_emit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
+220 CALL "io_fin": 2
+225 GOTO 99999
+230 REM ---- sc_lim: the limits of limits.inc this pass needs, checked against the table sizes ----
+235 SUB "sc_lim": P$, K(), K$(), K0, X()
+240 DIM Q$(9)
+245 LET Q$(1) = "FILE_VERSION"
+250 LET Q$(2) = "LIM_SYMBOLS"
+255 LET Q$(3) = "LIM_TYPES"
+260 LET Q$(4) = "LIM_CONSTS"
+265 LET Q$(5) = "LIM_NODES"
+270 LET Q$(6) = "LIM_STRINGS"
+275 LET Q$(7) = "LIM_POWK"
+280 LET Q$(8) = "LIM_DEC_FIELD"
+285 FOR I = 1 TO 8
+290 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
+295 IF T = 0 THEN 305
+300 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
+305 IF I = 1 THEN 335
+310 IF I = 8 THEN 325
+315 LET X(18 + I) = V
+320 GOTO 340
+325 LET X(35) = V
+330 GOTO 340
+335 LET X(34) = V
+340 NEXT I
+345 IF X(20) > 49999 THEN 380
+350 IF 9 + 2 * X(21) + INT(X(23) / 9) + 1 > 51209 THEN 380
+355 IF X(21) > 19999 THEN 380
+360 IF X(22) > 19999 THEN 380
+365 IF X(23) > 99999 THEN 380
+370 IF X(24) > 199999 THEN 380
+375 GOTO 385
+380 CALL "dg_bug": P$, "a capacity limit is larger than the pass tables"
+385 SUBEND
+390 REM ---- sc_pd: the predeclared names (LANGUAGE 3.3, Appendix C) in X$(10), 12-byte slots ------
+395 REM slots 1-4 constants, 5-8 handle types, 9- functions; a name is found as "|name " (pdx)
+400 SUB "sc_pd": X$()
+405 LET L$ = "pi inf nan eps Figure Axes Lu Chol abs all any args argmax argmin argsort axis_equal "
+410 LET L$ = L$ & "bar barh bincount ceil chol cols contour cos eig_sym error exp figure filled find "
+415 LET L$ = L$ & "find_first find_last floor format grid hypot idiv image ind2sub isnan legend len "
+420 LET L$ = L$ & "linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel plot "
+425 LET L$ = L$ & "pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str "
+430 LET L$ = L$ & "sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim "
+435 LET L$ = L$ & "y_reverse y_ticks ylabel ylim zeros "
+440 LET R$ = ""
+445 LET S = 1
+450 LET P = POS(L$, " ", S)
+455 IF P = 0 THEN 475
+460 LET R$ = R$ & SEG$("|" & SEG$(L$, S, P - 1) & "            ", 1, 12)
+465 LET S = P + 1
+470 GOTO 450
+475 LET X$(10) = R$
+480 SUBEND

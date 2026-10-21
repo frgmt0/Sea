@@ -1,0 +1,8 @@
+// const_cvt_ties -- i64 constants converted to f64 constants round ties to even (LANGUAGE.md 4.2, 7.2)
+const I1 = 9007199254740993
+const I2 = 9223372036854775296
+const I3 = 9223372036854775295
+const F1: f64 = I1
+const F2: f64 = I2
+const F3: f64 = I3
+printf("%.17g %.17g %.17g\n", F1, F2, F3)

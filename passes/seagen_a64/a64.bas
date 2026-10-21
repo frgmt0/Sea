@@ -178,6 +178,7 @@
 1052 LET M$ = "more functions than the signature table holds"
 1055 IF G0 > 19999 THEN 9975
 1060 LET S$(G0,1) = G$(2)
+1061 GOSUB 1130
 1065 CALL "io_u": G$(5), V0, T
 1070 IF T <> 0 THEN 9990
 1075 IF 6 + V0 > C0 THEN 9990
@@ -197,6 +198,26 @@
 1110 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 1115 GOTO 1025
 1120 RESTORE #1
+1122 FOR I8 = 0 TO 131071
+1124 LET H(I8) = 0
+1126 NEXT I8
+1128 GOTO 1200
+1130 REM ---- pass A: no two func records share a name (DESIGN 3.6.5); a hash set of them in H,
+1131 REM cleared before pass B uses H for the sites
+1132 CHANGE G$(2) TO W
+1133 LET S5 = 0
+1134 FOR I8 = 1 TO W(0)
+1135 LET S5 = S5 * 31 + W(I8)
+1136 LET S5 = S5 - INT(S5 / 131071) * 131071
+1137 NEXT I8
+1138 IF H(S5) = 0 THEN 1145
+1139 IF S$(H(S5),1) = G$(2) THEN 9990
+1140 LET S5 = S5 + 1
+1141 IF S5 < 131071 THEN 1138
+1142 LET S5 = 0
+1143 GOTO 1138
+1145 LET H(S5) = G0
+1146 RETURN
 1200 REM ---- pass B: the code ----------------------------------------------------------------
 1205 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), K(46), T$, H$(), 100, N1, L$
 1210 LET L0 = N1 + 3
@@ -302,7 +323,7 @@
 3258 GOTO 3480
 3260 LET S9 = 1
 3262 LET N9 = N9 + 1
-3264 LET O0 = O0 + C0 - 1
+3264 LET O0 = O0 + C0 - 1 - X5
 3266 IF Y0 = 0 THEN 3300
 3268 ON Y0 GOTO 9990,9990,9990,3290,3290,9990,3295,3320,3360,3320,3360,3320,3320,3380,3360,3400,3400,3410,3420,3442,3460
 3290 LET I9 = I9 + 1
@@ -1626,7 +1647,7 @@
 9400 REM ---- the fields of G$(1..C0) against record row I0 (DESIGN 3.1, passes.txt): checks, ----
 9401 REM registers (D1 D2 the destination d, E1 a second destination e, Q P J$ the sources, B1 B2
 9402 REM base / idx), site X0, cc K1$, first u U0, scale U2, off limbs L() (O1 = 1 if not 0),
-9403 REM label H0, slot H1
+9403 REM label H0, slot H1, site fields X5
 9404 LET T0 = 1
 9406 LET P0 = 0
 9408 LET D1 = 0
@@ -1636,6 +1657,7 @@
 9414 LET B2 = 0
 9416 LET X3 = 0
 9418 LET X0 = 0
+9419 LET X5 = 0
 9420 LET U0 = -1
 9422 LET U2 = 0
 9424 LET O1 = 0
@@ -1653,6 +1675,7 @@
 9448 IF T0 > C0 THEN 9990
 9450 LET Z$ = G$(T0)
 9452 LET T1 = F(J2,1)
+9453 GOSUB 9680
 9454 IF Z$ <> "-" THEN 9458
 9456 IF F(J2,2) = 1 THEN 9540
 9458 IF T1 >= 100 THEN 9524
@@ -1692,7 +1715,9 @@
 9511 GOTO 9540
 9512 IF SEG$(Z$, 1, 1) <> "d" THEN 9990
 9514 CALL "io_u": SEG$(Z$, 2, LEN(Z$)), H0, T
-9516 GOTO 9522
+9515 IF T <> 0 THEN 9990
+9516 IF H0 < 1 THEN 9990
+9517 GOTO 9540
 9518 IF SEG$(Z$, 1, 1) <> "s" THEN 9990
 9520 CALL "io_u": SEG$(Z$, 2, LEN(Z$)), H1, T
 9522 IF T <> 0 THEN 9990
@@ -1776,6 +1801,10 @@
 9668 IF B(I(I7),4) = R0 THEN 9990
 9670 NEXT I7
 9672 RETURN
+9680 REM ---- X5 counts the site fields of the record, present or -: they are no operands (DESIGN 2.7)
+9682 IF T1 <> 6 THEN 9686
+9684 LET X5 = X5 + 1
+9686 RETURN
 9960 CALL "dg_compile": P$, H$(), N1, F1, F2, F3, "TOO_LARGE", A$(), 1, E(), E$(), E0
 9970 CALL "dg_boot": P$
 9975 CALL "dg_bug": P$, M$

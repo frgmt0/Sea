@@ -1,0 +1,32 @@
+#sea 1
+#target arm64-macos
+#file type_const_neg.sea
+int 0:3:12 #000000003B9ACA00
+neg 0:3:11
+const 0:3:1 N 0
+int 0:4:12 999999999
+neg 0:4:11
+const 0:4:1 P 0
+int 0:5:12 #8000000000000000
+neg 0:5:11
+const 0:5:1 M 0
+pname 0:6:5 a
+name 0:6:9 N
+let 0:6:1 0
+pname 0:7:5 b
+name 0:7:9 P
+let 0:7:1 0
+pname 0:8:5 c
+name 0:8:9 M
+int 0:8:13 1
+bin 0:8:9 add
+let 0:8:1 0
+name 0:9:1 printf
+str 0:9:8 %25d%20%25d%20%25d%0A
+name 0:9:22 a
+name 0:9:25 b
+name 0:9:28 c
+call 0:9:1 4
+cstmt 0:9:1
+prog 7
+#end

@@ -1,0 +1,4 @@
+let x = 2.0
+printf("%g\n", x ^ K)
+const K = (9223372036854775807 + 1) * 0 + 2
+// err_const_poison_pow -- a constant exponent whose evaluation overflows reports the overflow (LANGUAGE.md 7.2 U2)

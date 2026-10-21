@@ -1,0 +1,5 @@
+// const_mixed -- i64 constants converted in f64 constants (LANGUAGE.md 7.2, 4.2)
+const N = 3
+const H = N * 2 + 0.5
+const G: f64 = N * 3
+printf("%g %g\n", H, G)

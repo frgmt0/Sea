@@ -189,7 +189,7 @@ asm) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM.s") ;
 exe) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM") ;;
 esac
 # An -o that names the input file itself is refused before anything is written (2.2).
-if [ -n "$DEST" ] && [ -e "$DEST" ] && [ "$DEST" -ef "$INPUT" ]; then
+if [ "$MODE" = build ] && [ -n "$DEST" ] && [ -e "$DEST" ] && [ "$DEST" -ef "$INPUT" ]; then
     die "$EX_USAGE" "output file '$DEST' is the input file"
 fi
 

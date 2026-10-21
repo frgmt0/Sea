@@ -1,0 +1,20 @@
+// err_const_mod_chain -- the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time (LANGUAGE.md 7.2 U2; at the operator)
+const C1 = 7 % 3
+const C2 = C1 % C1
+const C3 = C2 % C2
+const C4 = C3 % C3
+const C5 = C4 % C4
+const C6 = C5 % C5
+const C7 = C6 % C6
+const C8 = C7 % C7
+const C9 = C8 % C8
+const C10 = C9 % C9
+const C11 = C10 % C10
+const C12 = C11 % C11
+const C13 = C12 % C12
+const C14 = C13 % C13
+const C15 = C14 % C14
+const C16 = C15 % C15
+const C17 = C16 % C16
+const C18 = C17 % C17
+printf("%d\n", C18)

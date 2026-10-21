@@ -1,0 +1,5 @@
+// err_result_count_skip_annot -- let _: f64 = two() binds one value: at the call (LANGUAGE.md 7.2 R9, 8.4)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+let _: f64 = two()

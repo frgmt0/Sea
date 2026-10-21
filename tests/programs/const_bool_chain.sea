@@ -1,0 +1,20 @@
+// const_bool_chain -- an 18-constant bool && chain evaluates to one value (LANGUAGE.md 7.2 U2)
+const B1 = 1 < 2
+const B2 = B1 && B1
+const B3 = B2 && B2
+const B4 = B3 && B3
+const B5 = B4 && B4
+const B6 = B5 && B5
+const B7 = B6 && B6
+const B8 = B7 && B7
+const B9 = B8 && B8
+const B10 = B9 && B9
+const B11 = B10 && B10
+const B12 = B11 && B11
+const B13 = B12 && B12
+const B14 = B13 && B13
+const B15 = B14 && B14
+const B16 = B15 && B15
+const B17 = B16 && B16
+const B18 = B17 && B17
+printf("%d %d\n", B18, !B18)

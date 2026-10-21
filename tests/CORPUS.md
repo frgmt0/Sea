@@ -64,6 +64,13 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `stmt_tasg_cvt` | §4.2 (b), §7.3 (tuple assignment converts i64 to an f64 target) |
 | `lib_conv_identity` | §10.1 (`f64()` of f64, `i64()` of i64, untyped argument is i64) |
 | `stmt_for_blanks` | §7.5 (two blanks after `for`) |
+| `const_mod_chain` | §7.2 U2, §6.6 (18 constants, floored `%`, each evaluated once: 810) |
+| `const_bool_chain` | §7.2 U2 (an 18-constant `&&` chain of bool constants) |
+| `const_mixed` | §7.2, §4.2 (i64 constants converted inside f64 constants) |
+| `const_mod_min` | §6.6, §7.2 (`-2^63 % -1` is 0 in a constant) |
+| `const_shortcircuit` | §7.2 (`&&`/`||` in a constant skip the right operand) |
+| `const_cvt_ties` | §4.2, §7.2 (i64 → f64 constants round ties to even; `%.17g`) |
+| `const_cmp_ieee` | §7.2 (`-0.0 == 0.0`, NaN comparisons in constants) |
 | `fmt_d`, `fmt_d_f64`, `fmt_f`, `fmt_e`, `fmt_g`, `fmt_s`, `fmt_pct`, `fmt_nonfinite` | §11.1 |
 | `lex_crlf` | §3.1 (CR before LF and at end of file removed) |
 | `lex_long_line` | §3.1; DESIGN.md §2.2 step 2 (4096 bytes allowed, also followed by CR) |
@@ -90,8 +97,9 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `type_untyped` | ast hir1 hir | LANGUAGE.md §4.2, §6.5; §3.5.5, §3.5.7 folding |
 | `type_var_rule` | ast hir1 hir | LANGUAGE.md §4.2 var rule (Decision 8) |
 | `type_cvt` | ast hir1 hir | LANGUAGE.md §4.2; §3.5.5 `cvt` positions, `lib f64/i64` |
-| `type_powk` | ast hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents" |
-| `type_const` | ast hir1 hir | LANGUAGE.md §7.2; §3.5.2, §3.5.7 steps 1–2 |
+| `type_powk` | ast hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents"; §3.5.2 (`K = 6 % 4` is the leaf 2) |
+| `type_const_neg` | ast hir1 hir (+ `.out`) | §3.1 field `i` (−10⁹ and −2⁶³ in hex, −999 999 999 in decimal); §3.5.2 leaf at the `neg`; §3.5.7 steps 1–2 |
+| `type_const` | ast hir1 hir | LANGUAGE.md §7.2 U2; §3.5.2 (each `cn` child one leaf at the root's position), §3.5.7 steps 1–2 |
 | `fn_ref` | ast hir1 hir lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
 | `fn_multi` | ast hir1 hir lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
 | `fn_ref_order` | ast hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
@@ -149,6 +157,14 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_cond_bool_if` | `condition must be bool` | an if condition must be bool (LANGUAGE.md 4.3; at expr) |
 | `err_cond_bool_ifx` | `condition must be bool` | an if-expression condition must be bool (LANGUAGE.md 4.3, 6.10) |
 | `err_cond_bool_while` | `condition must be bool` | a while condition must be bool (LANGUAGE.md 4.3) |
+| `err_const_band_eval` | `integer division by zero` | a constant & evaluates both operands: 1 % 0 fails (LANGUAGE.md 7.2, 6.6) |
+| `err_const_mod_chain` | `integer division by zero` | the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time (LANGUAGE.md 7.2 U2; at the operator) |
+| `err_const_mod_zero` | `integer division by zero` | a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6) |
+| `err_const_overflow_inner` | `integer overflow` | the innermost failing operation in evaluation order is reported (DESIGN.md 2.6.2 expr; LANGUAGE.md 7.2) |
+| `err_const_overflow_neg` | `integer overflow` | unary minus of -2^63 in a constant (LANGUAGE.md 7.2, 6.5) |
+| `err_const_overflow_unused` | `integer overflow` | a constant that overflows i64 is a compile error even unused (LANGUAGE.md 7.2 U2; at the operator) |
+| `err_const_poison_and` | `integer overflow` | a constant whose operand constant failed reports only that failure (LANGUAGE.md 7.2 U2) |
+| `err_const_poison_pow` | `integer overflow` | a constant exponent whose evaluation overflows reports the overflow (LANGUAGE.md 7.2 U2) |
 | `err_continue_outside` | `continue outside a loop` | continue in a function called from a loop is still outside one |
 | `err_conv_no_paren` | `unexpected token '+'` | a conversion keyword without ( names the next token (LANGUAGE.md App. A) |
 | `err_dollar_array_literal` | `'$' outside an index` | array-literal brackets are not index brackets (LANGUAGE.md 5.3) |
@@ -229,6 +245,7 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_result_count_let` | `wrong number of results: expected 2, found 1` | a 2-result call bound to one name: at the call (LANGUAGE.md 8.4; DESIGN.md 2.6.2) |
 | `err_result_count_ptuple` | `wrong number of results: expected 2, found 3` | three names for two results: at the ptuple (LANGUAGE.md 8.4) |
 | `err_result_count_return` | `wrong number of results: expected 1, found 2` | two values returned from a function with one result: at the return |
+| `err_result_count_skip_annot` | `wrong number of results: expected 2, found 1` | let _: f64 = two() binds one value: at the call (LANGUAGE.md 7.2 R9, 8.4) |
 | `err_result_count_tasg` | `wrong number of results: expected 3, found 2` | a tuple assignment with one target too few: at the tasg (LANGUAGE.md 7.3, 8.4) |
 | `err_result_count_void` | `wrong number of results: expected 0, found 2` | return f() of a 2-result call in a function without results (LANGUAGE.md 8.4) |
 | `err_result_count_void_value` | `wrong number of results: expected 0, found 1` | a call without results used as a value: at the call (LANGUAGE.md 8.4) |
@@ -292,4 +309,4 @@ the `at` position of DESIGN.md §2.6.2.
 | `progfmt.py` | `programs/fmt_*.{sea,out}`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts` |
 | `lcg_w5.py` | `programs/op_lcg_w5.{sea,out}`, `lcg_w5.out` |
 | `f64emu.py` | `f64emu.txt`, `limb.txt` (read by `arith_check.sh` through `harness/f64emu_h.bas`, `harness/limb_h.bas`) |
-| `wave2_gen.py` | the wave-2 `programs/` and `errors/` tests listed above |
+| `wave2_gen.py` | the wave-2 and round-3 `programs/` and `errors/` tests listed above |

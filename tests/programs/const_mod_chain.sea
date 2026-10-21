@@ -1,0 +1,20 @@
+// const_mod_chain -- an 18-constant i64 % chain is evaluated once per constant (LANGUAGE.md 7.2 U2, 6.6)
+const C1 = 7 % 3
+const C2 = (C1 * 7 + 3) % 1000
+const C3 = (C2 * 7 + 3) % 1000
+const C4 = (C3 * 7 + 3) % 1000
+const C5 = (C4 * 7 + 3) % 1000
+const C6 = (C5 * 7 + 3) % 1000
+const C7 = (C6 * 7 + 3) % 1000
+const C8 = (C7 * 7 + 3) % 1000
+const C9 = (C8 * 7 + 3) % 1000
+const C10 = (C9 * 7 + 3) % 1000
+const C11 = (C10 * 7 + 3) % 1000
+const C12 = (C11 * 7 + 3) % 1000
+const C13 = (C12 * 7 + 3) % 1000
+const C14 = (C13 * 7 + 3) % 1000
+const C15 = (C14 * 7 + 3) % 1000
+const C16 = (C15 * 7 + 3) % 1000
+const C17 = (C16 * 7 + 3) % 1000
+const C18 = (C17 * 7 + 3) % 1000
+printf("%d\n", C18)

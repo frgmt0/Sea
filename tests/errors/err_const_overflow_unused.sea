@@ -1,0 +1,3 @@
+// err_const_overflow_unused -- a constant that overflows i64 is a compile error even unused (LANGUAGE.md 7.2 U2; at the operator)
+const BIG = 9223372036854775807 + 1
+printf("x\n")

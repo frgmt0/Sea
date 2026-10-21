@@ -6,10 +6,10 @@
 45 REM WHAT IT DOES (DESIGN 3.5.7, the steps that apply to phase 1)
 47 REM  0 validation first: every field against passes.txt (enum words tb_word, positions io_pos,
 48 REM    bytes 0x20-0x7E io_plain), the types of every node it folds, a cref's type = its cn's
-50 REM  1 constant substitution: each cref becomes a copy of its constant's folded expression,
-55 REM    every copied node at the position of the cref; the cn records are not written. A cref
-57 REM    may name a cn written later (constants are visible before their declaration): the
-58 REM    constants are buffered (X$) and replayed in dependency order at the first fn (4000)
+50 REM  1 constant substitution: each cref becomes a copy of its constant's leaf (pass 2a wrote it),
+55 REM    at the position of the cref; the cn records are not written. A cref in a function
+57 REM    may name a cn written later: every cn precedes the functions, and its child is one leaf
+58 REM    (ci cf cb cs, DESIGN 3.5.2), so the pool holds one record per cid, written by the cn
 60 REM  2 folding, bottom-up, only subtrees that are constant on their own, for ANY operand values
 65 REM    (no guard, DESIGN 2.8: inf, nan, overflow, underflow are exact in f64emu): f64 add sub
 70 REM    mul div (FEADD FESUB FEMUL FEDIV), powk k (the pinned FEMULs, then FEDIV for k < 0),
@@ -29,13 +29,13 @@
 140 REM  V special code of a record row, A its ty field index, B the rows of sea.hir1 (sets H H1)
 145 REM  G$ fields of the current record  U their u values  H$ #file paths
 150 REM  O$ out records  M out kind(0) high32(1) low32(2) row(3): kind 1 ci 2 cf 3 call 0 other
-155 REM  S stack of subtree starts (post-order trees)  Q$ J L the const pool (text, M-like; L per
-160 REM  cid: pool rows 0-1, ty 2, raw rows 3-4 in X$, state 5)  W replay order  T P K$ Y$ types (kind, offset, count,
+155 REM  S stack of subtree starts (post-order trees)  Q$ J the const pool (the leaf of cid i in row i:
+160 REM  text, M-like)  L per cid: pool rows 0-1, ty 2  T P K$ Y$ types (kind, offset, count,
 165 REM  extents; component ids; field names; struct names)  K function table (first record, last
 170 REM  record, new fid)  Y new type id  O old type id of each new id  D work stack
 175 REM
 180 REM SCALARS  P$ pass name  L$ record  L0 its line  C0 its fields  I0 its row  Y0 its code
-185 REM  S0 stack depth  O0 out records  N9 cid  N7 cn count  X7 X6 raw rows  Q5 Q7-Q9 replay  T9 types  F6 functions  F7 inside a function
+185 REM  S0 stack depth  O0 out records  N9 cn count  S7 T7 LIM_SYMBOLS LIM_TYPES  T9 types  F6 functions  F7 inside a function
 190 REM  F5 a function was seen  X8 fd records owed  S3 start of the node being made  K1 kind
 195 REM  A3-A0 B3-B0 R3-R0 limbs of operands and result  T$ text  Z8$ last position
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
@@ -46,7 +46,7 @@
 225 DIM C(299,4), C$(299), G$(300), U(300), H$(100), V(399), A(399), B(399), A$(1)
 230 DIM M(249999,3), O$(249999), S(249999)
 235 DIM T(20010,5), P(399999), K$(399999), Y$(20010), Y(20010), D(50010,1), K(50010,3), O(20010)
-240 DIM J(99999,3), Q$(99999), L(49999,5), X$(149999), W(49999)
+240 DIM J(49999,3), Q$(49999), L(49999,2)
 245 LET P$ = "seaexpand"
 250 REM ---- the tables ---------------------------------------------------------------------
 255 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -64,13 +64,14 @@
 315 CALL "tb_cval": C(), C$(), N5, "FILE_VERSION", V9, W1
 320 IF W1 = 0 THEN 330
 325 CALL "dg_bug": P$, "constant FILE_VERSION is not in the consts table"
-330 REM LIM_POWK: the largest |k| of a powk (LANGUAGE 6.5)
+330 REM LIM_POWK: the largest |k| of a powk (LANGUAGE 6.5); LIM_SYMBOLS, LIM_TYPES for the capacity checks (4400)
 331 CALL "tb_cval": C(), C$(), N5, "LIM_POWK", V8, W1
 332 IF W1 = 0 THEN 335
 333 CALL "dg_bug": P$, "constant LIM_POWK is not in the consts table"
 334 REM special code and ty field index of each record row of the HIR files (sets H and H1)
 335 LET K1$ = "|tvec=01|tmat=02|tfvec=03|tfmat=04|tstruct=05|trec=06|ttuple=07|fd=08|cn=09|fn=11|par=12|loc=13|end=14|"
 340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|"
+341 GOSUB 4400
 345 LET N2 = 0
 350 LET R5 = 0
 355 LET R6 = 0
@@ -106,7 +107,7 @@
 505 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), V9, G0$, H$(), 100, N1, L$
 510 LET L0 = N1 + 3
 515 REM ---- one record per round: L$ is line L0 -------------------------------------------------
-520 LET Z8$ = "0:1:1"
+520 LET Z8$ = STR$(N1 - 1) & ":1:1"
 525 LET O0 = 0
 530 LET S0 = 0
 535 LET D$ = "BAD_RECORD"
@@ -146,14 +147,9 @@
 730 LET M$ = "too many fields"
 735 IF T0 < C0 THEN 2915
 740 LET Z7 = 0
-745 IF LEN(Z7$) = 0 THEN 752
+745 IF LEN(Z7$) = 0 THEN 760
 748 LET Z7 = 1
 750 LET Z8$ = Z7$
-752 IF F5 = 1 THEN 760
-753 IF Q7 > 0 THEN 760
-754 IF Y0 = 9 THEN 3900
-756 IF Y0 = 0 THEN 3900
-758 IF Y0 >= 15 THEN 3900
 760 IF X8 = 0 THEN 775
 765 LET M$ = "fd record expected after tstruct / trec"
 770 IF Y0 <> 8 THEN 2915
@@ -195,7 +191,7 @@
 945 LET M$ = "bad i64 field"
 950 IF W1 <> 0 THEN 2915
 955 LET K1 = 1
-960 GOTO 990
+960 GOTO 986
 965 LET S3 = O0 + 1
 970 CALL "LMRF": G$(4), R3, R2, R1, R0, W1
 975 LET M$ = "bad f64 field"
@@ -207,12 +203,11 @@
 995 GOSUB 3070
 1000 GOSUB 3150
 1005 GOTO 1920
-1010 REM ---- cref: a copy of the constant's expression at the position of the cref -----------------
+1010 REM ---- cref: a copy of the constant's leaf at the position of the cref ---------------------------
 1015 LET D$ = "BAD_TREE"
-1020 LET M$ = "cref names a constant that is not defined, or not yet resolved"
+1020 LET M$ = "cref names a constant that is not defined"
 1025 IF U(3) < 1 THEN 2915
-1030 IF U(3) > N7 THEN 2915
-1031 IF L(U(3), 5) <> 3 THEN 2915
+1030 IF U(3) > N9 THEN 2915
 1032 LET D$ = "BAD_RECORD"
 1033 LET M$ = "cref of type " & STR$(U(2)) & " names a constant of type " & STR$(L(U(3), 2))
 1034 IF U(2) <> L(U(3), 2) THEN 2915
@@ -231,42 +226,39 @@
 1095 NEXT K9
 1100 GOSUB 3150
 1105 GOTO 1920
-1110 REM ---- cn: the folded expression moves to the constant pool, nothing is written ---------------
+1110 REM ---- cn: its value, one leaf (3.5.2), moves to the constant pool, nothing is written -----------
 1115 LET M$ = "cn after the first function"
 1120 IF F5 = 1 THEN 2915
 1125 GOSUB 2980
 1130 LET D$ = "BAD_TREE"
-1135 LET M$ = "cn does not follow exactly its expression"
+1135 LET M$ = "cn does not follow exactly its value, one ci cf cb or cs leaf"
 1140 IF S0 <> 0 THEN 2915
+1141 IF O0 <> S3 THEN 2915
+1142 IF POS("|ci|cf|cb|cs|", "|" & P7$ & "|") = 0 THEN 2915
 1145 LET D$ = "BAD_RECORD"
-1150 LET M$ = "cn replayed out of order"
-1155 IF Q7 = 0 THEN 2915
-1160 LET W9$ = "nodes"
+1150 LET M$ = "cn ids are not 1, 2, ..."
+1155 IF U(1) <> N9 + 1 THEN 2915
+1156 LET T$ = O$(S3)
+1157 LET T1 = 3
+1158 GOSUB 3345
+1159 LET M$ = "the value of cn " & STR$(U(1)) & " is typed " & Z$ & ", the cn " & STR$(U(3))
+1160 IF VAL(Z$) <> U(3) THEN 2915
+1161 LET W9$ = "symbols"
+1162 IF U(1) > S7 THEN 2925
 1165 LET N9 = U(1)
-1170 LET L(N9, 5) = 3
-1175 LET L(N9, 0) = Q0 + 1
-1180 FOR K9 = S3 TO O0
-1185 LET Q0 = Q0 + 1
-1190 IF Q0 > 99999 THEN 2925
-1195 LET Q$(Q0) = O$(K9)
-1200 LET J(Q0, 0) = M(K9, 0)
-1205 LET J(Q0, 1) = M(K9, 1)
-1210 LET J(Q0, 2) = M(K9, 2)
-1215 LET J(Q0, 3) = M(K9, 3)
-1220 LET D$ = "BAD_TREE"
-1225 LET M$ = "a constant expression contains a call"
-1230 IF M(K9, 0) = 3 THEN 2915
-1235 NEXT K9
-1240 LET L(N9, 1) = Q0
+1170 LET L(N9, 2) = U(3)
+1175 LET L(N9, 0) = N9
+1180 LET L(N9, 1) = N9
+1195 LET Q$(N9) = O$(S3)
+1200 LET J(N9, 0) = M(S3, 0)
+1205 LET J(N9, 1) = M(S3, 1)
+1210 LET J(N9, 2) = M(S3, 2)
+1215 LET J(N9, 3) = M(S3, 3)
 1245 LET O0 = S3 - 1
 1250 GOTO 1920
 1255 REM ---- fn: opens a function; its records stay in O$ until the reachable ones are written -------
 1260 LET M$ = "fn inside a function"
 1265 IF F7 = 1 THEN 2915
-1266 IF F5 = 1 THEN 1270
-1267 IF Q5 = 1 THEN 1270
-1268 LET Q5 = 1
-1269 IF X7 > 0 THEN 4000
 1270 LET D$ = "BAD_TREE"
 1275 LET M$ = "nodes left on the stack at fn"
 1280 IF S0 <> 0 THEN 2915
@@ -276,7 +268,7 @@
 1300 LET M$ = "elemental functions are a later phase: pass 2a rejects them, so pass 2b never sees one in phase 1"
 1305 IF G$(4) = "elem" THEN 2915
 1310 LET W9$ = "symbols"
-1315 IF F6 >= 49999 THEN 2925
+1315 IF F6 >= S7 THEN 2925
 1320 LET F6 = F6 + 1
 1325 LET F5 = 1
 1330 LET F7 = 1
@@ -415,17 +407,18 @@
 1905 GOSUB 3150
 1910 GOTO 1920
 1915 GOSUB 3255
-1920 GOSUB 2965
+1920 LET P7$ = G$(1)
+1921 GOSUB 2965
 1925 GOTO 535
 1930 REM ---- type records: kept in the tables T P K$ Y$ until the numbering ------------------------------------
 1935 LET M$ = "type record after the first function"
 1940 IF F5 = 1 THEN 2915
 1945 LET M$ = "type record after a constant"
-1950 IF X7 > 0 THEN 2915
+1950 IF N9 > 0 THEN 2915
 1955 LET M$ = "type ids are not 10, 11, ..."
 1960 IF U(1) <> 10 + T9 THEN 2915
 1965 LET W9$ = "types"
-1970 IF U(1) > 20008 THEN 2925
+1970 IF U(1) > 9 + T7 THEN 2925
 1975 LET T9 = T9 + 1
 1980 LET I9 = U(1)
 1985 LET T(I9, 1) = Y0
@@ -621,13 +614,12 @@
 2928 GOSUB 4300
 2930 CALL "io_pos": Z8$, W4, W5, W6, W7
 2935 IF W7 = 0 THEN 2955
-2940 LET W4 = 0
+2940 LET W4 = N1 - 1
 2945 LET W5 = 1
 2950 LET W6 = 1
 2955 CALL "dg_compile": P$, H$(), N1, W4, W5, W6, "TOO_LARGE", A$(), 1, E(), E$(), E0
 2960 REM ---- 2965: the next record of sea.hir1 into L$ (L0 counts the lines) ----
-2965 IF Q7 > 0 THEN 4200
-2967 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+2965 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 2970 RETURN
 2975 REM ---- 2980: P1 = the nodes the record pops; S0 shrinks; S3 = where the new node starts ----------------------------
 2980 LET P1 = 0
@@ -813,89 +805,12 @@
 3800 LET W2 = W4
 3805 NEXT W3
 3845 RETURN
-3895 REM ---- 3900: a record of the constants part, kept in X$ until the first fn (4000); a cn closes a constant ----
-3900 LET M$ = "fd record expected after tstruct / trec"
-3905 IF X8 > 0 THEN 2915
-3910 LET X7 = X7 + 1
-3915 LET W9$ = "nodes"
-3920 IF X7 > 149999 THEN 2925
-3925 LET X$(X7) = L$
-3930 IF Y0 <> 9 THEN 1920
-3935 LET M$ = "cn ids are not 1, 2, ..."
-3940 IF U(1) <> N7 + 1 THEN 2915
-3945 LET W9$ = "symbols"
-3950 IF U(1) > 49999 THEN 2925
-3955 LET N7 = U(1)
-3960 LET L(N7, 2) = U(3)
-3965 LET L(N7, 3) = X6 + 1
-3970 LET L(N7, 4) = X7
-3975 LET L(N7, 5) = 0
-3980 LET X6 = X7
-3985 GOTO 1920
-3995 REM ---- 4000: at the first fn: order the constants by dependency (iterative DFS, stack D), then replay them ----
-4000 LET F9$ = L$
-4005 LET D$ = "BAD_TREE"
-4010 LET M$ = "constant expression records not closed by a cn"
-4015 IF X7 <> X6 THEN 2915
-4025 FOR Q1 = 1 TO N7
-4030 IF L(Q1, 5) <> 0 THEN 4140
-4035 LET Q2 = 1
-4040 LET D(1, 0) = Q1
-4045 LET D(1, 1) = L(Q1, 3)
-4050 LET L(Q1, 5) = 1
-4055 LET Q3 = D(Q2, 0)
-4060 LET Q6 = D(Q2, 1)
-4065 IF Q6 > L(Q3, 4) THEN 4125
-4070 LET D(Q2, 1) = Q6 + 1
-4075 LET T$ = X$(Q6)
-4080 IF POS(T$, " ") <> 5 THEN 4055
-4085 IF SEG$(T$, 1, 4) <> "cref" THEN 4055
-4090 LET T1 = 4
-4095 GOSUB 3345
-4100 CALL "io_u": Z$, W2, W3
-4102 LET M$ = "cref names a constant that is not defined"
-4104 IF W3 <> 0 THEN 2915
-4106 IF W2 < 1 THEN 2915
-4108 IF W2 > N7 THEN 2915
-4110 LET M$ = "constants refer to each other in a cycle"
-4112 IF L(W2, 5) = 1 THEN 2915
-4114 IF L(W2, 5) = 2 THEN 4055
-4116 LET Q2 = Q2 + 1
-4117 LET D(Q2, 0) = W2
-4118 LET D(Q2, 1) = L(W2, 3)
-4119 LET L(W2, 5) = 1
-4120 GOTO 4055
-4125 LET L(Q3, 5) = 2
-4130 LET Q4 = Q4 + 1
-4132 LET W(Q4) = Q3
-4134 LET Q2 = Q2 - 1
-4136 IF Q2 > 0 THEN 4055
-4140 NEXT Q1
-4145 LET D$ = "BAD_RECORD"
-4150 LET Q7 = 1
-4155 LET Q8 = L(W(1), 3)
-4160 LET Q9 = L(W(1), 4)
-4165 GOTO 1920
-4195 REM ---- 4200: the next replayed record into L$; after the last constant, the saved fn record ----------
-4200 IF Q8 > Q9 THEN 4220
-4205 LET L$ = X$(Q8)
-4210 LET Q8 = Q8 + 1
-4215 RETURN
-4220 LET Q7 = Q7 + 1
-4225 IF Q7 > N7 THEN 4245
-4230 LET Q8 = L(W(Q7), 3)
-4235 LET Q9 = L(W(Q7), 4)
-4240 GOTO 4200
-4245 LET Q7 = 0
-4250 LET L$ = F9$
-4255 RETURN
 4295 REM ---- 4300: the record at fault has no pos: the position of the next record with one (DESIGN 2.6.2, 'here') ----
-4300 IF Q7 > 0 THEN 4395
-4305 IF G$(1) = "#end" THEN 4395
+4300 IF G$(1) = "#end" THEN 4396
 4315 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 4320 CALL "io_split": L$, G$(), 300, C0
 4325 IF C0 < 1 THEN 4395
-4330 IF G$(1) = "#end" THEN 4395
+4330 IF G$(1) = "#end" THEN 4396
 4335 LET I0 = 0
 4340 FOR I = 1 TO N2
 4345 IF R$(B(I)) <> G$(1) THEN 4355
@@ -923,3 +838,15 @@
 4391 GOTO 4300
 4392 LET Z8$ = G$(T0 + 1)
 4395 RETURN
+4396 LET Z8$ = STR$(N1 - 1) & ":1:1"
+4397 RETURN
+4398 REM ---- 4400: S7 T7 = LIM_SYMBOLS LIM_TYPES (limits.inc), within the DIMs of K L J Q$ and T Y O ----
+4400 CALL "tb_cval": C(), C$(), N5, "LIM_SYMBOLS", S7, W1
+4405 IF W1 <> 0 THEN 4440
+4410 CALL "tb_cval": C(), C$(), N5, "LIM_TYPES", T7, W1
+4415 IF W1 <> 0 THEN 4440
+4420 IF S7 > 49999 THEN 4445
+4425 IF T7 + 9 > 20009 THEN 4445
+4430 RETURN
+4440 CALL "dg_bug": P$, "LIM_SYMBOLS or LIM_TYPES is not in the consts table"
+4445 CALL "dg_bug": P$, "LIM_SYMBOLS or LIM_TYPES is larger than the arrays of seaexpand"

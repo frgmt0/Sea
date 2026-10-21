@@ -1,0 +1,4 @@
+// const_shortcircuit -- a constant && / || does not evaluate its right operand when the left decides (LANGUAGE.md 7.2)
+const A = false && (1 % 0 == 0)
+const B = true || (1 % 0 == 0)
+printf("%d %d\n", A, B)

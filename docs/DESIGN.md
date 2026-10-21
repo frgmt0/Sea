@@ -110,6 +110,16 @@ The user also decided the language questions that phase 0 raised:
 13. Tuple assignment converts each component as LANGUAGE.md §4.2 (b) and §7.3 require: the HIR
     `tasg` carries a conversion flag per target (lead decision; §3.5.5, §3.6.6). `tbind` needs
     none: a tuple pattern takes the result types exactly (LANGUAGE.md §7.2).
+14. Every `const` is evaluated once at compile time to one literal; a constant whose evaluation
+    overflows `i64` or divides an `i64` by zero is a compile error at the operation (user
+    decision U2, 2026-10-21; LANGUAGE.md §7.2; §3.5.2; errors 260, 261).
+15. Round-3 rules (lead decisions R1–R9): the `stdout=closed` test key (§6.2); driver input
+    examples and the `-ef` check for every output file `sea build` writes, not for `sea run`
+    (§2.2); limits read from `limits.inc`, the
+    look-ahead of `here` and type records (§2.6.2); `off` any `i64` (§3.6.4); `la d0` and
+    duplicate function names rejected, a `-` site no operand (§3.6.5, §2.7); positions of the
+    symbols limit and what the types and constants limits count (§2.6.2, §2.7); `let _: T = f()`
+    (LANGUAGE.md §7.2).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -267,9 +277,14 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
 
    **Input read once.** The driver copies the program file into the temporary directory before
    anything else reads it, and every later step (the line check, pass 1's input) reads that copy,
-   so the input may be a pipe or another non-regular file (`sea build /dev/stdin`). An `-o` that
-   names the input file itself (the same file, `test -ef`) is refused before anything is written:
-   `sea: output file '<path>' is the input file`, status 2.
+   so the input may be a pipe or another non-regular file (`sea run /dev/stdin`, `sea build -o
+   prog /dev/stdin`; without `-o` the default output `/dev/stdin.out` is not writable). Whenever
+   the command writes an output file (`sea build`, with or without `-o`: the linked program, the
+   `-S` assembly, or an `--emit` dump written to a file), the driver checks that file against the
+   input before anything is written: if it is the input file itself (the same file, `test -ef`,
+   also through a link, as `sea build -S a.sea` when `a.s` is a link to `a.sea`), the build is
+   refused with `sea: output file '<path>' is the input file`, status 2. `sea run` writes no
+   output file, so it makes no such check.
 2. Check the source lines (`LC_ALL=C awk`) of the program's file: one CR at the end of a line
    (before its LF, or at the very end of the file) is removed first, as LANGUAGE.md §3.1 says,
    and a line that then has more than `SEA_LIM_LINE_BYTES` (4096) bytes is reported as the
@@ -537,8 +552,8 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
-| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record); for a record without one, the next node of the same function or constant that has one; passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
-| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
+| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit of pass 2a, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
+| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
 | `binding` | the node declaring the name: `pname`, `param`, the `for` node (for a loop variable every error is reported at the `for` node; the AST `npos` field is used only for the `loc` record's position, §3.4, §3.5.4), a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
@@ -689,6 +704,8 @@ it equals the error record.
 | 257 | `VIEW_RANK` | C2 | dot | `ss` | `view .%s is not defined for %s` | defined here (LANGUAGE.md §5.6) |
 | 258 | `ELEMENT_TYPE` | C2 | type | `s` | `arrays cannot hold %s` | defined here (LANGUAGE.md §4.1: handles) |
 | 259 | `NOT_SUPPORTED` | C2 | construct | `s` | `not supported yet: %s` | defined here (the phase rule below and §8; retired once v1 is complete) |
+| 260 | `INT_OVERFLOW_C` | C2 | expr | - | `integer overflow` | LANGUAGE.md §7.2 (a `const` whose evaluation overflows `i64`) |
+| 261 | `INT_DIV_ZERO_C` | C2 | expr | - | `integer division by zero` | LANGUAGE.md §7.2 (a `const` whose evaluation divides an `i64` by zero) |
 | 400 | `TOO_LARGE` | CX | here | `s` | `program too large: %s` | LANGUAGE.md §3.1; §2.7 |
 | 500 | `TRUNCATED` | P | - | - | `internal error: truncated input` | §2.2 |
 | 501 | `BAD_HEADER` | P | - | - | `internal error: bad header` | defined here (§3.2) |
@@ -954,8 +971,11 @@ tables; every other pass uses a subset of the same layout:
 
 Six tables, passed to every `SUB` (6 of 16 parameters). Hence the **capacity limits**
 (compile errors `program too large: %s`): at most 99 999 AST nodes, 49 999 symbols, 19 999
-types, 19 999 distinct numeric constant values (equal bit patterns of one type are one entry of
-`C`, however often they occur) and 199 999 distinct strings per compilation (prelude included);
+types (types, not rows of `T`: the continuation rows of a tuple or struct type do not count),
+19 999 distinct numeric constant values (a literal counts once per kind as written, `ci` or `cf`,
+and value, however often it occurs; each `const` item's value is one value) and 199 999 distinct
+strings per compilation (prelude included); every pass compares with the `SEA_LIM_*` values it
+reads from the generated consts table (§2.6.3), never with a written number;
 nesting depth ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
 Pass 1 enforces the nesting, parameter, result and field limits as it parses (and the node and
 string limits as it builds the tree; the `prog` root is not counted as a node, and the `#file`
@@ -1041,14 +1061,76 @@ factor applied to the later passes, sized by the rules they implement (LANGUAGE.
 | 3a `sealower` | 5 000–8 000 | inlining, fusion, views, checks, COW, temporaries |
 | 3b `seaopt` | 3 000–5 000 | the §5.2 optimizations, scalar replacement, vectorization |
 | 4 `seagen_a64`, `seagen_x64` | 4 000–7 000 each | instruction selection (templates in `DATA`), linear-scan allocation, frames, error-site tables |
-| **total** | **≈ 26 000–42 000** | eight programs |
+| **total** | **≈ 26 000–42 000** | eight programs (original estimate of phase 0; recalibrated below) |
 
-The uncertainty is large (±50 % on the later passes); the estimate is recalibrated when pass 1
-exists (phase 1, §8). Passes 2a and 3a may approach the 10 000-line limit; the response is
-Decision 2 in §9 (split further, or grow Baysick, by the policy of §7.3). Runtime assembly per target, by analogy with
+The uncertainty was large (±50 % on the later passes); the estimate above is the original one of
+phase 0, kept for comparison, and is recalibrated below from the real phase-1 passes (§8).
+Runtime assembly per target, by analogy with
 Baysick's runtimes (9 000 and 11 000 lines): core runtime 8 000–12 000 lines, plotting and JSON
 2 500–4 000, Sea's own kernels (GEMV, LU/Cholesky panels, triangular solves, eigenvalues, sort,
 elementary functions in scalar and vector forms) 6 000–10 000 — all estimates.
+
+**Recalibration from the phase-1 passes (measured with phase 1 complete, on the tree of the
+round-3 fixes that follow sea commit 3f07e31).** `make lines
+check-limits` counts the stored lines of each built program `build/gen/<pass>.bas` (§2.6.3: the
+pass's own files, the shared modules of its `build.list`, the generated `DATA`, and `99999
+END`); the split comes from the line-number ranges of §2.6.3. FORs and string bytes are the
+counts Baysick's limits apply to (§2.7 table above).
+
+| Pass | Own | Lib modules | `DATA` | Total | FORs | String bytes | Original estimate (whole v1 pass) |
+|------|----:|------------:|-------:|------:|-----:|-------------:|-----------------------------------|
+| 1 `seaparse` | 1 528 | 1 845 (io diag tables limb fltlit) | 501 | 3 875 | 74 | 2 511 | 1 800–2 400 |
+| 2a `seacheck` | 2 778 | 2 123 (io diag tables limb f64emu) | 501 | 5 403 | 127 | 4 276 | 6 000–9 000 |
+| 2b `seaexpand` | 852 | 2 123 (io diag tables limb f64emu) | 501 | 3 477 | 90 | 3 512 | 2 500–4 000 |
+| 3a `sealower` | 1 649 | 892 (io diag tables) | 504 | 3 046 | 67 | 2 351 | 5 000–8 000 |
+| 3b `seaopt` | 952 | 892 (io diag tables) | 504 | 2 349 | 55 | 4 172 | 3 000–5 000 |
+| 4 `seagen_a64` | 1 935 | 892 (io diag tables) | 504 | 3 332 | 88 | 3 104 | 4 000–7 000 |
+
+(Totals include the `END` line. Limits: 10 000 lines, 1000 `FOR`s, 65 536 string bytes.)
+
+**How far off the original estimate was.** Pass 1 parses the whole grammar from phase 1 on
+(§2.6.2), so it is the one pass that can be compared whole: its own code (1 528 lines) is 15 %
+below the low end of the estimate, so the density factor of 1.5–2 Baysick lines per C line held
+for the code itself. The estimate missed the shared part: the modules and the generated `DATA`
+that every pass carries add 1 396 (passes 3a, 3b, 4) to 2 624 (passes 2a, 2b) lines to each
+pass, so pass 1's total is 1.6–2.2 times its estimate. The other passes are incomplete in
+phase 1, so their totals are compared with the estimate only through the re-estimate below.
+
+**Re-estimate for v1** (an estimate, not a measurement). Method: each pass's v1 size is its
+measured phase-1 size plus, for each later phase of §8, an increment for the features that phase
+adds to that pass, sized by comparing the work it adds with the measured phase-1 own lines of
+the same pass and the share of that pass's v1 features phase 1 already covers (pass 1 nearly all;
+passes 2a, 4 about a third; pass 3a about a quarter; pass 2b and 3b mostly their input
+validation); the modules and `DATA` stay as measured, except `DATA` growing to about 600–700 lines
+in the passes that load the runtime entries (3a, 3b, 4) as phases add entries. Own-line
+increments per phase:
+
+| Pass | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | v1 total (with modules and `DATA`) |
+|------|--:|--:|--:|--:|--:|--:|--:|--:|------------------------------------|
+| 1 `seaparse` | — | — | 0–100 | — | 0–100 | — | — | 0–100 | 3 900–4 200 |
+| 2a `seacheck` | — | 100–300 | 2 500–3 500 | — | 800–1 200 | — | 150–250 | 300–600 | **9 300–11 300** |
+| 2b `seaexpand` | — | — | 200–400 | — | 700–1 200 | — | — | — | 4 400–5 100 |
+| 3a `sealower` | — | 100–200 | 2 500–3 500 | — | 1 000–1 500 | 800–1 500 | 200–400 | 200–300 | **7 900–10 600** |
+| 3b `seaopt` | — | — | 200–300 | 1 500–2 500 | — | 1 000–2 000 | — | — | 5 200–7 300 |
+| 4 `seagen_a64` | — | 50–100 | 800–1 200 | 600–1 000 | — | 600–1 000 | 100–200 | — | 5 600–7 000 |
+| 4 `seagen_x64` | 1 900–2 300 (new pass, as `seagen_a64` in phase 1) | 50–100 | 800–1 200 | 600–1 000 | — | 600–1 000 | 100–200 | — | 5 600–7 400 |
+| **all passes** | | | | | | | | | **≈ 42 000–53 000** |
+
+The increments are judged, not measured: ±30 % on each, which the ranges carry. FORs grow with
+the code at the phase-1 ratio (one per 25–45 lines), so no pass approaches 1000; string bytes
+stay small because text lives in `DATA`.
+
+**Passes at risk of the 10 000-line limit.** Pass 2a: about 8 000–9 200 lines after phase 4 and
+8 800–10 400 after phase 6, so it is the first pass likely to reach the limit, in phase 6 (and
+above 9 000 already after phase 4 at the high end). Pass 3a: about 5 700–6 900 after phase 4, 6 700–8 400 after
+phase 6 and 7 500–9 900 after phase 7, reaching the limit only at the high end, in phases 8–9. No
+other pass comes near it. The
+response is the one §7.3 orders first and Decision 2 in §9 pre-agrees: **split the pass into two
+programs with an intermediate file** (pass 2a, for example, into name resolution and typing of
+statements and expressions, then the library-call and format checks; pass 3a into the lowering of
+statements and calls, then fusion and inlining), done when `make check-limits` first reports a
+pass above 9 000 lines, so that the split is made before a phase's work is blocked; Baysick is
+grown only if a pass cannot be split cleanly (§7.3, step 2).
 
 ### 2.8 Numbers inside the compiler
 
@@ -1458,8 +1540,14 @@ component) are not written. The table is written in id order.
 |--------|--------|------|----------|
 | `cn` | `cid:u name:s ty:ty pos:pos` | `1` | the constant's expression |
 
-One `cn` per `const` item, in stream order, numbered from 1, each preceded by its expression's
-records; `pos` is that of the `const` keyword. A use of the constant is a `cref` node.
+One `cn` per `const` item, in stream order, numbered from 1, each preceded by its value: pass 2a
+evaluates every constant (LANGUAGE.md §7.2) exactly, as it evaluates constant exponents (§3.5.5,
+with the emulation of §2.8 for `f64` and exact `i64`), and writes the result as **one leaf**: a
+`ci`, `cf`, `cb` or `cs` of the constant's type, at the position of the expression's root. So the
+child of a `cn` is always a single leaf, and constant substitution (§3.5.7) puts one leaf in place
+of each `cref`. An evaluation that overflows `i64` or divides an `i64` by zero is the compile
+error 260 or 261 (§2.6.2) and writes nothing. `pos` is that of the `const` keyword. A use of the
+constant is a `cref` node.
 
 #### 3.5.3 Elemental instances (`sea.hir`)
 
@@ -1706,9 +1794,10 @@ those of the operation (an `f64` `add` has two `f64` operands, …) before it fo
 
 In this order:
 
-1. **Constant substitution.** Every `cref` is replaced by a copy of its constant's expression
-   (recursively, for constants defined by constants); the copied nodes take the position of the
-   `cref`. The `cn` records are not written.
+1. **Constant substitution.** Every `cref` is replaced by a copy of its constant's leaf (§3.5.2:
+   one `ci`, `cf`, `cb` or `cs`), which takes the position of the `cref`. The `cn` records are
+   not written. Constants never need folding here; step 2 folds what the program's own constant
+   subtrees still hold.
 2. **Folding** (§2.8), bottom-up, of subtrees whose operands are constants (`ci`, `cf`) only:
    `f64` `add sub mul div` (any operand values, ±∞ and NaN included, §2.8), `powk k` of an `f64`
    constant (the multiplications of LANGUAGE.md §6.5 in their pinned order, each rounded),
@@ -1989,6 +2078,10 @@ The destination comes first. Operands are registers; constants are loaded with `
 | `chk` | `c:ri err:s site:site n:u a:reg*n` | if c ≠ 0, stop with the run-time error whose code name in `errors.inc` is `err`, the arguments substituted |
 | `retain` / `release` | `a:rp` | count one more / one fewer reference to a runtime object; `release` frees it at zero (§4.2) |
 
+The `off` field of the loads and stores is any `i64` value (field kind `i`, §3.1); passes 3b and
+4 hold it as four 16-bit limbs, not as an entry of the `C` table (which holds only the `li`/`lf`
+constants that the immediates limit counts, §2.7), so no 2⁵³ bound applies to it.
+
 Blocks (`loop`, `do`, `if`, `ifz`) are numbered per function from 1 in the order of their opening
 records and nest properly; `exit`/`next` name an enclosing `loop` or `do`.
 
@@ -2030,7 +2123,8 @@ choice (`incl` of `rcount` and `dim` of `chkb`: 0 or 1); each `chk` (n = the num
 slots that the `args` letters of the error `err` need, §2.6.2); no instruction inside a `loop`
 writes its `ind`; exactly one `func` of kind `main`, named `.main`; each `fconv` (class `p`
 exactly for `s`, `i` or `f` for the numeric conversions); every `la` names a data label the
-file defines. Any violation is `BAD_RECORD`. The transformations of §5.2–§5.3 and §5.1 arrive
+file defines (labels are `d1`, `d2`, …: `d0` is never one); no two `func` records have the same
+name. Any violation is `BAD_RECORD`. The transformations of §5.2–§5.3 and §5.1 arrive
 in phases 5 and 7. So that the phase-1 `.lir` dump tests stay valid after them, they use only
 programs on which the complete pass 3b changes nothing either: no loop-invariant instruction in a
 loop, no array access or removable check, no slot that §5.3 could scalar-replace (the slots of
@@ -2884,7 +2978,9 @@ sea/tests/
   NAME.meta           (optional, beside a programs/ or errors/ test) `key=value` lines for the
                       runner: `stdout=epipe` connects standard output to a pipe whose reading
                       end is closed before the program starts (for `cannot write '<stdout>':
-                      Broken pipe`, LANGUAGE.md §9.2)
+                      Broken pipe`, LANGUAGE.md §9.2); `stdout=closed` starts the program
+                      with standard output closed (`>&-`, for `cannot write '<stdout>': Bad
+                      file descriptor`); with either key NAME.out is not compared
   rt/arm64_macos/NAME.s  (later rt/x86_64_linux/) a runtime test: an assembly program, in
                       Baysick's assembly style, that calls runtime entry points through rt.inc
                       and is linked with libsea.a; + NAME.out [+ NAME.err, NAME.status], the
@@ -3070,15 +3166,16 @@ LANGUAGE.md), with the calibration of §2.7:
 | numbers to text | `STR$` (exact for integers < 10⁹) and digit arithmetic | yes |
 | exact `f64` bit patterns, big integers | doubles exact below 2⁵³, arrays as limbs (§2.8) | yes |
 | constants above 9 digits | built by arithmetic or read from `DATA` | yes, awkward |
-| program size | 10 000 lines per program, 16 `SUB` parameters, no globals | **tight**: eight programs of an estimated 26 000–42 000 lines in all, two of them possibly near 10 000 (§2.7) |
+| program size | 10 000 lines per program, 16 `SUB` parameters, no globals | **tight**: the passes measure 2 349–5 403 lines each in phase 1 and are re-estimated at about 42 000–53 000 lines in all for v1, with pass 2a reaching 10 000 around phase 6 and pass 3a near it from phase 7 (§2.7) |
 | tables | arrays ≤ 10⁶ elements, 2-D string arrays, by-reference array parameters | yes, giving the capacity limits of §2.7 |
 | message and template text | string constants ≤ 65 536 bytes outside `DATA` | yes, by keeping text in `DATA` |
 | writing assembly text | `PRINT #` of strings writes bytes unchanged | yes |
 
 **Conclusion.** No Baysick language change is needed to start, and none is proposed now. The
 honest risk is size: the line limit and the absence of globals make the larger passes long and
-repetitive, and the estimate of §2.7 could put a pass near 10 000 lines. §7.3 states the
-policy for that case; Decision 2 in §9 agrees it in advance.
+repetitive, and the phase-1 recalibration of §2.7 puts pass 2a at the 10 000-line limit around
+phase 6 and pass 3a near it from phase 7. §7.3 states the policy for that case (split the pass first);
+Decision 2 in §9 agrees it in advance.
 
 ### 7.2 Changes to Baysick's runtime kernel contract
 
@@ -3118,15 +3215,15 @@ this order:
 | no global variables; 16 `SUB` parameters | a `COMMON`-style shared block between the main program and its subprograms | Dartmouth's Fifth Edition `CHAIN`/`COMMON` concerns separate programs, not subprograms; this would be a **Baysick extension** | if table-passing overhead or parameter count becomes a measured problem |
 | 16 parameters per `SUB` | more parameters | none; **Baysick extension** | only with the previous row rejected |
 | 65 536 bytes of string constants | larger limit | none; **Baysick extension** | not expected: text lives in `DATA` |
-| 1000 `FOR` statements per program | larger limit | none; **Baysick extension** | not expected (estimate: a few hundred per pass) |
+| 1000 `FOR` statements per program | larger limit | none; **Baysick extension** | not expected (measured 55–127 per pass in phase 1; at most about 450 in v1, §2.7) |
 | two-character variable names | longer names | the later Dartmouth editions' long names are not verified against a primary source here; treat as a **Baysick extension** unless such a source is found | readability only; not expected to be needed |
 
 ### 7.4 Watch list
 
 | Limit | Expected use | If reached |
 |-------|--------------|------------|
-| 10 000 lines per program | 2 000–9 000 per pass (estimate, §2.7) | §7.3 |
-| 1000 `FOR` statements per program | a few hundred per pass (estimate) | split the pass |
+| 10 000 lines per program | 2 349–5 403 per pass measured in phase 1; 3 900–11 300 per pass re-estimated for v1, pass 2a at the limit around phase 6, pass 3a near it from phase 7 (§2.7) | §7.3: split the pass |
+| 1000 `FOR` statements per program | 55–127 per pass measured in phase 1; at most about 450 in v1 (§2.7) | split the pass |
 | 26 array letters per program unit | 6–8 tables per pass | pack tables into 2-D arrays |
 | 10⁶ elements per array | the tables of §2.7 | lower a capacity limit or split the table |
 | 1024 active `CALL`s | parser recursion ≤ nesting 64 × about 5 levels | iterative parsing of operator chains |
@@ -3185,7 +3282,10 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
    change: the compiler must fit Baysick 0.6.0 as it is, whatever the number of passes.
    **Decided: (a).** The calibration (§2.7) says Baysick 0.6.0 is sufficient with an
    estimated 26 000–42 000 lines in eight programs, but the estimate is ±50 %; (a) commits to
-   nothing unmeasured and pre-agrees how a measured need is handled. Affects §2.1, §2.7, §7.
+   nothing unmeasured and pre-agrees how a measured need is handled. (Recalibrated in phase 1
+   from the real passes: about 42 000–53 000 lines, with pass 2a reaching the 10 000-line
+   limit around phase 6 and pass 3a near it from phase 7, §2.7; the pre-agreed response is to
+   split them, §7.3.) Affects §2.1, §2.7, §7.
 3. **Index base.**
    Options: (a) 0-based with half-open ranges `a..b`; (b) 1-based with inclusive ranges, like
    MATLAB and Baysick's MAT. **Decided: (a).** It matches the C/Rust family Sea's syntax

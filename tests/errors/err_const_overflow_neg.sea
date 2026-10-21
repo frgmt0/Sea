@@ -1,0 +1,3 @@
+// err_const_overflow_neg -- unary minus of -2^63 in a constant (LANGUAGE.md 7.2, 6.5)
+const N = -(-9223372036854775807 - 1)
+let x = N

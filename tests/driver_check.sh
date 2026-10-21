@@ -367,6 +367,19 @@ if begin driver/output-is-input-hard-link; then
     cp "$W/p.sea" "$W/orig.sea"; rm -f "$W/link.sea"; ln "$W/orig.sea" "$W/link.sea"
     drive build -S orig.sea -o link.sea; want_status 2; want_err "sea: output file '$W/link.sea' is the input file"; want_log ""; end; fi
 
+if begin driver/S-default-output-is-input-symlink; then
+    rm -f "$W/a.s" "$W/a.sea"; cp "$W/p.sea" "$W/a.sea"; ln -s a.sea "$W/a.s"
+    drive build -S a.sea; want_status 2; want_out_empty; want_err "sea: output file '$W/a.s' is the input file"; want_log ""; want_tmp_clean
+    cmp -s "$W/p.sea" "$W/a.sea" || bad "the input file was changed"; rm -f "$W/a.s" "$W/a.sea"; end; fi
+if begin driver/S-default-output-is-input-hard-link; then
+    rm -f "$W/a.s" "$W/a.sea"; cp "$W/p.sea" "$W/a.sea"; ln "$W/a.sea" "$W/a.s"
+    drive build -S a.sea; want_status 2; want_err "sea: output file '$W/a.s' is the input file"; want_log ""
+    cmp -s "$W/p.sea" "$W/a.sea" || bad "the input file was changed"; rm -f "$W/a.s" "$W/a.sea"; end; fi
+if begin driver/x86-64-default-output-is-input-symlink; then
+    rm -f "$W/a.s" "$W/a.sea"; cp "$W/p.sea" "$W/a.sea"; ln -s a.sea "$W/a.s"
+    drive build --target x86_64-linux a.sea; want_status 2; want_err "sea: output file '$W/a.s' is the input file"; want_log ""
+    cmp -s "$W/p.sea" "$W/a.sea" || bad "the input file was changed"; rm -f "$W/a.s" "$W/a.sea"; end; fi
+
 # ---- outputs ------------------------------------------------------------------------------------------
 if begin driver/emit-to-file; then
     rm -f "$W/d.txt"; drive build --emit hir1 --no-prelude -o d.txt p.sea; want_status 0; want_out_empty
@@ -442,6 +455,19 @@ if [ $DARWIN = 1 ]; then
         : > "$T/log"
         printf 'let x = 1\n' | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log SEA_ASM=$T/main.s "$DRIVER" run /dev/stdin -- one two) >"$T/o" 2>"$T/e"; st=$?
         want_status 3; want_out_empty; want_tmp_clean; end; fi
+    if begin driver/run-symlink-named-like-default-output; then
+        rm -f "$W/a" "$W/a.sea"; cp "$W/p.sea" "$W/a.sea"; ln -s a.sea "$W/a"
+        drive_asm "$DRIVER" run a.sea -- one; want_status 2; want_out_empty; want_tmp_clean
+        [ -h "$W/a" ] || bad "the symlink was removed"; rm -f "$W/a" "$W/a.sea"; end; fi
+    if begin driver/build-default-output-is-input-symlink-refused; then
+        rm -f "$W/a" "$W/a.sea"; cp "$W/p.sea" "$W/a.sea"; ln -s a.sea "$W/a"
+        drive_asm "$DRIVER" build a.sea; want_status 2; want_out_empty; want_err "sea: output file '$W/a' is the input file"; want_log ""; want_tmp_clean
+        [ -h "$W/a" ] || bad "the symlink was replaced"
+        cmp -s "$W/p.sea" "$W/a.sea" || bad "the input file was changed"; rm -f "$W/a" "$W/a.sea"; end; fi
+    if begin driver/build-o-from-pipe; then
+        rm -f "$T/prog"; : > "$T/log"
+        printf 'let x = 1\n' | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log SEA_ASM=$T/main.s "$DRIVER" build -o "$T/prog" /dev/stdin) >"$T/o" 2>"$T/e"; st=$?
+        want_status 0; [ -x "$T/prog" ] || bad "executable not written"; end; fi
     if begin driver/run-no-arguments; then
         rm -f "$W/p"
         drive_asm "$DRIVER" run p.sea; want_status 1; [ -e "$W/p" ] && bad "sea run left an executable"; end; fi

@@ -1,0 +1,4 @@
+const A = B && (1 % 0 == 0)
+const B = (9223372036854775807 + 1) < 0
+printf("%d\n", A)
+// err_const_poison_and -- a constant whose operand constant failed reports only that failure (LANGUAGE.md 7.2 U2)

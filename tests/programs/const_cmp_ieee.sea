@@ -1,0 +1,9 @@
+// const_cmp_ieee -- constant comparisons follow IEEE: -0.0 == 0.0, NaN unordered (LANGUAGE.md 7.2)
+const Z = -0.0 == 0.0
+const N1 = nan != nan
+const N2 = nan == nan
+const N3 = nan < nan
+const N4 = nan <= 1.0
+const N5 = nan > 0.0
+const N6 = nan >= nan
+printf("%d %d %d %d %d %d %d\n", Z, N1, N2, N3, N4, N5, N6)

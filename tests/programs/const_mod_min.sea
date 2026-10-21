@@ -1,0 +1,5 @@
+// const_mod_min -- in a constant -2^63 % -1 is 0, not an overflow (LANGUAGE.md 6.6, 7.2)
+const MN = -9223372036854775808
+const R = MN % -1
+const Z = MN % -1 == 0
+printf("%d %d\n", R, Z)

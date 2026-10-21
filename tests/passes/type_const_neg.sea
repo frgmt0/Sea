@@ -1,0 +1,9 @@
+// type_const_neg -- negative constant leaves: -10^9 and -2^63 are written in hex, -999999999 in
+// decimal (DESIGN.md 3.1 field i, 3.5.2 one leaf at the root's position, 3.5.7 step 1)
+const N = -1000000000
+const P = -999999999
+const M = -9223372036854775808
+let a = N
+let b = P
+let c = M + 1
+printf("%d %d %d\n", a, b, c)

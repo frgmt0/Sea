@@ -29,7 +29,7 @@
 240 REM             k = 1.. (at most O9, the limit of operands); the func record's fields are in M(1..I(0,3)),
 245 REM             outside the limit; per field type:
 250 REM               u: the value, -1 for an absent (-) field; reg: the register number, 0 = absent;
-255 REM               li/lf v (i, f): a row of C; off (i): its value (|v| <= 2^53); s: a row of S$; pos: F*1E9+L, C;
+255 REM               li/lf v (i, f): a row of C; off (i): a row of G (its four limbs, any i64); s: a row of S$; pos: F*1E9+L, C;
 260 REM               lab, slot, blk: the number; an enumeration: the position of its word (1..)
 265 REM   R(r,1..7) register r (1..R9): class (1 i, 2 f, 3 p, 4 x, 5 y, 6 m), then six columns
 270 REM             for phase 5 (first definition, last use, interval start and end, machine
@@ -41,7 +41,7 @@
 300 REM   S$(r)     the distinct strings of the compilation (escaped, interned: P its hash table), r = 1..A3
 305 REM   X(h)      hash set of the distinct sites F*1E9+L of the compilation (instruction sites
 308 REM   (per compilation) H(sid) the func of name sid, V$(f) its result classes "/" parameter classes,
-309 REM   U$ the forward calls "sid:results/arguments" (hash set) checked at #end, M6 funcs of kind main
+309 REM   U$ the forward calls "sid:results/arguments" (hash set) checked at #end, M6 funcs of kind main; G(r,0..3) off limbs
 310 REM             and func positions), counted against the limit of sites
 315 REM Other state: Q Q$ F F$ N N$ W$ Z the record and enumeration tables of passes.txt (tb_records),
 320 REM E E$ the error table, J J$ the limits, Y Y$ the entries of rt.inc, D D$ the exit statuses,
@@ -57,7 +57,7 @@
 370 DIM J(299,4), J$(299), Y(399), Y$(399,5), D(39), D$(39), B(399), A(399)
 375 DIM I(199999,4), O(799999), R(99999,7), K(19999,4), C(199999,4), S$(199999)
 380 DIM X(131071), T(10000), G$(300), U(40), L(4), H$(100), A$(2)
-382 DIM M(301), P(262143), H(199999), V$(49999), U$(131071)
+382 DIM M(301), P(262143), H(199999), V$(49999), U$(131071), G(199999,3)
 385 LET P$ = "seaopt"
 390 REM ---- the tables of the contract files, in the order of the DATA blocks -------------------
 395 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -170,6 +170,7 @@
 930 LET A5 = 0
 931 LET Y1$ = ""
 932 LET Y2$ = ""
+933 LET A6 = 0
 935 LET F7 = 0
 940 LET F8 = 0
 945 LET F9 = 0
@@ -767,29 +768,13 @@
 3835 LET Q0 = M(P1)
 3840 LET Q1 = M(P1 + 1)
 3845 RETURN
-3848 REM ---- 3850: an off field (its exact value Q0): decimal for |v| <= 999999999, else # and 16 hex digits ----
+3848 REM ---- 3850: an off field (row Q0 of G): its limbs, then written as an i field (3730) ----
 3850 LET W6 = Q0
 3852 LET P1 = P1 + 1
-3854 IF ABS(W6) > 999999999 THEN 3860
-3856 LET S1$ = STR$(W6)
-3858 RETURN
-3860 LET W7 = ABS(W6)
-3862 FOR W8 = 4 TO 1 STEP -1
-3864 LET L(W8) = W7 - INT(W7 / 65536) * 65536
-3866 LET W7 = INT(W7 / 65536)
-3868 NEXT W8
-3870 IF W6 > 0 THEN 3890
-3872 FOR W8 = 1 TO 4
-3874 LET L(W8) = 65535 - L(W8)
-3876 NEXT W8
-3878 LET W8 = 4
-3880 LET L(W8) = L(W8) + 1
-3882 IF L(W8) < 65536 THEN 3890
-3884 LET L(W8) = 0
-3886 LET W8 = W8 - 1
-3888 GOTO 3880
-3890 CALL "io_hex": L(), S1$
-3892 RETURN
+3854 FOR W8 = 1 TO 4
+3856 LET L(W8) = G(W6, W8 - 1)
+3858 NEXT W8
+3860 GOTO 3730
 3897 REM ---- 3900: the checks of one validated field beyond its type (DESIGN 3.6.5), called after 2350 ----
 3900 IF A9 = 1 THEN 3995
 3905 IF Y0 <> 37 THEN 3940
@@ -956,14 +941,12 @@
 5054 LET P(H1) = A3
 5056 LET Q2 = A3
 5060 RETURN
-5095 REM ---- 5100: V1 = the exact value of an off field (io_i left K1 V L()); |v| above 2^53 is BAD_RECORD ----
-5100 LET V1 = V
-5105 IF K1 = 0 THEN 5160
-5110 LET M$ = B$ & " is an offset beyond 2^53 in magnitude"
-5115 IF L(1) < 32768 THEN 5145
-5125 IF 65535 - L(1) >= 32 THEN 2180
-5130 LET V1 = -((((65535 - L(1)) * 65536 + 65535 - L(2)) * 65536 + 65535 - L(3)) * 65536 + 65535 - L(4) + 1)
-5140 GOTO 5160
-5145 IF L(1) >= 32 THEN 2180
-5150 LET V1 = ((L(1) * 65536 + L(2)) * 65536 + L(3)) * 65536 + L(4)
+5095 REM ---- 5100: an off field (io_i left its limbs in L): a new row of G, any i64 (DESIGN 3.6.4) ----
+5100 LET A6 = A6 + 1
+5105 LET M$ = "more off fields in a function than instructions"
+5110 IF A6 > 199999 THEN 2180
+5115 FOR Q3 = 1 TO 4
+5120 LET G(A6, Q3 - 1) = L(Q3)
+5125 NEXT Q3
+5130 LET V1 = A6
 5160 RETURN

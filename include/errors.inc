@@ -144,6 +144,9 @@
 // phase rule (DESIGN.md 2.6.2, 8): a construct the compiler does not implement yet;
 // retired (never produced, code kept reserved) once Sea v1 is complete
     \m 259, NOT_SUPPORTED, C2, construct, s, "not supported yet: %s"
+// pass 2a: the evaluation of a const item fails (LANGUAGE.md 7.2)
+    \m 260, INT_OVERFLOW_C, C2, expr, -, "integer overflow"
+    \m 261, INT_DIV_ZERO_C, C2, expr, -, "integer division by zero"
 // any pass: capacity limits (DESIGN.md 2.7)
     \m 400, TOO_LARGE, CX, here, s, "program too large: %s"
 // passes: internal consistency checks, status SEA_EXIT_PASS_INTERNAL (DESIGN.md 2.2, 3.2, 3.3)

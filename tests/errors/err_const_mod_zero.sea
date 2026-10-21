@@ -1,0 +1,3 @@
+// err_const_mod_zero -- a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6)
+const Z = 5 % (3 - 3)
+let x = Z

@@ -1,9 +1,7 @@
 #sea 1
 #target arm64-macos
 #file type_powk.sea
-ci 0:4:11 3 6
-ci 0:4:15 3 4
-bin 0:4:11 3 mod
+ci 0:4:11 3 2
 cn 1 K 3 0:4:1
 fn 1 .main main 1 0 12 0:1:1
 loc x 4 let 0:5:5
