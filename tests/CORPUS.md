@@ -74,21 +74,21 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `op_prec` | ast | LANGUAGE.md §6.1, Appendix B; §3.3 positions with parentheses |
 | `stmt_header` | ast | LANGUAGE.md §6.11, Appendix A header mode |
 | `stmt_grammar_full` | ast | Appendix A, every production; §2.6.2 (pass 1 parses the whole grammar) |
-| `type_untyped` | hir1 hir | LANGUAGE.md §4.2, §6.5; §3.5.5, §3.5.7 folding |
-| `type_var_rule` | hir1 hir | LANGUAGE.md §4.2 var rule (Decision 8) |
-| `type_cvt` | hir1 hir | LANGUAGE.md §4.2; §3.5.5 `cvt` positions, `lib f64/i64` |
-| `type_powk` | hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents" |
-| `type_const` | hir1 hir | LANGUAGE.md §7.2; §3.5.2, §3.5.7 steps 1–2 |
-| `fn_ref` | hir1 hir lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
-| `fn_multi` | hir1 hir lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
-| `fn_ref_order` | hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
-| `fn_printf` | hir1 hir lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
-| `type_ifx_arm` | hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
-| `op_fold` | hir1 hir | §3.5.7 step 2, §2.8 folding checks |
-| `op_shortcircuit` | hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
-| `stmt_loops` | hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
+| `type_untyped` | ast hir1 hir | LANGUAGE.md §4.2, §6.5; §3.5.5, §3.5.7 folding |
+| `type_var_rule` | ast hir1 hir | LANGUAGE.md §4.2 var rule (Decision 8) |
+| `type_cvt` | ast hir1 hir | LANGUAGE.md §4.2; §3.5.5 `cvt` positions, `lib f64/i64` |
+| `type_powk` | ast hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents" |
+| `type_const` | ast hir1 hir | LANGUAGE.md §7.2; §3.5.2, §3.5.7 steps 1–2 |
+| `fn_ref` | ast hir1 hir lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
+| `fn_multi` | ast hir1 hir lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
+| `fn_ref_order` | ast hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
+| `fn_printf` | ast hir1 hir lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
+| `type_ifx_arm` | ast hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
+| `op_fold` | ast hir1 hir | §3.5.7 step 2, §2.8 folding checks |
+| `op_shortcircuit` | ast hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
+| `stmt_loops` | ast hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
-| `fn_reach` | hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
+| `fn_reach` | ast hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b

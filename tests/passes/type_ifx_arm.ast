@@ -1,0 +1,21 @@
+#sea 1
+#target arm64-macos
+#file type_ifx_arm.sea
+pname 0:4:5 c
+true 0:4:9
+let 0:4:1 0
+pname 0:5:5 v
+name 0:5:12 c
+float 0:5:16 #3FE0000000000000
+int 0:5:29 2
+ifx 0:5:9
+let 0:5:1 0
+pname 0:6:5 w
+name 0:6:9 c
+name 0:6:14 v
+float 0:6:18 #3FF0000000000000
+bin 0:6:14 gt
+bin 0:6:9 and
+let 0:6:1 0
+prog 3
+#end

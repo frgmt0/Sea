@@ -1,0 +1,67 @@
+#sea 1
+#target arm64-macos
+#file op_shortcircuit.sea
+type 0:3:12 i64 s 0
+param 0:3:9 a 0 0
+type 0:3:20 i64 s 0
+param 0:3:17 b 0 0
+type 0:3:28 i64 s 0
+pname 0:4:9 r
+int 0:4:13 0
+var 0:4:5 0
+int 0:5:14 0
+name 0:5:17 a
+range 0:5:14 0 0
+name 0:6:12 i
+int 0:6:16 1
+bin 0:6:12 gt
+name 0:6:21 i
+name 0:6:25 b
+bin 0:6:21 lt
+bin 0:6:12 and
+name 0:7:13 r
+int 0:7:18 1
+asg 0:7:13 add
+block 0:6:27 1
+if 0:6:9 0
+name 0:9:12 i
+int 0:9:17 0
+bin 0:9:12 eq
+name 0:9:22 r
+int 0:9:26 3
+bin 0:9:22 gt
+bin 0:9:12 or
+name 0:10:13 r
+name 0:10:17 r
+int 0:10:21 2
+bin 0:10:17 mul
+name 0:10:28 r
+int 0:10:32 4
+bin 0:10:28 gt
+int 0:10:36 1
+int 0:10:47 0
+ifx 0:10:25
+bin 0:10:17 add
+asg 0:10:13 set
+block 0:9:28 1
+if 0:9:9 0
+block 0:5:19 2
+for 0:5:5 i
+name 0:13:12 r
+return 0:13:5 1
+block 0:3:32 3
+fn 0:3:1 pick 0 2 1
+pname 0:15:5 x
+name 0:15:9 pick
+int 0:15:14 5
+int 0:15:17 3
+call 0:15:9 2
+let 0:15:1 0
+pname 0:16:5 y
+name 0:16:9 pick
+int 0:16:14 2
+int 0:16:17 2
+call 0:16:9 2
+let 0:16:1 0
+prog 3
+#end

@@ -1,0 +1,71 @@
+#sea 1
+#target arm64-macos
+#file type_powk.sea
+int 0:4:11 6
+int 0:4:15 4
+bin 0:4:11 mod
+const 0:4:1 K 0
+pname 0:5:5 x
+float 0:5:9 #3FF8000000000000
+let 0:5:1 0
+pname 0:6:5 a
+name 0:6:9 x
+int 0:6:13 2
+bin 0:6:9 pow
+let 0:6:1 0
+pname 0:7:5 b
+name 0:7:9 x
+float 0:7:13 #4000000000000000
+bin 0:7:9 pow
+let 0:7:1 0
+pname 0:8:5 c
+name 0:8:9 x
+int 0:8:14 1
+neg 0:8:13
+bin 0:8:9 pow
+let 0:8:1 0
+pname 0:9:5 d
+name 0:9:9 x
+name 0:9:13 K
+bin 0:9:9 pow
+let 0:9:1 0
+pname 0:10:5 e
+name 0:10:9 x
+int 0:10:14 1
+int 0:10:18 3
+bin 0:10:14 add
+bin 0:10:9 pow
+let 0:10:1 0
+pname 0:11:5 f
+name 0:11:9 x
+float 0:11:14 #0000000000000000
+neg 0:11:13
+bin 0:11:9 pow
+let 0:11:1 0
+pname 0:12:5 g
+int 0:12:9 2
+int 0:12:13 3
+bin 0:12:9 pow
+let 0:12:1 0
+pname 0:13:5 h
+name 0:13:9 x
+int 0:13:13 0
+bin 0:13:9 pow
+let 0:13:1 0
+pname 0:14:5 i
+name 0:14:9 x
+float 0:14:14 #4020000000000000
+float 0:14:20 #4000000000000000
+bin 0:14:14 div
+bin 0:14:9 pow
+let 0:14:1 0
+pname 0:15:5 n
+int 0:15:9 3
+let 0:15:1 0
+pname 0:16:5 j
+name 0:16:9 n
+int 0:16:13 2
+bin 0:16:9 pow
+let 0:16:1 0
+prog 13
+#end

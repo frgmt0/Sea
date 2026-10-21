@@ -1,0 +1,96 @@
+#sea 1
+#target arm64-macos
+#file fn_ref_order.sea
+type 0:4:13 i64 s 0
+param 0:4:6 s 1 0
+type 0:4:21 i64 s 0
+int 0:5:14 0
+int 0:5:17 2
+range 0:5:14 0 0
+name 0:6:9 s
+int 0:6:14 5
+asg 0:6:9 add
+block 0:5:19 1
+for 0:5:5 k
+name 0:8:12 s
+int 0:8:16 2
+bin 0:8:12 mul
+return 0:8:5 1
+block 0:4:25 2
+fn 0:4:1 g 0 1 1
+type 0:10:9 i64 s 0
+param 0:10:6 a 0 0
+type 0:10:17 i64 s 0
+param 0:10:14 b 0 0
+type 0:10:25 i64 s 0
+pname 0:11:9 r
+name 0:11:13 b
+var 0:11:5 0
+int 0:12:14 0
+int 0:12:17 3
+range 0:12:14 0 0
+name 0:13:9 r
+name 0:13:14 a
+asg 0:13:9 add
+block 0:12:19 1
+for 0:12:5 k
+name 0:15:12 r
+return 0:15:5 1
+block 0:10:29 3
+fn 0:10:1 f 0 2 1
+pname 0:17:5 x
+int 0:17:9 1
+var 0:17:1 0
+pname 0:18:5 y
+int 0:18:9 0
+var 0:18:1 0
+name 0:19:1 y
+name 0:19:5 x
+name 0:19:9 g
+name 0:19:15 x
+ref 0:19:11
+call 0:19:9 1
+bin 0:19:5 add
+asg 0:19:1 set
+name 0:20:1 x
+name 0:20:6 g
+name 0:20:12 x
+ref 0:20:8
+call 0:20:6 1
+asg 0:20:1 add
+pname 0:21:5 z
+name 0:21:9 f
+name 0:21:11 x
+name 0:21:14 g
+name 0:21:20 x
+ref 0:21:16
+call 0:21:14 1
+call 0:21:9 2
+let 0:21:1 0
+name 0:22:1 x
+name 0:22:5 g
+name 0:22:11 x
+ref 0:22:7
+call 0:22:5 1
+asg 0:22:1 set
+pname 0:23:5 w
+name 0:23:9 g
+name 0:23:15 x
+ref 0:23:11
+call 0:23:9 1
+name 0:23:20 f
+name 0:23:22 x
+int 0:23:25 0
+call 0:23:20 2
+bin 0:23:9 add
+let 0:23:1 0
+name 0:24:1 printf
+str 0:24:8 %25d%20%25d%20%25d%20%25d%0A
+name 0:24:25 x
+name 0:24:28 y
+name 0:24:31 z
+name 0:24:34 w
+call 0:24:1 5
+cstmt 0:24:1
+prog 10
+#end

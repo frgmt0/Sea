@@ -1,0 +1,55 @@
+#sea 1
+#target arm64-macos
+#file stmt_loops.sea
+type 0:4:12 i64 s 0
+param 0:4:9 n 0 0
+type 0:4:20 i64 s 0
+pname 0:5:9 k
+int 0:5:13 0
+var 0:5:5 0
+name 0:6:11 k
+name 0:6:15 n
+bin 0:6:11 lt
+name 0:7:9 k
+int 0:7:14 3
+asg 0:7:9 add
+block 0:6:17 1
+while 0:6:5
+name 0:9:14 n
+int 0:9:18 0
+int 0:9:26 2
+neg 0:9:25
+range 0:9:14 1 1
+name 0:10:12 i
+int 0:10:17 4
+bin 0:10:12 eq
+continue 0:11:13
+block 0:10:19 1
+if 0:10:9 0
+name 0:13:12 i
+int 0:13:16 2
+bin 0:13:12 lt
+break 0:14:13
+block 0:13:18 1
+if 0:13:9 0
+name 0:16:9 k
+name 0:16:14 i
+asg 0:16:9 sub
+block 0:9:28 3
+for 0:9:5 i
+name 0:18:12 k
+return 0:18:5 1
+block 0:4:24 4
+fn 0:4:1 walk 0 1 1
+pname 0:20:5 a
+name 0:20:9 walk
+int 0:20:14 10
+call 0:20:9 1
+let 0:20:1 0
+pname 0:21:5 b
+name 0:21:9 walk
+int 0:21:14 7
+call 0:21:9 1
+let 0:21:1 0
+prog 3
+#end

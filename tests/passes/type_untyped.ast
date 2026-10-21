@@ -1,0 +1,55 @@
+#sea 1
+#target arm64-macos
+#file type_untyped.sea
+type 0:4:9 f64 s 0
+param 0:4:6 v 0 0
+type 0:4:17 f64 s 0
+name 0:5:12 v
+return 0:5:5 1
+block 0:4:21 1
+fn 0:4:1 h 0 1 1
+pname 0:7:5 x
+float 0:7:9 #3FF8000000000000
+let 0:7:1 0
+pname 0:8:5 a
+int 0:8:9 2
+name 0:8:13 x
+bin 0:8:9 mul
+let 0:8:1 0
+pname 0:9:5 b
+int 0:9:9 3
+let 0:9:1 0
+pname 0:10:5 c
+int 0:10:9 2
+int 0:10:13 3
+bin 0:10:9 pow
+let 0:10:1 0
+pname 0:11:5 d
+type 0:11:8 f64 s 0
+int 0:11:14 4
+int 0:11:18 5
+bin 0:11:14 add
+let 0:11:1 1
+pname 0:12:5 e
+int 0:12:10 2
+neg 0:12:9
+int 0:12:14 3
+bin 0:12:9 mul
+let 0:12:1 0
+pname 0:13:5 f
+name 0:13:9 x
+int 0:13:13 7
+bin 0:13:9 lt
+let 0:13:1 0
+pname 0:14:5 g
+int 0:14:9 10
+int 0:14:14 4
+bin 0:14:9 div
+let 0:14:1 0
+pname 0:15:5 k
+name 0:15:9 h
+int 0:15:11 6
+call 0:15:9 1
+let 0:15:1 0
+prog 10
+#end

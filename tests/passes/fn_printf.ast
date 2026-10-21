@@ -1,0 +1,38 @@
+#sea 1
+#target arm64-macos
+#file fn_printf.sea
+pname 0:5:5 n
+int 0:5:9 42
+let 0:5:1 0
+pname 0:6:5 x
+name 0:6:13 n
+conv 0:6:9 f64
+float 0:6:18 #4020000000000000
+bin 0:6:9 div
+let 0:6:1 0
+name 0:7:1 printf
+str 0:7:8 n=%255d%20x=%25-8.3f%20%25s|%25%25%0A
+name 0:7:34 n
+name 0:7:37 x
+str 0:7:40 ok
+call 0:7:1 4
+cstmt 0:7:1
+pname 0:8:5 t
+name 0:8:9 now
+call 0:8:9 0
+let 0:8:1 0
+name 0:9:1 printf
+str 0:9:8 %25+e%20%25d%0A
+name 0:9:20 x
+name 0:9:27 x
+float 0:9:31 #4020000000000000
+bin 0:9:27 mul
+conv 0:9:23 i64
+call 0:9:1 3
+cstmt 0:9:1
+name 0:10:1 printf
+str 0:10:8 done%0A
+call 0:10:1 1
+cstmt 0:10:1
+prog 6
+#end

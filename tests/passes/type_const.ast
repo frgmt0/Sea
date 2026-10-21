@@ -1,0 +1,40 @@
+#sea 1
+#target arm64-macos
+#file type_const.sea
+int 0:4:11 4
+const 0:4:1 N 0
+name 0:5:11 N
+int 0:5:15 2
+bin 0:5:11 mul
+int 0:5:19 1
+bin 0:5:11 add
+const 0:5:1 M 0
+type 0:6:13 f64 s 0
+float 0:6:19 #3FE0000000000000
+const 0:6:1 HALF 1
+type 0:7:10 f64 s 0
+int 0:7:16 3
+const 0:7:1 K 1
+float 0:8:13 #4000000000000000
+name 0:8:19 pi
+bin 0:8:13 mul
+const 0:8:1 TAU 0
+pname 0:9:5 a
+name 0:9:9 M
+let 0:9:1 0
+pname 0:10:5 b
+name 0:10:9 N
+name 0:10:13 HALF
+bin 0:10:9 mul
+let 0:10:1 0
+pname 0:11:5 c
+name 0:11:9 K
+name 0:11:13 TAU
+bin 0:11:9 add
+let 0:11:1 0
+pname 0:12:5 d
+name 0:12:10 N
+neg 0:12:9
+let 0:12:1 0
+prog 9
+#end

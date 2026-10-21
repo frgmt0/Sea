@@ -1,0 +1,37 @@
+#sea 1
+#target arm64-macos
+#file fn_reach.sea
+type 0:4:14 i64 s 0
+param 0:4:11 n 0 0
+type 0:4:23 i64 s 0
+type 0:4:28 i64 s 0
+name 0:5:13 n
+name 0:5:16 n
+return 0:5:5 2
+block 0:4:33 1
+fn 0:4:1 unused 0 1 2
+type 0:7:14 i64 s 0
+int 0:8:12 7
+return 0:8:5 1
+block 0:7:18 1
+fn 0:7:1 leaf 0 0 1
+type 0:10:13 i64 s 0
+name 0:11:12 leaf
+call 0:11:12 0
+int 0:11:21 1
+bin 0:11:12 add
+return 0:11:5 1
+block 0:10:17 1
+fn 0:10:1 mid 0 0 1
+type 0:13:14 i64 s 0
+name 0:14:12 mid
+call 0:14:12 0
+return 0:14:5 1
+block 0:13:18 1
+fn 0:13:1 dead 0 0 1
+pname 0:16:5 v
+name 0:16:9 mid
+call 0:16:9 0
+let 0:16:1 0
+prog 5
+#end
