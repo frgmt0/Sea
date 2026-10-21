@@ -1,0 +1,2 @@
+env=BAYSICK_KERNELS=baseline
+env=SEA_KERNELS=bogus

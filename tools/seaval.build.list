@@ -1,0 +1,6 @@
+# tools/seaval.build.list -- what is added to tools/seaval.bas to build the validator (DESIGN 2.6.3, 2.10).
+# Same format as passes/<pass>/build.list:
+#   lib <module>...   shared modules of passes/lib/
+#   data <block>...   generated DATA blocks
+lib io diag tables
+data errors consts records

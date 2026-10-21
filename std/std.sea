@@ -1,0 +1,10 @@
+// std.sea -- the Sea prelude (docs/DESIGN.md 2.5, LANGUAGE.md section 10).
+//
+// The driver streams this file to pass 1 ahead of every program, and pass 2b drops each
+// function the program does not reach. It will hold the library functions that are naturally
+// written in Sea with value semantics, marked (P) in LANGUAGE.md section 10: linspace,
+// meshgrid, setdiff and bincount.
+//
+// Those functions need arrays, which arrive in phase 4 (DESIGN.md section 8). Until then this
+// file holds comments only; the driver still streams it, so the prelude path is exercised
+// on every compilation.

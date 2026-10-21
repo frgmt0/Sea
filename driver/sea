@@ -1,0 +1,375 @@
+#!/bin/sh
+# sea -- the Sea compiler driver (docs/DESIGN.md 2.2). POSIX sh, no other tool than
+# mktemp, sed, awk, tail, cmp, rm, cat, env, (arm64-macos) as, ld, xcrun.
+#
+#   sea build <file.sea> [-o <out>] [--target arm64-macos|x86_64-linux] [-S]
+#                        [--emit ast|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]
+#   sea run <file.sea> [--keep-temps] [--no-prelude] [-- program arguments...]
+#   sea --version | --help
+#
+# Installation directory (DESIGN.md 2.10): the directory of this script, symlinks resolved
+# (or $SEA_HOME, which the test runners use). It holds the pass executables seaparse,
+# seacheck, seaexpand, sealower, seaopt, seagen_a64 (seagen_x64), std.sea, errors.inc,
+# limits.inc, libsea.a and libbaysickrt.a. Run from the source tree, errors.inc and limits.inc
+# are found in ../include when the directory has no copy.
+#
+# Every number and message text the driver uses comes from the contract files: exit
+# statuses from errors.inc (SEA_EXIT_*), the line limit and the file-format version from
+# limits.inc, the `line too long` text from the error record LINE_TOO_LONG of errors.inc.
+
+# ---- locate the installation directory (step 1) -------------------------------------
+self=$0
+while [ -h "$self" ]; do
+    link=$(readlink "$self") || break
+    case $link in
+    /*) self=$link ;;
+    *) self=$(dirname "$self")/$link ;;
+    esac
+done
+SEA_DIR=${SEA_HOME:-$(cd "$(dirname "$self")" && pwd)}
+INC_DIR=$SEA_DIR
+if [ ! -f "$INC_DIR/errors.inc" ] || [ ! -f "$INC_DIR/limits.inc" ]; then
+    if [ -f "$SEA_DIR/../include/errors.inc" ] && [ -f "$SEA_DIR/../include/limits.inc" ]; then
+        INC_DIR=$SEA_DIR/../include
+    fi
+fi
+
+# ---- contract-file readers -----------------------------------------------------------
+# inc_equiv FILE NAME : the decimal value of `.equiv NAME, value`.
+inc_equiv() {
+    awk -v n="$2" '$1 == ".equiv" { s = $2; sub(/,$/, "", s); if (s == n) { print $3; exit } }' "$1"
+}
+
+if [ ! -f "$INC_DIR/errors.inc" ] || [ ! -f "$INC_DIR/limits.inc" ]; then
+    # Bootstrap case: the statuses are in the very file that is missing, so the
+    # installation-incomplete status of DESIGN.md 2.2 (4) is written out here, and only here.
+    echo "sea: cannot find errors.inc and limits.inc in '$SEA_DIR'" >&2
+    exit 4
+fi
+EX_OK=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_OK)
+EX_COMPILE=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_COMPILE)
+EX_USAGE=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_USAGE)
+EX_TOOLCHAIN=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_TOOLCHAIN)
+EX_INTERNAL=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_INTERNAL)
+EX_PASS_OK=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_PASS_OK)
+EX_PASS_COMPILE=$(inc_equiv "$INC_DIR/errors.inc" SEA_EXIT_PASS_COMPILE)
+LIM_LINE=$(inc_equiv "$INC_DIR/limits.inc" SEA_LIM_LINE_BYTES)
+FILE_VERSION=$(inc_equiv "$INC_DIR/limits.inc" SEA_FILE_VERSION)
+
+# error_text NAME : the message text of error record NAME (errors.inc line shape:
+# `    \m code, NAME, phase, at, args, "text"`), `\"` read as `"` and `\\` as `\`.
+error_text() {
+    LC_ALL=C awk -v n="$1," '
+    $1 == "\\m" && $3 == n {
+        s = $0; a = index(s, "\""); b = 0
+        for (i = length(s); i > a; i--) if (substr(s, i, 1) == "\"") { b = i; break }
+        t = substr(s, a + 1, b - a - 1); out = ""
+        for (i = 1; i <= length(t); i++) {
+            c = substr(t, i, 1)
+            if (c == "\\" && i < length(t)) { i++; c = substr(t, i, 1) }
+            out = out c
+        }
+        print out; exit
+    }' "$INC_DIR/errors.inc"
+}
+
+# ---- messages and cleanup ------------------------------------------------------------
+TMP=
+KEEP=0
+cleanup() {
+    if [ -n "$TMP" ] && [ -d "$TMP" ]; then
+        if [ "$KEEP" = 1 ]; then
+            echo "sea: temporary files kept in $TMP" >&2
+        else
+            rm -rf "$TMP"
+        fi
+    fi
+    TMP=
+}
+trap 'cleanup' EXIT
+trap 'cleanup; exit 129' HUP
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 143' TERM
+
+# die STATUS MESSAGE : clean up, then the message (DESIGN.md: cleanup before diagnostics).
+die() {
+    _st=$1; shift
+    cleanup
+    printf 'sea: %s\n' "$*" >&2
+    exit "$_st"
+}
+
+USAGE='usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]
+       sea run <file.sea> [--keep-temps] [--no-prelude] [-- program arguments...]
+       sea --version | --help'
+
+usage_error() { # usage_error [MESSAGE]
+    [ -n "$1" ] && printf 'sea: %s\n' "$1" >&2
+    printf 'sea: %s\n' "$USAGE" >&2
+    exit "$EX_USAGE"
+}
+
+# ---- command line --------------------------------------------------------------------
+VERSION='sea 0.1.0'
+[ $# -ge 1 ] || usage_error ""
+case $1 in
+--version) echo "$VERSION"; exit "$EX_OK" ;;
+--help | -h) printf '%s\n' "$USAGE"; exit "$EX_OK" ;;
+build | run) MODE=$1; shift ;;
+*) usage_error "unknown command '$1'" ;;
+esac
+
+INPUT=
+OUT=
+OUT_SET=0
+TARGET=arm64-macos
+ASM_ONLY=0
+EMIT=
+PRELUDE=1
+while [ $# -gt 0 ]; do
+    case $1 in
+    --)
+        shift
+        [ "$MODE" = run ] || usage_error "unknown option '--'"
+        break ;;
+    -o | --target | --emit)
+        [ "$MODE" = build ] || usage_error "unknown option '$1'"
+        [ $# -ge 2 ] || usage_error "missing argument for '$1'"
+        case $1 in
+        -o) OUT=$2; OUT_SET=1 ;;
+        --target) TARGET=$2 ;;
+        --emit) EMIT=$2 ;;
+        esac
+        shift 2 ;;
+    -S)
+        [ "$MODE" = build ] || usage_error "unknown option '-S'"
+        ASM_ONLY=1; shift ;;
+    --keep-temps) KEEP=1; shift ;;
+    --no-prelude) PRELUDE=0; shift ;;
+    -*) usage_error "unknown option '$1'" ;;
+    *)
+        [ -z "$INPUT" ] || usage_error "unexpected argument '$1'"
+        INPUT=$1; shift ;;
+    esac
+done
+[ -n "$INPUT" ] || usage_error "missing input file"
+case $TARGET in
+arm64-macos | x86_64-linux) ;;
+*) die "$EX_USAGE" "unknown target '$TARGET'" ;;
+esac
+case $EMIT in
+"" | ast | hir1 | hir | lir1 | lir) ;;
+*) die "$EX_USAGE" "unknown emit kind '$EMIT'" ;;
+esac
+if [ "$ASM_ONLY" = 1 ] && [ -n "$EMIT" ]; then usage_error "-S and --emit cannot be combined"; fi
+if [ "$MODE" = run ] && [ "$TARGET" != arm64-macos ]; then usage_error "run needs the native target"; fi
+
+# ---- the input file -------------------------------------------------------------------
+if [ ! -e "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': No such file or directory"; fi
+if [ -d "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': Is a directory"; fi
+if [ ! -r "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': Permission denied"; fi
+
+# ---- step 3 (first, so the checks can work on a copy): temporary directory ---------------
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea.XXXXXX" 2>/dev/null) || { TMP=; die "$EX_USAGE" "cannot create temporary directory"; }
+TMP=$(cd "$TMP" && pwd)
+
+# ---- the program text as the checks and the stream see it --------------------------------
+# awk cannot hold a NUL byte (it ends the record), and LANGUAGE.md 3.1 lets NUL appear in
+# comments and strings, so pass 1 must receive every byte. SRC is the file the awk programs
+# read: INPUT itself unless a copy is needed, in which
+#  * a final CR that follows an LF (or is the whole file) is dropped: it is "a CR at the very
+#    end of the file" (LANGUAGE.md 3.1), not an extra empty line; and
+#  * every NUL is replaced by a control byte NULSUB that occurs nowhere in the file; the
+#    stream is translated back afterwards.
+SRC=$INPUT
+NULSUB=
+size=$(wc -c < "$INPUT" | tr -d ' ')
+if [ "$size" -gt 0 ]; then
+    tail2=$(LC_ALL=C tail -c 2 "$INPUT" | od -An -v -tx1 | tr -d ' \n')
+    if [ "$tail2" = 0a0d ] || { [ "$size" = 1 ] && [ "$tail2" = 0d ]; }; then
+        { if [ "$size" = 1 ]; then : > "$TMP/in.cr"; else head -c $((size - 1)) "$INPUT" > "$TMP/in.cr"; fi; } && SRC=$TMP/in.cr || die "$EX_USAGE" "cannot write in '$TMP'"
+    fi
+fi
+if ! LC_ALL=C tr -d '\000' < "$SRC" | cmp -s - "$SRC"; then
+    # a byte value 1-31 (not TAB, LF, CR) absent from the file
+    NULSUB=$(od -An -v -tu1 "$SRC" | awk '
+        { for (i = 1; i <= NF; i++) used[$i] = 1 }
+        END { for (c = 1; c < 32; c++) if (c != 9 && c != 10 && c != 13 && !(c in used)) { print c; exit } }')
+    [ -n "$NULSUB" ] || die "$EX_INTERNAL" "internal error: '$INPUT' uses every control byte, cannot pass NUL bytes on"
+    NULOCT=$(printf '\\%03o' "$NULSUB")
+    LC_ALL=C tr '\000' "$NULOCT" < "$SRC" > "$TMP/in.nul" || die "$EX_USAGE" "cannot write in '$TMP'"
+    SRC=$TMP/in.nul
+fi
+
+# ---- step 2: line check (before any pass runs) ----------------------------------------
+# One CR at the end of a line (before its LF or at the very end of the file) is removed
+# first (LANGUAGE.md 3.1); a longer line is the error `line too long` at column limit+1.
+LINE_MSG=$(error_text LINE_TOO_LONG)
+if [ -z "$LINE_MSG" ] || [ -z "$LIM_LINE" ]; then
+    die "$EX_INTERNAL" "internal error: LINE_TOO_LONG or SEA_LIM_LINE_BYTES missing from the contract files"
+fi
+DIAG=$(SEA_F=$INPUT SEA_M=$LINE_MSG LC_ALL=C awk -v lim="$LIM_LINE" '
+    { l = $0; n = length(l)
+      if (n > 0 && substr(l, n, 1) == "\r") n--
+      if (n > lim) { printf "%s:%d:%d: error: %s\n", ENVIRON["SEA_F"], NR, lim + 1, ENVIRON["SEA_M"]; exit } }
+    ' "$SRC")
+if [ -n "$DIAG" ]; then
+    printf '%s\n' "$DIAG" >&2
+    exit "$EX_COMPILE"
+fi
+
+# ---- output path ----------------------------------------------------------------------
+case $INPUT in
+*.sea) STEM=${INPUT%.sea} ;;
+*) STEM=$INPUT.out ;;
+esac
+ORIG_PWD=$(pwd)
+abspath() { case $1 in /*) printf '%s' "$1" ;; *) printf '%s/%s' "$ORIG_PWD" "$1" ;; esac; }
+IN_ABS=$(abspath "$INPUT")
+
+# What the build produces: emit (a dump), asm (sea.s), exe (linked program).
+if [ -n "$EMIT" ]; then KIND=emit
+elif [ "$ASM_ONLY" = 1 ] || [ "$TARGET" != arm64-macos ]; then KIND=asm
+else KIND=exe; fi
+if [ "$MODE" = run ]; then KIND=exe; fi
+case $KIND in
+emit) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST= ;;      # no -o: standard output
+asm) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM.s") ;;
+exe) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM") ;;
+esac
+
+# ---- step 1 (rest): installation files ------------------------------------------------
+STD=$SEA_DIR/std.sea
+if [ "$PRELUDE" = 1 ] && [ ! -f "$STD" ]; then die "$EX_INTERNAL" "cannot find '$STD'"; fi
+
+
+# ---- step 4: the pass-1 input stream -----------------------------------------------------
+# stream_file FILE : `#file <escaped path>` and every line as `|line`, unchanged (LINPUT
+# removes the CR of a CRLF line; a last line without LF gets one).
+stream_file() {
+    SEA_P=$1 LC_ALL=C awk '
+    BEGIN {
+        for (i = 1; i < 256; i++) ord[sprintf("%c", i)] = i
+        p = ENVIRON["SEA_P"]; e = ""
+        for (i = 1; i <= length(p); i++) {
+            c = substr(p, i, 1); b = ord[c]
+            if (b >= 33 && b <= 126 && b != 37) e = e c
+            else e = e sprintf("%%%02X", b)
+        }
+        if (e == "") e = "%"
+        print "#file " e
+    }
+    { print "|" $0 }' "$2"
+}
+{
+    printf '#sea %s\n#target %s\n' "$FILE_VERSION" "$TARGET"
+    [ "$PRELUDE" = 1 ] && stream_file "$STD" "$STD"
+    if [ -n "$NULSUB" ]; then stream_file "$INPUT" "$SRC" | LC_ALL=C tr "$NULOCT" "\\000"; else stream_file "$INPUT" "$SRC"; fi
+    printf '#end\n'
+} > "$TMP/sea.in" || die "$EX_USAGE" "cannot write in '$TMP'"
+
+# ---- steps 5-7: the passes --------------------------------------------------------------
+printf '#end\n' > "$TMP/end5"
+printf '\n#end\n' > "$TMP/end6"
+
+# check_end FILE PASS : the output file ends with the line #end (DESIGN.md 2.2 step 6).
+check_end() {
+    if [ -f "$TMP/$1" ] && { cmp -s "$TMP/$1" "$TMP/end5" || tail -c 6 "$TMP/$1" | cmp -s - "$TMP/end6"; }; then
+        return 0
+    fi
+    die "$EX_INTERNAL" "internal error: $2 wrote no complete $1 (no final #end)"
+}
+
+# run_pass PASS INFILE OUTFILE : run one pass with the temporary directory as working
+# directory. Pass 1 reads its stream on standard input (INFILE sea.in); the others read their
+# fixed-name file themselves. Pass standard output goes to standard error (a pass writes
+# nothing there); its standard error (the one Sea diagnostic, or an internal message) passes
+# through.
+run_pass() {
+    _exe=$SEA_DIR/$1
+    if [ ! -f "$_exe" ] || [ ! -x "$_exe" ]; then
+        die "$EX_INTERNAL" "internal error: pass executable '$_exe' not found (run make)"
+    fi
+    if [ "$1" = seaparse ]; then
+        (cd "$TMP" && exec "$_exe" < sea.in 1>&2)
+    else
+        (cd "$TMP" && exec "$_exe" < /dev/null 1>&2)
+    fi
+    _st=$?
+    if [ "$_st" = "$EX_PASS_COMPILE" ]; then
+        cleanup
+        exit "$EX_COMPILE"
+    fi
+    if [ "$_st" != "$EX_PASS_OK" ]; then
+        die "$EX_INTERNAL" "internal error: $1 failed with exit status $_st"
+    fi
+    if [ "$3" != sea.s ]; then check_end "$3" "$1"; fi
+    [ -f "$TMP/$3" ] || die "$EX_INTERNAL" "internal error: $1 wrote no $3"
+}
+
+# finish FILE : deliver a produced text file (a dump or sea.s) to DEST or standard output.
+finish() {
+    if [ -z "$DEST" ]; then
+        cat "$TMP/$1" || die "$EX_USAGE" "cannot write '<stdout>'"
+    else
+        { cat "$TMP/$1" > "$DEST"; } 2>/dev/null || die "$EX_USAGE" "cannot write '$DEST'"
+    fi
+}
+
+run_pass seaparse sea.in sea.ast
+if [ "$EMIT" = ast ]; then finish sea.ast; exit "$EX_OK"; fi
+run_pass seacheck sea.ast sea.hir1
+if [ "$EMIT" = hir1 ]; then finish sea.hir1; exit "$EX_OK"; fi
+run_pass seaexpand sea.hir1 sea.hir
+if [ "$EMIT" = hir ]; then finish sea.hir; exit "$EX_OK"; fi
+run_pass sealower sea.hir sea.lir1
+if [ "$EMIT" = lir1 ]; then finish sea.lir1; exit "$EX_OK"; fi
+run_pass seaopt sea.lir1 sea.lir
+if [ "$EMIT" = lir ]; then finish sea.lir; exit "$EX_OK"; fi
+case $TARGET in
+arm64-macos) run_pass seagen_a64 sea.lir sea.s ;;
+x86_64-linux) run_pass seagen_x64 sea.lir sea.s ;;
+esac
+
+# ---- step 8: output ----------------------------------------------------------------------
+if [ "$KIND" = asm ]; then finish sea.s; exit "$EX_OK"; fi
+
+# arm64-macos: assemble and link exactly as Baysick does (Baysick DESIGN.md 4.3, 5.2). SDKROOT
+# is removed from the tools' environment; the SDK path comes from xcrun, never a made-up value.
+LIBSEA=$SEA_DIR/libsea.a
+LIBRT=$SEA_DIR/libbaysickrt.a
+[ -f "$LIBSEA" ] || die "$EX_INTERNAL" "cannot find runtime library '$LIBSEA'"
+[ -f "$LIBRT" ] || die "$EX_INTERNAL" "cannot find runtime library '$LIBRT'"
+SDK=$(env -u SDKROOT xcrun --show-sdk-path 2>/dev/null | sed -n 1p)
+if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then die "$EX_TOOLCHAIN" "cannot determine macOS SDK path"; fi
+
+# tool NAME ARGS... : run an external tool in the temporary directory; a failure is a
+# toolchain error (the tool's own stderr has already passed through).
+tool() {
+    _name=$1; shift
+    if ! command -v "$_name" > /dev/null 2>&1; then die "$EX_TOOLCHAIN" "cannot run '$_name': not found"; fi
+    (cd "$TMP" && env -u SDKROOT "$_name" "$@")
+    _st=$?
+    [ "$_st" = 0 ] || die "$EX_TOOLCHAIN" "'$_name' failed with exit status $_st"
+}
+tool as -arch arm64 -mmacosx-version-min=11.0 -o sea.o sea.s
+EXE=$TMP/sea.exe
+tool ld -o "$EXE" sea.o "$LIBSEA" "$LIBRT" -lSystem -syslibroot "$SDK" -e _main \
+    -arch arm64 -platform_version macos 11.0 11.0
+
+if [ "$MODE" = build ]; then
+    # Deliver the executable: a destination that cannot be written is a file error (2), not a
+    # linker failure. The old file is removed first so a running or cached binary is not
+    # overwritten in place.
+    { rm -f "$DEST" && cp "$EXE" "$DEST"; } 2>/dev/null || die "$EX_USAGE" "cannot write '$DEST'"
+    exit "$EX_OK"
+fi
+
+# ---- sea run ----------------------------------------------------------------------------
+# Run the program in the caller's directory with the arguments after `--`; the exit status
+# of `sea run` is the program's. (Not exec: the temporary directory is removed afterwards.)
+cd "$ORIG_PWD" || die "$EX_USAGE" "cannot change to '$ORIG_PWD'"
+"$EXE" "$@"
+st=$?
+cleanup
+exit "$st"

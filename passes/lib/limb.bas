@@ -1,0 +1,801 @@
+69000 REM limb.bas: exact i64 on 16-bit limbs and bignums; lines 69000-74999; API: passes/lib/API-arith.md
+69005 SUB "LMINT": S$,X3,X2,X1,X0,E ' int_lit text -> i64; E 0 ok, 1 = 2^63, 2 too large, 3 not an int_lit
+69010     LET L = LEN(S$)
+69015     LET A3 = 0
+69020     LET A2 = 0
+69025     LET A1 = 0
+69030     LET A0 = 0
+69035     LET F = 0 ' 1 once the value passed 2^64
+69040     LET E = 3
+69045     LET B = 10
+69050     LET P = 1
+69055     IF L = 0 THEN 69300
+69060     IF L < 3 THEN 69080
+69065     IF SEG$(S$,1,2) <> "0x" THEN 69080
+69070     LET B = 16
+69075     LET P = 3
+69080     IF SEG$(S$,P,P) = "_" THEN 69300 ' _ may not start the digits nor end the literal
+69085     IF SEG$(S$,L,L) = "_" THEN 69300
+69090     FOR I = P TO L
+69095         LET C = ASC(SEG$(S$,I,I))
+69100         IF C = 95 THEN 69230
+69105         LET D = C-48
+69110         IF D < 0 THEN 69300
+69115         IF D <= 9 THEN 69155
+69120         IF B = 10 THEN 69300
+69125         LET D = C-55 ' A-F
+69130         IF D < 10 THEN 69300
+69135         IF D <= 15 THEN 69155
+69140         LET D = C-87 ' a-f
+69145         IF D < 10 THEN 69300
+69150         IF D > 15 THEN 69300
+69155         IF F = 1 THEN 69230
+69160         LET V = A0*B+D ' A = A*B + D, limb by limb
+69165         LET K = INT(V/65536)
+69170         LET A0 = V-K*65536
+69175         LET V = A1*B+K
+69180         LET K = INT(V/65536)
+69185         LET A1 = V-K*65536
+69190         LET V = A2*B+K
+69195         LET K = INT(V/65536)
+69200         LET A2 = V-K*65536
+69205         LET V = A3*B+K
+69210         LET K = INT(V/65536)
+69215         LET A3 = V-K*65536
+69220         IF K = 0 THEN 69230
+69225         LET F = 1
+69230     NEXT I
+69235     LET E = 2
+69240     IF F = 1 THEN 69300
+69245     IF A3 < 32768 THEN 69270
+69250     IF A3 > 32768 THEN 69300
+69255     IF A2+A1+A0 > 0 THEN 69300
+69260     LET E = 1
+69265     GOTO 69275
+69270     LET E = 0
+69275     LET X3 = A3
+69280     LET X2 = A2
+69285     LET X1 = A1
+69290     LET X0 = A0
+69295     GOTO 69320
+69300     LET X3 = 0
+69305     LET X2 = 0
+69310     LET X1 = 0
+69315     LET X0 = 0
+69320 SUBEND
+69325 SUB "LMADD": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V ' R = A+B, V = 1 on i64 overflow
+69330     LET S0 = A0+B0
+69335     LET C = INT(S0/65536)
+69340     LET S0 = S0-C*65536
+69345     LET S1 = A1+B1+C
+69350     LET C = INT(S1/65536)
+69355     LET S1 = S1-C*65536
+69360     LET S2 = A2+B2+C
+69365     LET C = INT(S2/65536)
+69370     LET S2 = S2-C*65536
+69375     LET S3 = A3+B3+C
+69380     LET C = INT(S3/65536)
+69385     LET S3 = S3-C*65536
+69390     LET G1 = INT(A3/32768) ' signs
+69395     LET G2 = INT(B3/32768)
+69400     LET W = 0
+69405     IF G1 <> G2 THEN 69420
+69410     IF INT(S3/32768) = G1 THEN 69420
+69415     LET W = 1 ' same signs in, other sign out
+69420     LET R3 = S3
+69425     LET R2 = S2
+69430     LET R1 = S1
+69435     LET R0 = S0
+69440     LET V = W
+69445 SUBEND
+69450 SUB "LMSUB": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V ' R = A-B, V = 1 on i64 overflow
+69455     LET S0 = A0-B0+65536 ' C = 1 - borrow
+69460     LET C = INT(S0/65536)
+69465     LET S0 = S0-C*65536
+69470     LET S1 = A1-B1+65535+C
+69475     LET C = INT(S1/65536)
+69480     LET S1 = S1-C*65536
+69485     LET S2 = A2-B2+65535+C
+69490     LET C = INT(S2/65536)
+69495     LET S2 = S2-C*65536
+69500     LET S3 = A3-B3+65535+C
+69505     LET C = INT(S3/65536)
+69510     LET S3 = S3-C*65536
+69515     LET G1 = INT(A3/32768)
+69520     LET G2 = INT(B3/32768)
+69525     LET W = 0
+69530     IF G1 = G2 THEN 69545
+69535     IF INT(S3/32768) = G1 THEN 69545
+69540     LET W = 1 ' different signs in, sign of B out
+69545     LET R3 = S3
+69550     LET R2 = S2
+69555     LET R1 = S1
+69560     LET R0 = S0
+69565     LET V = W
+69570 SUBEND
+69575 SUB "LMNEG": A3,A2,A1,A0,R3,R2,R1,R0,V ' R = -A, V = 1 for -2^63
+69580     CALL "LMSUB": 0,0,0,0,A3,A2,A1,A0,R3,R2,R1,R0,V
+69585 SUBEND
+69590 SUB "LMMUL": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V ' R = A*B, V = 1 on i64 overflow
+69595     DIM P(8),X(4),Y(4)
+69600     LET G1 = INT(A3/32768)
+69605     LET G2 = INT(B3/32768)
+69610     LET C3 = A3
+69615     LET C2 = A2
+69620     LET C1 = A1
+69625     LET C0 = A0
+69630     IF G1 = 0 THEN 69640
+69635     CALL "LMSUB": 0,0,0,0,A3,A2,A1,A0,C3,C2,C1,C0,W ' |A| as unsigned
+69640     LET D3 = B3
+69645     LET D2 = B2
+69650     LET D1 = B1
+69655     LET D0 = B0
+69660     IF G2 = 0 THEN 69670
+69665     CALL "LMSUB": 0,0,0,0,B3,B2,B1,B0,D3,D2,D1,D0,W
+69670     LET X(1) = C0
+69675     LET X(2) = C1
+69680     LET X(3) = C2
+69685     LET X(4) = C3
+69690     LET Y(1) = D0
+69695     LET Y(2) = D1
+69700     LET Y(3) = D2
+69705     LET Y(4) = D3
+69710     FOR I = 1 TO 8
+69715         LET P(I) = 0
+69720     NEXT I
+69725     FOR I = 1 TO 4 ' P = |A|*|B|, 128 bits
+69730         LET K = 0
+69735         FOR J = 1 TO 4
+69740             LET T = P(I+J-1)+X(I)*Y(J)+K
+69745             LET K = INT(T/65536)
+69750             LET P(I+J-1) = T-K*65536
+69755         NEXT J
+69760         LET P(I+4) = K
+69765     NEXT I
+69770     LET W = 0
+69775     IF P(5)+P(6)+P(7)+P(8) > 0 THEN 69810
+69780     IF G1 <> G2 THEN 69795
+69785     IF P(4) < 32768 THEN 69815
+69790     GOTO 69810
+69795     IF P(4) < 32768 THEN 69815
+69800     IF P(4) > 32768 THEN 69810
+69805     IF P(1)+P(2)+P(3) = 0 THEN 69815 ' exactly 2^63: -2^63 is in range
+69810     LET W = 1
+69815     LET C3 = P(4)
+69820     LET C2 = P(3)
+69825     LET C1 = P(2)
+69830     LET C0 = P(1)
+69835     IF G1 = G2 THEN 69845
+69840     CALL "LMSUB": 0,0,0,0,C3,C2,C1,C0,C3,C2,C1,C0,Q
+69845     LET R3 = C3
+69850     LET R2 = C2
+69855     LET R1 = C1
+69860     LET R0 = C0
+69865     LET V = W
+69870 SUBEND
+69875 SUB "LMDVM": A3,A2,A1,A0,B3,B2,B1,B0,Q3,Q2,Q1,Q0,R3,R2,R1,R0 ' internal: floored quotient Q and remainder R, B <> 0
+69880     DIM U(8),W(8),Q(8)
+69885     LET G1 = INT(A3/32768)
+69890     LET G2 = INT(B3/32768)
+69895     LET C3 = A3
+69900     LET C2 = A2
+69905     LET C1 = A1
+69910     LET C0 = A0
+69915     IF G1 = 0 THEN 69925
+69920     CALL "LMSUB": 0,0,0,0,A3,A2,A1,A0,C3,C2,C1,C0,V
+69925     LET D3 = B3
+69930     LET D2 = B2
+69935     LET D1 = B1
+69940     LET D0 = B0
+69945     IF G2 = 0 THEN 69955
+69950     CALL "LMSUB": 0,0,0,0,B3,B2,B1,B0,D3,D2,D1,D0,V
+69955     CALL "LBLMB": C3,C2,C1,C0,U()
+69960     CALL "LBLMB": D3,D2,D1,D0,W()
+69965     CALL "LBDIV": U(),W(),Q() ' |A| = Q*|B| + U
+69970     CALL "LBTOL": Q(),E3,E2,E1,E0
+69975     CALL "LBTOL": U(),F3,F2,F1,F0
+69980     IF G1 <> G2 THEN 70000
+69985     IF G2 = 0 THEN 70055 ' both >= 0: Q, U
+69990     CALL "LMSUB": 0,0,0,0,F3,F2,F1,F0,F3,F2,F1,F0,V ' both < 0: Q, -U
+69995     GOTO 70055
+70000     IF F3+F2+F1+F0 > 0 THEN 70015
+70005     CALL "LMSUB": 0,0,0,0,E3,E2,E1,E0,E3,E2,E1,E0,V ' exact: -Q, 0
+70010     GOTO 70055
+70015     LET E3 = 65535-E3 ' -Q-1 = NOT Q
+70020     LET E2 = 65535-E2
+70025     LET E1 = 65535-E1
+70030     LET E0 = 65535-E0
+70035     IF G2 = 1 THEN 70050
+70040     CALL "LMSUB": D3,D2,D1,D0,F3,F2,F1,F0,F3,F2,F1,F0,V ' B > 0: |B| - U
+70045     GOTO 70055
+70050     CALL "LMSUB": F3,F2,F1,F0,D3,D2,D1,D0,F3,F2,F1,F0,V ' B < 0: U - |B|
+70055     LET Q3 = E3
+70060     LET Q2 = E2
+70065     LET Q1 = E1
+70070     LET Q0 = E0
+70075     LET R3 = F3
+70080     LET R2 = F2
+70085     LET R1 = F1
+70090     LET R0 = F0
+70095 SUBEND
+70100 SUB "LMDIV": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,E ' floored idiv; E 1 overflow, 2 division by zero
+70105     IF B3+B2+B1+B0 = 0 THEN 70150
+70110     LET K = 0
+70115     IF A3 <> 32768 THEN 70135
+70120     IF A2+A1+A0 > 0 THEN 70135
+70125     IF B3+B2+B1+B0 < 4*65535 THEN 70135
+70130     LET K = 1 ' idiv(-2^63, -1)
+70135     CALL "LMDVM": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,C3,C2,C1,C0
+70140     LET E = K
+70145     GOTO 70175
+70150     LET R3 = 0
+70155     LET R2 = 0
+70160     LET R1 = 0
+70165     LET R0 = 0
+70170     LET E = 2
+70175 SUBEND
+70180 SUB "LMMOD": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,E ' floored %; E 2 division by zero
+70185     IF B3+B2+B1+B0 = 0 THEN 70205
+70190     CALL "LMDVM": A3,A2,A1,A0,B3,B2,B1,B0,C3,C2,C1,C0,R3,R2,R1,R0
+70195     LET E = 0
+70200     GOTO 70230
+70205     LET R3 = 0
+70210     LET R2 = 0
+70215     LET R1 = 0
+70220     LET R0 = 0
+70225     LET E = 2
+70230 SUBEND
+70235 SUB "LMCMP": A3,A2,A1,A0,B3,B2,B1,B0,C ' signed compare, C = -1/0/1
+70240     LET P3 = A3+32768 ' flip the sign bits: signed order becomes unsigned order
+70245     IF P3 < 65536 THEN 70255
+70250     LET P3 = P3-65536
+70255     LET Q3 = B3+32768
+70260     IF Q3 < 65536 THEN 70270
+70265     LET Q3 = Q3-65536
+70270     LET D = 0
+70275     IF P3 <> Q3 THEN 70340
+70280     IF A2 <> B2 THEN 70325
+70285     IF A1 <> B1 THEN 70310
+70290     IF A0 = B0 THEN 70355
+70295     LET D = 1
+70300     IF A0 > B0 THEN 70355
+70305     GOTO 70350
+70310     LET D = 1
+70315     IF A1 > B1 THEN 70355
+70320     GOTO 70350
+70325     LET D = 1
+70330     IF A2 > B2 THEN 70355
+70335     GOTO 70350
+70340     LET D = 1
+70345     IF P3 > Q3 THEN 70355
+70350     LET D = -1
+70355     LET C = D
+70360 SUBEND
+70365 SUB "LMHEX": X3,X2,X1,X0,S$ ' # and 16 hex digits
+70370     DIM Y(3)
+70375     LET Y(0) = X3
+70380     LET Y(1) = X2
+70385     LET Y(2) = X1
+70390     LET Y(3) = X0
+70395     LET T$ = "#"
+70400     FOR I = 0 TO 3
+70405         LET V = Y(I)
+70410         FOR J = 1 TO 4
+70415             LET D = INT(V/4096)
+70420             LET V = (V-D*4096)*16
+70425             LET T$ = T$ & SEG$("0123456789ABCDEF",D+1,D+1)
+70430         NEXT J
+70435     NEXT I
+70440     LET S$ = T$
+70445 SUBEND
+70450 SUB "LMFMT": X3,X2,X1,X0,S$ ' the i field of DESIGN 3.1
+70455     LET G = INT(X3/32768)
+70460     LET C3 = X3
+70465     LET C2 = X2
+70470     LET C1 = X1
+70475     LET C0 = X0
+70480     IF G = 0 THEN 70490
+70485     CALL "LMSUB": 0,0,0,0,X3,X2,X1,X0,C3,C2,C1,C0,W
+70490     IF C3 > 0 THEN 70530
+70495     LET M = (C2*65536+C1)*65536+C0
+70500     IF M >= 1E9 THEN 70530
+70505     LET T$ = STR$(M)
+70510     IF G = 0 THEN 70520
+70515     LET T$ = "-" & T$
+70520     LET S$ = T$
+70525     GOTO 70535
+70530     CALL "LMHEX": X3,X2,X1,X0,S$
+70535 SUBEND
+70540 SUB "LMRF": S$,X3,X2,X1,X0,E ' read an f field (# and 16 hex); E 1 malformed
+70545     DIM Y(3)
+70550     IF LEN(S$) <> 17 THEN 70660
+70555     IF SEG$(S$,1,1) <> "#" THEN 70660
+70560     FOR I = 0 TO 3
+70565         LET V = 0
+70570         FOR J = 1 TO 4
+70575             LET C = ASC(SEG$(S$,4*I+J+1,4*I+J+1))
+70580             LET D = C-48
+70585             IF D < 0 THEN 70660
+70590             IF D <= 9 THEN 70610
+70595             LET D = C-55
+70600             IF D < 10 THEN 70660
+70605             IF D > 15 THEN 70660
+70610             LET V = V*16+D
+70615         NEXT J
+70620         LET Y(I) = V
+70625     NEXT I
+70630     LET X3 = Y(0)
+70635     LET X2 = Y(1)
+70640     LET X1 = Y(2)
+70645     LET X0 = Y(3)
+70650     LET E = 0
+70655     GOTO 70685
+70660     LET X3 = 0
+70665     LET X2 = 0
+70670     LET X1 = 0
+70675     LET X0 = 0
+70680     LET E = 1
+70685 SUBEND
+70690 SUB "LMRD": S$,X3,X2,X1,X0,E ' read an i field, canonical only (DESIGN 3.1); E 1 malformed
+70695     LET L = LEN(S$)
+70700     IF L = 0 THEN 70865
+70705     IF SEG$(S$,1,1) <> "#" THEN 70760
+70710     CALL "LMRF": S$,Y3,Y2,Y1,Y0,K
+70715     IF K = 1 THEN 70865
+70720     CALL "LMFMT": Y3,Y2,Y1,Y0,T$
+70725     IF SEG$(T$,1,1) <> "#" THEN 70865 ' -1E9 < v < 1E9 must be decimal
+70730     LET X3 = Y3
+70735     LET X2 = Y2
+70740     LET X1 = Y1
+70745     LET X0 = Y0
+70750     LET E = 0
+70755     GOTO 70890
+70760     LET P = 1
+70765     LET G = 0
+70770     IF SEG$(S$,1,1) <> "-" THEN 70785
+70775     LET P = 2
+70780     LET G = 1
+70785     IF L-P+1 < 1 THEN 70865
+70790     IF L-P+1 > 9 THEN 70865
+70795     LET M = 0
+70800     FOR I = P TO L
+70805         LET C = ASC(SEG$(S$,I,I))-48
+70810         IF C < 0 THEN 70865
+70815         IF C > 9 THEN 70865
+70820         LET M = M*10+C
+70825     NEXT I
+70830     IF L = P THEN 70840
+70835     IF SEG$(S$,P,P) = "0" THEN 70865 ' no leading zeros
+70840     IF G = 0 THEN 70855
+70845     IF M = 0 THEN 70865 ' never -0
+70850     LET M = -M
+70855     CALL "LMFRN": M,X3,X2,X1,X0,E
+70860     GOTO 70890
+70865     LET X3 = 0
+70870     LET X2 = 0
+70875     LET X1 = 0
+70880     LET X0 = 0
+70885     LET E = 1
+70890 SUBEND
+70895 SUB "LMFRN": N,X3,X2,X1,X0,E ' from a Baysick integer |N| <= 2^53 (else E = 1)
+70900     LET M = ABS(N)
+70905     LET G = 0
+70910     IF N >= 0 THEN 70920
+70915     LET G = 1
+70920     LET H = 65536*65536*65536 ' 2^48
+70925     IF M <> INT(M) THEN 71010
+70930     IF M > H*32 THEN 71010
+70935     LET Y3 = INT(M/H)
+70940     LET M = M-Y3*H
+70945     LET H = H/65536
+70950     LET Y2 = INT(M/H)
+70955     LET M = M-Y2*H
+70960     LET Y1 = INT(M/65536)
+70965     LET Y0 = M-Y1*65536
+70970     IF G = 0 THEN 70980
+70975     CALL "LMSUB": 0,0,0,0,Y3,Y2,Y1,Y0,Y3,Y2,Y1,Y0,W
+70980     LET X3 = Y3
+70985     LET X2 = Y2
+70990     LET X1 = Y1
+70995     LET X0 = Y0
+71000     LET E = 0
+71005     GOTO 71035
+71010     LET X3 = 0
+71015     LET X2 = 0
+71020     LET X1 = 0
+71025     LET X0 = 0
+71030     LET E = 1
+71035 SUBEND
+71040 SUB "LMTON": X3,X2,X1,X0,N,E ' to a Baysick number if |v| <= 2^53 (else E = 1)
+71045     LET G = INT(X3/32768)
+71050     LET Y3 = X3
+71055     LET Y2 = X2
+71060     LET Y1 = X1
+71065     LET Y0 = X0
+71070     IF G = 0 THEN 71080
+71075     CALL "LMSUB": 0,0,0,0,X3,X2,X1,X0,Y3,Y2,Y1,Y0,W
+71080     IF Y3 > 32 THEN 71125
+71085     IF Y3 < 32 THEN 71095
+71090     IF Y2+Y1+Y0 > 0 THEN 71125
+71095     LET M = ((Y3*65536+Y2)*65536+Y1)*65536+Y0
+71100     IF G = 0 THEN 71110
+71105     LET M = -M
+71110     LET N = M
+71115     LET E = 0
+71120     GOTO 71135
+71125     LET N = 0
+71130     LET E = 1
+71135 SUBEND
+71140 SUB "LBNRM": B() ' internal: drop leading zero limbs
+71145     LET N = B(0)
+71150     IF N = 0 THEN 71170
+71155     IF B(N) > 0 THEN 71170
+71160     LET N = N-1
+71165     GOTO 71150
+71170     LET B(0) = N
+71175 SUBEND
+71180 SUB "LBSET": B(),N ' B = N (integer 0 <= N < 2^53)
+71185     LET M = N
+71190     LET K = 0
+71195     IF M = 0 THEN 71225
+71200     LET K = K+1
+71205     LET Q = INT(M/65536)
+71210     LET B(K) = M-Q*65536
+71215     LET M = Q
+71220     GOTO 71195
+71225     LET B(0) = K
+71230 SUBEND
+71235 SUB "LBCPY": A(),B() ' B = A
+71240     FOR I = 0 TO A(0)
+71245         LET B(I) = A(I)
+71250     NEXT I
+71255 SUBEND
+71260 SUB "LBMAD": B(),M,C ' B = B*M+C (0 <= M, C <= 1E9)
+71265     LET N = B(0)
+71270     LET K = C
+71275     LET F = M
+71280     FOR I = 1 TO N
+71285         LET V = B(I)*F+K
+71290         LET K = INT(V/65536)
+71295         LET B(I) = V-K*65536
+71300     NEXT I
+71305     IF K = 0 THEN 71335
+71310     LET N = N+1
+71315     LET Q = INT(K/65536)
+71320     LET B(N) = K-Q*65536
+71325     LET K = Q
+71330     GOTO 71305
+71335     LET B(0) = N
+71340     CALL "LBNRM": B()
+71345 SUBEND
+71350 SUB "LBADD": A(),B() ' A = A+B
+71355     LET N = A(0)
+71360     LET M = B(0)
+71365     IF M <= N THEN 71375
+71370     LET N = M
+71375     LET K = 0
+71380     FOR I = 1 TO N
+71385         LET X = 0
+71390         IF I > A(0) THEN 71400
+71395         LET X = A(I)
+71400         LET Y = 0
+71405         IF I > M THEN 71415
+71410         LET Y = B(I)
+71415         LET V = X+Y+K
+71420         LET K = INT(V/65536)
+71425         LET A(I) = V-K*65536
+71430     NEXT I
+71435     IF K = 0 THEN 71450
+71440     LET N = N+1
+71445     LET A(N) = K
+71450     LET A(0) = N
+71455 SUBEND
+71460 SUB "LBSUB": A(),B() ' A = A-B (A >= B)
+71465     LET N = A(0)
+71470     LET M = B(0)
+71475     LET K = 0
+71480     FOR I = 1 TO N
+71485         IF I <= M THEN 71505
+71490         IF K = 0 THEN 71540 ' nothing left to subtract
+71495         LET V = A(I)-K
+71500         GOTO 71510
+71505         LET V = A(I)-B(I)-K
+71510         LET K = 0
+71515         IF V >= 0 THEN 71530
+71520         LET V = V+65536
+71525         LET K = 1
+71530         LET A(I) = V
+71535     NEXT I
+71540     CALL "LBNRM": A()
+71545 SUBEND
+71550 SUB "LBMUL": A(),B(),C() ' C = A*B (C not A, B)
+71555     LET N = A(0)
+71560     LET M = B(0)
+71565     FOR I = 1 TO N+M
+71570         LET C(I) = 0
+71575     NEXT I
+71580     FOR I = 1 TO N
+71585         LET K = 0
+71590         LET X = A(I)
+71595         FOR J = 1 TO M
+71600             LET V = C(I+J-1)+X*B(J)+K
+71605             LET K = INT(V/65536)
+71610             LET C(I+J-1) = V-K*65536
+71615         NEXT J
+71620         LET C(I+M) = K
+71625     NEXT I
+71630     LET C(0) = N+M
+71635     CALL "LBNRM": C()
+71640 SUBEND
+71645 SUB "LBSHL": B(),K ' B = B*2^K
+71650     LET N = B(0)
+71655     IF N = 0 THEN 71750
+71660     LET W = INT(K/16)
+71665     LET R = K-W*16
+71670     LET P = 1
+71675     FOR J = 1 TO R
+71680         LET P = P*2
+71685     NEXT J
+71690     LET B(N+W+1) = 0
+71695     FOR I = N TO 1 STEP -1
+71700         LET V = B(I)*P
+71705         LET H = INT(V/65536)
+71710         LET B(I+W+1) = B(I+W+1)+H
+71715         LET B(I+W) = V-H*65536
+71720     NEXT I
+71725     FOR I = 1 TO W
+71730         LET B(I) = 0
+71735     NEXT I
+71740     LET B(0) = N+W+1
+71745     CALL "LBNRM": B()
+71750 SUBEND
+71755 SUB "LBSHR": B(),K,T ' B = floor(B/2^K), T = 1 if a 1 bit dropped
+71760     LET N = B(0)
+71765     LET W = INT(K/16)
+71770     LET R = K-W*16
+71775     LET P = 1
+71780     FOR J = 1 TO R
+71785         LET P = P*2
+71790     NEXT J
+71795     LET Z = 0
+71800     IF W < N THEN 71825
+71805     IF N = 0 THEN 71815
+71810     LET Z = 1
+71815     LET B(0) = 0
+71820     GOTO 71910
+71825     FOR I = 1 TO W
+71830         IF B(I) = 0 THEN 71840
+71835         LET Z = 1
+71840     NEXT I
+71845     LET V = B(W+1)
+71850     IF V-INT(V/P)*P = 0 THEN 71860
+71855     LET Z = 1
+71860     LET F = 65536/P
+71865     FOR I = 1 TO N-W
+71870         LET V = INT(B(I+W)/P)
+71875         IF I+W >= N THEN 71890
+71880         LET U = B(I+W+1)
+71885         LET V = V+(U-INT(U/P)*P)*F
+71890         LET B(I) = V
+71895     NEXT I
+71900     LET B(0) = N-W
+71905     CALL "LBNRM": B()
+71910     LET T = Z
+71915 SUBEND
+71920 SUB "LBCMP": A(),B(),C ' C = -1/0/1
+71925     LET D = 1
+71930     LET N = A(0)
+71935     IF N > B(0) THEN 71990
+71940     LET D = -1
+71945     IF N < B(0) THEN 71990
+71950     FOR I = N TO 1 STEP -1
+71955         IF A(I) = B(I) THEN 71980
+71960         LET D = 1
+71965         IF A(I) > B(I) THEN 71990
+71970         LET D = -1
+71975         GOTO 71990
+71980     NEXT I
+71985     LET D = 0
+71990     LET C = D
+71995 SUBEND
+72000 SUB "LBLEN": B(),N ' N = bit length
+72005     LET M = B(0)
+72010     LET L = 0
+72015     IF M = 0 THEN 72050
+72020     LET V = B(M)
+72025     LET L = (M-1)*16
+72030     IF V < 1 THEN 72050
+72035     LET L = L+1
+72040     LET V = INT(V/2)
+72045     GOTO 72030
+72050     LET N = L
+72055 SUBEND
+72060 SUB "LBDIV": A(),B(),Q() ' Q = floor(A/B), A = A mod B (<= 1400 limbs)
+72065     DIM D(1400)
+72070     CALL "LBLEN": A(),N
+72075     CALL "LBLEN": B(),M
+72080     LET Q(0) = 0
+72085     IF N < M THEN 72215
+72090     LET K = N-M
+72095     CALL "LBCPY": B(),D()
+72100     CALL "LBSHL": D(),K ' D = B*2^K, aligned with A
+72105     LET L = INT(K/16)+1
+72110     FOR I = 1 TO L
+72115         LET Q(I) = 0
+72120     NEXT I
+72125     LET Q(0) = L
+72130     LET P = 1
+72135     FOR J = 1 TO K-(L-1)*16
+72140         LET P = P*2
+72145     NEXT J
+72150     FOR I = K TO 0 STEP -1 ' one quotient bit per step, value P in limb L
+72155         CALL "LBCMP": A(),D(),C
+72160         IF C < 0 THEN 72175
+72165         CALL "LBSUB": A(),D()
+72170         LET Q(L) = Q(L)+P
+72175         IF I = 0 THEN 72210
+72180         CALL "LBSHR": D(),1,T
+72185         LET P = P/2
+72190         IF P >= 1 THEN 72205
+72195         LET P = 32768
+72200         LET L = L-1
+72205     NEXT I
+72210     CALL "LBNRM": Q()
+72215 SUBEND
+72220 SUB "LBSQR": A(),Q() ' Q = floor(sqrt(A)), A = A-Q*Q (<= 200 limbs)
+72225     DIM B(200),T(200)
+72230     LET Q(0) = 0
+72235     CALL "LBLEN": A(),N
+72240     IF N = 0 THEN 72320
+72245     CALL "LBSET": B(),1
+72250     CALL "LBSHL": B(),2*INT((N-1)/2) ' highest power of 4 <= A
+72255     CALL "LBCPY": Q(),T()
+72260     CALL "LBADD": T(),B()
+72265     CALL "LBCMP": A(),T(),C
+72270     IF C < 0 THEN 72295
+72275     CALL "LBSUB": A(),T()
+72280     CALL "LBSHR": Q(),1,U
+72285     CALL "LBADD": Q(),B()
+72290     GOTO 72300
+72295     CALL "LBSHR": Q(),1,U
+72300     IF B(0) > 1 THEN 72310
+72305     IF B(1) = 1 THEN 72320
+72310     CALL "LBSHR": B(),2,U
+72315     GOTO 72255
+72320 SUBEND
+72325 SUB "LBFLD": B(),P,W,F ' F = bits P..P+W-1 of B (W <= 53)
+72330     DIM G(3)
+72335     LET N = B(0)
+72340     LET Q = INT(P/16)
+72345     LET R = P-Q*16
+72350     LET T = 1
+72355     FOR J = 1 TO R
+72360         LET T = T*2
+72365     NEXT J
+72370     LET H = 65536/T
+72375     FOR J = 0 TO 3 ' G(J) = limb J of B/2^P
+72380         LET I = Q+1+J
+72385         LET V = 0
+72390         IF I > N THEN 72415
+72395         LET V = INT(B(I)/T)
+72400         IF I+1 > N THEN 72415
+72405         LET U = B(I+1)
+72410         LET V = V+(U-INT(U/T)*T)*H
+72415         LET G(J) = V
+72420     NEXT J
+72425     LET K = INT(W/16)
+72430     LET R = W-K*16
+72435     LET S = 0
+72440     LET M = 1
+72445     FOR J = 0 TO K-1
+72450         LET S = S+G(J)*M
+72455         LET M = M*65536
+72460     NEXT J
+72465     IF R = 0 THEN 72495
+72470     LET T = 1
+72475     FOR J = 1 TO R
+72480         LET T = T*2
+72485     NEXT J
+72490     LET S = S+(G(K)-INT(G(K)/T)*T)*M
+72495     LET F = S
+72500 SUBEND
+72505 SUB "LBLOW": B(),P,T ' T = 1 if a bit below P is 1
+72510     LET N = B(0)
+72515     LET Q = INT(P/16)
+72520     LET R = P-Q*16
+72525     LET Z = 0
+72530     FOR I = 1 TO Q
+72535         IF I > N THEN 72600
+72540         IF B(I) = 0 THEN 72555
+72545         LET Z = 1
+72550         GOTO 72600
+72555     NEXT I
+72560     IF Q+1 > N THEN 72600
+72565     LET H = 1
+72570     FOR J = 1 TO R
+72575         LET H = H*2
+72580     NEXT J
+72585     LET V = B(Q+1)
+72590     IF V-INT(V/H)*H = 0 THEN 72600
+72595     LET Z = 1
+72600     LET T = Z
+72605 SUBEND
+72610 SUB "LBLMB": X3,X2,X1,X0,B() ' B = unsigned 64-bit pattern X
+72615     LET B(1) = X0
+72620     LET B(2) = X1
+72625     LET B(3) = X2
+72630     LET B(4) = X3
+72635     LET B(0) = 4
+72640     CALL "LBNRM": B()
+72645 SUBEND
+72650 SUB "LBTOL": B(),X3,X2,X1,X0 ' X = low 64 bits of B
+72655     DIM Y(4)
+72660     FOR I = 1 TO 4
+72665         LET Y(I) = 0
+72670         IF I > B(0) THEN 72680
+72675         LET Y(I) = B(I)
+72680     NEXT I
+72685     LET X3 = Y(4)
+72690     LET X2 = Y(3)
+72695     LET X1 = Y(2)
+72700     LET X0 = Y(1)
+72705 SUBEND
+72710 SUB "LBTOF": B(),X,G,T,R3,R2,R1,R0,V ' round (-1)^G*(B+sticky T)*2^X to binary64; V 0 exact, 1 inexact, 2 overflow
+72715     CALL "LBLEN": B(),N
+72720     LET S = G*32768 ' the sign bit in the top limb
+72725     LET Z = T
+72730     IF N > 0 THEN 72765
+72735     LET W3 = S
+72740     LET W2 = 0
+72745     LET W1 = 0
+72750     LET W0 = 0
+72755     LET I = Z
+72760     GOTO 72975
+72765     LET L = N-1+X-52 ' weight of the result's last place: 2^L
+72770     IF L >= -1074 THEN 72780
+72775     LET L = -1074
+72780     LET D = L-X ' low bits of B below the last place
+72785     IF D > 0 THEN 72820
+72790     CALL "LBFLD": B(),0,N,M
+72795     FOR J = 1 TO -D
+72800         LET M = M*2
+72805     NEXT J
+72810     LET I = Z
+72815     GOTO 72890
+72820     LET M = 0 ' all of B below the last place: M = 0
+72825     IF N <= D THEN 72835
+72830     CALL "LBFLD": B(),D,N-D,M
+72835     CALL "LBFLD": B(),D-1,1,U ' guard bit
+72840     CALL "LBLOW": B(),D-1,Y ' sticky
+72845     IF Z = 0 THEN 72855
+72850     LET Y = 1
+72855     LET I = 0
+72860     IF U+Y = 0 THEN 72890
+72865     LET I = 1
+72870     IF U = 0 THEN 72890
+72875     IF Y = 1 THEN 72885
+72880     IF M/2 = INT(M/2) THEN 72890 ' tie: keep an even M
+72885     LET M = M+1
+72890     LET H = 65536*65536*65536
+72895     LET Q = INT(M/H)
+72900     LET W3 = (L+1074)*16+Q ' bits = (L+1074)*2^52 + M; M=2^53 carries into the exponent
+72905     IF W3 < 32752 THEN 72940
+72910     LET W3 = 32752+S ' overflow: infinity
+72915     LET W2 = 0
+72920     LET W1 = 0
+72925     LET W0 = 0
+72930     LET I = 2
+72935     GOTO 72975
+72940     LET M = M-Q*H
+72945     LET H = H/65536
+72950     LET W2 = INT(M/H)
+72955     LET M = M-W2*H
+72960     LET W1 = INT(M/65536)
+72965     LET W0 = M-W1*65536
+72970     LET W3 = W3+S
+72975     LET R3 = W3
+72980     LET R2 = W2
+72985     LET R1 = W1
+72990     LET R0 = W0
+72995     LET V = I
+73000 SUBEND

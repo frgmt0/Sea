@@ -1,0 +1,77 @@
+10 REM limb harness (tests/arith_check.sh): reads tests/vectors/limb.txt on standard input and
+20 REM prints every vector with its results recomputed by passes/lib/limb.bas.
+30 DIM F$(9)
+40 IF END #0 THEN 770
+50 LINPUT #0, L$
+60 GOSUB 660
+70 LET O$ = F$(1)
+80 IF O$ = "int" THEN 400
+90 IF O$ = "neg" THEN 440
+100 IF O$ = "fmt" THEN 490
+110 IF O$ = "rd" THEN 530
+120 IF O$ = "rf" THEN 570
+130 IF O$ = "ton" THEN 590
+140 CALL "LMRF": F$(2),A3,A2,A1,A0,E
+150 CALL "LMRF": F$(3),B3,B2,B1,B0,E
+160 LET P$ = F$(1) & " " & F$(2) & " " & F$(3) & " "
+170 IF O$ = "add" THEN 250
+180 IF O$ = "sub" THEN 270
+190 IF O$ = "mul" THEN 290
+200 IF O$ = "div" THEN 310
+210 IF O$ = "mod" THEN 330
+220 IF O$ = "cmp" THEN 370
+230 PRINT "unknown vector: " & L$
+240 GOTO 40
+250 CALL "LMADD": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V
+260 GOTO 340
+270 CALL "LMSUB": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V
+280 GOTO 340
+290 CALL "LMMUL": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V
+300 GOTO 340
+310 CALL "LMDIV": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V
+320 GOTO 340
+330 CALL "LMMOD": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0,V
+340 CALL "LMHEX": R3,R2,R1,R0,R$
+350 PRINT P$ & R$ & " " & STR$(V)
+360 GOTO 40
+370 CALL "LMCMP": A3,A2,A1,A0,B3,B2,B1,B0,C
+380 PRINT P$ & STR$(C)
+390 GOTO 40
+400 CALL "LMINT": F$(2),X3,X2,X1,X0,E
+410 CALL "LMHEX": X3,X2,X1,X0,R$
+420 PRINT "int " & F$(2) & " " & R$ & " " & STR$(E)
+430 GOTO 40
+440 CALL "LMRF": F$(2),A3,A2,A1,A0,E
+450 CALL "LMNEG": A3,A2,A1,A0,R3,R2,R1,R0,V
+460 CALL "LMHEX": R3,R2,R1,R0,R$
+470 PRINT "neg " & F$(2) & " " & R$ & " " & STR$(V)
+480 GOTO 40
+490 CALL "LMRF": F$(2),A3,A2,A1,A0,E
+500 CALL "LMFMT": A3,A2,A1,A0,R$
+510 PRINT "fmt " & F$(2) & " " & R$
+520 GOTO 40
+530 CALL "LMRD": F$(2),A3,A2,A1,A0,E
+540 CALL "LMHEX": A3,A2,A1,A0,R$
+550 PRINT F$(1) & " " & F$(2) & " " & R$ & " " & STR$(E)
+560 GOTO 40
+570 CALL "LMRF": F$(2),A3,A2,A1,A0,E
+580 GOTO 540
+590 REM to a Baysick number and back
+600 CALL "LMRF": F$(2),A3,A2,A1,A0,E
+610 CALL "LMTON": A3,A2,A1,A0,N,E
+620 CALL "LMFRN": N,R3,R2,R1,R0,K
+630 CALL "LMHEX": R3,R2,R1,R0,R$
+640 PRINT "ton " & F$(2) & " " & STR$(E) & " " & R$ & " " & STR$(K)
+650 GOTO 40
+660 LET N = 0
+670 LET P = 1
+680 LET Q = POS(L$," ",P)
+690 IF Q = 0 THEN 740
+700 LET N = N+1
+710 LET F$(N) = SEG$(L$,P,Q-1)
+720 LET P = Q+1
+730 GOTO 680
+740 LET N = N+1
+750 LET F$(N) = SEG$(L$,P,LEN(L$))
+760 RETURN
+770 STOP
