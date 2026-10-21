@@ -1,15 +1,28 @@
-# Sea -- checks on x86_64 Linux (GNU as), docs/DESIGN.md 6.
+# Sea -- the x86_64-linux runtime and checks on x86_64 Linux (GNU make,
+# GNU as, ar; gcc only links test programs), docs/DESIGN.md 4.7.1, 6.
 #
+#   make -f Makefile.linux                  (= all)
+#   make -f Makefile.linux all              build build-x86_64-linux/libsea.a from
+#                                           runtime/x86_64_linux/*.s (objects in
+#                                           build-x86_64-linux/obj/, rt_main.o among them)
+#   make -f Makefile.linux test-rt          all, then the runtime tests
+#                                           tests/rt/x86_64_linux/*.s
+#                                           (tests/rt/run_rt_linux.sh); needs Baysick's
+#                                           x86_64 runtime, BAYSICK/build-x86_64-linux/
+#                                           libbaysickrt.a (make -f Makefile.linux in BAYSICK)
 #   make -f Makefile.linux check-includes   assemble tests/include_check_x86_64.s:
 #                                           the contract include files with GNU as,
 #                                           layout assertions, code ranges, table
 #                                           sizes, no name clash with Baysick's
 #                                           include/limits.inc and include/runtime.inc
+#   make -f Makefile.linux clean            remove build-x86_64-linux/
 #
 # Run on x86_64 Linux; from the Mac, tests/cross_includes.sh (make cross-includes)
-# copies the files to the Linux host and runs this target there. BAYSICK is the
-# Baysick checkout (default: the parent directory). The check works in a
-# temporary directory and leaves no files behind.
+# and the cross run (tests/cross.sh) copy the files to the Linux host and run these
+# targets there. BAYSICK is the Baysick checkout or the bundle's copy of it (default:
+# the parent directory); the runtime is assembled with -I BAYSICK/include for
+# Baysick's include/runtime.inc (the kernel entry points rt_main.s calls).
+# check-includes works in a temporary directory and leaves no files behind.
 
 UNAME_SM := $(shell uname -sm)
 ifneq ($(UNAME_SM),Linux x86_64)
@@ -17,13 +30,43 @@ $(error Makefile.linux: run the x86_64 checks on x86_64 Linux (uname -sm is '$(U
 endif
 
 AS      ?= as
+AR      ?= ar
 BAYSICK ?= ..
+BUILD   := build-x86_64-linux
 
 INCLUDES := include/limits.inc include/errors.inc include/rt.inc
 ASFLAGS_BASE := --64 --fatal-warnings -I include -I tests
 
-.PHONY: check-includes
-.DEFAULT_GOAL := check-includes
+# The runtime flags (DESIGN.md 4.7.1): Sea's contract files, then Baysick's.
+RT_ASFLAGS := --64 --fatal-warnings -I include -I $(BAYSICK)/include
+RT_SRCS    := $(wildcard runtime/x86_64_linux/*.s)
+RT_OBJS    := $(patsubst runtime/x86_64_linux/%.s,$(BUILD)/obj/%.o,$(RT_SRCS))
+
+.PHONY: all test-rt check-includes check-sources clean
+.DEFAULT_GOAL := all
+
+all: $(BUILD)/libsea.a
+
+# A clear message instead of a confusing ar error when the sources are missing.
+check-sources:
+	@if [ -z "$(RT_SRCS)" ]; then \
+	  echo "make: no assembly sources in runtime/x86_64_linux" >&2; exit 1; \
+	fi
+	@if [ ! -f "$(BAYSICK)/include/runtime.inc" ]; then \
+	  echo "make: Baysick's include/runtime.inc not found under BAYSICK=$(BAYSICK)" >&2; exit 1; \
+	fi
+
+$(BUILD)/libsea.a: $(RT_OBJS) | check-sources
+	rm -f $@
+	$(AR) rcs $@ $(RT_OBJS)
+
+$(BUILD)/obj/%.o: runtime/x86_64_linux/%.s $(INCLUDES) | check-sources
+	@mkdir -p $(dir $@)
+	$(AS) $(RT_ASFLAGS) -o $@ $<
+
+# The runtime tests run against the objects just built (DESIGN.md 4.7.1).
+test-rt: all
+	BAYSICK="$(BAYSICK)" AS="$(AS)" sh tests/rt/run_rt_linux.sh
 
 # Same comment rule and grep as the Mac Makefile (Baysick DESIGN.md 3.4).
 check-includes: $(INCLUDES) tests/include_check_x86_64.s tests/include_asserts.inc
@@ -41,3 +84,6 @@ check-includes: $(INCLUDES) tests/include_check_x86_64.s tests/include_asserts.i
 	rm -rf "$$t"; \
 	if [ $$st -ne 0 ]; then exit $$st; fi
 	@echo "include files assemble, layout assertions hold, no clash with Baysick's include/limits.inc and include/runtime.inc"
+
+clean:
+	rm -rf $(BUILD)

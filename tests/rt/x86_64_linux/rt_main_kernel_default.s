@@ -1,0 +1,84 @@
+# sea/tests/rt/x86_64_linux/rt_main_kernel_default.s -- kernel selection (DESIGN 4.4, 4.7.1): no SEA_KERNELS selects the best usable variant (the first of bsk_kern_variants), and sea_variant is its id
+.include "errors.inc"
+.include "rt.inc"
+
+# A static string object (rt.inc SEA_STR_*): count SEA_RC_STATIC, tag, length, bytes.
+.macro SSTR label, len, text
+    .p2align 3
+\label:
+    .quad SEA_RC_STATIC
+    .byte SEA_TAG_STR
+    .space 7, 0
+    .quad \len
+    .ascii "\text"
+.endm
+# Append static bytes to the standard-output buffer (caller-saved registers clobbered).
+.macro PUT label, len
+    leaq \label(%rip), %rdi
+    movq $\len, %rsi
+    call sea_out_write
+.endm
+# sea_err(code, site, slots label); noreturn.
+.macro RAISE code, site, slots
+    movl $\code, %edi
+    movq $\site, %rsi
+    leaq \slots(%rip), %rdx
+    call sea_err
+.endm
+# Function prologue / epilogue of sea_main-like routines (frame pointer only;
+# entered at %rsp = 8 (mod 16), so %rsp = 0 (mod 16) after the push).
+.macro PROLOGUE
+    pushq %rbp
+    movq %rsp, %rbp
+.endm
+.macro EPILOGUE
+    popq %rbp
+    ret
+.endm
+
+    .text
+    .globl sea_main
+    .type sea_main, @function
+    .p2align 4
+sea_main:
+    PROLOGUE
+    pushq %rbx
+    pushq %r12                  # %rsp = 0 (mod 16)
+    call bsk_kern_name
+    movq %rax, %rbx             # the name of the variant in use
+    call bsk_kern_variants
+    movq (%rax), %rsi           # the best usable variant
+    movq %rbx, %rdi
+    call strcmp@PLT
+    testl %eax, %eax
+    jnz 1f
+    PUT .Lbest, 11
+    jmp 2f
+1:  PUT .Lother, 12
+2:  # sea_variant must be the id of the selected name (DESIGN 4.7.1)
+    movl $SEA_VAR_SSE2, %r12d
+    movq %rbx, %rdi
+    leaq .Lavx2(%rip), %rsi
+    call strcmp@PLT
+    testl %eax, %eax
+    jnz 3f
+    movl $SEA_VAR_AVX2, %r12d
+3:  cmpq sea_variant(%rip), %r12
+    jne 4f
+    PUT .Lok, 12
+    jmp 5f
+4:  PUT .Lbad, 13
+5:  popq %r12
+    popq %rbx
+    EPILOGUE
+    .section .rodata
+.Lbest:  .ascii "kernel best"
+.Lother: .ascii "kernel other"
+.Lok:    .ascii " variant ok\n"
+.Lbad:   .ascii " variant bad\n"
+.Lavx2:  .asciz "avx2"
+    .section .data.rel.ro,"aw",@progbits
+    .p2align 3
+    .globl sea_sites
+sea_sites:
+    .quad 0

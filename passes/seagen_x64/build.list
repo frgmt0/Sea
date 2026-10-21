@@ -1,0 +1,7 @@
+# passes/seagen_x64/build.list -- what make adds to the pass's own passes/seagen_x64/*.bas (DESIGN.md 2.6.3).
+#   lib <module>...   shared modules of passes/lib/ (io diag tables limb f64emu fltlit)
+#   data <block>...   generated DATA blocks (errors errno exits consts entries records)
+# The build concatenates the parts in the canonical order of DESIGN.md 2.6.3 whatever the
+# order written here; a name outside the two sets is a build error.
+lib io diag tables
+data errors exits consts entries records

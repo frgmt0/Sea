@@ -33,6 +33,8 @@
 #                         include/*.inc and every record format of
 #                         include/passes.txt equals the tables of docs/DESIGN.md
 #                         (2.6.1, 2.6.2, 3, 4.8), and vice versa
+#   make cross-pack       pack the x86_64-linux test bundle into build/x86_64-linux-bundle
+#   make cross            pack, run on the Linux host (HOST=..., default desktop), report
 #   make cross-includes   the same check with GNU as on the Linux host
 #                         (tests/cross_includes.sh; HOST=... to override)
 #   make clean            remove build/
@@ -58,7 +60,7 @@ BUILD   := build
 
 BSK      := $(BAYSICK)/build/baysick
 BSKRT    := $(BAYSICK)/build/libbaysickrt.a
-PASSES   := seaparse seacheck seaexpand sealower seaopt seagen_a64
+PASSES   := seaparse seacheck seaexpand sealower seaopt seagen_a64 seagen_x64
 LIBS_CANON := io diag tables limb f64emu fltlit
 DATA_CANON := errors errno exits consts entries records
 RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock
@@ -73,7 +75,7 @@ BAYSICK_INC := $(wildcard $(BAYSICK)/include/runtime.inc $(BAYSICK)/include/limi
 .PHONY: all runtime tools passes install check-baysick FORCE \
         test test-programs test-rt test-stage test-protocol test-driver test-lib test-arith \
         check-data lines check-limits clean \
-        check-includes check-contracts cross-includes
+        check-includes check-contracts cross-includes cross cross-pack
 .DEFAULT_GOAL := all
 
 all: install runtime tools passes
@@ -268,3 +270,13 @@ check-includes: check-contracts $(INCLUDES) tests/include_check.s tests/include_
 
 cross-includes:
 	sh tests/cross_includes.sh -H $(HOST) -B "$(BAYSICK)"
+
+# ---- x86_64-linux cross testing (DESIGN.md 6.6.1) -----------------------------------------
+# cross-pack: the bundle build/x86_64-linux-bundle (removed first); cross: pack, ship by ssh to
+# HOST (default desktop), run there, report. Both need seagen_x64 and the x86_64 runtime.
+cross-pack: all
+	rm -rf $(BUILD)/x86_64-linux-bundle
+	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross_pack.sh -o $(BUILD)/x86_64-linux-bundle
+
+cross: all
+	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross.sh -H $(HOST)
