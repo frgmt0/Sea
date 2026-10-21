@@ -2753,6 +2753,13 @@ sea/tests/
   driver_check.sh     the driver's options, messages and statuses (§2.2)
   passes/NAME.out     (optional, beside a dump test) the program's expected standard output when
                       built and run
+  passes/NAME.lir     with neither NAME.sea nor NAME.lir1: a pass-4 test, LIR written by hand
+                      (the input of seagen_a64, §3.6); + NAME.out (the expected standard output)
+                      [+ NAME.err, NAME.status]. stage.sh runs seagen_a64 on it, assembles the
+                      sea.s with `as`, links it with libsea.a and libbaysickrt.a as the driver
+                      does, runs the program with standard input /dev/null and compares
+                      standard output with NAME.out, standard error with NAME.err (else empty)
+                      and the exit status with NAME.status (else 0)
   NAME.meta           (optional, beside a programs/ or errors/ test) `key=value` lines for the
                       runner: `stdout=epipe` connects standard output to a pipe whose reading
                       end is closed before the program starts (for `cannot write '<stdout>':
@@ -2763,7 +2770,8 @@ sea/tests/
                       expected bytes derived from LANGUAGE.md and §4 (`make test-rt`)
   stage.sh            runs one pass on the committed golden output of the previous pass
                       (passes/NAME.ast → seacheck → compare with NAME.hir1, and so on), so each
-                      pass is tested on its own (`make test-stage`)
+                      pass is tested on its own (`make test-stage`); a passes/NAME.lir with
+                      neither NAME.sea nor NAME.lir1 is the input of a pass-4 test (above)
   protocol.sh         the pass-protocol tests (truncated inputs, missing #end, §2.2)
   check_data.sh       checks the generator (§2.6.3) on the contract files: every generated
                       line ≤ 255 bytes, every record present (`make check-data`)

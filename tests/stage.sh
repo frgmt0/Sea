@@ -17,6 +17,14 @@
 #
 # A golden file whose pass executable is not built is a FAILURE ("not built"), not a skip.
 #
+# A NAME.lir with neither NAME.lir1 nor NAME.sea is not a seaopt golden but a pass-4 test: LIR
+# written by hand, with NAME.out (expected standard output) [+ NAME.err, NAME.status]. It runs
+# seagen_a64 on it (as sea.lir, standard input /dev/null), assembles sea.s with `as`, links it
+# with libsea.a and libbaysickrt.a as the driver does, and runs the program (standard input
+# /dev/null). Exit status must be NAME.status (else 0), standard output must equal NAME.out and
+# standard error NAME.err (else empty). A missing tool or library is a FAILURE. Name:
+# stage/seagen_a64/NAME.
+#
 # usage: sh tests/stage.sh [-v] [PATTERN...]      PATTERN: a substring of the test name
 #        (stage/<pass>/NAME). Environment: BUILD (default build/), SEA_TEST_TIMEOUT (10).
 # Exit status: 0 all passed, 1 a failure, 2 setup error.
@@ -85,6 +93,8 @@ stage() {
         nm=$(basename "$g" ".$_next")
         in=$ROOT/tests/passes/$nm.$_prev
         name=stage/$_p/$nm
+        # a hand-written NAME.lir (no NAME.lir1, no NAME.sea) is a pass-4 test, not a golden
+        if [ "$_next" = lir ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         selected "$name" || continue
         if [ ! -f "$in" ]; then fail "$name" "golden input $nm.$_prev missing"; continue; fi
         if [ ! -x "$BUILD/$_p" ]; then fail "$name" "pass '$_p' not built ($BUILD/$_p)"; continue; fi
@@ -121,6 +131,55 @@ for g in "$ROOT"/tests/passes/*.ast; do
     [ $st -eq 0 ] || { fail "$name" "exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
     [ $ok = 1 ] && { same "$g" "$TMP/p.out" "sea.ast" "$name" || ok=0; }
     [ $ok = 1 ] && { same "$TMP/empty" "$TMP/p.err" "stderr" "$name" || ok=0; }
+    [ $ok = 1 ] && pass
+done
+
+# pass 4 on hand-written LIR: build, run and compare the output
+for g in "$ROOT"/tests/passes/*.lir; do
+    [ -e "$g" ] || continue
+    nm=$(basename "$g" .lir)
+    [ -f "$ROOT/tests/passes/$nm.lir1" ] && continue
+    [ -f "$ROOT/tests/passes/$nm.sea" ] && continue
+    name=stage/seagen_a64/$nm
+    selected "$name" || continue
+    d=$ROOT/tests/passes
+    if [ ! -f "$d/$nm.out" ]; then fail "$name" "expected output $nm.out missing"; continue; fi
+    if [ ! -x "$BUILD/seagen_a64" ]; then fail "$name" "pass 'seagen_a64' not built ($BUILD/seagen_a64)"; continue; fi
+    if [ ! -f "$BUILD/libsea.a" ] || [ ! -f "$BUILD/libbaysickrt.a" ]; then fail "$name" "runtime library not built ($BUILD)"; continue; fi
+    want=0
+    [ -f "$d/$nm.status" ] && want=$(sed -n 1p "$d/$nm.status")
+    exp_err=$TMP/empty
+    [ -f "$d/$nm.err" ] && exp_err=$d/$nm.err
+    w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
+    cp "$g" "$w/sea.lir"
+    ok=1
+    run_limited "$TIMEOUT" "$w" "$BUILD/seagen_a64" >"$TMP/p.out" 2>"$TMP/p.err"
+    st=$?
+    [ $st -eq 0 ] || { fail "$name" "seagen_a64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
+    [ $ok = 1 ] && [ ! -f "$w/sea.s" ] && { fail "$name" "no sea.s written"; ok=0; }
+    if [ $ok = 1 ]; then
+        SDK=$(env -u SDKROOT xcrun --show-sdk-path 2>/dev/null | sed -n 1p)
+        if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then fail "$name" "cannot determine macOS SDK path"; ok=0; fi
+    fi
+    if [ $ok = 1 ]; then
+        (cd "$w" && env -u SDKROOT as -arch arm64 -mmacosx-version-min=11.0 -o sea.o sea.s) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
+        st=$?
+        [ $st -eq 0 ] || { fail "$name" "as failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
+    fi
+    if [ $ok = 1 ]; then
+        (cd "$w" && env -u SDKROOT ld -o prog sea.o "$BUILD/libsea.a" "$BUILD/libbaysickrt.a" -lSystem \
+            -syslibroot "$SDK" -e _main -arch arm64 -platform_version macos 11.0 11.0) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
+        st=$?
+        [ $st -eq 0 ] || { fail "$name" "ld failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
+    fi
+    if [ $ok = 1 ]; then
+        run_limited "$TIMEOUT" "$w" "$w/prog" >"$TMP/p.out" 2>"$TMP/p.err"
+        st=$?
+        [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
+        [ $ok = 1 ] && { same "$d/$nm.out" "$TMP/p.out" "standard output" "$name" || ok=0; }
+        [ $ok = 1 ] && { same "$exp_err" "$TMP/p.err" "standard error" "$name" || ok=0; }
+    fi
+    rm -rf "$w"
     [ $ok = 1 ] && pass
 done
 
