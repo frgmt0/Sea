@@ -15,7 +15,7 @@ passes. Decisions taken during phase 1 are recorded in DESIGN.md §0 ("Decided i
 §4.9.1, §6.6.1) is complete at sea commit a87ca78: `make cross` passes every case on the Linux
 host. Decision 7 (the user's MATLAB rerun) is done: the MATLAB baseline is committed at sea
 commit c1736f7. **Phase 3** (elementary functions: Sea's own scalar `log exp sin cos pow hypot`
-on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete (commit pending): the
+on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete at sea commit 98e1e14: the
 `math/` tests pass on both targets (≤ 1 ulp against the high-precision references, identical bits
 on both targets). **Next: phase 4** of DESIGN.md §8, **arrays and structs**; seacheck is expected
 to split into two programs in this phase (DESIGN.md §2.7, §7.3).
