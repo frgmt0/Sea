@@ -82,10 +82,10 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_multi` | hir1 lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
 | `fn_printf` | hir1 lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
 | `type_ifx_arm` | hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
-| `op_fold` | hir | §3.5.7 step 2, §2.8 folding checks |
+| `op_fold` | hir1 hir | §3.5.7 step 2, §2.8 folding checks |
 | `op_shortcircuit` | lir1 | §3.6.6 rule 3 |
 | `stmt_loops` | lir1 | §3.6.6 rule 4 |
-| `fn_reach` | hir | §3.5.7 step 5, §3.5.1 renumbering |
+| `fn_reach` | hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
