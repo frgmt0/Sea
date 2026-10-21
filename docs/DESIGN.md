@@ -34,8 +34,8 @@ the user's agreement. Phase 0 (§8) did:
 2. the contract files of §2.6 (`sea/include/*.inc`) are written with the matching doc
    sections, under the same contract rule as Baysick's (`CLAUDE.md`: a shared layout, code,
    limit or symbol changes only in the include file and its doc section together);
-3. implementation follows the milestones of §8: next is phase 1 (phase 0 is complete except
-   the user's MATLAB rerun of Decision 7).
+3. implementation follows the milestones of §8: phases 0 and 1 are complete (the MATLAB rerun
+   of Decision 7 is done: sea commit c1736f7); next is phase 2, the x86_64 target.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -1199,7 +1199,8 @@ is also the point of the Baysick project.
 | `passes/<pass>/build.list` | the modules and `DATA` blocks of each pass (§2.6.3) |
 | `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
 | `std/std.sea` | the prelude (§2.5) |
-| `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4); in phase 1 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s` |
+| `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4, §4.7.1); in phases 1 and 2 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s` |
+| `Makefile.linux` | on the Linux host: `check-includes`, `all` (`build-x86_64-linux/libsea.a`), `test-rt` (§4.7.1, §6.6.1) |
 | `include/` | the contract files (§2.6) |
 | `tests/` | the tests (§6.2) |
 | `build/` | the build output and installation directory: the pass executables, `sea`, `std.sea`, `errors.inc`, `limits.inc`, `libsea.a` and `libbaysickrt.a` (one of each, for the build's target), and the generated `build/gen/`; never committed |
@@ -2515,6 +2516,75 @@ The two runtimes implement the same entry points with the same results, as Baysi
 (arm64-macos native, x86_64-linux cross-compiled and tested on the Linux host). Everything a
 program prints is byte-identical on both targets except class-R values (§6.6).
 
+#### 4.7.1 The x86_64-linux runtime
+
+`runtime/x86_64_linux/` holds the same files as the arm64 runtime (in phase 2 `rt_main.s`,
+`rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s`) with the same entry points, the same internal
+helpers (§4.5, under their ELF names), the same algorithms, buffers and texts, so every byte a
+program writes and every exit status are those of the arm64 runtime (§4.7). Its style is
+Baysick's x86_64 runtime style (Baysick DESIGN.md §6.4.4): GNU `as` ≥ 2.38, AT&T syntax, `#`
+comments, 4-space indent, assembled with `as --64 --fatal-warnings -I include -I
+<baysick>/include` (Sea's contract files, then Baysick's `runtime.inc` for the kernel entry
+points); every file starts with its `.include` lines and ends with `.section
+.note.GNU-stack,"",@progbits`; entry points are `.globl` + `.type <name>, @function`; the
+internal helpers shared between files are `.globl` + `.hidden`; file-local labels are
+`.Lrt_<file>_<function>_<what>`; the function header block of CLAUDE.md "Assembly style", in
+System V terms. Code `.text` (`.p2align 4` per function), constants `.section .rodata`, tables
+of pointers `.section .data.rel.ro,"aw",@progbits`, mutable state `.data`/`.bss`. Instruction set:
+the x86-64 baseline (SSE2) only — no SSE3/SSE4.1 (`roundsd`), AVX, BMI or FMA — so the runtime
+runs on any x86_64 machine (later kernel variant files may use what their variant guarantees,
+§4.4). The calling convention is System V AMD64 (§4.8); the direction flag is clear and MXCSR
+and the x87 control word are never changed.
+
+**System interface.** glibc only (Sea's runtime calls no libm function),
+always called through the PLT (`call write@PLT`), as Baysick's x86_64 runtime does
+(Baysick DESIGN.md §6.4.3). The Linux values below are private to the runtime files (they are not
+contract values and are not in `rt.inc`):
+
+| Need | Call and Linux values |
+|------|-----------------------|
+| output | `write(fd, buf, len)`; errno through `__errno_location()` (returns `int *`); `EINTR` 4, `EAGAIN` 11; `poll(&pfd, 1, -1)` with `struct pollfd` {fd i32 at 0, events i16 at 4, revents i16 at 6}, `POLLOUT` 4 |
+| termination | `_exit(status)` |
+| number digits | `snprintf(buf, n, fmt, x)`: variadic, so `%al` = the number of vector registers used (`movl $1, %eax` for one `f64` in `%xmm0`) immediately before the call |
+| clock | `clock_gettime(1, &ts)` (`CLOCK_MONOTONIC` 1; `struct timespec` {tv_sec i64 at 0, tv_nsec i64 at 8}) |
+| program stack | `sysconf(30)` (`_SC_PAGESIZE`); `mmap(NULL, n, 3, 0x22, -1, 0)` (`PROT_READ\|PROT_WRITE`, `MAP_PRIVATE\|MAP_ANONYMOUS`), failure `(void *) -1`; `mprotect(base, G, 0)` |
+| signals | `signal(13, (void *) 1)` (`SIGPIPE`, `SIG_IGN`); `sigaltstack(&ss, NULL)` with `stack_t` {ss_sp ptr at 0, ss_flags i32 at 8, ss_size u64 at 16; 24 bytes}; `sigaction(sig, &sa, NULL)` with glibc's `struct sigaction` {sa_sigaction ptr at 0, sa_mask 128 bytes at 8, sa_flags i32 at 136, sa_restorer ptr at 144; 152 bytes}, `sa_flags` = `SA_ONSTACK\|SA_SIGINFO` = 0x08000004, `sa_mask` empty; `SIGSEGV` 11, `SIGBUS` 7; the handler receives (sig, `siginfo_t *`, context) and finds the fault address `si_addr` at offset 16 of `siginfo_t`; `SIG_DFL` 0 |
+| kernels | `getenv("SEA_KERNELS")`; Baysick's `bsk_kern_init`, `bsk_kern_use`, `bsk_kern_variants` (§4.4), linked from Baysick's x86_64 `libbaysickrt.a` |
+| memory | `memcpy`, `strlen` |
+
+**Start-up** follows the arm64 `main` step by step (§4.5, §4.6): `main` is entered from glibc's
+start code with `%rsp` ≡ 8 (mod 16) and pushes `%rbp` before its first call; it switches to the
+new program stack by setting `%rsp` to its top (page-aligned), clears `%rbp` (`xorl %ebp,
+%ebp`) and calls `sea_main` with `%rsp` ≡ 0 (mod 16). The `SIGSEGV`/`SIGBUS` handler runs on
+the alternate stack; a fault address inside the guard page is `stack overflow` with no location
+(`sea_err`, which flushes and ends with `_exit`); any other address resets the signal to
+`SIG_DFL` and returns, so the instruction faults again with the default action.
+
+**Kernel variant.** After the selection of §4.4 the runtime sets `sea_variant` from the selected
+Baysick variant's name: `avx2` → `SEA_VAR_AVX2`; `sse2` and `baseline` (Baysick's x86_64
+baseline is SSE2 code) → `SEA_VAR_SSE2`. Phase 2 emits no `vfeat`, so the value changes no
+output.
+
+**Identical output.** The digits of finite `f64` conversions come from glibc's `snprintf`
+exactly as from libSystem's on the Mac: both print the exact decimal value of the binary64
+argument, correctly rounded for every precision (ties by the default rounding mode), in the C
+locale (the program never calls `setlocale`); the integer paths are Sea's own code on both
+targets. Error texts come from `errors.inc` and errno texts from the errno table (§2.6.2), whose
+`x86_64-linux` column maps the host value; a host errno outside the table prints id 0's text.
+The cross corpus (§6.6.1) checks every byte.
+
+**Build and tests on Linux.** `make -f Makefile.linux` builds `build-x86_64-linux/libsea.a` from
+`runtime/x86_64_linux/*.s` (objects in `build-x86_64-linux/obj/`, `ar rcs`); Baysick's x86_64
+runtime is built in the Baysick tree (or the bundle's copy of it) with Baysick's `make -f
+Makefile.linux` (`build-x86_64-linux/libbaysickrt.a`). Runtime tests are
+`tests/rt/x86_64_linux/NAME.s`: the x86_64 counterparts of `tests/rt/arm64_macos/` (an assembly
+program defining `sea_main` and `sea_sites`), with the same sidecars and the same expected bytes;
+a test about a host-specific value carries the host in its name (`rt_err_errno_linux`,
+`rt_err_errno_darwin`) and exists only for its host. They are assembled with the runtime flags,
+linked as `gcc -no-pie -o prog NAME.o build-x86_64-linux/obj/rt_main.o build-x86_64-linux/libsea.a
+<libbaysickrt.a> -lm` (`rt_main.o` explicit and first, as on the Mac) and run by
+`tests/rt/run_rt_linux.sh` (`make -f Makefile.linux test-rt`), and by the cross run (§6.6.1).
+
 ### 4.8 Runtime ABI: what `rt.inc` holds
 
 `sea/include/rt.inc` (§2.6) pins everything pass 4 (both code generators) and the two runtimes
@@ -2532,7 +2602,8 @@ arguments and failure codes.
 (agreed with `rt.inc` in phase 0, §0).
 
 **Symbols.** Mach-O names; on `x86_64-linux` the ELF names drop the leading `_` (`main`,
-`sea_main`, `sea_err`, `sea_sites`, `sea_variant`), as Baysick's do.
+`sea_main`, `sea_err`, `sea_sites`, `sea_variant`, `sea_stack_limit`, and the entry points
+`sea_printf`, `sea_now`), as Baysick's do.
 
 | Symbol | Defined by | Contract |
 |--------|------------|----------|
@@ -2769,6 +2840,117 @@ results back; no callee-saved register is used except the frame record (`x29`/`x
 `L<function number>_<block>_<what>`. The phase-1 code is deliberately simple; §5.2 states what
 phase 5 must reach.
 
+#### 4.9.1 x86_64-linux code (`seagen_x64`)
+
+`seagen_x64` (`passes/seagen_x64/`, built like every pass, §2.6.3, with the same modules and
+`DATA` blocks as `seagen_a64`) is `seagen_a64` with the target changed: it reads `sea.lir` the
+same way, validates the same things, lays out the same frame areas, numbers sites, constants,
+cold blocks and labels the same way and emits the same data layouts (`rt.inc`, §4.8). Only what
+this section says differs. As on arm64, the dump tests do not compare `sea.s`: the behaviour of
+the program is what the tests check (§6.6), so the instruction sequences below are normative in
+their results, and the named sequences are the ones to use.
+
+**Syntax and naming.** GNU `as`, AT&T syntax (Baysick DESIGN.md §5.4.2: never
+`.intel_syntax`), x86_64 ELF, `#` comments, 4-space indent, labels in column 0; first line `#
+sea.s -- written by seagen_x64 from sea.lir (Sea DESIGN.md 4.8, 4.9)`. Symbols carry no leading
+`_` (§4.8): the output defines `sea_main` (`.globl sea_main`, `.type sea_main, @function`) and
+`sea_sites` (`.globl sea_sites`, `.type sea_sites, @object`) and refers to `sea_err`,
+`sea_stack_limit` and the entry points by their ELF symbols (`sea_printf`, `sea_now`). Every
+arm64 local label `L…` is the assembler-local `.L…` (`.Lfn_<name>` for a function other than
+`.main`, `.L<f>_ret`, `.L<f>_so`, `.L<f>_c<k>`, `.L<f>_e<k>`, `.L<f>_<b>_<what>`, `.Ld<N>` and
+`.Ld<N>_t<k>` for data, `.Lsf<k>` for the site file strings); numeric labels `1:` … only inside
+one instruction's sequence.
+
+**Sections.** Code in `.text`, `.p2align 4` before each function; a function's cold blocks and
+then its `f64` constants follow it in `.text` (`.p2align 3`, `.quad 0x<16 hex digits>`), as on
+arm64. The data records and `sea_sites` go to `.section .data.rel.ro,"aw",@progbits` (they hold
+absolute addresses), with `.quad`, `.long`, `.byte` and `.zero` (arm64's `.space`). The last line
+is `.section .note.GNU-stack,"",@progbits` (a non-executable stack; without it GNU `ld` warns).
+
+**Addressing and linking.** Data, constants and runtime variables are addressed RIP-relative
+(`leaq .Ld1(%rip), %rax`, `movsd .L1_c3(%rip), %xmm8`, `movq sea_stack_limit(%rip), %r11`);
+calls are direct (`call .Lfn_tri`, `call sea_err`, `call sea_printf`). The program is linked
+non-PIE, exactly as Baysick's x86_64 programs (Baysick DESIGN.md §5.4.1): `as --64 -o prog.o
+sea.s`, then `gcc -no-pie -o prog prog.o libsea.a libbaysickrt.a -lm` (Baysick's flags; Sea's
+own code calls no libm function, `-lm` serves Baysick archive members), so the absolute addresses in `.data.rel.ro` are resolved at static link time. The driver does not run
+these commands (x86_64-linux is a cross target, §2.2); the cross run does (§6.6.1).
+
+**Frame.** A function is entered with `%rsp` ≡ 8 (mod 16). Its prologue is the stack check (when
+§4.6 requires one), then `pushq %rbp`, `movq %rsp, %rbp`, `subq $F, %rsp`, where F is the size of
+the arm64 frame's body (every area below the frame record, rounded up to 16), so `%rsp` ≡ 0
+(mod 16) at every call. The areas lie from `%rsp` upwards exactly as on arm64: outgoing stack
+arguments and the `sea_err` argument slots at offset 0, the results area of calls, the LIR slots,
+16 bytes per loop block, the saved address of the function's own results area, the register
+slots. Every function has this `%rbp` frame (as every `seagen_a64` function has its frame
+record); no other callee-saved register is used, so none is saved. The parameters are stored
+from the §4.8 registers into their slots after the prologue; a parameter passed on the stack is
+at `16+8k(%rbp)`. The epilogue is `leave`, `ret`. The scratch registers are those of the
+phase-1 allocator table above; `%rdx` and `%rcx` double as the operands that x86 instructions
+fix (`idivq`, shift counts in `%cl`).
+
+**Stack check** (§4.6), before `pushq %rbp`, with N = 8 + F, the bytes the prologue allocates:
+
+```
+    movq sea_stack_limit(%rip), %r11
+    movq %rsp, %r10
+    subq %r11, %r10          # borrow (CF = 1): rsp already below the limit
+    jb .L<f>_so
+    cmpq $N, %r10            # N > 2^31 - 1: movabsq $N, %r11 / cmpq %r11, %r10
+    jb .L<f>_so
+```
+
+and the cold block, reached with `%rsp` ≡ 8 (mod 16) and nothing allocated:
+
+```
+.L<f>_so:
+    subq $8, %rsp            # realign for the call
+    movl $15, %edi           # STACK_OVERFLOW (errors.inc)
+    movq $<site index of the function's definition line>, %rsi
+    movq %rsp, %rdx
+    call sea_err
+```
+
+**Run-time error calls.** A check's cold block is `movl $<code>, %edi`, `movq $<site index>,
+%rsi`, `movq %rsp, %rdx` (the argument slots at offset 0 of the frame, stored before the jump as
+on arm64), `call sea_err`; `%rsp` ≡ 0 there. An `rcall` of an entry with site `S` passes the site
+index as its last integer argument (§4.8).
+
+**Instructions whose x86_64 form differs** (every LIR instruction keeps exactly its §3.6.4
+meaning; operands are in the scratch registers in operand order, the result in the first):
+
+| LIR | x86_64 |
+|-----|--------|
+| `li` | `movq $v, %rax` for −2³¹ ≤ v < 2³¹, else `movabsq $v, %rax` |
+| `lf` | `movsd .L<f>_c<k>(%rip), %xmm8` (the function's constant, as arm64's `L<f>_c<k>`) |
+| `la`, `sa` | `leaq .Ld<N>(%rip), %rax`; `leaq <offset>(%rsp), %rax` |
+| `iaddc` `isubc` `inegc` | `addq %rcx, %rax` / `subq %rcx, %rax` / `negq %rax`, then `jo` to the `INT_OVERFLOW` cold block |
+| `imulc` | `imulq %rcx, %rax`, then `jo` (OF is set exactly when the signed product does not fit) |
+| `imulh` | `imulq %rcx` (one-operand form: `%rdx:%rax` = `%rax`·`%rcx`), then `movq %rdx, %rax` |
+| `idivf` | `idivq` raises a divide error (`SIGFPE`) for a zero divisor and for −2⁶³ ÷ −1, so the checks come first: divisor 0 → `INT_DIV_ZERO`; divisor −1 and dividend −2⁶³ → `INT_OVERFLOW`; then `cqto`, `idivq %rcx` (quotient `%rax`, remainder `%rdx`) and the floored correction of arm64 (remainder ≠ 0 with a sign different from the divisor's: quotient − 1) |
+| `imodf` | divisor 0 → `INT_DIV_ZERO`; divisor −1 → result 0 without `idivq` (the floored modulo by −1 is 0 for every dividend, −2⁶³ included, where `idivq` would fault and arm64's `sdiv` does not); otherwise `cqto`, `idivq %rcx`, and the floored correction (remainder ≠ 0 with a sign different from the divisor's: remainder + divisor) |
+| `rcount` | the arm64 sequence with `divq` for its unsigned divisions (`xorl %edx, %edx` first; the zero-step check comes before) |
+| `ishl` `ishr` `isar` | `shlq %cl, %rax` / `shrq %cl, %rax` / `sarq %cl, %rax` (the hardware masks the count to 6 bits, which changes nothing for the counts 0 … 63 the instruction allows) |
+| `icmp`, `bnot` | `cmpq %rcx, %rax` (`testq %rax, %rax` for `bnot`), `set<cc> %al`, `movzbl %al, %eax`; cc `eq` `e`, `ne` `ne`, `lt` `l`, `le` `le`, `gt` `g`, `ge` `ge` (`bnot`: `e`) |
+| `isel` `psel` | `testq %rax, %rax`, `movq %rdx, %rax`, `cmovneq %rcx, %rax` |
+| `fsel` | `testq %rax, %rax`, `jne 1f`, `movapd %xmm9, %xmm8`, `1:` |
+| `fcmp` | `ucomisd` (flags of D − S for `ucomisd S, D`; an unordered pair sets ZF, PF and CF): `eq` `ucomisd %xmm9, %xmm8`, `sete %al`, `setnp %cl`, `andb %cl, %al`; `ne` the same with `setne`, `setp`, `orb`; `gt` `ucomisd %xmm9, %xmm8`, `seta`; `ge` the same with `setae`; `lt` `ucomisd %xmm8, %xmm9`, `seta`; `le` the same with `setae`; then `movzbl %al, %eax`. With a NaN operand only `ne` gives 1 |
+| `fnan` | `ucomisd %xmm8, %xmm8`, `setp %al`, `movzbl %al, %eax` |
+| `fneg` `fabs` | flip / clear bit 63 through `%rax`: `movq %xmm8, %rax`, `btcq $63, %rax` / `btrq $63, %rax`, `movq %rax, %xmm8` (never `0 − x`, which gives +0 for −(+0)) |
+| `fsqrt` | `sqrtsd %xmm8, %xmm8` |
+| `fmin` `fmax` | not `minsd`/`maxsd`, which return their second (source) operand when either is NaN and when the operands are equal (±0 included); the result is arm64's: `fmin` gives b if b < a (an ordered comparison), else a, and then b if a is NaN; `fmax` the same with b > a |
+| `ffloor` `fceil` `ftrunc` `fround` | SSE2 has no `roundsd`, so: if x is NaN or \|x\| ≥ 2⁵², the result is x (NaN, or already integral); otherwise t = `cvttsd2si` then `cvtsi2sdq` (exact for \|x\| < 2⁵²), and `ftrunc` gives t; `ffloor` t − 1.0 if t > x, else t; `fceil` t + 1.0 if t < x, else t; `fround` t + 1.0·sign(x) if \|x − t\| ≥ 0.5 (x − t is exact), else t; a zero result takes x's sign bit (`ftrunc(-0.5)`, `fceil(-0.5)`, `fround(-0.4)` and `ffloor(-0.0)` are −0.0), which gives exactly arm64's `frintz`/`frintm`/`frintp`/`frinta` results |
+| `itof` | `cvtsi2sdq %rax, %xmm8` (round to nearest even: MXCSR is never changed) |
+| `ftoi` | the checks come first, as on arm64: NaN, a non-integral x (the `ftrunc` above differs from x) and x < −2⁶³ or x ≥ 2⁶³ go to the `CONV_I64` cold block (x's bits in the argument slot); then `cvttsd2si %xmm8, %rax`. (`cvttsd2si` returns 0x8000000000000000, the "integer indefinite", for NaN and out-of-range inputs, so the conversion cannot be checked afterwards; −2⁶³ itself converts to that pattern correctly) |
+| `ldi` `ldb` `ldf` `ldp`, `sti` `stb` `stf` `stp` | `movq`, `movzbl`, `movsd`, `movq`; `movq %rax`, `movb %al`, `movsd %xmm8`, `movq %rax`, on `off(base, idx, scale)` when scale is 1, 2, 4 or 8 and −2³¹ ≤ off < 2³¹; otherwise the address is computed into `%r10` first (`imulq`/`addq`, `movabsq` for a large offset), as arm64 computes it into `x16` |
+| `chkb` | `cmpq %rcx, %rax`, `jae` to the `INDEX_OOB` cold block (unsigned, so idx < 0 fails too) |
+| `chk` | `testq %rax, %rax`, `jne` to the cold block |
+| branches | `jmp` and `j<cc>`: GNU `as` chooses the short or near form, and a near branch reaches any distance, so arm64's far form (and the mode-0 line count it needs) has no counterpart |
+| `call`, `rcall` | arguments loaded into the §4.8 registers (stack arguments stored at `0(%rsp)`, `8(%rsp)`, …), `call`, results stored from `%rax %rdx %rcx %rsi %rdi %r8 %r9` and `%xmm0`–`%xmm7` (and the results area); no entry point is variadic, so generated code never sets `%al` |
+| `ret` | the results into the §4.8 result registers (and the caller's results area), then the epilogue |
+
+The vector, mask and `vfeat` instructions and `retain`/`release` are `BAD_RECORD` in phase 2, as
+in phase 1 (§4.9).
+
 ## 5. Performance model
 
 ### 5.1 Fusion
@@ -2959,7 +3141,8 @@ sea/tests/
                       of §3.2–§3.6 (§3.9), in both directions
   run.sh              Mac runner of programs/, errors/ and the passes/ dumps (it compiles with
                       the test's directory as working directory, so diagnostics name NAME.sea);
-                      cross.sh, cross_pack.sh, cross_run.sh: Linux, as Baysick's
+                      cross.sh, cross_pack.sh, cross_run.sh: the x86_64-linux cases on the
+                      Linux host (§6.6.1, `make cross`, `make cross-pack`)
   NAME.status         the expected exit status: a decimal number and LF
   harness/            Baysick test programs of the shared modules (limb, f64emu, fltlit) that
                       read the committed vectors
@@ -2981,7 +3164,7 @@ sea/tests/
                       Broken pipe`, LANGUAGE.md §9.2); `stdout=closed` starts the program
                       with standard output closed (`>&-`, for `cannot write '<stdout>': Bad
                       file descriptor`); with either key NAME.out is not compared
-  rt/arm64_macos/NAME.s  (later rt/x86_64_linux/) a runtime test: an assembly program, in
+  rt/arm64_macos/NAME.s, rt/x86_64_linux/NAME.s (§4.7.1) a runtime test: an assembly program, in
                       Baysick's assembly style, that calls runtime entry points through rt.inc
                       and is linked with libsea.a; + NAME.out [+ NAME.err, NAME.status], the
                       expected bytes derived from LANGUAGE.md and §4 (`make test-rt`)
@@ -3147,7 +3330,99 @@ for the x86_64 numbers (reported, not compared with MATLAB, which has no Linux b
   targets with the acceptance rules (§6.3–§6.4), not byte for byte. Its `K @ u0` reactions
   are class E given the same `u0`.
 * `x86_64-linux` output is produced by the cross scripts as Baysick's are (`sea/tests/cross*.sh`
-  on the ssh host, default `desktop`).
+  on the ssh host, default `desktop`; §6.6.1).
+
+#### 6.6.1 Cross testing x86_64-linux
+
+As in Baysick (Baysick DESIGN.md §8.3), compiling happens only on the Mac (the passes are macOS
+Baysick programs) and the run half on the Linux host. Three POSIX `sh` scripts and two make
+targets do it; every spec test that runs a program is a cross case, and the expected files are
+the same files the Mac uses (one set for both targets).
+
+**Cases.**
+
+* `programs/NAME`: every program test.
+* `errors/NAME` whose program compiles: the run-time error tests. A test whose `sea build`
+  fails with status 1 and exactly `NAME.err` on standard error (and `NAME.status` 1) is a
+  compile-time test, target-independent (it never reaches pass 4), checked on the Mac only, and
+  skipped silently; any other failure is a pack failure.
+* `passes/NAME` with a `NAME.out`: the program built with `--no-prelude` and run (§6.2).
+* `passes/NAME.lir` pass-4 tests (hand-written LIR, §6.2): the file with its `#target` record
+  replaced by `#target x86_64-linux`, run through `seagen_x64` on the Mac.
+* `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1).
+
+The dump tests (`--emit`) and the other Mac groups (`stage.sh` dumps, `protocol.sh`,
+`lib_check.sh`, `arith_check.sh`, `driver_check.sh`, `check_data.sh`) are target-independent and
+run only on the Mac (`make test`).
+
+**Bundle** (a self-contained directory made on the Mac, consumed on Linux):
+
+```
+<bundle>/BUNDLE                       one line: "sea-x86_64-linux-bundle 1"
+<bundle>/Makefile.linux               Sea's
+<bundle>/include/limits.inc errors.inc rt.inc
+<bundle>/runtime/x86_64_linux/*.s
+<bundle>/tests/cross_run.sh
+<bundle>/tests/include_check_x86_64.s tests/include_asserts.inc
+<bundle>/tests/rt/run_rt_linux.sh     tests/rt/x86_64_linux/NAME.s + sidecars
+<bundle>/baysick/Makefile.linux       Baysick's, with its include/*.inc and
+<bundle>/baysick/include/*.inc        src/runtime_x86_64_linux/*.s (the x86_64
+<bundle>/baysick/src/runtime_x86_64_linux/*.s   libbaysickrt.a is built from them)
+<bundle>/cases/<kind>/NAME.s          the program as compiled on the Mac, kind programs,
+                                      errors or passes
+<bundle>/cases/<kind>/NAME.out .err .status .in .args .meta, NAME.files/, NAME.expect/
+                                      copies of the sidecars present
+<bundle>/cases/<kind>/NAME.packfail   instead of NAME.s when compiling failed: "status <n>",
+                                      then the compiler's standard error
+```
+
+**`tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]`** (Mac). `BUNDLE_DIR` must not exist or be
+empty (else exit 2); PATTERN selects cases whose name contains it, as in `tests/run.sh`.
+Environment: `SEA` (the driver, default `build/sea`), `BAYSICK` (the Baysick checkout, default
+the parent of the Sea repository). Each case is compiled with the driver run in the test's own
+directory with the bare file name, exactly as `tests/run.sh` does (so the site table names
+`NAME.sea`): `sea build --target x86_64-linux -S -o <bundle>/cases/<kind>/NAME.s NAME.sea`
+(`--no-prelude` for passes/); a pass-4 test runs `seagen_x64` on the retargeted LIR in a scratch
+directory (the pass's file protocol, §2.2). The compile must exit 0 with empty standard output
+and standard error, else `NAME.packfail` is written (the errors/ rule above decides first). It
+prints `packed: <n> cases (<m> failed to compile)` and exits 0 when the bundle is complete, 2
+on a setup error (driver or `seagen_x64` missing, bad `-o`, copy failure). `make cross-pack`
+writes `build/x86_64-linux-bundle` (removed first).
+
+**`tests/cross_run.sh [-v] [BUNDLE_DIR]`** (Linux; default the directory above the script).
+Environment: `SEA_TEST_TIMEOUT` (seconds per run, default 10), `AS` (default `as`), `CC`
+(default `gcc`), `SEA_KERNELS` (passed to the programs when set). Setup (failure → message,
+exit 2): the `BUNDLE` line; `make -C BUNDLE_DIR/baysick -f Makefile.linux all AS="$AS"`; `make
+-C BUNDLE_DIR -f Makefile.linux check-includes all BAYSICK=baysick AS="$AS"`. Per case, in a
+`mktemp -d` directory: a `NAME.packfail` is a FAIL (`compile (on the Mac) failed`); otherwise
+`$AS --64 -o prog.o NAME.s` and `$CC -no-pie -o prog prog.o <libsea.a> <libbaysickrt.a> -lm` (an
+`rt/` case also links `obj/rt_main.o` first, §4.7.1), each of which must exit 0 with **empty
+standard error** (a warning is a FAIL: `assemble failed` / `link failed`); then the program runs
+exactly as `tests/run.sh` runs it on the Mac: in a fresh working directory holding the copied
+`NAME.files/`, standard input `NAME.in` or `/dev/null`, the arguments of `NAME.args`, the
+`NAME.meta` keys (`stdout=epipe`, `stdout=closed`, with the same mechanisms), the timeout.
+
+**What "byte-identical" compares.** For each case, against the same expected files as on the
+Mac: standard output with `NAME.out` (not compared under a `stdout=` key; empty when absent for
+errors/), standard error with `NAME.err` (empty when absent), the exit status with
+`NAME.status` (0 when absent), every file of `NAME.expect/` byte for byte, and that the working
+directory holds nothing else but unchanged fixtures. The output format and exit status of the
+script are those of `tests/run.sh` (`FAIL <name>: <reason>`, `----`, `passed: P  failed: F`,
+`failed tests: …`; 0, 1, or 2 on a setup error).
+
+**`tests/cross.sh [-v] [-H HOST] [PATTERN...]`** (Mac, the one command; `make cross`). Host:
+`-H`, else `$SEA_CROSS_HOST`, else `desktop`, reached with `ssh -o BatchMode=yes --`. It packs
+into a local `mktemp -d` directory, streams it as `tar -C <bundle> -cf - .` into one `ssh` call
+whose remote `sh -c` script (no single quote in it) unpacks into a remote `mktemp -d` directory,
+removed on exit and on HUP/INT/TERM/PIPE, and runs `SEA_TEST_TIMEOUT=<value> [SEA_KERNELS=<value>]
+sh "$d/tests/cross_run.sh" [-v] "$d"`; `SEA_KERNELS`, when set, must be letters, digits and
+underscores (else exit 2). Exit: the status of `cross_run.sh`; 2 if packing or `ssh` fails or
+the remote status is anything else. Nothing is left on the host. All three scripts treat
+HUP/INT/TERM/PIPE by removing their temporary directory and exiting 2, and match patterns
+literally.
+
+Phase 2 is done (§8) when `make cross` passes every case and `make cross-includes` passes, with
+`make test` still passing on the Mac.
 
 ## 7. What Baysick must grow
 
@@ -3330,7 +3605,10 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
    §6.4 cannot be automated, and the current baseline's variance (W2: 1.05–1.74 s) makes a
    best-of-3 comparison noisy. Which baseline (default or single-threaded) is the pass
    criterion is part of this decision; decided: the default-threaded one, as users run
-   MATLAB, with the single-threaded one reported. Affects §1.2, §5.7, §6.3–§6.5.
+   MATLAB, with the single-threaded one reported. Affects §1.2, §5.7, §6.3–§6.5. **Done**
+   (2026-10-21, sea commit c1736f7): the user's rerun on an M2 Pro with MATLAB R2026a committed
+   `workloads/reference/<name>.txt` for the five workloads, `baseline_timings_matlab.json`
+   (default threads) and `baseline_timings_matlab_1thread.json`.
 8. **Typing strictness and untyped integer literals.**
    Options: (a) static, signatures annotated, locals inferred, only `i64 → f64` implicit, untyped
    integer constants typed by context and a `var` initialised by one typed by its assignments

@@ -13,7 +13,8 @@ W5 LCG acceptance test passes; the size estimate of DESIGN.md §2.7 is recalibra
 passes. Decisions taken during phase 1 are recorded in DESIGN.md §0 ("Decided in phase 1").
 **Next: phase 2** of DESIGN.md §8, the **x86_64 target**: `seagen_x64`, the x86_64 runtime for
 the same subset and `cross*.sh`, done when the phase-1 tests pass byte-identically on the Linux
-host. Still open from phase 0: the user's MATLAB rerun (Decision 7).
+host (specified in DESIGN.md §4.7.1, §4.9.1, §6.6.1). Decision 7 (the user's MATLAB rerun) is
+done: the MATLAB baseline is committed at sea commit c1736f7.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
