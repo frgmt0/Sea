@@ -3,5 +3,6 @@
 #   data <block>...   generated DATA blocks (errors errno exits consts entries records)
 # The build concatenates the parts in the canonical order of DESIGN.md 2.6.3 whatever the
 # order written here; a name outside the two sets is a build error.
-lib io diag tables limb f64emu fltlit
+# seaparse needs limb (LMINT, LMFMT, LMHEX) and fltlit (FLCVT), not f64emu.
+lib io diag tables limb fltlit
 data errors exits consts records
