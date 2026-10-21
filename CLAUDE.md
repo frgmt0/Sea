@@ -11,10 +11,12 @@ at sea commit e6e9873) of DESIGN.md §8 are done. The six passes (`seaparse` `se
 `sealower` `seaopt` `seagen_a64`), the driver, the arm64 runtime and the tools are written; the
 W5 LCG acceptance test passes; the size estimate of DESIGN.md §2.7 is recalibrated from the real
 passes. Decisions taken during phase 1 are recorded in DESIGN.md §0 ("Decided in phase 1").
-**Next: phase 2** of DESIGN.md §8, the **x86_64 target**: `seagen_x64`, the x86_64 runtime for
-the same subset and `cross*.sh`, done when the phase-1 tests pass byte-identically on the Linux
-host (specified in DESIGN.md §4.7.1, §4.9.1, §6.6.1). Decision 7 (the user's MATLAB rerun) is
-done: the MATLAB baseline is committed at sea commit c1736f7.
+**Phase 2** (the x86_64 target: `seagen_x64`, the x86_64 runtime, `cross*.sh`; DESIGN.md §4.7.1,
+§4.9.1, §6.6.1) is complete at sea commit a87ca78: `make cross` passes every case on the Linux
+host. Decision 7 (the user's MATLAB rerun) is done: the MATLAB baseline is committed at sea
+commit c1736f7. **Next: phase 3** of DESIGN.md §8, **elementary functions**: Sea's own scalar
+`log exp sin cos pow hypot` on both targets (Decision 6), done when the `math/` tests pass on
+both targets (≤ 1 ulp against the high-precision references, identical bits on both targets).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -52,6 +54,11 @@ done: the MATLAB baseline is committed at sea commit c1736f7.
 - Include check on the Linux host (GNU `as`): `make cross-includes` / `sh tests/cross_includes.sh
   [-H host] [-B baysick_dir]` (ssh host, default `desktop`); on Linux itself:
   `make -f Makefile.linux check-includes`.
+- x86_64 cross test (DESIGN.md §6.6.1): `make cross` / `sh tests/cross.sh [-v] [-H host]
+  [pattern]` (packs on the Mac, one ssh to the host, default `$SEA_CROSS_HOST` else `desktop`);
+  `make cross-pack` builds `build/x86_64-linux-bundle` only; on Linux: `sh tests/cross_run.sh
+  [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
+  Makefile.linux test-rt` (`tests/rt/x86_64_linux/`).
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
@@ -59,8 +66,8 @@ done: the MATLAB baseline is committed at sea commit c1736f7.
   (`io diag tables limb f64emu fltlit`), interfaces in `passes/lib/API.md`, `API-arith.md`.
 - `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator),
   `passlines.sh`.
-- `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/` the runtime (`libsea.a`);
-  `std/std.sea` the prelude.
+- `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
+  runtimes (`libsea.a`); `std/std.sea` the prelude.
 - `tests/` programs/, errors/, passes/ (dump goldens), rt/, harness/, vectors/ and the scripts
   above; `tests/CORPUS.md` describes the corpus.
 

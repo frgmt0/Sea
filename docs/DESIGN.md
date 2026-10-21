@@ -172,30 +172,44 @@ Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc`, a Sea 
    baseline;
 4. **writes its figures** as SVG files (LANGUAGE.md §12) when asked to.
 
-**The MATLAB baseline exists.** `reference/baseline_timings_matlab.json` was found, written by
-`run_all.m` with MATLAB `26.1.0.3346908 (R2026a) Update 5`, `arch` = `maca64`, three repetitions
-per workload. Its values (seconds; the first run includes MATLAB's JIT warm-up):
+**The MATLAB baseline.** `reference/baseline_timings_matlab.json` (Decision 7, sea commit
+c1736f7) was written by `run_all.m` with MATLAB `26.1.0.3346908 (R2026a) Update 5`, `arch` =
+`maca64`, on an Apple M2 Pro (`Mac14,9`), with MATLAB's default thread count
+(`maxNumCompThreads` = 10), five repetitions per workload. Its values (seconds; the first run
+includes MATLAB's JIT warm-up; median and best over all five runs):
 
-| Workload | compute, runs 1/2/3 | best compute | total, runs 1/2/3 | best total |
-|----------|---------------------|-------------:|-------------------|-----------:|
-| w1_shaft_design | 0.613 / 0.528 / 0.532 | 0.528 | 0.738 / 0.591 / 0.594 | 0.591 |
-| w2_truss_fem | 1.444 / 1.053 / 1.740 | 1.053 | 1.473 / 1.097 / 1.770 | 1.097 |
-| w3_quarter_car | 0.717 / 0.661 / 0.650 | 0.650 | 0.813 / 0.752 / 0.743 | 0.743 |
-| w4_heat_plate | 1.146 / 0.914 / 0.901 | 0.901 | 1.157 / 0.919 / 0.906 | 0.906 |
-| w5_tolerance_mc | 0.978 / 0.825 / 0.810 | 0.810 | 0.987 / 0.829 / 0.815 | 0.815 |
+| Workload | total, first | total, median | **total, best** | compute, first | compute, median | **compute, best** |
+|----------|-------------:|--------------:|----------------:|---------------:|----------------:|------------------:|
+| w1_shaft_design | 0.595 | 0.583 | 0.573 | 0.527 | 0.522 | 0.511 |
+| w2_truss_fem | 1.022 | 1.129 | 0.956 | 1.000 | 1.108 | 0.936 |
+| w3_quarter_car | 0.733 | 0.729 | 0.720 | 0.641 | 0.640 | 0.631 |
+| w4_heat_plate | 0.912 | 0.918 | 0.907 | 0.906 | 0.912 | 0.902 |
+| w5_tolerance_mc | 0.862 | 0.808 | 0.768 | 0.858 | 0.805 | 0.764 |
 
-The file records neither the CPU model nor the machine; §6.5 requires the Sea measurement
-to name its machine, and the comparison is valid only on the same one (the user's).
+The bests are the pass criterion (below). `reference/baseline_timings_matlab_1thread.json`
+holds the same five-run measurement with `maxNumCompThreads(1)` on the same machine; it is
+reported next to Sea's numbers (§6.5), not compared:
+
+| Workload | total, first | total, median | total, best | compute, first | compute, median | compute, best |
+|----------|-------------:|--------------:|------------:|---------------:|----------------:|--------------:|
+| w1_shaft_design | 0.683 | 0.634 | 0.588 | 0.602 | 0.571 | 0.526 |
+| w2_truss_fem | 0.571 | 0.391 | 0.379 | 0.543 | 0.369 | 0.358 |
+| w3_quarter_car | 0.806 | 0.744 | 0.737 | 0.710 | 0.651 | 0.646 |
+| w4_heat_plate | 1.104 | 0.861 | 0.851 | 1.091 | 0.856 | 0.846 |
+| w5_tolerance_mc | 1.627 | 1.565 | 1.539 | 1.617 | 1.561 | 1.533 |
+
+The comparison is valid only on the machine the files name (the user's M2 Pro); §6.5 requires
+the Sea measurement to name its machine.
 
 **What "faster than MATLAB" means.** Two measures, both required:
 
 * **Compute time**: the time the program measures around the same region as the MATLAB
-  script's `tic`/`toc` (`computeSeconds`), with Sea's `now()` (LANGUAGE.md §13). Compared: Sea's best of 3
-  consecutive runs against MATLAB's best compute time above (the same rule as the baseline,
-  §5.7). Sea's first run is reported next to MATLAB's first run but is not a pass criterion.
+  script's `tic`/`toc` (`computeSeconds`), with Sea's `now()` (LANGUAGE.md §13). Compared: Sea's best of 5
+  consecutive runs against MATLAB's best compute time above (also a best of 5, §5.7). Sea's
+  first run is reported next to MATLAB's first run but is not a pass criterion.
 * **Whole-process time**: wall time from `exec` of the compiled Sea binary to its exit, with
   the reference export enabled (MATLAB's `total_seconds` includes the `jsonencode` export) and
-  figures disabled (as in `run_all`). Compared: Sea's best of 3 against MATLAB's best
+  figures disabled (as in `run_all`). Compared: Sea's best of 5 against MATLAB's best
   `total_seconds`. This is
   conservative in MATLAB's favour: MATLAB's total is measured inside an already running
   MATLAB session and excludes MATLAB's own start-up, while Sea's includes everything the
@@ -203,8 +217,8 @@ to name its machine, and the comparison is valid only on the same one (the user'
 
 Sea's compile time is reported next to these numbers but not counted: an AOT binary is
 compiled once and run many times. The methodology is §6.5; its known asymmetries (MATLAB ran
-multithreaded, three repetitions with visible variance) are stated in §5.7, and Decision 7 in
-§9 adds a MATLAB rerun that removes them.
+multithreaded, Sea single-threaded) are stated in §5.7; the MATLAB rerun of Decision 7 in §9
+supplied the five-run and single-threaded baselines above.
 
 ### 1.3 Non-goals
 
@@ -2560,6 +2574,11 @@ the alternate stack; a fault address inside the guard page is `stack overflow` w
 (`sea_err`, which flushes and ends with `_exit`); any other address resets the signal to
 `SIG_DFL` and returns, so the instruction faults again with the default action.
 
+**No `madvise`.** Baysick's x86_64 runtime calls `madvise(base, size + G, MADV_NOHUGEPAGE)` on its
+program stack (Baysick DESIGN.md §6.9); Sea's runtime deliberately does not in phase 2. The call
+changes only resident memory and start-up time on hosts with transparent huge pages set to
+`always`, never output; it is revisited with benchmarks in phase 10 (§8).
+
 **Kernel variant.** After the selection of §4.4 the runtime sets `sea_variant` from the selected
 Baysick variant's name: `avx2` → `SEA_VAR_AVX2`; `sse2` and `baseline` (Baysick's x86_64
 baseline is SSE2 code) → `SEA_VAR_SSE2`. Phase 2 emits no `vfeat`, so the value changes no
@@ -2578,9 +2597,27 @@ The cross corpus (§6.6.1) checks every byte.
 runtime is built in the Baysick tree (or the bundle's copy of it) with Baysick's `make -f
 Makefile.linux` (`build-x86_64-linux/libbaysickrt.a`). Runtime tests are
 `tests/rt/x86_64_linux/NAME.s`: the x86_64 counterparts of `tests/rt/arm64_macos/` (an assembly
-program defining `sea_main` and `sea_sites`), with the same sidecars and the same expected bytes;
-a test about a host-specific value carries the host in its name (`rt_err_errno_linux`,
-`rt_err_errno_darwin`) and exists only for its host. They are assembled with the runtime flags,
+program defining `sea_main` and `sea_sites`), with the same sidecars and the same expected bytes,
+except for these tests, whose subject is target-dependent by this section and §4.4:
+
+* `rt_err_errno_darwin`, `rt_err_errno_linux` (in both directories): the errno table is the
+  host's column (§2.6.2), so the host's own value prints its text and the other host's value
+  for the same error, absent from this column, prints record 0's text (`unknown error`);
+* `rt_main_kernel_baseline` (`SEA_KERNELS=baseline`): the selected variant's name and
+  `sea_variant`, `kernel neon variant 1` on arm64 and `kernel sse2 variant 2` on x86_64
+  (Baysick's x86_64 baseline reports `sse2`, mapped as above);
+* `rt_main_kernel_default`, `rt_main_kernel_bogus` (no / an unknown `SEA_KERNELS`): arm64 has one
+  variant and prints `kernel neon variant 1`; on x86_64 the best usable variant depends on the
+  host CPU (`avx2` or `sse2`), so the test checks that the variant in use is the first of
+  `bsk_kern_variants` and that `sea_variant` is its mapped id, and prints `kernel best variant ok`;
+* `rt_main_state`: `sea_variant` must be `SEA_VAR_SSE2` or `SEA_VAR_AVX2` on x86_64
+  (`SEA_VAR_NEON` on arm64); the output `state ok` is the same.
+
+A `.meta` of an x86_64 runtime test holds only `stdout=epipe`, `stdout=slowpipe` and
+`env=NAME=VALUE` lines, never `requires=fmt_g`: that key marks the arm64 tests that `run_rt.sh`
+skips while `rt_fmt.s` lacks a real `_sea_fmt_g`, and the Linux archive always contains
+`sea_fmt_g` (its absence is a setup error of `run_rt_linux.sh`), so `cross_run.sh` rejects any
+other line (§6.6.1). They are assembled with the runtime flags,
 linked as `gcc -no-pie -o prog NAME.o build-x86_64-linux/obj/rt_main.o build-x86_64-linux/libsea.a
 <libbaysickrt.a> -lm` (`rt_main.o` explicit and first, as on the Mac) and run by
 `tests/rt/run_rt_linux.sh` (`make -f Makefile.linux test-rt`), and by the cross run (§6.6.1).
@@ -2824,7 +2861,16 @@ assembler and an unchecked record would become wrong machine code; any violation
 
 **The phase-1 allocator** (§8; linear-scan allocation replaces it in phase 5, §5.2). Every virtual
 register of a function has its own 8-byte slot in the frame; the frame holds the frame record,
-the LIR `slot`s (§3.6.3) and the register slots, and its size is a multiple of 16. Each
+the LIR `slot`s (§3.6.3) and the register slots, and its size is a multiple of 16. When the
+largest alignment A of the function's `slot`s exceeds 16, the prologue rounds the stack pointer
+down to a multiple of A after allocating the body (arm64 `mov x16, sp` / `and sp, x16, #-A`,
+x86_64 `andq $-A, %rsp`), which moves it by up to A − 16 further bytes. **The checked frame
+size** S of §4.6 covers every byte the prologue can move the stack pointer by, the worst-case
+realignment included: S = 16 + B + R, where B is the body (every area below the frame record,
+a multiple of 16) and R = A − 16 if A > 16, else 0. arm64 compares S (frame record 16 + B + R);
+x86_64 compares S − 8 (`pushq %rbp` 8 + B + R; the other 8 bytes of the 16 are the return
+address its caller's `call` already pushed). Both compare S with `SEA_STACK_LEAF_MAX` to decide
+whether a leaf needs the check. Each
 instruction loads its register operands from their slots into fixed scratch registers, computes
 into a scratch register and stores the result to the destination's slot:
 
@@ -2878,17 +2924,19 @@ these commands (x86_64-linux is a cross target, §2.2); the cross run does (§6.
 **Frame.** A function is entered with `%rsp` ≡ 8 (mod 16). Its prologue is the stack check (when
 §4.6 requires one), then `pushq %rbp`, `movq %rsp, %rbp`, `subq $F, %rsp`, where F is the size of
 the arm64 frame's body (every area below the frame record, rounded up to 16), so `%rsp` ≡ 0
-(mod 16) at every call. The areas lie from `%rsp` upwards exactly as on arm64: outgoing stack
-arguments and the `sea_err` argument slots at offset 0, the results area of calls, the LIR slots,
-16 bytes per loop block, the saved address of the function's own results area, the register
-slots. Every function has this `%rbp` frame (as every `seagen_a64` function has its frame
+(mod 16) at every call; when the realignment of §4.9 applies, `andq $-A, %rsp` follows the
+`subq` (the epilogue's `leave` undoes it). The areas lie from `%rsp` upwards exactly as on
+arm64: outgoing stack arguments and the `sea_err` argument slots at offset 0, the results area
+of calls, the LIR slots, 16 bytes per loop block, the saved address of the function's own
+results area, the register slots. Every function has this `%rbp` frame (as every `seagen_a64` function has its frame
 record); no other callee-saved register is used, so none is saved. The parameters are stored
 from the §4.8 registers into their slots after the prologue; a parameter passed on the stack is
 at `16+8k(%rbp)`. The epilogue is `leave`, `ret`. The scratch registers are those of the
 phase-1 allocator table above; `%rdx` and `%rcx` double as the operands that x86 instructions
 fix (`idivq`, shift counts in `%cl`).
 
-**Stack check** (§4.6), before `pushq %rbp`, with N = 8 + F, the bytes the prologue allocates:
+**Stack check** (§4.6), before `pushq %rbp`, with N = S − 8 = 8 + F + R, every byte the
+prologue can move `%rsp` by (S and R as in §4.9; F = B):
 
 ```
     movq sea_stack_limit(%rip), %r11
@@ -3055,13 +3103,13 @@ lanes into 2-wide vector operations when that does not change the operation sequ
 Planning estimates from instruction counts and kernel rates, to be replaced by the measurements
 of §6.5. They show where the time should go, not a promise:
 
-| Workload | MATLAB best compute | Where Sea's time should go |
+| Workload | MATLAB best compute (§1.2) | Where Sea's time should go |
 |----------|--------------------:|----------------------------|
-| W1 | 0.528 s | ≈ 260 k scalar `shaft_safety` evaluations with one `pow` each (only one branch of `kb` runs); 40 fused grid iterations; well under 0.1 s expected |
-| W2 | 1.053 s | ≈ 400 dense factorizations of 241 × 241 (Cholesky ≈ 4.7 MFLOP each) and the 1441-RHS triangular solves; dominated by GEMM-rate updates; a few tenths of a second expected |
-| W3 | 0.650 s | 480 k RK4 steps at a few tens of ns each, plus ≈ 0.96 M `sin` for the road (16001 × 60); around 0.1 s expected |
-| W4 | 0.901 s | 31 M latency-bound SOR updates (≈ 20 cycles each by the add-chain latency) plus ≈ 1500 fused half sweeps; roughly 0.2–0.4 s expected |
-| W5 | 0.810 s | 11 M LCG steps, 3 M `log` and 3 M `cos`, two 1 M-element sorts, 26 fused stack-ups over 7 M elements; roughly 0.1–0.3 s expected |
+| W1 | 0.511 s | ≈ 260 k scalar `shaft_safety` evaluations with one `pow` each (only one branch of `kb` runs); 40 fused grid iterations; well under 0.1 s expected |
+| W2 | 0.936 s | ≈ 400 dense factorizations of 241 × 241 (Cholesky ≈ 4.7 MFLOP each) and the 1441-RHS triangular solves; dominated by GEMM-rate updates; a few tenths of a second expected |
+| W3 | 0.631 s | 480 k RK4 steps at a few tens of ns each, plus ≈ 0.96 M `sin` for the road (16001 × 60); around 0.1 s expected |
+| W4 | 0.902 s | 31 M latency-bound SOR updates (≈ 20 cycles each by the add-chain latency) plus ≈ 1500 fused half sweeps; roughly 0.2–0.4 s expected |
+| W5 | 0.764 s | 11 M LCG steps, 3 M `log` and 3 M `cos`, two 1 M-element sorts, 26 fused stack-ups over 7 M elements; roughly 0.1–0.3 s expected |
 
 W4 and W5 are the workloads where Sea's margin over MATLAB is expected to be smallest, because
 their dominant costs (a sequential dependency chain; memory traffic) are not things a compiler
@@ -3088,15 +3136,16 @@ never part of Sea.
 **Workloads versus MATLAB** (§6.5) cannot follow the kernel rules exactly, and the differences
 are stated rather than hidden:
 
-* **Threads.** The MATLAB baseline ran with MATLAB's default thread count (`run_all.m` does not
-  call `maxNumCompThreads`), so its BLAS/LAPACK calls (W2's solves) may use several cores; Sea is
-  single-threaded. The comparison is "Sea against MATLAB as users run it", which favours MATLAB.
-  A single-threaded MATLAB run is requested as part of Decision 7, to report alongside.
-* **Repetitions.** The baseline is the best of 3 runs (first run included), with visible
-  variance (W2 compute 1.05 / 1.44 / 1.74 s). Sea is therefore compared with the **same rule:
-  best of 3** consecutive runs (the first included); the median and spread of 10 further runs
-  are reported next to it but not used for the pass/fail. Decision 7 asks for a MATLAB rerun
-  with more repetitions so both sides can be compared on medians.
+* **Threads.** The MATLAB baseline (`baseline_timings_matlab.json`, §1.2) ran with MATLAB's
+  default thread count (`maxNumCompThreads` = 10), so its BLAS/LAPACK calls (W2's solves) may use
+  several cores; Sea is single-threaded. The comparison is "Sea against MATLAB as users run it",
+  which favours MATLAB. The single-threaded MATLAB run (`baseline_timings_matlab_1thread.json`)
+  is reported alongside, not compared.
+* **Repetitions.** The baseline is the best of 5 runs (first run included), still with visible
+  variance (W2 compute 0.94–1.96 s). Sea is therefore compared with the **same rule: best of 5**
+  consecutive runs (the first included). The median of those 5 runs is compared with MATLAB's
+  five-run median, and the median and spread of 10 further Sea runs are reported next to them;
+  neither is used for the pass/fail.
 * **Same machine**: the comparison is valid only on the machine that produced the baseline,
   which must be recorded (§6.5).
 
@@ -3231,9 +3280,10 @@ with `exact` rules (`rank`, `k_worst`, `i_best`, `lcg_final`, counts, …) check
 
 ### 6.4 Report equivalence
 
-**Reference text.** The MATLAB report text is not stored yet. Decision 7 in §9 adds a
-`diary`-based capture to `run_all.m` (each script's report written to
-`reference/<name>.txt` on the last repetition) and a one-time MATLAB rerun by the user.
+**Reference text.** The MATLAB report texts are stored (Decision 7 in §9, sea commit c1736f7):
+`run_all.m` captures each script's report with `diary` on the last repetition into
+`sea/workloads/reference/<name>.txt`, committed for the five workloads from the user's rerun
+(M2 Pro, MATLAB R2026a).
 
 **Token map.** Each port has a file `sea/ports/<name>.tokens` that says how each numeric token
 of the report is judged. One line per report-line pattern:
@@ -3297,21 +3347,24 @@ never from Sea output (§6.1), and reviewed with the port.
 `sea/bench/workloads.sh`, on the machine of the MATLAB baseline:
 
 * builds each port once (compile time reported separately);
-* runs it 3 times, then 10 more times, each with `--export-reference` in a fresh directory,
+* runs it 5 times, then 10 more times, each with `--export-reference` in a fresh directory,
   measuring whole-process wall time with a small exec-and-wait harness
   (`clock_gettime(CLOCK_MONOTONIC)` around `posix_spawn` + `waitpid`), and reading the program's
   own `Compute time` line;
-* reports, per workload: the first run, the best of the first 3 (the pass/fail number, the same
-  rule as MATLAB's baseline, §5.7), and the median and range of the 10 further runs; compute
-  and whole-process; next to MATLAB's first and best from `baseline_timings_matlab.json`, and the
-  ratios; plus machine model, macOS version, kernel variant, load average before and after
+* reports, per workload: the first run, the best of the first 5 (the pass/fail number, the same
+  rule as MATLAB's baseline, §5.7) and their median, and the median and range of the 10 further
+  runs; compute and whole-process; next to MATLAB's
+  first, median and best from `baseline_timings_matlab.json` (§1.2) and the single-threaded
+  first, median and best from `baseline_timings_matlab_1thread.json`, and the ratios; plus machine model, macOS version, kernel variant, load average before and after
   (BENCH.md conventions);
-* **passes** when, for every workload, Sea's best-of-3 whole-process time < MATLAB's best
-  `total_seconds` and Sea's best-of-3 compute time < MATLAB's best `compute_seconds` (§1.2).
+* **passes** when, for every workload, Sea's best-of-5 whole-process time < MATLAB's best
+  `total_seconds` and Sea's best-of-5 compute time < MATLAB's best `compute_seconds` (§1.2).
 
-If the MATLAB rerun of Decision 7 happens, the same script also compares medians against the
-new baseline's medians and reports the single-threaded MATLAB numbers; the pass criterion then
-uses whichever baseline the user chose in that decision. The same script runs on the Linux host
+The MATLAB rerun of Decision 7 is committed (sea commit c1736f7): `baseline_timings_matlab.json`
+(default thread count, the pass criterion, as Decision 7 chose) and
+`baseline_timings_matlab_1thread.json` (`maxNumCompThreads(1)`, reported), five repetitions
+each. The same script also compares Sea's medians with the default baseline's medians and
+reports the single-threaded MATLAB numbers beside them. The same script runs on the Linux host
 for the x86_64 numbers (reported, not compared with MATLAB, which has no Linux baseline).
 
 ### 6.6 Cross-target identity
@@ -3349,7 +3402,11 @@ the same files the Mac uses (one set for both targets).
 * `passes/NAME` with a `NAME.out`: the program built with `--no-prelude` and run (§6.2).
 * `passes/NAME.lir` pass-4 tests (hand-written LIR, §6.2): the file with its `#target` record
   replaced by `#target x86_64-linux`, run through `seagen_x64` on the Mac.
-* `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1).
+* `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1). Its `.meta` may hold
+  `stdout=epipe`, `stdout=slowpipe` and `env=NAME=VALUE` lines (`SEA_KERNELS` and
+  `BAYSICK_KERNELS` otherwise unset) and nothing else: no `requires=` (§4.7.1). A program case's
+  `.meta` may hold only `stdout=epipe` and `stdout=closed` (§6.2). `cross_run.sh` stops with
+  exit 2 on any other line, an empty line excepted.
 
 The dump tests (`--emit`) and the other Mac groups (`stage.sh` dumps, `protocol.sh`,
 `lib_check.sh`, `arith_check.sh`, `driver_check.sh`, `check_data.sh`) are target-independent and
