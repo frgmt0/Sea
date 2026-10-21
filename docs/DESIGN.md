@@ -82,6 +82,8 @@ The user also decided the language questions that phase 0 raised:
 
 1. Full-range loops: `rcount` yields last + non-empty flag (user decision 2026-10-21); d = 0 for
    an empty range (§3.6.4, §3.6.6).
+2. `f64(x)` accepts an `f64` and `i64(x)` an `i64`, returning x unchanged; an untyped literal
+   argument of either is `i64` (user decision 2026-10-21; LANGUAGE.md §4.2, §10.1).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -265,7 +267,10 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    arguments, by decision, Baysick LANGUAGE.md §15.1). With `--no-prelude` the `std.sea` file
    and its lines are left out; the option exists for the dump tests of §3.8, whose programs then
    cannot use the prelude's functions (a use is the compile error `undeclared name`, because the
-   prelude's names are then not declared at all).
+   prelude's names are then not declared at all). Pass 1 reads the files as one token stream:
+   tokens and open brackets continue across a `#file` record, a block comment still open at a
+   `#file` record is `unterminated comment` (at its `/*`), and `unexpected end of file` occurs
+   only at the end of the program file, the last.
 5. Run the passes in order. Pass 1 writes the header records of §3.2 at the start of its
    output and every later pass copies those of its input, so every pass knows the target and the
    file names for diagnostics.
@@ -276,7 +281,9 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
      standard input, else its input file), never with plain `INPUT`/`LINPUT`;
    * requires the final record `#end` of its input, and if the input ends without it writes
      `<pass>: internal error: truncated input` (`TRUNCATED`, §2.6.2) and stops with status 11;
-   * writes `#end` as the last record of its own output, after everything else;
+   * writes `#end` as the last record of its own output, after everything else (pass 1 reads
+     its input as it parses, so a compile error found before the input ends is reported, status
+     10, even when the input is truncated);
    * reads its `DATA` tables with counted loops whose counts are checked against a sentinel
      value at the end of each table.
 
@@ -493,7 +500,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
 | `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the node being read, created or lowered when the limit is exceeded (for a record without a position, the next node of the same function or constant that has one); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
-| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
+| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
 | `binding` | the node declaring the name: `pname`, `param`, the `for` node, a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
@@ -520,7 +527,11 @@ to this table. A code is never reused or renumbered; a new message is appended i
   conversion as written (`%` through the conversion letter, e.g. `%8d`), then `an integer or f64`
   for `d i f F e E g G` or `str` for `s`, then the argument's type; in `invalid format
   conversion "%s"` the conversion as written from its `%` through the byte that makes it invalid
-  (or the end of the string); in `operator '%s' …` the operator as written (`*`, `==`, `!`); in
+  (or the end of the string); in `operator '%s' …` the operator as written (`*`, `==`, `!`; for a
+  compound assignment the compound operator, `+=`); in `'%s' is not a function` the callee's name
+  when the callee is a name (a local, constant or struct), else its type; in `'%s' is not a ref
+  parameter` the parameter's name, or the function's name for a library function (which has no
+  `ref` parameters); in
   `no overload of '%s' accepts (%s)` the function's name and the argument types joined by `, `;
   in `view .%s …` the view name (`T`, `flat`, `col`, `row`); in `%s of an empty array` the
   function (`max`, `min`, `argmax`, `argmin`); in `program too large: %s` one of the words
@@ -654,8 +665,11 @@ first error in source order is reported, whichever kind it is. Its position is t
 the table's row names, and of several such nodes the first in source order: for a `str` local
 its declaring `pname` (or `for` node), for a `str` parameter its `param` node, for a `str` result
 the result's `type` node, for a default argument the `param` node, for a named argument the
-`narg` node, for a library function the `call`. The format literal of `printf` is not a
-`strings` construct. The `%s` is one of the words below. It is
+`narg` node, for a library function the `call`, for a `for` over anything but a range the
+`for` node, for `+` or a comparison on `str` operands the operator node. The format literal of
+`printf` is not a `strings` construct, and neither is a string literal argument of `printf`: a
+misplaced one is reported by the format checks (`format "%d" expects an integer or f64, found
+str`). The `%s` is one of the words below. It is
 not a rule of the language: LANGUAGE.md describes v1 complete, and a phase's compiler is a
 conforming v1 compiler for the programs it accepts. When v1 is complete (phase 10) no construct is
 reported any more; the message is retired and its code stays reserved, never reused. In phase 1
@@ -898,17 +912,24 @@ Six tables, passed to every `SUB` (6 of 16 parameters). Hence the **capacity lim
 types, 19 999 numeric constants and 199 999 distinct strings per compilation (prelude included);
 nesting depth ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
 Pass 1 enforces the nesting, parameter, result and field limits as it parses (and the node and
-string limits as it builds the tree); pass 2a the symbol, type and constant limits; passes 3a,
+string limits as it builds the tree; the `prog` root is not counted as a node, and the `#file`
+paths count as strings); pass 2a the symbol, type and constant limits; passes 3a,
 3b and 4 the LIR limits. **Nesting depth** counts the constructs that make pass 1 recurse: a
 block `{ … }` (of any statement or function), a parenthesized expression, the argument list of a
 call, an index list, an array literal, a struct or record literal, an `if` expression, a unary
 operator and the right operand of `^`; the top level is depth 0, and each such construct
-contained in another adds 1. A construct at depth 65 is `program too large: nesting`, reported
+contained in another adds 1. The `{ … }` of a `match` (its arm list) does not count (the arms'
+blocks do); a parenthesized expression counts also after `return`; a conversion `f64(x)` counts
+once (its parentheses are its argument list); the `if` after `else` in an `if` statement adds
+nothing (its blocks are at the depth of the first `if`'s), while in an `if` expression it is a
+nested `if` expression and adds 1. A construct at depth 65 is `program too large: nesting`, reported
 at its opening token (`{`, `(`, `[`, `if`, the unary operator, or the `^`). For the LIR limits,
 the operand fields of an instruction are all its fields after the opcode except its `site`
 (§3.6.4); the fields of `func`, `slot` and data records are not operands. The distinct sites are
 the distinct `F:L` among the instructions' `site` fields and the `pos` of every `func` record
-(§4.9), counted over the compilation.
+(§4.9), counted over the compilation. No record of any format has more than 300 fields (the
+longest are `func` and `call` with 64 parameters, hidden result addresses and 64 results), and
+passes 3a and 4 split a LIR record into at most 300 fields (a longer one is `BAD_RECORD`).
 (A node's position needs its file, §3.1: the sixth field of `N` holds the file index and the line
 as F·10⁹ + L, exact in a Baysick number.)
 
@@ -2518,7 +2539,7 @@ further results):
 | further parameters | 8-byte stack slots in parameter order at `[sp]` at the call | 8-byte stack slots in parameter order at `0(%rsp)` at the call |
 | `i` and `p` results, in order | `x0`–`x7` | `%rax %rdx %rcx %rsi %rdi %r8 %r9` |
 | `f` results, in order | `d0`–`d7` | `%xmm0`–`%xmm7` |
-| further results | written by the callee to an area of 8-byte slots whose address the caller passes as a hidden parameter after the hidden result addresses of §3.6.3 | same |
+| further results | written by the callee to an area of 8-byte slots whose address the caller passes as a hidden parameter after the hidden result addresses of §3.6.3: one slot per result that gets no register, in result order, whatever its class | same |
 | callee-saved | `x19`–`x28`, `d8`–`d15` (low 64 bits); `x18` never used; frame record `x29`/`x30` in every non-leaf function | `%rbx %rbp %r12`–`%r15` |
 | stack | 16-byte aligned at every call | 16-byte aligned at every call |
 
@@ -2534,7 +2555,10 @@ function, taken at its `func` record. Every function's line is a site, not only 
 functions that check the stack limit (§4.6), because whether a function is checked depends on its
 frame size, which only pass 4 knows, while pass 3b counts the sites (§2.7). A run-time check branches to an out-of-line
 call of `_sea_err` with its code, the site index and its argument slots; an `rcall` of an entry
-with site `S` passes the site index as its last argument (§4.8).
+with site `S` passes the site index as its last argument (§4.8). That out-of-line call does not
+make a function non-leaf (`_sea_err` never returns, so no frame record is needed for it); a
+function is non-leaf when it contains a `call` or `rcall`. In phase 1 pass 4 rejects the vector,
+mask, `vfeat`, `retain` and `release` records with `BAD_RECORD` (no phase-1 pass 3 writes them).
 
 **The phase-1 allocator** (§8; linear-scan allocation replaces it in phase 5, §5.2). Every virtual
 register of a function has its own 8-byte slot in the frame; the frame holds the frame record,

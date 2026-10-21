@@ -522,7 +522,8 @@ every workload result bit-identical to the MATLAB arithmetic (§6.8).
   (c) an element of an array literal that has an `f64` element, (d) an operand of `^` (§6.5),
   (e) the argument of an `f`, `F`, `e`, `E`, `g` or `G` conversion of `printf` or `format`
   (§11.1), or (f) an arm of an `if` expression (§6.10) whose other arm has an `f64` type;
-  otherwise it is `i64`. The value must be exactly representable in `f64` (`integer
+  otherwise it is `i64` (also as the argument of `f64(…)` or `i64(…)`, §10.1). The value must
+  be exactly representable in `f64` (`integer
   constant not exact in f64`, also in contexts (e) and (f): `printf("%f", 9007199254740993)` is
   that error). So `let n = 5` is an `i64`, `if c { 0.5 } else { 2 }` is `f64` (the 2 is 2.0), `var Fbs = 0.0` is an `f64`,
   `4 * (Kf * Ma) ^ 2` multiplies by the `f64` 4, and `2 ^ 10` is the `f64` 1024.
@@ -542,7 +543,8 @@ every workload result bit-identical to the MATLAB arithmetic (§6.8).
 * **No implicit `f64` → `i64`**, ever. Explicit: `i64(x)` (§10.1) converts an integral
   finite `f64` and stops with the run-time error `conversion to i64: x is not an integer`
   otherwise; `i64(floor(x))` and `i64(round(x))` are the idioms.
-* `bool` converts to neither implicitly. `f64(b)` and `i64(b)` give 1 or 0.
+* `bool` converts to neither implicitly. `f64(b)` and `i64(b)` give 1 or 0. `f64(x)` of an
+  `f64` and `i64(x)` of an `i64` return x unchanged.
 
 ### 4.3 `bool`
 
@@ -828,7 +830,8 @@ mathematics (MATLAB's left-associative `2^3^2 = 64` is a trap). `@` shares the p
 * `A @ B` is the **matrix product** (part of Decision 11 in DESIGN.md §9): matrix @ matrix → matrix
   (`r×k @ k×c → r×c`), matrix @ vector → vector (`r×k @ k → r`), vector @ matrix → vector
   (`k @ k×c → c`). Inner extents must agree (`shape mismatch`). vector @ vector is a compile
-  error (`sum(a * b)` is the dot product). Element types `f64` (an `i64` operand is converted).
+  error (`sum(a * b)` is the dot product). `@` with a scalar operand is `operator '@' cannot be
+  applied to …`. Element types `f64` (an `i64` operand is converted).
 * **Transpose** is the view `A.T` (§5.6).
 * **Solve** is the function `solve(A, B)` (§10.8), not an operator: `A \ b` reads as an escape
   in a C-like language, and the factorization-based forms (`lu`, `chol`) need names anyway.
@@ -1019,7 +1022,9 @@ A block `{ … }` holds statements separated by NL or `;` (§3.7). The statement
 | block | `{ … }` (a new scope) |
 
 An expression that is not a call, used as a statement, is the compile error
-`expression statement has no effect`.
+`expression statement has no effect`, reported at the statement's first token whatever follows
+it: `x + y = 3` is this error (`x + y` is not an assignment target). A call statement must end
+after the call: `f(x) = 3` is `unexpected token '='`.
 
 ### 7.2 Bindings, mutability, scope
 
@@ -1039,7 +1044,10 @@ An expression that is not a call, used as a statement, is the compile error
   visible everywhere in the file, before and after their declaration.
 * **`const NAME [: type] = expr`** declares a compile-time constant at top level; `expr` must be
   a constant expression (literals, other constants, operators, the constants `pi inf nan eps`,
-  and `sqrt`). Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
+  and `sqrt`; nothing else: conversions, `if` expressions and other calls are not constant
+  expressions). A constant whose expression refers back to itself, directly or through other
+  constants, is `not a constant expression`, reported at the name that closes the cycle.
+  Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
   whose expression is an untyped integer constant is `i64` (`const N = 4` is the `i64` 4); with an
   annotation it has the annotated type (`const G: f64 = 9` is 9.0).
 
@@ -1067,7 +1075,8 @@ for name in a..b [step s] { … }      for name in a..=b [step s] { … }      f
 ```
 
 * **Range loops**: `name` is an immutable `i64` local of the loop body taking the range's
-  values in order. The bounds and step are evaluated **once**, before the first iteration
+  values in order. The bounds and the step are `i64` (an untyped literal is `i64`; any other
+  type is `type mismatch: expected i64, found …` at that bound or step). The bounds and step are evaluated **once**, before the first iteration
   (changing a variable used in them inside the loop does not change the iteration count).
 * **Element loops**: `for x in v` iterates over the elements of a vector (`T[]`, `T[n]`,
   including `str[]` and struct arrays) in index order; `x` is an immutable copy of the element.
@@ -1112,9 +1121,13 @@ fn name(…) { … }                         no result
 elemental fn name(…) -> R { … }          §8.5
 ```
 
-* Top-level items only; no nested functions, no closures, no function values.
+* Top-level items only; no nested functions, no closures, no function values: the name of a
+  function, a struct or a library function used as a value (not called) is `undeclared name`.
 * Every parameter and result type is written (§4.10). A function with a result must end every
-  path with `return` (`missing return`).
+  path with `return` (`missing return`, at the `fn`). A statement ends every path when it is a
+  `return`, a block one of whose statements ends every path, or an `if` with an `else` whose
+  branches (every branch of an `else if` chain) all end every path; a loop never does, whatever
+  its condition (`while true { return 1 }` as the last statement is `missing return`).
 * **Default values**: a parameter may have a constant default; all parameters after it must
   have one too.
 * **Calls**: positional arguments first, then named ones `name: value` in any order; a name
@@ -1173,7 +1186,9 @@ function without results. A multiple-result call cannot appear inside an express
 `f(two())`): that is `multiple-result call used as a value`, reported at the call. Binding it to
 one name (`let y = two()`), or destructuring or assigning it to a tuple of another number of
 names, is `wrong number of results: expected n, found m`, with n the number of `f`'s results and
-m the number of names. MATLAB's "ask for fewer
+m the number of names; assigning it to one target (`y = two()`) is the same error, at the call.
+A call of a function without results used as a value (bound, assigned, or inside an expression)
+is `wrong number of results: expected 0, found 1`, at the call. MATLAB's "ask for fewer
 outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 
 ### 8.5 Elemental functions (shape polymorphism)
@@ -1228,7 +1243,9 @@ workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
   `%s`/`%d`-style substitutions.
 * The compiler stops at the **first** error, in a deterministic order: lexical and syntax errors
   in source order (pass 1), then name and type errors in source order (pass 2), then the few
-  errors only later passes detect (capacity limits). The compiled output is not written.
+  errors only later passes detect (capacity limits). Of two errors at the same position, the one
+  of the inner construct (a child before its parent) is reported. The compiled output is not
+  written.
 * The driver's exit status is 1 for a compile error (DESIGN.md §2.2). There are no warnings in v1: a
   rule is either an error or allowed.
 
@@ -1316,8 +1333,8 @@ specification of it exists in this document.
 
 | Function | Result |
 |----------|--------|
-| `f64(x)` | `i64` or `bool` (or arrays) to `f64`; elemental |
-| `i64(x)` | `f64` → `i64` if integral and in range, else run-time error; `bool` → 0/1; elemental |
+| `f64(x)` | `i64` or `bool` (or arrays) to `f64`; an `f64` x is returned unchanged; an untyped integer literal argument is `i64` (§4.2); elemental |
+| `i64(x)` | `f64` → `i64` if integral and in range, else run-time error; `bool` → 0/1; an `i64` x is returned unchanged; an untyped integer literal argument is `i64` (§4.2); elemental |
 | `pi`, `inf`, `nan`, `eps` | `f64` constants: the double nearest π, +∞, a quiet NaN, 2⁻⁵² |
 | `isnan(x)` | `bool`; elemental. Core: the only readable test for the NaN values the workloads produce (`x != x` works but is obscure) |
 
@@ -1845,7 +1862,8 @@ if_expr      = "if" head_expr "{" nl expr nl "}" "else" ( if_expr | "{" nl expr 
   decided by the operand's type in pass 2.
 * `conv_type "(" expr ")"` is a conversion (`f64(b)`, `i64(x)`, `str(x)`). `bool` is only a type
   name: there is no `bool(x)`, and `bool` where an expression is expected is `unexpected token
-  'bool'`.
+  'bool'`. A `conv_type` other than `bool` not followed by `(` is `unexpected token` naming the
+  token after it (`let x = f64 + 1` is `unexpected token '+'`).
 
 ### Appendix B. Operator precedence
 
