@@ -1,0 +1,23 @@
+#sea 1
+#target arm64-macos
+#file type_ifx_arm.sea
+fn 1 .main main 1 0 3 0:1:1
+loc c 2 let 0:4:5
+loc v 4 let 0:5:5
+loc w 2 let 0:6:5
+cb 0:4:9 2 1
+bind 0:4:1 1
+lv 0:5:12 2 1
+cf 0:5:16 4 #3FE0000000000000
+cf 0:5:29 4 #4000000000000000
+ifx 0:5:9 4
+bind 0:5:1 2
+lv 0:6:9 2 1
+lv 0:6:14 4 2
+cf 0:6:18 4 #3FF0000000000000
+bin 0:6:14 2 gt
+bin 0:6:9 2 and
+bind 0:6:1 3
+block 0:1:1 3
+end
+#end

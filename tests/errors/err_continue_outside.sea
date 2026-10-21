@@ -1,0 +1,7 @@
+// err_continue_outside -- continue in a function called from a loop is still outside one
+fn f() {
+    continue
+}
+for i in 0..2 {
+    f()
+}

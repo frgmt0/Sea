@@ -1,0 +1,2 @@
+// err_type_mismatch_bool -- an untyped constant where bool is expected is i64 (LANGUAGE.md 4.2)
+let b: bool = 1

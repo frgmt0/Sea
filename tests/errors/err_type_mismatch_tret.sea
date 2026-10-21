@@ -1,0 +1,8 @@
+// err_type_mismatch_tret -- return f() needs exactly the same result types (LANGUAGE.md 8.4; at the call)
+fn g() -> (i64, f64) {
+    return (1, 2.0)
+}
+fn h() -> (f64, f64) {
+    return g()
+}
+let (a, b) = h()

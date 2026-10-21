@@ -1,0 +1,2 @@
+// err_rt_epipe_final -- the final flush to a closed pipe fails: no location (LANGUAGE.md 9.2)
+printf("hello\n")

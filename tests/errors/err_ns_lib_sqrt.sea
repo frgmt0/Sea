@@ -1,0 +1,2 @@
+// err_ns_lib_sqrt -- phase 1: a library function other than printf now f64 i64 idiv
+let r = sqrt(2.0)

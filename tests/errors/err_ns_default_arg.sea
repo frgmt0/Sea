@@ -1,0 +1,5 @@
+// err_ns_default_arg -- phase 1: a parameter default, reported at the param node (DESIGN.md 2.6.2)
+fn f(a: i64 = 1) -> i64 {
+    return a
+}
+printf("%d\n", f(2))

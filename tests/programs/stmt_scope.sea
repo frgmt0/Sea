@@ -1,0 +1,29 @@
+// stmt_scope -- lexical block scope; a binding may shadow an earlier one in the same or an
+// enclosing scope, with any type; var lo = lo makes a parameter mutable (LANGUAGE.md 7.2).
+fn twice(lo: i64) -> i64 {
+    var lo = lo
+    lo *= 2
+    return lo
+}
+let x = 1
+{
+    let x = 2
+    printf("%d\n", x)
+}
+printf("%d\n", x)
+let x = x + 10
+printf("%d\n", x)
+var y = 5
+if true {
+    y = 6
+    var y = 7
+    y += 1
+    printf("%d\n", y)
+}
+printf("%d\n", y)
+printf("%d\n", twice(21))
+let x = 2.5
+for x in 0..2 {
+    printf("loop %d\n", x)
+}
+printf("%g\n", x)

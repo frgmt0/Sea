@@ -1,0 +1,44 @@
+// stmt_for -- range loops: half-open a..b, inclusive a..=b, step (negative counts down),
+// empty ranges, bounds and step evaluated once, exact iteration count (LANGUAGE.md 5.1, 7.5).
+for i in 0..5 { printf("%d ", i) }
+printf("|\n")
+for i in 0..=5 { printf("%d ", i) }
+printf("|\n")
+for i in 9..=0 step -1 { printf("%d ", i) }
+printf("|\n")
+for i in 10..0 step -3 { printf("%d ", i) }
+printf("|\n")
+for i in 0..10 step 3 { printf("%d ", i) }
+printf("|\n")
+for i in 0..=9 step 3 { printf("%d ", i) }
+printf("|\n")
+for i in 5..5 { printf("%d ", i) }
+for i in 5..0 { printf("%d ", i) }
+for i in 0..=-1 { printf("%d ", i) }
+for i in 0..5 step -1 { printf("%d ", i) }
+for i in 3..=3 { printf("%d ", i) }
+printf("|\n")
+var n = 3
+for i in 0..n {
+    n += 1
+    printf("%d ", i)
+}
+printf("| n = %d\n", n)
+var st = 2
+for i in 0..10 step st {
+    st = 100
+    printf("%d ", i)
+}
+printf("|\n")
+for i in -9223372036854775808..=9223372036854775807 step 9223372036854775807 {
+    printf("%d ", i)
+}
+printf("|\n")
+for i in 2 * 3..2 * 4 step 1 + 0 { printf("%d ", i) }
+printf("|\n")
+for a in 0..2 {
+    for b in a..=2 {
+        printf("%d%d ", a, b)
+    }
+}
+printf("|\n")

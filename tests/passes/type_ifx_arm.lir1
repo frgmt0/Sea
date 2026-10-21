@@ -1,0 +1,20 @@
+#sea 1
+#target arm64-macos
+#file type_ifx_arm.sea
+func .main main 0:1:1 0 0
+li i1 1
+if 1 i1
+lf f2 #3FE0000000000000
+else 1
+lf f2 #4000000000000000
+endif 1
+mov f3 f2
+mov i4 i1
+if 2 i4
+lf f5 #3FF0000000000000
+fcmp gt i4 f3 f5
+endif 2
+mov i6 i4
+ret 0
+endfunc
+#end

@@ -1,0 +1,2 @@
+// err_undeclared_self -- a binding is not visible in its own initialiser (LANGUAGE.md 7.2)
+let w = w + 1

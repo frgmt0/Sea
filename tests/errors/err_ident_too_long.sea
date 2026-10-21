@@ -1,0 +1,2 @@
+// err_ident_too_long -- a 64-byte identifier (limit 63, LANGUAGE.md 3.3; at token)
+let aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 1

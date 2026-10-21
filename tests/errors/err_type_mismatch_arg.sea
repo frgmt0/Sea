@@ -1,0 +1,5 @@
+// err_type_mismatch_arg -- an f64 argument for an i64 parameter (LANGUAGE.md 4.2)
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(1.5))

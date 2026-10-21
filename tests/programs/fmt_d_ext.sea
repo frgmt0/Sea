@@ -1,0 +1,10 @@
+// fmt_d_ext -- %d and %i of a bool print 0 or 1; %d of -0.0 is the integer 0 (+0 with the +
+// flag); an integral f64 follows C's integer rules for flags and precision (%.3d of 7.0 is
+// 007, %.0d of 0.0 prints no digits); a non-integral value is %e with precision 6 whatever
+// precision was given (LANGUAGE.md 11.1).
+printf("[%d] [%d] [%i]\n", true, false, 1 < 2)
+printf("[%5d] [%-3d]\n", true, false)
+printf("[%d] [%+d] [% d]\n", -0.0, -0.0, -0.0)
+printf("[%.3d] [%.3d] [%5.3d] [%-6.3d]\n", 7.0, -7.0, 7.0, 7.0)
+printf("[%.0d] [%3.0d] [%.0d]\n", 0.0, 0.0, 5.0)
+printf("[%.3d] [%.10i]\n", 1.5, -2.5)

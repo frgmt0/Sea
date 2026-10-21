@@ -1,0 +1,18 @@
+// fn_ref -- ref parameters: par ... ref and rarg in HIR; in LIR the caller stores a scalar
+// local into a slot, passes its address and reloads it after the call, the callee loads and
+// stores through the p register, a ref parameter is passed on unchanged (LANGUAGE.md 8.3;
+// DESIGN.md 3.5.4, 3.6.3, 3.6.6 rule 12)
+fn bump(ref s: i64, n: i64) {
+    for i in 0..n {
+        s += i
+    }
+}
+fn bump2(ref s: i64, n: i64) {
+    for i in 0..n {
+        bump(ref s, i)
+    }
+}
+var t = 0
+bump(ref t, 3)
+bump2(ref t, 2)
+bump2(ref t, 1)

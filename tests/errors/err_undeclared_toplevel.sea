@@ -1,0 +1,6 @@
+// err_undeclared_toplevel -- top-level bindings are not visible inside functions (LANGUAGE.md 7.2)
+let k = 3
+fn f() -> i64 {
+    return k
+}
+printf("%d\n", f())

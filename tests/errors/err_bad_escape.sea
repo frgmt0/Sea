@@ -1,0 +1,2 @@
+// err_bad_escape -- \q is not an escape; reported at the backslash (LANGUAGE.md 3.5)
+printf("a\qb\n")

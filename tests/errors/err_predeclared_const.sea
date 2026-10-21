@@ -1,0 +1,2 @@
+// err_predeclared_const -- a constant may not take a predeclared name (LANGUAGE.md 3.3)
+const pi = 3.0

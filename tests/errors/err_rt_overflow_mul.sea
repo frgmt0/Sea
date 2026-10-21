@@ -1,0 +1,3 @@
+// err_rt_overflow_mul -- i64 * overflow (LANGUAGE.md 6.5)
+let a = 3037000500
+printf("%d\n", a * a)

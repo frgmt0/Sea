@@ -1,0 +1,2 @@
+// err_format_arg_f -- %.2f of a bool (LANGUAGE.md 11.1)
+printf("%d %.2f\n", 1, true)

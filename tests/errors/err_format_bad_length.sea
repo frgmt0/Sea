@@ -1,0 +1,2 @@
+// err_format_bad_length -- length modifiers do not exist (LANGUAGE.md 11.1)
+printf("%ld\n", 1)

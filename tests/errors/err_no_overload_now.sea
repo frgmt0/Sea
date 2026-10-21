@@ -1,0 +1,2 @@
+// err_no_overload_now -- now takes no argument (LANGUAGE.md 13)
+let t = now(1)

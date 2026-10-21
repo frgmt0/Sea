@@ -1,0 +1,5 @@
+// err_no_effect -- a line starting with a binary operator is a new statement (LANGUAGE.md 3.7)
+var x = 1
+let b = 2
+x = 3
+- b

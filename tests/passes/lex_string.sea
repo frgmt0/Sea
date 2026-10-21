@@ -1,0 +1,11 @@
+// lex_string -- string literals: escapes \n \t \r \0 \xHH \u{H...} \" \\, UTF-8 bytes, the
+// empty string; the str field escapes every byte outside 0x21-0x7E and % (LANGUAGE.md 3.5;
+// DESIGN.md 3.1)
+let a = "plain text"
+let b = "tab\tnl\ncr\r"
+let c = "q\"b\\s"
+let d = "nul\0x\x41\x7E"
+let e = "\u{41}\u{E9}\u{20AC}\u{1F600}"
+let f = ""
+let g = "é and 100%"
+let h = "#-"

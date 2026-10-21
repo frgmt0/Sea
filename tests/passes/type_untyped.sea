@@ -1,0 +1,15 @@
+// type_untyped -- integer literals are untyped until used: f64 beside an f64 operand, as an
+// operand of ^, where f64 is expected; i64 otherwise; / converts both i64 operands
+// (LANGUAGE.md 4.2, 6.5; DESIGN.md 3.5.5); pass 2b folds the constant parts (3.5.7)
+fn h(v: f64) -> f64 {
+    return v
+}
+let x = 1.5
+let a = 2 * x
+let b = 3
+let c = 2 ^ 3
+let d: f64 = 4 + 5
+let e = -2 * 3
+let f = x < 7
+let g = 10 / 4
+let k = h(6)

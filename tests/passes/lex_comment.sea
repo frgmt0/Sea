@@ -1,0 +1,11 @@
+// lex_comment -- // and /* */ comments are spaces; a block comment holding a line break is
+// one line break; block comments do not nest (LANGUAGE.md 3.2, 3.7)
+let a = 1 // trailing comment
+let b /* inline */ = 2
+let c = 3 /* spans
+two lines */ let d = 4
+/* a comment
+   alone */
+let e = /* in an expression */ 5
+// let f = 6
+let g = 1 /* no nesting: /* still a comment */ + 1

@@ -1,0 +1,8 @@
+// err_result_count_void -- return f() of a 2-result call in a function without results (LANGUAGE.md 8.4)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+fn v() {
+    return two()
+}
+v()

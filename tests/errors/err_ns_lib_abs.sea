@@ -1,0 +1,3 @@
+// err_ns_lib_abs -- phase 1: abs is a library function not yet supported
+let a = 3
+printf("%d\n", abs(a))

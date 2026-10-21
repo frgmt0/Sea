@@ -1,0 +1,6 @@
+// err_ref_alias_value -- a ref argument whose root another argument shares (LANGUAGE.md 8.3)
+fn g(a: i64, ref b: i64) {
+    b = a
+}
+var n = 1
+g(n, ref n)

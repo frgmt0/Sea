@@ -1,0 +1,26 @@
+// stmt_if -- if / else if / else; braces required, no parentheses; a newline before else is
+// dropped (LANGUAGE.md 7.4, 3.7 rule 3).
+fn classify(x: i64) {
+    if x < 0 {
+        printf("%d negative\n", x)
+    } else if x == 0 {
+        printf("%d zero\n", x)
+    } else if x < 10 {
+        printf("%d small\n", x)
+    } else {
+        printf("%d large\n", x)
+    }
+}
+classify(-5); classify(0); classify(3); classify(42)
+if true { printf("no else\n") }
+if false { printf("never\n") }
+let c = 2 > 1
+if c {
+    printf("c\n")
+}
+
+// a comment line between the block and else
+else {
+    printf("not c\n")
+}
+if !c { printf("not c\n") } else { printf("else taken\n") }

@@ -1,0 +1,2 @@
+// err_rt_conv_nan -- i64() of NaN (LANGUAGE.md 4.2; NaN spelled as printf %g)
+printf("%d\n", i64(nan))

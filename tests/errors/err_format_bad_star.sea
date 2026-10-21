@@ -1,0 +1,2 @@
+// err_format_bad_star -- * width does not exist (LANGUAGE.md 11.1)
+printf("%*d\n", 1)

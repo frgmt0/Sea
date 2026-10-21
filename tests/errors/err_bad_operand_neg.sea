@@ -1,0 +1,2 @@
+// err_bad_operand_neg -- unary - needs a number (Appendix B)
+let a = -true

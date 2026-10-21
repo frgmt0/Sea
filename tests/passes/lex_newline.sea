@@ -1,0 +1,29 @@
+// lex_newline -- no NL inside ( and [, none after a continuing token (also across blank and
+// comment lines), none before else; ; separates too (LANGUAGE.md 3.7)
+let a = 1 +
+    2
+let b = (1
+    + 2)
+let c = add(1,
+    2)
+if a > b {
+    printf("a\n")
+}
+else {
+    printf("b\n")
+}
+let d = a *
+
+    // comment between
+    b
+fn add(x: i64,
+       y: i64) -> i64 {
+    return x + y
+}
+let e = a; let f = b;;
+for i in 0..4 step
+    2 {
+    printf("%d\n", i)
+}
+let g =
+    5

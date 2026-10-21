@@ -1,0 +1,17 @@
+// op_fold -- pass 2b folds f64 + - * / of finite constants when the exponent checks of
+// DESIGN.md 2.8 allow it, i64 + - * and unary - when the result is in range, cvt of an i64
+// constant; never inf/nan operands, comparisons, %, or a division by zero (DESIGN.md 3.5.7)
+let a = 2 * 3 + 4
+let b = 1.5 * 2.0 - 0.5
+let c = 9223372036854775807 + 1
+let d = 1e300 * 1e10
+let e = 1e200 * 1e100
+let f = 1.0 / 0.0
+let g = 1.0 / 3.0
+let h = inf - 1.0
+let i = -nan
+let j = 7 % 3
+let k = 2 < 3
+let m = 7 / 2
+let n = -(2 + 3)
+let p = 2.0 * pi * a / 60

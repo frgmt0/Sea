@@ -1,0 +1,2 @@
+// err_bad_escape_digits -- \u{} with 7 hex digits (at most 6, LANGUAGE.md 3.5)
+printf("%s\n", "\u{0000041}")

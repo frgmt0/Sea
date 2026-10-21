@@ -1,0 +1,2 @@
+// err_bad_escape_big -- \u{110000} is above 10FFFF (LANGUAGE.md 3.5)
+printf("%s\n", "\u{110000}")

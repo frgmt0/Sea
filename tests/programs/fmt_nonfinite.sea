@@ -1,0 +1,14 @@
+// fmt_nonfinite -- Inf, -Inf, NaN in every numeric conversion (LANGUAGE.md 11.1): the +
+// and space flags sign +Inf, NaN is never signed, 0/# and precision are
+// ignored, padding is with spaces.
+printf("[%f] [%f] [%f]\n", inf, -inf, nan)
+printf("[%+f] [% f] [%+f] [% f]\n", inf, inf, -inf, -inf)
+printf("[%+f] [% f] [%f]\n", nan, nan, -nan)
+printf("[%e] [%E] [%g] [%G] [%F]\n", inf, inf, -inf, nan, nan)
+printf("[%+8.2f]\n", inf)
+printf("[%08d]\n", nan)
+printf("[%08.3f] [%-8f] [%#g]\n", inf, -inf, inf)
+printf("[%d] [%5i] [%-6d]\n", inf, -inf, nan)
+printf("[%2f]\n", -inf)
+printf("[%f] [%f]\n", 1.0 / 0.0, -1.0 / 0.0)
+printf("[%f]\n", 0.0 / 0.0)

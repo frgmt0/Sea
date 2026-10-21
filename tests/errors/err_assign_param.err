@@ -1,0 +1,1 @@
+err_assign_param.sea:3:5: error: cannot assign to immutable 'x'

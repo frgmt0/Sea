@@ -1,0 +1,5 @@
+// err_ns_named_arg -- phase 1: a named argument (at the narg)
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(a: 1))

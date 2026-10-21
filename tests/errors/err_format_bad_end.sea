@@ -1,0 +1,2 @@
+// err_format_bad_end -- a conversion cut off by the end of the string (LANGUAGE.md 11.1)
+printf("x%5")

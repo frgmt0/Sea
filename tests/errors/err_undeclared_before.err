@@ -1,0 +1,1 @@
+err_undeclared_before.sea:2:16: error: undeclared name 'y'

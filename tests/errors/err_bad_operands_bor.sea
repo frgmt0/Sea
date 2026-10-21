@@ -1,0 +1,2 @@
+// err_bad_operands_bor -- | needs bool operands (LANGUAGE.md 6.4)
+let a = true | 2.0

@@ -1,0 +1,4 @@
+// err_assign_for -- a loop variable is immutable (LANGUAGE.md 7.5)
+for i in 0..3 {
+    i = 5
+}

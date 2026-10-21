@@ -1,0 +1,2 @@
+// err_int_too_large -- 2^63 is too large except as the operand of a unary minus (LANGUAGE.md 3.4)
+let a = 9223372036854775808

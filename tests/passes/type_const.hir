@@ -1,0 +1,19 @@
+#sea 1
+#target arm64-macos
+#file type_const.sea
+fn 1 .main main 1 0 4 0:1:1
+loc a 3 let 0:9:5
+loc b 4 let 0:10:5
+loc c 4 let 0:11:5
+loc d 3 let 0:12:5
+ci 0:9:9 3 9
+bind 0:9:1 1
+cf 0:10:9 4 #4000000000000000
+bind 0:10:1 2
+cf 0:11:9 4 #402290FDAA22168C
+bind 0:11:1 3
+ci 0:12:9 3 -4
+bind 0:12:1 4
+block 0:1:1 4
+end
+#end

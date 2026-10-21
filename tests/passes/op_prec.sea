@@ -1,0 +1,17 @@
+// op_prec -- precedence and associativity of LANGUAGE.md 6.1 / Appendix B: ^ right-assoc
+// with a signed right operand, -x ^ 2 = -(x ^ 2), comparisons above & above | above && above ||,
+// left-assoc * / % @ and + -; positions of operator nodes (DESIGN.md 3.3)
+let a = 1 + 2 * 3
+let b = 2 ^ 3 ^ 2
+let c = -x ^ 2
+let d = x ^ -y
+let e = 1 - 2 - 3
+let f = x < y & y < z | !t
+let g = t || t && u
+let h = (1 + 2) * 3
+let i = x * y / z % w
+let j = (x < y) == t
+let k = x @ y
+let m = !t && t
+let n = 2 * -3
+let o = (1 < 2) == (3 < 4)

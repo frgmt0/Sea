@@ -1,0 +1,5 @@
+// err_too_many_args -- more arguments than parameters (LANGUAGE.md 8.1; at the call)
+fn f(a: i64, b: i64) -> i64 {
+    return a + b
+}
+printf("%d\n", f(1, 2, 3))

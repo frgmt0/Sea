@@ -1,0 +1,6 @@
+// err_ref_target_let -- a let cannot be passed to a ref parameter (LANGUAGE.md 7.2, 8.3; at the ref)
+fn incr(ref x: i64) {
+    x += 1
+}
+let k = 1
+incr(ref k)

@@ -1,0 +1,21 @@
+// fn_multi -- multiple results: a ttuple result type, ret k, tbind with _ (-), and tret for
+// return f() of a call with exactly the function's result types; several result registers in
+// LIR, a new register for a discarded result (LANGUAGE.md 8.4; DESIGN.md 3.5.5, 3.6.3, 3.6.6)
+fn sums(n: i64) -> (i64, f64) {
+    var a = 0
+    var b = 0.0
+    for i in 0..n {
+        a += i
+        b += 0.5
+    }
+    return (a, b)
+}
+fn again(n: i64) -> (i64, f64) {
+    if n > 0 {
+        return again(n - 1)
+    }
+    return sums(4)
+}
+let (p, q) = sums(3)
+let (r, _) = again(2)
+let (_, w) = sums(2)

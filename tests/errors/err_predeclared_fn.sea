@@ -1,0 +1,4 @@
+// err_predeclared_fn -- a top-level function may not take a predeclared name (LANGUAGE.md 3.3)
+fn sqrt(x: f64) -> f64 {
+    return x
+}

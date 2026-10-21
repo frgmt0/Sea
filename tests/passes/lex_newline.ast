@@ -1,0 +1,71 @@
+#sea 1
+#target arm64-macos
+#file lex_newline.sea
+pname 0:3:5 a
+int 0:3:9 1
+int 0:4:5 2
+bin 0:3:9 add
+let 0:3:1 0
+pname 0:5:5 b
+int 0:5:10 1
+int 0:6:7 2
+bin 0:5:10 add
+let 0:5:1 0
+pname 0:7:5 c
+name 0:7:9 add
+int 0:7:13 1
+int 0:8:5 2
+call 0:7:9 2
+let 0:7:1 0
+name 0:9:4 a
+name 0:9:8 b
+bin 0:9:4 gt
+name 0:10:5 printf
+str 0:10:12 a%0A
+call 0:10:5 1
+cstmt 0:10:5
+block 0:9:10 1
+name 0:13:5 printf
+str 0:13:12 b%0A
+call 0:13:5 1
+cstmt 0:13:5
+block 0:12:6 1
+if 0:9:1 1
+pname 0:15:5 d
+name 0:15:9 a
+name 0:18:5 b
+bin 0:15:9 mul
+let 0:15:1 0
+type 0:19:11 i64 s 0
+param 0:19:8 x 0 0
+type 0:20:11 i64 s 0
+param 0:20:8 y 0 0
+type 0:20:19 i64 s 0
+name 0:21:12 x
+name 0:21:16 y
+bin 0:21:12 add
+return 0:21:5 1
+block 0:20:23 1
+fn 0:19:1 add 0 2 1
+pname 0:23:5 e
+name 0:23:9 a
+let 0:23:1 0
+pname 0:23:16 f
+name 0:23:20 b
+let 0:23:12 0
+int 0:24:10 0
+int 0:24:13 4
+int 0:25:5 2
+range 0:24:10 0 1
+name 0:26:5 printf
+str 0:26:12 %25d%0A
+name 0:26:20 i
+call 0:26:5 2
+cstmt 0:26:5
+block 0:25:7 1
+for 0:24:1 i
+pname 0:28:5 g
+int 0:29:5 5
+let 0:28:1 0
+prog 10
+#end

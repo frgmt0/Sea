@@ -1,0 +1,2 @@
+// err_float_range_exp -- 1e309 overflows (LANGUAGE.md 3.4; at token)
+let a = 2.0 * 1e309

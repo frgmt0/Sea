@@ -1,0 +1,2 @@
+// err_bad_escape_surrogate -- \u{D800} is a surrogate (LANGUAGE.md 3.5; at the backslash)
+printf("%s\n", "x\u{D800}")

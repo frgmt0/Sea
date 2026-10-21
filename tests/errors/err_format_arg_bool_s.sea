@@ -1,0 +1,2 @@
+// err_format_arg_bool_s -- %s of a bool (LANGUAGE.md 11.1)
+printf("%s\n", true)

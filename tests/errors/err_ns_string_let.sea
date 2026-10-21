@@ -1,0 +1,2 @@
+// err_ns_string_let -- phase 1: a string literal that is not a printf %s argument
+let s = "abc"

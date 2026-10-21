@@ -1,0 +1,5 @@
+// err_rt_step_zero -- a range step of zero (LANGUAGE.md 5.1; at the for line)
+let z = 0
+for i in 0..10 step z {
+    printf("%d\n", i)
+}

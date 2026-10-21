@@ -1,0 +1,235 @@
+#sea 1
+#target arm64-macos
+#file stmt_grammar_full.sea
+type 0:3:10 i64 s 0
+int 0:3:16 4
+const 0:3:1 N 1
+float 0:4:11 #3FE0000000000000
+const 0:4:1 H 0
+type 0:6:8 f64 s 0
+field 0:6:5 a
+type 0:6:16 i64 s 0
+field 0:6:13 b
+name 0:7:12 N
+type 0:7:8 f64 fv 1
+field 0:7:5 c
+struct 0:5:1 S 3
+type 0:9:20 f64 s 0
+param 0:9:17 x 0 0
+type 0:9:28 f64 s 0
+name 0:10:12 x
+name 0:10:16 x
+bin 0:10:12 mul
+return 0:10:5 1
+block 0:9:32 1
+fn 0:9:1 sq 1 1 1
+type 0:12:13 f64 m 0
+param 0:12:6 v 1 0
+type 0:12:24 i64 s 0
+int 0:12:30 2
+param 0:12:21 k 0 1
+type 0:12:37 f64 s 0
+type 0:12:42 i64 s 0
+name 0:13:13 v
+int 0:13:15 0
+dollar 0:13:18
+int 0:13:22 1
+bin 0:13:18 sub
+index 0:13:13 2
+name 0:13:26 k
+return 0:13:5 2
+block 0:12:47 1
+fn 0:12:1 f 0 2 2
+return 0:16:5 0
+block 0:15:8 1
+fn 0:15:1 g 0 0 0
+pname 0:18:5 m
+int 0:18:12 2
+int 0:18:15 2
+type 0:18:8 f64 fm 2
+float 0:18:21 #3FF0000000000000
+float 0:18:26 #4000000000000000
+row 0:18:21 2
+float 0:18:31 #4008000000000000
+float 0:18:36 #4010000000000000
+row 0:18:31 2
+array 0:18:20 2
+let 0:18:1 1
+pname 0:19:5 w
+type 0:19:8 f64 v 0
+array 0:19:16 0
+var 0:19:1 1
+pname 0:20:6 p
+pskip 0:20:9
+ptuple 0:20:5 2
+name 0:20:14 f
+name 0:20:20 m
+ref 0:20:16
+int 0:20:26 3
+narg 0:20:23 k
+call 0:20:14 2
+let 0:20:1 0
+pskip 0:21:5
+name 0:21:9 sq
+name 0:21:12 H
+call 0:21:9 1
+let 0:21:1 0
+pname 0:22:5 t
+int 0:22:9 0
+var 0:22:1 0
+name 0:23:1 t
+int 0:23:5 1
+asg 0:23:1 set
+name 0:23:8 t
+int 0:23:13 2
+asg 0:23:8 add
+name 0:23:16 t
+int 0:23:21 1
+asg 0:23:16 sub
+name 0:23:24 t
+int 0:23:29 3
+asg 0:23:24 mul
+name 0:23:32 t
+int 0:23:37 2
+asg 0:23:32 div
+name 0:24:2 w
+int 0:24:4 0
+index 0:24:2 1
+pskip 0:24:8
+name 0:24:13 f
+name 0:24:19 w
+ref 0:24:15
+call 0:24:13 1
+tasg 0:24:1 2
+name 0:25:1 g
+call 0:25:1 0
+cstmt 0:25:1
+name 0:26:4 t
+int 0:26:9 1
+bin 0:26:4 eq
+name 0:26:13 t
+int 0:26:17 2
+asg 0:26:13 set
+block 0:26:11 1
+name 0:26:29 t
+int 0:26:34 3
+bin 0:26:29 ne
+name 0:26:38 t
+int 0:26:42 4
+asg 0:26:38 set
+block 0:26:36 1
+name 0:26:53 t
+int 0:26:57 5
+asg 0:26:53 set
+block 0:26:51 1
+if 0:26:26 1
+if 0:26:1 1
+name 0:27:7 t
+int 0:27:11 10
+bin 0:27:7 lt
+false 0:27:18
+not 0:27:17
+bin 0:27:7 and
+true 0:27:27
+bin 0:27:7 or
+break 0:27:34
+block 0:27:32 1
+while 0:27:1
+int 0:28:10 0
+name 0:28:14 N
+int 0:28:21 2
+range 0:28:10 1 1
+continue 0:28:25
+block 0:28:23 1
+for 0:28:1 i
+name 0:29:10 w
+int 0:29:12 1
+dollar 0:29:15
+range 0:29:12 0 0
+index 0:29:10 1
+block 0:29:18 0
+for 0:29:1 x
+name 0:30:11 t
+conv 0:30:7 str
+str 0:31:5 1
+str 0:31:11 2
+block 0:31:18 0
+arm 0:31:5 2
+block 0:31:28 0
+arm 0:31:23 0
+match 0:30:1 2
+pname 0:33:7 r
+float 0:33:18 #3FF0000000000000
+init 0:33:15 a
+int 0:33:26 2
+init 0:33:23 b
+float 0:33:33 #0000000000000000
+float 0:33:38 #0000000000000000
+float 0:33:43 #0000000000000000
+float 0:33:48 #0000000000000000
+row 0:33:33 4
+array 0:33:32 1
+init 0:33:29 c
+slit 0:33:11 S 3
+let 0:33:3 0
+block 0:33:1 1
+pname 0:34:5 e
+int 0:34:18 1
+conv 0:34:14 f64
+init 0:34:11 x
+float 0:34:29 #4000000000000000
+conv 0:34:25 i64
+init 0:34:22 y
+rlit 0:34:9 2
+let 0:34:1 0
+pname 0:35:5 q
+int 0:35:10 0
+int 0:35:13 3
+range 0:35:10 0 0
+rangev 0:35:9
+int 0:35:18 2
+bin 0:35:9 mod
+int 0:35:23 1
+bin 0:35:9 ge
+name 0:35:27 m
+all 0:35:29
+int 0:35:32 1
+index 0:35:27 2
+float 0:35:38 #4000000000000000
+bin 0:35:27 le
+bin 0:35:9 band
+false 0:35:44
+bin 0:35:9 bor
+let 0:35:1 0
+pname 0:36:5 u
+name 0:36:9 m
+dot 0:36:9 T
+name 0:36:15 e
+dot 0:36:15 x
+bin 0:36:9 matmul
+float 0:36:21 #3FF8000000000000
+int 0:36:28 2
+neg 0:36:27
+bin 0:36:21 pow
+bin 0:36:9 div
+name 0:36:32 w
+name 0:36:34 i
+index 0:36:32 1
+bin 0:36:9 add
+let 0:36:1 0
+pname 0:37:5 z
+name 0:37:12 t
+int 0:37:16 0
+bin 0:37:12 gt
+int 0:37:20 1
+name 0:37:32 t
+int 0:37:36 0
+bin 0:37:32 lt
+int 0:37:41 1
+neg 0:37:40
+int 0:37:52 0
+ifx 0:37:29
+ifx 0:37:9
+let 0:37:1 0
+prog 28
+#end

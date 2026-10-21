@@ -1,0 +1,5 @@
+// err_bad_target_fn -- a function is not an assignment target (DESIGN.md 2.6.2)
+fn f() {
+    printf("f\n")
+}
+f = 2

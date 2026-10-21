@@ -1,0 +1,3 @@
+// err_unexpected_eof_block -- the input ends inside a block (DESIGN.md 2.6.2, at token)
+fn f() {
+    printf("x\n")

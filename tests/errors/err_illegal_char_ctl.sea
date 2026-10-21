@@ -1,0 +1,2 @@
+// err_illegal_char_ctl -- a control byte in code is illegal (LANGUAGE.md 3.1; at byte)
+let b = 3

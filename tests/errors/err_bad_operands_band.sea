@@ -1,0 +1,2 @@
+// err_bad_operands_band -- & needs bool operands (LANGUAGE.md 6.4)
+let a = 1 & true

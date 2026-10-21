@@ -1,0 +1,2 @@
+// err_bad_operands_lt -- bool compares with == and != only (LANGUAGE.md 6.4)
+let a = true < false

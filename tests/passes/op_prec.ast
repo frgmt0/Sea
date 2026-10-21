@@ -1,0 +1,106 @@
+#sea 1
+#target arm64-macos
+#file op_prec.sea
+pname 0:4:5 a
+int 0:4:9 1
+int 0:4:13 2
+int 0:4:17 3
+bin 0:4:13 mul
+bin 0:4:9 add
+let 0:4:1 0
+pname 0:5:5 b
+int 0:5:9 2
+int 0:5:13 3
+int 0:5:17 2
+bin 0:5:13 pow
+bin 0:5:9 pow
+let 0:5:1 0
+pname 0:6:5 c
+name 0:6:10 x
+int 0:6:14 2
+bin 0:6:10 pow
+neg 0:6:9
+let 0:6:1 0
+pname 0:7:5 d
+name 0:7:9 x
+name 0:7:14 y
+neg 0:7:13
+bin 0:7:9 pow
+let 0:7:1 0
+pname 0:8:5 e
+int 0:8:9 1
+int 0:8:13 2
+bin 0:8:9 sub
+int 0:8:17 3
+bin 0:8:9 sub
+let 0:8:1 0
+pname 0:9:5 f
+name 0:9:9 x
+name 0:9:13 y
+bin 0:9:9 lt
+name 0:9:17 y
+name 0:9:21 z
+bin 0:9:17 lt
+bin 0:9:9 band
+name 0:9:26 t
+not 0:9:25
+bin 0:9:9 bor
+let 0:9:1 0
+pname 0:10:5 g
+name 0:10:9 t
+name 0:10:14 t
+name 0:10:19 u
+bin 0:10:14 and
+bin 0:10:9 or
+let 0:10:1 0
+pname 0:11:5 h
+int 0:11:10 1
+int 0:11:14 2
+bin 0:11:10 add
+int 0:11:19 3
+bin 0:11:9 mul
+let 0:11:1 0
+pname 0:12:5 i
+name 0:12:9 x
+name 0:12:13 y
+bin 0:12:9 mul
+name 0:12:17 z
+bin 0:12:9 div
+name 0:12:21 w
+bin 0:12:9 mod
+let 0:12:1 0
+pname 0:13:5 j
+name 0:13:10 x
+name 0:13:14 y
+bin 0:13:10 lt
+name 0:13:20 t
+bin 0:13:9 eq
+let 0:13:1 0
+pname 0:14:5 k
+name 0:14:9 x
+name 0:14:13 y
+bin 0:14:9 matmul
+let 0:14:1 0
+pname 0:15:5 m
+name 0:15:10 t
+not 0:15:9
+name 0:15:15 t
+bin 0:15:9 and
+let 0:15:1 0
+pname 0:16:5 n
+int 0:16:9 2
+int 0:16:14 3
+neg 0:16:13
+bin 0:16:9 mul
+let 0:16:1 0
+pname 0:17:5 o
+int 0:17:10 1
+int 0:17:14 2
+bin 0:17:10 lt
+int 0:17:21 3
+int 0:17:25 4
+bin 0:17:21 lt
+bin 0:17:9 eq
+let 0:17:1 0
+prog 14
+#end

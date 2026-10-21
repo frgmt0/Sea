@@ -1,0 +1,17 @@
+// type_cvt -- implicit i64 -> f64 conversion in a mixed operator, on initialisation,
+// assignment, argument passing and return; each cvt takes its operand's position
+// (LANGUAGE.md 4.2; DESIGN.md 3.5.5); f64() and i64() are lib nodes (3.5.5)
+fn widen(k: i64) -> f64 {
+    return k
+}
+fn scale(x: f64) -> f64 {
+    return x * 2.0
+}
+let n = 3
+let a = n * 0.5
+let b: f64 = n
+var c = 0.0
+c = n + 1
+let d = scale(n)
+let e = widen(n) < n
+let f = f64(n) + i64(2.5)

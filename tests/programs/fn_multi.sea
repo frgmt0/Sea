@@ -1,0 +1,33 @@
+// fn_multi -- multiple results: return (e1, e2), let (a, b) = f(), _ discards, tuple
+// assignment to existing variables, a discarded call, and return f() of a call with exactly
+// the same result types (LANGUAGE.md 8.4, 7.2, 7.3).
+fn divmod(a: i64, b: i64) -> (i64, i64) {
+    return (idiv(a, b), a % b)
+}
+fn minmax(x: f64, y: f64) -> (f64, f64) {
+    if x < y {
+        return (x, y)
+    }
+    return (y, x)
+}
+fn wrap(a: i64, b: i64) -> (i64, i64) {
+    return divmod(a, b)
+}
+fn three() -> (i64, f64, bool) {
+    return (1, 2.5, true)
+}
+let (q, r) = divmod(17, 5)
+printf("%d %d\n", q, r)
+let (lo, hi) = minmax(2.5, -1)
+printf("%g %g\n", lo, hi)
+let (q2, _) = wrap(-17, 5)
+printf("%d\n", q2)
+var a = 0
+var b = 0
+(a, b) = divmod(100, 7)
+printf("%d %d\n", a, b)
+(_, b) = divmod(9, 4)
+printf("%d %d\n", a, b)
+divmod(1, 1)
+let (i, f, t) = three()
+printf("%d %g %d\n", i, f, i64(t))

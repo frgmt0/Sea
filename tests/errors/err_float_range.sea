@@ -1,0 +1,2 @@
+// err_float_range -- a float literal above the overflow midpoint (LANGUAGE.md 3.4; at token)
+let a = 1.7976931348623159e308

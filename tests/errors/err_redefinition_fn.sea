@@ -1,0 +1,7 @@
+// err_redefinition_fn -- two functions of one name; at the later one (DESIGN.md 2.6.2)
+fn f() {
+    printf("a\n")
+}
+fn f() {
+    printf("b\n")
+}

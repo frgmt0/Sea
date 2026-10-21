@@ -1,0 +1,21 @@
+// op_powk -- x ^ k with a constant integral |k| <= 4 is x^0 = 1, x^1 = x, x^2 = x*x,
+// x^3 = (x*x)*x, x^4 = (x*x)*(x*x), x^-k = 1/(x^k) (LANGUAGE.md 6.5); the
+// result is f64; digits from tests/vectors/progfmt.py.
+const K = 2 + 2
+let x = 1.1
+let n = 3
+printf("%.17g %.17g\n", x ^ 0, x ^ 1)
+printf("%.17g\n", x ^ 2)
+printf("%.17g\n", x ^ 3)
+printf("%.17g\n", x ^ 4)
+printf("%.17g\n", x * x * x * x)
+printf("%.17g\n", x ^ -1)
+printf("%.17g\n", x ^ -2)
+printf("%.17g\n", x ^ -3)
+printf("%.17g\n", x ^ -4)
+printf("%.17g %.17g\n", x ^ 2.0, x ^ (6 % 4))
+printf("%.17g\n", x ^ K)
+printf("%g %g\n", 2 ^ 3, n ^ 2)
+printf("%.17g\n", -x ^ 2)
+printf("%g %g %g\n", nan ^ 0, inf ^ -1, 0.0 ^ -1)
+printf("%g\n", x ^ -0.0)

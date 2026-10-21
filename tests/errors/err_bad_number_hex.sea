@@ -1,0 +1,2 @@
+// err_bad_number_hex -- _ may not follow 0x (LANGUAGE.md 3.4; at token)
+let a = 0x_FF

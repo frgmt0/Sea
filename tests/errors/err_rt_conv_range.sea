@@ -1,0 +1,3 @@
+// err_rt_conv_range -- i64() of 2^63, integral but out of range (LANGUAGE.md 9.2)
+let x = 9223372036854775808.0
+printf("%d\n", i64(x))

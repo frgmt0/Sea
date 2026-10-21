@@ -1,0 +1,39 @@
+#sea 1
+#target arm64-macos
+#file stmt_loops.sea
+func .main main 0:1:1 0 0
+li i1 10
+call walk 1 i2 1 i1
+li i3 7
+call walk 1 i4 1 i3
+ret 0
+endfunc
+func walk fn 0:4:1 1 i1 1 i
+li i2 0
+do 1
+icmp lt i3 i2 i1
+ifz 2 i3
+exit 1
+endif 2
+li i4 3
+iaddc i2 i2 i4 0:7
+enddo 1
+li i5 0
+li i6 -2
+rcount i7 i1 i5 i6 1 0:9
+loop 3 i8 i1 i7 i6
+li i9 4
+icmp eq i10 i8 i9
+if 4 i10
+next 3
+endif 4
+li i11 2
+icmp lt i12 i8 i11
+if 5 i12
+exit 3
+endif 5
+isubc i2 i2 i8 0:16
+endloop 3
+ret 1 i2
+endfunc
+#end

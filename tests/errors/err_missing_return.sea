@@ -1,0 +1,7 @@
+// err_missing_return -- a function with a result must end every path with return (LANGUAGE.md 8.1; at fn)
+fn f(x: i64) -> i64 {
+    if x > 0 {
+        return 1
+    }
+}
+printf("%d\n", f(1))

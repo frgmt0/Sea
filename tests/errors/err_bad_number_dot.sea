@@ -1,0 +1,2 @@
+// err_bad_number_dot -- there is no 1. literal (LANGUAGE.md 3.4; at token)
+let a = 3.

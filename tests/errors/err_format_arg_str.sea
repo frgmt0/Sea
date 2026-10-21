@@ -1,0 +1,2 @@
+// err_format_arg_str -- %s of an i64 (LANGUAGE.md 11.1)
+printf("%s\n", 5)

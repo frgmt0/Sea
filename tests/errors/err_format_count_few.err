@@ -1,0 +1,1 @@
+err_format_count_few.sea:2:1: error: format "%d %d\n" expects 2 arguments, found 1

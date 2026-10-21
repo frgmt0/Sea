@@ -1,0 +1,35 @@
+// fn_ref -- ref parameters: the callee assigns the caller's variable; a ref parameter passed
+// on as a ref argument; a var whose type the ref use decides (LANGUAGE.md 8.3, 4.2).
+fn incr(ref x: i64) {
+    x += 1
+}
+fn incr_twice(ref x: i64) {
+    incr(ref x)
+    incr(ref x)
+}
+fn scale(ref v: f64, k: f64) {
+    v = v * k
+}
+fn swap(ref a: i64, ref b: i64) {
+    let t = a; a = b; b = t
+}
+var n = 1
+incr(ref n)
+printf("%d\n", n)
+incr_twice(ref n)
+printf("%d\n", n)
+var p = 3
+var q = 9
+swap(ref p, ref q)
+printf("%d %d\n", p, q)
+var v = 1.5
+scale(ref v, 4)
+printf("%g\n", v)
+var w = 2
+scale(ref w, 1.5)
+printf("%g\n", w)
+var c = 0
+for i in 0..5 {
+    incr(ref c)
+}
+printf("%d\n", c)

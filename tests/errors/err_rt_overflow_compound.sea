@@ -1,0 +1,5 @@
+// err_rt_overflow_compound -- x += 1 overflows like x + 1 (LANGUAGE.md 7.3, 6.5)
+var x = 9223372036854775806
+x += 1
+x += 1
+printf("%d\n", x)

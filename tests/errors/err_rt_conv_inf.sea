@@ -1,0 +1,2 @@
+// err_rt_conv_inf -- i64() of +Inf (LANGUAGE.md 9.2; Inf spelled as printf %g)
+printf("%d\n", i64(inf))

@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file op_shortcircuit.sea
+func .main main 0:1:1 0 0
+li i1 5
+li i2 3
+call pick 1 i3 2 i1 i2
+li i4 2
+li i5 2
+call pick 1 i6 2 i4 i5
+ret 0
+endfunc
+func pick fn 0:3:1 2 i1 i2 1 i
+li i3 0
+li i4 0
+li i5 1
+rcount i6 i4 i1 i5 0 0:5
+loop 1 i7 i4 i6 i5
+li i8 1
+icmp gt i9 i7 i8
+if 2 i9
+icmp lt i9 i7 i2
+endif 2
+if 3 i9
+li i10 1
+iaddc i3 i3 i10 0:7
+endif 3
+li i11 0
+icmp eq i12 i7 i11
+ifz 4 i12
+li i13 3
+icmp gt i12 i3 i13
+endif 4
+if 5 i12
+li i14 2
+imulc i15 i3 i14 0:10
+li i16 4
+icmp gt i17 i3 i16
+if 6 i17
+li i18 1
+else 6
+li i18 0
+endif 6
+iaddc i3 i15 i18 0:10
+endif 5
+endloop 1
+ret 1 i3
+endfunc
+#end

@@ -1,0 +1,23 @@
+// stmt_ifx -- if expressions: else required, arms of one type after the conversions of
+// LANGUAGE.md 4.2, else-if chains, only the selected arm is evaluated (LANGUAGE.md 6.10).
+fn noisy(k: i64) -> i64 {
+    printf("eval %d\n", k)
+    return k
+}
+let a = 3
+let b = 7
+let m = if a > b { a } else { b }
+printf("%d\n", m)
+let s = if a < 0 { -1 } else if a == 0 { 0 } else { 1 }
+printf("%d\n", s)
+let r = if a > 1 { 0.5 } else { 2 }
+printf("%g\n", r)
+let q = if a == 3 { noisy(1) } else { noisy(2) }
+printf("%d\n", q)
+let z = if b > 5 {
+    100
+} else {
+    200
+}
+printf("%d\n", z)
+printf("%d\n", if b < 5 { 1 } else { 2 } + 10)

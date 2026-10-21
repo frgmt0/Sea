@@ -1,0 +1,23 @@
+#sea 1
+#target arm64-macos
+#file lex_column.sea
+pname 0:3:6 a
+int 0:3:10 1
+let 0:3:2 0
+pname 0:4:5 b
+str 0:4:9 %C3%A9%C3%A9
+let 0:4:1 0
+pname 0:4:21 c
+int 0:4:25 2
+let 0:4:17 0
+pname 0:5:14 d
+int 0:5:18 3
+let 0:5:10 0
+pname 0:6:5 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+int 0:6:71 4
+let 0:6:1 0
+pname 0:7:5 e
+int 0:7:9 5
+let 0:7:1 0
+prog 6
+#end

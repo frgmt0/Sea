@@ -1,0 +1,2 @@
+// err_format_literal -- the format must be a string literal (LANGUAGE.md 11.1; at expr)
+printf(42)

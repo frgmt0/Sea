@@ -1,0 +1,2 @@
+// err_no_overload_idiv -- idiv takes two i64 (LANGUAGE.md 6.6; at the call)
+let a = idiv(1.5, 2)

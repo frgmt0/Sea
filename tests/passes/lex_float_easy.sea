@@ -1,0 +1,11 @@
+// lex_float_easy -- float literals with exact binary values: digits.digits, exponent forms,
+// E, signs in the exponent, _ separators (LANGUAGE.md 3.4)
+let a = 1.0
+let b = 0.5
+let c = 2.5e3
+let d = 1e10
+let e = 3.125E-2
+let f = 1_000.5
+let g = 6.0e+0
+let h = 0.0
+let i = 1_0e-1

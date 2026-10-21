@@ -1,0 +1,28 @@
+// op_logic -- ! & | && || on bool; && and || short-circuit, & and | evaluate both operands;
+// comparisons bind tighter than &, & than |, | than &&, && than || (LANGUAGE.md 6.1, 6.4).
+fn yes(k: i64) -> bool {
+    printf("t%d ", k)
+    return true
+}
+fn no(k: i64) -> bool {
+    printf("f%d ", k)
+    return false
+}
+let a = true
+let b = false
+printf("%d %d %d %d\n", i64(!a), i64(!b), i64(!!a), i64(a & b))
+printf("%d %d %d\n", i64(a | b), i64(a && b), i64(a || b))
+let r1 = no(1) && yes(2)
+printf("-> %d\n", i64(r1))
+let r2 = yes(3) || no(4)
+printf("-> %d\n", i64(r2))
+let r3 = no(5) & yes(6)
+printf("-> %d\n", i64(r3))
+let r4 = yes(7) | no(8)
+printf("-> %d\n", i64(r4))
+let r5 = yes(9) && no(10)
+printf("-> %d\n", i64(r5))
+let r6 = no(11) || yes(12)
+printf("-> %d\n", i64(r6))
+printf("-> %d\n", i64(no(13) || yes(14) && no(15)))
+printf("%d %d\n", i64(1 < 2 & 3 > 4 | 5 == 5), i64(true | false & false))

@@ -1,0 +1,1 @@
+err_bad_operands_add.sea:2:9: error: operator '+' cannot be applied to bool and i64

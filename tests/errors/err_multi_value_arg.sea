@@ -1,0 +1,8 @@
+// err_multi_value_arg -- a multiple-result call as an argument (LANGUAGE.md 8.4; at the call)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+fn one(a: i64) -> i64 {
+    return a
+}
+let y = one(two())

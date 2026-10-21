@@ -1,0 +1,5 @@
+// err_rt_stack_overflow -- unbounded recursion: reported at the fn's definition line (DESIGN.md 4.6)
+fn down(n: i64) -> i64 {
+    return down(n + 1) + 1
+}
+printf("%d\n", down(0))

@@ -1,0 +1,2 @@
+// err_unexpected_eof -- the input ends inside an expression: just after the last byte of the last line
+let a = (1 +

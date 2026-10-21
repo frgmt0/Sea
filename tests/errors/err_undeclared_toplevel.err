@@ -1,0 +1,1 @@
+err_undeclared_toplevel.sea:4:12: error: undeclared name 'k'

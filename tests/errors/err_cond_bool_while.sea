@@ -1,0 +1,5 @@
+// err_cond_bool_while -- a while condition must be bool (LANGUAGE.md 4.3)
+var n = 3
+while n {
+    n -= 1
+}

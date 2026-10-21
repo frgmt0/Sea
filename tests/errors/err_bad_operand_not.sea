@@ -1,0 +1,2 @@
+// err_bad_operand_not -- ! needs a bool (LANGUAGE.md 6.4; at the operator node)
+let a = !5

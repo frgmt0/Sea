@@ -1,0 +1,3 @@
+// err_bad_target_const -- a constant is not an assignment target (DESIGN.md 2.6.2)
+const C = 1
+C = 2

@@ -1,0 +1,20 @@
+// type_var_rule -- a var initialised by an untyped constant is f64 when any assignment
+// (=, op= or a ref argument to an f64 parameter) stores an f64, else i64; one type per
+// variable, flow-insensitive; annotated vars and lets follow the literal rule (LANGUAGE.md 4.2)
+fn half(ref v: f64) {
+    v = v / 2
+}
+let d = 2.5
+var dMax = 0
+if d > dMax {
+    dMax = d
+}
+var count = 0
+count += 1
+var late = 1
+late = late + 1
+late = 0.5
+var r = 4
+half(ref r)
+var n: i64 = 0
+let k = 0

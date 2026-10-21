@@ -1,0 +1,2 @@
+// err_not_exact_printf_f -- an untyped literal argument of %f is f64 and must be exact (LANGUAGE.md 4.2 (e))
+printf("%f\n", 9007199254740993)

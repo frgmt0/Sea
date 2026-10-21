@@ -1,0 +1,2 @@
+// err_dollar_outside -- $ outside an index (LANGUAGE.md 5.3; at the $)
+let a = $

@@ -1,0 +1,14 @@
+// lib_now -- now() is a monotonic clock in seconds: the difference of two readings is
+// never negative (LANGUAGE.md 13). Its value is never printed.
+let t0 = now()
+var acc = 0
+for i in 0..100000 {
+    acc += i
+}
+let t1 = now()
+if t1 - t0 >= 0.0 {
+    printf("ok\n")
+} else {
+    printf("clock went backwards\n")
+}
+printf("%d\n", acc)

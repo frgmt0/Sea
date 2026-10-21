@@ -1,0 +1,1 @@
+err_format_arg_str.sea:2:16: error: format "%s" expects str, found i64

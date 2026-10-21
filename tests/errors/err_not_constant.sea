@@ -1,0 +1,2 @@
+// err_not_constant -- a const expression must be constant (LANGUAGE.md 7.2; at expr)
+const C = now()

@@ -1,0 +1,14 @@
+struct P {
+    x: f64
+    n: i64
+}
+fn scale(p: P, k: f64 = 2.0) -> f64 {
+    return p.x * k ^ 2 * (0.5 * 3)
+}
+let p = P { n: 3, x: 1.5 }
+var t = 0
+for i in 0..p.n {
+    t += scale(p, k: i)
+}
+t += scale(p)
+printf("%.3f\n", t)

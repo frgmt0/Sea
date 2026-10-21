@@ -1,0 +1,7 @@
+// err_result_count_tasg -- a tuple assignment with one target too few: at the tasg (LANGUAGE.md 7.3, 8.4)
+fn three() -> (i64, i64, i64) {
+    return (1, 2, 3)
+}
+var x = 0
+var y = 0
+(x, y) = three()

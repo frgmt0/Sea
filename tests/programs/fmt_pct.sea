@@ -1,0 +1,6 @@
+// fmt_pct -- %% prints one percent sign (LANGUAGE.md 11.1).
+printf("%%\n")
+printf("100%%\n")
+printf("%d%%\n", 50)
+printf("%%d\n")
+printf("[%%%d%%]\n", 7)

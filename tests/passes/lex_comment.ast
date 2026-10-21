@@ -1,0 +1,25 @@
+#sea 1
+#target arm64-macos
+#file lex_comment.sea
+pname 0:3:5 a
+int 0:3:9 1
+let 0:3:1 0
+pname 0:4:5 b
+int 0:4:22 2
+let 0:4:1 0
+pname 0:5:5 c
+int 0:5:9 3
+let 0:5:1 0
+pname 0:6:18 d
+int 0:6:22 4
+let 0:6:14 0
+pname 0:9:5 e
+int 0:9:32 5
+let 0:9:1 0
+pname 0:11:5 g
+int 0:11:9 1
+int 0:11:50 1
+bin 0:11:9 add
+let 0:11:1 0
+prog 6
+#end

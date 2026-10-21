@@ -1,0 +1,2 @@
+// err_type_mismatch_let -- no implicit f64 -> i64 (LANGUAGE.md 4.2; at expr)
+let a: i64 = 1.5

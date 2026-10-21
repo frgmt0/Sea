@@ -1,0 +1,5 @@
+// err_flush -- a run-time error first flushes standard output, with no extra newline, then
+// writes <file>:<line>: error: <message> to standard error and exits 1 (LANGUAGE.md 9.2).
+printf("partial")
+let z = 0
+printf("%d\n", idiv(1, z))

@@ -1,0 +1,16 @@
+// op_shortcircuit -- a && b: R = a; if R { R = b }; a || b: R = a; ifz R { R = b }; an if
+// expression: c; if { R = then } else { R = else } (DESIGN.md 3.6.6 rule 3)
+fn pick(a: i64, b: i64) -> i64 {
+    var r = 0
+    for i in 0..a {
+        if i > 1 && i < b {
+            r += 1
+        }
+        if i == 0 || r > 3 {
+            r = r * 2 + if r > 4 { 1 } else { 0 }
+        }
+    }
+    return r
+}
+let x = pick(5, 3)
+let y = pick(2, 2)

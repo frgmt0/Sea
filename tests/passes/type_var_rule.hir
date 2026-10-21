@@ -1,0 +1,60 @@
+#sea 1
+#target arm64-macos
+#file type_var_rule.sea
+fn 1 .main main 1 0 7 0:1:1
+loc d 4 let 0:7:5
+loc dMax 4 var 0:8:5
+loc count 3 var 0:12:5
+loc late 4 var 0:14:5
+loc r 4 var 0:17:5
+loc n 3 var 0:19:5
+loc k 3 let 0:20:5
+cf 0:7:9 4 #4004000000000000
+bind 0:7:1 1
+cf 0:8:12 4 #0000000000000000
+bind 0:8:1 2
+lv 0:9:4 4 1
+lv 0:9:8 4 2
+bin 0:9:4 2 gt
+lv 0:10:5 4 2
+lv 0:10:12 4 1
+asg 0:10:5 set
+block 0:9:13 1
+if 0:9:1 0
+ci 0:12:13 3 0
+bind 0:12:1 3
+lv 0:13:1 3 3
+ci 0:13:10 3 1
+asg 0:13:1 add
+cf 0:14:12 4 #3FF0000000000000
+bind 0:14:1 4
+lv 0:15:1 4 4
+lv 0:15:8 4 4
+cf 0:15:15 4 #3FF0000000000000
+bin 0:15:8 4 add
+asg 0:15:1 set
+lv 0:16:1 4 4
+cf 0:16:8 4 #3FE0000000000000
+asg 0:16:1 set
+cf 0:17:9 4 #4010000000000000
+bind 0:17:1 5
+lv 0:18:10 4 5
+rarg 0:18:6 4
+call 0:18:1 1 2 1
+eval 0:18:1
+ci 0:19:14 3 0
+bind 0:19:1 6
+ci 0:20:9 3 0
+bind 0:20:1 7
+block 0:1:1 12
+end
+fn 2 half fn 1 1 0 0:4:1
+par v 4 ref
+lv 0:5:5 4 1
+lv 0:5:9 4 1
+cf 0:5:13 4 #4000000000000000
+bin 0:5:9 4 div
+asg 0:5:5 set
+block 0:4:21 1
+end
+#end

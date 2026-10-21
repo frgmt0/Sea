@@ -1,0 +1,9 @@
+fn tri(n: i64, x: f64) -> f64 {
+    var s = 0.0
+    for i in 0..n {
+        s = s + x * i
+    }
+    return s
+}
+let a = tri(10, 0.5)
+let b = tri(4, a)

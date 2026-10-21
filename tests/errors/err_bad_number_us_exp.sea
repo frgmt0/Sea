@@ -1,0 +1,2 @@
+// err_bad_number_us_exp -- _ may not stand next to the exponent letter (LANGUAGE.md 3.4)
+let a = 1_e5

@@ -1,0 +1,2 @@
+// err_unexpected_paren -- a closing parenthesis where an expression is expected (Appendix A)
+let x = )

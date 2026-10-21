@@ -1,0 +1,59 @@
+#sea 1
+#target arm64-macos
+#file stmt_header.sea
+pname 0:4:5 n
+int 0:4:9 3
+let 0:4:1 0
+int 0:5:10 0
+name 0:5:13 n
+range 0:5:10 0 0
+name 0:6:5 printf
+str 0:6:12 %25d%0A
+name 0:6:20 k
+call 0:6:5 2
+cstmt 0:6:5
+block 0:5:15 1
+for 0:5:1 k
+name 0:8:4 n
+int 0:8:8 2
+bin 0:8:4 gt
+name 0:8:12 printf
+str 0:8:19 big%0A
+call 0:8:12 1
+cstmt 0:8:12
+block 0:8:10 1
+if 0:8:1 0
+name 0:9:7 ok
+float 0:9:17 #3FF0000000000000
+init 0:9:14 x
+slit 0:9:10 P 1
+call 0:9:7 1
+block 0:9:24 0
+while 0:9:1
+int 0:10:12 1
+init 0:10:9 a
+slit 0:10:5 Q 1
+dot 0:10:4 a
+int 0:10:22 1
+bin 0:10:4 eq
+block 0:10:24 0
+if 0:10:1 0
+pname 0:11:5 r
+int 0:11:16 1
+init 0:11:13 a
+slit 0:11:9 Q 1
+let 0:11:1 0
+pname 0:12:5 s
+name 0:12:12 c
+int 0:12:16 1
+int 0:12:27 2
+ifx 0:12:9
+let 0:12:1 0
+int 0:13:10 0
+name 0:13:13 n
+name 0:13:20 n
+range 0:13:10 0 1
+block 0:13:22 0
+for 0:13:1 k
+prog 8
+#end

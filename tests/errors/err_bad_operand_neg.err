@@ -1,0 +1,1 @@
+err_bad_operand_neg.sea:2:9: error: operator '-' cannot be applied to bool

@@ -1,0 +1,6 @@
+// err_ref_unexpected -- ref on an argument of an ordinary parameter (DESIGN.md 2.6.2; at the ref)
+fn g(a: i64) -> i64 {
+    return a
+}
+var n = 1
+printf("%d\n", g(ref n))

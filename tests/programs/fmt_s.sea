@@ -1,0 +1,10 @@
+// fmt_s -- printf %s of string literals: bytes, width and precision count
+// bytes (LANGUAGE.md 11.1).
+printf("[%s]\n", "abc")
+printf("[%5s] [%-5s]\n", "ab", "ab")
+printf("[%.2s] [%5.1s]\n", "abcdef", "xyz")
+printf("[%s]\n", "")
+printf("[%4s]\n", "é")
+printf("[%s]\n", "a\tb")
+printf("%s-%s\n", "left", "right")
+printf("[%3s]\n", "abcdef")

@@ -1,0 +1,39 @@
+#sea 1
+#target arm64-macos
+#file fn_multi.sea
+func .main main 0:1:1 0 0
+li i1 3
+call sums 2 i2 f3 1 i1
+li i4 2
+call again 2 i5 f6 1 i4
+li i7 2
+call sums 2 i8 f9 1 i7
+ret 0
+endfunc
+func sums fn 0:4:1 1 i1 2 i f
+li i2 0
+lf f3 #0000000000000000
+li i4 0
+li i5 1
+rcount i6 i4 i1 i5 0 0:7
+loop 1 i7 i4 i6 i5
+iaddc i2 i2 i7 0:8
+lf f8 #3FE0000000000000
+fadd f3 f3 f8
+endloop 1
+ret 2 i2 f3
+endfunc
+func again fn 0:13:1 1 i1 2 i f
+li i2 0
+icmp gt i3 i1 i2
+if 1 i3
+li i4 1
+isubc i5 i1 i4 0:15
+call again 2 i6 f7 1 i5
+ret 2 i6 f7
+endif 1
+li i8 4
+call sums 2 i9 f10 1 i8
+ret 2 i9 f10
+endfunc
+#end

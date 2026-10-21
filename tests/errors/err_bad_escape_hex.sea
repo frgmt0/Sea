@@ -1,0 +1,2 @@
+// err_bad_escape_hex -- \x needs two hex digits (LANGUAGE.md 3.5)
+printf("%s\n", "ab\x4")

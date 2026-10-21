@@ -1,0 +1,13 @@
+struct P {
+    x: f64
+    n: i64
+}
+fn f() -> i64 {
+    printf("f\n")
+    return 1
+}
+fn g() -> f64 {
+    printf("g\n")
+    return 2.0
+}
+let p = P { n: f(), x: g() }

@@ -1,0 +1,2 @@
+// err_format_order -- the count is checked before the argument types (DESIGN.md 2.6.2, formatting calls)
+printf("%s %s\n", 1)

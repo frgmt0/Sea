@@ -1,0 +1,4 @@
+// err_rt_epipe_loop -- a buffer flush during printf fails: at that printf's line (LANGUAGE.md 9.2)
+for i in 0..100000 {
+    printf("%d\n", i)
+}

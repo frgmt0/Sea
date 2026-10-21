@@ -1,0 +1,21 @@
+// op_cvt -- f64() and i64() conversions and the implicit i64 -> f64 conversion, rounded to
+// nearest even (LANGUAGE.md 4.2, 10.1).
+fn half(v: f64) -> f64 {
+    return v / 2
+}
+fn back(k: i64) -> f64 {
+    return k
+}
+let n = 7
+printf("%g\n", f64(n) / 2.0)
+printf("%d %d %d\n", i64(3.0), i64(-0.0), i64(1e18))
+printf("%d %d\n", i64(true), i64(false))
+printf("%g %g\n", f64(true), f64(false))
+printf("%d\n", i64(-9223372036854775808.0))
+let big = 9007199254740993
+printf("%.17g\n", f64(big))
+let y: f64 = big
+printf("%.17g\n", y)
+printf("%.17g\n", big + 0.5)
+printf("%g %d\n", f64(2.5), i64(7))
+printf("%g %g\n", half(n), back(n))

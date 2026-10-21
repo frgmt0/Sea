@@ -1,0 +1,5 @@
+// err_result_count_ptuple -- three names for two results: at the ptuple (LANGUAGE.md 8.4)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+let (a, b, c) = two()

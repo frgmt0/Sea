@@ -1,0 +1,2 @@
+// err_bad_number_trailing -- _ may not end a literal (LANGUAGE.md 3.4; at token)
+let a = 1_000_

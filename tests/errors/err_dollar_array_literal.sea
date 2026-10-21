@@ -1,0 +1,2 @@
+// err_dollar_array_literal -- array-literal brackets are not index brackets (LANGUAGE.md 5.3)
+let v = [0, $ - 1]

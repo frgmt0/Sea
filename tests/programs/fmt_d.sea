@@ -1,0 +1,13 @@
+// fmt_d -- printf %d and %i of i64 values with flags and width
+// (LANGUAGE.md 11.1); expected bytes from tests/vectors/progfmt.py.
+printf("[%d] [%d] [%d]\n", 0, 42, -42)
+printf("[%d]\n", 9223372036854775807)
+printf("[%d]\n", -9223372036854775808)
+printf("[%5d] [%-5d] [%05d]\n", 42, 42, -42)
+printf("[%+d] [%+d] [% d] [% d]\n", 42, 0, 42, -42)
+printf("[%+5d] [%-+5d]\n", -3, 3)
+printf("[%3d]\n", 12345)
+printf("[%i] [%4i]\n", 7, -7)
+printf("[%d]\n", 2 - 8)
+printf("[%d]\n", 1_000_000)
+printf("[%d]\n", 0xFF)

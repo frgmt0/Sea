@@ -1,0 +1,13 @@
+// stmt_header -- header mode: in an if/while/for header a { starts the block, so a struct
+// literal there needs parentheses, except inside a call's parentheses; an if-expression
+// condition is a header too (LANGUAGE.md 6.11, Appendix A)
+let n = 3
+for k in 0..n {
+    printf("%d\n", k)
+}
+if n > 2 { printf("big\n") }
+while ok(P { x: 1.0 }) { }
+if (Q { a: 1 }).a == 1 { }
+let r = Q { a: 1 }
+let s = if c { 1 } else { 2 }
+for k in 0..n step n { }

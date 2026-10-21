@@ -1,0 +1,46 @@
+#sea 1
+#target arm64-macos
+#file fn_ref.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 8 8
+li i1 0
+sa p2 s1
+sti i1 p2 - 0 0
+li i3 3
+call bump 0 2 p2 i3
+ldi i1 p2 - 0 0
+sa p4 s2
+sti i1 p4 - 0 0
+li i5 2
+call bump2 0 2 p4 i5
+ldi i1 p4 - 0 0
+sa p6 s3
+sti i1 p6 - 0 0
+li i7 1
+call bump2 0 2 p6 i7
+ldi i1 p6 - 0 0
+ret 0
+endfunc
+func bump fn 0:5:1 2 p1 i2 0
+li i3 0
+li i4 1
+rcount i5 i3 i2 i4 0 0:6
+loop 1 i6 i3 i5 i4
+ldi i7 p1 - 0 0
+iaddc i8 i7 i6 0:7
+sti i8 p1 - 0 0
+endloop 1
+ret 0
+endfunc
+func bump2 fn 0:10:1 2 p1 i2 0
+li i3 0
+li i4 1
+rcount i5 i3 i2 i4 0 0:11
+loop 1 i6 i3 i5 i4
+call bump 0 2 p1 i6
+endloop 1
+ret 0
+endfunc
+#end

@@ -1,0 +1,2 @@
+// err_unexpected_token -- a binary operator where an operand is expected (Appendix A)
+let a = 1 +* 2

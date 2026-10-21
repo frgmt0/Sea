@@ -1,0 +1,1 @@
+err_type_mismatch_assign.sea:4:5: error: type mismatch: expected i64, found f64

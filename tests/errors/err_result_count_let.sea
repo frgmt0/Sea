@@ -1,0 +1,5 @@
+// err_result_count_let -- a 2-result call bound to one name: at the call (LANGUAGE.md 8.4; DESIGN.md 2.6.2)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+let y = two()

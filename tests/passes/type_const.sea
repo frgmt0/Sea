@@ -1,0 +1,12 @@
+// type_const -- const items: sea.hir1 keeps cn records and cref uses; pass 2b substitutes
+// each cref by a copy of the constant's expression at the cref's position and folds it
+// (LANGUAGE.md 7.2; DESIGN.md 3.5.2, 3.5.7)
+const N = 4
+const M = N * 2 + 1
+const HALF: f64 = 0.5
+const K: f64 = 3
+const TAU = 2.0 * pi
+let a = M
+let b = N * HALF
+let c = K + TAU
+let d = -N

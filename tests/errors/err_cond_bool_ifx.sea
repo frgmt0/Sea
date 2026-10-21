@@ -1,0 +1,3 @@
+// err_cond_bool_ifx -- an if-expression condition must be bool (LANGUAGE.md 4.3, 6.10)
+let a = 2.0
+let b = if a { 1 } else { 2 }

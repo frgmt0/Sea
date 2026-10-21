@@ -1,0 +1,65 @@
+#sea 1
+#target arm64-macos
+#file lex_float_hard.sea
+pname 0:3:5 h0
+float 0:3:10 #3FB999999999999A
+let 0:3:1 0
+pname 0:4:5 h1
+float 0:4:10 #3FD3333333333333
+let 0:4:1 0
+pname 0:5:5 h2
+float 0:5:10 #44B52D02C7E14AF6
+let 0:5:1 0
+pname 0:6:5 h3
+float 0:6:10 #7FE0000000000000
+let 0:6:1 0
+pname 0:7:5 h4
+float 0:7:10 #4340000000000000
+let 0:7:1 0
+pname 0:8:5 h5
+float 0:8:10 #4340000000000002
+let 0:8:1 0
+pname 0:9:5 h6
+float 0:9:10 #7FEFFFFFFFFFFFFF
+let 0:9:1 0
+pname 0:10:5 h7
+float 0:10:10 #7FEFFFFFFFFFFFFF
+let 0:10:1 0
+pname 0:11:5 h8
+float 0:11:10 #000FFFFFFFFFFFFF
+let 0:11:1 0
+pname 0:12:5 h9
+float 0:12:10 #0010000000000000
+let 0:12:1 0
+pname 0:13:5 h10
+float 0:13:11 #0000000000000001
+let 0:13:1 0
+pname 0:14:5 h11
+float 0:14:11 #0000000000000001
+let 0:14:1 0
+pname 0:15:5 h12
+float 0:15:11 #0000000000000000
+let 0:15:1 0
+pname 0:16:5 h13
+float 0:16:11 #0000000000000000
+let 0:16:1 0
+pname 0:17:5 h14
+float 0:17:11 #3FB999999999999A
+let 0:17:1 0
+pname 0:18:5 h15
+float 0:18:11 #3FB999999999999A
+let 0:18:1 0
+pname 0:19:5 h16
+float 0:19:11 #3FB999999999999B
+let 0:19:1 0
+pname 0:20:5 h17
+float 0:20:11 #45F8EE90FF6C373E
+let 0:20:1 0
+pname 0:21:5 h18
+float 0:21:11 #408F40010624DD2F
+let 0:21:1 0
+pname 0:22:5 h19
+float 0:22:11 #0000000000000001
+let 0:22:1 0
+prog 20
+#end

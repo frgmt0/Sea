@@ -1,0 +1,19 @@
+// lib_consts -- pi inf nan eps (LANGUAGE.md 10.1; bits DESIGN.md 3.5.5) and const items
+// (LANGUAGE.md 7.2); digits from tests/vectors/progfmt.py.
+const TAU = pi * 2.0
+const N = 1000
+const M = N * 2
+const HALF: f64 = 0.5
+const K: f64 = 3
+printf("%.17g\n", pi)
+printf("%.17g\n", eps)
+printf("%g %g %g\n", inf, -inf, nan)
+printf("%.17g\n", 2.0 * pi)
+printf("%.17g\n", 1.0 + eps)
+printf("%.17g\n", 1.0 + eps / 2.0)
+printf("%.17g\n", TAU)
+printf("%d\n", N)
+printf("%d\n", M)
+printf("%.17g\n", HALF)
+printf("%.17g\n", N * HALF)
+printf("%.17g\n", K)

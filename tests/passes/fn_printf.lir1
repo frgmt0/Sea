@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file fn_printf.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 16 8
+slot s3 8 8
+li i1 42
+itof f2 i1
+lf f3 #4020000000000000
+fdiv f4 f2 f3
+la p5 d1
+sa p6 s1
+sti i1 p6 - 0 0
+stf f4 p6 - 0 8
+stp p5 p6 - 0 16
+la p7 d2
+rcall sea_printf 0:7 0 2 p7 p6
+rcall sea_now - 1 f8 0
+lf f9 #4020000000000000
+fmul f10 f4 f9
+ftoi i11 f10 0:9
+sa p12 s2
+stf f4 p12 - 0 0
+sti i11 p12 - 0 8
+la p13 d3
+rcall sea_printf 0:9 0 2 p13 p12
+sa p14 s3
+la p15 d4
+rcall sea_printf 0:10 0 2 p15 p14
+ret 0
+endfunc
+str d1 ok
+fmt d2 7
+ftext n=
+fconv - 5 - d i
+ftext %20x=
+fconv l 8 3 f f
+ftext %20
+fconv - - - s p
+ftext |%25%0A
+fmt d3 4
+fconv p - - e f
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 1
+ftext done%0A
+#end

@@ -1,0 +1,5 @@
+// err_unexpected_newline_if -- an NL token between an if condition and its block (Appendix A)
+let x = true
+if x
+{
+}

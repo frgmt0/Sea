@@ -1,0 +1,3 @@
+// err_rt_overflow_neg -- unary - of -2^63 overflows (LANGUAGE.md 6.5)
+let small = -9223372036854775808
+printf("%d\n", -small)

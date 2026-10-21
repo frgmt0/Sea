@@ -1,0 +1,5 @@
+// err_type_mismatch_return -- a return value of the wrong type (DESIGN.md 2.6.2)
+fn f() -> i64 {
+    return 0.5
+}
+printf("%d\n", f())

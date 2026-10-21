@@ -1,0 +1,5 @@
+// err_rt_in_fn -- a run-time error in a function reports the line of the failing expression
+fn q(a: i64, b: i64) -> i64 {
+    return a % b
+}
+printf("%d\n", q(1, 0))

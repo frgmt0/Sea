@@ -1,0 +1,36 @@
+// fn_recursion -- direct and mutual recursion (LANGUAGE.md 8.6), and a recursion depth of
+// 100 000 calls, which fits the 64 MiB stack (DESIGN.md 4.6).
+fn fact(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    return n * fact(n - 1)
+}
+fn fib(n: i64) -> i64 {
+    if n < 2 {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+fn is_even(n: i64) -> bool {
+    if n == 0 {
+        return true
+    }
+    return is_odd(n - 1)
+}
+fn is_odd(n: i64) -> bool {
+    if n == 0 {
+        return false
+    }
+    return is_even(n - 1)
+}
+fn depth(n: i64) -> i64 {
+    if n == 0 {
+        return 0
+    }
+    return 1 + depth(n - 1)
+}
+printf("%d\n", fact(20))
+printf("%d\n", fib(20))
+printf("%d %d %d\n", i64(is_even(10)), i64(is_odd(7)), i64(is_odd(10)))
+printf("%d\n", depth(100000))

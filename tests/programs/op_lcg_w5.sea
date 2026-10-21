@@ -1,0 +1,51 @@
+// op_lcg_w5 -- W5's Park-Miller LCG (sea/workloads/w5_tolerance_mc.m, LANGUAGE.md 2.5) for
+// exactly W5's 11 M steps, in W5's draw order, with the phase-1 subset only. Prints the first
+// ten uniforms, the uniform columns of first_dev and first_top that the reference JSON pins,
+// and lcg_final. Expected output: tests/vectors/lcg_w5.py (asserted against
+// sea/workloads/reference/w5_tolerance_mc.json bit for bit).
+
+fn next_u(ref s: i64) -> f64 {
+    s = 16807 * s % 2147483647
+    return s / 2147483647
+}
+
+fn skip(ref s: i64, n: i64) {
+    for i in 0..n {
+        s = 16807 * s % 2147483647
+    }
+}
+
+let nSample = 1_000_000
+let tol = 0.030               // spacer and retaining ring tolerance [mm]
+let Tlo = 20.0
+let Thi = 95.0
+var s = 7_340_117
+
+// dim 1, normal: 2 * nSample draws; the first ten uniforms
+for k in 0..10 {
+    printf("u[%d] = %.17g\n", k, next_u(ref s))
+}
+skip(ref s, 2 * nSample - 10)
+skip(ref s, nSample)          // dim 2, triangular
+skip(ref s, 2 * nSample)      // dim 3, normal
+// dim 4, spacer, uniform: dev = tol * (2 * u - 1)
+for k in 0..10 {
+    let u = next_u(ref s)
+    printf("first_dev[%d][3] = %.17g\n", k, tol * (2 * u - 1))
+}
+skip(ref s, nSample - 10)
+skip(ref s, nSample)          // dim 5, triangular
+skip(ref s, 2 * nSample)      // dim 6, normal
+// dim 7, retaining ring, uniform
+for k in 0..10 {
+    let u = next_u(ref s)
+    printf("first_dev[%d][6] = %.17g\n", k, tol * (2 * u - 1))
+}
+skip(ref s, nSample - 10)
+// operating temperatures
+for k in 0..10 {
+    let u = next_u(ref s)
+    printf("first_top[%d] = %.17g\n", k, Tlo + (Thi - Tlo) * u)
+}
+skip(ref s, nSample - 10)
+printf("lcg_final = %d\n", s)

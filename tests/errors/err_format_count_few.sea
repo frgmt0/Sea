@@ -1,0 +1,2 @@
+// err_format_count_few -- fewer arguments than conversions (LANGUAGE.md 11.1; at the call)
+printf("%d %d\n", 1)

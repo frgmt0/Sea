@@ -1,0 +1,2 @@
+// err_format_bad_zero_s -- 0 with s is undefined in C (LANGUAGE.md 11.1)
+printf("%05s\n", "a")

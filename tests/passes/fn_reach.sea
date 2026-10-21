@@ -1,0 +1,16 @@
+// fn_reach -- pass 2b keeps only the functions reachable from .main and renumbers functions
+// and types densely (DESIGN.md 3.5.7 step 5, 3.5.1): unused and dead go, with unused's tuple
+// type
+fn unused(n: i64) -> (i64, i64) {
+    return (n, n)
+}
+fn leaf() -> i64 {
+    return 7
+}
+fn mid() -> i64 {
+    return leaf() + 1
+}
+fn dead() -> i64 {
+    return mid()
+}
+let v = mid()

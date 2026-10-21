@@ -1,0 +1,1 @@
+err_format_arg_bool_s.sea:2:16: error: format "%s" expects str, found bool

@@ -1,0 +1,8 @@
+// err_ref_target_param -- an ordinary parameter is immutable: not a ref argument (LANGUAGE.md 8.2, 8.3)
+fn incr(ref x: i64) {
+    x += 1
+}
+fn g(p: i64) {
+    incr(ref p)
+}
+g(1)

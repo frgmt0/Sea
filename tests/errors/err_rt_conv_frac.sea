@@ -1,0 +1,3 @@
+// err_rt_conv_frac -- i64() of a non-integral value (LANGUAGE.md 4.2; %g spelling)
+let x = 1.5
+printf("%d\n", i64(x))

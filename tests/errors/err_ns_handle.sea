@@ -1,0 +1,4 @@
+// err_ns_handle -- phase 1: a handle type (at the type node)
+fn f(a: Figure) {
+    printf("x\n")
+}

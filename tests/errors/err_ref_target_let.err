@@ -1,0 +1,1 @@
+err_ref_target_let.sea:6:6: error: ref argument must be a mutable variable, element or field

@@ -1,0 +1,4 @@
+// err_cond_bool_if -- an if condition must be bool (LANGUAGE.md 4.3; at expr)
+if 1 {
+    printf("x\n")
+}

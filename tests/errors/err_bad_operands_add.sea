@@ -1,0 +1,2 @@
+// err_bad_operands_add -- + on bool and i64 (Appendix B; at the operator node)
+let a = true + 1

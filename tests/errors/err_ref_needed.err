@@ -1,0 +1,1 @@
+err_ref_needed.sea:6:6: error: argument for ref parameter 'x' must be marked ref

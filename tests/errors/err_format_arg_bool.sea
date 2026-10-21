@@ -1,0 +1,2 @@
+// err_format_arg_bool -- %8e of a bool: e takes f64 or i64 only (LANGUAGE.md 11.1; DESIGN.md 2.6.2)
+printf("x=%8e\n", 1 < 2)

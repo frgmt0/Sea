@@ -1,0 +1,3 @@
+// err_unexpected_newline_lcomment -- the NL token is the LF after a line comment (DESIGN.md 2.6.2, at token)
+let a // the name
+= 5

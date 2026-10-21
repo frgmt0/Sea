@@ -1,0 +1,4 @@
+// err_rt_overflow_add -- i64 + overflow (LANGUAGE.md 6.5)
+let big = 9223372036854775807
+let one = 1
+printf("%d\n", big + one)

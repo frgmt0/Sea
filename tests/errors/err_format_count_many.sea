@@ -1,0 +1,3 @@
+// err_format_count_many -- more arguments than conversions; %% is not a conversion (LANGUAGE.md 11.1)
+let x = 3
+printf("%d%%\n", x, x)

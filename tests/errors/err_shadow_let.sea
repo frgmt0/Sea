@@ -1,0 +1,2 @@
+// err_shadow_let -- a local may not shadow a predeclared name (LANGUAGE.md 3.3; at the pname)
+let len = 3

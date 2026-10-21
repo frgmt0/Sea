@@ -1,0 +1,2 @@
+// err_format_bad_flag -- # with d is undefined in C (LANGUAGE.md 11.1)
+printf("%#d\n", 1)

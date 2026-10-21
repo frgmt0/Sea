@@ -1,0 +1,13 @@
+// fmt_d_f64 -- printf %d of f64 values: the MATLAB rule (integral values as
+// the integer, others as %e with precision 6; LANGUAGE.md 11.1).
+printf("[%d] [%d]\n", 3.0, -3.0)
+printf("[%d]\n", 1e20)
+printf("[%d]\n", 9223372036854775808.0)
+printf("[%d]\n", 1.7976931348623157e308)
+printf("[%5d] [%-5d] [%+d] [%05d]\n", 2.0, 2.0, 2.0, -3.0)
+printf("[%d]\n", 1.5)
+printf("[%12d] [%14d]\n", 1.5, -2.5)
+printf("[%+d] [% d]\n", 0.1, 0.1)
+printf("[%-15d]\n", 0.1)
+printf("[%d]\n", 5e-324)
+printf("[%i]\n", 1e-3)

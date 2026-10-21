@@ -1,0 +1,5 @@
+// err_missing_arg -- a parameter without a default must be given (LANGUAGE.md 8.1; at the call)
+fn f(a: i64, b: i64) -> i64 {
+    return a + b
+}
+printf("%d\n", f(1))

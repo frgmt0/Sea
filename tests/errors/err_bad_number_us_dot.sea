@@ -1,0 +1,2 @@
+// err_bad_number_us_dot -- _ may not stand next to . (LANGUAGE.md 3.4; at token)
+let a = 2_.5

@@ -1,0 +1,6 @@
+// type_ifx_arm -- an untyped arm beside an f64 arm is f64 (LANGUAGE.md 4.2 (f)); an ifx or &&
+// at the root of a stored value is computed into a new register R, then moved
+// (DESIGN.md 3.6.6 rules 2 and 3)
+let c = true
+let v = if c { 0.5 } else { 2 }
+let w = c && v > 1.0

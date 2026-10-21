@@ -1,0 +1,1 @@
+err_assign_for.sea:3:5: error: cannot assign to immutable 'i'

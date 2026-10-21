@@ -1,0 +1,14 @@
+// op_cmp -- == != < <= > >= on i64, f64, mixed i64/f64 (the i64 converted) and bool; IEEE:
+// every comparison with NaN is false except != (LANGUAGE.md 6.4, 4.2). i64(b) shows a bool.
+printf("%d %d %d %d %d %d\n", i64(1 < 2), i64(2 < 1), i64(2 <= 2), i64(3 > 2), i64(2 >= 3), i64(2 == 2))
+printf("%d %d\n", i64(2 != 2), i64(2 != 3))
+let x = 0.5
+printf("%d %d %d\n", i64(x < 1), i64(1 > x), i64(x == 0.5))
+let n = nan
+printf("%d %d %d %d %d %d\n", i64(n == n), i64(n != n), i64(n < 1.0), i64(n > 1.0), i64(n <= n), i64(n >= n))
+printf("%d %d\n", i64(inf > 1e308), i64(-inf < -1e308))
+printf("%d %d\n", i64(0.0 == -0.0), i64(-0.0 < 0.0))
+printf("%d %d %d\n", i64(true == true), i64(true != false), i64(false == true))
+let big = 9007199254740993
+printf("%d\n", i64(big == 9007199254740992.0))
+printf("%d\n", i64(-9223372036854775808 < 9223372036854775807))

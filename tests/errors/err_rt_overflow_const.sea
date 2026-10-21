@@ -1,0 +1,2 @@
+// err_rt_overflow_const -- a constant i64 sum that overflows is not folded: it fails at run time
+printf("%d\n", 9223372036854775807 + 1)

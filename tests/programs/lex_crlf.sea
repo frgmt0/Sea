@@ -1,0 +1,5 @@
+// lex_crlf -- one CR before each LF is removed (LANGUAGE.md 3.1); the last line has a CR
+// at the very end of the file and no LF.
+let a = 2
+printf("%d\n", a * 21)
+printf("end\n")

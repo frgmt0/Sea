@@ -1,0 +1,3 @@
+// err_no_effect_name -- a bare name is not a call (LANGUAGE.md 7.1; at stmt)
+let x = 1
+x

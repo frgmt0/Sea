@@ -1,0 +1,3 @@
+// err_not_exact_ifx -- an untyped arm beside an f64 arm is f64 and must be exact (LANGUAGE.md 4.2 (f))
+let c = true
+let v = if c { 0.5 } else { 9007199254740993 }

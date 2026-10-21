@@ -1,0 +1,2 @@
+// err_ns_array_literal -- phase 1: an array literal (at the array node)
+let v = [1, 2]

@@ -1,0 +1,1 @@
+err_format_arg_bool.sea:2:19: error: format "%8e" expects an integer or f64, found bool

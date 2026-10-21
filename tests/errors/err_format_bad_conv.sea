@@ -1,0 +1,2 @@
+// err_format_bad_conv -- an unknown conversion letter (LANGUAGE.md 11.1; at the string)
+printf("%q\n")

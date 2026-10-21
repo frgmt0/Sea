@@ -1,0 +1,3 @@
+// err_unterminated_string -- a string literal may not contain a line break (LANGUAGE.md 3.5; at the ")
+printf("abc
+)

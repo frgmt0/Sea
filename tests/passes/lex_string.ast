@@ -1,0 +1,29 @@
+#sea 1
+#target arm64-macos
+#file lex_string.sea
+pname 0:4:5 a
+str 0:4:9 plain%20text
+let 0:4:1 0
+pname 0:5:5 b
+str 0:5:9 tab%09nl%0Acr%0D
+let 0:5:1 0
+pname 0:6:5 c
+str 0:6:9 q"b\s
+let 0:6:1 0
+pname 0:7:5 d
+str 0:7:9 nul%00xA~
+let 0:7:1 0
+pname 0:8:5 e
+str 0:8:9 A%C3%A9%E2%82%AC%F0%9F%98%80
+let 0:8:1 0
+pname 0:9:5 f
+str 0:9:9 %
+let 0:9:1 0
+pname 0:10:5 g
+str 0:10:9 %C3%A9%20and%20100%25
+let 0:10:1 0
+pname 0:11:5 h
+str 0:11:9 #-
+let 0:11:1 0
+prog 8
+#end

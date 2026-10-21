@@ -1,0 +1,17 @@
+// op_int_arith -- i64 + - * and unary - are exact; idiv is the floored quotient and % the
+// floored modulo with the sign of the divisor (LANGUAGE.md 6.5, 6.6); precedence (6.1).
+let a = 17
+let b = 5
+printf("%d %d %d\n", a + b, a - b, a * b)
+printf("%d %d\n", -a, -(-a))
+printf("%d %d %d %d\n", idiv(a, b), idiv(-a, b), idiv(a, -b), idiv(-a, -b))
+printf("%d %d %d %d\n", a % b, -a % b, a % -b, -a % -b)
+printf("%d %d %d\n", 0 % 7, idiv(0, -7), 6 % 3)
+printf("%d %d %d %d %d\n", 2 + 3 * 4, (2 + 3) * 4, 10 - 4 - 3, 100 % 7 * 2, 2 * 7 % 4)
+let big = 9223372036854775807
+let small = -9223372036854775808
+printf("%d %d\n", big - 1 + 1, small + 1 - 1)
+printf("%d\n", -big - 1)
+printf("%d %d\n", idiv(small, 1), small % -1)
+printf("%d\n", 3037000499 * 3037000499)
+printf("%d\n", 16807 * 2147483646 % 2147483647)

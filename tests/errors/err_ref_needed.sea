@@ -1,0 +1,6 @@
+// err_ref_needed -- an argument for a ref parameter must say ref (DESIGN.md 2.6.2; at expr)
+fn incr(ref x: i64) {
+    x += 1
+}
+var k = 1
+incr(k)

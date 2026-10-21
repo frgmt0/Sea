@@ -1,0 +1,5 @@
+// err_redefinition_fn_const -- a constant, then a function of the same name (DESIGN.md 2.6.2)
+const g = 1
+fn g() {
+    printf("a\n")
+}

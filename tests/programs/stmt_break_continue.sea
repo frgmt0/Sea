@@ -1,0 +1,25 @@
+// stmt_break_continue -- break leaves and continue restarts the innermost loop
+// (LANGUAGE.md 7.5), in for and while loops.
+for i in 0..10 {
+    if i == 2 { continue }
+    if i == 5 { break }
+    printf("%d ", i)
+}
+printf("|\n")
+var i = 0
+while true {
+    i += 1
+    if i % 2 == 0 { continue }
+    if i > 7 { break }
+    printf("%d ", i)
+}
+printf("| i = %d\n", i)
+for a in 0..3 {
+    for b in 0..3 {
+        if b == 1 { break }
+        printf("(%d,%d) ", a, b)
+    }
+    if a == 1 { continue }
+    printf("a%d ", a)
+}
+printf("|\n")

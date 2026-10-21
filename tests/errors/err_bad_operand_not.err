@@ -1,0 +1,1 @@
+err_bad_operand_not.sea:2:9: error: operator '!' cannot be applied to i64

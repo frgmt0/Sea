@@ -1,0 +1,2 @@
+// err_bool_conv -- there is no bool(x) conversion (Appendix A; DESIGN.md 0)
+let b = bool(1)

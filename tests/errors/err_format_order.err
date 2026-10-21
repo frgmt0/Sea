@@ -1,0 +1,1 @@
+err_format_order.sea:2:1: error: format "%s %s\n" expects 2 arguments, found 1

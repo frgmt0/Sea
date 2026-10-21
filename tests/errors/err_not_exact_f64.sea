@@ -1,0 +1,2 @@
+// err_not_exact_f64 -- an untyped integer that becomes f64 must be exact (LANGUAGE.md 4.2; at expr)
+let x = 0.5 * 9007199254740993

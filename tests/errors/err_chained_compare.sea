@@ -1,0 +1,2 @@
+// err_chained_compare -- comparisons are non-associative; at the second operator (LANGUAGE.md 6.1)
+let a = 1 < 2 < 3
