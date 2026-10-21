@@ -1,0 +1,7 @@
+// lib_math_const_powk -- a const defined with pow whose value is an integer makes x ^ K a powk (LANGUAGE.md 6.5; DESIGN.md 3.5.5)
+const K = pow(9.0, 0.5)
+const N = -pow(4.0, 0.5)
+let x = 1.3
+let y = 1.2
+printf("%.17g %.17g\n", x ^ K, pow(x, K))
+printf("%.17g %.17g\n", y ^ N, pow(y, N))

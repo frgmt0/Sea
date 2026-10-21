@@ -1,0 +1,13 @@
+// lib_math_cos -- cos of ordinary, huge, i64 and special arguments (LANGUAGE.md 10.4; DESIGN.md 4.10)
+let n = 7
+printf("%.17g\n", cos(0.0))
+printf("%.17g\n", cos(-0.0))
+printf("%.17g\n", cos(1.0))
+printf("%.17g\n", cos(pi))
+printf("%.17g\n", cos(1e22))
+printf("%.17g\n", cos(1e300))
+printf("%.17g\n", cos(n))
+printf("%.17g\n", cos(3))
+printf("%.17g\n", cos(inf))
+printf("%.17g\n", cos(-inf))
+printf("%.17g\n", cos(nan))

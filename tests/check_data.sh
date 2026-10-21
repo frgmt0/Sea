@@ -209,7 +209,7 @@ check_eq "errno alone: line count" "$((R + 1))" "$(wc -l <"$T/o" | tr -d ' ')"
 gen "$INC" entries records
 check_eq "entries + records: exit status" 0 "$st"
 has '89000 DATA 1,"PRINTF","sea_printf","S","pp","-"'
-has '89002 DATA -1'
+has "$((89000 + T5)) DATA -1"
 
 # --- a synthetic contract directory: edge values and escaping ----------------------------------
 D=$T/syn
@@ -434,6 +434,63 @@ D=$T/missing
 mkdir -p "$D"
 gen "$D" errors
 if [ "$st" -eq 1 ]; then pass; else fail "missing errors.inc: expected exit status 1, got $st"; fi
+
+# --- the mtab block (DESIGN.md 2.6.3, 4.10.3): the pow words of math_tables.inc ----------------
+# expected lines derived here with awk from the label and word lines of the real file
+mtab_want() {
+    awk -v start="$2" '
+        function flush() { if (nw > 0) { printf "%d DATA %s\n", ln++, line; line = ""; nw = 0 } }
+        /^sea_mt_[a-z]+:$/ { flush(); t = substr($0, 8, length($0) - 8); next }
+        /^    \.quad 0x[0-9A-F]{16}$/ {
+            if (t != "const" && t != "exp" && t != "log") next
+            h = substr($0, 13, 16); s = ""
+            for (i = 0; i < 4; i++) {
+                v = 0
+                for (j = 1; j <= 4; j++) v = v * 16 + index("0123456789ABCDEF", substr(h, 4 * i + j, 1)) - 1
+                s = s (i ? "," : "") v
+            }
+            line = line (nw ? "," : "") s; nw++
+            if (nw == 8) flush()
+        }
+        BEGIN { ln = start + 1; printf "%d DATA 32,128,128\n", start }
+        END { flush(); printf "%d DATA -1\n", ln }' "$1"
+}
+gen "$INC" mtab
+check_eq "mtab: exit status" 0 "$st"
+check_eq "mtab: line count" 86 "$(wc -l <"$T/o" | tr -d ' ')"
+mtab_want "$INC/math_tables.inc" 89000 >"$T/want"
+cmp -s "$T/want" "$T/o" && pass || { fail "mtab block differs from the words of math_tables.inc:"; diff "$T/want" "$T/o" | head -5 >&2; }
+has "89000 DATA 32,128,128"
+has "89085 DATA -1"
+# word 0 of sea_mt_const is EXP_INVLN2N = #40671547652B82FE (DESIGN.md 4.10.4); exp record 0 = #0, #3FF0000000000000
+grep -q '^89001 DATA 16487,5447,25899,33534,' "$T/o" && pass || fail "mtab: EXP_INVLN2N is not the first word"
+grep -q '^89005 DATA 0,0,0,0,16368,0,0,0,' "$T/o" && pass || fail "mtab: exp record 0 does not start line 89005"
+awk 'length($0) > 202 { bad = 1 } END { exit bad }' "$T/o" && pass || fail "mtab: a line longer than 202 bytes"
+# after the other blocks: numbering continues across blocks, mtab last
+gen "$INC" records mtab
+check_eq "records + mtab: exit status" 0 "$st"
+check_eq "records + mtab: the mtab block ends the output" "DATA -1" "$(tail -1 "$T/o" | cut -d' ' -f2-)"
+gen "$INC" mtab records
+negative "mtab before records" "at most once, in the order"
+# negative cases on a private copy of math_tables.inc
+D=$T/mt
+copy_inc "$D"
+awk '/^    \.quad 0x/ && !done && t == "exp" { done = 1; next } /^sea_mt_/ { t = substr($0, 8, length($0) - 8) } { print }' \
+    "$INC/math_tables.inc" >"$D/math_tables.inc"
+gen "$D" mtab
+negative "mtab: sea_mt_exp one word short" "has 255 words, not 256"
+awk '/^sea_mt_log:$/ { print "sea_mt_lag:"; next } { print }' "$INC/math_tables.inc" >"$D/math_tables.inc"
+gen "$D" mtab
+negative "mtab: no sea_mt_log" "lacks one of the tables"
+awk '/^sea_mt_exp:$/ { print "sea_mt_log:"; next } /^sea_mt_log:$/ { print "sea_mt_exp:"; next } { print }' \
+    "$INC/math_tables.inc" >"$D/math_tables.inc"
+gen "$D" mtab
+negative "mtab: tables out of order" "must come once each, in this order"
+rm -f "$D/math_tables.inc"
+gen "$D" mtab
+if [ "$st" -eq 1 ]; then pass; else fail "missing math_tables.inc: expected exit status 1, got $st"; fi
+gen "$D" errors
+check_eq "no math_tables.inc, mtab not selected: exit status" 0 "$st"
 
 # --- result ---------------------------------------------------------------------------------
 if [ "$fails" -ne 0 ]; then

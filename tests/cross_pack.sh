@@ -17,6 +17,7 @@
 # driver exit SEA_EXIT_COMPILE, exactly NAME.err on stderr, empty stdout, NAME.status equal, is
 # target-independent and skipped silently); passes/NAME.sea with NAME.out (--no-prelude);
 # hand-written passes/NAME.lir (retargeted, run through seagen_x64); rt/x86_64_linux/NAME.s.
+# math/math_check (tests/math: harness source and *.vec, built and run on the host).
 # A case whose compilation fails gets NAME.packfail ("status <n>", then stderr) instead of NAME.s.
 #
 # Exit status: 0 the bundle is complete (even with .packfail files), 2 setup error.
@@ -72,9 +73,14 @@ mkdir -p "$BUNDLE/include" "$BUNDLE/runtime/x86_64_linux" "$BUNDLE/tests/rt/x86_
     "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" \
     || setup_fail "cannot create bundle directory '$BUNDLE'"
 echo "sea-x86_64-linux-bundle 1" > "$BUNDLE/BUNDLE" || setup_fail "cannot write $BUNDLE/BUNDLE"
+printf '%s\n' "$PATTERNS" > "$BUNDLE/PATTERNS" || setup_fail "cannot write $BUNDLE/PATTERNS"
 cp "$ROOT/Makefile.linux" "$BUNDLE/" || setup_fail "cannot copy Makefile.linux"
-cp "$ROOT/include/limits.inc" "$ROOT/include/errors.inc" "$ROOT/include/rt.inc" "$BUNDLE/include/" \
-    || setup_fail "cannot copy include files"
+# Every include file: all of include/*.inc, and the bundle must hold each file the bundle's
+# Makefile.linux lists in its INCLUDES (derived from that line, not a second list here).
+cp "$ROOT"/include/*.inc "$BUNDLE/include/" || setup_fail "cannot copy include files"
+for inc in $(sed -n 's/^INCLUDES[[:space:]]*:=[[:space:]]*//p' "$ROOT/Makefile.linux"); do
+    [ -f "$BUNDLE/$inc" ] || setup_fail "Makefile.linux needs $inc, which is not in the bundle"
+done
 cp "$ROOT"/runtime/x86_64_linux/*.s "$BUNDLE/runtime/x86_64_linux/" || setup_fail "cannot copy the runtime"
 cp "$ROOT/tests/cross_run.sh" "$ROOT/tests/include_check_x86_64.s" "$ROOT/tests/include_asserts.inc" \
     "$BUNDLE/tests/" || setup_fail "cannot copy test support files"
@@ -243,6 +249,19 @@ for src in "$ROOT"/tests/rt/x86_64_linux/*.s; do
     sidecars "$base" "$BUNDLE/tests/rt/x86_64_linux/$nm" out err status meta
     PACKED=$((PACKED + 1))
 done
+
+
+# math/math_check: the elementary-function harness and its vectors (DESIGN.md 4.10.6)
+if selected "math/math_check"; then
+    [ -f "$ROOT/tests/math/math_check.c" ] || setup_fail "tests/math/math_check.c missing"
+    for fn in log exp sin cos pow hypot; do
+        [ -f "$ROOT/tests/math/$fn.vec" ] || setup_fail "tests/math/$fn.vec missing"
+    done
+    mkdir -p "$BUNDLE/tests/math" || setup_fail "cannot create $BUNDLE/tests/math"
+    cp "$ROOT/tests/math/math_check.c" "$ROOT"/tests/math/*.vec "$BUNDLE/tests/math/" \
+        || setup_fail "cannot copy tests/math"
+    PACKED=$((PACKED + 1))
+fi
 
 if [ $PACKED -eq 0 ]; then echo "cross_pack.sh: no case selected (patterns: ${PATTERNS:-none}; compile-time error tests are not packed)" >&2; exit 2; fi
 echo "packed: $PACKED cases ($BAD failed to compile)"

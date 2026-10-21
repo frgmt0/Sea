@@ -34,8 +34,8 @@ the user's agreement. Phase 0 (§8) did:
 2. the contract files of §2.6 (`sea/include/*.inc`) are written with the matching doc
    sections, under the same contract rule as Baysick's (`CLAUDE.md`: a shared layout, code,
    limit or symbol changes only in the include file and its doc section together);
-3. implementation follows the milestones of §8: phases 0 and 1 are complete (the MATLAB rerun
-   of Decision 7 is done: sea commit c1736f7); next is phase 2, the x86_64 target.
+3. implementation follows the milestones of §8: phases 0, 1, 2 and 3 are complete (the MATLAB
+   rerun of Decision 7 is done: sea commit c1736f7); next is phase 4, arrays and structs.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -76,7 +76,7 @@ The user also decided the language questions that phase 0 raised:
 7. The default report rule is "within one unit of the last printed digit of the coarser token"
    (§6.4).
 8. An exponent that contains a call or a non-multiplicative `^` is not a constant integer for
-   `powk` (LANGUAGE.md §6.5).
+   `powk` (LANGUAGE.md §6.5), judged on the exponent as written: a `const` name counts by its value, however defined (`const K = pow(4.0, 0.5)` makes `x ^ K` a `powk 2`).
 
 **Decided in phase 1.**
 
@@ -1240,13 +1240,18 @@ is also the point of the Baysick project.
 | `tools/math_tables.py` | the generator of `include/math_tables.inc` (§4.10.3, §4.10.6), run with `uv run --with mpmath`; `--check` verifies the committed file |
 | `std/std.sea` | the prelude (§2.5) |
 | `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4, §4.7.1); in phases 1 and 2 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s`; phase 3 adds `rt_math.s` (§4.10) |
-| `Makefile.linux` | on the Linux host: `check-includes`, `all` (`build-x86_64-linux/libsea.a`), `test-rt` (§4.7.1, §6.6.1) |
+| `Makefile.linux` | on the Linux host: `check-includes`, `all` (`build-x86_64-linux/libsea.a`), `test-rt` (§4.7.1, §6.6.1), `test-math` (`all`, then `tests/math/math_check.c` built with `gcc -O1 -ffp-contract=off` against `build-x86_64-linux/libsea.a` and run on `tests/math`, §4.10.6) |
 | `include/` | the contract files (§2.6) |
 | `tests/` | the tests (§6.2) |
 | `build/` | the build output and installation directory: the pass executables, `sea`, `std.sea`, `errors.inc`, `limits.inc`, `libsea.a` and `libbaysickrt.a` (one of each, for the build's target), and the generated `build/gen/`; never committed |
 
-`make` builds `build/`; `make test` runs the tests of §6.2; `make test-rt`, `make test-stage`
-and `make check-data` run single groups of them (§6.2); `make lines` reports each built pass's
+`make` builds `build/`; `make test` runs the tests of §6.2; `make test-rt`, `make test-stage`,
+`make test-math` and `make check-data` run single groups of them (§6.2); `make test-math` builds
+`tests/math/math_check.c` with `xcrun cc -O1 -ffp-contract=off` against `build/libsea.a` and
+compares all six elementary functions bit for bit over `tests/math/*.vec` (§4.10.6);
+`make math-tables` is a developer check that is not part of `make test`: `timeout 120 uv run
+--with mpmath python tools/math_tables.py --check`, which verifies the committed
+`include/math_tables.inc` against its definitions (§4.10.6); `make lines` reports each built pass's
 line count against Baysick's 10 000 lines, and `make check-limits` checks each built pass against
 Baysick's other per-program limits of §2.7 (1000 `FOR` statements, 65 536 bytes of string
 constants outside `DATA`, 255-byte lines); `make check-includes` and `make check-contracts`
@@ -1794,7 +1799,7 @@ operations (§2.8), so nothing can stop the pass. If the value is an integer k w
 `powk k`; otherwise it stays `bin pow` with its exponent. An exponent whose evaluation overflows
 `i64` or divides an `i64` by zero is not integral here; it stays, and the run time reports the
 error. An exponent that contains a call (`sqrt` or any other) or a `^` that is itself not a
-`powk` is not integral, whatever its value (LANGUAGE.md §6.5), so it is not evaluated. Constant
+`powk` is not integral, whatever its value (LANGUAGE.md §6.5), so it is not evaluated. This is judged on the exponent as written: a `const` name counts by its value, however that const was defined (`const K = pow(4.0, 0.5)` gives `x ^ K` as `powk 2`, since `K` contains no call). Constant
 extents (§3.5.1) and the `i64` values of constant
 expressions use the same exact evaluator. In a `const` item's expression, a `^` that is not a `powk` and a call `pow(x, y)` are
 evaluated with `FEPOW` (§4.10.5; Decision 16), which gives the run time's bits.
@@ -3496,7 +3501,7 @@ Two oracles: **mpmath is the oracle for accuracy, the Python model is the oracle
   of the exact value (the ulp of the binade of the exact value, 2⁻¹⁰⁷⁴ below 2⁻¹⁰²²; an exact
   value ≥ 2¹⁰²⁴(1 − 2⁻⁵⁴) must give ∞), that every special case of §4.10.4 gives the Annex F
   value, and that exactly representable results are exact; any failure stops it with status 1.
-  Each file holds at most 10 000 cases: every special value of the function, the exact cases
+  Each file holds exactly 10 000 cases (`math_check` rejects any other count, exit status 2, so a truncated file is caught): every special value of the function, the exact cases
   (`pow(2, k)` for every k from −1074 to 1023 that `pow` covers, `pow(10, k)` for 0 ≤ k ≤ 22,
   `exp(0)`, `log(1)`, `log(2^k)`, Pythagorean `hypot`s), the hard cases of §4.10.7 (log near 1;
   exp near the overflow, underflow and subnormal thresholds; sin/cos at the continued-fraction
@@ -3527,10 +3532,17 @@ Two oracles: **mpmath is the oracle for accuracy, the Python model is the oracle
   plus `passes/` dumps of the canonical `rcall` lowering (`.lir1`, §3.8) and `const` tests whose
   literals (`FEPOW`, §4.10.5) are the model's bits.
 * `math_vectors.py` also writes `tests/vectors/fepow.txt` for the compile-time `pow` (§4.10.5):
-  `pow #X #Y #R` lines (the shape of `f64emu.txt`), every special case and exact case of
-  `pow.vec` and 500 of its other cases (seeded choice, every *rare* path of `pow` represented),
-  at most 1 500 lines because each `FEPOW` costs a few hundred limb operations in Baysick;
+  `pow #X #Y #R` lines (the shape of `f64emu.txt`): every special case of `pow.vec`, its exact
+  cases except that of the 2 098 `pow(2, k)` only those with k ≡ 0 (mod 16), k = −1074 and
+  k = 1023 are taken, and 500 of its other cases (seeded choice, every *rare* path of `pow`
+  represented), at most 1 500 lines because each `FEPOW` costs a few hundred limb operations in
+  Baysick;
   `arith_check.sh` checks them bit for bit (§6.2, `tests/harness/`).
+* `math_vectors.py --check-format` (it writes no file) checks the committed
+  vector files: every field of each `tests/math/*.vec` line and of `tests/vectors/fepow.txt`
+  must be exactly 16 upper-case hexadecimal digits, each line must have the right field count
+  (two for `log exp sin cos`, three for `pow` and `hypot`; `pow #X #Y #R` for `fepow.txt`),
+  and the line ends must be LF.
 
 #### 4.10.7 Measured accuracy
 
@@ -3972,6 +3984,14 @@ the same files the Mac uses (one set for both targets).
   `.meta` may hold only `stdout=epipe` and `stdout=closed` (§6.2). `cross_run.sh` stops with
   exit 2 on any other line, an empty line excepted.
 
+**An extra case, `math/math_check`.** Besides the program cases, `make cross` runs one case on the
+host: `cross_pack.sh` copies `tests/math/math_check.c` and `tests/math/*.vec` into
+`<bundle>/tests/math/` (a setup error if there is no `.vec` file), and `cross_run.sh` builds the
+harness there with ` -O1 -ffp-contract=off` against `build-x86_64-linux/libsea.a` (`-lm`;
+any compiler output is a FAIL) and runs it on `<bundle>/tests/math` under the case timeout
+(60 seconds); it passes when the exit status is 0 and standard error is empty (§4.10.6). The
+pattern `math/math_check` selects it.
+
 The dump tests (`--emit`) and the other Mac groups (`stage.sh` dumps, `protocol.sh`,
 `lib_check.sh`, `arith_check.sh`, `driver_check.sh`, `check_data.sh`) are target-independent and
 run only on the Mac (`make test`).
@@ -4044,6 +4064,10 @@ literally.
 
 Phase 2 is done (§8) when `make cross` passes every case and `make cross-includes` passes, with
 `make test` still passing on the Mac.
+
+Phase 3 is done (§8) when, in addition, `make test-math` passes on the Mac (part of `make test`) and the
+`math/math_check` case of `make cross` passes on the host (§4.10.6), with the `lib_math_*` programs
+passing in `run.sh` and in the cross run.
 
 ## 7. What Baysick must grow
 

@@ -615,7 +615,7 @@
 3110 LET S = W(W0 + 2)
 3115 IF S > 20 THEN 3125
 3120 ON S GOTO 3445, 3500, 3595, 3620, 3850, 3915, 4035, 4100, 4130, 4160, 4500, 5080, 5400, 5510, 5535, 5695, 3090, 3090, 5835, 5995
-3125 ON S - 20 GOTO 3090, 3090, 6180, 6275, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350
+3125 ON S - 20 GOTO 3090, 3090, 6180, 6275, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8620
 3130 REM ==== the nodes (state 0) and their resume points ============================================
 3135 REM ---- constants: li / lf into the dest or a new register (rules 1, 3) ----------------------
 3140 LET C1 = 1
@@ -727,7 +727,7 @@
 3670 LET V3 = A1
 3675 LET V4 = A2
 3680 IF A3 > 18 THEN 2360
-3685 ON A3 GOTO 3690, 3690, 3690, 3720, 3735, 2360, 2360, 3760, 3760, 3760, 3760, 3760, 3760, 3785, 3795, 2360, 2360, 2360
+3685 ON A3 GOTO 3690, 3690, 3690, 3720, 3735, 8505, 2360, 3760, 3760, 3760, 3760, 3760, 3760, 3785, 3795, 2360, 2360, 2360
 3690 LET O$ = SEG$("faddfsubfmul", 4 * A3 - 3, 4 * A3)
 3695 IF C2 = 2 THEN 3800
 3700 IF C2 <> 1 THEN 2360
@@ -986,13 +986,13 @@
 4965 NEXT I
 4970 LET U0 = W(W0 + 3)
 4975 GOTO 3090
-4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11) ---------------------------
-4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   "
+4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14)-------------------------
+4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  "
 4990 LET W2$ = S$(H(X, 0))
 4995 GOSUB 1875
 5000 IF W2 = 0 THEN 2360
-5005 IF H(X, 6) <> VAL(SEG$("10112", W2, W2)) THEN 2360
-5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500
+5005 IF H(X, 6) <> VAL(SEG$("10112111122", W2, W2)) THEN 2360
+5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600
 5015 REM printf: frame x1 = U0 at entry, x2 = the next piece of the fmt
 5020 LET X2 = H(X, 7)
 5025 IF H(X2, 1) <> 13 THEN 2365
@@ -1647,3 +1647,66 @@
 8480 NEXT I
 8485 LET U0 = W(W0 + 3)
 8490 GOTO 3090
+8500 REM ---- bin pow (a ^ that is not a powk): rcall sea_pow - 1 d 2 a b into D2 (rule 14) ---------
+8505 LET Q1$ = "POW"
+8510 GOSUB 8705
+8512 IF LEN(Y$(Q9, 4)) <> 2 THEN 2360
+8515 GOSUB 5590
+8520 LET V1 = D2
+8525 GOSUB 7500
+8530 LET L1$ = L1$ & " " & Z$ & " 2"
+8535 LET V1 = A1
+8540 GOSUB 7500
+8545 LET L1$ = L1$ & " " & Z$
+8550 LET V1 = A2
+8555 GOSUB 7500
+8560 LET L1$ = L1$ & " " & Z$
+8565 GOSUB 7695
+8570 LET R9 = D2
+8575 GOTO 3090
+8595 REM ---- lib log exp sin cos pow hypot: the arguments, then one rcall of entry NAME (rule 14)
+8600 LET W(W0 + 3) = U0
+8605 LET W(W0 + 4) = H(X, 7)
+8610 IF W(W0 + 4) = 0 THEN 8627
+8612 LET S = 38
+8614 LET X1 = W(W0 + 4)
+8616 LET D1 = 0
+8618 GOTO 7380
+8620 GOSUB 7970
+8622 LET U(U0, 1) = R9
+8624 LET W(W0 + 4) = H(W(W0 + 4), 8)
+8626 GOTO 8610
+8627 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  "
+8628 LET W2$ = S$(H(X, 0))
+8629 GOSUB 1875
+8630 LET Q1$ = SEG$("LOG  EXP  SIN  COS  POW  HYPOT", 5 * W2 - 29, 5 * W2 - 25)
+8632 IF SEG$(Q1$, LEN(Q1$), LEN(Q1$)) <> " " THEN 8640
+8634 LET Q1$ = SEG$(Q1$, 1, LEN(Q1$) - 1)
+8636 GOTO 8632
+8640 GOSUB 8705
+8645 IF LEN(Y$(Q9, 4)) <> U0 - W(W0 + 3) THEN 2360
+8650 LET C1 = 2
+8655 GOSUB 7470
+8660 GOSUB 5590
+8665 LET V1 = D2
+8670 GOSUB 7500
+8675 LET L1$ = L1$ & " " & Z$ & " " & STR$(U0 - W(W0 + 3))
+8680 FOR I = W(W0 + 3) + 1 TO U0
+8682 LET V1 = U(I, 1)
+8684 GOSUB 7500
+8686 LET L1$ = L1$ & " " & Z$
+8688 NEXT I
+8690 GOSUB 7695
+8692 LET U0 = W(W0 + 3)
+8694 LET R9 = D2
+8696 GOTO 3090
+8700 REM ---- 8705: Q9 = the row of entry Q1$ in the entries table (an entry of class f results) ----
+8705 LET Q9 = 0
+8710 FOR I = 1 TO Y0
+8715 IF Y$(I, 1) <> Q1$ THEN 8725
+8720 LET Q9 = I
+8725 NEXT I
+8730 IF Q9 = 0 THEN 8740
+8735 IF Y$(Q9, 5) = "f" THEN 8745
+8740 CALL "dg_bug": P$, "entry " & Q1$ & " (results f) is not in the entries table"
+8745 RETURN

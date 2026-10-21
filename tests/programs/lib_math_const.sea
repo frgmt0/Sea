@@ -1,0 +1,10 @@
+// lib_math_const -- pow in constants is evaluated at compile time with the run time's bits (LANGUAGE.md 7.2; DESIGN.md 4.10.5)
+const C = 2.0 ^ 0.5
+const P = pow(10, -2)
+const Q = 2 ^ (3.0 / 2.0)
+const K = 3.0 ^ 2
+let x = 2.0
+printf("%.17g %.17g\n", C, x ^ 0.5)
+printf("%.17g\n", P)
+printf("%.17g\n", Q)
+printf("%.17g\n", K)

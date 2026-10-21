@@ -1,0 +1,15 @@
+// const_pow -- consts using pow and a non-powk ^ are folded to the model's bits (FEPOW);
+// a pow-defined const of integral value makes x ^ K a powk (DESIGN.md 3.5.2, 3.5.5, 4.10.5)
+const C = 2.0 ^ 0.5
+const P = pow(10, -2)
+const Q = 2 ^ (3.0 / 2.0)
+const K = pow(9.0, 0.5)
+const Z = pow(-8.0, 0.5)
+const W = 3.0 ^ 2
+let x = 1.3
+let a = C
+let b = P + Q
+let e = x ^ K
+let f = x ^ C
+let z = Z
+let w = W

@@ -22,6 +22,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | f64 bits of literals and constant arithmetic | `vectors/float_oracle.py`: exact `Fraction` decimal-to-binary, round to nearest even, subnormals, overflow; `+ − × ÷` and i64→f64 the same way. Python floats only as a cross-check |
 | printf output (`fmt_*`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts`) | `vectors/progfmt.py`: C99 `%d %i %f %F %e %E %g %G %s` from the exact decimal value of each argument (ties to even), plus the MATLAB `%d`-on-f64 rule and the non-finite rules of LANGUAGE.md §11.1. It writes both `.sea` and `.out` from one table; Python's `%` only as a cross-check |
 | `op_lcg_w5` | `vectors/lcg_w5.py`: the LCG in exact integers in W5's draw order (11 M steps), the uniform `first_dev` columns and `first_top` with the oracle; asserted bit for bit against `workloads/reference/w5_tolerance_mc.json` (`lcg_final = 2145635252`) |
+| phase-3 elementary functions (`lib_math_*`, `passes/math_lower.lir1`, `passes/const_pow.hir1`, `err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot`) | `vectors/math_progs.py`: each result is the bits of the reference model `vectors/math_model.py` (DESIGN.md §4.10.6) for the argument bits of `float_oracle.py` (i64/untyped arguments converted exactly, §4.2), printed by `progfmt.py`; const results are the same model bits (FEPOW = the model, DESIGN.md §4.10.5) |
 | wave-2 tests (`fold_*`, `stmt_else_if_2000`, `const_reverse_1000`, `fmt_prec_zeros`, `stmt_tasg_cvt`, `lib_conv_identity`, `stmt_for_blanks` and their `err_*`) | `vectors/wave2_gen.py`: each expected value derived in its comments; folded values with the exact oracles of `f64emu.py`/`float_oracle.py` |
 | `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
@@ -54,6 +55,11 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_many` | §8.1, §8.4 (10 + 10 parameters, 10 results) |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
+| `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
+| `lib_math_pow` | §10.4, §6.5 (`pow` calls with the C99 Annex F special cases; `^` with a non-integral exponent, with \|k\| > 4, with an i64 or untyped base, and with an exponent containing a call) |
+| `lib_math_const` | §7.2, §6.5; DESIGN.md §4.10.5 (`2.0 ^ 0.5`, `pow(10, -2)`, `2 ^ (3.0 / 2.0)` folded by FEPOW with the run time's bits; the powk `3.0 ^ 2`) |
+| `lib_math_powk_vs_pow` | §6.5 (`x ^ 3`, `x ^ -2` are the pinned multiplications; `x ^ f64(k)`, whose exponent holds a call, and `pow(x, k)` are `pow`), for x = 1.3, 2.3, 1.2 where the bits differ (asserted by the generator); DESIGN.md §4.10.6 |
+| `lib_math_const_powk` | §6.5, §7.2; DESIGN.md §3.5.5 "Constant exponents" (`const K = pow(9.0, 0.5)` = 3 and `const N = -pow(4.0, 0.5)` = −2 make `x ^ K`, `y ^ N` powks, printed next to `pow(x, K)`, `pow(y, N)` whose bits differ; k = 2 cannot discriminate, one rounding of x·x is the correctly rounded square) |
 | `fmt_d_ext` | §11.1 (`%d` of bool, of −0.0, C precision on an integral f64) |
 | `fmt_prec_zeros` | §11.1 (precision digits with leading zeros) |
 | `fold_inf_chain` | DESIGN.md §2.8 U1 (16 constants squared: overflow folds, Inf) |
@@ -116,6 +122,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `stmt_loops` | ast hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
 | `fn_reach` | ast hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
+| `math_lower` | ast hir1 hir lir1 | §3.6.6 rule 14 (`rcall sea_<fn> - 1 d n args`, no site) for `log exp sin cos pow hypot` and a non-powk `^`, rules 1, 2, 10 (`cvt` and `f64()` are `itof`, the rcall writes the bound local), §3.6.1 numbering; §3.5.7 (nothing folded) |
+| `const_pow` | ast hir1 | §3.5.2 (each `cn` leaf at the root position), §4.10.5 (`^` non-powk and `pow` folded by FEPOW: the model's bits from `math_model.eval_bits`, NaN `#7FF8000000000000`), §3.5.5 (`x ^ K` with `K = pow(9.0, 0.5)` is `powk 3`, `x ^ C` stays `bin pow`) |
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
@@ -163,6 +171,7 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_cond_bool_ifx` | `condition must be bool` | an if-expression condition must be bool (LANGUAGE.md 4.3, 6.10) |
 | `err_cond_bool_while` | `condition must be bool` | a while condition must be bool (LANGUAGE.md 4.3) |
 | `err_const_band_eval` | `integer division by zero` | a constant & evaluates both operands: 1 % 0 fails (LANGUAGE.md 7.2, 6.6) |
+| `err_const_log` | `not a constant expression` | log is not a constant expression (LANGUAGE.md 7.2; DESIGN.md 4.10.5; at expr, the whole initialiser) |
 | `err_const_mod_chain` | `integer division by zero` | the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time (LANGUAGE.md 7.2 U2; at the operator) |
 | `err_const_mod_zero` | `integer division by zero` | a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6) |
 | `err_const_overflow_inner` | `integer overflow` | the innermost failing operation in evaluation order is reported (DESIGN.md 2.6.2 expr; LANGUAGE.md 7.2) |
@@ -170,6 +179,8 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_const_overflow_unused` | `integer overflow` | a constant that overflows i64 is a compile error even unused (LANGUAGE.md 7.2 U2; at the operator) |
 | `err_const_poison_and` | `integer overflow` | a constant whose operand constant failed reports only that failure (LANGUAGE.md 7.2 U2) |
 | `err_const_poison_pow` | `integer overflow` | a constant exponent whose evaluation overflows reports the overflow (LANGUAGE.md 7.2 U2) |
+| `err_const_sin` | `not a constant expression` | sin inside a larger constant expression: at the whole initialiser (LANGUAGE.md 7.2; DESIGN.md 2.6.2 expr) |
+| `err_const_sqrt` | `not supported yet: sqrt` | sqrt is admitted in constants (LANGUAGE.md 7.2) but still outside the phase-3 library (DESIGN.md 2.6.2 phase rule; at the call) |
 | `err_continue_outside` | `continue outside a loop` | continue in a function called from a loop is still outside one |
 | `err_conv_no_paren` | `unexpected token '+'` | a conversion keyword without ( names the next token (LANGUAGE.md App. A) |
 | `err_dollar_array_literal` | `'$' outside an index` | array-literal brackets are not index brackets (LANGUAGE.md 5.3) |
@@ -207,6 +218,7 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_no_effect_asg` | `expression statement has no effect` | x + y = 3 is an expression statement (LANGUAGE.md 7.1) |
 | `err_no_effect_binop` | `expression statement has no effect` | an operator expression is not a call (LANGUAGE.md 7.1; at stmt) |
 | `err_no_effect_name` | `expression statement has no effect` | a bare name is not a call (LANGUAGE.md 7.1; at stmt) |
+| `err_no_overload_hypot` | `no overload of 'hypot' accepts (f64)` | hypot takes two arguments (LANGUAGE.md 10.4; at the call) |
 | `err_no_overload_idiv` | `no overload of 'idiv' accepts (f64, i64)` | idiv takes two i64 (LANGUAGE.md 6.6; at the call) |
 | `err_no_overload_now` | `no overload of 'now' accepts (i64)` | now takes no argument (LANGUAGE.md 13) |
 | `err_not_constant` | `not a constant expression` | a const expression must be constant (LANGUAGE.md 7.2; at expr) |
@@ -226,8 +238,6 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_ns_lib_sqrt` | `not supported yet: sqrt` | phase 1: a library function other than printf now f64 i64 idiv |
 | `err_ns_match` | `not supported yet: match` | phase 1: a match statement (at the match node) |
 | `err_ns_named_arg` | `not supported yet: named arguments` | phase 1: a named argument (at the narg) |
-| `err_ns_pow` | `not supported yet: pow` | phase 1: ^ that is not a powk (at the bin node) |
-| `err_ns_pow_call` | `not supported yet: pow` | an exponent that contains a call is never integral (LANGUAGE.md 6.5) |
 | `err_ns_record` | `not supported yet: records` | phase 1: a record literal (at the rlit) |
 | `err_ns_string_let` | `not supported yet: strings` | phase 1: a string literal that is not a printf %s argument |
 | `err_ns_string_type` | `not supported yet: strings` | phase 1: the str type (at the type node) |
@@ -319,4 +329,5 @@ the `at` position of DESIGN.md §2.6.2.
 | `f64emu.py` | `f64emu.txt`, `limb.txt` (read by `arith_check.sh` through `harness/f64emu_h.bas`, `harness/limb_h.bas`) |
 | `wave2_gen.py` | the wave-2 and round-3 `programs/` and `errors/` tests listed above |
 | `edges_gen.py` | the phase-2 edge tests `op_mod_idiv_edges`, `op_ftoi_edges`, `op_itof_round`, `op_cmp_nan_zero`, `op_neg_zero`, `err_rt_mod_zero_min`, `err_rt_idiv_zero_min`, `err_rt_conv_below` (min/max, floor/ceil/round/trunc, abs and sqrt are `not supported yet` in phases 1–2, Sea has no shifts) |
+| `math_progs.py` | the phase-3 `programs/lib_math_*.{sea,out}`, `passes/math_lower.{sea,ast,hir1,hir,lir1}`, `passes/const_pow.{sea,ast,hir1}` and `errors/err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot` |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

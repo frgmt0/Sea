@@ -1,0 +1,15 @@
+// math_lower -- log exp sin cos pow hypot and a ^ that is not a powk lower to rcall
+// sea_<fn> - 1 d n args with no site (DESIGN.md 3.6.6 rules 1, 2, 10, 14)
+let x = 0.5
+let y = 2.0
+let n = 3
+let a = log(x)
+let b = exp(x)
+let c = sin(n)
+let d = cos(x)
+let e = pow(x, y)
+let h = hypot(x, 4.0)
+let p = x ^ 0.5
+let q = x ^ y
+let r = log(2.0) + exp(y)
+let s = n ^ f64(3)

@@ -1,6 +1,10 @@
-10 REM f64emu harness (tests/arith_check.sh): reads tests/vectors/f64emu.txt on standard input and
-20 REM prints every vector with its results recomputed by passes/lib/f64emu.bas.
-30 DIM F$(9)
+10 REM f64emu harness (tests/arith_check.sh): reads tests/vectors/f64emu.txt or fepow.txt on standard
+20 REM input and prints every vector with its results recomputed by passes/lib/f64emu.bas.
+30 DIM F$(9), M(2688)
+32 CALL "FEMTI": M(), E
+34 IF E = 0 THEN 40
+36 PRINT #-1, "f64emu_h: the mtab DATA block disagrees (FEMTI)"
+38 STOP
 40 IF END #0 THEN 830
 50 LINPUT #0, L$
 60 GOSUB 720
@@ -21,6 +25,7 @@
 220 IF O$ = "div" THEN 340
 230 IF O$ = "fmod" THEN 360
 240 IF O$ = "mod" THEN 380
+245 IF O$ = "pow" THEN 395
 250 IF O$ = "cmp" THEN 460
 260 PRINT "unknown vector: " & L$
 270 GOTO 40
@@ -36,6 +41,8 @@
 370 GOTO 430
 380 CALL "FEMOD": A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0
 390 GOTO 430
+395 CALL "FEPOW": M(),A3,A2,A1,A0,B3,B2,B1,B0,R3,R2,R1,R0
+397 GOTO 430
 400 CALL "FESQR": A3,A2,A1,A0,R3,R2,R1,R0
 410 GOTO 430
 420 CALL "FENEG": A3,A2,A1,A0,R3,R2,R1,R0

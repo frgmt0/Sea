@@ -1,0 +1,2 @@
+// err_no_overload_hypot -- hypot takes two arguments: no overload for one (LANGUAGE.md 10.4)
+let h = hypot(1.0)

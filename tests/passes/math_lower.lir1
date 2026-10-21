@@ -1,0 +1,29 @@
+#sea 1
+#target arm64-macos
+#file math_lower.sea
+func .main main 0:1:1 0 0
+lf f1 #3FE0000000000000
+lf f2 #4000000000000000
+li i3 3
+rcall sea_log - 1 f4 1 f1
+rcall sea_exp - 1 f5 1 f1
+itof f6 i3
+rcall sea_sin - 1 f7 1 f6
+rcall sea_cos - 1 f8 1 f1
+rcall sea_pow - 1 f9 2 f1 f2
+lf f10 #4010000000000000
+rcall sea_hypot - 1 f11 2 f1 f10
+lf f12 #3FE0000000000000
+rcall sea_pow - 1 f13 2 f1 f12
+rcall sea_pow - 1 f14 2 f1 f2
+lf f15 #4000000000000000
+rcall sea_log - 1 f16 1 f15
+rcall sea_exp - 1 f17 1 f2
+fadd f18 f16 f17
+itof f19 i3
+li i20 3
+itof f21 i20
+rcall sea_pow - 1 f22 2 f19 f21
+ret 0
+endfunc
+#end

@@ -14,9 +14,11 @@ passes. Decisions taken during phase 1 are recorded in DESIGN.md §0 ("Decided i
 **Phase 2** (the x86_64 target: `seagen_x64`, the x86_64 runtime, `cross*.sh`; DESIGN.md §4.7.1,
 §4.9.1, §6.6.1) is complete at sea commit a87ca78: `make cross` passes every case on the Linux
 host. Decision 7 (the user's MATLAB rerun) is done: the MATLAB baseline is committed at sea
-commit c1736f7. **Next: phase 3** of DESIGN.md §8, **elementary functions**: Sea's own scalar
-`log exp sin cos pow hypot` on both targets (Decision 6), done when the `math/` tests pass on
-both targets (≤ 1 ulp against the high-precision references, identical bits on both targets).
+commit c1736f7. **Phase 3** (elementary functions: Sea's own scalar `log exp sin cos pow hypot`
+on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete (commit pending): the
+`math/` tests pass on both targets (≤ 1 ulp against the high-precision references, identical bits
+on both targets). **Next: phase 4** of DESIGN.md §8, **arrays and structs**; seacheck is expected
+to split into two programs in this phase (DESIGN.md §2.7, §7.3).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -41,8 +43,12 @@ both targets (≤ 1 ulp against the high-precision references, identical bits on
   generator), `test-lib` (`tests/lib_check.sh`), `test-arith` (`tests/arith_check.sh`, the exact
   arithmetic modules), `test-rt` (`tests/rt/`, runtime tests against `libsea.a`), `test-stage`
   (`tests/stage.sh`, each pass on the previous pass's golden), `test-protocol`
-  (`tests/protocol.sh`, truncated input, missing `#end`), `test-programs` (`sh tests/run.sh [-v]
-  [pattern]`: programs/, errors/ and the passes/ dumps). Each group is also its own target.
+  (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
+  (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`),
+  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps). Each group is also its own target.
+- Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
+  `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
+  --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.
 - Size: `make lines` (built lines per pass) and `make check-limits` (lines, `FOR`s, string
   bytes, 255-byte lines against Baysick's limits).
 - Include check (Mac, Apple `as`): `make check-includes` — first `make check-contracts`, then
@@ -58,7 +64,8 @@ both targets (≤ 1 ulp against the high-precision references, identical bits on
   [pattern]` (packs on the Mac, one ssh to the host, default `$SEA_CROSS_HOST` else `desktop`);
   `make cross-pack` builds `build/x86_64-linux-bundle` only; on Linux: `sh tests/cross_run.sh
   [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
-  Makefile.linux test-rt` (`tests/rt/x86_64_linux/`).
+  Makefile.linux test-rt` (`tests/rt/x86_64_linux/`), `make -f Makefile.linux test-math`. `make cross` also
+  runs one extra case, `math/math_check`, on the host.
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)

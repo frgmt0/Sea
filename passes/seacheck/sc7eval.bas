@@ -1,347 +1,378 @@
-10260 REM ---- powk: Z = 1 when the exponent B of a ^ is a constant whose exact value is an integer K0
-10265 REM with |K0| <= LIM_POWK (DESIGN 3.5.5 "Constant exponents", LANGUAGE 6.5); Z = 2 when B reads
-10270 REM a failed constant (no further error) ------------------------------------------------------
-10275 SUB "powk": N(), M(), Y(), C(), W(), X(), X$(), B, K0, Z
-10280 LET Z = 0
-10285 LET K0 = 0
-10290 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), B, K, A3, A2, A1, A0
-10295 IF K = 0 THEN 10415
-10300 IF K < 4 THEN 10325
-10305 REM a poisoned exponent (a failed constant) is settled: Z = 2, no pow and no error from it
-10310 IF A1 <> 3 THEN 10415
-10315 LET Z = 2
-10320 GOTO 10415
-10325 IF K > 2 THEN 10415
-10330 IF K = 1 THEN 10350
-10335 CALL "FETOI": A3, A2, A1, A0, B3, B2, B1, B0, E
-10340 IF E <> 0 THEN 10415
-10345 GOTO 10370
-10350 LET B3 = A3
-10355 LET B2 = A2
-10360 LET B1 = A1
-10365 LET B0 = A0
-10370 IF B3 + B2 + B1 <> 0 THEN 10395
-10375 IF B0 > X(25) THEN 10415
-10380 LET K0 = B0
-10385 LET Z = 1
-10390 GOTO 10415
-10395 IF B3 + B2 + B1 <> 3 * 65535 THEN 10415
-10400 IF B0 < 65536 - X(25) THEN 10415
-10405 LET K0 = B0 - 65536
-10410 LET Z = 1
-10415 SUBEND
-10420 REM ---- evx: the exact value of constant expression E with the semantics of LANGUAGE 6 (7.2,
-10425 REM DESIGN 2.8, 3.5.2, 3.5.5): K 1 i64, 2 f64 (limbs A3..A0), 3 bool (A0 0 or 1), 4 an error:
-10430 REM the i64 operation at node A0 overflowed (A1 = 1) or divided by zero (A1 = 2), the first in
-10435 REM evaluation order that the program would evaluate (&& and || skip their right operand as at
-10440 REM run time; A1 = 3: a poisoned value from a failed constant, already reported, A0 = 0);
-10445 REM 0 not a constant value (a call, a variable, a ^ that is not a powk). Post-order
-10450 REM with a value stack in W from X(11) up, five words per value (kind, four limbs); a
-10455 REM constant's value was computed before (ck_cord, cval). --------------------------------
-10460 SUB "evx": N(), M(), Y(), C(), W(), X(), X$(), E, K, A3, A2, A1, A0
-10465 LET B9 = X(11)
-10470 LET P = B9
-10475 FOR J = M(E, 0) TO E
-10480 LET P0 = P - 5 * M(J, 6)
-10485 LET V = 0
-10490 LET R3 = 0
-10495 LET R2 = 0
-10500 LET R1 = 0
-10505 LET R0 = 0
-10510 LET K1 = N(J, 0)
-10515 IF K1 = 25 THEN 10560
-10520 IF K1 = 26 THEN 10635
-10525 IF K1 = 28 THEN 10670
-10530 IF K1 = 29 THEN 10675
-10535 IF K1 = 30 THEN 10685
-10540 IF K1 = 32 THEN 10855
-10545 IF K1 = 33 THEN 10990
-10550 IF K1 = 34 THEN 11055
-10555 GOTO 11060
-10560 LET H = M(J, 5)
-10565 LET R3 = C(H, 1)
-10570 LET R2 = C(H, 2)
-10575 LET R1 = C(H, 3)
-10580 LET R0 = C(H, 4)
-10585 LET V = 1
-10590 IF M(J, 1) <> 4 THEN 11060
-10595 LET V = 2
-10600 IF R3 <> 32768 THEN 10625
-10605 IF R2 + R1 + R0 <> 0 THEN 10625
-10610 REM the literal 2^63 (only under neg): +2^63 in f64
-10615 LET R3 = 17376
-10620 GOTO 11060
-10625 CALL "FEFRI": C(H, 1), C(H, 2), C(H, 3), C(H, 4), R3, R2, R1, R0, Z
-10630 GOTO 11060
-10635 LET H = M(J, 5)
-10640 LET R3 = C(H, 1)
-10645 LET R2 = C(H, 2)
-10650 LET R1 = C(H, 3)
-10655 LET R0 = C(H, 4)
-10660 LET V = 2
-10665 GOTO 11060
-10670 LET R0 = 1
-10675 LET V = 3
-10680 GOTO 11060
-10685 LET S = M(J, 2)
-10690 IF S = 0 THEN 11060
-10695 IF S < 0 THEN 10810
-10700 IF Y(S, 0) <> 2 THEN 11060
-10705 REM the value of a constant (computed before, ck_cord): 1 i64 2 f64 (C row Y(S,8)), 3 bool (Y(S,8) itself)
-10710 REM 6 failed (an error was reported for it): a poisoned value, kind 4 with A1 = 3
-10715 IF Y(S, 7) = 6 THEN 10795
-10720 IF Y(S, 7) = 0 THEN 11060
-10725 IF Y(S, 7) > 3 THEN 11060
-10730 LET V = Y(S, 7)
-10735 LET H = Y(S, 8)
-10740 IF V <> 3 THEN 10770
-10745 LET R3 = 0
-10750 LET R2 = 0
-10755 LET R1 = 0
-10760 LET R0 = H
-10765 GOTO 11060
-10770 LET R3 = C(H, 1)
-10775 LET R2 = C(H, 2)
-10780 LET R1 = C(H, 3)
-10785 LET R0 = C(H, 4)
-10790 GOTO 11060
-10795 LET V = 4
-10800 LET R1 = 3
-10805 GOTO 11060
-10810 IF S < -4 THEN 11060
-10815 REM pi inf nan eps (LANGUAGE 10.1; bits of DESIGN 3.5.5)
-10820 LET V = 2
-10825 LET R3 = VAL(SEG$("16393327523276015536", 5 * (-S) - 4, 5 * (-S)))
-10830 IF S <> -1 THEN 11060
-10835 LET R2 = 8699
-10840 LET R1 = 21572
-10845 LET R0 = 11544
-10850 GOTO 11060
-10855 LET G = N(J, 7)
-10860 IF N(G, 0) <> 25 THEN 10915
-10865 LET H = M(G, 5)
-10870 IF C(H, 1) <> 32768 THEN 10915
-10875 IF C(H, 2) + C(H, 3) + C(H, 4) <> 0 THEN 10915
-10880 REM -2^63: the i64 pattern #8000000000000000, or the f64 -2^63
-10885 LET V = 1
-10890 LET R3 = 32768
-10895 IF M(J, 1) <> 4 THEN 11060
-10900 LET V = 2
-10905 LET R3 = 50144
-10910 GOTO 11060
-10915 LET V = W(P0 + 1)
-10920 IF V = 1 THEN 10955
-10925 IF V = 2 THEN 10945
-10930 IF V = 4 THEN 11025
-10935 LET V = 0
-10940 GOTO 11060
-10945 CALL "FENEG": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0
-10950 GOTO 11060
-10955 CALL "LMNEG": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0, Z
-10960 IF Z = 0 THEN 11060
-10965 REM -(-2^63) overflows: an error at this node
-10970 LET V = 4
-10975 LET R0 = J
-10980 LET R1 = 1
-10985 GOTO 11060
-10990 LET V = W(P0 + 1)
-10995 IF V = 4 THEN 11025
-11000 IF V = 3 THEN 11015
-11005 LET V = 0
-11010 GOTO 11060
-11015 LET R0 = 1 - W(P0 + 5)
-11020 GOTO 11060
-11025 REM an error value passes up unchanged
-11030 LET R3 = W(P0 + 2)
-11035 LET R2 = W(P0 + 3)
-11040 LET R1 = W(P0 + 4)
-11045 LET R0 = W(P0 + 5)
-11050 GOTO 11060
-11055 CALL "evbin": N(), M(), W(), J, P0, V, R3, R2, R1, R0
-11060 IF M(J, 7) <> 1 THEN 11080
-11065 IF V <> 1 THEN 11080
-11070 CALL "FEFRI": R3 + 0, R2 + 0, R1 + 0, R0 + 0, R3, R2, R1, R0, Z
-11075 LET V = 2
-11080 LET P = P0
-11085 IF P + 5 < X(12) - 2 THEN 11105
-11090 CALL "fatal": N(), X(), X$(), J, "nesting"
-11095 LET V = 0
-11100 GOTO 11140
-11105 LET W(P + 1) = V
-11110 LET W(P + 2) = R3
-11115 LET W(P + 3) = R2
-11120 LET W(P + 4) = R1
-11125 LET W(P + 5) = R0
-11130 LET P = P + 5
-11135 NEXT J
-11140 LET K = W(B9 + 1)
-11145 LET A3 = W(B9 + 2)
-11150 LET A2 = W(B9 + 3)
-11155 LET A1 = W(B9 + 4)
-11160 LET A0 = W(B9 + 5)
-11165 IF V <> 0 THEN 11175
-11170 LET K = 0
-11175 SUBEND
-11180 REM ---- evbin: the value of binary node J from its operands at W(P0+1..P0+10) (see evx): an
-11185 REM error operand passes up (the left one first); && and || decided by the left operand ignore
-11190 REM the right one; a powk by the pinned multiplications of LANGUAGE 6.5 ---------------------
-11195 SUB "evbin": N(), M(), W(), J, P0, V, R3, R2, R1, R0
-11200 LET V = 0
-11205 LET U = W(P0 + 1)
-11210 LET U2 = W(P0 + 6)
-11215 LET O = N(J, 1)
-11220 LET Q = 0
-11225 IF U = 4 THEN 11620
-11230 IF O < 16 THEN 11265
-11235 REM && (16) and || (17): false && x is false, true || x is true, whatever x is
-11240 IF U <> 3 THEN 11265
-11245 IF W(P0 + 5) <> O - 16 THEN 11265
-11250 LET V = 3
-11255 LET R0 = O - 16
-11260 GOTO 11815
-11265 LET Q = 5
-11270 IF M(J, 8) > 0 THEN 11655
-11275 IF U2 = 4 THEN 11620
-11280 IF U = 0 THEN 11815
-11285 IF U <> U2 THEN 11815
-11290 IF O < 8 THEN 11450
-11295 IF U = 3 THEN 11350
-11300 REM comparisons of two i64 or two f64 (LANGUAGE 6.4: NaN compares false except !=)
-11305 IF O > 13 THEN 11815
-11310 IF U = 2 THEN 11325
-11315 CALL "LMCMP": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), Z
-11320 GOTO 11330
-11325 CALL "FECMP": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), Z
-11330 REM Z -1 0 1 or 2 (unordered); the result of eq ne lt le gt ge in that order of Z
-11335 LET V = 3
-11340 LET R0 = VAL(SEG$("010010111000110000100110", 4 * (O - 8) + Z + 2, 4 * (O - 8) + Z + 2))
-11345 GOTO 11815
-11350 REM bool: == != & | && || (a decided && or || returned above)
-11355 IF O = 8 THEN 11400
-11360 IF O = 9 THEN 11425
-11365 IF O < 14 THEN 11815
-11370 LET V = 3
-11375 LET R0 = W(P0 + 5) * W(P0 + 10)
-11380 IF O = 14 THEN 11815
-11385 IF O = 16 THEN 11815
-11390 LET R0 = W(P0 + 5) + W(P0 + 10) - R0
-11395 GOTO 11815
-11400 LET V = 3
-11405 LET R0 = 1
-11410 IF W(P0 + 5) = W(P0 + 10) THEN 11815
-11415 LET R0 = 0
-11420 GOTO 11815
-11425 LET V = 3
-11430 LET R0 = 0
-11435 IF W(P0 + 5) = W(P0 + 10) THEN 11815
-11440 LET R0 = 1
-11445 GOTO 11815
-11450 IF O > 5 THEN 11815
-11455 IF U = 3 THEN 11815
-11460 IF U = 2 THEN 11560
-11465 ON O GOTO 11470, 11480, 11490, 11815, 11500
-11470 CALL "LMADD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
-11475 GOTO 11520
-11480 CALL "LMSUB": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
-11485 GOTO 11520
-11490 CALL "LMMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
-11495 GOTO 11520
-11500 CALL "LMMOD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
-11505 REM a zero divisor (E = 2) is an error at this node
-11510 IF Z = 0 THEN 11520
-11515 LET Z = 2
-11520 LET V = 1
-11525 IF Z = 0 THEN 11815
-11530 LET V = 4
-11535 LET R1 = Z
-11540 LET R0 = J
-11545 LET R2 = 0
-11550 LET R3 = 0
-11555 GOTO 11815
-11560 ON O GOTO 11565, 11575, 11585, 11595, 11605
-11565 CALL "FEADD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
-11570 GOTO 11610
-11575 CALL "FESUB": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
-11580 GOTO 11610
-11585 CALL "FEMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
-11590 GOTO 11610
-11595 CALL "FEDIV": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
-11600 GOTO 11610
-11605 CALL "FEMOD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
-11610 LET V = 2
-11615 GOTO 11815
-11620 REM the error of the operand at W(P0+Q+1..)
-11625 LET V = 4
-11630 LET R3 = W(P0 + Q + 2)
-11635 LET R2 = W(P0 + Q + 3)
-11640 LET R1 = W(P0 + Q + 4)
-11645 LET R0 = W(P0 + Q + 5)
-11650 GOTO 11815
-11655 REM x^0 = 1, x^1 = x, x^2 = x*x, x^3 = (x*x)*x, x^4 = (x*x)*(x*x), x^-k = 1/(x^k)
-11660 IF U <> 2 THEN 11815
-11665 LET K = M(J, 8) - 10
-11670 LET K1 = ABS(K)
-11675 LET R3 = W(P0 + 2)
-11680 LET R2 = W(P0 + 3)
-11685 LET R1 = W(P0 + 4)
-11690 LET R0 = W(P0 + 5)
-11695 IF K1 > 0 THEN 11725
-11700 LET R3 = 16368
-11705 LET R2 = 0
-11710 LET R1 = 0
+10420 REM ---- powk: Z = 1 when the exponent B of a ^ is a constant whose exact value is an integer K0
+10425 REM with |K0| <= LIM_POWK (DESIGN 3.5.5 "Constant exponents", LANGUAGE 6.5); Z = 2 when B reads
+10430 REM a failed constant (no further error) ------------------------------------------------------
+10435 SUB "powk": N(), M(), Y(), C(), W(), X(), X$(), B, K0, Z
+10440 LET Z = 0
+10445 LET K0 = 0
+10450 REM W() fills evx's mtab slot Q(): with F = 0 evx never reads it, and Q() is not in scope here
+10455 REM W() only fills the mtab slot Q() of evx: F = 0 never reads it, and Q() is not in scope here
+10460 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), W(), B, 0, K, A3, A2, A1, A0
+10465 IF K = 0 THEN 10585
+10470 IF K < 4 THEN 10495
+10475 REM a poisoned exponent (a failed constant) is settled: Z = 2, no pow and no error from it
+10480 IF A1 <> 3 THEN 10585
+10485 LET Z = 2
+10490 GOTO 10585
+10495 IF K > 2 THEN 10585
+10500 IF K = 1 THEN 10520
+10505 CALL "FETOI": A3, A2, A1, A0, B3, B2, B1, B0, E
+10510 IF E <> 0 THEN 10585
+10515 GOTO 10540
+10520 LET B3 = A3
+10525 LET B2 = A2
+10530 LET B1 = A1
+10535 LET B0 = A0
+10540 IF B3 + B2 + B1 <> 0 THEN 10565
+10545 IF B0 > X(25) THEN 10585
+10550 LET K0 = B0
+10555 LET Z = 1
+10560 GOTO 10585
+10565 IF B3 + B2 + B1 <> 3 * 65535 THEN 10585
+10570 IF B0 < 65536 - X(25) THEN 10585
+10575 LET K0 = B0 - 65536
+10580 LET Z = 1
+10585 SUBEND
+10590 REM ---- evx: the exact value of constant expression E with the semantics of LANGUAGE 6 (7.2,
+10595 REM DESIGN 2.8, 3.5.2, 3.5.5): K 1 i64, 2 f64 (limbs A3..A0), 3 bool (A0 0 or 1), 4 an error:
+10600 REM the i64 operation at node A0 overflowed (A1 = 1) or divided by zero (A1 = 2), the first in
+10605 REM evaluation order that the program would evaluate (&& and || skip their right operand as at
+10610 REM run time; A1 = 3: a poisoned value from a failed constant, already reported, A0 = 0);
+10615 REM 0 not a constant value (a call, a variable, a ^ that is not a powk). Post-order
+10620 REM with a value stack in W from X(11) up, five words per value (kind, four limbs); a
+10625 REM constant's value was computed before (ck_cord, cval). F = 1 (a const item, cval): pow(x, y)
+10630 REM and a ^ that is not a powk are evaluated by FEPOW with the mtab words Q() (DESIGN 4.10.5);
+10635 REM F = 0 (powk; Q() unused): they are no constant value. --------------------------------
+10640 SUB "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, F, K, A3, A2, A1, A0
+10645 LET B9 = X(11)
+10650 LET P = B9
+10655 FOR J = M(E, 0) TO E
+10660 LET P0 = P - 5 * M(J, 6)
+10665 LET V = 0
+10670 LET R3 = 0
+10675 LET R2 = 0
+10680 LET R1 = 0
+10685 LET R0 = 0
+10690 LET K1 = N(J, 0)
+10695 IF K1 = 25 THEN 10745
+10700 IF K1 = 26 THEN 10820
+10705 IF K1 = 28 THEN 10855
+10710 IF K1 = 29 THEN 10860
+10715 IF K1 = 30 THEN 10870
+10720 IF K1 = 32 THEN 11040
+10725 IF K1 = 33 THEN 11175
+10730 IF K1 = 34 THEN 11335
+10735 IF K1 = 35 THEN 11240
+10740 GOTO 11340
+10745 LET H = M(J, 5)
+10750 LET R3 = C(H, 1)
+10755 LET R2 = C(H, 2)
+10760 LET R1 = C(H, 3)
+10765 LET R0 = C(H, 4)
+10770 LET V = 1
+10775 IF M(J, 1) <> 4 THEN 11340
+10780 LET V = 2
+10785 IF R3 <> 32768 THEN 10810
+10790 IF R2 + R1 + R0 <> 0 THEN 10810
+10795 REM the literal 2^63 (only under neg): +2^63 in f64
+10800 LET R3 = 17376
+10805 GOTO 11340
+10810 CALL "FEFRI": C(H, 1), C(H, 2), C(H, 3), C(H, 4), R3, R2, R1, R0, Z
+10815 GOTO 11340
+10820 LET H = M(J, 5)
+10825 LET R3 = C(H, 1)
+10830 LET R2 = C(H, 2)
+10835 LET R1 = C(H, 3)
+10840 LET R0 = C(H, 4)
+10845 LET V = 2
+10850 GOTO 11340
+10855 LET R0 = 1
+10860 LET V = 3
+10865 GOTO 11340
+10870 LET S = M(J, 2)
+10875 IF S = 0 THEN 11340
+10880 IF S < 0 THEN 10995
+10885 IF Y(S, 0) <> 2 THEN 11340
+10890 REM the value of a constant (computed before, ck_cord): 1 i64 2 f64 (C row Y(S,8)), 3 bool (Y(S,8) itself)
+10895 REM 6 failed (an error was reported for it): a poisoned value, kind 4 with A1 = 3
+10900 IF Y(S, 7) = 6 THEN 10980
+10905 IF Y(S, 7) = 0 THEN 11340
+10910 IF Y(S, 7) > 3 THEN 11340
+10915 LET V = Y(S, 7)
+10920 LET H = Y(S, 8)
+10925 IF V <> 3 THEN 10955
+10930 LET R3 = 0
+10935 LET R2 = 0
+10940 LET R1 = 0
+10945 LET R0 = H
+10950 GOTO 11340
+10955 LET R3 = C(H, 1)
+10960 LET R2 = C(H, 2)
+10965 LET R1 = C(H, 3)
+10970 LET R0 = C(H, 4)
+10975 GOTO 11340
+10980 LET V = 4
+10985 LET R1 = 3
+10990 GOTO 11340
+10995 IF S < -4 THEN 11340
+11000 REM pi inf nan eps (LANGUAGE 10.1; bits of DESIGN 3.5.5)
+11005 LET V = 2
+11010 LET R3 = VAL(SEG$("16393327523276015536", 5 * (-S) - 4, 5 * (-S)))
+11015 IF S <> -1 THEN 11340
+11020 LET R2 = 8699
+11025 LET R1 = 21572
+11030 LET R0 = 11544
+11035 GOTO 11340
+11040 LET G = N(J, 7)
+11045 IF N(G, 0) <> 25 THEN 11100
+11050 LET H = M(G, 5)
+11055 IF C(H, 1) <> 32768 THEN 11100
+11060 IF C(H, 2) + C(H, 3) + C(H, 4) <> 0 THEN 11100
+11065 REM -2^63: the i64 pattern #8000000000000000, or the f64 -2^63
+11070 LET V = 1
+11075 LET R3 = 32768
+11080 IF M(J, 1) <> 4 THEN 11340
+11085 LET V = 2
+11090 LET R3 = 50144
+11095 GOTO 11340
+11100 LET V = W(P0 + 1)
+11105 IF V = 1 THEN 11140
+11110 IF V = 2 THEN 11130
+11115 IF V = 4 THEN 11210
+11120 LET V = 0
+11125 GOTO 11340
+11130 CALL "FENEG": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0
+11135 GOTO 11340
+11140 CALL "LMNEG": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0, Z
+11145 IF Z = 0 THEN 11340
+11150 REM -(-2^63) overflows: an error at this node
+11155 LET V = 4
+11160 LET R0 = J
+11165 LET R1 = 1
+11170 GOTO 11340
+11175 LET V = W(P0 + 1)
+11180 IF V = 4 THEN 11210
+11185 IF V = 3 THEN 11200
+11190 LET V = 0
+11195 GOTO 11340
+11200 LET R0 = 1 - W(P0 + 5)
+11205 GOTO 11340
+11210 REM an error value passes up unchanged
+11215 LET R3 = W(P0 + 2)
+11220 LET R2 = W(P0 + 3)
+11225 LET R1 = W(P0 + 4)
+11230 LET R0 = W(P0 + 5)
+11235 GOTO 11340
+11240 REM pow(x, y) (F = 1): x at W(P0+6..), y at W(P0+11..) after the callee name's slot; an error
+11245 REM operand passes up, the first one first
+11250 IF F = 0 THEN 11340
+11255 IF M(N(J, 7), 2) <> -X(39) THEN 11340
+11260 LET Q9 = 5
+11265 IF W(P0 + 6) = 4 THEN 11305
+11270 LET Q9 = 10
+11275 IF W(P0 + 11) = 4 THEN 11305
+11280 IF W(P0 + 6) <> 2 THEN 11340
+11285 IF W(P0 + 11) <> 2 THEN 11340
+11290 CALL "FEPOW": Q(), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), W(P0 + 12), W(P0 + 13), W(P0 + 14), W(P0 + 15), R3, R2, R1, R0
+11295 LET V = 2
+11300 GOTO 11340
+11305 LET V = 4
+11310 LET R3 = W(P0 + Q9 + 2)
+11315 LET R2 = W(P0 + Q9 + 3)
+11320 LET R1 = W(P0 + Q9 + 4)
+11325 LET R0 = W(P0 + Q9 + 5)
+11330 GOTO 11340
+11335 CALL "evbin": N(), M(), W(), Q(), J, P0, F, V, R3, R2, R1, R0
+11340 IF M(J, 7) <> 1 THEN 11360
+11345 IF V <> 1 THEN 11360
+11350 CALL "FEFRI": R3 + 0, R2 + 0, R1 + 0, R0 + 0, R3, R2, R1, R0, Z
+11355 LET V = 2
+11360 LET P = P0
+11365 IF P + 5 < X(12) - 2 THEN 11385
+11370 CALL "fatal": N(), X(), X$(), J, "nesting"
+11375 LET V = 0
+11380 GOTO 11420
+11385 LET W(P + 1) = V
+11390 LET W(P + 2) = R3
+11395 LET W(P + 3) = R2
+11400 LET W(P + 4) = R1
+11405 LET W(P + 5) = R0
+11410 LET P = P + 5
+11415 NEXT J
+11420 LET K = W(B9 + 1)
+11425 LET A3 = W(B9 + 2)
+11430 LET A2 = W(B9 + 3)
+11435 LET A1 = W(B9 + 4)
+11440 LET A0 = W(B9 + 5)
+11445 IF V <> 0 THEN 11455
+11450 LET K = 0
+11455 SUBEND
+11460 REM ---- evbin: the value of binary node J from its operands at W(P0+1..P0+10) (see evx): an
+11465 REM error operand passes up (the left one first); && and || decided by the left operand ignore
+11470 REM the right one; a powk by the pinned multiplications of LANGUAGE 6.5; with F = 1 another ^ by
+11475 REM FEPOW (Q() the mtab words, DESIGN 4.10.5) ---------------------
+11480 SUB "evbin": N(), M(), W(), Q(), J, P0, F, V, R3, R2, R1, R0
+11485 LET V = 0
+11490 LET U = W(P0 + 1)
+11495 LET U2 = W(P0 + 6)
+11500 LET O = N(J, 1)
+11505 LET Q = 0
+11510 IF U = 4 THEN 11935
+11515 IF O < 16 THEN 11550
+11520 REM && (16) and || (17): false && x is false, true || x is true, whatever x is
+11525 IF U <> 3 THEN 11550
+11530 IF W(P0 + 5) <> O - 16 THEN 11550
+11535 LET V = 3
+11540 LET R0 = O - 16
+11545 GOTO 12130
+11550 LET Q = 5
+11555 IF M(J, 8) > 0 THEN 11970
+11560 IF U2 = 4 THEN 11935
+11565 IF U = 0 THEN 12130
+11570 IF U <> U2 THEN 12130
+11575 IF O < 8 THEN 11735
+11580 IF U = 3 THEN 11635
+11585 REM comparisons of two i64 or two f64 (LANGUAGE 6.4: NaN compares false except !=)
+11590 IF O > 13 THEN 12130
+11595 IF U = 2 THEN 11610
+11600 CALL "LMCMP": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), Z
+11605 GOTO 11615
+11610 CALL "FECMP": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), Z
+11615 REM Z -1 0 1 or 2 (unordered); the result of eq ne lt le gt ge in that order of Z
+11620 LET V = 3
+11625 LET R0 = VAL(SEG$("010010111000110000100110", 4 * (O - 8) + Z + 2, 4 * (O - 8) + Z + 2))
+11630 GOTO 12130
+11635 REM bool: == != & | && || (a decided && or || returned above)
+11640 IF O = 8 THEN 11685
+11645 IF O = 9 THEN 11710
+11650 IF O < 14 THEN 12130
+11655 LET V = 3
+11660 LET R0 = W(P0 + 5) * W(P0 + 10)
+11665 IF O = 14 THEN 12130
+11670 IF O = 16 THEN 12130
+11675 LET R0 = W(P0 + 5) + W(P0 + 10) - R0
+11680 GOTO 12130
+11685 LET V = 3
+11690 LET R0 = 1
+11695 IF W(P0 + 5) = W(P0 + 10) THEN 12130
+11700 LET R0 = 0
+11705 GOTO 12130
+11710 LET V = 3
 11715 LET R0 = 0
-11720 GOTO 11810
-11725 IF K1 = 1 THEN 11780
-11730 CALL "FEMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), Q3, Q2, Q1, Q0
-11735 LET R3 = Q3
-11740 LET R2 = Q2
-11745 LET R1 = Q1
-11750 LET R0 = Q0
-11755 IF K1 = 2 THEN 11780
-11760 IF K1 = 4 THEN 11775
-11765 CALL "FEMUL": Q3, Q2, Q1, Q0, W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0
-11770 GOTO 11780
-11775 CALL "FEMUL": Q3, Q2, Q1, Q0, Q3, Q2, Q1, Q0, R3, R2, R1, R0
-11780 IF K >= 0 THEN 11810
-11785 CALL "FEDIV": 16368, 0, 0, 0, R3, R2, R1, R0, Q3, Q2, Q1, Q0
-11790 LET R3 = Q3
-11795 LET R2 = Q2
-11800 LET R1 = Q1
-11805 LET R0 = Q0
-11810 LET V = 2
-11815 SUBEND
-11820 REM ---- cval: the value of const item S (LANGUAGE 7.2): Y(S,7) 1 i64, 2 f64, 3 bool, 5 none, 6 failed
-11825 REM (number: C row Y(S,8); bool: Y(S,8) is 0 or 1); an i64 overflow or zero divisor is error
-11830 REM 260 or 261 at its operator ----
-11835 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), H(), S
-11840 IF Y(S, 7) <> 0 THEN 11990
-11845 LET Y(S, 7) = 6
-11850 LET F = Y(S, 3)
-11855 LET E = N(F, 7)
-11860 IF N(F, 1) = 0 THEN 11870
-11865 LET E = N(E, 8)
-11870 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), E, K, A3, A2, A1, A0
-11875 IF K > 0 THEN 11895
-11880 REM no constant value (an error was reported by the check): none
-11885 LET Y(S, 7) = 5
-11890 GOTO 11990
-11895 IF K < 4 THEN 11935
-11900 REM a failed operand (A1 = 3) was reported already: this constant fails too, silently
-11905 IF A1 = 3 THEN 11990
-11910 IF A1 = 2 THEN 11925
-11915 CALL "er": N(), X(), X$(), A0, "INT_OVERFLOW_C", "", "", "", 0
-11920 GOTO 11990
-11925 CALL "er": N(), X(), X$(), A0, "INT_DIV_ZERO_C", "", "", "", 0
-11930 GOTO 11990
-11935 REM a bool value is kept in Y(S,8) itself (0 or 1): only numbers count as constants (DESIGN
-11940 REM 2.7); the C row is keyed by type: 3 i64, 4 f64
-11945 LET R = A0
-11950 IF K = 3 THEN 11980
-11955 LET D = K + 2
-11960 CALL "cnew": C(), H(), X(), D, A3, A2, A1, A0, R
-11965 IF R > 0 THEN 11980
-11970 CALL "fatal": N(), X(), X$(), F, "constants"
-11975 GOTO 11990
-11980 LET Y(S, 8) = R
-11985 LET Y(S, 7) = K
-11990 SUBEND
+11720 IF W(P0 + 5) = W(P0 + 10) THEN 12130
+11725 LET R0 = 1
+11730 GOTO 12130
+11735 IF O = 6 THEN 11910
+11740 IF O > 5 THEN 12130
+11745 IF U = 3 THEN 12130
+11750 IF U = 2 THEN 11850
+11755 ON O GOTO 11760, 11770, 11780, 12130, 11790
+11760 CALL "LMADD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
+11765 GOTO 11810
+11770 CALL "LMSUB": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
+11775 GOTO 11810
+11780 CALL "LMMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
+11785 GOTO 11810
+11790 CALL "LMMOD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0, Z
+11795 REM a zero divisor (E = 2) is an error at this node
+11800 IF Z = 0 THEN 11810
+11805 LET Z = 2
+11810 LET V = 1
+11815 IF Z = 0 THEN 12130
+11820 LET V = 4
+11825 LET R1 = Z
+11830 LET R0 = J
+11835 LET R2 = 0
+11840 LET R3 = 0
+11845 GOTO 12130
+11850 ON O GOTO 11855, 11865, 11875, 11885, 11895
+11855 CALL "FEADD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11860 GOTO 11900
+11865 CALL "FESUB": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11870 GOTO 11900
+11875 CALL "FEMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11880 GOTO 11900
+11885 CALL "FEDIV": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11890 GOTO 11900
+11895 CALL "FEMOD": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11900 LET V = 2
+11905 GOTO 12130
+11910 REM a ^ that is not a powk, in a const item (F = 1): the run time's pow (DESIGN 3.5.5)
+11915 IF F = 0 THEN 12130
+11920 IF U <> 2 THEN 12130
+11925 CALL "FEPOW": Q(), W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11930 GOTO 11900
+11935 REM the error of the operand at W(P0+Q+1..)
+11940 LET V = 4
+11945 LET R3 = W(P0 + Q + 2)
+11950 LET R2 = W(P0 + Q + 3)
+11955 LET R1 = W(P0 + Q + 4)
+11960 LET R0 = W(P0 + Q + 5)
+11965 GOTO 12130
+11970 REM x^0 = 1, x^1 = x, x^2 = x*x, x^3 = (x*x)*x, x^4 = (x*x)*(x*x), x^-k = 1/(x^k)
+11975 IF U <> 2 THEN 12130
+11980 LET K = M(J, 8) - 10
+11985 LET K1 = ABS(K)
+11990 LET R3 = W(P0 + 2)
+11995 LET R2 = W(P0 + 3)
+12000 LET R1 = W(P0 + 4)
+12005 LET R0 = W(P0 + 5)
+12010 IF K1 > 0 THEN 12040
+12015 LET R3 = 16368
+12020 LET R2 = 0
+12025 LET R1 = 0
+12030 LET R0 = 0
+12035 GOTO 12125
+12040 IF K1 = 1 THEN 12095
+12045 CALL "FEMUL": W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), Q3, Q2, Q1, Q0
+12050 LET R3 = Q3
+12055 LET R2 = Q2
+12060 LET R1 = Q1
+12065 LET R0 = Q0
+12070 IF K1 = 2 THEN 12095
+12075 IF K1 = 4 THEN 12090
+12080 CALL "FEMUL": Q3, Q2, Q1, Q0, W(P0 + 2), W(P0 + 3), W(P0 + 4), W(P0 + 5), R3, R2, R1, R0
+12085 GOTO 12095
+12090 CALL "FEMUL": Q3, Q2, Q1, Q0, Q3, Q2, Q1, Q0, R3, R2, R1, R0
+12095 IF K >= 0 THEN 12125
+12100 CALL "FEDIV": 16368, 0, 0, 0, R3, R2, R1, R0, Q3, Q2, Q1, Q0
+12105 LET R3 = Q3
+12110 LET R2 = Q2
+12115 LET R1 = Q1
+12120 LET R0 = Q0
+12125 LET V = 2
+12130 SUBEND
+12135 REM ---- cval: the value of const item S (LANGUAGE 7.2): Y(S,7) 1 i64, 2 f64, 3 bool, 5 none, 6 failed
+12140 REM (number: C row Y(S,8); bool: Y(S,8) is 0 or 1); an i64 overflow or zero divisor is error
+12145 REM 260 or 261 at its operator ----
+12150 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), H(), Q(), S
+12155 IF Y(S, 7) <> 0 THEN 12305
+12160 LET Y(S, 7) = 6
+12165 LET F = Y(S, 3)
+12170 LET E = N(F, 7)
+12175 IF N(F, 1) = 0 THEN 12185
+12180 LET E = N(E, 8)
+12185 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, 1, K, A3, A2, A1, A0
+12190 IF K > 0 THEN 12210
+12195 REM no constant value (an error was reported by the check): none
+12200 LET Y(S, 7) = 5
+12205 GOTO 12305
+12210 IF K < 4 THEN 12250
+12215 REM a failed operand (A1 = 3) was reported already: this constant fails too, silently
+12220 IF A1 = 3 THEN 12305
+12225 IF A1 = 2 THEN 12240
+12230 CALL "er": N(), X(), X$(), A0, "INT_OVERFLOW_C", "", "", "", 0
+12235 GOTO 12305
+12240 CALL "er": N(), X(), X$(), A0, "INT_DIV_ZERO_C", "", "", "", 0
+12245 GOTO 12305
+12250 REM a bool value is kept in Y(S,8) itself (0 or 1): only numbers count as constants (DESIGN
+12255 REM 2.7); the C row is keyed by type: 3 i64, 4 f64
+12260 LET R = A0
+12265 IF K = 3 THEN 12295
+12270 LET D = K + 2
+12275 CALL "cnew": C(), H(), X(), D, A3, A2, A1, A0, R
+12280 IF R > 0 THEN 12295
+12285 CALL "fatal": N(), X(), X$(), F, "constants"
+12290 GOTO 12305
+12295 LET Y(S, 8) = R
+12300 LET Y(S, 7) = K
+12305 SUBEND

@@ -309,6 +309,29 @@ for src in "$BUNDLE"/tests/rt/x86_64_linux/*.s; do
     [ $ok = 1 ] && pass
 done
 
+
+# ---- math/math_check: bit-exact elementary functions against the vectors (4.10.6) ------
+if [ ! -f "$BUNDLE/tests/math/math_check.c" ]; then
+    # absent only if the packing patterns deliberately excluded it
+    if [ -z "$(cat "$BUNDLE/PATTERNS" 2>/dev/null)" ]; then fail math/math_check "the bundle lacks the math case"; fi
+else
+    name=math/math_check
+    "$CC" -O1 -ffp-contract=off -o "$TMP/math_check" "$BUNDLE/tests/math/math_check.c" "$LIBSEA" -lm \
+        >"$TMP/m.cc" 2>&1
+    if [ $? -ne 0 ] || [ -s "$TMP/m.cc" ]; then
+        fail "$name" "build failed: $(head -3 "$TMP/m.cc" | tr '\n' ' ')"
+    else
+        run_limited 60 /dev/null "$TMP" "$TMP/math_check" "$BUNDLE/tests/math" >"$TMP/m.out" 2>"$TMP/m.err"
+        st=$?
+        if [ $st -eq 0 ] && [ ! -s "$TMP/m.err" ]; then
+            pass
+        else
+            fail "$name" "exit status $st: $(grep -v ' cases ok$' "$TMP/m.out" "$TMP/m.err" | head -3 | tr '\n' ' ')"
+            if [ "$VERBOSE" = 1 ]; then sed 's/^/    /' "$TMP/m.out" | head -60; fi
+        fi
+    fi
+fi
+
 if [ $((PASS + FAIL)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi
 echo "----"
 echo "passed: $PASS  failed: $FAIL"

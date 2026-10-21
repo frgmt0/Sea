@@ -428,3 +428,332 @@
 79140     LET R0 = G0
 79150     LET Y = 1
 79170 SUBEND
+79200 SUB "FEPOW": M(),X3,X2,X1,X0,Y3,Y2,Y1,Y0,R3,R2,R1,R0 ' R = pow(X,Y) with the runtime's bits (DESIGN 4.10.4)
+79205     DIM F(49,3)
+79210     CALL "FELD": F(),1,X3,X2,X1,X0
+79215     CALL "FELD": F(),2,Y3,Y2,Y1,Y0
+79220     CALL "FECLS": X3,X2,X1,X0,K1,S1
+79225     CALL "FECLS": Y3,Y2,Y1,Y0,K2,S2
+79230     LET G = 0
+79235     IF K2 = 0 THEN 79900 ' 1: y = +-0 -> 1.0
+79240     IF X3 <> 16368 THEN 79250
+79245     IF X2+X1+X0 = 0 THEN 79900 ' 2: x = +1 -> 1.0
+79250     IF K1 = 4 THEN 79920 ' 3: a NaN -> NAN
+79255     IF K2 = 4 THEN 79920
+79260     IF K2 <> 3 THEN 79300
+79265     IF X3 <> 49136 THEN 79275 ' 4: y = +-inf
+79270     IF X2+X1+X0 = 0 THEN 79900 ' x = -1 -> 1.0
+79275     CALL "FECMP": X3-S1*32768,X2,X1,X0,16368,0,0,0,C
+79280     IF C = 1-2*S2 THEN 79960 ' |x| < 1 and y = -inf, or |x| > 1 and y = +inf
+79285     GOTO 79940
+79300     LET E = INT((Y3-S2*32768)/16) ' 5: Q = 0 not an integer, 1 odd, 2 even
+79305     LET Q = 0
+79310     IF E < 1023 THEN 79400
+79315     LET Q = 2
+79320     IF E > 1075 THEN 79400
+79325     CALL "FEBIT": Y3,Y2,Y1,Y0,1075-E,Z,T
+79330     LET Q = 0
+79335     IF Z = 0 THEN 79400
+79340     LET Q = 2-T
+79400     IF K1 <> 0 THEN 79450 ' 6: x = +-0
+79405     IF S2 = 0 THEN 79430
+79410     IF S1 = 0 THEN 79960
+79415     IF Q = 1 THEN 79970
+79420     GOTO 79960
+79430     IF Q <> 1 THEN 79940
+79435     CALL "FECP": F(),11,1 ' x itself
+79440     GOTO 79625
+79450     IF K1 <> 3 THEN 79500 ' 7: x = +-inf
+79455     IF S1 = 1 THEN 79470
+79460     IF S2 = 1 THEN 79940
+79465     GOTO 79960
+79470     IF S2 = 0 THEN 79485
+79475     IF Q = 1 THEN 79950
+79480     GOTO 79940
+79485     IF Q = 1 THEN 79970
+79490     GOTO 79960
+79500     IF S1 = 0 THEN 79530 ' 8: x < 0
+79505     IF Q = 0 THEN 79920
+79510     IF Q = 2 THEN 79520
+79515     LET G = 1
+79520     LET F(1,0) = X3-32768
+79530     IF K1 <> 1 THEN 79550 ' 9: x subnormal
+79535     CALL "FELD": F(),36,17200,0,0,0
+79540     CALL "FEOP": F(),3,13,1,36 ' f64(ix) * 2^52
+79545     CALL "LMSUB": F(13,0),F(13,1),F(13,2),F(13,3),832,0,0,0,F(13,0),F(13,1),F(13,2),F(13,3),V
+79547     GOTO 79560
+79550     CALL "FECP": F(),13,1
+79560     CALL "FELGC": F(),M(),13,3,4 ' 10: (lh, lt) = log_core(ix)
+79565     CALL "FELD": F(),5,Y3,Y2,INT(Y1/2048)*2048,0 ' yhi
+79570     CALL "FEOP": F(),2,6,2,5 ' ylo = y - yhi
+79575     CALL "FELD": F(),7,F(3,0),F(3,1),INT(F(3,2)/2048)*2048,0 ' lhi
+79580     CALL "FEOP": F(),2,8,3,7 ' lh - lhi
+79585     CALL "FEOP": F(),1,8,8,4 ' llo
+79590     CALL "FEOP": F(),3,9,5,7 ' ehi = yhi * lhi
+79595     CALL "FEOP": F(),3,10,6,7 ' ylo * lhi
+79600     CALL "FEOP": F(),3,12,2,8 ' y * llo
+79605     CALL "FEOP": F(),1,10,10,12 ' elo
+79610     CALL "FEEXC": F(),M(),9,10,11 ' 11: v = exp_core(ehi, elo)
+79615     IF G = 0 THEN 79625
+79620     CALL "FEOP": F(),5,11,11,11 ' 12: neg(v)
+79625     LET R3 = F(11,0)
+79630     LET R2 = F(11,1)
+79635     LET R1 = F(11,2)
+79640     LET R0 = F(11,3)
+79645     GOTO 79990
+79900     CALL "FELD": F(),11,16368,0,0,0 ' 1.0
+79905     GOTO 79625
+79920     CALL "FELD": F(),11,32760,0,0,0 ' NAN
+79925     GOTO 79625
+79940     CALL "FELD": F(),11,0,0,0,0 ' +0.0
+79945     GOTO 79625
+79950     CALL "FELD": F(),11,32768,0,0,0 ' -0.0
+79955     GOTO 79625
+79960     CALL "FELD": F(),11,32752,0,0,0 ' +inf
+79965     GOTO 79625
+79970     CALL "FELD": F(),11,65520,0,0,0 ' -inf
+79975     GOTO 79625
+79990 SUBEND
+80000 SUB "FELGC": F(),M(),I,H,L ' internal: log_core of the pattern in row I into rows H, L (DESIGN 4.10.4)
+80005     CALL "LMSUB": F(I,0),F(I,1),F(I,2),F(I,3),16357,61440,0,0,T3,T2,T1,T0,V ' 1: t = ix - LOG_OFF
+80010     LET T = T3-INT(T3/16)*16
+80015     LET J = T*8+INT(T2/8192) ' i = (t >> 45) & 127
+80020     LET K = INT(T3/16) ' k = t >>a 52
+80025     IF K < 2048 THEN 80035
+80030     LET K = K-4096
+80035     CALL "LMSUB": F(I,0),F(I,1),F(I,2),F(I,3),T3-T,0,0,0,F(14,0),F(14,1),F(14,2),F(14,3),V ' iz, z
+80040     CALL "FEMC": F(),M(),15,288+3*J ' 2: invc
+80045     CALL "FELD": F(),16,F(14,0),F(14,1),INT(F(14,2)/1024)*1024,0 ' zhi
+80050     CALL "FEOP": F(),2,17,14,16 ' zlo = z - zhi
+80055     CALL "FEOP": F(),3,18,16,15 ' zhi * invc
+80060     CALL "FELD": F(),36,16368,0,0,0
+80065     CALL "FEOP": F(),2,18,18,36 ' rhi
+80070     CALL "FEOP": F(),3,19,17,15 ' rlo = zlo * invc
+80075     CALL "FE2SM": F(),18,19,20,21 ' (rh, rl)
+80080     CALL "LMFRN": K,K3,K2,K1,K0,E ' 3
+80085     CALL "FEFRI": K3,K2,K1,K0,F(22,0),F(22,1),F(22,2),F(22,3),E ' kd = itof(k)
+80090     CALL "FEMC": F(),M(),36,8
+80095     CALL "FEOP": F(),3,23,22,36 ' kd * LOG_LN2HI
+80100     CALL "FEMC": F(),M(),37,289+3*J
+80105     CALL "FEOP": F(),1,23,23,37 ' t1
+80110     CALL "FE2SM": F(),23,20,24,25 ' (t2, e1)
+80115     CALL "FE2PR": F(),20,20,26,27 ' 4: (s, se)
+80120     CALL "FELD": F(),36,49120,0,0,0 ' -0.5
+80125     CALL "FEOP": F(),3,28,36,26 ' hs
+80130     CALL "FE2SM": F(),24,28,29,30 ' (t3, e2)
+80135     CALL "FEOP": F(),3,31,20,20 ' 5: r2
+80140     CALL "FEMC": F(),M(),36,16
+80145     CALL "FEOP": F(),3,34,20,36 ' rh * A9
+80150     FOR W = 15 TO 10 STEP -1 ' A8 ... A3, innermost first: w = A + rh * w
+80155         CALL "FEMC": F(),M(),36,W
+80160         CALL "FEOP": F(),1,34,36,34
+80165         IF W = 10 THEN 80175
+80170         CALL "FEOP": F(),3,34,20,34
+80175     NEXT W
+80180     CALL "FEOP": F(),3,32,20,31 ' rh * r2
+80185     CALL "FEOP": F(),3,32,32,34 ' p
+80190     CALL "FEMC": F(),M(),36,9 ' 6
+80195     CALL "FEOP": F(),3,33,22,36 ' kd * LOG_LN2LO
+80200     CALL "FEMC": F(),M(),37,290+3*J
+80205     CALL "FEOP": F(),1,33,33,37
+80210     CALL "FEOP": F(),1,33,33,21 ' lo
+80215     CALL "FEOP": F(),1,35,25,30 ' e1 + e2
+80220     CALL "FEOP": F(),1,33,33,35
+80225     CALL "FELD": F(),36,49120,0,0,0
+80230     CALL "FEOP": F(),3,35,36,27 ' -0.5 * se
+80235     CALL "FEOP": F(),3,37,20,21 ' rh * rl
+80240     CALL "FEOP": F(),2,35,35,37
+80245     CALL "FEOP": F(),1,33,33,35
+80250     CALL "FEOP": F(),1,33,33,32 ' lo + p
+80255     CALL "FEF2S": F(),29,33,H,L ' 7: (h, l)
+80260 SUBEND
+80500 SUB "FEEXC": F(),M(),X,Y,R ' internal: exp_core of rows X (x), Y (xt) into row R (DESIGN 4.10.4)
+80505     LET S = INT(F(X,0)/32768)
+80510     LET T = INT((F(X,0)-S*32768)/16) ' top
+80515     IF T >= 969 THEN 80530
+80520     CALL "FELD": F(),36,16368,0,0,0 ' 1: 1.0 + x
+80525     CALL "FEOP": F(),1,R,36,X
+80527     GOTO 80990
+80530     IF T < 1033 THEN 80560
+80535     CALL "FELD": F(),R,32752-32752*S,0,0,0 ' 2: +inf, or +0 for a negative x
+80540     GOTO 80990
+80560     CALL "FEMC": F(),M(),36,0 ' 3
+80565     CALL "FEOP": F(),3,14,36,X ' z
+80570     CALL "FEMC": F(),M(),37,1
+80575     CALL "FEOP": F(),1,15,14,37 ' kd = z + EXP_SHIFT
+80580     LET K3 = F(15,0) ' ki = bits(kd)
+80585     LET K2 = F(15,1)
+80590     LET K1 = F(15,2)
+80595     LET K0 = F(15,3)
+80600     CALL "FEOP": F(),2,15,15,37 ' kd = kd - EXP_SHIFT
+80605     CALL "FEMC": F(),M(),36,2
+80610     CALL "FEOP": F(),3,16,15,36 ' kd * EXP_NLN2HI_N
+80615     CALL "FEOP": F(),1,16,X,16
+80620     CALL "FEMC": F(),M(),36,3
+80625     CALL "FEOP": F(),3,17,15,36 ' kd * EXP_NLN2LO_N
+80630     CALL "FEOP": F(),1,16,16,17
+80635     CALL "FEOP": F(),1,16,16,Y ' r = r + xt
+80640     LET J = K0-INT(K0/128)*128 ' 4: i = ki & 127
+80645     CALL "FEMC": F(),M(),18,32+2*J ' tail
+80650     LET V = (K1-INT(K1/8)*8)*65536+K0 ' the low 19 bits of ki
+80655     LET W = 4*(33+2*J)
+80660     CALL "LMADD": M(W+1),M(W+2),M(W+3),M(W+4),INT(V/8),(V-INT(V/8)*8)*8192,0,0,F(24,0),F(24,1),F(24,2),F(24,3),E ' sbits
+80665     CALL "FEOP": F(),3,19,16,16 ' 5: r2
+80670     CALL "FEOP": F(),1,20,18,16 ' tail + r
+80675     CALL "FEMC": F(),M(),36,5
+80680     CALL "FEOP": F(),3,21,16,36 ' r * EXP_C3
+80685     CALL "FEMC": F(),M(),37,4
+80690     CALL "FEOP": F(),1,21,37,21 ' EXP_C2 + ..
+80695     CALL "FEOP": F(),3,21,19,21 ' r2 * (..)
+80700     CALL "FEOP": F(),1,20,20,21
+80705     CALL "FEMC": F(),M(),36,7
+80710     CALL "FEOP": F(),3,22,16,36 ' r * EXP_C5
+80715     CALL "FEMC": F(),M(),37,6
+80720     CALL "FEOP": F(),1,22,37,22 ' EXP_C4 + ..
+80725     CALL "FEOP": F(),3,23,19,19 ' r2 * r2
+80730     CALL "FEOP": F(),3,22,23,22
+80735     CALL "FEOP": F(),1,20,20,22 ' tmp
+80740     IF T >= 1032 THEN 80760
+80745     CALL "FEOP": F(),3,25,24,20 ' 6: scale * tmp
+80750     CALL "FEOP": F(),1,R,24,25
+80755     GOTO 80990
+80760     IF INT(K1/32768) = 1 THEN 80800 ' 7: bit 31 of ki
+80765     CALL "LMSUB": F(24,0),F(24,1),F(24,2),F(24,3),16144,0,0,0,F(24,0),F(24,1),F(24,2),F(24,3),E
+80770     CALL "FEOP": F(),3,25,24,20
+80775     CALL "FEOP": F(),1,25,24,25
+80780     CALL "FELD": F(),36,32512,0,0,0 ' 2^1009
+80785     CALL "FEOP": F(),3,R,36,25
+80790     GOTO 80990
+80800     CALL "LMADD": F(24,0),F(24,1),F(24,2),F(24,3),16352,0,0,0,F(24,0),F(24,1),F(24,2),F(24,3),E
+80805     CALL "FEOP": F(),3,26,24,20 ' scale * tmp
+80810     CALL "FEOP": F(),1,25,24,26 ' y
+80815     CALL "FELD": F(),36,16368,0,0,0
+80820     CALL "FECMP": F(25,0),F(25,1),F(25,2),F(25,3),16368,0,0,0,C
+80825     IF C <> -1 THEN 80870
+80830     CALL "FEOP": F(),2,27,24,25 ' scale - y
+80835     CALL "FEOP": F(),3,28,24,20 ' scale * tmp
+80840     CALL "FEOP": F(),1,27,27,28 ' lo
+80845     CALL "FEOP": F(),1,29,36,25 ' hi = 1.0 + y
+80850     CALL "FEOP": F(),2,30,36,29 ' 1.0 - hi
+80855     CALL "FEOP": F(),1,30,30,25
+80860     CALL "FEOP": F(),1,27,30,27 ' lo
+80862     CALL "FEOP": F(),1,25,29,27 ' hi + lo
+80865     CALL "FEOP": F(),2,25,25,36 ' y
+80870     CALL "FELD": F(),37,16,0,0,0 ' 2^-1022
+80875     CALL "FEOP": F(),3,R,37,25
+80990 SUBEND
+81000 SUB "FE2SM": F(),A,B,S,E ' internal: two_sum of rows A, B into rows S, E (scratch 40-43)
+81005     CALL "FEOP": F(),1,40,A,B ' s
+81010     CALL "FEOP": F(),2,41,40,A ' bb
+81015     CALL "FEOP": F(),2,42,40,41 ' s - bb
+81020     CALL "FEOP": F(),2,42,A,42 ' a - (s - bb)
+81025     CALL "FEOP": F(),2,43,B,41 ' b - bb
+81030     CALL "FEOP": F(),1,42,42,43 ' e
+81035     CALL "FECP": F(),S,40
+81040     CALL "FECP": F(),E,42
+81045 SUBEND
+81100 SUB "FEF2S": F(),A,B,S,E ' internal: fast_two_sum of rows A, B into rows S, E (scratch 40-41)
+81105     CALL "FEOP": F(),1,40,A,B ' s
+81110     CALL "FEOP": F(),2,41,40,A ' s - a
+81115     CALL "FEOP": F(),2,41,B,41 ' e
+81120     CALL "FECP": F(),S,40
+81125     CALL "FECP": F(),E,41
+81130 SUBEND
+81200 SUB "FESPL": F(),A,H,L ' internal: split of row A into rows H, L (scratch 46-49)
+81205     CALL "FELD": F(),46,16800,0,512,0 ' 134217729.0
+81210     CALL "FEOP": F(),3,47,46,A ' g
+81215     CALL "FEOP": F(),2,48,47,A ' g - a
+81220     CALL "FEOP": F(),2,48,47,48 ' h
+81225     CALL "FEOP": F(),2,49,A,48 ' l
+81230     CALL "FECP": F(),H,48
+81235     CALL "FECP": F(),L,49
+81240 SUBEND
+81300 SUB "FE2PR": F(),A,B,P,E ' internal: two_prod of rows A, B into rows P, E (scratch 38, 40-49)
+81305     CALL "FEOP": F(),3,40,A,B ' p
+81310     CALL "FESPL": F(),A,41,42 ' (ah, al)
+81315     CALL "FESPL": F(),B,43,44 ' (bh, bl)
+81320     CALL "FEOP": F(),3,45,41,43 ' ah * bh
+81325     CALL "FEOP": F(),2,45,45,40
+81330     CALL "FEOP": F(),3,38,41,44 ' ah * bl
+81335     CALL "FEOP": F(),1,45,45,38
+81340     CALL "FEOP": F(),3,38,42,43 ' al * bh
+81345     CALL "FEOP": F(),1,45,45,38
+81350     CALL "FEOP": F(),3,38,42,44 ' al * bl
+81355     CALL "FEOP": F(),1,45,45,38
+81360     CALL "FECP": F(),P,40
+81365     CALL "FECP": F(),E,45
+81370 SUBEND
+81400 SUB "FEOP": F(),P,D,A,B ' internal: row D = row A op row B (P: 1 + 2 - 3 * 4 /, 5 neg of row A)
+81405     ON P GOTO 81410,81415,81420,81425,81430
+81410     CALL "FEADD": F(A,0),F(A,1),F(A,2),F(A,3),F(B,0),F(B,1),F(B,2),F(B,3),F(D,0),F(D,1),F(D,2),F(D,3)
+81412     GOTO 81440
+81415     CALL "FESUB": F(A,0),F(A,1),F(A,2),F(A,3),F(B,0),F(B,1),F(B,2),F(B,3),F(D,0),F(D,1),F(D,2),F(D,3)
+81417     GOTO 81440
+81420     CALL "FEMUL": F(A,0),F(A,1),F(A,2),F(A,3),F(B,0),F(B,1),F(B,2),F(B,3),F(D,0),F(D,1),F(D,2),F(D,3)
+81422     GOTO 81440
+81425     CALL "FEDIV": F(A,0),F(A,1),F(A,2),F(A,3),F(B,0),F(B,1),F(B,2),F(B,3),F(D,0),F(D,1),F(D,2),F(D,3)
+81427     GOTO 81440
+81430     CALL "FENEG": F(A,0),F(A,1),F(A,2),F(A,3),F(D,0),F(D,1),F(D,2),F(D,3)
+81440 SUBEND
+81450 SUB "FELD": F(),D,A3,A2,A1,A0 ' internal: row D = the pattern A3..A0
+81455     LET F(D,0) = A3
+81460     LET F(D,1) = A2
+81465     LET F(D,2) = A1
+81470     LET F(D,3) = A0
+81475 SUBEND
+81500 SUB "FECP": F(),D,A ' internal: row D = row A
+81505     LET F(D,0) = F(A,0)
+81510     LET F(D,1) = F(A,1)
+81515     LET F(D,2) = F(A,2)
+81520     LET F(D,3) = F(A,3)
+81525 SUBEND
+81550 SUB "FEMC": F(),M(),D,W ' internal: row D = word W of the mtab table M (FEMTI)
+81555     LET F(D,0) = M(4*W+1)
+81560     LET F(D,1) = M(4*W+2)
+81565     LET F(D,2) = M(4*W+3)
+81570     LET F(D,3) = M(4*W+4)
+81575 SUBEND
+81600 SUB "FEBIT": X3,X2,X1,X0,B,Z,T ' internal: Z = 1 if bits 0 .. B-1 of X are 0; T = bit B (0 <= B <= 63)
+81605     LET J = INT(B/16)
+81610     LET W = B-16*J
+81615     LET S = 0
+81620     LET L = X0
+81625     IF J < 1 THEN 81665
+81630     LET S = X0
+81635     LET L = X1
+81640     IF J < 2 THEN 81665
+81645     LET S = S+X1
+81650     LET L = X2
+81655     IF J < 3 THEN 81665
+81657     LET S = S+X2
+81660     LET L = X3
+81665     LET P = 1
+81670     LET I = 0
+81675     IF I >= W THEN 81690
+81680     LET P = P+P
+81682     LET I = I+1
+81685     GOTO 81675
+81690     LET U = INT(L/P)
+81692     LET Z = 0
+81694     IF S+L-U*P > 0 THEN 81698
+81696     LET Z = 1
+81698     LET T = U-INT(U/2)*2
+81699 SUBEND
+81700 SUB "FEMTI": M(),E ' M() = the mtab DATA block (DESIGN 2.6.3, 4.10.5); E = 1 if it disagrees
+81705     LET E = 1
+81710     READ A,B,C
+81715     IF A <> 32 THEN 81790
+81720     IF B <> 128 THEN 81790
+81725     IF C <> 128 THEN 81790
+81730     LET M(0) = 672
+81735     FOR I = 1 TO 2688
+81740         READ V
+81745         IF V < 0 THEN 81790
+81750         IF V > 65535 THEN 81790
+81755         IF V <> INT(V) THEN 81790
+81760         LET M(I) = V
+81765     NEXT I
+81770     READ V
+81775     IF V <> -1 THEN 81790
+81780     LET E = 0
+81790 SUBEND

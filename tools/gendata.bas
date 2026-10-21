@@ -3,29 +3,29 @@
 12 REM
 13 REM FILES (Baysick names files at compile time, so the program is run in a
 14 REM directory that holds them under these names; the build runs it in sea/include):
-15 REM    file 1 limits.inc   file 2 errors.inc   file 3 rt.inc   file 4 passes.txt
+15 REM    file 1 limits.inc   file 2 errors.inc   file 3 rt.inc   file 4 passes.txt   file 5 math_tables.inc
 16 REM
 17 REM STANDARD INPUT = the selection: one block name per line, each block at most
-18 REM once, in the order  errors errno exits consts entries records.
+18 REM once, in the order  errors errno exits consts entries records mtab.
 19 REM    errors   error records of errors.inc          (file 2)
 20 REM    errno    errno records of errors.inc          (file 2)
 21 REM    exits    SEA_EXIT_ constants of errors.inc    (file 2)
 22 REM    consts   constants of limits.inc then rt.inc  (files 1, 3), one table
 23 REM    entries  SEA_ENTRY_LIST records of rt.inc     (file 3)
 24 REM    records  enum, head, rec lines of passes.txt  (file 4)
-25 REM STANDARD OUTPUT = the DATA lines of the selected blocks, numbered
-26 REM consecutively from 89000 across the blocks; each table ends with its sentinel.
-27 REM A malformed record, an over-long DATA line (255 bytes, line number included),
-28 REM a bad selection or a missing file: message on stderr, exit status 1.
-29 REM
+25 REM    mtab     the pow words of math_tables.inc     (file 5): sea_mt_const exp log, 8 per line
+26 REM STANDARD OUTPUT = the DATA lines of the selected blocks, numbered
+27 REM consecutively from 89000 across the blocks; each table ends with its sentinel.
+28 REM A malformed record, an over-long DATA line (255 bytes, line number included),
+29 REM a bad selection or a missing file: message on stderr, exit status 1.
 30 REM Variables: N next line number; K file; G line count of the file read;
 31 REM L$ input line; R$ rest of a record; W$ field; S$ in / E$ out of ENC;
 32 REM D$ statement text of the DATA line being built; Z$ record id; M$ message;
 33 REM X$ file name; O result flag of the validators; M() limbs of a constant.
-100 FILES "limits.inc"; "errors.inc"; "rt.inc"; "passes.txt"
+100 FILES "limits.inc"; "errors.inc"; "rt.inc"; "passes.txt"; "math_tables.inc"
 110 DIM C(1)
 120 DIM M(3)
-130 DIM S(6)
+130 DIM S(7)
 140 REM the quote character cannot be written in a string constant
 150 LET C(0)=1
 160 LET C(1)=34
@@ -42,7 +42,7 @@
 270 REM rank of the requested block name
 280 RESTORE
 290 LET P=0
-300 FOR I=1 TO 6
+300 FOR I=1 TO 7
 310 READ A$
 320 IF L$<>A$ THEN 340
 325 IF LEN(L$)<>LEN(A$) THEN 340
@@ -52,7 +52,7 @@
 360 LET M$="unknown block "&Q$&L$&Q$
 370 GOTO 900
 380 IF P>P0 THEN 410
-390 LET M$="each block at most once, in the order errors errno exits consts entries records"
+390 LET M$="each block at most once, in the order errors errno exits consts entries records mtab"
 400 GOTO 900
 410 LET P0=P
 420 LET S(P)=1
@@ -61,9 +61,9 @@
 441 IF G>0 THEN 446
 442 LET M$="empty selection (no block named on standard input)"
 444 GOTO 900
-446 FOR I=1 TO 6
+446 FOR I=1 TO 7
 448 IF S(I)=0 THEN 484
-450 ON I GOTO 452,456,460,464,468,472
+450 ON I GOTO 452,456,460,464,468,472,476
 452 GOSUB 6000
 453 GOTO 484
 456 GOSUB 6100
@@ -76,6 +76,8 @@
 469 GOTO 484
 472 GOSUB 6400
 473 GOTO 484
+476 GOSUB 6900
+477 GOTO 484
 484 NEXT I
 486 GOTO 9999
 500 REM ---- validators: W$ in, O out (1 = valid) ----
@@ -592,5 +594,106 @@
 6806 LET D$="DATA -1"
 6807 GOSUB 800
 6808 RETURN
-9990 DATA "errors","errno","exits","consts","entries","records"
+6900 REM block mtab: "DATA 32,128,128", the words of sea_mt_const, sea_mt_exp, sea_mt_log of
+6901 REM math_tables.inc as limbs, 8 words per line (no line mixes two tables), then -1.
+6902 REM T7 = the table being read (1 const, 2 exp, 3 log, 0 none, 4 another label), E7 the
+6903 REM next table expected, W7 its words so far, Q7 the words in D$, A7$ its name.
+6904 LET K=5
+6905 LET X$="math_tables.inc"
+6906 RESTORE #K
+6907 LET G=0
+6908 LET T7=0
+6909 LET E7=1
+6910 LET D$="DATA 32,128,128"
+6911 GOSUB 800
+6912 IF END #K THEN 6980
+6913 LINPUT #K, L$
+6914 LET G=G+1
+6915 IF LEN(L$)<>28 THEN 6930
+6916 IF SEG$(L$,1,12)<>"    .quad 0x" THEN 6930
+6917 IF T7=0 THEN 6912
+6918 IF T7=4 THEN 6912
+6919 GOTO 7000
+6930 IF LEN(L$)<9 THEN 6912
+6931 IF SEG$(L$,1,7)<>"sea_mt_" THEN 6912
+6932 IF ASC(SEG$(L$,LEN(L$),LEN(L$)))<>58 THEN 6912
+6933 IF POS(L$," ")>0 THEN 6912
+6934 GOSUB 7100
+6935 LET A7$=SEG$(L$,8,LEN(L$)-1)
+6936 LET Z$=A7$
+6937 LET T7=4
+6938 IF A7$="const" THEN 6945
+6939 IF A7$="exp" THEN 6947
+6940 IF A7$="log" THEN 6949
+6941 LET Z$=""
+6942 GOTO 6912
+6945 LET T7=1
+6946 GOTO 6950
+6947 LET T7=2
+6948 GOTO 6950
+6949 LET T7=3
+6950 IF T7=E7 THEN 6955
+6951 REM
+6952 LET M$="the tables sea_mt_const, sea_mt_exp, sea_mt_log must come once each, in this order"
+6953 GOTO 900
+6955 LET W7=0
+6956 LET Q7=0
+6957 LET D$="DATA "
+6958 LET Z$=""
+6959 GOTO 6912
+6980 GOSUB 7100
+6981 LET Z$=""
+6982 IF E7=4 THEN 6986
+6983 LET M$="math_tables.inc lacks one of the tables sea_mt_const, sea_mt_exp, sea_mt_log"
+6984 GOTO 900
+6986 LET D$="DATA -1"
+6987 GOSUB 800
+6988 RETURN
+7000 REM a word line of the table T7: 16 upper-case hexadecimal digits -> 4 limbs in D$
+7001 FOR A7=0 TO 3
+7002 LET V7=0
+7003 FOR B7=1 TO 4
+7004 LET C7=ASC(SEG$(L$,12+4*A7+B7,12+4*A7+B7))
+7005 IF C7<48 THEN 7020
+7006 IF C7<=57 THEN 7011
+7007 IF C7<65 THEN 7020
+7008 IF C7>70 THEN 7020
+7009 LET V7=16*V7+C7-55
+7010 GOTO 7012
+7011 LET V7=16*V7+C7-48
+7012 NEXT B7
+7013 IF Q7+A7=0 THEN 7016
+7014 LET D$=D$&","&STR$(V7)
+7015 GOTO 7017
+7016 LET D$=D$&STR$(V7)
+7017 NEXT A7
+7018 GOTO 7030
+7020 LET M$="a .quad word is not 16 upper-case hexadecimal digits"
+7021 LET Z$=A7$
+7022 GOTO 900
+7030 LET W7=W7+1
+7031 LET Q7=Q7+1
+7032 IF Q7<8 THEN 6912
+7033 GOSUB 800
+7034 LET Q7=0
+7035 LET D$="DATA "
+7036 GOTO 6912
+7100 REM end of the table T7 (if one of the three is open): the last line, then its word count
+7101 IF T7=0 THEN 7130
+7102 IF T7=4 THEN 7130
+7103 IF Q7=0 THEN 7108
+7104 GOSUB 800
+7105 LET Q7=0
+7108 LET C7=32
+7109 IF T7=1 THEN 7113
+7110 LET C7=256
+7111 IF T7=2 THEN 7113
+7112 LET C7=384
+7113 IF W7=C7 THEN 7120
+7114 LET M$="table sea_mt_"&A7$&" has "&STR$(W7)&" words, not "&STR$(C7)
+7115 LET Z$=A7$
+7116 GOTO 900
+7120 LET E7=E7+1
+7130 RETURN
+9990 DATA "errors","errno","exits","consts","entries","records","mtab"
 9999 END

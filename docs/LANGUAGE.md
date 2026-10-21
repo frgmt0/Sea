@@ -889,7 +889,7 @@ converted (§4.2), so `2 ^ 10` is 1024.0 and `n ^ 2` with `n: i64` is an `f64`.
   `x ^ y` is evaluated by multiplication in this pinned order (the value of `y` is computed
   exactly, as the run time would compute it; an exponent that contains a call of any function,
   such as `sqrt(4.0)`, or a `^` that is itself not evaluated by multiplication, such as
-  `4 ^ 0.5`, does not count as an integer here, whatever its value): `x^0 = 1`, `x^1 = x`,
+  `4 ^ 0.5`, does not count as an integer here, whatever its value; the rule is about the exponent as written, so a `const` name counts by its value however that const was defined: with `const K = pow(4.0, 0.5)`, `x ^ K` is the multiplication `x*x`, because the exponent expression `K` itself contains no call): `x^0 = 1`, `x^1 = x`,
   `x^2 = x*x`, `x^3 = (x*x)*x`, `x^4 = (x*x)*(x*x)`, `x^-k = 1/(x^k)`. So `x ^ 2` and `x ^ 2.0`
   are the same operation. (W1's `d ^ 3` and the squares in `shaft_safety` take this path.)
 * Otherwise `x ^ y` is `pow(x, y)` of §10.4.

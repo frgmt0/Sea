@@ -12,7 +12,7 @@ These are the shared pass modules `limb.bas`, `f64emu.bas` and `fltlit.bas` (DES
 
 None of these modules contains `DATA` or `END`. No SUB can stop the program (none raises a Baysick
 `OVERFLOW`, `DIVISION BY ZERO` or `SUBSCRIPT ERROR` within the stated capacities). Together they
-use 40 `FOR` statements.
+use 42 `FOR` statements.
 
 ## Conventions
 
@@ -99,7 +99,8 @@ unchanged, a NaN A included and not quieted (LANGUAGE.md §6.6).
 | `FEUNP` | `A3..A0,S,K,M,E` | sign S, class K (as `FECLS`), and \|A\| = M·2^E with M an integer below 2⁵³ (M = 0 for zeros, infinities and NaN). |
 | `FEMTI` | `MT(),E` | reads the `mtab` `DATA` block (DESIGN.md §2.6.3) from the current `DATA` position into `MT()`, which the caller dimensions with 2689 elements: `MT(0)` = 672, word w (0-based: 32 constants, the `exp` table, the `log` table) at `MT(4w+1)` … `MT(4w+4)`, most significant limb first. E = 0: ok. E = 1: a count, limb or the sentinel disagrees (the caller reports `BAD_DATA`). |
 | `FEPOW` | `MT(),X3..X0,Y3..Y0,R3..R0` | R = `pow(X, Y)` with exactly the runtime's bits: the operation sequence of DESIGN.md §4.10.4 (`pow` steps 1–12, `log_core`, `exp_core`), every IEEE operation through `FEADD` `FESUB` `FEMUL` `FEDIV` `FENEG` in the order written there, every integer step exact on the limbs; special cases as C99 Annex F; every NaN result `#7FF8000000000000` (not the NaN-propagation rule above). `MT()` as `FEMTI` filled it. |
-| `FELGC` `FEEXC` `FE2SM` `FEF2S` `FESPL` `FE2PR` | *internal* | `log_core`, `exp_core`, `two_sum`, `fast_two_sum`, `split`, `two_prod` of DESIGN.md §4.10.2–§4.10.4, used only by `FEPOW`. |
+| `FELGC` `FEEXC` `FE2SM` `FEF2S` `FESPL` `FE2PR` | *internal* | `log_core`, `exp_core`, `two_sum`, `fast_two_sum`, `split`, `two_prod` of DESIGN.md §4.10.2–§4.10.4, used only by `FEPOW`. They work on a table `F(49,3)` of f64 patterns (one row per value, limbs most significant first) that `FEPOW` dimensions; rows 1–37 hold the values of `FEPOW` and the two cores, 38 and 40–49 the primitives' scratch. |
+| `FEOP` `FELD` `FECP` `FEMC` `FEBIT` | *internal* | one IEEE operation on rows of `F` (`FEADD` `FESUB` `FEMUL` `FEDIV` `FENEG`), load a pattern, copy a row, load word w of `MT()`, test the low bits of a pattern (the integer classification of `pow` step 5). |
 | `FEPCK` `FEADS` `FEMDS` `FEQNP` | *internal* | pack M·2^E, the signed add, an exact modulo, and the propagated NaN (`FEQNP: A3..A0,B3..B0,N,R3..R0,Y`: Y = 1 and R = the first NaN among the N operands, quieted; Y = 0 and R untouched if none). |
 
 **Folding.** Folding is not guarded (DESIGN.md §2.8, §3.5.7): pass 2b folds a foldable operation

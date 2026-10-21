@@ -1,0 +1,13 @@
+// lib_math_hypot -- hypot of ordinary, i64, huge, tiny and special arguments (LANGUAGE.md 10.4; DESIGN.md 4.10)
+let a = 8
+let b = 15
+printf("%.17g\n", hypot(3.0, 4.0))
+printf("%.17g\n", hypot(5, 12))
+printf("%.17g\n", hypot(a, b))
+printf("%.17g\n", hypot(-0.0, 0.0))
+printf("%.17g\n", hypot(inf, nan))
+printf("%.17g\n", hypot(nan, -inf))
+printf("%.17g\n", hypot(nan, 1.0))
+printf("%.17g\n", hypot(1e308, 1e308))
+printf("%.17g\n", hypot(5e-324, 5e-324))
+printf("%.17g\n", hypot(1e-300, 1.0))

@@ -1,3 +1,0 @@
-// err_ns_pow_call -- an exponent that contains a call is never integral (LANGUAGE.md 6.5)
-let x = 2.0
-let p = x ^ i64(2.0)
