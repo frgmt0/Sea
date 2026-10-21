@@ -269,8 +269,8 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    bug could otherwise look like success. Therefore every pass:
    * reads its input only with `LINPUT #k` after an `IF END #k` test (`k` = 0 for pass 1's
      standard input, else its input file), never with plain `INPUT`/`LINPUT`;
-   * requires the final record `#end` of its input, and stops with status 11 (`internal error:
-     truncated input`) if the input ends without it;
+   * requires the final record `#end` of its input, and if the input ends without it writes
+     `<pass>: internal error: truncated input` (`TRUNCATED`, §2.6.2) and stops with status 11;
    * writes `#end` as the last record of its own output, after everything else;
    * reads its `DATA` tables with counted loops whose counts are checked against a sentinel
      value at the end of each table.
@@ -526,11 +526,12 @@ to this table. A code is never reused or renumbered; a new message is appended i
 
 **Output.** A compile-time message is written by the pass (or the driver) as LANGUAGE.md §9.1
 says; a `P` message as `<pass>: <text>` + LF on standard error, where `<pass>` is the program's
-name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`, except `TRUNCATED` and
-`BAD_HEADER`, which are written as their text alone (exactly one line, no prefix); a run-time
-message by `_sea_err` as LANGUAGE.md §9.2 says. One text is copied outside `errors.inc`: the
-text of `BAD_DATA` is needed before a pass has read its `DATA` tables, so `passes/lib/diag.bas`
-holds it as a constant, and `tests/lib_check.sh` checks that it equals the error record.
+name (`seaparse`, `seacheck`, …), exactly one line, before the pass ends with `STOP 11`
+(`SEA_EXIT_PASS_INTERNAL`); this holds for every `P` message, `TRUNCATED` and `BAD_HEADER`
+included; a run-time message by `_sea_err` as LANGUAGE.md §9.2 says. One text is copied
+outside `errors.inc`: the text of `BAD_DATA` is needed before a pass has read its `DATA`
+tables, so `passes/lib/diag.bas` holds it as a constant, and `tests/lib_check.sh` checks that
+it equals the error record.
 
 **The error table.**
 
@@ -2755,8 +2756,9 @@ Test names carry the spec area: `lex_*`, `type_*`, `idx_*`, `op_*`, `stmt_*`, `f
 * **Linear-algebra tests** use exact data (small integer matrices with exact factorizations and
   solutions), as Baysick's product tests do, so even class-R results are exact and identical,
   plus ∞/NaN propagation tests and empty-operand tests.
-* **Pass-protocol tests** feed each pass a truncated input (no `#end`) and check status 11, and
-  check that the driver rejects a pass output without `#end` (§2.2).
+* **Pass-protocol tests** feed each pass a truncated input (no `#end`) and check status 11 and
+  the one line `<pass>: internal error: truncated input` on standard error, and check that the
+  driver rejects a pass output without `#end` (§2.2).
 
 ### 6.3 Workload acceptance
 

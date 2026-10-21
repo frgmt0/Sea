@@ -6,7 +6,7 @@
 #    final #end (pass 1: on standard input; the others: as sea.ast, sea.hir1, sea.hir,
 #    sea.lir1, sea.lir in the working directory). It must exit with status 11
 #    (SEA_EXIT_PASS_INTERNAL) and write exactly the text of the error record TRUNCATED of
-#    errors.inc, followed by LF, to standard error, and nothing to standard output.
+#    errors.inc prefixed by the pass name (`<pass>: <text>`), followed by LF, to standard error, and nothing to standard output.
 #    A pass whose executable is not built is a FAILURE ("not built"), not a skip.
 # 2. The driver rejects a pass output without #end. With fake passes (shell scripts in a
 #    scratch installation directory, SEA_HOME) one pass at a time writes its output file without
@@ -82,7 +82,6 @@ if [ -z "$TRUNC_TEXT" ] || [ -z "$PASS_INTERNAL" ]; then
     echo "protocol.sh: TRUNCATED or SEA_EXIT_PASS_INTERNAL not found in $INC" >&2
     exit 2
 fi
-printf '%s\n' "$TRUNC_TEXT" > "$TMP/trunc.err"
 HEADER='#sea 1
 #target arm64-macos
 #file t.sea'
@@ -103,6 +102,7 @@ truncated() { # truncated PASS INPUTNAME(stdin|file name)
     st=$?
     ok=1
     [ "$st" = "$PASS_INTERNAL" ] || { fail "$name" "exit status $st, expected $PASS_INTERNAL"; ok=0; }
+    printf "%s: %s\n" "$_p" "$TRUNC_TEXT" > "$TMP/trunc.err"
     [ $ok = 1 ] && { same "$TMP/trunc.err" "$TMP/p.err" "stderr" "$name" || ok=0; }
     [ $ok = 1 ] && { same "$TMP/empty" "$TMP/p.out" "stdout" "$name" || ok=0; }
     rm -rf "$w"
