@@ -1,0 +1,135 @@
+#sea 1
+#target arm64-macos
+#file stmt_tasg.sea
+type 0:4:11 i64 s 0
+param 0:4:8 n 0 0
+type 0:4:20 i64 s 0
+type 0:4:25 i64 s 0
+pname 0:5:9 s
+int 0:5:13 0
+var 0:5:5 0
+int 0:6:14 0
+name 0:6:17 n
+range 0:6:14 0 0
+name 0:7:9 s
+name 0:7:14 i
+asg 0:7:9 add
+block 0:6:19 1
+for 0:6:5 i 0:6:9
+name 0:9:13 s
+name 0:9:16 n
+return 0:9:5 2
+block 0:4:30 3
+fn 0:4:1 two 0 1 2
+type 0:11:16 i64 s 0
+param 0:11:9 c 1 0
+type 0:11:25 i64 s 0
+type 0:11:30 i64 s 0
+int 0:12:14 0
+int 0:12:17 2
+range 0:12:14 0 0
+name 0:13:9 c
+int 0:13:14 1
+asg 0:13:9 add
+block 0:12:19 1
+for 0:12:5 i 0:12:9
+name 0:15:13 c
+int 0:15:17 10
+bin 0:15:13 mul
+name 0:15:21 c
+int 0:15:25 100
+bin 0:15:21 add
+return 0:15:5 2
+block 0:11:35 2
+fn 0:11:1 bump 0 1 2
+type 0:17:15 f64 s 0
+param 0:17:8 p 1 0
+type 0:17:23 i64 s 0
+param 0:17:20 n 0 0
+type 0:17:31 i64 s 0
+pname 0:18:9 k
+int 0:18:13 0
+var 0:18:5 0
+int 0:19:14 0
+int 0:19:17 1
+range 0:19:14 0 0
+name 0:20:10 p
+name 0:20:13 k
+name 0:20:18 two
+name 0:20:22 n
+call 0:20:18 1
+tasg 0:20:9 2
+block 0:19:19 1
+for 0:19:5 i 0:19:9
+name 0:22:12 k
+return 0:22:5 1
+block 0:17:35 3
+fn 0:17:1 put 0 2 1
+pname 0:24:5 a
+float 0:24:9 #3FE0000000000000
+var 0:24:1 0
+pname 0:25:5 b
+int 0:25:9 0
+var 0:25:1 0
+name 0:26:2 a
+name 0:26:5 b
+name 0:26:10 two
+int 0:26:14 4
+call 0:26:10 1
+tasg 0:26:1 2
+pskip 0:27:2
+name 0:27:5 b
+name 0:27:10 two
+int 0:27:14 5
+call 0:27:10 1
+tasg 0:27:1 2
+pname 0:28:5 c
+int 0:28:9 1
+var 0:28:1 0
+pname 0:29:5 d
+int 0:29:9 0
+var 0:29:1 0
+name 0:30:2 d
+name 0:30:5 c
+name 0:30:10 bump
+name 0:30:19 c
+ref 0:30:15
+call 0:30:10 1
+tasg 0:30:1 2
+name 0:31:2 d
+pskip 0:31:5
+name 0:31:10 bump
+name 0:31:19 c
+ref 0:31:15
+call 0:31:10 1
+tasg 0:31:1 2
+pname 0:32:5 x
+float 0:32:9 #3FD0000000000000
+var 0:32:1 0
+pname 0:33:5 k
+name 0:33:9 put
+name 0:33:17 x
+ref 0:33:13
+int 0:33:20 3
+call 0:33:9 2
+let 0:33:1 0
+pname 0:34:5 k2
+name 0:34:10 put
+name 0:34:18 x
+ref 0:34:14
+int 0:34:21 5
+call 0:34:10 2
+let 0:34:1 0
+name 0:35:1 printf
+str 0:35:8 %25f%20%25d%20%25d%20%25d%20%25f%20%25d%20%25d%0A
+name 0:35:34 a
+name 0:35:37 b
+name 0:35:40 d
+name 0:35:43 c
+name 0:35:46 x
+name 0:35:49 k
+name 0:35:52 k2
+call 0:35:1 8
+cstmt 0:35:1
+prog 15
+#end

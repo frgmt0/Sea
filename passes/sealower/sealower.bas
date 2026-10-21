@@ -29,7 +29,7 @@
 240 FILES "sea.hir"; "sea.lir1"
 245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(9), Y$(9,5), Z(8), I(40), L(4)
 250 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
-255 DIM H(99999,8), G(49999,8), A(99999,2), T(19999,3), M(199999), S$(199999), A$(2)
+255 DIM H(99999,8), G(49999,8), A(99999,2), T(20008,3), M(199999), S$(199999), A$(2)
 260 DIM V(199999,2), W(599999), U(199999,2), D(49999,2), B(9999,2), J(9999), P(131071)
 265 DIM L$(199999)
 270 LET P$ = "sealower"
@@ -82,7 +82,12 @@
 505 LET Q1$ = "ESIZE_F64"
 510 GOSUB 1850
 515 LET E8 = Q1
+516 LET Q1$ = "LIM_TYPES"
+517 GOSUB 1850
+518 LET T9 = Q1 + 9
 520 REM the tables above are DIMmed for these limits
+521 REM type ids run to 9 + SEA_LIM_TYPES (the predefined 1-9, then the program's)
+522 IF T9 > 20008 THEN 565
 525 IF N8 > 99999 THEN 565
 530 IF I9 > 199999 THEN 565
 535 IF R8 > 199999 THEN 565
@@ -175,7 +180,7 @@
 970 NEXT I
 975 LET W1 = W1 - P1 + 1
 980 LET W(W1) = H1
-985 ON K GOTO 995, 995, 1015, 995, 1015, 1285, 1070, 1095, 1135, 1025, 1285, 1155, 1040, 995, 1180, 1025, 1285, 1285, 1040, 1050, 1200, 1285, 1255, 1060, 1050, 1285, 1050, 1285, 1285, 1060, 1285, 1060
+985 ON K GOTO 995, 995, 1015, 995, 1015, 1285, 1070, 1095, 1135, 1025, 1285, 1155, 1040, 995, 1180, 1025, 1285, 1285, 1040, 1050, 1200, 1285, 1255, 8105, 1050, 1285, 1050, 1285, 1285, 1060, 1285, 1060
 990 REM the value of field 3 (ci cf cs ftext) as a string
 995 GOSUB 1900
 1000 LET S$(S0) = G$(4)
@@ -243,7 +248,7 @@
 1310 IF G0 > 0 THEN 2360
 1315 IF I(1) <> Y9 + 1 THEN 2360
 1320 LET Y9 = I(1)
-1325 IF Y9 <= 19999 THEN 1340
+1325 IF Y9 <= T9 THEN 1340
 1330 LET P8$ = "types"
 1335 GOTO 1285
 1340 LET T(Y9, 1) = 1
@@ -251,7 +256,7 @@
 1350 IF G0 > 0 THEN 2360
 1355 IF I(1) <> Y9 + 1 THEN 2360
 1360 LET Y9 = I(1)
-1365 IF Y9 > 19999 THEN 1415
+1365 IF Y9 > T9 THEN 1415
 1370 IF M1 + I(2) > 199999 THEN 1415
 1375 LET T(Y9, 1) = 2
 1380 LET T(Y9, 2) = I(2)
@@ -487,7 +492,14 @@
 2530 LET J0 = 0
 2535 LET U0 = 0
 2540 LET S7 = 0
-2545 LET X = G(F0, 8)
+2541 REM the func record's pos is a site too (2.7, 4.9); a capacity error here is reported at
+2542 REM that pos, held in the unused node row 0
+2543 LET H(0, 2) = G(F0, 6)
+2544 LET H(0, 3) = G(F0, 7)
+2545 LET X = 0
+2546 LET K8 = G(F0, 6)
+2547 GOSUB 7795
+2548 LET X = G(F0, 8)
 2550 REM rule 12 snapshots: in one statement (its expressions; an if, while or forr only its
 2555 REM condition or range), a read of a local L before a ref argument of L is flagged H(.,6) = 1
 2560 REM (an lv's own column 6 is free); the read then copies L into a new register
@@ -1097,6 +1109,7 @@
 5580 GOTO 3090
 5585 REM 5590: L1$ = "rcall <symbol> <site or -> <nr>" of entry row Q9; its results go after it
 5590 LET L1$ = "rcall " & Y$(Q9, 2) & " -"
+5592 LET S7 = 1
 5595 IF Y$(Q9, 3) <> "S" THEN 5615
 5600 GOSUB 7775
 5605 LET L1$ = "rcall " & Y$(Q9, 2) & " " & Z9$
@@ -1147,45 +1160,9 @@
 5830 GOTO 7380
 5835 LET U0 = W(W0 + 3)
 5840 GOTO 3090
-5845 REM ---- tasg: targets lv (a ref parameter: a new register, stored after) or skip (new) ------
-5850 LET W(W0 + 3) = U0
-5855 LET X2 = H(X, 7)
-5860 LET X3 = X2
-5865 FOR I = 1 TO H(X, 6)
-5870 LET X3 = H(X3, 8)
-5875 NEXT I
-5880 LET Z6 = H(X3, 4)
-5885 IF Z6 <= 9 THEN 2360
-5890 IF T(Z6, 1) <> 2 THEN 2360
-5895 IF T(Z6, 2) <> H(X, 6) THEN 2360
-5900 FOR I = 1 TO H(X, 6)
-5905 GOSUB 7970
-5910 LET U(U0, 2) = 0
-5915 IF H(X2, 1) = 18 THEN 5945
-5920 IF H(X2, 1) <> 5 THEN 2360
-5925 LET A1 = H(X2, 5)
-5930 LET U(U0, 1) = A1
-5935 IF V(A1, 1) <> 3 THEN 5965
-5940 LET U(U0, 2) = -A1
-5945 LET T1 = M(T(Z6, 3) + I - 1)
-5950 GOSUB 7395
-5955 GOSUB 7420
-5960 LET U(U0, 1) = N2
-5965 LET X2 = H(X2, 8)
-5970 NEXT I
-5975 LET S = 20
-5980 LET X1 = X3
-5985 LET D1 = -2
-5990 GOTO 7380
-5995 FOR I = W(W0 + 3) + 1 TO U0
-6000 IF U(I, 2) >= 0 THEN 6025
-6005 LET V2 = U(I, 1)
-6010 LET V3 = -U(I, 2)
-6015 LET Z3 = 0
-6020 GOSUB 7650
-6025 NEXT I
-6030 LET U0 = W(W0 + 3)
-6035 GOTO 3090
+5845 REM ---- tasg: rule 2 steps (a)-(d), at 8200 (the call) and 8400 (step (d)) -------------
+5850 GOTO 8205
+5995 GOTO 8405
 6040 REM ---- eval: the expression, a call discarding its results (rule 5) --------------------------
 6045 LET S = 21
 6050 LET X1 = H(X, 7)
@@ -1532,14 +1509,15 @@
 7755 LET Q2$ = "operands"
 7760 IF O7 > O9 THEN 2390
 7765 RETURN
-7770 REM ---- 7775: Z9$ = the site F:L of node X, S7 = 1; counts the distinct sites (2.7) ---------
+7770 REM ---- 7775: Z9$ = the site F:L of node X, S7 = 1; 7795: count the distinct site K8 (2.7)
 7775 LET F1 = INT(H(X, 2) / 1E9)
 7780 LET L1 = H(X, 2) - F1 * 1E9
 7785 LET Z9$ = STR$(F1) & ":" & STR$(L1)
 7790 LET S7 = 1
-7795 LET Z4 = H(X, 2) - INT(H(X, 2) / 131071) * 131071
+7792 LET K8 = H(X, 2)
+7795 LET Z4 = K8 - INT(K8 / 131071) * 131071
 7800 IF P(Z4) = 0 THEN 7830
-7805 IF P(Z4) = H(X, 2) + 1 THEN 7850
+7805 IF P(Z4) = K8 + 1 THEN 7850
 7810 LET Z4 = Z4 + 1
 7815 IF Z4 < 131071 THEN 7800
 7820 LET Z4 = 0
@@ -1547,7 +1525,7 @@
 7830 LET Q2$ = "sites"
 7835 IF S8 >= Z8 THEN 2390
 7840 LET S8 = S8 + 1
-7845 LET P(Z4) = H(X, 2) + 1
+7845 LET P(Z4) = K8 + 1
 7850 RETURN
 7855 REM ---- 7865 / 7885 / 7905 / 7935: count an li / lf; a new block B7; a new slot S5 of Z1
 7860 REM bytes, alignment Z2; a new data label D0 of kind Q3 for node Q4 -----------------------
@@ -1578,3 +1556,94 @@
 7985 LET J0 = J0 + 1
 7990 LET J(J0) = W(W0 + 3)
 7995 RETURN
+8100 REM ---- reading tasg: n, then one cv flag (0 or 1) per target, kept in M from H(H1, 0) ------
+8105 LET H(H1, 6) = I(2)
+8110 LET H(H1, 0) = M1 + 1
+8115 LET Q2$ = "nodes"
+8120 IF M1 + I(2) > 199999 THEN 2375
+8125 FOR I = 1 TO I(2)
+8130 LET M1 = M1 + 1
+8135 LET M(M1) = VAL(G$(3 + I))
+8140 IF M(M1) > 1 THEN 2360
+8145 NEXT I
+8150 GOTO 1285
+8195 REM ---- tasg (t1 .. tn) = call (rule 2): Ri on U; U(.,2) = -(L + 100000 cv + 200000 if L is a
+8200 REM ref parameter) for a component that step (d) finishes (a new register Ri), else 0
+8205 LET W(W0 + 3) = U0
+8210 LET X2 = H(X, 7)
+8215 LET X3 = X2
+8220 FOR I = 1 TO H(X, 6)
+8225 LET X3 = H(X3, 8)
+8230 NEXT I
+8235 LET Z6 = H(X3, 4)
+8240 IF Z6 <= 9 THEN 2360
+8245 IF T(Z6, 1) <> 2 THEN 2360
+8250 IF T(Z6, 2) <> H(X, 6) THEN 2360
+8255 REM X4 = the call (the value of a seq)
+8260 LET X4 = X3
+8265 IF H(X4, 1) <> 19 THEN 8290
+8270 LET X4 = H(X4, 7)
+8275 IF H(X4, 8) = 0 THEN 8290
+8280 LET X4 = H(X4, 8)
+8285 GOTO 8275
+8290 IF H(X4, 1) <> 10 THEN 2360
+8295 FOR I = 1 TO H(X, 6)
+8300 GOSUB 7970
+8305 LET U(U0, 2) = 0
+8310 LET Q3 = M(H(X, 0) + I - 1)
+8315 IF H(X2, 1) = 18 THEN 8375
+8320 IF H(X2, 1) <> 5 THEN 2360
+8325 LET A1 = H(X2, 5)
+8330 LET U(U0, 1) = A1
+8335 LET A2 = A1 + 100000 * Q3
+8340 IF V(A1, 1) <> 3 THEN 8350
+8345 LET A2 = A2 + 200000
+8347 GOTO 8370
+8350 IF Q3 = 1 THEN 8370
+8352 REM a local keeps its register unless the call passes it by ref
+8355 LET X8 = H(X4, 7)
+8357 IF X8 = 0 THEN 8390
+8360 IF H(X8, 1) <> 11 THEN 8365
+8362 IF H(H(X8, 7), 5) = A1 THEN 8370
+8365 LET X8 = H(X8, 8)
+8367 GOTO 8357
+8370 LET U(U0, 2) = -A2
+8375 LET T1 = M(T(Z6, 3) + I - 1)
+8380 GOSUB 7395
+8382 GOSUB 7420
+8385 LET U(U0, 1) = N2
+8390 LET X2 = H(X2, 8)
+8392 NEXT I
+8394 LET S = 20
+8396 LET X1 = X3
+8397 LET D1 = -2
+8398 GOTO 7380
+8400 REM step (d), components in order: itof F Ri if cv is 1 (V = F, else V = Ri), then mov L V or sti/stf V P
+8405 FOR I = W(W0 + 3) + 1 TO U0
+8410 IF U(I, 2) >= 0 THEN 8480
+8415 LET A2 = -U(I, 2)
+8420 LET A3 = 0
+8425 IF A2 < 200000 THEN 8440
+8430 LET A3 = 1
+8435 LET A2 = A2 - 200000
+8440 LET V2 = U(I, 1)
+8445 IF A2 < 100000 THEN 8465
+8450 LET A2 = A2 - 100000
+8452 LET C1 = 2
+8454 GOSUB 7420
+8456 LET O$ = "itof"
+8458 LET V3 = V2
+8460 LET V2 = N2
+8462 GOSUB 7540
+8465 IF A3 = 1 THEN 8475
+8467 LET O$ = "mov"
+8468 LET V3 = V2
+8469 LET V2 = A2
+8470 GOSUB 7540
+8472 GOTO 8480
+8475 LET V3 = A2
+8476 LET Z3 = 0
+8477 GOSUB 7650
+8480 NEXT I
+8485 LET U0 = W(W0 + 3)
+8490 GOTO 3090

@@ -1,0 +1,115 @@
+#sea 1
+#target arm64-macos
+#file stmt_tasg.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 8 8
+slot s4 8 8
+slot s5 56 8
+lf f1 #3FE0000000000000
+li i2 0
+li i3 4
+call two 2 i4 i2 1 i3
+itof f5 i4
+mov f1 f5
+li i6 5
+call two 2 i7 i2 1 i6
+li i8 1
+li i9 0
+sa p10 s1
+sti i8 p10 - 0 0
+call bump 2 i9 i11 1 p10
+ldi i8 p10 - 0 0
+mov i8 i11
+sa p12 s2
+sti i8 p12 - 0 0
+call bump 2 i9 i13 1 p12
+ldi i8 p12 - 0 0
+lf f14 #3FD0000000000000
+sa p15 s3
+stf f14 p15 - 0 0
+li i16 3
+call put 1 i17 2 p15 i16
+ldf f14 p15 - 0 0
+sa p18 s4
+stf f14 p18 - 0 0
+li i19 5
+call put 1 i20 2 p18 i19
+ldf f14 p18 - 0 0
+sa p21 s5
+stf f1 p21 - 0 0
+sti i2 p21 - 0 8
+sti i9 p21 - 0 16
+sti i8 p21 - 0 24
+stf f14 p21 - 0 32
+sti i17 p21 - 0 40
+sti i20 p21 - 0 48
+la p22 d1
+rcall sea_printf 0:35 0 2 p22 p21
+ret 0
+endfunc
+func two fn 0:4:1 1 i1 2 i i
+li i2 0
+li i3 0
+li i4 1
+rcount i5 i6 i3 i1 i4 0 0:6
+if 1 i6
+loop 2 i7 i3 i5 i4
+iaddc i2 i2 i7 0:7
+endloop 2
+endif 1
+ret 2 i2 i1
+endfunc
+func bump fn 0:11:1 1 p1 2 i i
+li i2 0
+li i3 2
+li i4 1
+rcount i5 i6 i2 i3 i4 0 0:12
+if 1 i6
+loop 2 i7 i2 i5 i4
+ldi i8 p1 - 0 0
+li i9 1
+iaddc i10 i8 i9 0:13
+sti i10 p1 - 0 0
+endloop 2
+endif 1
+ldi i11 p1 - 0 0
+li i12 10
+imulc i13 i11 i12 0:15
+ldi i14 p1 - 0 0
+li i15 100
+iaddc i16 i14 i15 0:15
+ret 2 i13 i16
+endfunc
+func put fn 0:17:1 2 p1 i2 1 i
+li i3 0
+li i4 0
+li i5 1
+li i6 1
+rcount i7 i8 i4 i5 i6 0 0:19
+if 1 i8
+loop 2 i9 i4 i7 i6
+call two 2 i10 i3 1 i2
+itof f11 i10
+stf f11 p1 - 0 0
+endloop 2
+endif 1
+ret 1 i3
+endfunc
+fmt d1 14
+fconv - - - f f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - f f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

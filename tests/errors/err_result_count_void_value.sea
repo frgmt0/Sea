@@ -1,0 +1,5 @@
+// err_result_count_void_value -- a call without results used as a value: at the call (LANGUAGE.md 8.4)
+fn p() {
+    printf("x\n")
+}
+let y = p()

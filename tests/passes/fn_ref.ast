@@ -12,7 +12,7 @@ name 0:7:9 s
 name 0:7:14 i
 asg 0:7:9 add
 block 0:6:19 1
-for 0:6:5 i
+for 0:6:5 i 0:6:9
 block 0:5:29 1
 fn 0:5:1 bump 0 2 0
 type 0:10:17 i64 s 0
@@ -29,7 +29,7 @@ name 0:12:21 i
 call 0:12:9 2
 cstmt 0:12:9
 block 0:11:19 1
-for 0:11:5 i
+for 0:11:5 i 0:11:9
 block 0:10:30 1
 fn 0:10:1 bump2 0 2 0
 pname 0:15:5 t

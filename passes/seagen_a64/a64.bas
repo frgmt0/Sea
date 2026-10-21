@@ -270,6 +270,7 @@
 3170 LET F6$ = ""
 3175 FOR I5 = 1 TO P0
 3180 LET T(I5) = Q(I5)
+3182 IF Q(I5) <> I5 THEN 9990
 3185 LET F6$ = F6$ & SEG$("ifp", P(I5), P(I5))
 3190 NEXT I5
 3191 LET F7$ = ""
@@ -316,13 +317,15 @@
 3305 IF U0 > 1 THEN 9990
 3306 IF U0 = 0 THEN 3309
 3307 LET T5 = T9
-3309 IF R$(I0) <> "mov" THEN 3314
+3309 IF R$(I0) <> "mov" THEN 3312
 3311 IF D2 <> P(1) THEN 9990
+3312 IF R$(I0) <> "chkb" THEN 3314
+3313 IF U0 > 1 THEN 9990
 3314 IF M(T5,6) * K(1) <= A1 THEN 3316
 3315 LET A1 = M(T5,6) * K(1)
 3316 LET A$(1) = "labels"
 3318 IF H0 > K(44) THEN 9960
-3319 GOTO 3480
+3319 GOTO 3620
 3320 REM opening a block: numbered in order, pushed
 3322 LET Y1 = VAL(G$(2))
 3324 IF Y1 <> B7 + 1 THEN 9990
@@ -338,7 +341,7 @@
 3344 IF Y0 <> 10 THEN 3347
 3346 LET B(B7,1) = 2
 3347 IF Y0 <> 8 THEN 3480
-3348 LET B(B7,1) = 1
+3348 GOSUB 3630
 3349 LET B(B7,4) = Q(1)
 3350 GOTO 3480
 3360 REM closing: the innermost open block, of the matching kind
@@ -428,8 +431,10 @@
 3471 IF Y1 = 0 THEN 9990
 3472 IF E$(Y1,2) <> "R" THEN 9990
 3473 LET G(J) = Y1
-3474 IF (P0 - 1) * K(1) <= A1 THEN 3480
-3475 LET A1 = (P0 - 1) * K(1)
+3474 GOSUB 3600
+3475 IF Y2 <> U(4) THEN 9990
+3476 IF (P0 - 1) * K(1) <= A1 THEN 3480
+3478 LET A1 = (P0 - 1) * K(1)
 3480 NEXT J
 3482 IF K7 <> 0 THEN 9990
 3484 LET A$(1) = "instructions"
@@ -470,6 +475,27 @@
 3582 IF 8 * G3 <= A1 THEN 3586
 3584 LET A1 = 8 * G3
 3586 RETURN
+3600 REM ---- Y2 = the argument slots the args letters of error Y1 need: h two, the others one
+3601 REM (DESIGN 2.6.2); a chk names exactly that many (DESIGN 3.6.5, 4.9)
+3602 LET Y2 = 0
+3604 LET Z$ = E$(Y1,4)
+3606 IF Z$ = "-" THEN 3618
+3608 FOR I5 = 1 TO LEN(Z$)
+3610 LET Y2 = Y2 + 1
+3612 IF SEG$(Z$, I5, I5) <> "h" THEN 3616
+3614 LET Y2 = Y2 + 1
+3616 NEXT I5
+3618 RETURN
+3620 REM la: the highest data label referenced, L8; the file must define it (checked at #end)
+3622 IF R$(I0) <> "la" THEN 3480
+3624 IF H0 <= L8 THEN 3480
+3626 LET L8 = H0
+3628 GOTO 3480
+3630 REM a loop: its ind is not the ind of an enclosing loop (the loop writes it at each step)
+3632 LET R0 = Q(1)
+3634 GOSUB 9660
+3636 LET B(B7,1) = 1
+3638 RETURN
 3700 REM ---- the func record (in G$): name, kind, position --------------------------------
 3705 IF C0 < 6 THEN 9990
 3710 LET F5$ = G$(2)
@@ -567,22 +593,27 @@
 4050 LET X$ = "Lfn_" & F5$ & ":"
 4055 GOSUB 9000
 4060 IF A9 = 0 THEN 4100
-4062 REM sp - frame below _sea_stack_limit: stack overflow at the definition line
-4065 LET Z5 = A7
-4070 LET Z5$ = "x16"
-4072 GOSUB 9050
-4074 LET X$ = "sub x16, sp, x16"
-4076 GOSUB 9010
-4078 LET X$ = "adrp x17, _sea_stack_limit@PAGE"
-4080 GOSUB 9010
-4082 LET X$ = "ldr x17, [x17, _sea_stack_limit@PAGEOFF]"
-4084 GOSUB 9010
-4086 LET X$ = "cmp x16, x17"
-4088 GOSUB 9010
-4090 LET Z1$ = "b.lo"
-4092 LET Z2$ = ""
-4094 LET Z3$ = "L" & STR$(F0) & "_so"
-4096 GOSUB 9100
+4062 REM r = sp - _sea_stack_limit; a borrow (sp below the limit) or r < the frame size, unsigned,
+4063 REM is a stack overflow at the definition line; nothing wraps for any frame size (DESIGN 4.6)
+4064 LET X$ = "adrp x17, _sea_stack_limit@PAGE"
+4066 GOSUB 9010
+4068 LET X$ = "ldr x17, [x17, _sea_stack_limit@PAGEOFF]"
+4070 GOSUB 9010
+4072 LET X$ = "subs x16, sp, x17"
+4074 GOSUB 9010
+4076 LET Z1$ = "b.lo"
+4078 LET Z2$ = ""
+4080 LET Z3$ = "L" & STR$(F0) & "_so"
+4082 GOSUB 9100
+4084 LET Z5 = A7
+4086 LET Z5$ = "x17"
+4088 GOSUB 9050
+4090 LET X$ = "cmp x16, x17"
+4092 GOSUB 9010
+4094 LET Z1$ = "b.lo"
+4095 LET Z2$ = ""
+4096 LET Z3$ = "L" & STR$(F0) & "_so"
+4097 GOSUB 9100
 4100 LET X$ = "stp x29, x30, [sp, #-16]!"
 4105 GOSUB 9010
 4110 LET X$ = "mov x29, sp"
@@ -1283,6 +1314,7 @@
 7790 GOSUB 7600
 7792 RETURN
 7800 REM a conversion: letter, flags (fl letters l p s z a -> SEA_FF_*), class, width, precision
+7801 GOSUB 7960
 7802 LET Y1 = 0
 7804 IF G$(2) = "-" THEN 7816
 7806 FOR I2 = 1 TO LEN(G$(2))
@@ -1349,9 +1381,16 @@
 7908 LET X$ = ".section __DATA,__const"
 7910 GOSUB 9010
 7914 RETURN
+7960 REM ---- fconv: class p exactly for %s, i or f for the numeric conversions (DESIGN 3.6.5) --
+7962 IF G$(5) <> "s" THEN 7968
+7964 IF G$(6) <> "p" THEN 9990
+7966 RETURN
+7968 IF G$(6) = "p" THEN 9990
+7970 RETURN
 8000 REM ---- #end: the #file strings and _sea_sites (rt.inc SEA_SITE_*) ------------------------
 8005 CALL "io_end": 1, P$, E(), E$(), E0
 8010 IF M9 <> 1 THEN 9990
+8012 IF L8 > D8 THEN 9990
 8015 GOSUB 7900
 8020 FOR I4 = 1 TO N1
 8025 LET Z9$ = "Lsf" & STR$(I4 - 1)
@@ -1668,7 +1707,7 @@
 9532 IF F$(J2) <> "d" THEN 9536
 9533 LET D1 = R0
 9534 LET D2 = R1
-9535 GOTO 9540
+9535 GOTO 9547
 9536 LET P0 = P0 + 1
 9537 LET Q(P0) = R0
 9538 LET P(P0) = R1
@@ -1678,10 +1717,11 @@
 9544 IF T0 = C0 THEN 9549
 9545 GOTO 9990
 9546 LET E1 = R0
-9547 GOTO 9540
+9547 GOSUB 9660
+9548 GOTO 9540
 9549 RETURN
 9550 REM ---- the register Z$ of field type T1 (16 reg, 17 ri, 18 rf, 19 rp): R0 number, R1 class
-9551 REM (1 i, 2 f, 3 p); one class per register (D), M0 the highest number (DESIGN 3.6.1)
+9551 REM (1 i, 2 f, 3 p); one class per register (D); a new one is M0 + 1, the highest (DESIGN 3.6.1)
 9552 LET R1 = POS("ifp", SEG$(Z$, 1, 1))
 9554 IF R1 = 0 THEN 9990
 9556 IF T1 = 16 THEN 9560
@@ -1692,11 +1732,11 @@
 9566 IF R0 <= K(40) THEN 9572
 9568 LET A$(1) = "registers"
 9570 GOTO 9960
-9572 IF D(R0) = 0 THEN 9578
+9572 IF D(R0) = 0 THEN 9577
 9574 IF D(R0) <> R1 THEN 9990
 9576 RETURN
+9577 IF R0 <> M0 + 1 THEN 9990
 9578 LET D(R0) = R1
-9580 IF R0 <= M0 THEN 9584
 9582 LET M0 = R0
 9584 RETURN
 9590 REM the base and index fields of loads and stores
@@ -1728,6 +1768,14 @@
 9652 LET Z8 = Z8 + 1
 9654 NEXT I1
 9656 RETURN
+9660 REM ---- analysis (W0 = 3): register R0 is written; it is not the ind of an open loop ------
+9661 REM (DESIGN 3.6.5: the body never writes ind)
+9662 IF W0 <> 3 THEN 9672
+9664 FOR I7 = 1 TO K7
+9666 IF B(I(I7),1) <> 1 THEN 9670
+9668 IF B(I(I7),4) = R0 THEN 9990
+9670 NEXT I7
+9672 RETURN
 9960 CALL "dg_compile": P$, H$(), N1, F1, F2, F3, "TOO_LARGE", A$(), 1, E(), E$(), E0
 9970 CALL "dg_boot": P$
 9975 CALL "dg_bug": P$, M$

@@ -1,0 +1,8 @@
+// stmt_tasg_cvt -- a tuple assignment converts an i64 component to an f64 target (LANGUAGE.md 4.2, 7.3)
+fn two(n: i64) -> (i64, i64) {
+    return (n, n + 1)
+}
+var a = 0.5
+var b = 0
+(a, b) = two(3)
+printf("%f %d\n", a, b)

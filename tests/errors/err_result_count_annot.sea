@@ -1,0 +1,5 @@
+// err_result_count_annot -- an annotated let of a 2-result call: at the call, before any conversion (LANGUAGE.md 8.4)
+fn two() -> (i64, i64) {
+    return (1, 2)
+}
+let y: i64 = two()

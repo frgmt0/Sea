@@ -1,0 +1,4 @@
+// err_no_effect_asg -- x + y = 3 is an expression statement (LANGUAGE.md 7.1)
+var x = 1
+var y = 2
+x + y = 3

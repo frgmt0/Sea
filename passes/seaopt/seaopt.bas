@@ -11,8 +11,8 @@
 150 REM numbering and nesting, exit/next naming an enclosing loop or do, slot numbering, chk naming a
 155 REM run-time error, rcall naming an entry of rt.inc with its site, argument and result classes,
 160 REM the sub-records of fmt and dat, functions then data, and #end last. A malformed input is an
-165 REM internal error (status 11, 2.2): two lines "seaopt: line n: ..." and "seaopt: record: ..."
-170 REM saying where, then the text of BAD_RECORD from errors.inc. A capacity limit (2.6.1) is the
+165 REM internal error (status 11, 2.2): exactly one line, "seaopt: " and the text of BAD_RECORD from
+170 REM errors.inc (M$ says what failed, for a reader of this file only). A capacity limit (2.6.1) is the
 175 REM compile error "program too large: <word>" at the position of the func record (2.6.2).
 180 REM
 185 REM FLOW. Per function: read every record into the tables below (the main loop, one record per
@@ -25,11 +25,11 @@
 220 REM   I(n,1..4) instruction n (1..I9; row 0 is the func record): record row in the passes.txt
 225 REM             table Q (so Q$(I(n,1)) is the opcode), index in O of its first operand,
 230 REM             operand count, site (F*1E9+L, 0 = none; the site field is not in O)
-235 REM   O(k)      operand fields in record order (the repeated ones expanded), k = 1..: first those of
-240 REM             the func record (I(0,3) of them, outside the limit), then those of the instructions
-245 REM             (at most O9, the limit of operands); per field type:
+235 REM   O(k)      operand fields of the instructions in record order (the repeated ones expanded),
+240 REM             k = 1.. (at most O9, the limit of operands); the func record's fields are in M(1..I(0,3)),
+245 REM             outside the limit; per field type:
 250 REM               u: the value, -1 for an absent (-) field; reg: the register number, 0 = absent;
-255 REM               i and f: a row of C; s: a row of S$; pos: two entries, F*1E9+L then C;
+255 REM               li/lf v (i, f): a row of C; off (i): its value (|v| <= 2^53); s: a row of S$; pos: F*1E9+L, C;
 260 REM               lab, slot, blk: the number; an enumeration: the position of its word (1..)
 265 REM   R(r,1..7) register r (1..R9): class (1 i, 2 f, 3 p, 4 x, 5 y, 6 m), then six columns
 270 REM             for phase 5 (first definition, last use, interval start and end, machine
@@ -38,8 +38,10 @@
 285 REM             instruction that opens it, its else (0: none), the instruction that closes it
 290 REM   K(10000+s,1..4)  slot s (1..S9): size, alignment, frame offset (0 now), 0
 295 REM   C(r,1..4) the four 16-bit limbs of an i or f field, most significant first (r = 1..M9)
-300 REM   S$(r)     a string field exactly as written (escaped), r = 1..I9 plus row 0 (func name)
+300 REM   S$(r)     the distinct strings of the compilation (escaped, interned: P its hash table), r = 1..A3
 305 REM   X(h)      hash set of the distinct sites F*1E9+L of the compilation (instruction sites
+308 REM   (per compilation) H(sid) the func of name sid, V$(f) its result classes "/" parameter classes,
+309 REM   U$ the forward calls "sid:results/arguments" (hash set) checked at #end, M6 funcs of kind main
 310 REM             and func positions), counted against the limit of sites
 315 REM Other state: Q Q$ F F$ N N$ W$ Z the record and enumeration tables of passes.txt (tb_records),
 320 REM E E$ the error table, J J$ the limits, Y Y$ the entries of rt.inc, D D$ the exit statuses,
@@ -47,14 +49,15 @@
 330 REM fields of the current record, L four limbs, G$ the fields of the current line, H$ #file paths.
 335 REM Special codes B(row): 30 str 31 fmt 32 ftext 33 fconv 34 dat 35 dvi 36 dvf 37 func 38 slot
 340 REM   39 endfunc 40 loop 41 endloop 42 do 43 enddo 44 if / ifz 45 else 46 endif 47 exit 48 next
-345 REM   50 chk 51 rcall 52 mov; 0 every other instruction.
+345 REM   50 chk 51 rcall 52 mov 53 ret 54 call; 0 every other instruction.
 350 REM State: M8 0 outside a function, 1 after func (slots allowed), 2 in code, 3 in the data.
 355 REM ====================================================================================
 360 FILES "sea.lir1"; "sea.lir"
 365 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), Q(399,9), Q$(399), F(1499,3), F$(1499), Z(8)
 370 DIM J(299,4), J$(299), Y(399), Y$(399,5), D(39), D$(39), B(399), A(399)
-375 DIM I(199999,4), O(800299), R(99999,7), K(19999,4), C(199999,4), S$(200000)
+375 DIM I(199999,4), O(799999), R(99999,7), K(19999,4), C(199999,4), S$(199999)
 380 DIM X(131071), T(10000), G$(300), U(40), L(4), H$(100), A$(2)
+382 DIM M(301), P(262143), H(199999), V$(49999), U$(131071)
 385 LET P$ = "seaopt"
 390 REM ---- the tables of the contract files, in the order of the DATA blocks -------------------
 395 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -104,7 +107,7 @@
 615 IF S8 > 60000 THEN 2205
 620 REM ---- the rows of set L and the special code of every record row ---------------------------
 625 LET K1$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|"
-630 LET K2$ = "|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|rcall=51|mov=52|"
+630 LET K2$ = "|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|rcall=51|mov=52|ret=53|call=54|"
 635 LET A8 = 0
 640 FOR I1 = 1 TO Z(7)
 645 LET B(I1) = 0
@@ -164,7 +167,9 @@
 915 LET A0 = 0
 920 LET A1 = 0
 925 LET A2 = 0
-930 LET A3 = 0
+930 LET A5 = 0
+931 LET Y1$ = ""
+932 LET Y2$ = ""
 935 LET F7 = 0
 940 LET F8 = 0
 945 LET F9 = 0
@@ -204,6 +209,7 @@
 1115 LET T1 = F(B0, 1)
 1120 LET O2 = F(B0, 2)
 1125 GOSUB 2350
+1127 GOSUB 3900
 1130 IF D7 > 0 THEN 1140
 1135 GOSUB 3050
 1140 NEXT X1
@@ -219,7 +225,7 @@
 1190 IF Y0 >= 40 THEN 1335
 1195 GOTO 1860
 1200 REM ---- func: all its fields are stored in row 0 ------------------------------------------------
-1205 LET I(0, 3) = A1
+1205 GOTO 4400
 1210 GOTO 2060
 1215 REM ---- slot id size align: recorded in K, rows 10000 + s -----------------------------------------
 1220 LET S6 = S6 + 1
@@ -248,6 +254,9 @@
 1335 LET I(A0, 3) = A1 - I(A0, 2) + 1
 1340 IF Y0 = 51 THEN 1680
 1345 IF Y0 = 52 THEN 1655
+1346 IF Y0 = 50 THEN 4500
+1347 IF Y0 = 53 THEN 4520
+1348 IF Y0 = 54 THEN 4560
 1350 IF Y0 < 40 THEN 2060
 1355 IF Y0 > 48 THEN 2060
 1360 LET V = U(1)
@@ -408,15 +417,14 @@
 2135 REM lir1 numbers data labels by first reference, so none is without a user (3.6.2)
 2140 LET M$ = "data label d" & STR$(D8) & " is defined but no instruction uses it (lir1 numbers labels by first use; " & STR$(R8) & " are used)"
 2145 IF R8 < D8 THEN 2180
-2150 IF END #1 THEN 2160
-2155 CALL "dg_note": P$, "records follow #end"
+2146 LET M$ = "the file has " & STR$(M6) & " funcs of kind main, not one"
+2147 IF M6 <> 1 THEN 2180
+2148 GOSUB 4970
 2160 CALL "io_end": 1, P$, E(), E$(), E0
 2165 CALL "io_fin": 2
 2170 STOP
 2175 REM ---- failure: say where, then the internal error of errors.inc (status 11) ----------------------------
-2180 CALL "dg_note": P$, "line " & STR$(L0) & ": " & M$
-2185 CALL "dg_note": P$, "record: " & SEG$(L$, 1, 100)
-2190 CALL "dg_internal": P$, D$, E(), E$(), E0
+2180 CALL "dg_internal": P$, D$, E(), E$(), E0
 2195 STOP 11
 2200 REM ---- a pass bug, not a bad input -------------------------------------------------------------------------
 2205 CALL "dg_bug": P$, M$
@@ -482,6 +490,7 @@
 2505 IF W1 = 0 THEN 2180
 2510 LET M$ = B$ & " (a chk names a run-time error)"
 2515 IF E$(W1, 2) <> "R" THEN 2180
+2516 GOSUB 4700
 2520 RETURN
 2525 REM pos F:L:C and site F:L: the file index must name a #file record; the func record sets F7 F8 F9
 2530 CALL "io_pos": Z$, F1, L1, C1, T
@@ -592,11 +601,15 @@
 3055 IF T1 = 6 THEN 3100
 3060 IF T1 = 5 THEN 3130
 3065 IF T1 = 4 THEN 3160
-3070 IF T1 = 2 THEN 3180
+3070 IF T1 = 2 THEN 3176
 3075 IF T1 = 3 THEN 3180
-3080 LET A1 = A1 + 1
-3085 IF A1 - I(0, 3) > O9 THEN 2230
+3080 IF Y0 = 37 THEN 3093
+3081 LET A1 = A1 + 1
+3085 IF A1 > O9 THEN 2230
 3090 LET O(A1) = V1
+3091 RETURN
+3093 LET A5 = A5 + 1
+3094 LET M(A5) = V1
 3095 RETURN
 3100 IF A9 = 1 THEN 3120
 3105 LET I(A0, 4) = F1 * 1E9 + L1
@@ -610,10 +623,12 @@
 3145 GOSUB 3080
 3150 LET K5 = F1 * 1E9 + L1
 3155 GOTO 3220
-3160 LET A3 = A3 + 1
-3165 LET S$(A3) = Z$
-3170 LET V1 = A3
-3175 GOTO 3080
+3160 GOSUB 5000
+3165 LET V1 = Q2
+3170 GOTO 3080
+3176 IF F$(B0) <> "off" THEN 3180
+3177 GOSUB 5100
+3178 GOTO 3080
 3180 LET A2 = A2 + 1
 3185 IF A2 > M9 THEN 2270
 3190 FOR W1 = 1 TO 4
@@ -664,9 +679,10 @@
 3415 RETURN
 3420 REM wtok: S1$ = the next field, T1 its type; P1 advances over its operands
 3425 LET T1 = F(W2, 1)
+3427 GOSUB 3815
 3430 IF T1 >= 100 THEN 3565
-3435 ON T1 GOTO 3440, 3705, 3665, 3550, 3585, 3610, 3805, 3805, 3805, 3805, 3805, 3805, 3475, 3490, 3505, 3520, 3520, 3520, 3520, 3520, 3520, 3520
-3440 LET V = O(P1)
+3435 ON T1 GOTO 3440, 3702, 3665, 3550, 3585, 3610, 3805, 3805, 3805, 3805, 3805, 3805, 3475, 3490, 3505, 3520, 3520, 3520, 3520, 3520, 3520, 3520
+3440 LET V = Q0
 3445 LET P1 = P1 + 1
 3450 LET U(W1) = V
 3455 LET S1$ = "-"
@@ -674,29 +690,30 @@
 3465 LET S1$ = STR$(V)
 3470 RETURN
 3475 LET S1$ = STR$(O(P1))
+3476 LET S1$ = STR$(Q0)
 3480 LET P1 = P1 + 1
 3485 RETURN
-3490 LET S1$ = "d" & STR$(O(P1))
+3490 LET S1$ = "d" & STR$(Q0)
 3495 LET P1 = P1 + 1
 3500 RETURN
-3505 LET S1$ = "s" & STR$(O(P1))
+3505 LET S1$ = "s" & STR$(Q0)
 3510 LET P1 = P1 + 1
 3515 RETURN
-3520 LET V = O(P1)
+3520 LET V = Q0
 3525 LET P1 = P1 + 1
 3530 LET S1$ = "-"
 3535 IF V = 0 THEN 3545
 3540 LET S1$ = SEG$("ifpxym", R(V, 1), R(V, 1)) & STR$(V)
 3545 RETURN
-3550 LET S1$ = S$(O(P1))
+3550 LET S1$ = S$(Q0)
 3555 LET P1 = P1 + 1
 3560 RETURN
-3565 LET S1$ = W$(N(T1 - 100, 1) + O(P1) - 1)
+3565 LET S1$ = W$(N(T1 - 100, 1) + Q0 - 1)
 3570 LET P1 = P1 + 1
 3575 RETURN
 3580 REM pos F:L:C and site F:L (F*1E9+L, 0: absent)
-3585 LET W6 = O(P1)
-3590 LET W7 = O(P1 + 1)
+3585 LET W6 = Q0
+3590 LET W7 = Q1
 3595 LET P1 = P1 + 2
 3600 LET S1$ = ""
 3605 GOTO 3635
@@ -711,7 +728,7 @@
 3650 LET S1$ = S1$ & ":" & STR$(W7)
 3655 RETURN
 3660 REM f: always # and 16 hex digits of the limbs
-3665 LET W6 = O(P1)
+3665 LET W6 = Q0
 3670 LET P1 = P1 + 1
 3675 FOR W8 = 1 TO 4
 3680 LET L(W8) = C(W6, W8)
@@ -719,7 +736,8 @@
 3690 CALL "io_hex": L(), S1$
 3695 RETURN
 3700 REM i: decimal if |v| <= 999999999, else the hex form of the limbs (3.1)
-3705 LET W6 = O(P1)
+3702 IF F$(W2) = "off" THEN 3850
+3705 LET W6 = Q0
 3710 LET P1 = P1 + 1
 3715 FOR W8 = 1 TO 4
 3720 LET L(W8) = C(W6, W8)
@@ -741,3 +759,211 @@
 3800 REM a field type that LIR records do not have
 3805 LET M$ = "passes.txt gives record " & Q$(W0) & " a field type seaopt does not know"
 3810 GOTO 2205
+3812 REM ---- 3815: Q0 Q1 = the operand value at P1 and the next one (record N9; row 0, the func record, is in M) ----
+3815 IF N9 = 0 THEN 3835
+3820 LET Q0 = O(P1)
+3825 LET Q1 = 0
+3830 RETURN
+3835 LET Q0 = M(P1)
+3840 LET Q1 = M(P1 + 1)
+3845 RETURN
+3848 REM ---- 3850: an off field (its exact value Q0): decimal for |v| <= 999999999, else # and 16 hex digits ----
+3850 LET W6 = Q0
+3852 LET P1 = P1 + 1
+3854 IF ABS(W6) > 999999999 THEN 3860
+3856 LET S1$ = STR$(W6)
+3858 RETURN
+3860 LET W7 = ABS(W6)
+3862 FOR W8 = 4 TO 1 STEP -1
+3864 LET L(W8) = W7 - INT(W7 / 65536) * 65536
+3866 LET W7 = INT(W7 / 65536)
+3868 NEXT W8
+3870 IF W6 > 0 THEN 3890
+3872 FOR W8 = 1 TO 4
+3874 LET L(W8) = 65535 - L(W8)
+3876 NEXT W8
+3878 LET W8 = 4
+3880 LET L(W8) = L(W8) + 1
+3882 IF L(W8) < 65536 THEN 3890
+3884 LET L(W8) = 0
+3886 LET W8 = W8 - 1
+3888 GOTO 3880
+3890 CALL "io_hex": L(), S1$
+3892 RETURN
+3897 REM ---- 3900: the checks of one validated field beyond its type (DESIGN 3.6.5), called after 2350 ----
+3900 IF A9 = 1 THEN 3995
+3905 IF Y0 <> 37 THEN 3940
+3910 IF F$(B0) <> "par" THEN 3925
+3915 LET M$ = B$ & " is parameter " & STR$(X1) & ", so it must be register " & STR$(X1)
+3918 IF V <> X1 THEN 2180
+3920 LET Y2$ = Y2$ & SEG$("ifp", X2, X2)
+3922 GOTO 3995
+3925 IF F$(B0) <> "cls" THEN 3995
+3930 LET Y1$ = Y1$ & Z$
+3935 GOTO 3995
+3940 IF Y0 <> 33 THEN 3965
+3945 IF F$(B0) <> "conv" THEN 3950
+3947 LET G1$ = Z$
+3950 IF F$(B0) <> "cls" THEN 3995
+3952 LET M$ = "fconv " & G1$ & " with class " & Z$ & " (class p exactly for conversion s)"
+3954 IF G1$ = "s" THEN 3960
+3956 IF Z$ = "p" THEN 2180
+3958 GOTO 3995
+3960 IF Z$ <> "p" THEN 2180
+3962 GOTO 3995
+3965 IF T1 <> 1 THEN 3975
+3967 IF F$(B0) = "incl" THEN 3971
+3968 IF F$(B0) <> "dim" THEN 3995
+3971 LET M$ = B$ & " must be 0 or 1"
+3972 IF V > 1 THEN 2180
+3973 GOTO 3995
+3975 IF T1 < 16 THEN 3995
+3977 IF T1 > 22 THEN 3995
+3979 IF F$(B0) = "d" THEN 3985
+3981 IF F$(B0) = "e" THEN 3985
+3983 IF F$(B0) <> "ind" THEN 3995
+3985 LET M$ = B$ & " is written inside a loop whose induction register it is"
+3987 FOR Q1 = 1 TO B1
+3989 IF K(T(Q1), 1) <> 1 THEN 3993
+3991 IF O(I(K(T(Q1), 2), 2) + 1) = V THEN 2180
+3993 NEXT Q1
+3995 RETURN
+4395 REM ---- 4400: func: .main, a unique name, the signature its calls must match (DESIGN 3.6.5) ----
+4400 LET I(0, 3) = A5
+4405 LET Q2 = M(1)
+4410 LET M$ = "func " & S$(Q2) & ": kind main exactly for the name .main, which has no results"
+4415 IF M(2) = 1 THEN 4440
+4420 IF LEN(S$(Q2)) <> 5 THEN 4455
+4425 IF S$(Q2) = ".main" THEN 2180
+4430 GOTO 4455
+4440 IF LEN(S$(Q2)) <> 5 THEN 2180
+4442 IF S$(Q2) <> ".main" THEN 2180
+4444 IF LEN(Y1$) > 0 THEN 2180
+4446 LET M6 = M6 + 1
+4448 LET M$ = "a second func of kind main"
+4450 IF M6 > 1 THEN 2180
+4455 LET M$ = "func " & S$(Q2) & " is defined twice"
+4460 IF H(Q2) <> 0 THEN 2180
+4465 LET F6 = F6 + 1
+4470 LET M$ = "more than 49999 functions"
+4475 IF F6 > 49999 THEN 2180
+4480 LET H(Q2) = F6
+4485 LET V$(F6) = Y1$ & "/" & Y2$
+4490 GOTO 2060
+4495 REM ---- 4500: chk: n = the argument slots of its error (C3, from 4700) ----
+4500 LET M$ = "chk names an error whose arguments take " & STR$(C3) & " slots, but n = " & STR$(U(4))
+4505 IF U(4) <> C3 THEN 2180
+4510 GOTO 2060
+4515 REM ---- 4520: ret: the results of the func, in number and class ----
+4520 LET P1 = I(A0, 2)
+4525 LET M$ = "ret does not return the results of its func (" & Y1$ & ")"
+4530 IF O(P1) <> LEN(Y1$) THEN 2180
+4535 FOR Q3 = 1 TO O(P1)
+4540 IF R(O(P1 + Q3), 1) <> POS("ifp", SEG$(Y1$, Q3, Q3)) THEN 2180
+4545 NEXT Q3
+4550 GOTO 2060
+4555 REM ---- 4560: call: its signature R2$ = result classes "/" argument classes, against the func (4800) or deferred ----
+4560 LET P1 = I(A0, 2)
+4565 LET Q2 = O(P1)
+4570 LET R2$ = ""
+4575 LET P2 = P1 + 1
+4580 FOR Q3 = 1 TO O(P2)
+4585 LET R2$ = R2$ & SEG$("ifp", R(O(P2 + Q3), 1), R(O(P2 + Q3), 1))
+4590 NEXT Q3
+4595 LET R2$ = R2$ & "/"
+4600 LET P2 = P2 + O(P2) + 1
+4605 FOR Q3 = 1 TO O(P2)
+4610 LET R2$ = R2$ & SEG$("ifp", R(O(P2 + Q3), 1), R(O(P2 + Q3), 1))
+4615 NEXT Q3
+4620 IF H(Q2) = 0 THEN 4640
+4625 GOSUB 4800
+4630 LET M$ = "call " & S$(Q2) & " (" & R2$ & ") does not match its func (" & V$(H(Q2)) & ")"
+4632 IF Q5 = 0 THEN 2180
+4635 GOTO 2060
+4640 LET Z$ = STR$(Q2) & ":" & R2$
+4642 GOSUB 4930
+4645 GOTO 2060
+4695 REM ---- 4700: C3 = the argument slots of error row W1: one per args letter, two for h (DESIGN 2.6.2) ----
+4700 LET C3 = 0
+4705 LET R2$ = E$(W1, 4)
+4710 IF R2$ = "-" THEN 4740
+4715 FOR Q3 = 1 TO LEN(R2$)
+4720 LET C3 = C3 + 1
+4725 IF SEG$(R2$, Q3, Q3) <> "h" THEN 4735
+4730 LET C3 = C3 + 1
+4735 NEXT Q3
+4740 RETURN
+4795 REM ---- 4800: Q5 = 1 if the call signature R2$ matches func H(Q2): all its results, or none ----
+4800 LET Q5 = 0
+4805 LET R3$ = V$(H(Q2))
+4810 IF LEN(R2$) <> LEN(R3$) THEN 4825
+4815 IF R2$ = R3$ THEN 4840
+4825 LET R3$ = SEG$(R3$, POS(R3$, "/"), LEN(R3$))
+4830 IF LEN(R2$) <> LEN(R3$) THEN 4845
+4835 IF R2$ <> R3$ THEN 4845
+4840 LET Q5 = 1
+4845 RETURN
+4895 REM ---- 4900: H1 = a hash of Z$ modulo H2 ----
+4900 LET H1 = 0
+4905 FOR Q4 = 1 TO LEN(Z$)
+4910 LET H1 = H1 * 31 + ASC(SEG$(Z$, Q4, Q4))
+4915 LET H1 = H1 - INT(H1 / H2) * H2
+4920 NEXT Q4
+4925 RETURN
+4928 REM ---- 4930: Z$ joins the set U$ of forward calls ----
+4930 LET H2 = 131071
+4932 GOSUB 4900
+4934 IF LEN(U$(H1)) = 0 THEN 4950
+4936 IF LEN(U$(H1)) <> LEN(Z$) THEN 4940
+4938 IF U$(H1) = Z$ THEN 4960
+4940 LET H1 = H1 + 1
+4942 IF H1 < 131071 THEN 4934
+4944 LET H1 = 0
+4946 GOTO 4934
+4950 LET Q6 = Q6 + 1
+4952 LET M$ = "more distinct forward calls than seaopt holds"
+4954 IF Q6 > 131000 THEN 2180
+4956 LET U$(H1) = Z$
+4960 RETURN
+4965 REM ---- 4970: at #end every forward call names a func of the file and matches it (4800) ----
+4970 FOR Q3 = 0 TO 131070
+4972 IF LEN(U$(Q3)) = 0 THEN 4990
+4974 LET Q4 = POS(U$(Q3), ":")
+4976 LET Q2 = VAL(SEG$(U$(Q3), 1, Q4 - 1))
+4978 LET R2$ = SEG$(U$(Q3), Q4 + 1, LEN(U$(Q3)))
+4980 LET M$ = "call of " & S$(Q2) & ", which no func defines"
+4982 IF H(Q2) = 0 THEN 2180
+4984 GOSUB 4800
+4986 LET M$ = "call " & S$(Q2) & " does not match its func"
+4988 IF Q5 = 0 THEN 2180
+4990 NEXT Q3
+4992 RETURN
+4995 REM ---- 5000: Q2 = the row of S$ that holds Z$ (interned, DESIGN 2.7; a new row if absent) ----
+5000 LET H2 = 262139
+5005 GOSUB 4900
+5010 IF P(H1) = 0 THEN 5040
+5015 LET Q2 = P(H1)
+5020 IF LEN(S$(Q2)) <> LEN(Z$) THEN 5030
+5025 IF S$(Q2) = Z$ THEN 5060
+5030 LET H1 = H1 + 1
+5032 IF H1 < 262139 THEN 5010
+5034 LET H1 = 0
+5036 GOTO 5010
+5040 LET A3 = A3 + 1
+5045 LET M$ = "more than 199999 distinct strings"
+5050 IF A3 > 199999 THEN 2180
+5052 LET S$(A3) = Z$
+5054 LET P(H1) = A3
+5056 LET Q2 = A3
+5060 RETURN
+5095 REM ---- 5100: V1 = the exact value of an off field (io_i left K1 V L()); |v| above 2^53 is BAD_RECORD ----
+5100 LET V1 = V
+5105 IF K1 = 0 THEN 5160
+5110 LET M$ = B$ & " is an offset beyond 2^53 in magnitude"
+5115 IF L(1) < 32768 THEN 5145
+5125 IF 65535 - L(1) >= 32 THEN 2180
+5130 LET V1 = -((((65535 - L(1)) * 65536 + 65535 - L(2)) * 65536 + 65535 - L(3)) * 65536 + 65535 - L(4) + 1)
+5140 GOTO 5160
+5145 IF L(1) >= 32 THEN 2180
+5150 LET V1 = ((L(1) * 65536 + L(2)) * 65536 + L(3)) * 65536 + L(4)
+5160 RETURN

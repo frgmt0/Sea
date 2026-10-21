@@ -1,0 +1,4 @@
+// err_not_constant_cycle -- a constant cycle through another constant: at the name that closes it (LANGUAGE.md 7.2)
+const A = B + 1
+const B = A + 1
+let x = A

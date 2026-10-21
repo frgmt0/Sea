@@ -8,11 +8,11 @@
 40 REM line, column; ties: the first found) is reported (DESIGN 2.6.2); a capacity overflow wins.
 45 REM Files: 1 sea.ast (input), 2 sea.hir1 (output). Built with io diag tables limb f64emu.
 50 REM Tables (passed to every SUB): N M nodes, Y symbols, T types, W work stack, C literal limbs,
-55 REM S$ strings, X X$ state. Layouts: see the REM block of sc2util.
+55 REM S$ strings, X X$ state, H the hash of C, O that of S$. Layouts: see the REM block of sc2util.
 60 REM ====================================================================================
 65 DIM E(299), E$(299,5), J(20), J$(20), K(299,4), K$(299), F$(100), A$(3)
 70 DIM N(99999,9), M(99999,9), Y(49999,9), T(20099,9), W(199999), C(19999,4)
-75 DIM S$(199999), X(60), X$(20)
+75 DIM S$(199999), X(60), X$(20), H(39989), O(399989)
 80 FILES "sea.ast"; "sea.hir1"
 85 LET P$ = "seacheck"
 90 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -20,9 +20,9 @@
 100 CALL "tb_consts": P$, E(), E$(), E0, K(), K$(), 299, K0
 105 CALL "sc_lim": P$, K(), K$(), K0, X()
 110 CALL "sc_pd": X$()
-115 CALL "sc_read": P$, E(), E$(), E0, N(), M(), C(), S$(), W(), X(), X$(), F$(), N1, T$
+115 CALL "sc_read": P$, E(), E$(), E0, N(), M(), C(), S$(), W(), X(), X$(), F$(), N1, T$, H(), O()
 120 LET X(18) = N1 - 1
-125 CALL "sc_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
+125 CALL "sc_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H()
 130 IF X(6) = 0 THEN 175
 135 REM the first error (or a capacity overflow): one diagnostic line, status of a compile error
 140 LET I = X(7)
@@ -47,39 +47,43 @@
 235 LET Q$(5) = "LIM_NODES"
 240 LET Q$(6) = "LIM_STRINGS"
 245 LET Q$(7) = "LIM_POWK"
-250 FOR I = 1 TO 7
-255 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
-260 IF T = 0 THEN 270
-265 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
-270 IF I = 1 THEN 285
-275 LET X(18 + I) = V
-280 GOTO 290
-285 LET X(34) = V
-290 NEXT I
-295 IF X(20) > 49999 THEN 325
-300 IF X(21) > 20089 THEN 325
-305 IF X(22) > 19999 THEN 325
-310 IF X(23) > 99999 THEN 325
-315 IF X(24) > 199999 THEN 325
-320 GOTO 330
-325 CALL "dg_bug": P$, "a capacity limit is larger than the pass tables"
-330 SUBEND
-335 REM ---- sc_pd: the predeclared names (LANGUAGE 3.3, Appendix C) in X$(10), 12-byte slots ------
-340 REM slots 1-4 constants, 5-8 handle types, 9- functions; a name is found as "|name " (pdx)
-345 SUB "sc_pd": X$()
-350 LET L$ = "pi inf nan eps Figure Axes Lu Chol abs all any args argmax argmin argsort axis_equal "
-355 LET L$ = L$ & "bar barh bincount ceil chol cols contour cos eig_sym error exp figure filled find "
-360 LET L$ = L$ & "find_first find_last floor format grid hypot idiv image ind2sub isnan legend len "
-365 LET L$ = L$ & "linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel plot "
-370 LET L$ = L$ & "pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str "
-375 LET L$ = L$ & "sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim "
-380 LET L$ = L$ & "y_reverse y_ticks ylabel ylim zeros "
-385 LET R$ = ""
-390 LET S = 1
-395 LET P = POS(L$, " ", S)
-400 IF P = 0 THEN 420
-405 LET R$ = R$ & SEG$("|" & SEG$(L$, S, P - 1) & "            ", 1, 12)
-410 LET S = P + 1
-415 GOTO 395
-420 LET X$(10) = R$
-425 SUBEND
+250 LET Q$(8) = "LIM_DEC_FIELD"
+255 FOR I = 1 TO 8
+260 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
+265 IF T = 0 THEN 275
+270 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
+275 IF I = 1 THEN 305
+280 IF I = 8 THEN 295
+285 LET X(18 + I) = V
+290 GOTO 310
+295 LET X(35) = V
+300 GOTO 310
+305 LET X(34) = V
+310 NEXT I
+315 IF X(20) > 49999 THEN 345
+320 IF X(21) > 20089 THEN 345
+325 IF X(22) > 19999 THEN 345
+330 IF X(23) > 99999 THEN 345
+335 IF X(24) > 199999 THEN 345
+340 GOTO 350
+345 CALL "dg_bug": P$, "a capacity limit is larger than the pass tables"
+350 SUBEND
+355 REM ---- sc_pd: the predeclared names (LANGUAGE 3.3, Appendix C) in X$(10), 12-byte slots ------
+360 REM slots 1-4 constants, 5-8 handle types, 9- functions; a name is found as "|name " (pdx)
+365 SUB "sc_pd": X$()
+370 LET L$ = "pi inf nan eps Figure Axes Lu Chol abs all any args argmax argmin argsort axis_equal "
+375 LET L$ = L$ & "bar barh bincount ceil chol cols contour cos eig_sym error exp figure filled find "
+380 LET L$ = L$ & "find_first find_last floor format grid hypot idiv image ind2sub isnan legend len "
+385 LET L$ = L$ & "linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel plot "
+390 LET L$ = L$ & "pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str "
+395 LET L$ = L$ & "sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim "
+400 LET L$ = L$ & "y_reverse y_ticks ylabel ylim zeros "
+405 LET R$ = ""
+410 LET S = 1
+415 LET P = POS(L$, " ", S)
+420 IF P = 0 THEN 440
+425 LET R$ = R$ & SEG$("|" & SEG$(L$, S, P - 1) & "            ", 1, 12)
+430 LET S = P + 1
+435 GOTO 415
+440 LET X$(10) = R$
+445 SUBEND

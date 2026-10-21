@@ -11,7 +11,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 * `NAME.status` holds the expected exit status in decimal and a LF. Compile errors and run-time
   errors both expect 1 (DESIGN.md §2.2 driver status 1; LANGUAGE.md §9.4).
 * `errors/NAME.meta` with `stdout=epipe`: standard output is a pipe whose reading end is closed
-  before the program starts (DESIGN.md §6.2).
+  before the program starts (DESIGN.md §6.2); with `stdout=closed` the program starts with
+  standard output closed (`>&-`, its writes fail with `EBADF`).
 * `passes/`: `sea build --emit X --no-prelude NAME.sea` for each `NAME.X` present (§3.8).
 
 ## How the expected outputs were derived
@@ -21,6 +22,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | f64 bits of literals and constant arithmetic | `vectors/float_oracle.py`: exact `Fraction` decimal-to-binary, round to nearest even, subnormals, overflow; `+ − × ÷` and i64→f64 the same way. Python floats only as a cross-check |
 | printf output (`fmt_*`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts`) | `vectors/progfmt.py`: C99 `%d %i %f %F %e %E %g %G %s` from the exact decimal value of each argument (ties to even), plus the MATLAB `%d`-on-f64 rule and the non-finite rules of LANGUAGE.md §11.1. It writes both `.sea` and `.out` from one table; Python's `%` only as a cross-check |
 | `op_lcg_w5` | `vectors/lcg_w5.py`: the LCG in exact integers in W5's draw order (11 M steps), the uniform `first_dev` columns and `first_top` with the oracle; asserted bit for bit against `workloads/reference/w5_tolerance_mc.json` (`lcg_final = 2145635252`) |
+| wave-2 tests (`fold_*`, `stmt_else_if_2000`, `const_reverse_1000`, `fmt_prec_zeros`, `stmt_tasg_cvt`, `lib_conv_identity`, `stmt_for_blanks` and their `err_*`) | `vectors/wave2_gen.py`: each expected value derived in its comments; folded values with the exact oracles of `f64emu.py`/`float_oracle.py` |
+| `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
 | `passes/` (validated with `build/tools/seaval`, exit 0 for every dump) | by hand from DESIGN.md §3 record by record (post-order, positions §3.3/§3.5.5, numbering §3.5.1/§3.5.4/§3.6.1, canonical lowering §3.6.6). `ex.ast`, `lx.lir1`, `lx.lir` are the DESIGN examples verbatim |
@@ -52,6 +55,15 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `fmt_d_ext` | §11.1 (`%d` of bool, of −0.0, C precision on an integral f64) |
+| `fmt_prec_zeros` | §11.1 (precision digits with leading zeros) |
+| `fold_inf_chain` | DESIGN.md §2.8 U1 (16 constants squared: overflow folds, Inf) |
+| `fold_a13_chain` | DESIGN.md §2.8 (13 doubling constants used 7 times fold to literals) |
+| `fold_nonfinite` | DESIGN.md §2.8 U1, §11.1 (folded ±Inf, NaN, −0, underflow, a subnormal tie) |
+| `stmt_else_if_2000` | DESIGN.md §2.7 (2000 else-if links add no nesting) |
+| `const_reverse_1000` | §7.2 (1000 constants declared in reverse order) |
+| `stmt_tasg_cvt` | §4.2 (b), §7.3 (tuple assignment converts i64 to an f64 target) |
+| `lib_conv_identity` | §10.1 (`f64()` of f64, `i64()` of i64, untyped argument is i64) |
+| `stmt_for_blanks` | §7.5 (two blanks after `for`) |
 | `fmt_d`, `fmt_d_f64`, `fmt_f`, `fmt_e`, `fmt_g`, `fmt_s`, `fmt_pct`, `fmt_nonfinite` | §11.1 |
 | `lex_crlf` | §3.1 (CR before LF and at end of file removed) |
 | `lex_long_line` | §3.1; DESIGN.md §2.2 step 2 (4096 bytes allowed, also followed by CR) |
@@ -69,6 +81,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `lex_float_hard` | ast | LANGUAGE.md §3.4; §2.8 (bits: `vectors/float_oracle.py`, table `float_oracle.out`) |
 | `lex_string` | ast | LANGUAGE.md §3.5; §3.1 string escaping |
 | `lex_comment` | ast | LANGUAGE.md §3.2, §3.7 |
+| `lex_for_blanks` | ast | §3.4 `for` `npos` (L1), two blanks after `for` |
 | `lex_newline` | ast | LANGUAGE.md §3.7, Appendix A `sep` |
 | `lex_column` | ast | LANGUAGE.md §3.1, §3.3 (63-byte identifier), §9.1 byte columns |
 | `op_prec` | ast | LANGUAGE.md §6.1, Appendix B; §3.3 positions with parentheses |
@@ -84,8 +97,9 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_ref_order` | ast hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
 | `fn_printf` | ast hir1 hir lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
 | `type_ifx_arm` | ast hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
-| `op_fold` | ast hir1 hir | §3.5.7 step 2, §2.8 folding checks |
+| `op_fold` | ast hir1 hir | §3.5.7 step 2, §2.8 (U1: overflow, `x / 0`, `inf`/`nan` operands fold; NaN bits) |
 | `op_shortcircuit` | ast hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
+| `stmt_tasg` | ast hir1 hir lir1 (+ `.out`) | LANGUAGE.md §7.3, §4.2 (b); §3.5.5 `tasg` `cv` flags; §3.6.6 rule 2 `tasg` steps (a)–(d): cv 1 into a local (`itof`, `mov`), cv 0 straight into the target register, `skip` a new register, a `ref`-parameter target with cv 1 (`itof`, `stf`), a target local the call passes by `ref` (new register, reload, then `mov`) |
 | `stmt_loops` | ast hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
 | `fn_reach` | ast hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
@@ -129,12 +143,14 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_bad_target_fn` | `invalid assignment target` | a function is not an assignment target (DESIGN.md 2.6.2) |
 | `err_bool_conv` | `unexpected token 'bool'` | there is no bool(x) conversion (Appendix A; DESIGN.md 0) |
 | `err_break_outside` | `break outside a loop` | break outside a loop (LANGUAGE.md 7.5) |
+| `err_call_then_asg` | `unexpected token '='` | a call statement ends after the call: f(1) = 3 (LANGUAGE.md 7.1) |
 | `err_chained_compare` | `comparisons cannot be chained` | comparisons are non-associative; at the second operator (LANGUAGE.md 6.1) |
 | `err_chained_compare_eq` | `comparisons cannot be chained` | a == b != c is chained too (LANGUAGE.md 6.1) |
 | `err_cond_bool_if` | `condition must be bool` | an if condition must be bool (LANGUAGE.md 4.3; at expr) |
 | `err_cond_bool_ifx` | `condition must be bool` | an if-expression condition must be bool (LANGUAGE.md 4.3, 6.10) |
 | `err_cond_bool_while` | `condition must be bool` | a while condition must be bool (LANGUAGE.md 4.3) |
 | `err_continue_outside` | `continue outside a loop` | continue in a function called from a loop is still outside one |
+| `err_conv_no_paren` | `unexpected token '+'` | a conversion keyword without ( names the next token (LANGUAGE.md App. A) |
 | `err_dollar_array_literal` | `'$' outside an index` | array-literal brackets are not index brackets (LANGUAGE.md 5.3) |
 | `err_dollar_outside` | `'$' outside an index` | $ outside an index (LANGUAGE.md 5.3; at the $) |
 | `err_float_range` | `float literal out of range` | a float literal above the overflow midpoint (LANGUAGE.md 3.4; at token) |
@@ -163,14 +179,17 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_line_too_long` | `line too long` | line 3 has 4097 bytes: the driver reports column 4097 before any pass |
 | `err_missing_arg` | `missing argument` | a parameter without a default must be given (LANGUAGE.md 8.1; at the call) |
 | `err_missing_return` | `missing return` | a function with a result must end every path with return (LANGUAGE.md 8.1; at fn) |
+| `err_missing_return_while` | `missing return` | a loop never ends every path, even while true (LANGUAGE.md 8.1) |
 | `err_multi_value` | `multiple-result call used as a value` | a multiple-result call inside an expression (LANGUAGE.md 8.4; at the call) |
 | `err_multi_value_arg` | `multiple-result call used as a value` | a multiple-result call as an argument (LANGUAGE.md 8.4; at the call) |
 | `err_no_effect` | `expression statement has no effect` | a line starting with a binary operator is a new statement (LANGUAGE.md 3.7) |
+| `err_no_effect_asg` | `expression statement has no effect` | x + y = 3 is an expression statement (LANGUAGE.md 7.1) |
 | `err_no_effect_binop` | `expression statement has no effect` | an operator expression is not a call (LANGUAGE.md 7.1; at stmt) |
 | `err_no_effect_name` | `expression statement has no effect` | a bare name is not a call (LANGUAGE.md 7.1; at stmt) |
 | `err_no_overload_idiv` | `no overload of 'idiv' accepts (f64, i64)` | idiv takes two i64 (LANGUAGE.md 6.6; at the call) |
 | `err_no_overload_now` | `no overload of 'now' accepts (i64)` | now takes no argument (LANGUAGE.md 13) |
 | `err_not_constant` | `not a constant expression` | a const expression must be constant (LANGUAGE.md 7.2; at expr) |
+| `err_not_constant_cycle` | `not a constant expression` | a constant cycle through another constant: at the name that closes it (LANGUAGE.md 7.2) |
 | `err_not_exact_f64` | `integer constant not exact in f64` | an untyped integer that becomes f64 must be exact (LANGUAGE.md 4.2; at expr) |
 | `err_not_exact_ifx` | `integer constant not exact in f64` | an untyped arm beside an f64 arm is f64 and must be exact (LANGUAGE.md 4.2 (f)) |
 | `err_not_exact_printf_f` | `integer constant not exact in f64` | an untyped literal argument of %f is f64 and must be exact (LANGUAGE.md 4.2 (e)) |
@@ -202,14 +221,17 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_ref_alias` | `ref argument aliases another argument` | two ref arguments with the same root (LANGUAGE.md 8.3; at the first ref) |
 | `err_ref_alias_value` | `ref argument aliases another argument` | a ref argument whose root another argument shares (LANGUAGE.md 8.3) |
 | `err_ref_needed` | `argument for ref parameter 'x' must be marked ref` | an argument for a ref parameter must say ref (DESIGN.md 2.6.2; at expr) |
+| `err_ref_target_fn` | `ref argument must be a mutable variable, element or field` | a function name as a ref argument: at the ref (LANGUAGE.md 8.3) |
 | `err_ref_target_let` | `ref argument must be a mutable variable, element or field` | a let cannot be passed to a ref parameter (LANGUAGE.md 7.2, 8.3; at the ref) |
 | `err_ref_target_param` | `ref argument must be a mutable variable, element or field` | an ordinary parameter is immutable: not a ref argument (LANGUAGE.md 8.2, 8.3) |
 | `err_ref_unexpected` | `'a' is not a ref parameter` | ref on an argument of an ordinary parameter (DESIGN.md 2.6.2; at the ref) |
+| `err_result_count_annot` | `wrong number of results: expected 2, found 1` | an annotated let of a 2-result call: at the call, before any conversion (LANGUAGE.md 8.4) |
 | `err_result_count_let` | `wrong number of results: expected 2, found 1` | a 2-result call bound to one name: at the call (LANGUAGE.md 8.4; DESIGN.md 2.6.2) |
 | `err_result_count_ptuple` | `wrong number of results: expected 2, found 3` | three names for two results: at the ptuple (LANGUAGE.md 8.4) |
 | `err_result_count_return` | `wrong number of results: expected 1, found 2` | two values returned from a function with one result: at the return |
 | `err_result_count_tasg` | `wrong number of results: expected 3, found 2` | a tuple assignment with one target too few: at the tasg (LANGUAGE.md 7.3, 8.4) |
 | `err_result_count_void` | `wrong number of results: expected 0, found 2` | return f() of a 2-result call in a function without results (LANGUAGE.md 8.4) |
+| `err_result_count_void_value` | `wrong number of results: expected 0, found 1` | a call without results used as a value: at the call (LANGUAGE.md 8.4) |
 | `err_rt_conv_frac` | `conversion to i64: 1.5 is not an integer` | i64() of a non-integral value (LANGUAGE.md 4.2; %g spelling) |
 | `err_rt_conv_inf` | `conversion to i64: Inf is not an integer` | i64() of +Inf (LANGUAGE.md 9.2; Inf spelled as printf %g) |
 | `err_rt_conv_nan` | `conversion to i64: NaN is not an integer` | i64() of NaN (LANGUAGE.md 4.2; NaN spelled as printf %g) |
@@ -228,8 +250,11 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_rt_overflow_neg` | `integer overflow` | unary - of -2^63 overflows (LANGUAGE.md 6.5) |
 | `err_rt_overflow_sub` | `integer overflow` | i64 - overflow (LANGUAGE.md 6.5) |
 | `err_rt_stack_overflow` | `stack overflow` | unbounded recursion: reported at the fn's definition line (DESIGN.md 4.6) |
+| `err_rt_stdout_closed` | `cannot write '<stdout>': Bad file descriptor` (.meta) | standard output closed (>&-): the final flush fails (LANGUAGE.md 9.2) |
 | `err_rt_step_zero` | `range step is zero` | a range step of zero (LANGUAGE.md 5.1; at the for line) |
+| `err_same_pos_priority` | `undeclared name 'q'` | two errors at one position: the inner one first (LANGUAGE.md 9.1) |
 | `err_shadow_for` | `local name shadows a predeclared name` | a loop variable that shadows: reported at the for node (DESIGN.md 2.6.2, binding) |
+| `err_shadow_for_blanks` | `local name shadows a predeclared name` | a loop variable shadowing a predeclared name, two blanks after for: at the for node (DESIGN.md 2.6.2 binding) |
 | `err_shadow_let` | `local name shadows a predeclared name` | a local may not shadow a predeclared name (LANGUAGE.md 3.3; at the pname) |
 | `err_shadow_param` | `local name shadows a predeclared name` | a parameter may not shadow a predeclared name (at the param) |
 | `err_too_deep` | `program too large: nesting` | 65 nested parentheses: the 65th opening token (DESIGN.md 2.7 nesting depth) |
@@ -240,6 +265,7 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_type_mismatch_arg` | `type mismatch: expected i64, found f64` | an f64 argument for an i64 parameter (LANGUAGE.md 4.2) |
 | `err_type_mismatch_assign` | `type mismatch: expected i64, found f64` | a var initialised by a typed value keeps its type (LANGUAGE.md 4.2) |
 | `err_type_mismatch_bool` | `type mismatch: expected bool, found i64` | an untyped constant where bool is expected is i64 (LANGUAGE.md 4.2) |
+| `err_type_mismatch_ifx_arm` | `type mismatch: expected i64, found f64` | typed if-expression arms of different types: at the else arm (LANGUAGE.md 6.10; DESIGN.md 2.6.2) |
 | `err_type_mismatch_let` | `type mismatch: expected i64, found f64` | no implicit f64 -> i64 (LANGUAGE.md 4.2; at expr) |
 | `err_type_mismatch_return` | `type mismatch: expected i64, found f64` | a return value of the wrong type (DESIGN.md 2.6.2) |
 | `err_type_mismatch_tret` | `type mismatch: expected (f64, f64), found (i64, f64)` | return f() needs exactly the same result types (LANGUAGE.md 8.4; at the call) |
@@ -265,3 +291,5 @@ the `at` position of DESIGN.md §2.6.2.
 | `float_oracle.py` | `float_oracle.out`, `passes/lex_float_hard.{sea,ast}`; also a module for the other two |
 | `progfmt.py` | `programs/fmt_*.{sea,out}`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts` |
 | `lcg_w5.py` | `programs/op_lcg_w5.{sea,out}`, `lcg_w5.out` |
+| `f64emu.py` | `f64emu.txt`, `limb.txt` (read by `arith_check.sh` through `harness/f64emu_h.bas`, `harness/limb_h.bas`) |
+| `wave2_gen.py` | the wave-2 `programs/` and `errors/` tests listed above |

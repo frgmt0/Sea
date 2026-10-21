@@ -169,25 +169,56 @@ if [ ! -e "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': No such file o
 if [ -d "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': Is a directory"; fi
 if [ ! -r "$INPUT" ]; then die "$EX_USAGE" "cannot read '$INPUT': Permission denied"; fi
 
-# ---- step 3 (first, so the checks can work on a copy): temporary directory ---------------
+# ---- output path ----------------------------------------------------------------------
+case $INPUT in
+*.sea) STEM=${INPUT%.sea} ;;
+*) STEM=$INPUT.out ;;
+esac
+ORIG_PWD=$(pwd)
+abspath() { case $1 in /*) printf '%s' "$1" ;; *) printf '%s/%s' "$ORIG_PWD" "$1" ;; esac; }
+IN_ABS=$(abspath "$INPUT")
+
+# What the build produces: emit (a dump), asm (sea.s), exe (linked program).
+if [ -n "$EMIT" ]; then KIND=emit
+elif [ "$ASM_ONLY" = 1 ] || [ "$TARGET" != arm64-macos ]; then KIND=asm
+else KIND=exe; fi
+if [ "$MODE" = run ]; then KIND=exe; fi
+case $KIND in
+emit) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST= ;;      # no -o: standard output
+asm) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM.s") ;;
+exe) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM") ;;
+esac
+# An -o that names the input file itself is refused before anything is written (2.2).
+if [ -n "$DEST" ] && [ -e "$DEST" ] && [ "$DEST" -ef "$INPUT" ]; then
+    die "$EX_USAGE" "output file '$DEST' is the input file"
+fi
+
+# ---- step 3 (first, so the checks can work on a copy): temporary directory -------------
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea.XXXXXX" 2>/dev/null) || { TMP=; die "$EX_USAGE" "cannot create temporary directory"; }
 TMP=$(cd "$TMP" && pwd)
+
+# ---- the input is read once (2.2): copy it into the temporary directory; every later tool
+# reads the copy, so the input may be a pipe (/dev/stdin) and a name such as x=1.sea is
+# never an awk assignment (the copy has an absolute path).
+SRC=$TMP/in.src
+if ! rderr=$(cat -- "$INPUT" 2>&1 >"$SRC"); then
+    die "$EX_USAGE" "cannot read '$INPUT': ${rderr##*: }"
+fi
 
 # ---- the program text as the checks and the stream see it --------------------------------
 # awk cannot hold a NUL byte (it ends the record), and LANGUAGE.md 3.1 lets NUL appear in
 # comments and strings, so pass 1 must receive every byte. SRC is the file the awk programs
-# read: INPUT itself unless a copy is needed, in which
+# read: the copy of INPUT, or a modified copy of it, in which
 #  * a final CR that follows an LF (or is the whole file) is dropped: it is "a CR at the very
 #    end of the file" (LANGUAGE.md 3.1), not an extra empty line; and
 #  * every NUL is replaced by a control byte NULSUB that occurs nowhere in the file; the
 #    stream is translated back afterwards.
-SRC=$INPUT
 NULSUB=
-size=$(wc -c < "$INPUT" | tr -d ' ')
+size=$(wc -c < "$SRC" | tr -d ' ')
 if [ "$size" -gt 0 ]; then
-    tail2=$(LC_ALL=C tail -c 2 "$INPUT" | od -An -v -tx1 | tr -d ' \n')
+    tail2=$(LC_ALL=C tail -c 2 "$SRC" | od -An -v -tx1 | tr -d ' \n')
     if [ "$tail2" = 0a0d ] || { [ "$size" = 1 ] && [ "$tail2" = 0d ]; }; then
-        { if [ "$size" = 1 ]; then : > "$TMP/in.cr"; else head -c $((size - 1)) "$INPUT" > "$TMP/in.cr"; fi; } && SRC=$TMP/in.cr || die "$EX_USAGE" "cannot write in '$TMP'"
+        { if [ "$size" = 1 ]; then : > "$TMP/in.cr"; else head -c $((size - 1)) "$SRC" > "$TMP/in.cr"; fi; } && SRC=$TMP/in.cr || die "$EX_USAGE" "cannot write in '$TMP'"
     fi
 fi
 if ! LC_ALL=C tr -d '\000' < "$SRC" | cmp -s - "$SRC"; then
@@ -217,26 +248,6 @@ if [ -n "$DIAG" ]; then
     printf '%s\n' "$DIAG" >&2
     exit "$EX_COMPILE"
 fi
-
-# ---- output path ----------------------------------------------------------------------
-case $INPUT in
-*.sea) STEM=${INPUT%.sea} ;;
-*) STEM=$INPUT.out ;;
-esac
-ORIG_PWD=$(pwd)
-abspath() { case $1 in /*) printf '%s' "$1" ;; *) printf '%s/%s' "$ORIG_PWD" "$1" ;; esac; }
-IN_ABS=$(abspath "$INPUT")
-
-# What the build produces: emit (a dump), asm (sea.s), exe (linked program).
-if [ -n "$EMIT" ]; then KIND=emit
-elif [ "$ASM_ONLY" = 1 ] || [ "$TARGET" != arm64-macos ]; then KIND=asm
-else KIND=exe; fi
-if [ "$MODE" = run ]; then KIND=exe; fi
-case $KIND in
-emit) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST= ;;      # no -o: standard output
-asm) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM.s") ;;
-exe) [ "$OUT_SET" = 1 ] && DEST=$(abspath "$OUT") || DEST=$(abspath "$STEM") ;;
-esac
 
 # ---- step 1 (rest): installation files ------------------------------------------------
 STD=$SEA_DIR/std.sea

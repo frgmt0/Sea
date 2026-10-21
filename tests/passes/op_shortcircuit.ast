@@ -46,7 +46,7 @@ asg 0:10:13 set
 block 0:9:28 1
 if 0:9:9 0
 block 0:5:19 2
-for 0:5:5 i
+for 0:5:5 i 0:5:9
 name 0:13:12 r
 return 0:13:5 1
 block 0:3:32 3

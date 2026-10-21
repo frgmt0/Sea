@@ -16,7 +16,8 @@
 # `NAME.sea:LINE: error: ...`. Programs run in a fresh empty working directory.
 #
 # tests/programs/NAME.sea  a program that must compile and run
-#   NAME.out    REQUIRED  exact expected standard output (not compared with stdout=epipe)
+#   NAME.out    REQUIRED  exact expected standard output (not compared with stdout=epipe or
+#                         stdout=closed)
 #   NAME.err    optional  exact expected standard error (absent = must be empty)
 #   NAME.status optional  expected exit status of the program (absent = 0)
 #   NAME.in     optional  the program's standard input (absent = /dev/null)
@@ -24,7 +25,8 @@
 #   NAME.files/ optional  fixtures copied into the working directory first
 #   NAME.expect/ optional files that must exist afterwards, byte-identical
 #   NAME.meta   optional  key=value lines: stdout=epipe connects standard output to a pipe
-#                         whose reading end is closed before the program starts
+#                         whose reading end is closed before the program starts;
+#                         stdout=closed starts the program with standard output closed (>&-)
 #   Afterwards the working directory may hold only the expected files and unchanged fixtures.
 #
 # tests/errors/NAME.sea    a program with a compile-time or run-time error
@@ -122,7 +124,7 @@ check_meta() {
     [ -f "$1.meta" ] || return 0
     while IFS= read -r _l || [ -n "$_l" ]; do
         case $_l in
-        "" | stdout=epipe) ;;
+        "" | stdout=epipe | stdout=closed) ;;
         *) echo "run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         esac
     done < "$1.meta"
@@ -190,6 +192,12 @@ RUNIT
         ERRFILE=$TMP/r.err; export ERRFILE
         run_limited "$TIMEOUT" "$(stdin_for "$_b")" "$WORK" sh "$TMP/runit.sh" "$TMP/epipe.fifo" "$_exe" "$@"
         st=$?
+    elif [ "$(meta_get "$_b.meta" stdout)" = closed ]; then
+        # descriptor 1 closed in the program itself: its writes fail with EBADF
+        : >"$TMP/r.out"
+        ERRFILE=$TMP/r.err; export ERRFILE
+        run_limited "$TIMEOUT" "$(stdin_for "$_b")" "$WORK" sh -c 'exec "$@" >&- 2>"$ERRFILE"' sh "$_exe" "$@"
+        st=$?
     else
         run_limited "$TIMEOUT" "$(stdin_for "$_b")" "$WORK" "$_exe" "$@" >"$TMP/r.out" 2>"$TMP/r.err"
         st=$?
@@ -222,7 +230,7 @@ for src in "$ROOT"/tests/programs/*.sea; do
     want=$(want_status "$base")
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
-    if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ]; then
+    if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ] && [ "$(meta_get "$base.meta" stdout)" != closed ]; then
         same "$base.out" "$TMP/r.out" "stdout" "$name" || ok=0
     fi
     [ $ok = 1 ] && { same "$experr" "$TMP/r.err" "stderr" "$name" || ok=0; }
@@ -266,7 +274,7 @@ for src in "$ROOT"/tests/errors/*.sea; do
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "program exit status $st, expected $want"; ok=0; }
     [ $ok = 1 ] && { same "$base.err" "$TMP/r.err" "stderr" "$name" || ok=0; }
-    if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ]; then
+    if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ] && [ "$(meta_get "$base.meta" stdout)" != closed ]; then
         same "$expout" "$TMP/r.out" "stdout" "$name" || ok=0
     fi
     [ $ok = 1 ] && { check_files "$name" "$base" || ok=0; }

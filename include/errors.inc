@@ -182,10 +182,15 @@
     \m 15, ENAMETOOLONG, 63, 36, "File name too long"
     \m 16, ELOOP, 62, 40, "Too many levels of symbolic links"
     \m 17, EDQUOT, 69, 122, "Disk quota exceeded"
+    \m 18, EBADF, 9, 9, "Bad file descriptor"
+    \m 19, ENXIO, 6, 6, "Device not configured"
+    \m 20, ECONNRESET, 54, 104, "Connection reset by peer"
+    \m 21, ENOTCONN, 57, 107, "Socket is not connected"
+    \m 22, ETIMEDOUT, 60, 110, "Operation timed out"
 .endm
 
 // Number of errno records (ids 0 .. SEA_ERRNO_COUNT-1).
-.equiv SEA_ERRNO_COUNT,         18
+.equiv SEA_ERRNO_COUNT,         23
 
 // ---- Exit statuses (LANGUAGE.md 9.4; DESIGN.md 2.2) ----------------------
 // compiled program

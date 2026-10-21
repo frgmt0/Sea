@@ -321,6 +321,52 @@ if begin driver/passes-run-in-temp-directory; then
     case $n in "$TD"/sea.*) ;; *) bad "pass working directory '$n' is not below the temporary directory" ;; esac
     [ "$(sort -u "$T/log.cwd" | wc -l | tr -d ' ')" = 1 ] || bad "passes ran in different directories"; end; fi
 
+# ---- the input is read once (DESIGN.md 2.2 "Input read once") -------------------------------------
+if begin driver/input-name-like-awk-assignment; then
+    printf 'let x = 1\n' > "$W/x=1.sea"
+    drive build --emit ast --no-prelude "x=1.sea"; want_status 0
+    printf '#sea 1\n#target arm64-macos\n#file x=1.sea\n|let x = 1\n#end\n' > "$T/want"
+    want_file "$T/o" "$T/want" "pass-1 input stream"; want_tmp_clean; end; fi
+if begin driver/input-name-like-awk-assignment-line-check; then
+    { bytes 4097; printf '\n'; } > "$W/x=1.sea"
+    drive build -S -o "$T/o.s" "x=1.sea"; want_status 1; want_err 'x=1.sea:1:4097: error: line too long'; want_log ""; end; fi
+if begin driver/input-from-pipe; then
+    : > "$T/log"
+    printf 'a\nb' | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build --emit ast --no-prelude /dev/stdin) >"$T/o" 2>"$T/e"; st=$?
+    want_status 0
+    printf '#sea 1\n#target arm64-macos\n#file /dev/stdin\n|a\n|b\n#end\n' > "$T/want"
+    want_file "$T/o" "$T/want" "pass-1 input stream"; want_tmp_clean; end; fi
+if begin driver/input-from-pipe-line-check; then
+    : > "$T/log"
+    { printf 'let a = 1\n'; bytes 4097; printf '\n'; } | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build -S -o "$T/o.s" /dev/stdin) >"$T/o" 2>"$T/e"; st=$?
+    want_status 1; want_err '/dev/stdin:2:4097: error: line too long'; want_log ""; want_tmp_clean; end; fi
+if begin driver/input-from-pipe-cr-and-nul; then
+    : > "$T/log"
+    printf 'a\000b\r\n\r' | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build --emit ast --no-prelude /dev/stdin) >"$T/o" 2>"$T/e"; st=$?
+    want_status 0
+    printf '#sea 1\n#target arm64-macos\n#file /dev/stdin\n|a\000b\r\n#end\n' > "$T/want"
+    want_file "$T/o" "$T/want" "pass-1 input stream"; end; fi
+if begin driver/input-from-named-pipe; then
+    rm -f "$W/fifo"; mkfifo "$W/fifo" && { printf 'let x = 1\n' > "$W/fifo" & }
+    drive build --emit ast --no-prelude fifo; want_status 0
+    printf '#sea 1\n#target arm64-macos\n#file fifo\n|let x = 1\n#end\n' > "$T/want"
+    want_file "$T/o" "$T/want" "pass-1 input stream"; wait; rm -f "$W/fifo"; end; fi
+if begin driver/output-is-input-build; then
+    cp "$W/p.sea" "$W/same.sea"
+    drive build same.sea -o same.sea; want_status 2; want_out_empty; want_err "sea: output file '$W/same.sea' is the input file"; want_log ""; want_tmp_clean
+    cmp -s "$W/p.sea" "$W/same.sea" || bad "the input file was changed"; end; fi
+if begin driver/output-is-input-S; then
+    cp "$W/p.sea" "$W/same.sea"
+    drive build -S same.sea -o ./same.sea; want_status 2; want_out_empty; want_err "sea: output file '$W/./same.sea' is the input file"; want_log ""; want_tmp_clean
+    cmp -s "$W/p.sea" "$W/same.sea" || bad "the input file was changed"; end; fi
+if begin driver/output-is-input-emit; then
+    cp "$W/p.sea" "$W/same.sea"
+    drive build --emit ast same.sea -o "$W/same.sea"; want_status 2; want_err "sea: output file '$W/same.sea' is the input file"; want_log ""
+    cmp -s "$W/p.sea" "$W/same.sea" || bad "the input file was changed"; end; fi
+if begin driver/output-is-input-hard-link; then
+    cp "$W/p.sea" "$W/orig.sea"; rm -f "$W/link.sea"; ln "$W/orig.sea" "$W/link.sea"
+    drive build -S orig.sea -o link.sea; want_status 2; want_err "sea: output file '$W/link.sea' is the input file"; want_log ""; end; fi
+
 # ---- outputs ------------------------------------------------------------------------------------------
 if begin driver/emit-to-file; then
     rm -f "$W/d.txt"; drive build --emit hir1 --no-prelude -o d.txt p.sea; want_status 0; want_out_empty
@@ -392,6 +438,10 @@ if [ $DARWIN = 1 ]; then
         want_status 0; [ -x "$W/p" ] || bad "executable not written"; end; fi
     if begin driver/run-status-and-arguments; then
         drive_asm "$DRIVER" run p.sea -- one two; want_status 3; want_out_empty; want_tmp_clean; end; fi
+    if begin driver/run-from-pipe; then
+        : > "$T/log"
+        printf 'let x = 1\n' | (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log SEA_ASM=$T/main.s "$DRIVER" run /dev/stdin -- one two) >"$T/o" 2>"$T/e"; st=$?
+        want_status 3; want_out_empty; want_tmp_clean; end; fi
     if begin driver/run-no-arguments; then
         rm -f "$W/p"
         drive_asm "$DRIVER" run p.sea; want_status 1; [ -e "$W/p" ] && bad "sea run left an executable"; end; fi

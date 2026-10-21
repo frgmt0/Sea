@@ -1,0 +1,35 @@
+// stmt_tasg -- tuple assignment: per-component cv flags in HIR (1: an i64 result into an f64
+// target), skip, a ref-parameter target, a target local the call passes by ref; in LIR the
+// result registers, itof, mov / stf after the reloads (LANGUAGE.md 7.3; DESIGN.md 3.5.5, 3.6.6)
+fn two(n: i64) -> (i64, i64) {
+    var s = 0
+    for i in 0..n {
+        s += i
+    }
+    return (s, n)
+}
+fn bump(ref c: i64) -> (i64, i64) {
+    for i in 0..2 {
+        c += 1
+    }
+    return (c * 10, c + 100)
+}
+fn put(ref p: f64, n: i64) -> i64 {
+    var k = 0
+    for i in 0..1 {
+        (p, k) = two(n)
+    }
+    return k
+}
+var a = 0.5
+var b = 0
+(a, b) = two(4)
+(_, b) = two(5)
+var c = 1
+var d = 0
+(d, c) = bump(ref c)
+(d, _) = bump(ref c)
+var x = 0.25
+let k = put(ref x, 3)
+let k2 = put(ref x, 5)
+printf("%f %d %d %d %f %d %d\n", a, b, d, c, x, k, k2)

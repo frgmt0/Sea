@@ -1,0 +1,142 @@
+#sea 1
+#target arm64-macos
+#file stmt_tasg.sea
+ttuple 10 2 3 3
+tvec 11 3
+fn 1 .main main 1 0 7 0:1:1
+loc a 4 var 0:24:5
+loc b 3 var 0:25:5
+loc c 3 var 0:28:5
+loc d 3 var 0:29:5
+loc x 4 var 0:32:5
+loc k 3 let 0:33:5
+loc k2 3 let 0:34:5
+cf 0:24:9 4 #3FE0000000000000
+bind 0:24:1 1
+ci 0:25:9 3 0
+bind 0:25:1 2
+lv 0:26:2 4 1
+lv 0:26:5 3 2
+ci 0:26:14 3 4
+call 0:26:10 10 2 1
+tasg 0:26:1 2 1 0
+skip 0:27:2 1
+lv 0:27:5 3 2
+ci 0:27:14 3 5
+call 0:27:10 10 2 1
+tasg 0:27:1 2 0 0
+ci 0:28:9 3 1
+bind 0:28:1 3
+ci 0:29:9 3 0
+bind 0:29:1 4
+lv 0:30:2 3 4
+lv 0:30:5 3 3
+lv 0:30:19 3 3
+rarg 0:30:15 3
+call 0:30:10 10 3 1
+tasg 0:30:1 2 0 0
+lv 0:31:2 3 4
+skip 0:31:5 1
+lv 0:31:19 3 3
+rarg 0:31:15 3
+call 0:31:10 10 3 1
+tasg 0:31:1 2 0 0
+cf 0:32:9 4 #3FD0000000000000
+bind 0:32:1 5
+lv 0:33:17 4 5
+rarg 0:33:13 4
+ci 0:33:20 3 3
+call 0:33:9 3 4 2
+bind 0:33:1 6
+lv 0:34:18 4 5
+rarg 0:34:14 4
+ci 0:34:21 3 5
+call 0:34:10 3 4 2
+bind 0:34:1 7
+lv 0:35:34 4 1
+fconv 0:35:8 1 - - - f
+ftext 0:35:8 1 %20
+lv 0:35:37 3 2
+fconv 0:35:8 1 - - - d
+ftext 0:35:8 1 %20
+lv 0:35:40 3 4
+fconv 0:35:8 1 - - - d
+ftext 0:35:8 1 %20
+lv 0:35:43 3 3
+fconv 0:35:8 1 - - - d
+ftext 0:35:8 1 %20
+lv 0:35:46 4 5
+fconv 0:35:8 1 - - - f
+ftext 0:35:8 1 %20
+lv 0:35:49 3 6
+fconv 0:35:8 1 - - - d
+ftext 0:35:8 1 %20
+lv 0:35:52 3 7
+fconv 0:35:8 1 - - - d
+ftext 0:35:8 1 %0A
+fmt 0:35:8 1 14
+lib 0:35:1 1 printf 1
+eval 0:35:1
+block 0:1:1 12
+end
+fn 2 two fn 10 1 2 0:4:1
+par n 3 val
+loc s 3 var 0:5:9
+loc i 3 for 0:6:9
+ci 0:5:13 3 0
+bind 0:5:5 2
+ci 0:6:14 3 0
+lv 0:6:17 3 1
+rng 0:6:14 11 0 0
+lv 0:7:9 3 2
+lv 0:7:14 3 3
+asg 0:7:9 add
+block 0:6:19 1
+forr 0:6:5 3
+lv 0:9:13 3 2
+lv 0:9:16 3 1
+ret 0:9:5 2
+block 0:4:30 3
+end
+fn 3 bump fn 10 1 1 0:11:1
+par c 3 ref
+loc i 3 for 0:12:9
+ci 0:12:14 3 0
+ci 0:12:17 3 2
+rng 0:12:14 11 0 0
+lv 0:13:9 3 1
+ci 0:13:14 3 1
+asg 0:13:9 add
+block 0:12:19 1
+forr 0:12:5 2
+lv 0:15:13 3 1
+ci 0:15:17 3 10
+bin 0:15:13 3 mul
+lv 0:15:21 3 1
+ci 0:15:25 3 100
+bin 0:15:21 3 add
+ret 0:15:5 2
+block 0:11:35 2
+end
+fn 4 put fn 3 2 2 0:17:1
+par p 4 ref
+par n 3 val
+loc k 3 var 0:18:9
+loc i 3 for 0:19:9
+ci 0:18:13 3 0
+bind 0:18:5 3
+ci 0:19:14 3 0
+ci 0:19:17 3 1
+rng 0:19:14 11 0 0
+lv 0:20:10 4 1
+lv 0:20:13 3 3
+lv 0:20:22 3 2
+call 0:20:18 10 2 1
+tasg 0:20:9 2 1 0
+block 0:19:19 1
+forr 0:19:5 4
+lv 0:22:12 3 3
+ret 0:22:5 1
+block 0:17:35 3
+end
+#end

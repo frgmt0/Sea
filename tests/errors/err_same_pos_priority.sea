@@ -1,0 +1,2 @@
+// err_same_pos_priority -- two errors at one position: the inner one first (LANGUAGE.md 9.1)
+let x = q + true

@@ -1,0 +1,5 @@
+// lex_for_blanks -- the AST for record names the loop variable at its own position npos, here
+// two blanks after for (DESIGN.md 3.4, L1)
+for  i in 0..3 {
+    printf("%d\n", i)
+}

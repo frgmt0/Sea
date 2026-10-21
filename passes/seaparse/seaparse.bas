@@ -1039,7 +1039,7 @@
 10390 CALL "p_rng": Z(), X$(), L(), E(), E$(), F$(), S$, R
 10400 LET Z(16) = H
 10410 CALL "p_block": Z(), X$(), L(), E(), E$(), F$()
-10420 CALL "pw": Z(), X$(), L(), E(), E$(), F$(), "for", P$, V$, ""
+10420 CALL "pw": Z(), X$(), L(), E(), E$(), F$(), "for", P$, V$, Q$
 10430 SUBEND
 10440 REM ---- p_rng: after a bound starting at S$, an optional ( .. | ..= ) or_expr [ step
 10450 REM or_expr ]; R = 1 if a range node was written

@@ -1,6 +1,6 @@
-// op_fold -- pass 2b folds f64 + - * / of finite constants when the exponent checks of
-// DESIGN.md 2.8 allow it, i64 + - * and unary - when the result is in range, cvt of an i64
-// constant; never inf/nan operands, comparisons, %, or a division by zero (DESIGN.md 3.5.7)
+// op_fold -- pass 2b folds f64 + - * / and unary - of constants whatever their values (overflow
+// to Inf, x / 0, inf and nan operands: DESIGN.md 2.8, U1), i64 + - * and unary - when the result
+// is in range, cvt of an i64 constant; never i64 overflow, comparisons or % (DESIGN.md 3.5.7)
 let a = 2 * 3 + 4
 let b = 1.5 * 2.0 - 0.5
 let c = 9223372036854775807 + 1

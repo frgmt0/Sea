@@ -4,45 +4,49 @@
 25 REM modules io diag tables limb f64emu, the DATA blocks errors exits consts records, END.
 40 REM
 45 REM WHAT IT DOES (DESIGN 3.5.7, the steps that apply to phase 1)
+47 REM  0 validation first: every field against passes.txt (enum words tb_word, positions io_pos,
+48 REM    bytes 0x20-0x7E io_plain), the types of every node it folds, a cref's type = its cn's
 50 REM  1 constant substitution: each cref becomes a copy of its constant's folded expression,
-55 REM    every copied node at the position of the cref; the cn records are not written
-60 REM  2 folding, bottom-up, only subtrees that are constant on their own: f64 add sub mul div
-65 REM    (the FEGRD guard of 2.8 decides WHETHER; the value is always computed with FEADD FESUB
-70 REM    FEMUL FEDIV, so -0 survives), un neg (FENEG / LMNEG), lib sqrt of an f64 >= 0 (FESQR),
-75 REM    i64 add sub mul (LMADD LMSUB LMMUL; an overflow stays for run time), cvt of an i64
-80 REM    constant (FEFRI, ties to even). A folded subtree is one ci/cf at its root's position.
-85 REM    Never folded: inf or nan operands, comparisons, logic, %, pow, i64 division, anything
-90 REM    transcendental, a result that is not finite.
+55 REM    every copied node at the position of the cref; the cn records are not written. A cref
+57 REM    may name a cn written later (constants are visible before their declaration): the
+58 REM    constants are buffered (X$) and replayed in dependency order at the first fn (4000)
+60 REM  2 folding, bottom-up, only subtrees that are constant on their own, for ANY operand values
+65 REM    (no guard, DESIGN 2.8: inf, nan, overflow, underflow are exact in f64emu): f64 add sub
+70 REM    mul div (FEADD FESUB FEMUL FEDIV), powk k (the pinned FEMULs, then FEDIV for k < 0),
+75 REM    un neg (FENEG / LMNEG), lib sqrt (FESQR), i64 add sub mul (LMADD LMSUB LMMUL; an
+80 REM    overflow stays for run time), cvt of an i64 constant (FEFRI, ties to even). A folded
+85 REM    subtree is one ci/cf at its root's position. Never folded: comparisons, logic, %, pow,
+90 REM    i64 division, anything transcendental, conversion to i64.
 95 REM  5 reachability from .main through call records; functions renumbered densely in their
 100 REM    old order; types renumbered by first reference (3.5.1); unreferenced types dropped
 105 REM Steps 3 (elemental instantiation) and 4 (write_json expansion) belong to later phases
 110 REM (DESIGN 8, phase 6): pass 2a rejects elemental functions and write_json as not supported
 115 REM yet, so no emap, elem function or lib write_json can reach this pass in phase 1. Such a
-120 REM record is reported as an internal error (BAD_RECORD) with a note, never passed on.
+120 REM record is reported as an internal error (BAD_RECORD), never passed on.
 125 REM
 130 REM TABLES  (arrays one letter; DIM below)
 135 REM  E E$ errors  N N$ W$ enums  R R$ records  F F$ fields  Z counts  C C$ constants
 140 REM  V special code of a record row, A its ty field index, B the rows of sea.hir1 (sets H H1)
 145 REM  G$ fields of the current record  U their u values  H$ #file paths
 150 REM  O$ out records  M out kind(0) high32(1) low32(2) row(3): kind 1 ci 2 cf 3 call 0 other
-155 REM  S stack of subtree starts (post-order trees)  Q$ J L the const pool (text, M-like,
-160 REM  per cid first and last pool row)  T P K$ Y$ the type table (kind, pool offset, count,
+155 REM  S stack of subtree starts (post-order trees)  Q$ J L the const pool (text, M-like; L per
+160 REM  cid: pool rows 0-1, ty 2, raw rows 3-4 in X$, state 5)  W replay order  T P K$ Y$ types (kind, offset, count,
 165 REM  extents; component ids; field names; struct names)  K function table (first record, last
 170 REM  record, new fid)  Y new type id  O old type id of each new id  D work stack
 175 REM
 180 REM SCALARS  P$ pass name  L$ record  L0 its line  C0 its fields  I0 its row  Y0 its code
-185 REM  S0 stack depth  O0 out records  N9 cn count  T9 types  F6 functions  F7 inside a function
+185 REM  S0 stack depth  O0 out records  N9 cid  N7 cn count  X7 X6 raw rows  Q5 Q7-Q9 replay  T9 types  F6 functions  F7 inside a function
 190 REM  F5 a function was seen  X8 fd records owed  S3 start of the node being made  K1 kind
 195 REM  A3-A0 B3-B0 R3-R0 limbs of operands and result  T$ text  Z8$ last position
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
-205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib
+205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk
 210 REM ====================================================================================
 215 FILES "sea.hir1"; "sea.hir"
 220 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 225 DIM C(299,4), C$(299), G$(300), U(300), H$(100), V(399), A(399), B(399), A$(1)
 230 DIM M(249999,3), O$(249999), S(249999)
 235 DIM T(20010,5), P(399999), K$(399999), Y$(20010), Y(20010), D(50010,1), K(50010,3), O(20010)
-240 DIM J(59999,3), Q$(59999), L(19999,1)
+240 DIM J(99999,3), Q$(99999), L(49999,5), X$(149999), W(49999)
 245 LET P$ = "seaexpand"
 250 REM ---- the tables ---------------------------------------------------------------------
 255 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -60,9 +64,13 @@
 315 CALL "tb_cval": C(), C$(), N5, "FILE_VERSION", V9, W1
 320 IF W1 = 0 THEN 330
 325 CALL "dg_bug": P$, "constant FILE_VERSION is not in the consts table"
-330 REM special code and ty field index of each record row of the HIR files (sets H and H1)
+330 REM LIM_POWK: the largest |k| of a powk (LANGUAGE 6.5)
+331 CALL "tb_cval": C(), C$(), N5, "LIM_POWK", V8, W1
+332 IF W1 = 0 THEN 335
+333 CALL "dg_bug": P$, "constant LIM_POWK is not in the consts table"
+334 REM special code and ty field index of each record row of the HIR files (sets H and H1)
 335 LET K1$ = "|tvec=01|tmat=02|tfvec=03|tfmat=04|tstruct=05|trec=06|ttuple=07|fd=08|cn=09|fn=11|par=12|loc=13|end=14|"
-340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|"
+340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|"
 345 LET N2 = 0
 350 LET R5 = 0
 355 LET R6 = 0
@@ -102,6 +110,10 @@
 525 LET O0 = 0
 530 LET S0 = 0
 535 LET D$ = "BAD_RECORD"
+536 CALL "io_plain": L$, W1
+537 LET M$ = "a byte outside 0x20-0x7E"
+538 IF W1 = 0 THEN 2915
+539 LET Z7$ = ""
 540 CALL "io_split": L$, G$(), 300, C0
 545 LET M$ = "empty record, a blank at its start or end, two blanks in a row, or too many fields"
 550 IF C0 < 1 THEN 2915
@@ -128,24 +140,20 @@
 655 IF T0 <= C0 THEN 670
 660 LET M$ = "too few fields: " & F$(B0) & " is missing"
 665 GOTO 2915
-670 LET W1 = F(B0, 1)
-675 IF W1 = 1 THEN 690
-680 IF W1 < 8 THEN 720
-685 IF W1 > 12 THEN 720
-690 IF G$(T0) = "-" THEN 720
-695 CALL "io_u": G$(T0), W2, W3
-700 IF W3 = 0 THEN 715
-705 LET M$ = "field " & F$(B0) & " ('" & G$(T0) & "') is not a number"
-710 GOTO 2915
-715 LET U(J1) = W2
+670 GOSUB 3600
 720 NEXT X1
 725 NEXT J1
 730 LET M$ = "too many fields"
 735 IF T0 < C0 THEN 2915
-740 IF R(I0, 4) = 0 THEN 755
-745 IF F(R(I0, 3), 1) <> 5 THEN 755
-750 LET Z8$ = G$(2)
-755 REM the fd records owed by the last tstruct / trec come first
+740 LET Z7 = 0
+745 IF LEN(Z7$) = 0 THEN 752
+748 LET Z7 = 1
+750 LET Z8$ = Z7$
+752 IF F5 = 1 THEN 760
+753 IF Q7 > 0 THEN 760
+754 IF Y0 = 9 THEN 3900
+756 IF Y0 = 0 THEN 3900
+758 IF Y0 >= 15 THEN 3900
 760 IF X8 = 0 THEN 775
 765 LET M$ = "fd record expected after tstruct / trec"
 770 IF Y0 <> 8 THEN 2915
@@ -160,6 +168,7 @@
 815 IF Y0 = 20 THEN 1585
 820 IF Y0 = 21 THEN 1885
 825 IF Y0 = 22 THEN 1800
+826 IF Y0 = 23 THEN 1700
 830 IF Y0 = 9 THEN 1115
 835 IF Y0 = 11 THEN 1260
 840 IF Y0 = 14 THEN 1375
@@ -192,15 +201,21 @@
 975 LET M$ = "bad f64 field"
 980 IF W1 <> 0 THEN 2915
 985 LET K1 = 2
+986 LET M$ = "a ci not typed i64 (3) or a cf not typed f64 (4)"
+987 IF U(2) <> 2 + K1 THEN 2915
 990 LET T$ = L$
 995 GOSUB 3070
 1000 GOSUB 3150
 1005 GOTO 1920
 1010 REM ---- cref: a copy of the constant's expression at the position of the cref -----------------
 1015 LET D$ = "BAD_TREE"
-1020 LET M$ = "cref names a constant that is not defined before it"
+1020 LET M$ = "cref names a constant that is not defined, or not yet resolved"
 1025 IF U(3) < 1 THEN 2915
-1030 IF U(3) > N9 THEN 2915
+1030 IF U(3) > N7 THEN 2915
+1031 IF L(U(3), 5) <> 3 THEN 2915
+1032 LET D$ = "BAD_RECORD"
+1033 LET M$ = "cref of type " & STR$(U(2)) & " names a constant of type " & STR$(L(U(3), 2))
+1034 IF U(2) <> L(U(3), 2) THEN 2915
 1035 LET S3 = O0 + 1
 1040 LET Z$ = G$(2)
 1045 FOR K9 = L(U(3), 0) TO L(U(3), 1)
@@ -224,15 +239,15 @@
 1135 LET M$ = "cn does not follow exactly its expression"
 1140 IF S0 <> 0 THEN 2915
 1145 LET D$ = "BAD_RECORD"
-1150 LET M$ = "cn ids are not 1, 2, ..."
-1155 IF U(1) <> N9 + 1 THEN 2915
-1160 LET W9$ = "constants"
-1165 IF U(1) > 19999 THEN 2925
-1170 LET N9 = N9 + 1
+1150 LET M$ = "cn replayed out of order"
+1155 IF Q7 = 0 THEN 2915
+1160 LET W9$ = "nodes"
+1165 LET N9 = U(1)
+1170 LET L(N9, 5) = 3
 1175 LET L(N9, 0) = Q0 + 1
 1180 FOR K9 = S3 TO O0
 1185 LET Q0 = Q0 + 1
-1190 IF Q0 > 59999 THEN 2925
+1190 IF Q0 > 99999 THEN 2925
 1195 LET Q$(Q0) = O$(K9)
 1200 LET J(Q0, 0) = M(K9, 0)
 1205 LET J(Q0, 1) = M(K9, 1)
@@ -248,6 +263,10 @@
 1255 REM ---- fn: opens a function; its records stay in O$ until the reachable ones are written -------
 1260 LET M$ = "fn inside a function"
 1265 IF F7 = 1 THEN 2915
+1266 IF F5 = 1 THEN 1270
+1267 IF Q5 = 1 THEN 1270
+1268 LET Q5 = 1
+1269 IF X7 > 0 THEN 4000
 1270 LET D$ = "BAD_TREE"
 1275 LET M$ = "nodes left on the stack at fn"
 1280 IF S0 <> 0 THEN 2915
@@ -287,30 +306,34 @@
 1450 REM ---- cvt: i64 constant -> f64 (nearest, ties to even) ----------------------------------------
 1455 GOSUB 2980
 1460 IF O0 <> S3 THEN 905
-1465 IF M(O0, 0) <> 1 THEN 905
+1465 IF M(O0, 0) = 0 THEN 905
+1466 IF M(O0, 0) = 3 THEN 905
+1467 LET M$ = "cvt of a constant that is not an i64 constant, or not typed f64"
+1468 IF M(O0, 0) <> 1 THEN 2915
+1469 IF U(2) <> 4 THEN 2915
 1470 LET D1 = O0
 1475 GOSUB 3180
 1480 CALL "FEFRI": A3, A2, A1, A0, R3, R2, R1, R0, W1
 1485 LET K1 = 2
 1490 GOTO 1915
-1495 REM ---- un neg of a constant ----------------------------------------------------------------------
+1495 REM ---- un neg of a constant: i64 unless it overflows, f64 always (a sign flip) ------------------
 1500 GOSUB 2980
 1505 IF G$(4) <> "neg" THEN 905
 1510 IF O0 <> S3 THEN 905
 1515 LET K1 = M(O0, 0)
 1520 IF K1 = 0 THEN 905
 1525 IF K1 > 2 THEN 905
+1526 LET M$ = "un neg typed " & STR$(U(2)) & " of a constant of another type"
+1527 IF U(2) <> 2 + K1 THEN 2915
 1530 LET D1 = O0
 1535 GOSUB 3180
-1540 IF K1 = 2 THEN 1560
+1540 IF K1 = 2 THEN 1570
 1545 CALL "LMNEG": A3, A2, A1, A0, R3, R2, R1, R0, W1
 1550 IF W1 = 1 THEN 905
 1555 GOTO 1915
-1560 CALL "FECLS": A3, A2, A1, A0, K2, S2
-1565 IF K2 >= 3 THEN 905
 1570 CALL "FENEG": A3, A2, A1, A0, R3, R2, R1, R0
 1575 GOTO 1915
-1580 REM ---- bin add sub mul div of two constants -------------------------------------------------------
+1580 REM ---- bin add sub mul div of two constants: f64 always, i64 add sub mul unless it overflows -----
 1585 GOSUB 2980
 1590 LET P2 = INT((POS("|add|sub|mul|div|", "|" & G$(4) & "|") + 3) / 4)
 1595 IF P2 = 0 THEN 905
@@ -318,13 +341,18 @@
 1605 LET K1 = M(S3, 0)
 1610 IF K1 = 0 THEN 905
 1615 IF K1 > 2 THEN 905
-1620 IF M(O0, 0) <> K1 THEN 905
+1616 IF M(O0, 0) = 0 THEN 905
+1617 IF M(O0, 0) > 2 THEN 905
+1618 LET M$ = "bin " & G$(4) & " typed " & STR$(U(2)) & ": its constant operands do not have the operation's types"
+1620 IF M(O0, 0) <> K1 THEN 2915
+1621 IF U(2) <> 2 + K1 THEN 2915
+1622 IF K1 = 2 THEN 1625
+1623 IF P2 = 4 THEN 2915
 1625 LET D1 = S3
 1630 GOSUB 3180
 1635 LET D1 = O0
 1640 GOSUB 3215
-1645 IF K1 = 2 THEN 1700
-1650 IF P2 = 4 THEN 905
+1645 IF K1 = 2 THEN 1730
 1655 IF P2 = 2 THEN 1675
 1660 IF P2 = 3 THEN 1685
 1665 CALL "LMADD": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0, W1
@@ -334,39 +362,48 @@
 1685 CALL "LMMUL": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0, W1
 1690 IF W1 = 1 THEN 905
 1695 GOTO 1915
-1700 CALL "FECLS": A3, A2, A1, A0, K2, S2
-1705 IF K2 >= 3 THEN 905
-1710 CALL "FECLS": B3, B2, B1, B0, K2, S2
-1715 IF K2 >= 3 THEN 905
-1720 CALL "FEGRD": P2, A3, A2, A1, A0, B3, B2, B1, B0, F1
-1725 IF F1 = 0 THEN 905
+1698 REM ---- powk k of an f64 constant: the pinned multiplications (3555) ------------------------------------
+1700 GOSUB 2980
+1702 IF O0 <> S3 THEN 905
+1704 LET K1 = M(O0, 0)
+1706 IF K1 = 0 THEN 905
+1708 IF K1 = 3 THEN 905
+1710 LET M$ = "powk of a constant that is not an f64 constant, not typed f64, or with |k| above LIM_POWK"
+1712 IF K1 <> 2 THEN 2915
+1714 IF U(2) <> 4 THEN 2915
+1716 CALL "LMRD": G$(4), B3, B2, B1, B0, W1
+1718 CALL "LMTON": B3, B2, B1, B0, P2, W1
+1720 IF W1 <> 0 THEN 2915
+1722 IF ABS(P2) > V8 THEN 2915
+1724 LET D1 = O0
+1725 GOSUB 3180
+1726 GOSUB 3555
+1728 GOTO 1915
 1730 IF P2 = 2 THEN 1755
 1735 IF P2 = 3 THEN 1765
 1740 IF P2 = 4 THEN 1775
 1745 CALL "FEADD": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0
-1750 GOTO 1780
+1750 GOTO 1915
 1755 CALL "FESUB": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0
-1760 GOTO 1780
+1760 GOTO 1915
 1765 CALL "FEMUL": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0
-1770 GOTO 1780
+1770 GOTO 1915
 1775 CALL "FEDIV": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0
-1780 CALL "FECLS": R3, R2, R1, R0, K2, S2
-1785 IF K2 >= 3 THEN 905
-1790 GOTO 1915
-1795 REM ---- lib: sqrt of a constant >= 0 folds; write_json is a later phase ------------------------------
+1780 GOTO 1915
+1795 REM ---- lib: sqrt of a constant folds (any value); write_json is a later phase -----------------------
 1800 LET M$ = "write_json expansion is a later phase: pass 2a rejects it, so pass 2b never sees it in phase 1"
 1805 IF G$(4) = "write_json" THEN 2915
 1810 GOSUB 2980
 1815 IF G$(4) <> "sqrt" THEN 905
 1820 IF U(4) <> 1 THEN 905
 1825 IF O0 <> S3 THEN 905
-1830 IF M(O0, 0) <> 2 THEN 905
+1830 IF M(O0, 0) = 0 THEN 905
+1831 IF M(O0, 0) = 3 THEN 905
+1832 LET M$ = "lib sqrt of a constant that is not an f64 constant, or not typed f64"
+1833 IF M(O0, 0) <> 2 THEN 2915
+1834 IF U(2) <> 4 THEN 2915
 1835 LET D1 = O0
 1840 GOSUB 3180
-1845 CALL "FECLS": A3, A2, A1, A0, K2, S2
-1850 IF K2 >= 3 THEN 905
-1855 CALL "FEGRD": 5, A3, A2, A1, A0, 0, 0, 0, 0, F1
-1860 IF F1 = 0 THEN 905
 1865 CALL "FESQR": A3, A2, A1, A0, R3, R2, R1, R0
 1870 LET K1 = 2
 1875 GOTO 1915
@@ -384,7 +421,7 @@
 1935 LET M$ = "type record after the first function"
 1940 IF F5 = 1 THEN 2915
 1945 LET M$ = "type record after a constant"
-1950 IF N9 > 0 THEN 2915
+1950 IF X7 > 0 THEN 2915
 1955 LET M$ = "type ids are not 10, 11, ..."
 1960 IF U(1) <> 10 + T9 THEN 2915
 1965 LET W9$ = "types"
@@ -580,6 +617,8 @@
 2915 CALL "dg_internal": P$, D$, E(), E$(), E0
 2920 REM ---- a capacity limit (DESIGN 2.7): program too large: W9$, at the last position seen -------------------------------
 2925 LET A$(1) = W9$
+2926 IF Z7 = 1 THEN 2930
+2928 GOSUB 4300
 2930 CALL "io_pos": Z8$, W4, W5, W6, W7
 2935 IF W7 = 0 THEN 2955
 2940 LET W4 = 0
@@ -587,7 +626,8 @@
 2950 LET W6 = 1
 2955 CALL "dg_compile": P$, H$(), N1, W4, W5, W6, "TOO_LARGE", A$(), 1, E(), E$(), E0
 2960 REM ---- 2965: the next record of sea.hir1 into L$ (L0 counts the lines) ----
-2965 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+2965 IF Q7 > 0 THEN 4200
+2967 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 2970 RETURN
 2975 REM ---- 2980: P1 = the nodes the record pops; S0 shrinks; S3 = where the new node starts ----------------------------
 2980 LET P1 = 0
@@ -704,3 +744,182 @@
 3535 LET W4 = W4 - 1
 3540 IF W4 > 0 THEN 3450
 3545 RETURN
+3550 REM ---- 3555: R = A ^ P2 by the pinned multiplications of LANGUAGE 6.5, each rounded (FEMUL, FEDIV) ----
+3555 LET W2 = ABS(P2)
+3557 IF W2 > 0 THEN 3567
+3559 LET R3 = 16368
+3561 LET R2 = 0
+3563 LET R1 = 0
+3565 LET R0 = 0
+3566 RETURN
+3567 LET R3 = A3
+3568 LET R2 = A2
+3569 LET R1 = A1
+3570 LET R0 = A0
+3571 IF W2 = 1 THEN 3590
+3572 CALL "FEMUL": A3, A2, A1, A0, A3, A2, A1, A0, R3, R2, R1, R0
+3573 IF W2 = 2 THEN 3590
+3574 IF W2 = 4 THEN 3577
+3575 CALL "FEMUL": R3, R2, R1, R0, A3, A2, A1, A0, R3, R2, R1, R0
+3576 GOTO 3590
+3577 CALL "FEMUL": R3, R2, R1, R0, R3, R2, R1, R0, R3, R2, R1, R0
+3590 IF P2 > 0 THEN 3595
+3592 CALL "FEDIV": 16368, 0, 0, 0, R3, R2, R1, R0, R3, R2, R1, R0
+3595 RETURN
+3598 REM ---- 3600: field G$(T0) (row B0 of F) valid for its type (passes.txt, DESIGN 3.1, 3.5.7); u-like values into U(J1) ----
+3600 LET Z$ = G$(T0)
+3605 LET W1 = F(B0, 1)
+3610 LET M$ = "field " & F$(B0) & " ('" & Z$ & "') is not valid for its type"
+3615 IF F(B0, 2) = 0 THEN 3625
+3620 IF Z$ = "-" THEN 3845
+3625 IF W1 >= 100 THEN 3720
+3630 IF W1 = 1 THEN 3680
+3635 IF W1 = 2 THEN 3735
+3640 IF W1 = 3 THEN 3745
+3645 IF W1 = 4 THEN 3755
+3650 IF W1 = 5 THEN 3700
+3655 IF W1 = 7 THEN 3770
+3660 IF W1 < 8 THEN 2915
+3665 IF W1 > 12 THEN 2915
+3680 CALL "io_u": Z$, W2, W3
+3685 IF W3 <> 0 THEN 2915
+3690 LET U(J1) = W2
+3692 IF W1 <> 1 THEN 3845
+3694 IF F$(B0) <> "cv" THEN 3845
+3696 IF W2 > 1 THEN 2915
+3698 GOTO 3845
+3700 CALL "io_pos": Z$, W4, W5, W6, W3
+3705 IF W3 <> 0 THEN 2915
+3710 IF W4 >= N1 THEN 2915
+3712 IF LEN(Z7$) > 0 THEN 3845
+3714 LET Z7$ = Z$
+3716 GOTO 3845
+3720 CALL "tb_word": N(), W$(), W1 - 100, Z$, W2
+3725 IF W2 = 0 THEN 2915
+3730 GOTO 3845
+3735 CALL "LMRD": Z$, W2, W3, W4, W5, W6
+3740 GOTO 3760
+3745 CALL "LMRF": Z$, W2, W3, W4, W5, W6
+3750 GOTO 3760
+3755 CALL "io_unesc": Z$, 0, Y1$, W6
+3760 IF W6 <> 0 THEN 2915
+3765 GOTO 3845
+3770 IF Z$ = "-" THEN 3845
+3775 LET W2 = 0
+3780 FOR W3 = 1 TO LEN(Z$)
+3785 LET W4 = POS("lpsza", SEG$(Z$, W3, W3))
+3790 IF W4 = 0 THEN 2915
+3795 IF W4 <= W2 THEN 2915
+3800 LET W2 = W4
+3805 NEXT W3
+3845 RETURN
+3895 REM ---- 3900: a record of the constants part, kept in X$ until the first fn (4000); a cn closes a constant ----
+3900 LET M$ = "fd record expected after tstruct / trec"
+3905 IF X8 > 0 THEN 2915
+3910 LET X7 = X7 + 1
+3915 LET W9$ = "nodes"
+3920 IF X7 > 149999 THEN 2925
+3925 LET X$(X7) = L$
+3930 IF Y0 <> 9 THEN 1920
+3935 LET M$ = "cn ids are not 1, 2, ..."
+3940 IF U(1) <> N7 + 1 THEN 2915
+3945 LET W9$ = "symbols"
+3950 IF U(1) > 49999 THEN 2925
+3955 LET N7 = U(1)
+3960 LET L(N7, 2) = U(3)
+3965 LET L(N7, 3) = X6 + 1
+3970 LET L(N7, 4) = X7
+3975 LET L(N7, 5) = 0
+3980 LET X6 = X7
+3985 GOTO 1920
+3995 REM ---- 4000: at the first fn: order the constants by dependency (iterative DFS, stack D), then replay them ----
+4000 LET F9$ = L$
+4005 LET D$ = "BAD_TREE"
+4010 LET M$ = "constant expression records not closed by a cn"
+4015 IF X7 <> X6 THEN 2915
+4025 FOR Q1 = 1 TO N7
+4030 IF L(Q1, 5) <> 0 THEN 4140
+4035 LET Q2 = 1
+4040 LET D(1, 0) = Q1
+4045 LET D(1, 1) = L(Q1, 3)
+4050 LET L(Q1, 5) = 1
+4055 LET Q3 = D(Q2, 0)
+4060 LET Q6 = D(Q2, 1)
+4065 IF Q6 > L(Q3, 4) THEN 4125
+4070 LET D(Q2, 1) = Q6 + 1
+4075 LET T$ = X$(Q6)
+4080 IF POS(T$, " ") <> 5 THEN 4055
+4085 IF SEG$(T$, 1, 4) <> "cref" THEN 4055
+4090 LET T1 = 4
+4095 GOSUB 3345
+4100 CALL "io_u": Z$, W2, W3
+4102 LET M$ = "cref names a constant that is not defined"
+4104 IF W3 <> 0 THEN 2915
+4106 IF W2 < 1 THEN 2915
+4108 IF W2 > N7 THEN 2915
+4110 LET M$ = "constants refer to each other in a cycle"
+4112 IF L(W2, 5) = 1 THEN 2915
+4114 IF L(W2, 5) = 2 THEN 4055
+4116 LET Q2 = Q2 + 1
+4117 LET D(Q2, 0) = W2
+4118 LET D(Q2, 1) = L(W2, 3)
+4119 LET L(W2, 5) = 1
+4120 GOTO 4055
+4125 LET L(Q3, 5) = 2
+4130 LET Q4 = Q4 + 1
+4132 LET W(Q4) = Q3
+4134 LET Q2 = Q2 - 1
+4136 IF Q2 > 0 THEN 4055
+4140 NEXT Q1
+4145 LET D$ = "BAD_RECORD"
+4150 LET Q7 = 1
+4155 LET Q8 = L(W(1), 3)
+4160 LET Q9 = L(W(1), 4)
+4165 GOTO 1920
+4195 REM ---- 4200: the next replayed record into L$; after the last constant, the saved fn record ----------
+4200 IF Q8 > Q9 THEN 4220
+4205 LET L$ = X$(Q8)
+4210 LET Q8 = Q8 + 1
+4215 RETURN
+4220 LET Q7 = Q7 + 1
+4225 IF Q7 > N7 THEN 4245
+4230 LET Q8 = L(W(Q7), 3)
+4235 LET Q9 = L(W(Q7), 4)
+4240 GOTO 4200
+4245 LET Q7 = 0
+4250 LET L$ = F9$
+4255 RETURN
+4295 REM ---- 4300: the record at fault has no pos: the position of the next record with one (DESIGN 2.6.2, 'here') ----
+4300 IF Q7 > 0 THEN 4395
+4305 IF G$(1) = "#end" THEN 4395
+4315 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+4320 CALL "io_split": L$, G$(), 300, C0
+4325 IF C0 < 1 THEN 4395
+4330 IF G$(1) = "#end" THEN 4395
+4335 LET I0 = 0
+4340 FOR I = 1 TO N2
+4345 IF R$(B(I)) <> G$(1) THEN 4355
+4350 LET I0 = B(I)
+4355 NEXT I
+4360 IF I0 = 0 THEN 4395
+4362 LET T0 = 1
+4364 FOR J1 = 1 TO R(I0, 4)
+4366 LET B0 = R(I0, 3) + J1 - 1
+4368 LET U(J1) = 0
+4370 LET X0 = 1
+4372 IF F(B0, 3) = 0 THEN 4376
+4374 LET X0 = U(F(B0, 3))
+4376 IF F(B0, 1) <> 5 THEN 4382
+4378 IF T0 + 1 > C0 THEN 4395
+4379 CALL "io_pos": G$(T0 + 1), W4, W5, W6, W3
+4380 IF W3 = 0 THEN 4392
+4381 GOTO 4395
+4382 IF F(B0, 1) <> 1 THEN 4388
+4383 IF T0 + 1 > C0 THEN 4395
+4384 CALL "io_u": G$(T0 + 1), W2, W3
+4386 LET U(J1) = W2
+4388 LET T0 = T0 + X0
+4390 NEXT J1
+4391 GOTO 4300
+4392 LET Z8$ = G$(T0 + 1)
+4395 RETURN

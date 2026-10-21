@@ -53,7 +53,7 @@ rec A 14 tasg n+1 pos:pos n:u
 rec A 15 cstmt 1 pos:pos
 rec A 16 if 2+e pos:pos e:u
 rec A 17 while 2 pos:pos
-rec A 18 for 2 pos:pos name:s
+rec A 18 for 2 pos:pos name:s npos:pos
 rec A 19 match n+1 pos:pos n:u
 rec A 20 arm k+1 pos:pos k:u
 rec A 21 break 0 pos:pos
@@ -142,7 +142,7 @@ rec H 47 bind 1 pos:pos lid:lid
 rec H 48 tbind 1 pos:pos n:u lid:lid?*n
 rec H 49 eval 1 pos:pos
 rec H 50 asg 2 pos:pos op:asgop
-rec H 51 tasg n+1 pos:pos n:u
+rec H 51 tasg n+1 pos:pos n:u cv:u*n
 rec H 52 if 2+e pos:pos e:u
 rec H 53 while 2 pos:pos
 rec H 54 forr 2 pos:pos lid:lid

@@ -1,0 +1,4 @@
+// lib_conv_identity -- f64() of an f64 and i64() of an i64 are the identity; an untyped argument is i64 (LANGUAGE.md 10.1)
+let x = 2.5
+let n = 7
+printf("%f %d %f %d\n", f64(x), i64(n), f64(3), i64(3))

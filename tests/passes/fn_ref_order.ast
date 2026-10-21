@@ -11,7 +11,7 @@ name 0:6:9 s
 int 0:6:14 5
 asg 0:6:9 add
 block 0:5:19 1
-for 0:5:5 k
+for 0:5:5 k 0:5:9
 name 0:8:12 s
 int 0:8:16 2
 bin 0:8:12 mul
@@ -33,7 +33,7 @@ name 0:13:9 r
 name 0:13:14 a
 asg 0:13:9 add
 block 0:12:19 1
-for 0:12:5 k
+for 0:12:5 k 0:12:9
 name 0:15:12 r
 return 0:15:5 1
 block 0:10:29 3

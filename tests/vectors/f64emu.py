@@ -15,9 +15,13 @@ f64emu.txt (A, B, R are binary64 patterns, sign bit first):
   fri I R X                  i64 pattern I -> f64 (ties to even); X = 1 if inexact
   toi A R E                  f64 -> i64: E = 0 ok, 1 not an integer or not finite, 2 out of range
   ton A E R                  f64 -> Baysick number -> f64: E = 1 for inf/NaN (R = 0); -0 gives +0
-  grd P A B F                F = 1 if DESIGN.md 2.8 allows folding (P: 1 + 2 - 3 * 4 / 5 sqrt)
-Every NaN an operation produces is #7FF8000000000000 (DESIGN.md 3.5.5's nan); neg flips the
-sign bit of any pattern, and mod with B = 0 returns A unchanged (a NaN A included).
+NaN results follow DESIGN.md 2.8 ("NaN bits", arm64 with FPCR.DN = 0): if an operand of add,
+sub, mul, div, sqrt, fmod or mod is a NaN, the result is the first NaN operand (A, then B) with
+its quiet bit (bit 51) set, sign and payload kept; otherwise an invalid operation (inf - inf,
+0 * inf, 0 / 0, inf / inf, sqrt of a negative number, fmod of an infinite A or by a zero B, mod
+of an infinite A) gives the default NaN #7FF8000000000000. neg flips the sign bit of any
+pattern, and mod with B = 0 returns A unchanged, a NaN A included (LANGUAGE.md 6.6). Folding has
+no guards any more (DESIGN.md 2.8: every operation folds), so there are no grd vectors.
 
 limb.txt (i64 two's-complement patterns):
   add|sub|mul A B R V        R = result mod 2^64, V = 1 if the exact result is outside i64
@@ -47,6 +51,7 @@ from fractions import Fraction
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 NAN = 0x7FF8000000000000
+QUIET = 1 << 51
 INF = 0x7FF0000000000000
 SIGN = 1 << 63
 M64 = (1 << 64) - 1
@@ -99,9 +104,19 @@ def rnd(x, neg_zero=False):
     return s | bits
 
 
+def nanop(a, b=None):
+    """The propagated NaN of DESIGN.md 2.8: the first NaN operand, quieted; None if neither."""
+    if cls(a) == 4:
+        return a | QUIET
+    if b is not None and cls(b) == 4:
+        return b | QUIET
+    return None
+
+
 def f_add(a, b):
-    if cls(a) == 4 or cls(b) == 4:
-        return NAN
+    n = nanop(a, b)
+    if n is not None:
+        return n
     if cls(a) == 3 or cls(b) == 3:
         if cls(a) == 3 and cls(b) == 3:
             return a if sgn(a) == sgn(b) else NAN
@@ -118,15 +133,17 @@ def f_neg(a):
 
 
 def f_sub(a, b):
-    if cls(b) == 4:
-        return NAN
+    n = nanop(a, b)  # before the sign flip: a NaN b propagates with its own sign
+    if n is not None:
+        return n
     return f_add(a, f_neg(b))
 
 
 def f_mul(a, b):
     s = sgn(a) ^ sgn(b)
-    if cls(a) == 4 or cls(b) == 4:
-        return NAN
+    n = nanop(a, b)
+    if n is not None:
+        return n
     if cls(a) == 3 or cls(b) == 3:
         if cls(a) == 0 or cls(b) == 0:
             return NAN
@@ -137,8 +154,9 @@ def f_mul(a, b):
 def f_div(a, b):
     s = sgn(a) ^ sgn(b)
     ka, kb = cls(a), cls(b)
-    if ka == 4 or kb == 4:
-        return NAN
+    n = nanop(a, b)
+    if n is not None:
+        return n
     if ka == 3:
         return NAN if kb == 3 else INF | (s << 63)
     if kb == 3:
@@ -151,7 +169,7 @@ def f_div(a, b):
 def f_sqrt(a):
     k = cls(a)
     if k == 4:
-        return NAN
+        return a | QUIET
     if k == 0:
         return a
     if sgn(a):
@@ -174,7 +192,10 @@ def f_sqrt(a):
 
 def f_fmod(a, b):
     ka, kb = cls(a), cls(b)
-    if ka >= 3 or kb == 4 or kb == 0:
+    n = nanop(a, b)
+    if n is not None:
+        return n
+    if ka == 3 or kb == 0:
         return NAN
     if kb == 3 or ka == 0:
         return a
@@ -189,7 +210,10 @@ def f_mod(a, b):
     ka, kb = cls(a), cls(b)
     if kb == 0:
         return a
-    if ka >= 3 or kb == 4:
+    n = nanop(a, b)
+    if n is not None:
+        return n
+    if ka == 3:
         return NAN
     r = f_fmod(a, b)
     if r & ~SIGN and sgn(r) != sgn(b):
@@ -242,24 +266,6 @@ def expo(b):
     return e
 
 
-def f_grd(p, a, b):
-    if cls(a) >= 3:
-        return 0
-    if p == 5:
-        return 1 if cls(a) == 0 or not sgn(a) else 0
-    if cls(b) >= 3:
-        return 0
-    ea = expo(a) if cls(a) else None
-    eb = expo(b) if cls(b) else None
-    if p in (1, 2):
-        return 1 if (ea is None or ea <= 1022) and (eb is None or eb <= 1022) else 0
-    if p == 3:
-        return 1 if ea is None or eb is None or ea + eb <= 1022 else 0
-    if cls(b) == 0:
-        return 0
-    return 1 if ea is None or ea - eb <= 1022 else 0
-
-
 # ---------------------------------------------------------------- cross-checks with host floats
 
 def tof(b):
@@ -272,7 +278,7 @@ def tob(x):
 
 def same(bits, x):
     if math.isnan(x):
-        return bits == NAN
+        return cls(bits) == 4  # any NaN: the host's NaN bits are not the oracle (DESIGN.md 2.8)
     return tob(x) == bits
 
 
@@ -313,7 +319,8 @@ def pat(x):
 SPECIALS = [0, SIGN, 1, SIGN | 1, 0x000FFFFFFFFFFFFF, 0x0010000000000000, SIGN | 0x0010000000000000,
             pat(1.0), pat(-1.0), pat(2.0), pat(0.5), pat(3.0), pat(-3.0), pat(0.1), pat(10.0),
             pat(1.5), pat(-2.5), 0x7FEFFFFFFFFFFFFF, SIGN | 0x7FEFFFFFFFFFFFFF, 0x7FE0000000000000,
-            INF, SIGN | INF, NAN, 0x7FF0000000000001, 0xFFF8000000000000, pat(2.0 ** 53),
+            INF, SIGN | INF, NAN, 0x7FF0000000000001, 0xFFF8000000000000, 0x7FF4000000000123,
+            0xFFF0000000000005, 0x7FFFFFFFFFFFFFFF, pat(2.0 ** 53),
             pat(2.0 ** 63), pat(-(2.0 ** 63)), pat(1e300), pat(1e-300), pat(4.0), pat(6.0)]
 
 
@@ -462,16 +469,6 @@ def gen_f64(r):
         res, x = f_fri(i)
         assert tob(float(v)) == res
         lines.append('fri #%016X #%016X %d' % (i, res, x))
-    # folding guards
-    gp = SPECIALS + [pat(2.0 ** 1022), pat(2.0 ** 1023), pat(-(2.0 ** 1022) * 1.75), pat(2.0 ** 511),
-                     pat(2.0 ** 512), pat(2.0 ** -1), pat(2.0 ** -1000), pat(3 * 2.0 ** -1074)]
-    for p in (1, 2, 3, 4):
-        for a in gp:
-            for b in gp:
-                if r.random() < 0.35 or (cls(a) != 2 and cls(b) != 2):
-                    lines.append('grd %d #%016X #%016X %d' % (p, a, b, f_grd(p, a, b)))
-    for a in gp:
-        lines.append('grd 5 #%016X #%016X %d' % (a, 0, f_grd(5, a, 0)))
     return lines
 
 
@@ -597,7 +594,7 @@ def main():
     f = gen_f64(r)
     with open(os.path.join(HERE, 'f64emu.txt'), 'w') as fo:
         fo.write('\n'.join(f) + '\n')
-    l = gen_limb(r)
+    l = gen_limb(random.Random(20261021))  # its own stream: f64 vector changes leave limb.txt alone
     with open(os.path.join(HERE, 'limb.txt'), 'w') as fo:
         fo.write('\n'.join(l) + '\n')
     print('f64emu.txt: %d vectors, limb.txt: %d vectors' % (len(f), len(l)))

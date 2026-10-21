@@ -1,0 +1,5 @@
+// err_call_then_asg -- a call statement ends after the call: f(1) = 3 (LANGUAGE.md 7.1)
+fn f(a: i64) -> i64 {
+    return a
+}
+f(1) = 3

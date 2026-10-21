@@ -6,7 +6,6 @@
 60 GOSUB 720
 70 LET O$ = F$(1)
 80 IF O$ = "fri" THEN 620
-90 IF O$ = "grd" THEN 670
 100 CALL "LMRF": F$(2),A3,A2,A1,A0,E
 110 LET P$ = F$(1) & " " & F$(2) & " "
 120 IF O$ = "sqrt" THEN 400
@@ -64,11 +63,6 @@
 640 CALL "LMHEX": R3,R2,R1,R0,R$
 650 PRINT "fri " & F$(2) & " " & R$ & " " & STR$(X)
 660 GOTO 40
-670 CALL "LMRF": F$(3),A3,A2,A1,A0,E
-680 CALL "LMRF": F$(4),B3,B2,B1,B0,E
-690 CALL "FEGRD": VAL(F$(2)),A3,A2,A1,A0,B3,B2,B1,B0,K
-700 PRINT "grd " & F$(2) & " " & F$(3) & " " & F$(4) & " " & STR$(K)
-710 GOTO 40
 720 LET N = 0
 730 LET P = 1
 740 LET Q = POS(L$," ",P)

@@ -1,0 +1,7 @@
+// err_missing_return_while -- a loop never ends every path, even while true (LANGUAGE.md 8.1)
+fn f() -> i64 {
+    while true {
+        return 1
+    }
+}
+printf("%d\n", f())

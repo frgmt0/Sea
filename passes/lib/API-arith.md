@@ -73,10 +73,15 @@ use 40 `FOR` statements.
 ## f64emu.bas — binary64
 
 Results are rounded to nearest, ties to even, with subnormals, signed zeros and infinities, as
-IEEE-754 specifies. Every NaN an operation **produces** is `#7FF8000000000000` (DESIGN.md
-§3.5.5's `nan`); the payload and sign of an input NaN are not carried through. There are two
-exceptions: `FENEG` flips the sign bit of any value, a NaN included (LANGUAGE.md §6.5), and
-`FEMOD` with B = ±0 returns A unchanged, a NaN A included (LANGUAGE.md §6.6).
+IEEE-754 specifies, for every operand, finite or not. NaN results have arm64's bits (DESIGN.md
+§2.8, "NaN bits"; FPCR.DN = 0): if an operand of `FEADD` `FESUB` `FEMUL` `FEDIV` `FESQR` `FEFMD`
+`FEMOD` is a NaN, the result is the first NaN operand in operand order (A, then B) with its
+quiet bit (bit 51) set, sign and payload kept (`FESUB` takes a NaN B before flipping its sign);
+otherwise an invalid operation (∞ − ∞, 0 × ∞, 0 ÷ 0, ∞ ÷ ∞, √ of a number below zero, `fmod`
+of an infinite A or by a zero B, `%` of an infinite A) gives the default NaN
+`#7FF8000000000000` (DESIGN.md §3.5.5's `nan`). There are two exceptions: `FENEG` flips the sign
+bit of any value, a NaN included (LANGUAGE.md §6.5), and `FEMOD` with B = ±0 returns A
+unchanged, a NaN A included and not quieted (LANGUAGE.md §6.6).
 
 | SUB | Parameters | Result |
 |-----|-----------|--------|
@@ -91,14 +96,14 @@ exceptions: `FENEG` flips the sign bit of any value, a NaN included (LANGUAGE.md
 | `FETOI` | `A3..A0,R3..R0,E` | converts f64 to i64. E = 1: not an integer, or not finite. E = 2: an integer outside i64. R = 0 unless E = 0. |
 | `FETON` | `A3..A0,N,E` | N = the finite value as a Baysick number (exact; −0 gives −0). E = 1 for ±∞ or NaN (N = 0). |
 | `FEFRN` | `N,R3..R0` | R = the bit pattern of the Baysick number N (exact), except that **a zero always gives +0**: a Baysick program cannot tell −0 from +0. |
-| `FEGRD` | `P,A3..A0,B3..B0,F` | F = 1 if DESIGN.md §2.8 allows pass 2b to fold `A op B`, with P = 1 +, 2 −, 3 ×, 4 ÷, 5 sqrt (B is ignored for sqrt). Both operands must be finite. Write e(x) for the exponent with 2^e ≤ \|x\| < 2^(e+1), computed exactly (subnormals included); a zero has no exponent limit. The rules: + and −, e(A) ≤ 1022 and e(B) ≤ 1022; ×, e(A) + e(B) ≤ 1022; ÷, B ≠ 0 and e(A) − e(B) ≤ 1022; sqrt, A ≥ 0 (−0 included). |
 | `FEUNP` | `A3..A0,S,K,M,E` | sign S, class K (as `FECLS`), and \|A\| = M·2^E with M an integer below 2⁵³ (M = 0 for zeros, infinities and NaN). |
-| `FEPCK` `FEADS` `FEMDS` `FEEXP` | *internal* | pack M·2^E, the signed add, an exact modulo, and the exponent of M·2^E. |
+| `FEPCK` `FEADS` `FEMDS` `FEQNP` | *internal* | pack M·2^E, the signed add, an exact modulo, and the propagated NaN (`FEQNP: A3..A0,B3..B0,N,R3..R0,Y`: Y = 1 and R = the first NaN among the N operands, quieted; Y = 0 and R untouched if none). |
 
-**Folding (lead's decision).** `FEGRD` decides only **whether** pass 2b folds an operation. The
-folded **value** is always computed with `FEADD`, `FESUB`, `FEMUL`, `FEDIV` or `FESQR` (and a
-sign flip with `FENEG`); this gives the run time's bits exactly, signed zeros included (−1.0 × +0.0
-= −0, √−0 = −0, −10⁻²⁰⁰ × 10⁻²⁰⁰ = −0). **`FETON` and `FEFRN` must never be used to produce a
+**Folding.** Folding is not guarded (DESIGN.md §2.8, §3.5.7): pass 2b folds a foldable operation
+whatever its operands' values, and the folded **value** is always computed with `FEADD`,
+`FESUB`, `FEMUL`, `FEDIV` or `FESQR` (and a sign flip with `FENEG`); this gives the run time's
+bits exactly, signed zeros, infinities and arm64's NaN bits included (−1.0 × +0.0 = −0, √−0 = −0,
+−10⁻²⁰⁰ × 10⁻²⁰⁰ = −0, 10³⁰⁰ × 10³⁰⁰ = +∞). **`FETON` and `FEFRN` must never be used to produce a
 folded result.** The round trip through a Baysick number loses the sign of a zero, and Baysick's
 `SQR` takes √\|x\|, so `SQR(-0)` is +0.
 

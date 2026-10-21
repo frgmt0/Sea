@@ -1,0 +1,2 @@
+// err_rt_stdout_closed -- standard output closed (>&-): the final flush fails (LANGUAGE.md 9.2)
+printf("hello\n")

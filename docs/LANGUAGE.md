@@ -525,7 +525,10 @@ every workload result bit-identical to the MATLAB arithmetic (§6.8).
   otherwise it is `i64` (also as the argument of `f64(…)` or `i64(…)`, §10.1). The value must
   be exactly representable in `f64` (`integer
   constant not exact in f64`, also in contexts (e) and (f): `printf("%f", 9007199254740993)` is
-  that error). So `let n = 5` is an `i64`, `if c { 0.5 } else { 2 }` is `f64` (the 2 is 2.0), `var Fbs = 0.0` is an `f64`,
+  that error). The check is per literal: in an `f64` context each `int_lit` of the constant
+  expression must be exact, and the arithmetic is then `f64` arithmetic (`9007199254740992 + 1`
+  in an `f64` context is the `f64` sum, 2⁵³, without an error). An untyped `-0` in an `f64`
+  context is −0.0 (unary `-` of 0.0). So `let n = 5` is an `i64`, `if c { 0.5 } else { 2 }` is `f64` (the 2 is 2.0), `var Fbs = 0.0` is an `f64`,
   `4 * (Kf * Ma) ^ 2` multiplies by the `f64` 4, and `2 ^ 10` is the `f64` 1024.
 * **A `var` initialised by an untyped constant** takes its type from all its uses in the
   function: if any assignment to it (`=`, `op=`, or as a `ref` argument to an `f64`
@@ -867,7 +870,10 @@ always, and for `+ - * %` when any operand is `f64`; otherwise `i64`.
 **`f64`**: IEEE-754 binary64 with round-to-nearest-even; no traps. Infinities and NaN are
 ordinary values (the workloads use `Inf`, `-Inf` and `NaN` as data: `dMax = Inf`,
 `Thot(~unknown) = -Inf`, `settle = NaN`). Division by zero gives ±Inf or NaN. Unary `-` flips
-the sign bit exactly. Subnormals are kept (never flushed to zero).
+the sign bit exactly. Subnormals are kept (never flushed to zero). A NaN's sign bit and payload
+are not observable: no operation exposes a value's bits, a NaN prints as `NaN` (§11.1) and is
+written as `null` (§11.4), and comparisons and `isnan` treat every NaN alike; so the targets
+(and constant folding) may produce different NaN bits for the same operation.
 
 **`i64`**: `+ - *` and unary `-` are exact; a result outside the `i64` range is the run-time
 error `integer overflow`. `/` on two `i64` operands converts both to `f64` and divides (so
@@ -1031,8 +1037,12 @@ after the call: `f(x) = 3` is `unexpected token '='`.
 * `let` binds an immutable name: it can be neither assigned nor modified element-wise, and it
   cannot be passed to a `ref` parameter. `var` binds a mutable one. Both require an
   initializer: there are no uninitialized variables.
-* **Patterns**: a name, `_` (evaluate and discard), or a tuple pattern `(p1, p2, …)` of names
+* **Patterns**: a name, `_` (evaluate and discard; `let _ = f()` discards all results of a call,
+  whatever their number, including none), or a tuple pattern `(p1, p2, …)` of names
   and `_` for destructuring a multiple-result call (`let (nfv, nyv, _, _, _) = shaft_safety(…)`).
+  The names of a tuple pattern take the call's result types exactly (no conversion); a tuple
+  pattern cannot be annotated, because no `type` names a tuple (`let (a, b): f64 = two()` is
+  `type mismatch: expected f64, found (f64, f64)`, at the call).
 * **Scope** is lexical, per block. A binding is visible from the statement after it to the end
   of its block. A new binding may **shadow** an earlier one in the same or an enclosing scope
   (`var lo = lo` turns a parameter into a mutable local); it may not shadow a predeclared name
@@ -1122,7 +1132,9 @@ elemental fn name(…) -> R { … }          §8.5
 ```
 
 * Top-level items only; no nested functions, no closures, no function values: the name of a
-  function, a struct or a library function used as a value (not called) is `undeclared name`.
+  function, a struct or a library function used as a value (not called) is `undeclared name`,
+  except as the argument of a `ref` parameter, where it (or a handle type's name) is `ref
+  argument must be a mutable variable, element or field` (§8.3).
 * Every parameter and result type is written (§4.10). A function with a result must end every
   path with `return` (`missing return`, at the `fn`). A statement ends every path when it is a
   `return`, a block one of whose statements ends every path, or an `if` with an `else` whose
@@ -1161,11 +1173,15 @@ let u = lcg_fill(ref s, 2 * nSample)       // advances the caller's s
 
 * The argument of a `ref` parameter must be a `var` name, an element, a field, or a `ref`
   parameter of the caller (not a `let`, not an expression, not a selection with ranges or index
-  vectors: `ref argument must be a mutable variable, element or field`).
+  vectors: `ref argument must be a mutable variable, element or field`). The name of a function,
+  a struct, a library function or a handle type given as a `ref` argument is that error too, not
+  `undeclared name`.
 * A `ref` argument may not share its **root variable** with any other argument of the same
   call (`ref argument aliases another argument`). The root of an argument is the variable at
   the start of its path: `dims[0].name`, `dims[k].tol` and `dims` all have the root `dims`, so
-  `f(ref dims[0].nom, dims[1].nom)` is rejected even though the two elements differ. The check
+  `f(ref dims[0].nom, dims[1].nom)` is rejected even though the two elements differ. Only an
+  argument that is a path (a name, element or field) has a root; any other expression
+  argument (`x + 1`, a call) shares no root with anything. The check
   is on names only, at compile time, and deliberately conservative: it needs no reasoning about
   index values. (Copy the other argument into a `let` first if this is ever in the way.) It is
   what lets the callee modify `T` in place while reading `src` (W4's
@@ -1243,7 +1259,9 @@ workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
   `%s`/`%d`-style substitutions.
 * The compiler stops at the **first** error, in a deterministic order: lexical and syntax errors
   in source order (pass 1), then name and type errors in source order (pass 2), then the few
-  errors only later passes detect (capacity limits). Of two errors at the same position, the one
+  errors only later passes detect (capacity limits). A capacity limit exceeded while a pass reads
+  its input (the tree it is given, before checking it) is reported at once, before any error that
+  pass would report in source order. Of two errors at the same position, the one
   of the inner construct (a child before its parent) is reported. The compiled output is not
   written.
 * The driver's exit status is 1 for a compile error (DESIGN.md §2.2). There are no warnings in v1: a
@@ -1847,7 +1865,8 @@ if_expr      = "if" head_expr "{" nl expr nl "}" "else" ( if_expr | "{" nl expr 
   `if`, `else if`, `while`, `for` (both range bounds and the `step` expression included) or
   `match`, and the condition of an `if_expr` — the parser keeps a flag that is cleared inside
   `( )` and `[ ]` and restored after them. While it is set, `IDENT "{"` is not a `struct_lit`
-  (the `{` starts the block) and `"{"` does not start a `record_lit`. Outside header mode,
+  (the `{` starts the block) and `"{"` does not start a `record_lit`. The flag stays set inside
+  the arms `{ … }` of an `if_expr` that is itself in a header. Outside header mode,
   `IDENT "{"` in expression position is a `struct_lit` (pass 1 decides this from the tokens
   alone; pass 2 reports `unknown struct type` if `IDENT` is not one) and `"{"` in expression
   position is a `record_lit`. So `for k in 0..nStep {` parses `nStep` as the bound.

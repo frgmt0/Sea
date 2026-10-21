@@ -1,0 +1,5 @@
+// err_ref_target_fn -- a function name as a ref argument: at the ref (LANGUAGE.md 8.3)
+fn f(ref x: i64) {
+    x += 1
+}
+f(ref f)

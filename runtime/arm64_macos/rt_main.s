@@ -21,7 +21,9 @@
 //   3. An alternate signal stack (RT_ALTSTACK_BYTES, static) and
 //      SA_ONSTACK|SA_SIGINFO handlers for SIGSEGV and SIGBUS. A fault
 //      whose address lies in the guard page is the run-time error
-//      `stack overflow` with no location (SEA_SITE_NONE); a fault
+//      `stack overflow` with no location (SEA_SITE_NONE), reported by
+//      _sea_err, which flushes standard output first and ends with
+//      _exit (status 1), never exit (DESIGN.md 4.6); a fault
 //      anywhere else gets the default action back (the handler resets
 //      the signal to SIG_DFL and returns, so the instruction faults
 //      again and the process dies as it would without a handler).
@@ -37,7 +39,8 @@
 // (_sea_out_flush). If it fails: _sea_err(SEA_E_CANNOT_WRITE,
 // SEA_SITE_NONE, {"<stdout>", errno}), i.e. `error: cannot write
 // '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise
-// exit(SEA_EXIT_RUN_OK). The stack is never unmapped.
+// _exit(SEA_EXIT_RUN_OK) (all output is already written). The stack is
+// never unmapped.
 // =====================================================================
 .include "limits.inc"
 .include "errors.inc"

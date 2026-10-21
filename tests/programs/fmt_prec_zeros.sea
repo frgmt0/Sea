@@ -1,0 +1,2 @@
+// fmt_prec_zeros -- precision digits may have leading zeros (LANGUAGE.md 11.1)
+printf("[%.0000000005f] [%.00e] [%.000d] [%5.0000000002f]\n", 1.0, 2.5, 7, 3.14159)

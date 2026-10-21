@@ -1,0 +1,4 @@
+// stmt_for_blanks -- two blanks between for and the loop variable (LANGUAGE.md 7.5; L1)
+for  i in 0..3 {
+    printf("%d\n", i)
+}

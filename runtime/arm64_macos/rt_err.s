@@ -22,7 +22,10 @@
 //      call and keep no descriptor open between calls, so no file can be
 //      open when an error is reported from outside such a call, and
 //      nothing is left to flush here;
-//   4. the process exits with SEA_EXIT_RUN_ERROR (1).
+//   4. the process ends with _exit(SEA_EXIT_RUN_ERROR) (1), never exit:
+//      no atexit handler or library flush runs, which also makes this
+//      path safe from the SIGSEGV / SIGBUS handler of rt_main.s
+//      (DESIGN.md 4.6).
 // A code outside 1 .. SEA_E_RT_END-1 (a caller bug) prints nothing after
 // the flush and exits 1, like Baysick's _bsk_err.
 //

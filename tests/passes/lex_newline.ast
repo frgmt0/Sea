@@ -63,7 +63,7 @@ name 0:26:20 i
 call 0:26:5 2
 cstmt 0:26:5
 block 0:25:7 1
-for 0:24:1 i
+for 0:24:1 i 0:24:5
 pname 0:28:5 g
 int 0:29:5 5
 let 0:28:1 0

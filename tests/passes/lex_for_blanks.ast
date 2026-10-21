@@ -1,0 +1,15 @@
+#sea 1
+#target arm64-macos
+#file lex_for_blanks.sea
+int 0:3:11 0
+int 0:3:14 3
+range 0:3:11 0 0
+name 0:4:5 printf
+str 0:4:12 %25d%0A
+name 0:4:20 i
+call 0:4:5 2
+cstmt 0:4:5
+block 0:3:16 1
+for 0:3:1 i 0:3:6
+prog 1
+#end

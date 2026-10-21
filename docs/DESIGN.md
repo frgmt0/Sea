@@ -80,10 +80,36 @@ The user also decided the language questions that phase 0 raised:
 
 **Decided in phase 1.**
 
-1. Full-range loops: `rcount` yields last + non-empty flag (user decision 2026-10-21); d = 0 for
-   an empty range (§3.6.4, §3.6.6).
+1. Full-range loops: `rcount` yields last + non-empty flag; d = 0 for an empty range (user
+   decision 2026-10-21; the d = 0 detail a lead decision; §3.6.4, §3.6.6).
 2. `f64(x)` accepts an `f64` and `i64(x)` an `i64`, returning x unchanged; an untyped literal
    argument of either is `i64` (user decision 2026-10-21; LANGUAGE.md §4.2, §10.1).
+3. Constant folding covers non-finite values: every `f64` operation folds with the exact IEEE
+   emulation, ±∞ and NaN included, with arm64's NaN bits (user decision 2026-10-21; §2.8,
+   §3.5.7).
+4. The AST `for` record carries the loop variable's position `npos` (lead decision; §3.4).
+5. A format literal in a message is rendered canonically from its bytes (lead decision; §2.6.2).
+6. `SEA_LIM_CONSTS` counts distinct constant values (lead decision; §2.6.1, §2.7).
+7. The driver reads its input once and refuses an output that is the input file (lead decision;
+   §2.2).
+8. The errno table gains `EBADF`, `ENXIO`, `ECONNRESET`, `ENOTCONN`, `ETIMEDOUT` (lead decision;
+   §2.6.2).
+9. A capacity error reported for a record with a `pos` field takes that position; capacity
+   errors found while a pass reads its input are reported at once (lead decisions; §2.6.2,
+   LANGUAGE.md §9.1).
+10. Passes 2b, 3b and 4 validate their input as §3.5.7, §3.6.5 and §4.9 list (lead decision).
+11. The stack check compares without wrapping, and the signal handler ends with `_exit` (lead
+    decision; §4.6, §4.9).
+12. Behaviour of the phase-1 passes written down as the rule (lead decision): the reads before
+    a `ref` call copied in every arm, `&&`/`||`/`ifx` writing a non-local destination directly,
+    nothing after a final returning `if` (§3.6.6); a `-` site is no operand (§2.7); `sea run`
+    status overlap, installation files checked when needed, usage after option errors (§2.2);
+    the per-literal exactness check and untyped `-0` (LANGUAGE.md §4.2), `let _ = f()`
+    (LANGUAGE.md §7.2), roots only for path arguments (LANGUAGE.md §8.3), header mode in
+    `if_expr` arms (LANGUAGE.md Appendix A), the NL token of a last line without LF (§2.6.2).
+13. Tuple assignment converts each component as LANGUAGE.md §4.2 (b) and §7.3 require: the HIR
+    `tasg` carries a conversion flag per target (lead decision; §3.5.5, §3.6.6). `tbind` needs
+    none: a tuple pattern takes the result types exactly (LANGUAGE.md §7.2).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -235,7 +261,15 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    executable, `errors.inc`, `limits.inc`, and for a linked program `libsea.a` and
    `libbaysickrt.a`) is an incomplete installation: driver status 4 (`SEA_EXIT_INTERNAL`). The
    driver reads `SEA_LIM_LINE_BYTES` and `SEA_FILE_VERSION` from `limits.inc` and the exit
-   statuses from `errors.inc`.
+   statuses from `errors.inc`. Each file is checked when the build first needs it (a pass
+   executable just before that pass runs, the libraries before linking), so a build that stops
+   earlier (a compile error, `--emit`, `-S`) does not report a missing later file.
+
+   **Input read once.** The driver copies the program file into the temporary directory before
+   anything else reads it, and every later step (the line check, pass 1's input) reads that copy,
+   so the input may be a pipe or another non-regular file (`sea build /dev/stdin`). An `-o` that
+   names the input file itself (the same file, `test -ef`) is refused before anything is written:
+   `sea: output file '<path>' is the input file`, status 2.
 2. Check the source lines (`LC_ALL=C awk`) of the program's file: one CR at the end of a line
    (before its LF, or at the very end of the file) is removed first, as LANGUAGE.md §3.1 says,
    and a line that then has more than `SEA_LIM_LINE_BYTES` (4096) bytes is reported as the
@@ -313,8 +347,10 @@ diagnostics read as the user wrote the path). A pass's standard output is sent t
 standard error (a pass writes nothing there); its standard error passes through. `sea
 --version` prints `sea 0.1.0`. The driver's own messages, each `sea: ` + text + LF on standard
 error: the usage text (`usage: sea build <file.sea> …`, after a message naming the bad option,
-status 2); `unknown target '%s'`, `unknown emit kind '%s'`, `-S and --emit cannot be combined`
-(2); `cannot read '%s': <reason>` for the program file (2); `cannot create temporary directory`,
+status 2), which also follows `unknown command '%s'`, `unknown option '%s'`, `missing argument
+for '%s'`, `unexpected argument '%s'`, `missing input file`, `-S and --emit cannot be combined`
+and `run needs the native target`; `unknown target '%s'`, `unknown emit kind '%s'` (2); `output
+file '%s' is the input file` (2); `cannot read '%s': <reason>` for the program file (2); `cannot create temporary directory`,
 `cannot write in '%s'`, `cannot write '%s'` (2); `cannot find '%s'` and `cannot find runtime
 library '%s'` (4); `internal error: pass executable '%s' not found (run make)`, `internal error:
 %s failed with exit status %d`, `internal error: %s wrote no complete %s (no final #end)`,
@@ -324,7 +360,9 @@ found`, `'%s' failed with exit status %d` (3); with `--keep-temps`, `temporary f
 **Driver exit statuses** (the meanings of Baysick DESIGN.md §4.2): 0 success; 1 Sea compile
 error; 2 usage or file error; 3 toolchain error (`as`/`ld`/`xcrun` missing or failing); 4
 internal error (pass status 1 or 11, a missing `#end`, out of memory). Driver messages start with
-`sea: `.
+`sea: `. `sea run` exits with the program's own status once the program runs, so its statuses
+overlap the driver's (a run-time error and a compile error are both 1); a caller that must tell
+them apart uses `sea build` and runs the program itself.
 
 ### 2.3 What the compiler emits, and why
 
@@ -443,7 +481,7 @@ files by absolute path for the same reason).
 | `SEA_LIM_NODES` | 99999 | syntax-tree nodes per compilation, prelude included (`program too large: nodes`) | §2.7 |
 | `SEA_LIM_SYMBOLS` | 49999 | symbols (`… symbols`) | §2.7 |
 | `SEA_LIM_TYPES` | 19999 | types (`… types`) | §2.7 |
-| `SEA_LIM_CONSTS` | 19999 | numeric constants (`… constants`) | §2.7 |
+| `SEA_LIM_CONSTS` | 19999 | distinct numeric constant values (`… constants`) | §2.7 |
 | `SEA_LIM_STRINGS` | 199999 | distinct strings (`… strings`) | §2.7 |
 | `SEA_LIM_NESTING` | 64 | nesting depth of blocks and expressions, §2.7 (`… nesting`) | §2.7 |
 | `SEA_LIM_PARAMS` | 64 | parameters per function (`… parameters`) | §2.7 |
@@ -496,14 +534,14 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `at` | Position reported |
 |------|-------------------|
 | `byte` | the offending byte; for `invalid escape` the `\` that starts the escape |
-| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file) |
+| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
-| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the node being read, created or lowered when the limit is exceeded (for a record without a position, the next node of the same function or constant that has one); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
-| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
+| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record); for a record without one, the next node of the same function or constant that has one; passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
+| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
-| `binding` | the node declaring the name: `pname`, `param`, the `for` node, a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
+| `binding` | the node declaring the name: `pname`, `param`, the `for` node (for a loop variable every error is reported at the `for` node; the AST `npos` field is used only for the `loc` record's position, §3.4, §3.5.4), a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
 | `fieldname` | the `field` or `init` node of the reserved name |
 | `effect` | the `param` node of a `ref` parameter, or the `call` that has effects |
 | `type` | the `type` node; for a literal, its `slit` (`unknown struct type`) or `array` (`arrays cannot hold %s`) node |
@@ -522,8 +560,10 @@ to this table. A code is never reused or renumbered; a new message is appended i
   `%s`/`%d` and LANGUAGE.md does not say what they are: a **type** is written as in Sea source
   (`f64`, `i64[]`, `f64[,]`, `f64[4]`, `f64[4,4]` — no spaces inside brackets —, a struct's name, `Figure`, an anonymous record as
   `{name: T, …}` with `, ` between fields, a tuple as `(T1, T2, …)`); a **name** as written;
-  `unexpected token '%s'` the token's source text; in `format "%s" …` the format literal's source
-  text between its quotes, escapes as written; in `format "%s" expects %s, found %s` the
+  `unexpected token '%s'` the token's source text; in `format "%s" …` the format literal's bytes
+  rendered canonically (not as written): `"` as `\"`, `\` as `\\`, LF as `\n`, TAB as `\t`, CR
+  as `\r`, NUL as `\0`, every other byte below 0x20 and 0x7F as `\x` and two upper-case hex
+  digits (`\x1B`), every other byte (0x20–0x7E, and 0x80–0xFF) as itself; in `format "%s" expects %s, found %s` the
   conversion as written (`%` through the conversion letter, e.g. `%8d`), then `an integer or f64`
   for `d i f F e E g G` or `str` for `s`, then the argument's type; in `invalid format
   conversion "%s"` the conversion as written from its `%` through the byte that makes it invalid
@@ -713,7 +753,7 @@ i against r (LANGUAGE.md §10.7) and reports `INDEX_OOB` with i, dimension 0 and
 
 **The errno table** (LANGUAGE.md §9.2:
 "a fixed table of errno texts so both targets print the same bytes"). A host errno value that is not in the table prints the text of id 0. Names
-`SEA_ERRNO_<NAME>`, `SEA_ERRNO_COUNT` = 18.
+`SEA_ERRNO_<NAME>`, `SEA_ERRNO_COUNT` = 23.
 
 | Id | Name | arm64-macos | x86_64-linux | Text |
 |---:|------|------------:|-------------:|------|
@@ -735,6 +775,11 @@ i against r (LANGUAGE.md §10.7) and reports `INDEX_OOB` with i, dimension 0 and
 | 15 | `ENAMETOOLONG` | 63 | 36 | `File name too long` |
 | 16 | `ELOOP` | 62 | 40 | `Too many levels of symbolic links` |
 | 17 | `EDQUOT` | 69 | 122 | `Disk quota exceeded` |
+| 18 | `EBADF` | 9 | 9 | `Bad file descriptor` |
+| 19 | `ENXIO` | 6 | 6 | `Device not configured` |
+| 20 | `ECONNRESET` | 54 | 104 | `Connection reset by peer` |
+| 21 | `ENOTCONN` | 57 | 107 | `Socket is not connected` |
+| 22 | `ETIMEDOUT` | 60 | 110 | `Operation timed out` |
 
 
 **Exit statuses** (LANGUAGE.md §9.4; §2.2):
@@ -764,7 +809,7 @@ object file (by each runtime's `_sea_err`).
 | Name | Value | Meaning |
 |------|------:|---------|
 | `SEA_E_RT_END` | 22 | one past the last run-time code: records 0 … 21 |
-| `SEA_ERRNO_COUNT` | 18 | number of errno records (ids 0 … 17) |
+| `SEA_ERRNO_COUNT` | 23 | number of errno records (ids 0 … 22) |
 | `SEA_ERRTAB_MSG` | 0 | ptr: NUL-terminated message text |
 | `SEA_ERRTAB_ARGS` | 8 | ptr: NUL-terminated `args` letters (empty for `-`) |
 | `SEA_ERRTAB_SIZE` | 16 | record size; record k at table + 16·k |
@@ -909,7 +954,8 @@ tables; every other pass uses a subset of the same layout:
 
 Six tables, passed to every `SUB` (6 of 16 parameters). Hence the **capacity limits**
 (compile errors `program too large: %s`): at most 99 999 AST nodes, 49 999 symbols, 19 999
-types, 19 999 numeric constants and 199 999 distinct strings per compilation (prelude included);
+types, 19 999 distinct numeric constant values (equal bit patterns of one type are one entry of
+`C`, however often they occur) and 199 999 distinct strings per compilation (prelude included);
 nesting depth ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
 Pass 1 enforces the nesting, parameter, result and field limits as it parses (and the node and
 string limits as it builds the tree; the `prog` root is not counted as a node, and the `#file`
@@ -925,7 +971,7 @@ nothing (its blocks are at the depth of the first `if`'s), while in an `if` expr
 nested `if` expression and adds 1. A construct at depth 65 is `program too large: nesting`, reported
 at its opening token (`{`, `(`, `[`, `if`, the unary operator, or the `^`). For the LIR limits,
 the operand fields of an instruction are all its fields after the opcode except its `site`
-(§3.6.4); the fields of `func`, `slot` and data records are not operands. The distinct sites are
+(§3.6.4), also when the site is `-` (an `rcall` of an entry that cannot fail); the fields of `func`, `slot` and data records are not operands. The distinct sites are
 the distinct `F:L` among the instructions' `site` fields and the `pos` of every `func` record
 (§4.9), counted over the compilation. No record of any format has more than 300 fields (the
 longest are `func` and `call` with 64 parameters, hidden result addresses and 64 results), and
@@ -1015,34 +1061,40 @@ the result could run (Baysick LANGUAGE.md §5.4); `SQR` takes `sqrt(|x|)`. There
   limbs, then rounding to 53 bits, ties to even), and carried as hex in every later file. The
   assembler only ever sees `.quad 0x…` patterns. Test vectors for the converter come from the
   IEEE definition (hard-rounding cases included), §6.2.
-* **Constant folding** (pass 2b) folds an `f64` operation only when its operands are finite
-  constants that a Baysick number can hold, and only after checking, **before** the operation,
-  that it cannot fail in Baysick or produce a non-finite result:
-  * `a + b`, `a − b`: both exponents (computed exactly by scaling by powers of two) at most 1022;
-  * `a × b`: the sum of the exponents at most 1022;
-  * `a ÷ b`: `b ≠ 0` and the difference of the exponents at most 1022;
-  * `sqrt(a)`: `a ≥ 0` (folded with Baysick's `SQR`, which is the correctly rounded root for
-    `a ≥ 0`);
-  * the constants `inf` and `nan`, and any operation whose operand is one of them, are never
-    folded; neither are transcendental functions, `pow`, or `%`.
-
-  These checks only decide **whether** to fold (the exponent of x is the e with 2^e ≤ |x| <
-  2^(e+1); a zero operand passes every check). The folded value itself is computed with the exact
-  IEEE emulation of `passes/lib/f64emu.bas` (the operations `FEADD`, `FESUB`, `FEMUL`, `FEDIV`,
-  `FESQR` on bit patterns), never with Baysick's doubles, which cannot hold −0 (and `SQR` of −0
-  gives +0): so `-0.0 * 1.0` folds to −0.0 and `sqrt(-0.0)` to −0.0, as at run time. Underflow is
-  harmless (the emulation rounds to subnormals as IEEE does). Folding folds only subtrees that
-  are constant on their own (`2 * pi * rpm / 60` folds `2 * pi` only, LANGUAGE.md §6.8).
-* **NaN in the emulation.** The emulation's NaN result is always the canonical
-  `#7FF8000000000000`, while hardware propagates an operand's payload. No folded value is ever a
-  NaN (the checks above), and a NaN met while evaluating a constant exponent only decides that it
-  is not integral (§3.5.5), so the difference is never visible.
+* **Constant folding** (pass 2b, §3.5.7) and the evaluation of constants and constant exponents
+  (pass 2a, §3.5.5) compute every `f64` operation with the exact IEEE emulation of
+  `passes/lib/f64emu.bas` (`FEADD`, `FESUB`, `FEMUL`, `FEDIV`, `FESQR` on bit patterns held in
+  16-bit limbs), never with Baysick's doubles. The emulation is integer arithmetic on limbs, so it
+  cannot overflow or divide by zero in Baysick, and it gives the IEEE binary64 result
+  (round to nearest, ties to even) for every operand, finite or not: overflow to ±∞, underflow
+  to subnormals or ±0, `x ÷ 0` → ±∞ (or NaN for `0 ÷ 0`), every operation on ±∞ or NaN, −0 kept
+  (`-0.0 * 1.0` folds to −0.0, `sqrt(-0.0)` to −0.0, as at run time). So no operation is
+  guarded: a foldable operation (§3.5.7) folds whatever its operands' values, and every `f64`
+  constant expression built from foldable operations folds to one `cf` (constant substitution
+  therefore never makes the tree larger than one literal per constant use). No guard is needed
+  for exactness either: the emulation is exact by construction, and the only rounding is the
+  one IEEE prescribes. (Until phase 1's review the folding was guarded by exponent checks
+  because Baysick's doubles could not hold the results; with the emulation those checks are
+  gone.) Folding folds only subtrees that are constant on their own (`2 * pi * rpm / 60` folds
+  `2 * pi` only, LANGUAGE.md §6.8).
+* **NaN bits.** A folded NaN has the bits arm64 produces for the same operation (FPCR.DN = 0,
+  the macOS default): if an operand is a NaN, the result is that operand with its quiet bit
+  (bit 51) set, the first NaN operand in operand order (a, then b) when both are; otherwise (an
+  invalid operation: ∞ − ∞, 0 × ∞, 0 ÷ 0, ∞ ÷ ∞, `sqrt` of a negative number) the default NaN
+  `#7FF8000000000000`. Sea's `nan` is `#7FF8000000000000` (§3.5.5), and unary `-` flips the sign
+  bit exactly, so the NaNs that occur in folding are `#7FF8000000000000` and
+  `#FFF8000000000000`, and every compile-time NaN is quiet. x86_64 (SSE2/AVX2) produces the
+  default NaN `#FFF8000000000000` for an invalid operation (and propagates the first NaN
+  operand), so run-time NaN bits can differ between the targets and from the folded ones. This is
+  never visible: a NaN prints as `NaN`, never signed (LANGUAGE.md §11.1), `write_json` writes
+  `null`, comparisons and `isnan` ignore sign and payload, and no Sea operation exposes a value's
+  bits (LANGUAGE.md §6.5).
 * **`i64` arithmetic** beyond 2⁵³ (literals, overflow checks of folded constants, the magic
   numbers for division by a constant) uses multi-limb integer routines in the pass that needs it.
-* **Constant exponents and extents** (pass 2a, §3.5.5) are evaluated, not folded: pass 2a computes
-  their exact values with multi-limb arithmetic that emulates IEEE binary64 (and exact `i64`),
-  never with Baysick's floating-point operations, so the rules above do not restrict it; it
-  writes no folded value, only the decision `powk k` (or the extent of a type).
+* **Constant exponents and extents** (pass 2a, §3.5.5) are evaluated with the same emulation
+  (and exact `i64`), never with Baysick's floating-point operations; pass 2a writes no folded
+  value, only the decision `powk k` (or the extent of a type). A NaN or ∞ exponent is not
+  integral, so it is no `powk`.
 
 ### 2.9 Self-hosting is not a goal
 
@@ -1233,7 +1285,7 @@ them in order):
 | `cstmt` | — | `1` | a `call` | a call statement |
 | `if` | `e:u` | `2+e` | cond, block, [else if e = 1: a `block`, or an `if` for `else if`] | `if` statement |
 | `while` | — | `2` | cond, block | |
-| `for` | `name:s` | `2` | iterable (a `range` for a range loop, else an expression), block | `for name in … { … }` |
+| `for` | `name:s npos:pos` | `2` | iterable (a `range` for a range loop, else an expression), block | `for name in … { … }`; `pos` is that of `for`, `npos` that of `name` (the loop variable); fields in this order |
 | `match` | `n:u` | `n+1` | scrutinee, n `arm` | |
 | `arm` | `k:u` | `k+1` | k `str` patterns, block | `"a" \| "b" => { … }`; k = 0 for `_` |
 | `break`, `continue` | — | `0` | — | |
@@ -1344,7 +1396,7 @@ narg 0:11:19 k
 call 0:11:10 2
 asg 0:11:5 add
 block 0:10:17 1
-for 0:10:1 i
+for 0:10:1 i 0:10:5
 name 0:13:1 t
 name 0:13:6 scale
 name 0:13:12 p
@@ -1436,7 +1488,7 @@ end                                          pops the body (one block)
 |--------|--------|------|---------|
 | `fn` | `fid:u name:s kind:fkind rty:ty np:u nl:u pos:pos` | `0` | kind `main` (the implicit main function of the top-level statements, LANGUAGE.md §7.2, named `.main`), `fn`, or `elem` (an `elemental fn`); `rty` the result type (1 for none, a `ttuple` for several); `pos` the `fn` or `elemental` keyword, for `.main` line 1, column 1 of the program's file |
 | `par` | `name:s ty:ty mode:pmode` | `0` | a parameter; mode `val` or `ref` |
-| `loc` | `name:s ty:ty mut:lmut pos:pos` | `0` | a local; mut `let`, `var` or `for` (a loop variable, LANGUAGE.md §7.5); `pos` its name in the declaration |
+| `loc` | `name:s ty:ty mut:lmut pos:pos` | `0` | a local; mut `let`, `var` or `for` (a loop variable, LANGUAGE.md §7.5); `pos` its name in the declaration (for a loop variable the `npos` of its AST `for`) |
 | `end` | — | `1` | the end of the function; pops its body block |
 
 Functions are numbered from 1: `.main` first, then every `fn` item in stream order (the prelude's
@@ -1457,7 +1509,9 @@ an `rarg` node.
 #### 3.5.5 Nodes
 
 Expression records have the fields `pos ty` first: `ty` is the expression's static type after
-every implicit conversion, which pass 2a has made explicit (`cvt`, `dyn`, `fix`); untyped integer
+every implicit conversion, which pass 2a has made explicit (`cvt`, `dyn`, `fix`, and for the
+components of a tuple assignment the `cv` flags of `tasg`, which pass 2a sets and passes 2b and
+3a carry unchanged, since a component has no expression node to put a `cvt` on); untyped integer
 constants (LANGUAGE.md §4.2) are written with their decided type (`ci` for `i64`, `cf` for
 `f64`). Statement records have `pos` first and no type.
 
@@ -1499,7 +1553,7 @@ constants (LANGUAGE.md §4.2) are written with their decided type (`ci` for `i64
 | `tbind` | `n:u lid?*n` | `1` | a multiple-result application | `let (…) = f(…)`; `-` for `_`; the child is a `call`, in `sea.hir` also an `emap` of a multiple-result elemental function (§3.5.7), either possibly as the value of a `seq` |
 | `eval` | — | `1` | expression | a call statement, or `let _ = e` |
 | `asg` | `op:asgop` | `2` | target, value | assignment; the target is an `lv`, `idx`, `fld` or `view flat` tree (LANGUAGE.md §7.3) |
-| `tasg` | `n:u` | `n+1` | n targets (or `skip`), a multiple-result application | `(t1, …) = f(…)`; the last child as for `tbind` |
+| `tasg` | `n:u cv:u*n` | `n+1` | n targets (or `skip`), a multiple-result application | `(t1, …) = f(…)`; the last child as for `tbind`; fields in the order n, then one `cv` per target in target order: 1 if result i is an `i64` stored into an `f64` target (converted, LANGUAGE.md §4.2 (b)), else 0 (also for `skip`) |
 | `if` | `e:u` | `2+e` | cond, block, [else: `block` or `if`] | |
 | `while` | — | `2` | cond, block | |
 | `forr` | `lid` | `2` | `rng`, block | a range loop; `lid` the loop variable |
@@ -1643,19 +1697,27 @@ so `sea.hir` usually has fewer types than `sea.hir1`.
 
 #### 3.5.7 What pass 2b does
 
+**What pass 2b validates.** Before it transforms anything, pass 2b checks every record of
+`sea.hir1` against `passes.txt` and in addition: every enumerated field is one of its enum's
+words (`tb_word`), every `pos` field is a well-formed position (`io_pos`), every record holds only
+bytes 0x20–0x7E (`io_plain`, §3.1), the operand and result types of every node it folds are
+those of the operation (an `f64` `add` has two `f64` operands, …) before it folds, and every
+`cref` has the type of its `cn`. Any violation is `BAD_RECORD` (§2.6.2).
+
 In this order:
 
 1. **Constant substitution.** Every `cref` is replaced by a copy of its constant's expression
    (recursively, for constants defined by constants); the copied nodes take the position of the
    `cref`. The `cn` records are not written.
 2. **Folding** (§2.8), bottom-up, of subtrees whose operands are constants (`ci`, `cf`) only:
-   `f64` `add sub mul div` under the checks of §2.8, `un neg` of an `f64` (a sign flip), `lib sqrt`
-   of an `f64` ≥ 0, `i64` `add sub mul` and `un neg` when the exact result is in the `i64` range
-   (otherwise the node stays, and the overflow is reported at run time, LANGUAGE.md §6.5), and
-   `cvt` of an `i64` constant (rounded to nearest, ties to even, exactly). Nothing else is folded
-   (no comparison, logic, `%`, `pow`, transcendental function or conversion to `i64`; no
-   operation on `inf` or `nan`). A folded subtree becomes one `ci`/`cf` at the position of its
-   root. (`powk` is decided earlier, by pass 2a, with exact arithmetic: §3.5.5, "Constant
+   `f64` `add sub mul div` (any operand values, ±∞ and NaN included, §2.8), `powk k` of an `f64`
+   constant (the multiplications of LANGUAGE.md §6.5 in their pinned order, each rounded),
+   `un neg` of an `f64` (a sign flip), `lib sqrt` of an `f64` (any value: a negative operand
+   gives the default NaN, §2.8), `i64` `add sub mul` and `un neg` when the exact result is in the
+   `i64` range (otherwise the node stays, and the overflow is reported at run time, LANGUAGE.md
+   §6.5), and `cvt` of an `i64` constant (rounded to nearest, ties to even, exactly). Nothing
+   else is folded (no comparison, logic, `%`, `pow`, transcendental function or conversion to
+   `i64`). A folded subtree becomes one `ci`/`cf` at the position of its root. (`powk` is decided earlier, by pass 2a, with exact arithmetic: §3.5.5, "Constant
    exponents".)
 3. **Elemental instantiation.** A `call` of an elemental function with at least one array
    argument becomes an `emap` of the instance for its argument types (§3.5.3), with the same
@@ -1959,7 +2021,16 @@ instructions (§5.2–§5.3).
 **Pass 3b in phase 1** (§8). Pass 3b reads `sea.lir1` completely and validates it (the header
 records and `#end`, every record against `passes.txt`, register classes and the numbering of
 §3.6.1, block numbering and nesting, slots, data labels and their records) and writes it
-unchanged as `sea.lir`; it transforms nothing. The transformations of §5.2–§5.3 and §5.1 arrive
+unchanged as `sea.lir`; it transforms nothing. The validation also covers: the parameter
+registers of each `func` record (numbered 1 … np in order, §3.6.1); every `ret` against its
+`func` (n = the function's nr, each value of the result's class; `.main` returns 0); every
+`call` (a `func` of that name exists, na = its np with each argument of its parameter's class,
+nr = its nr or 0, each result register of the result's class); the `u` fields that encode a
+choice (`incl` of `rcount` and `dim` of `chkb`: 0 or 1); each `chk` (n = the number of argument
+slots that the `args` letters of the error `err` need, §2.6.2); no instruction inside a `loop`
+writes its `ind`; exactly one `func` of kind `main`, named `.main`; each `fconv` (class `p`
+exactly for `s`, `i` or `f` for the numeric conversions); every `la` names a data label the
+file defines. Any violation is `BAD_RECORD`. The transformations of §5.2–§5.3 and §5.1 arrive
 in phases 5 and 7. So that the phase-1 `.lir` dump tests stay valid after them, they use only
 programs on which the complete pass 3b changes nothing either: no loop-invariant instruction in a
 loop, no array access or removable check, no slot that §5.3 could scalar-replace (the slots of
@@ -2002,13 +2073,24 @@ rule (c) covers, no elemental function).
    local L, or is an operand or arm with destination R (rule 3), is its `ldi`/`ldf` with L or R
    as destination. An `asg` with op `set` to a `ref` parameter P computes the value into a new
    register V by the same rule (a root that is `lv M` of a plain local becomes `mov V M`), then
-   `sti`/`stf V P - 0 0`. A `tasg` target that is a `ref` parameter gets a new result register,
-   written through the parameter with `sti`/`stf` after the `call`, in target order.
+   `sti`/`stf V P - 0 0`. **`tasg`** `(t1, …, tn) = call` is lowered exactly as: (a) the call's
+   arguments left to right (rules 5 and 12); (b) `call` with one result register Ri per component
+   i: the register of the target local L when ti is a local, its `cv` is 0 and the call does not
+   pass L by `ref`, otherwise a new register of result i's class (for `skip`, for a target that
+   is a `ref` parameter, for a component with `cv` 1 (an `i` register), and for a local the call
+   passes by `ref`); (c) the reloads of rule 12, in argument order; (d) for each component i in
+   order that got a new register, except `skip`: if its `cv` is 1, `itof F Ri` into a new
+   register F and V = F, else V = Ri; then `mov L V` for a local L, or `sti`/`stf V P - 0 0` (by
+   V's class) for a `ref` parameter P. So in `.main`, `var a = 0.0`, `var b = 0`, `(a, b) =
+   two()` with `two` returning `(i64, i64)` is `lf f1 #0000000000000000`, `li i2 0`, `call two 2
+   i3 i2 0`, `itof f4 i3`, `mov f1 f4`.
 3. `a && b` and `a || b`: a new register R; a with destination R; then `if B R` (for `&&`) or
    `ifz B R` (for `||`), b with destination R, `endif B`. `ifx c a b`: c, then `if B c`, a with a
    new destination R, `else B`, b with destination R, `endif B`. "With destination R" follows
    rule 2: an operand or arm whose root is a constant is its `li`/`lf` into R directly, one that is
-   `lv M` is `mov R M`, any other root's instruction writes R.
+   `lv M` is `mov R M`, any other root's instruction writes R. An `&&`, `||` or `ifx` that itself
+   has a destination which is not a local (it is an operand or arm with destination R′ of an
+   enclosing `&&`, `||` or `ifx`) uses R′ as its R: no new register and no `mov`.
 4. `if c then [else]`: c, `if B c`, then, [`else B`, else], `endif B`. `while c body`: `do B`,
    c, `ifz B2 c`, `exit B`, `endif B2`, body, `enddo B`. `forr L (rng lo hi [st])`: lo, hi, then
    st or (if absent) `li` 1, then `rcount C E lo hi st incl site` (C and E new registers, in that
@@ -2020,7 +2102,11 @@ rule (c) covers, no elemental function).
    with a new register for each result, then `ret` of those registers in order. `seq`: its `bind`
    nodes in order (rule 2), then its value, which is lowered as if it stood in the `seq`'s place.
 6. A function whose result type is `void` ends with `ret 0` unless its last statement is a
-   `ret`; `.main` always ends with `ret 0`. `block` emits nothing for scalar locals.
+   `ret`; `.main` always ends with `ret 0`. A function with results gets nothing after its last
+   statement (LANGUAGE.md §8.1 guarantees that every path returns): when that statement is an
+   `if` with `else` whose branches all return, the body ends with its `endif` and the `endfunc`
+   follows, and pass 4 emits no code after the construct. `block` emits nothing for scalar
+   locals.
 7. **String constants.** A `cs` (in phase 1 only as the argument of a `%s` conversion of
    `printf`, §8) is a `str` data record `str dN v` (a new label for every occurrence, §3.6.2) and
    `la P dN` into a new register P.
@@ -2058,7 +2144,8 @@ rule (c) covers, no elemental function).
     precedes the call). A read evaluated after the call sees the updated value. In `x = g(ref
     x)` (an `asg`, `bind` or `tbind` whose value is a call that passes the target by `ref`) the
     call writes a new result register R, then the reloads above follow, then `mov x R`, so the
-    assignment wins over the reload.
+    assignment wins over the reload. The copy is made for every such read of the statement,
+    whichever `&&`, `||` or `ifx` arm it is in and whichever arm holds the call.
 13. **Constant exponents.** `powk k` lowers its base x first, then into a new destination d (or
     the destination of rule 2): k = 0 `lf d 1.0`; k = 1 `mov d x`; k = 2 `fmul d x x`; k = 3
     `fmul t x x`, `fmul d t x`; k = 4 `fmul t x x`, `fmul d t t` (t a new register). For k < 0,
@@ -2307,15 +2394,20 @@ appear in `rt.inc` or in `sea.s`.
 `main` runs the program on a 64 MiB stack mapped with a guard page (Baysick's program-stack
 technique, Baysick DESIGN.md §6.9). **Stack overflow is detected by the compiled code**: before it
 allocates its frame, every non-leaf function, and every leaf function whose frame is larger than
-`SEA_STACK_LEAF_MAX` bytes, compares sp minus its frame size with `_sea_stack_limit` (the top of
-the guard page plus `SEA_STACK_MARGIN`, set by `main` before `_sea_main`); if it is lower, the
+`SEA_STACK_LEAF_MAX` bytes, checks that its frame fits above `_sea_stack_limit` (the top of
+the guard page plus `SEA_STACK_MARGIN`, set by `main` before `_sea_main`) without wrapping: it
+computes sp − `_sea_stack_limit` and compares it with its frame size as unsigned values, a
+borrow in the subtraction (sp already below the limit) counting as overflow; if the frame does
+not fit, the
 function calls `_sea_err(SEA_E_STACK_OVERFLOW, site)`, where site is the function's definition
 line: the `F:L` of its LIR `func` record's `pos` (§3.6.3), which pass 4 adds to `_sea_sites`
 (§4.8, §4.9). So `stack overflow` reports `<file>:<line>` of the `fn` whose call did not fit
 (LANGUAGE.md §8.6, §9.2). The margin leaves room for unchecked leaf frames and for `_sea_err`
 itself. The guard page stays as a safety net: an alternate signal stack and a `SIGSEGV`/`SIGBUS`
 handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`); a
-`SIGSEGV`/`SIGBUS` at any other address, and any other signal, keeps its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
+`SIGSEGV`/`SIGBUS` at any other address, and any other signal, keeps its default action. After
+reporting `stack overflow`, the handler path ends the process with `_exit` (status 1), never
+`exit`, so no `atexit` handler or library flush runs inside a signal handler. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
 (status 1): a failed write of standard output as `cannot write '<stdout>': <reason>`, at the site
 of the output call whose buffer flush failed, or with no site (`SEA_SITE_NONE`, §4.8) when the
 final flush after `_sea_main` returns fails (LANGUAGE.md §9.2). A write that fails with `EAGAIN`
@@ -2559,6 +2651,11 @@ with site `S` passes the site index as its last argument (§4.8). That out-of-li
 make a function non-leaf (`_sea_err` never returns, so no frame record is needed for it); a
 function is non-leaf when it contains a `call` or `rcall`. In phase 1 pass 4 rejects the vector,
 mask, `vfeat`, `retain` and `release` records with `BAD_RECORD` (no phase-1 pass 3 writes them).
+
+**What pass 4 validates.** Pass 4 checks its input as pass 3b does (§3.6.5, the whole list,
+including `la` labels and `chk` argument counts), because it is the last pass before the
+assembler and an unchecked record would become wrong machine code; any violation is
+`BAD_RECORD`.
 
 **The phase-1 allocator** (§8; linear-scan allocation replaces it in phase 5, §5.2). Every virtual
 register of a function has its own 8-byte slot in the frame; the frame holds the frame record,
