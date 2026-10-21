@@ -1,0 +1,24 @@
+
+=== W1  Gear-shaft sizing study ===
+Finish: machined   reliability: 0.99 (ke = 0.814)   target n: 2.00   bearing life: 20000 h
+Span 420 mm, gear at 150 mm, pitch radius 85 mm, ripple 12 %
+
+Case              P[kW]    rpm     Mat dReq[mm] dStd[mm]     it     nf     ny crit[rpm]   ratio Bearing   L10[h]
+Conveyor drive     7.50    960  CS-med   27.314     28.0     22  2.146  6.071     6368    6.63 DG-025    229630
+Pump coupling     22.00   2900  CS-med   26.125     28.0     22  2.436  6.252     6368    2.20 DG-025     83023
+Mixer gearbox     15.00    420  AS-QT1   41.334     45.0     22  2.556  8.842    15242   36.29 DG-040     58277
+Fan jackshaft      4.00   1450  CS-low   21.742     22.4     22  2.174  6.692     4159    2.87 DG-020   2588991
+Winch input       30.00    720  AS-QT2   37.309     40.0     22  2.447  7.659    12365   17.17 DG-040     21408
+
+Material comparison at case "Conveyor drive" loads (T = 74.60 N m, M = 90.07 N m):
+  CS-low   Sut   470 MPa  min d for n >= 2.0:  29.285 mm
+  CS-med   Sut   640 MPa  min d for n >= 2.0:  27.325 mm
+  AS-QT1   Sut  1030 MPa  min d for n >= 2.0:  24.385 mm
+  AS-QT2   Sut  1460 MPa  min d for n >= 2.0:  22.670 mm
+
+Power x speed grid (90 x 120 points, material CS-med):
+  largest  d =  82.237 mm at P =  45.00 kW,  250.0 rpm
+  smallest d =   6.506 mm at P =   0.50 kW, 3600.0 rpm
+  yield-limited points: 0.00 %   total bisection iterations: 237600
+  scalar vs vectorized bisection max difference: 7.031e-08 m
+Compute time: 0.511 s

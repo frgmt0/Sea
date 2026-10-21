@@ -1,0 +1,25 @@
+
+=== W5  Monte Carlo tolerance stack-up (1000000 samples) ===
+Dimension        nom[mm]     tol dist        sgn var share
+housing depth     84.000   0.050 normal       +1    19.27%
+gasket             0.250   0.040 triangular   +1    18.50%
+bearing 1         19.000   0.012 normal       -1     1.11%
+spacer            24.750   0.030 uniform      -1    20.81%
+gear hub          22.000   0.040 triangular   -1    18.48%
+bearing 2         17.000   0.012 normal       -1     1.11%
+retaining ring     1.200   0.030 uniform      -1    20.79%
+
+Nominal gap 0.3000 mm; worst case 0.0860 .. 0.5140 mm; RSS 3-sigma 0.1860 .. 0.4140 mm
+Cold gap: mean 0.29999, std 0.03797, min 0.13476, max 0.46763 mm, Cpk 0.878
+Hot gap : mean 0.33726, std 0.04368, min 0.15298, max 0.52579 mm
+Rejects: 3375 below LSL, 411 above USL, 3950 too loose when hot; yield 99.2563 %
+Percentiles (cold / hot) [mm]:
+  P0.135     0.19033   0.21111
+  P2.500     0.22593   0.25241
+  P50.000    0.30003   0.33726
+  P97.500    0.37397   0.42246
+  P99.865    0.40937   0.46264
+Largest contributors: spacer, retaining ring, housing depth
+Histogram: 60 bins of 0.010 mm, underflow 0, overflow 0, fullest bin 102390
+Largest tolerance scale with yield >= 99.73 %: 0.85
+Compute time: 0.799 s

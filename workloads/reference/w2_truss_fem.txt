@@ -1,0 +1,21 @@
+
+=== W2  X-braced bridge truss ===
+60 panels x 1.00 m, depth 6.00 m: 122 nodes, 301 members, 241 free DOF
+FSD: 96 iterations, converged = 1, final max relative change 8.410e-10
+Steel mass after catalog snap: 26034.1 kg
+
+Group          count  Amin[cm2]  Amax[cm2]     Nmin[kN]     Nmax[kN]
+bottom chord      60      10.00     160.00       109.28      2107.99
+top chord         60      10.00     160.00     -2109.29       -29.45
+vertical          61      10.00      31.50      -177.77        93.08
+diagonal         120      10.00      63.00      -664.73       567.58
+
+Design load case: midspan deflection -192.191 mm, min FOS 1.652 (member 68, top chord)
+Reactions: left (0.00, 847.70) kN, right 847.70 kN; applied total 1695.39 kN
+
+Load-angle sweep (1441 angles, 80 kN at midspan top node):
+  worst utilisation 1.2540 at 353.50 deg; lowest FOS 1.2348 at 257.25 deg
+  midspan deflection range -209.733 .. -174.649 mm
+Influence lines: max midspan deflection per kN 0.2271 mm, chord force per kN 2441.1327
+Member removal: 0 mechanisms, 158 cases overstressed, worst utilisation 46.5999 (remove member 61, bottom chord)
+Compute time: 0.936 s

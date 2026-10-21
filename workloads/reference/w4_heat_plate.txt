@@ -1,0 +1,17 @@
+
+=== W4  Steady heat conduction in a cooled plate ===
+Grid 241 x 161 (h = 1.250 mm), 37662 unknowns, 657 coolant nodes, omega = 1.97261
+Scalar SOR    :   832 sweeps, last change 8.896e-09 K, max residual 1.283e-08 K
+Red-black SOR :   759 sweeps, last change 9.689e-09 K, max residual 1.932e-08 K
+Max difference between the two solutions: 1.368e-07 K
+
+Hot spot 160.7627 degC at (x, y) = (0.0825, 0.0938) m
+T mean 58.4161 degC over the unknown nodes
+Heat flow into the plate [W]:
+  bottom edge        -78.279841
+  top edge          -141.174762
+  coolant channel   -108.865709
+  heat source        328.320312
+  balance             -0.000000
+Peak heat flux 3.8142e+05 W/m^2 at (x, y) = (0.0925, 0.1212) m
+Compute time: 0.915 s
