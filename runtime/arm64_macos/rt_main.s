@@ -23,11 +23,12 @@
 //      whose address lies in the guard page is the run-time error
 //      `stack overflow` with no location (SEA_SITE_NONE), reported by
 //      _sea_err, which flushes standard output first and ends with
-//      _exit (status 1), never exit (DESIGN.md 4.6); a fault
-//      anywhere else gets the default action back (the handler resets
-//      the signal to SIG_DFL and returns, so the instruction faults
-//      again and the process dies as it would without a handler).
-//      Every other signal keeps its default action.
+//      _exit (status 1), never exit (DESIGN.md 4.6). A fault anywhere
+//      else, and a signal that was sent rather than raised by a fault
+//      (si_code >= SI_USER: kill, raise, sigqueue, ...), gets the default
+//      action: the handler resets the signal to SIG_DFL, unblocks it and
+//      raises it again, so the process dies by that signal as it would
+//      without a handler. Every other signal keeps its default action.
 //   4. Kernels: _bsk_kern_init selects a Baysick variant from
 //      BAYSICK_KERNELS; Sea must not depend on that variable, so the
 //      runtime re-selects: SEA_KERNELS, if it names a usable variant or
@@ -59,7 +60,10 @@
 .equ RT_SIG_IGN,        1
 .equ RT_SA_ONSTACK,     0x0001
 .equ RT_SA_SIGINFO,     0x0040
+.equ RT_SI_CODE,        8           /* siginfo_t.si_code (i32) on Darwin */
+.equ RT_SI_USER,        0x10001     /* <sys/signal.h> SI_USER; SI_QUEUE .. SI_MESGQ follow: sent signals */
 .equ RT_SI_ADDR,        24          /* siginfo_t.si_addr on Darwin arm64 */
+.equ RT_SIG_UNBLOCK,    2           /* sigprocmask how: SIG_UNBLOCK on Darwin */
 // stack_t (Darwin): ss_sp, ss_size, ss_flags
 .equ RT_SS_SP,          0
 .equ RT_SS_SIZE,        8
@@ -207,21 +211,35 @@ Lrt_main_oom:
 
 // ---------------------------------------------------------------------
 // Lrt_main_segv -- SIGSEGV / SIGBUS handler (runs on the alternate stack).
-//   Purpose : a fault in the guard page is the run-time error `stack
-//             overflow` without location. Any other fault: the signal
-//             gets its default action and the handler returns, so the
-//             faulting instruction runs again and kills the process the
-//             default way.
+//   Purpose : a fault whose address lies in the guard page is the
+//             run-time error `stack overflow` without location. Anything
+//             else -- a fault elsewhere, or a signal that was sent
+//             (si_code >= SI_USER: kill, raise, sigqueue, timers, AIO,
+//             message queues; or si_code <= 0) -- gets the default
+//             action: the signal is reset to SIG_DFL, unblocked (it is
+//             blocked while its handler runs) and raised again, so the
+//             process dies by it at once (status 128 + signal through a
+//             shell). Should the process survive the raise, the handler
+//             returns.
 //   Inputs  : w0 = signal number, x1 = siginfo_t *, x2 = ucontext (unused)
-//   Outputs : returns only in the "any other fault" case
+//   Outputs : does not return in practice (see Purpose)
 //   Clobbers: x0-x17 (a signal handler: everything but sp)
-//   Callee-saved used: none
-//   Frame   : 16 bytes (frame record)
+//   Callee-saved used: x19 = signal number (saved and restored)
+//   Frame   : 32 bytes (frame record, x19, the sigset_t at sp+24)
 // ---------------------------------------------------------------------
     .p2align 2
 Lrt_main_segv:
-    stp x29, x30, [sp, #-16]!
+    stp x29, x30, [sp, #-32]!
     mov x29, sp
+    str x19, [sp, #16]
+    mov w19, w0                     // the signal number
+    ldr w9, [x1, #RT_SI_CODE]
+    cmp w9, #0
+    b.le Lrt_main_segv_other        // not a fault code
+    movz w10, #(RT_SI_USER & 0xffff)
+    movk w10, #(RT_SI_USER >> 16), lsl #16
+    cmp w9, w10
+    b.ge Lrt_main_segv_other        // sent (SI_USER and up), not a fault
     ldr x9, [x1, #RT_SI_ADDR]       // the faulting address
     adrp x10, Lrt_main_guard@PAGE
     add x10, x10, Lrt_main_guard@PAGEOFF
@@ -235,9 +253,21 @@ Lrt_main_segv:
     mov x2, #0
     bl _sea_err                     // noreturn
 Lrt_main_segv_other:
-    mov x1, #RT_SIG_DFL             // w0 still the signal number
-    bl _signal
-    ldp x29, x30, [sp], #16
+    mov w0, w19
+    mov x1, #RT_SIG_DFL
+    bl _signal                      // the default action back
+    mov w9, #1
+    sub w10, w19, #1
+    lsl w9, w9, w10                 // sigset_t (u32) holding just this signal
+    str w9, [sp, #24]
+    mov w0, #RT_SIG_UNBLOCK
+    add x1, sp, #24
+    mov x2, #0                      // old mask: not wanted
+    bl _sigprocmask
+    mov w0, w19
+    bl _raise                       // dies here by the signal's default action
+    ldr x19, [sp, #16]
+    ldp x29, x30, [sp], #32
     ret
 
 // ---------------------------------------------------------------------

@@ -34,7 +34,7 @@
 #                         include/passes.txt equals the tables of docs/DESIGN.md
 #                         (2.6.1, 2.6.2, 3, 4.8), and vice versa
 #   make cross-pack       pack the x86_64-linux test bundle into build/x86_64-linux-bundle
-#   make cross            pack, run on the Linux host (HOST=..., default desktop), report
+#   make cross            pack, run on the Linux host (HOST=... or SEA_CROSS_HOST, default desktop), report
 #   make cross-includes   the same check with GNU as on the Linux host
 #                         (tests/cross_includes.sh; HOST=... to override)
 #   make clean            remove build/
@@ -55,7 +55,13 @@
 
 AS      := as
 BAYSICK ?= ..
-HOST    ?= desktop
+# The ssh host: HOST=... on the command line, else $(SEA_CROSS_HOST), else desktop (a stray
+# exported HOST of csh-family shells is deliberately ignored).
+ifeq ($(origin HOST),command line)
+CROSS_HOST := $(HOST)
+else
+CROSS_HOST := $(or $(SEA_CROSS_HOST),desktop)
+endif
 BUILD   := build
 
 BSK      := $(BAYSICK)/build/baysick
@@ -269,7 +275,7 @@ check-includes: check-contracts $(INCLUDES) tests/include_check.s tests/include_
 	@echo "include files assemble, layout assertions hold, no clash with Baysick's include/limits.inc and include/runtime.inc"
 
 cross-includes:
-	sh tests/cross_includes.sh -H $(HOST) -B "$(BAYSICK)"
+	sh tests/cross_includes.sh -H $(CROSS_HOST) -B "$(BAYSICK)"
 
 # ---- x86_64-linux cross testing (DESIGN.md 6.6.1) -----------------------------------------
 # cross-pack: the bundle build/x86_64-linux-bundle (removed first); cross: pack, ship by ssh to
@@ -279,4 +285,4 @@ cross-pack: all
 	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross_pack.sh -o $(BUILD)/x86_64-linux-bundle
 
 cross: all
-	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross.sh -H $(HOST)
+	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross.sh -H $(CROSS_HOST)

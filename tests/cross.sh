@@ -50,20 +50,59 @@ TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea-cross.XXXXXX") || {
     echo "cross.sh: cannot create temporary directory" >&2
     exit 2
 }
-trap 'rm -rf "$TMP"' EXIT
+
+
+SSHPID=
+cleanup() {
+    # stop a still-running ssh (exact pid); the remote side then sees its stdin close, kills the
+    # run and removes its directory (see the remote script)
+    if [ -n "$SSHPID" ]; then kill "$SSHPID" 2>/dev/null; fi
+    rm -rf "$TMP"
+}
+trap 'cleanup' EXIT
 # dash/busybox sh skip the EXIT trap on fatal signals: clean up explicitly there.
-trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
+trap 'cleanup; exit 2' HUP INT TERM PIPE
 
 if ! sh "$ROOT/tests/cross_pack.sh" -o "$TMP/bundle" "$@"; then
     echo "cross.sh: packing the test bundle failed" >&2
     exit 2
 fi
 
-# Remote script: no single quote anywhere, so it survives any login shell.
-REMOTE='d=$(mktemp -d "${TMPDIR:-/tmp}/sea-cross.XXXXXX") || exit 2; trap "rm -rf \"\$d\"" EXIT; trap "rm -rf \"\$d\"; exit 2" HUP INT TERM PIPE; tar -C "$d" -xf - || exit 2; SEA_TEST_TIMEOUT='"$TIMEOUT"' '"$KPFX"'sh "$d/tests/cross_run.sh" "$@" "$d"'
-
-COPYFILE_DISABLE=1 tar --no-xattrs -C "$TMP/bundle" -cf - . | ssh -o BatchMode=yes -- "$HOST" "sh -c '$REMOTE' sh $VERBOSE"
+# Remote script (no single quote in it, so it survives any login shell). The tar stream is
+# followed by an open, silent stdin: when the connection or this script goes away, that stdin
+# reaches end of file, and the watcher kills the whole run (its own process group when setsid
+# exists) and the EXIT/HUP/INT/TERM trap removes the directory. Nothing is left on the host.
+REMOTE=$(cat <<'EOF'
+d=$(mktemp -d "${TMPDIR:-/tmp}/sea-cross.XXXXXX") || exit 2
+rp=
+stop() { if [ -n "$rp" ]; then kill -TERM -- "-$rp" 2>/dev/null || kill -TERM "$rp" 2>/dev/null; wait "$rp" 2>/dev/null; fi; }
+trap "stop; rm -rf \"\$d\"" EXIT
+trap "stop; rm -rf \"\$d\"; exit 2" HUP INT TERM PIPE
+exec 3<&0
+tar -C "$d" -xf - <&3 || exit 2
+S=; if command -v setsid >/dev/null 2>&1; then S=setsid; fi
+$S sh "$d/tests/cross_run.sh" "$@" "$d" </dev/null &
+rp=$!
+( cat <&3 >/dev/null; kill -TERM -- "-$rp" 2>/dev/null || kill -TERM "$rp" 2>/dev/null ) >/dev/null 2>&1 &
+wp=$!
+wait "$rp"
 st=$?
+kill "$wp" 2>/dev/null
+rp=
+exit $st
+EOF
+)
+REMOTE="SEA_TEST_TIMEOUT=$TIMEOUT; export SEA_TEST_TIMEOUT; ${KPFX:+$KPFX; export SEA_KERNELS;} $REMOTE"
+
+mkfifo "$TMP/in" || { echo "cross.sh: cannot create a fifo" >&2; exit 2; }
+ssh -o BatchMode=yes -- "$HOST" "sh -c '$REMOTE' sh $VERBOSE" < "$TMP/in" &
+SSHPID=$!
+exec 3>"$TMP/in"
+COPYFILE_DISABLE=1 tar --no-xattrs -C "$TMP/bundle" -cf - . >&3
+wait "$SSHPID"
+st=$?
+SSHPID=
+exec 3>&-
 if [ $st -eq 255 ]; then
     echo "cross.sh: ssh to '$HOST' failed" >&2
     exit 2

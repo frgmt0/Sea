@@ -26,11 +26,12 @@
 #      whose address (si_addr) lies in the guard page is the run-time
 #      error `stack overflow` with no location (SEA_SITE_NONE), reported
 #      by sea_err, which flushes standard output first and ends with
-#      _exit (status 1), never exit (DESIGN.md 4.6); a fault anywhere
-#      else gets the default action back (the handler resets the signal
-#      to SIG_DFL and returns, so the instruction faults again and the
-#      process dies as it would without a handler). Every other signal
-#      keeps its default action.
+#      _exit (status 1), never exit (DESIGN.md 4.6). A fault anywhere
+#      else, and a signal that was sent rather than raised by a fault
+#      (si_code <= 0: kill, tkill, raise, sigqueue), gets the default
+#      action: the handler resets the signal to SIG_DFL, unblocks it and
+#      raises it again, so the process dies by that signal as it would
+#      without a handler. Every other signal keeps its default action.
 #   4. Kernels: bsk_kern_init selects a Baysick variant from
 #      BAYSICK_KERNELS; Sea must not depend on that variable, so the
 #      runtime re-selects: SEA_KERNELS, if it names a usable variant or
@@ -65,7 +66,10 @@
 .equ RT_SIG_DFL,        0
 .equ RT_SIG_IGN,        1
 .equ RT_SA_FLAGS_VAL,   0x08000004  # SA_ONSTACK | SA_SIGINFO
+.equ RT_SI_CODE,        8           # siginfo_t.si_code (i32): > 0 a fault, <= 0 sent by kill/tkill/raise/sigqueue
 .equ RT_SI_ADDR,        16          # siginfo_t.si_addr
+.equ RT_SIG_UNBLOCK,    1           # sigprocmask how: SIG_UNBLOCK
+.equ RT_SIGSET_BYTES,   128         # glibc sigset_t
 # stack_t: ss_sp ptr, ss_flags i32, ss_size u64; 24 bytes
 .equ RT_SS_SP,          0
 .equ RT_SS_FLAGS,       8
@@ -233,23 +237,35 @@ main:
 # ---------------------------------------------------------------------
 # .Lrt_main_segv -- SIGSEGV / SIGBUS handler (runs on the alternate
 #   stack).
-#   Purpose : a fault in the guard page is the run-time error `stack
-#             overflow` without location. Any other fault: the signal
-#             gets its default action and the handler returns, so the
-#             faulting instruction runs again and kills the process the
-#             default way.
+#   Purpose : a fault (si_code > 0) whose address lies in the guard page
+#             is the run-time error `stack overflow` without location.
+#             Anything else -- a fault elsewhere, or a signal sent with
+#             kill/tkill/raise/sigqueue (si_code <= 0) -- gets the
+#             default action: the signal is reset to SIG_DFL, unblocked
+#             (it is blocked while its handler runs) and raised again,
+#             so the process dies by it at once (status 128 + signal
+#             through a shell). Should the process survive the raise,
+#             the handler returns.
 #   Inputs  : %edi = signal number, %rsi = siginfo_t *, %rdx = ucontext
 #             (unused)
-#   Outputs : returns only in the "any other fault" case
+#   Outputs : does not return in practice (see Purpose)
 #   Clobbers: all caller-saved registers (the kernel restores the
 #             interrupted context on return)
-#   Callee-saved used: %rbp = frame pointer
-#   Frame   : 8 bytes (%rbp); entered at %rsp = 8 (mod 16)
+#   Callee-saved used: %rbx = signal number (saved and restored),
+#             %rbp = frame pointer
+#   Frame   : 16 bytes (%rbp %rbx) + RT_SIGSET_BYTES (the sigset_t at
+#             0(%rsp)) + 8 pad; entered at %rsp = 8 (mod 16), so %rsp =
+#             0 (mod 16) at the calls
 # ---------------------------------------------------------------------
     .p2align 4
 .Lrt_main_segv:
     pushq %rbp                      # %rsp = 0 (mod 16)
     movq %rsp, %rbp
+    pushq %rbx
+    subq $(RT_SIGSET_BYTES + 8), %rsp # %rsp = 0 (mod 16)
+    movl %edi, %ebx                 # the signal number
+    cmpl $0, RT_SI_CODE(%rsi)
+    jle .Lrt_main_segv_other        # sent, not a fault (SI_USER 0, SI_TKILL -6, ...)
     movq RT_SI_ADDR(%rsi), %rax     # the faulting address
     cmpq .Lrt_main_guard(%rip), %rax
     jb .Lrt_main_segv_other         # below the guard page
@@ -260,8 +276,25 @@ main:
     xorl %edx, %edx
     call sea_err                    # noreturn
 .Lrt_main_segv_other:
-    movl $RT_SIG_DFL, %esi          # %edi is still the signal number
-    call signal@PLT
+    movl %ebx, %edi
+    movl $RT_SIG_DFL, %esi
+    call signal@PLT                 # the default action back
+    movq %rsp, %rdi                 # an empty sigset_t ...
+    xorl %eax, %eax
+    movl $(RT_SIGSET_BYTES / 8), %ecx
+    rep stosq                       # (the direction flag is clear in a handler)
+    leal -1(%rbx), %ecx
+    movl $1, %eax
+    shlq %cl, %rax
+    movq %rax, (%rsp)               # ... holding just this signal (bit sig-1)
+    movl $RT_SIG_UNBLOCK, %edi
+    movq %rsp, %rsi
+    xorl %edx, %edx                 # old mask: not wanted
+    call sigprocmask@PLT
+    movl %ebx, %edi
+    call raise@PLT                  # dies here by the signal's default action
+    addq $(RT_SIGSET_BYTES + 8), %rsp
+    popq %rbx
     popq %rbp
     ret
 

@@ -36,9 +36,13 @@
 #                  env=NAME=VALUE     an environment variable (repeatable);
 #                                     SEA_KERNELS and BAYSICK_KERNELS are
 #                                     otherwise unset
-#                  requires=fmt_g     needs the real sea_fmt_g of rt_fmt.s (always
-#                                     present here: its absence is a setup error)
-# Every program runs in a fresh empty working directory with stdin from /dev/null.
+#                Empty lines are ignored; any other line is a setup error (exit 2),
+#                as in cross_run.sh (DESIGN.md 4.7.1, 6.6.1).
+# Every program runs in a fresh empty working directory with stdin from /dev/null,
+# in its own process group: a run that exceeds SEA_RT_TIMEOUT is killed as a whole
+# group (the program, the runner shell and a slowpipe reader), status 137.
+# A program killed by a signal has the status the shell reports, 128 + the signal
+# number (139 for SIGSEGV).
 # Exit status 0 if nothing failed, 1 if a test failed, 2 on a setup problem.
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
@@ -116,11 +120,16 @@ fi
 exec "$exe" </dev/null >"$out" 2>"$err"
 EOF
 
-# run_limited SECONDS WORKDIR CMD... : status of CMD, killed after SECONDS
+# run_limited SECONDS WORKDIR CMD... : status of CMD, killed after SECONDS (137). CMD runs
+# as a job of its own (set -m): its process group id is its pid, so the watchdog kills
+# the whole group (the runner shell, the program and a slowpipe reader), never one PID
+# of it alone, and never anything outside it.
 run_limited() {
     _t=$1; _wd=$2; shift 2
+    set -m
     (cd "$_wd" && exec "$@") &
     _cpid=$!
+    set +m
     (
         _i=0
         while [ "$_i" -lt $((_t * 10)) ]; do
@@ -128,13 +137,26 @@ run_limited() {
             kill -0 "$_cpid" 2>/dev/null || exit 0
             _i=$((_i + 1))
         done
-        kill -9 "$_cpid" 2>/dev/null
+        kill -9 -- "-$_cpid" 2>/dev/null
     ) &
     _wpid=$!
     wait "$_cpid"
     _st=$?
+    kill "$_wpid" 2>/dev/null
     wait "$_wpid" 2>/dev/null
     return $_st
+}
+
+# check_meta META NAME : every line of META must be stdout=epipe, stdout=slowpipe,
+# env=NAME=VALUE or empty; anything else is a setup error (exit 2).
+check_meta() {
+    [ -f "$1" ] || return 0
+    while IFS= read -r _l || [ -n "$_l" ]; do
+        case $_l in
+        "" | stdout=epipe | stdout=slowpipe | env=?*=*) ;;
+        *) echo "run_rt_linux.sh: $2.meta: unknown line '$_l'" >&2; exit 2 ;;
+        esac
+    done <"$1"
 }
 
 meta_get() { [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | head -1; }
@@ -166,8 +188,7 @@ for src in "$TESTDIR"/*.s; do
     base=${src%.s}
     meta=$base.meta
 
-    case "$(meta_get "$meta" requires)" in ""|fmt_g) ;;
-        *) echo "run_rt_linux.sh: $name: bad requires= in $name.meta" >&2; exit 2 ;; esac
+    check_meta "$meta" "$name"
 
     if ! $ASCMD -o "$TMP/t.o" "$src" 2>"$TMP/as.err"; then
         fail "$name" "does not assemble: $(head -3 "$TMP/as.err" | tr '\n' ' ')"; continue

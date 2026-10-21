@@ -2513,8 +2513,17 @@ line: the `F:L` of its LIR `func` record's `pos` (§3.6.3), which pass 4 adds to
 (§4.8, §4.9). So `stack overflow` reports `<file>:<line>` of the `fn` whose call did not fit
 (LANGUAGE.md §8.6, §9.2). The margin leaves room for unchecked leaf frames and for `_sea_err`
 itself. The guard page stays as a safety net: an alternate signal stack and a `SIGSEGV`/`SIGBUS`
-handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`); a
-`SIGSEGV`/`SIGBUS` at any other address, and any other signal, keeps its default action. After
+handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`). Only a
+fault counts: a `SIGSEGV`/`SIGBUS` whose `si_code` says it was sent by `kill`, `raise`,
+`sigqueue` or the like (Linux: `si_code` ≤ 0; macOS: `si_code` ≤ 0 or ≥ `SI_USER` = 0x10001) is
+never `stack overflow`, whatever its address. Such a signal, and a fault at any other address,
+gets the default action at once: the handler resets the signal to `SIG_DFL`, unblocks it
+(`sigprocmask(SIG_UNBLOCK, {sig}, NULL)`; it is blocked while its handler runs) and calls
+`raise(sig)`, so the process dies by the signal (status 128 + sig through a shell, 139 for
+`SIGSEGV`); should it survive the raise, the handler returns. Any other signal keeps its
+default action. The rt tests `rt_main_segv_raise` (`raise(SIGSEGV)`),
+`rt_main_segv_kill` (`kill(getpid(), SIGSEGV)`) and `rt_main_segv_other` (a fault outside the
+guard page) expect status 139 with no output, on both targets. After
 reporting `stack overflow`, the handler path ends the process with `_exit` (status 1), never
 `exit`, so no `atexit` handler or library flush runs inside a signal handler. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
 (status 1): a failed write of standard output as `cannot write '<stdout>': <reason>`, at the site
@@ -2562,7 +2571,7 @@ contract values and are not in `rt.inc`):
 | number digits | `snprintf(buf, n, fmt, x)`: variadic, so `%al` = the number of vector registers used (`movl $1, %eax` for one `f64` in `%xmm0`) immediately before the call |
 | clock | `clock_gettime(1, &ts)` (`CLOCK_MONOTONIC` 1; `struct timespec` {tv_sec i64 at 0, tv_nsec i64 at 8}) |
 | program stack | `sysconf(30)` (`_SC_PAGESIZE`); `mmap(NULL, n, 3, 0x22, -1, 0)` (`PROT_READ\|PROT_WRITE`, `MAP_PRIVATE\|MAP_ANONYMOUS`), failure `(void *) -1`; `mprotect(base, G, 0)` |
-| signals | `signal(13, (void *) 1)` (`SIGPIPE`, `SIG_IGN`); `sigaltstack(&ss, NULL)` with `stack_t` {ss_sp ptr at 0, ss_flags i32 at 8, ss_size u64 at 16; 24 bytes}; `sigaction(sig, &sa, NULL)` with glibc's `struct sigaction` {sa_sigaction ptr at 0, sa_mask 128 bytes at 8, sa_flags i32 at 136, sa_restorer ptr at 144; 152 bytes}, `sa_flags` = `SA_ONSTACK\|SA_SIGINFO` = 0x08000004, `sa_mask` empty; `SIGSEGV` 11, `SIGBUS` 7; the handler receives (sig, `siginfo_t *`, context) and finds the fault address `si_addr` at offset 16 of `siginfo_t`; `SIG_DFL` 0 |
+| signals | `signal(13, (void *) 1)` (`SIGPIPE`, `SIG_IGN`); `sigaltstack(&ss, NULL)` with `stack_t` {ss_sp ptr at 0, ss_flags i32 at 8, ss_size u64 at 16; 24 bytes}; `sigaction(sig, &sa, NULL)` with glibc's `struct sigaction` {sa_sigaction ptr at 0, sa_mask 128 bytes at 8, sa_flags i32 at 136, sa_restorer ptr at 144; 152 bytes}, `sa_flags` = `SA_ONSTACK\|SA_SIGINFO` = 0x08000004, `sa_mask` empty; `SIGSEGV` 11, `SIGBUS` 7; the handler receives (sig, `siginfo_t *`, context) and finds `si_code` (i32) at offset 8 and the fault address `si_addr` at offset 16 of `siginfo_t`; `SIG_DFL` 0; `sigprocmask(1, &set, NULL)` (`SIG_UNBLOCK` 1; macOS 2) with a 128-byte `sigset_t` holding bit sig − 1; `raise(sig)` |
 | kernels | `getenv("SEA_KERNELS")`; Baysick's `bsk_kern_init`, `bsk_kern_use`, `bsk_kern_variants` (§4.4), linked from Baysick's x86_64 `libbaysickrt.a` |
 | memory | `memcpy`, `strlen` |
 
@@ -2571,8 +2580,8 @@ start code with `%rsp` ≡ 8 (mod 16) and pushes `%rbp` before its first call; i
 new program stack by setting `%rsp` to its top (page-aligned), clears `%rbp` (`xorl %ebp,
 %ebp`) and calls `sea_main` with `%rsp` ≡ 0 (mod 16). The `SIGSEGV`/`SIGBUS` handler runs on
 the alternate stack; a fault address inside the guard page is `stack overflow` with no location
-(`sea_err`, which flushes and ends with `_exit`); any other address resets the signal to
-`SIG_DFL` and returns, so the instruction faults again with the default action.
+(`sea_err`, which flushes and ends with `_exit`); a sent signal (`si_code` ≤ 0) or a fault at
+any other address is reset to `SIG_DFL`, unblocked and raised again, as §4.6 states.
 
 **No `madvise`.** Baysick's x86_64 runtime calls `madvise(base, size + G, MADV_NOHUGEPAGE)` on its
 program stack (Baysick DESIGN.md §6.9); Sea's runtime deliberately does not in phase 2. The call

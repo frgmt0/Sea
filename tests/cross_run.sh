@@ -46,6 +46,7 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 command -v "$AS" >/dev/null 2>&1 || { echo "cross_run.sh: assembler '$AS' not found" >&2; exit 2; }
 command -v "$CC" >/dev/null 2>&1 || { echo "cross_run.sh: C compiler '$CC' not found (needed to link)" >&2; exit 2; }
 command -v make >/dev/null 2>&1 || { echo "cross_run.sh: make not found" >&2; exit 2; }
+SETSID=; if command -v setsid >/dev/null 2>&1; then SETSID=1; fi
 
 # ---- setup: build both runtimes from the bundle ---------------------------------
 if ! make -C "$BUNDLE/baysick" -f Makefile.linux all AS="$AS" >"$TMP/make.log" 2>&1; then
@@ -69,10 +70,16 @@ PASS=0
 FAIL=0
 FAILED=""
 
-# run_limited SECONDS INFILE WORKDIR CMD... : status of CMD run in WORKDIR (137 if killed)
+# run_limited SECONDS INFILE WORKDIR CMD... : status of CMD run in WORKDIR (137 if killed).
+# With setsid the command runs in its own process group, and the whole group is killed on
+# timeout and reaped afterwards (a slowpipe reader or other helper never outlives its case).
 run_limited() {
     _t=$1; _in=$2; _wd=$3; shift 3
-    (cd "$_wd" && exec "$@" <"$_in") &
+    if [ -n "$SETSID" ]; then
+        (cd "$_wd" && exec setsid "$@" <"$_in") &
+    else
+        (cd "$_wd" && exec "$@" <"$_in") &
+    fi
     _cpid=$!
     (
         _i=0
@@ -81,13 +88,14 @@ run_limited() {
             kill -0 "$_cpid" 2>/dev/null || exit 0
             _i=$((_i + 1))
         done
-        kill -9 "$_cpid" 2>/dev/null
+        kill -9 -- "-$_cpid" 2>/dev/null || kill -9 "$_cpid" 2>/dev/null
     ) &
     _wpid=$!
     wait "$_cpid"
     _st=$?
     kill "$_wpid" 2>/dev/null
     wait "$_wpid" 2>/dev/null
+    [ -n "$SETSID" ] && kill -9 -- "-$_cpid" 2>/dev/null
     return $_st
 }
 
@@ -301,6 +309,7 @@ for src in "$BUNDLE"/tests/rt/x86_64_linux/*.s; do
     [ $ok = 1 ] && pass
 done
 
+if [ $((PASS + FAIL)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi
 echo "----"
 echo "passed: $PASS  failed: $FAIL"
 if [ $FAIL -ne 0 ]; then

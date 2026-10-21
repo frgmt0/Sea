@@ -244,5 +244,6 @@ for src in "$ROOT"/tests/rt/x86_64_linux/*.s; do
     PACKED=$((PACKED + 1))
 done
 
+if [ $PACKED -eq 0 ]; then echo "cross_pack.sh: no case selected (patterns: ${PATTERNS:-none}; compile-time error tests are not packed)" >&2; exit 2; fi
 echo "packed: $PACKED cases ($BAD failed to compile)"
 exit 0
