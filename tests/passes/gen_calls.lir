@@ -1,0 +1,149 @@
+#sea 1
+#target arm64-macos
+#file gen_calls.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 192 8
+li i1 11
+lf f2 #3FF8000000000000
+li i3 22
+lf f4 #4004000000000000
+li i5 33
+lf f6 #400C000000000000
+li i7 44
+lf f8 #4012000000000000
+li i9 55
+lf f10 #4016000000000000
+li i11 66
+lf f12 #401A000000000000
+li i13 77
+lf f14 #401E000000000000
+li i15 88
+lf f16 #4021000000000000
+li i17 99
+lf f18 #4023000000000000
+li i19 110
+lf f20 #4025000000000000
+call fwd 20 i21 f22 i23 f24 i25 f26 i27 f28 i29 f30 i31 f32 i33 f34 i35 f36 i37 f38 i39 f40 20 i1 f2 i3 f4 i5 f6 i7 f8 i9 f10 i11 f12 i13 f14 i15 f16 i17 f18 i19 f20
+call many 0 20 i1 f2 i3 f4 i5 f6 i7 f8 i9 f10 i11 f12 i13 f14 i15 f16 i17 f18 i19 f20
+li i41 20
+call fact 1 i42 1 i41
+li i43 1
+sa p44 s1
+sti i43 p44 - 0 0
+call bump2 0 1 p44
+ldi i43 p44 - 0 0
+rcall sea_now - 1 f45 0
+lf f46 #0000000000000000
+fcmp ge i47 f45 f46
+la p48 d1
+sa p49 s2
+sti i21 p49 - 0 0
+stf f22 p49 - 0 8
+sti i23 p49 - 0 16
+stf f24 p49 - 0 24
+sti i25 p49 - 0 32
+stf f26 p49 - 0 40
+sti i27 p49 - 0 48
+stf f28 p49 - 0 56
+sti i29 p49 - 0 64
+stf f30 p49 - 0 72
+sti i31 p49 - 0 80
+stf f32 p49 - 0 88
+sti i33 p49 - 0 96
+stf f34 p49 - 0 104
+sti i35 p49 - 0 112
+stf f36 p49 - 0 120
+sti i37 p49 - 0 128
+stf f38 p49 - 0 136
+sti i39 p49 - 0 144
+stf f40 p49 - 0 152
+sti i42 p49 - 0 160
+sti i43 p49 - 0 168
+sti i47 p49 - 0 176
+stp p48 p49 - 0 184
+la p50 d2
+rcall sea_printf 0:12 0 2 p50 p49
+ret 0
+endfunc
+func many fn 0:2:1 20 i1 f2 i3 f4 i5 f6 i7 f8 i9 f10 i11 f12 i13 f14 i15 f16 i17 f18 i19 f20 20 i f i f i f i f i f i f i f i f i f i f
+ret 20 i19 f20 i17 f18 i15 f16 i13 f14 i11 f12 i9 f10 i7 f8 i5 f6 i3 f4 i1 f2
+endfunc
+func fwd fn 0:3:1 20 i1 f2 i3 f4 i5 f6 i7 f8 i9 f10 i11 f12 i13 f14 i15 f16 i17 f18 i19 f20 20 i f i f i f i f i f i f i f i f i f i f
+call many 20 i21 f22 i23 f24 i25 f26 i27 f28 i29 f30 i31 f32 i33 f34 i35 f36 i37 f38 i39 f40 20 i1 f2 i3 f4 i5 f6 i7 f8 i9 f10 i11 f12 i13 f14 i15 f16 i17 f18 i19 f20
+ret 20 i21 f22 i23 f24 i25 f26 i27 f28 i29 f30 i31 f32 i33 f34 i35 f36 i37 f38 i39 f40
+endfunc
+func fact fn 0:4:1 1 i1 1 i
+li i2 1
+icmp le i3 i1 i2
+if 1 i3
+ret 1 i2
+endif 1
+isubc i4 i1 i2 0:6
+call fact 1 i5 1 i4
+imulc i6 i1 i5 0:6
+ret 1 i6
+endfunc
+func bump fn 0:7:1 1 p1 0
+ldi i2 p1 - 0 0
+li i3 5
+iaddc i4 i2 i3 0:8
+sti i4 p1 - 0 0
+ret 0
+endfunc
+func bump2 fn 0:9:1 1 p1 0
+call bump 0 1 p1
+call bump 0 1 p1
+ret 0
+endfunc
+str d1 ok
+fmt d2 48
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %0A
+#end

@@ -1,0 +1,338 @@
+#sea 1
+#target arm64-macos
+#file gen_arith.sea
+func .main main 0:1:1 0 0
+slot s1 64 8
+slot s2 40 8
+slot s3 88 8
+slot s4 32 8
+slot s5 208 8
+slot s6 56 8
+li i1 7
+li i2 2
+li i3 -7
+li i4 -2
+idivf i5 i1 i2 0:2
+idivf i6 i3 i2 0:2
+idivf i7 i1 i4 0:2
+idivf i8 i3 i4 0:2
+imodf i9 i1 i2 0:3
+imodf i10 i3 i2 0:3
+imodf i11 i1 i4 0:3
+imodf i12 i3 i4 0:3
+sa p13 s1
+sti i5 p13 - 0 0
+sti i6 p13 - 0 8
+sti i7 p13 - 0 16
+sti i8 p13 - 0 24
+sti i9 p13 - 0 32
+sti i10 p13 - 0 40
+sti i11 p13 - 0 48
+sti i12 p13 - 0 56
+la p14 d1
+rcall sea_printf 0:4 0 2 p14 p13
+li i15 #8000000000000000
+li i16 -1
+imodf i17 i15 i16 0:5
+li i18 1
+idivf i19 i15 i18 0:5
+li i20 #00000000B504F333
+imulc i21 i20 i20 0:6
+li i22 5
+inegc i23 i22 0:7
+isubc i24 i15 i16 0:8
+sa p25 s2
+sti i17 p25 - 0 0
+sti i19 p25 - 0 8
+sti i21 p25 - 0 16
+sti i23 p25 - 0 24
+sti i24 p25 - 0 32
+la p26 d2
+rcall sea_printf 0:9 0 2 p26 p25
+li i27 0
+li i28 10
+li i29 3
+rcount i30 i27 i28 i29 0 0:10
+rcount i31 i27 i28 i29 1 0:10
+li i32 -3
+rcount i33 i28 i27 i32 0 0:10
+rcount i34 i28 i27 i32 1 0:10
+li i35 1
+rcount i36 i28 i35 i32 1 0:10
+rcount i37 i28 i35 i32 0 0:10
+li i38 5
+rcount i39 i38 i38 i35 0 0:10
+rcount i40 i38 i38 i35 1 0:10
+li i41 6
+rcount i42 i41 i38 i35 0 0:10
+li i43 #7FFFFFFFFFFFFFFF
+li i44 #4000000000000000
+rcount i45 i15 i43 i44 0 0:10
+rcount i46 i27 i15 i15 1 0:10
+sa p47 s3
+sti i30 p47 - 0 0
+sti i31 p47 - 0 8
+sti i33 p47 - 0 16
+sti i34 p47 - 0 24
+sti i36 p47 - 0 32
+sti i37 p47 - 0 40
+sti i39 p47 - 0 48
+sti i40 p47 - 0 56
+sti i42 p47 - 0 64
+sti i45 p47 - 0 72
+sti i46 p47 - 0 80
+la p48 d3
+rcall sea_printf 0:11 0 2 p48 p47
+li i49 0
+li i50 1
+rcount i51 i27 i28 i50 0 0:12
+loop 1 i52 i27 i51 i50
+li i53 3
+icmp eq i54 i52 i53
+if 2 i54
+next 1
+endif 2
+li i55 7
+icmp eq i56 i52 i55
+if 3 i56
+exit 1
+endif 3
+iaddc i49 i49 i52 0:13
+endloop 1
+li i57 0
+do 4
+iaddc i57 i57 i29 0:14
+icmp ge i58 i57 i28
+if 5 i58
+exit 4
+endif 5
+enddo 4
+li i59 0
+loop 6 i60 i28 i36 i32
+iaddc i59 i59 i60 0:15
+endloop 6
+li i61 0
+ifz 7 i61
+li i62 100
+else 7
+li i62 200
+endif 7
+sa p63 s4
+sti i49 p63 - 0 0
+sti i57 p63 - 0 8
+sti i59 p63 - 0 16
+sti i62 p63 - 0 24
+la p64 d4
+rcall sea_printf 0:16 0 2 p64 p63
+lf f65 #7FF8000000000000
+lf f66 #3FF0000000000000
+lf f67 #4000000000000000
+fcmp eq i68 f65 f66
+fcmp ne i69 f65 f66
+fcmp lt i70 f65 f66
+fcmp le i71 f65 f66
+fcmp gt i72 f65 f66
+fcmp ge i73 f65 f66
+fcmp eq i74 f66 f67
+fcmp ne i75 f66 f67
+fcmp lt i76 f66 f67
+fcmp le i77 f66 f67
+fcmp gt i78 f66 f67
+fcmp ge i79 f66 f67
+fcmp eq i80 f67 f67
+fcmp ne i81 f67 f67
+fcmp lt i82 f67 f67
+fcmp le i83 f67 f67
+fcmp gt i84 f67 f67
+fcmp ge i85 f67 f67
+icmp eq i86 i16 i35
+icmp ne i87 i16 i35
+icmp lt i88 i16 i35
+icmp le i89 i16 i35
+icmp gt i90 i16 i35
+icmp ge i91 i16 i35
+bnot i92 i27
+bnot i93 i22
+sa p94 s5
+sti i68 p94 - 0 0
+sti i69 p94 - 0 8
+sti i70 p94 - 0 16
+sti i71 p94 - 0 24
+sti i72 p94 - 0 32
+sti i73 p94 - 0 40
+sti i74 p94 - 0 48
+sti i75 p94 - 0 56
+sti i76 p94 - 0 64
+sti i77 p94 - 0 72
+sti i78 p94 - 0 80
+sti i79 p94 - 0 88
+sti i80 p94 - 0 96
+sti i81 p94 - 0 104
+sti i82 p94 - 0 112
+sti i83 p94 - 0 120
+sti i84 p94 - 0 128
+sti i85 p94 - 0 136
+sti i86 p94 - 0 144
+sti i87 p94 - 0 152
+sti i88 p94 - 0 160
+sti i89 p94 - 0 168
+sti i90 p94 - 0 176
+sti i91 p94 - 0 184
+sti i92 p94 - 0 192
+sti i93 p94 - 0 200
+la p95 d5
+rcall sea_printf 0:17 0 2 p95 p94
+lf f96 #C3E0000000000000
+ftoi i97 f96 0:18
+lf f98 #8000000000000000
+ftoi i99 f98 0:18
+lf f100 #4008000000000000
+ftoi i101 f100 0:18
+lf f102 #43DFFFFFFFFFFFFF
+ftoi i103 f102 0:18
+li i104 #0020000000000001
+itof f105 i104
+lf f106 #0000000000000000
+fneg f107 f106
+fdiv f108 f66 f106
+sa p109 s6
+sti i97 p109 - 0 0
+sti i99 p109 - 0 8
+sti i101 p109 - 0 16
+sti i103 p109 - 0 24
+stf f105 p109 - 0 32
+stf f107 p109 - 0 40
+stf f108 p109 - 0 48
+la p110 d6
+rcall sea_printf 0:19 0 2 p110 p109
+ret 0
+endfunc
+fmt d1 16
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 10
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 22
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 8
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d5 52
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d6 14
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 0 f f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - f f
+ftext %0A
+#end
