@@ -899,7 +899,11 @@ block `{ … }` (of any statement or function), a parenthesized expression, the 
 call, an index list, an array literal, a struct or record literal, an `if` expression, a unary
 operator and the right operand of `^`; the top level is depth 0, and each such construct
 contained in another adds 1. A construct at depth 65 is `program too large: nesting`, reported
-at its opening token (`{`, `(`, `[`, `if`, the unary operator, or the `^`).
+at its opening token (`{`, `(`, `[`, `if`, the unary operator, or the `^`). For the LIR limits,
+the operand fields of an instruction are all its fields after the opcode except its `site`
+(§3.6.4); the fields of `func`, `slot` and data records are not operands. The distinct sites are
+the distinct `F:L` among the instructions' `site` fields and the `pos` of every `func` record
+(§4.9), counted over the compilation.
 (A node's position needs its file, §3.1: the sixth field of `N` holds the file index and the line
 as F·10⁹ + L, exact in a Baysick number.)
 
@@ -1958,7 +1962,8 @@ rule (c) covers, no elemental function).
    operand); `ci`/`cb` emit `li` and `cf` emits `lf`, a new register for every occurrence; `cvt`
    is `itof`; `i64` `add sub mul` are `iaddc isubc imulc` and `un neg` is `inegc`, with the
    node's line as site; `f64` arithmetic and `un neg` are `fadd fsub fmul fdiv fneg`;
-   comparisons are `icmp`/`fcmp`; `un not` is `bnot`.
+   comparisons are `icmp`/`fcmp`; `un not` is `bnot`; `bin band` and `bin bor` (`&`, `|` on
+   `bool`) are `iand` and `ior`.
 2. **Destinations.** An instruction's destination is a new register, except that when a value is
    stored into a local L (`bind`, `tbind`, `asg` to `lv L`), the instruction computing the root
    of the value writes L's register directly; a root that is `lv M` becomes `mov L M`. `asg op`
@@ -1967,7 +1972,12 @@ rule (c) covers, no elemental function).
    computed into its new register R (rule 3) and then copied with `mov L R`, so that L still
    holds its old value while the operands are evaluated. `tbind` and `tasg` give the call the
    registers of their target locals as result registers, and a new register for each `-` or
-   `skip` (`_`).
+   `skip` (`_`). A read of a `ref` parameter P (rule 12) whose value is stored straight into a
+   local L, or is an operand or arm with destination R (rule 3), is its `ldi`/`ldf` with L or R
+   as destination. An `asg` with op `set` to a `ref` parameter P computes the value into a new
+   register V by the same rule (a root that is `lv M` of a plain local becomes `mov V M`), then
+   `sti`/`stf V P - 0 0`. A `tasg` target that is a `ref` parameter gets a new result register,
+   written through the parameter with `sti`/`stf` after the `call`, in target order.
 3. `a && b` and `a || b`: a new register R; a with destination R; then `if B R` (for `&&`) or
    `ifz B R` (for `||`), b with destination R, `endif B`. `ifx c a b`: c, then `if B c`, a with a
    new destination R, `else B`, b with destination R, `endif B`. "With destination R" follows
@@ -1989,8 +1999,9 @@ rule (c) covers, no elemental function).
 8. **`printf`.** `lib printf` with its `fmt` of n conversions: the arguments of the conversions,
    left to right, each by rule 1; then `sa S s` of a new slot s of 8·max(n, 1) bytes, alignment
    8; then for each argument j (from 0) its store into slot word j: `sti`, `stf` or `stp` (by the
-   argument's class) `value S - 0 8j`; then `la F dM` of a `fmt dM n` data record whose
-   `ftext`/`fconv` records are the format's pieces in order (each `fconv` with the class of its
+   argument's class) `value S - 0 8j`; then `la F dM` of a `fmt dM k` data record, k the number
+   of the format's pieces (`ftext` and `fconv` records, §3.6.2), whose records are those pieces in
+   order (each `fconv` with the class of its
    argument: `i` for `i64` and `bool`, `f` for `f64`, `p` for `str`); then `rcall sea_printf
    site 0 2 F S`, with the `printf` call's line as site (§4.8: pass 4 adds the site index as the
    entry's last argument).
@@ -2010,6 +2021,21 @@ rule (c) covers, no elemental function).
     0`. For `asg op` the parameter's current value is loaded first (it is the left operand,
     LANGUAGE.md §6.8 rule 5), then the value is computed, then the operation into a new register,
     then the store.
+
+    **Reads before a `ref` call.** Within one statement, a read of a local L that is evaluated
+    (in the order of LANGUAGE.md §6.8 rule 5) before a `call` that passes L by `ref`, or passes
+    a `ref` parameter that aliases L, is copied at its evaluation point into a new register T
+    (`mov T L`; for a `ref` parameter, its `ldi`/`ldf` writes T), and the later use reads T.
+    This covers `y = x + g(ref x)`, `f(x, g(ref x))` and `x += g(ref x)` (the read of x by `+=`
+    precedes the call). A read evaluated after the call sees the updated value. In `x = g(ref
+    x)` (an `asg`, `bind` or `tbind` whose value is a call that passes the target by `ref`) the
+    call writes a new result register R, then the reloads above follow, then `mov x R`, so the
+    assignment wins over the reload.
+13. **Constant exponents.** `powk k` lowers its base x first, then into a new destination d (or
+    the destination of rule 2): k = 0 `lf d 1.0`; k = 1 `mov d x`; k = 2 `fmul d x x`; k = 3
+    `fmul t x x`, `fmul d t x`; k = 4 `fmul t x x`, `fmul d t t` (t a new register). For k < 0,
+    x^|k| is computed as above into a new register t (t is x itself when |k| = 1), then `lf o
+    1.0` into a new register o and `fdiv d o t`.
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8 and 12), and their `slot`
 records come at the start of the function in that order (§3.6.3).
@@ -2494,8 +2520,10 @@ record, under the calling convention of §4.8 and the style rules of Baysick's r
 (frame record in every non-leaf function, `x18` never used, 16-byte aligned `sp`).
 
 **Sites.** `_sea_sites` (§4.8) holds one record per distinct `F:L` in this order of first
-occurrence in `sea.lir`: the `site` fields of the instructions, and the definition line of each
-checked function (§4.6), taken at its `func` record. A run-time check branches to an out-of-line
+occurrence in `sea.lir`: the `site` fields of the instructions, and the definition line of every
+function, taken at its `func` record. Every function's line is a site, not only those of the
+functions that check the stack limit (§4.6), because whether a function is checked depends on its
+frame size, which only pass 4 knows, while pass 3b counts the sites (§2.7). A run-time check branches to an out-of-line
 call of `_sea_err` with its code, the site index and its argument slots; an `rcall` of an entry
 with site `S` passes the site index as its last argument (§4.8).
 
