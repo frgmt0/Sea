@@ -46,6 +46,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_call` | §8.1, §8.2, §6.8 rule 5, §7.2 (functions visible before declaration) |
 | `fn_recursion` | §8.6 (direct, mutual, depth 100 000); DESIGN.md §4.6 |
 | `fn_ref` | §8.3, §4.2 (var typed by a ref use) |
+| `fn_ref_order` | §6.8 rule 5, §8.3 (reads before a `ref` call see the old value, reads after it the new one, `x = g(ref x)` keeps the result) |
 | `fn_multi` | §8.4, §7.2, §7.3 (tuple patterns, `_`, tuple assignment, `return f()`) |
 | `fn_many` | §8.1, §8.4 (10 + 10 parameters, 10 results) |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
@@ -78,13 +79,14 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `type_cvt` | hir1 hir | LANGUAGE.md §4.2; §3.5.5 `cvt` positions, `lib f64/i64` |
 | `type_powk` | hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents" |
 | `type_const` | hir1 hir | LANGUAGE.md §7.2; §3.5.2, §3.5.7 steps 1–2 |
-| `fn_ref` | hir1 lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
-| `fn_multi` | hir1 lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
-| `fn_printf` | hir1 lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
+| `fn_ref` | hir1 hir lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
+| `fn_multi` | hir1 hir lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
+| `fn_ref_order` | hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
+| `fn_printf` | hir1 hir lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
 | `type_ifx_arm` | hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
 | `op_fold` | hir1 hir | §3.5.7 step 2, §2.8 folding checks |
-| `op_shortcircuit` | lir1 | §3.6.6 rule 3 |
-| `stmt_loops` | lir1 | §3.6.6 rule 4 |
+| `op_shortcircuit` | hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
+| `stmt_loops` | hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `fn_reach` | hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call

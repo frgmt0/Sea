@@ -1,0 +1,88 @@
+#sea 1
+#target arm64-macos
+#file fn_ref_order.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 8 8
+slot s4 8 8
+slot s5 8 8
+slot s6 32 8
+li i1 1
+li i2 0
+mov i3 i1
+sa p4 s1
+sti i1 p4 - 0 0
+call g 1 i5 1 p4
+ldi i1 p4 - 0 0
+iaddc i2 i3 i5 0:19
+mov i6 i1
+sa p7 s2
+sti i1 p7 - 0 0
+call g 1 i8 1 p7
+ldi i1 p7 - 0 0
+iaddc i1 i6 i8 0:20
+mov i9 i1
+sa p10 s3
+sti i1 p10 - 0 0
+call g 1 i11 1 p10
+ldi i1 p10 - 0 0
+call f 1 i12 2 i9 i11
+sa p13 s4
+sti i1 p13 - 0 0
+call g 1 i14 1 p13
+ldi i1 p13 - 0 0
+mov i1 i14
+sa p15 s5
+sti i1 p15 - 0 0
+call g 1 i16 1 p15
+ldi i1 p15 - 0 0
+li i17 0
+call f 1 i18 2 i1 i17
+iaddc i19 i16 i18 0:23
+sa p20 s6
+sti i1 p20 - 0 0
+sti i2 p20 - 0 8
+sti i12 p20 - 0 16
+sti i19 p20 - 0 24
+la p21 d1
+rcall sea_printf 0:24 0 2 p21 p20
+ret 0
+endfunc
+func g fn 0:4:1 1 p1 1 i
+li i2 0
+li i3 2
+li i4 1
+rcount i5 i2 i3 i4 0 0:5
+loop 1 i6 i2 i5 i4
+ldi i7 p1 - 0 0
+li i8 5
+iaddc i9 i7 i8 0:6
+sti i9 p1 - 0 0
+endloop 1
+ldi i10 p1 - 0 0
+li i11 2
+imulc i12 i10 i11 0:8
+ret 1 i12
+endfunc
+func f fn 0:10:1 2 i1 i2 1 i
+mov i3 i2
+li i4 0
+li i5 3
+li i6 1
+rcount i7 i4 i5 i6 0 0:12
+loop 1 i8 i4 i7 i6
+iaddc i3 i3 i1 0:13
+endloop 1
+ret 1 i3
+endfunc
+fmt d1 8
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end
