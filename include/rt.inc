@@ -30,8 +30,15 @@
 //   _sea_variant  runtime   u64 SEA_VAR_* of the selected kernel variant, set
 //                           before _sea_main; LIR vfeat avx2 is
 //                           (_sea_variant == SEA_VAR_AVX2)
-// The entry points that LIR rcall records name (DESIGN.md 3.6.4) are added
-// to this file, with DESIGN.md 4.8, by the phase that implements each one.
+//   _sea_stack_limit runtime u64: the lowest address sp may reach; the
+//                           prologue check of every checked function compares
+//                           sp - frame size with it (DESIGN.md 4.6, 4.9)
+// LINE SHAPES (read by the DATA generator, DESIGN.md 2.6.3; keep them exact):
+// constants ".equiv SEA_<NAME>, <value>  [ /* comment */ ]", value decimal
+// or 0x + upper-case hex; entry records as described at SEA_ENTRY_LIST.
+// The entry points that LIR rcall records name (DESIGN.md 3.6.4) are listed
+// in SEA_ENTRY_LIST below, with DESIGN.md 4.8, by the phase that implements
+// each one.
 // =====================================================================
 .ifndef SEA_RT_INC
 .equiv SEA_RT_INC, 1
@@ -131,6 +138,28 @@
 .equiv SEA_SITE_LINE,           8   /* u64  line L, from 1 */
 .equiv SEA_SITE_SIZE,           16
 .equiv SEA_SITE_NONE,           -1  /* site index of an error with no location: "error: <message>" */
+
+// ---- Stack (DESIGN.md 4.6, 4.9) ---------------------------------------------
+.equiv SEA_STACK_MARGIN,        65536 /* bytes kept above the guard page: _sea_stack_limit = guard top + this */
+.equiv SEA_STACK_LEAF_MAX,      4096  /* a leaf function with a larger frame is checked too */
+
+// ---- Runtime entry points named by LIR rcall (DESIGN.md 3.6.4, 4.8) ----------
+// LINE SHAPE (read by the DATA generator, DESIGN.md 2.6): between
+// ".macro SEA_ENTRY_LIST m" and the next ".endm", 4 spaces, "\m ", then
+//   id, NAME, symbol, site, args, results
+// id dense from 1; symbol the ELF name (Mach-O adds a leading _), which LIR
+// rcall records write; site S (pass 4 passes the site index as one more,
+// last, integer argument) or -; args, results: LIR register classes in
+// order, or - for none. Fields separated by a comma and one space.
+.macro SEA_ENTRY_LIST m
+    \m 1, PRINTF, sea_printf, S, pp, -
+    \m 2, NOW, sea_now, -, -, f
+.endm
+.equiv SEA_ENT_COUNT,           2   /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.macro SEA_ENTDEF id, name, sym, site, args, res
+.equiv SEA_ENT_\name, \id
+.endm
+SEA_ENTRY_LIST SEA_ENTDEF
 
 // ---- Kernel variants (DESIGN.md 4.4); names as Baysick's KV_NAME ----------
 .equiv SEA_VAR_NEON,            1   /* "neon", arm64-macos */

@@ -1499,12 +1499,19 @@ the number of conversions (`format "…" expects 3 arguments, found 2`); loops p
 
 | conv | Argument types | Output |
 |------|----------------|--------|
-| `d`, `i` | `i64`; `f64` | `i64`: decimal. `f64` (MATLAB rule): an integral finite value prints as the integer it is (exactly, any magnitude); NaN, Inf, −Inf print as `NaN`, `Inf`, `-Inf` padded to the width (the `0` flag ignored); a non-integral value prints as `%e` with the same flags and width and precision 6 (MATLAB prints `1.500000e+00` for `sprintf('%d', 1.5)`; W1 prints `L10h`, which can be NaN, with `%8d`) |
+| `d`, `i` | `i64`; `f64` | `i64`: decimal. `f64` (MATLAB rule): an integral finite value prints as the integer it is (exactly, any magnitude); NaN, Inf, −Inf print as `NaN`, `Inf`, `-Inf` padded with spaces to the width (non-finite values below); a non-integral value prints as `%e` with the same flags and width and precision 6 (MATLAB prints `1.500000e+00` for `sprintf('%d', 1.5)`; W1 prints `L10h`, which can be NaN, with `%8d`) |
 | `f`, `F`, `e`, `E`, `g`, `G` | `f64`; `i64` (converted) | C99 semantics for finite values; NaN/Inf as for `d` (MATLAB spelling, not C's `nan`/`inf`) |
 | `s` | `str` | the bytes; precision truncates to that many bytes; width pads with spaces (counts bytes) |
 | `%%` | — | `%` |
 
 Any other conversion, flag combination C leaves undefined, or argument type is a compile error.
+
+**Non-finite values** (every numeric conversion, MATLAB spelling): −∞ prints `-Inf`; +∞ prints
+`Inf`, or `+Inf` with the `+` flag, or ` Inf` with the space flag (as C signs `inf`); NaN prints
+`NaN` and is never signed, whatever its sign bit and flags. The result is padded with spaces to
+the width (on the left, or on the right with the `-` flag); the `0` and `#` flags and the
+precision are ignored for non-finite values. So `%+8.2f` of +∞ is `    +Inf` and `%08d` of NaN is
+`     NaN`.
 
 **Exact output.** For finite `f64` values the digits are the **correctly rounded** decimal
 representation of the exact binary value, ties to even, which is what C99 `printf` produces on

@@ -335,7 +335,7 @@ plays the role Baysick's IR plays for Baysick's backends, but is lower level.
 |------|----------|
 | **Compiler intrinsics** (passes 2–3) | operators, views, indexing, `len rows cols numel`, conversions, `where`, reductions (fused into loops), the elemental math functions (inline code or runtime calls), `printf`/`format` (pre-parsed formats), and **`write_json`**, which pass 2b expands per static type into calls of the runtime's JSON emitter (LANGUAGE.md §11.4) — so no generics or reflection are needed |
 | **Runtime** (assembly, `libsea.a`, §4) | memory, strings, number-to-text conversion, I/O, clock, the elementary functions, sorting, linear-algebra kernels, the JSON emitter, and the **plotting library**: the `Figure`/`Axes` handle objects, layout, SVG writer and PNG/base64 encoder (LANGUAGE.md §12.1) |
-| **Prelude** `std/std.sea` | what is naturally written in Sea with value semantics: `linspace`, `meshgrid`, `setdiff`, `bincount` (marked **(P)** in LANGUAGE.md §10) |
+| **Prelude** `std/std.sea` | what is naturally written in Sea with value semantics: `linspace`, `meshgrid`, `setdiff`, `bincount` (marked **(P)** in LANGUAGE.md §10); until phase 4 (§8), which brings the arrays these functions need, it holds comments only, and the driver streams it as usual |
 
 **Decision: the prelude is Sea source streamed to pass 1 ahead of the program on every
 compilation**, and pass 2b drops every function the program does not reach. It is small (an
@@ -367,12 +367,13 @@ change only together with the matching doc section:
 | **Baysick's `include/runtime.inc`** (cross-repository) | `MV_*` (matrix views), `KS_*` (kernel statuses), `KV_*` (variant records), `KF_*` (feature bits), and the `_bsk_kern_*` entry points of Baysick DESIGN.md §6.6 | Sea's runtime, which `.include`s it from the Baysick checkout; a change there is a change to Sea's contract too, so Baysick's contract rule (CLAUDE.md) covers it, and a Sea test assembles Sea's runtime against the current file |
 
 The `.inc` files follow Baysick's dual-assembler rules (Baysick DESIGN.md §3.4). Baysick programs
-cannot `.include`, so the passes get the same numbers and texts from `passes.txt` and
-`errors.inc` through generated `DATA` blocks: `sea/tools/` contains a small Baysick program that
-reads the contract files and writes the `DATA` lines, and a test checks that every pass's `DATA`
-block is current. (Error texts must be `DATA`, not string constants: §2.7.) The entry-point
-names of `rt.inc` that passes 3a and 3b write into `rcall` records (§3.6.4) reach them the same
-way. `passes.txt` is not an assembler file; its format is §3.9.
+cannot `.include`, so the passes get the same numbers and texts from the contract files through
+generated `DATA` blocks: `sea/tools/gendata.bas`, a Baysick program, reads the contract files and
+writes the `DATA` lines, and every build regenerates them, so a pass's `DATA` is current by
+construction (§2.6.3). (Error texts must be `DATA`, not string constants: §2.7.) The entry points
+of `rt.inc` that passes 3a and 3b write into `rcall` records (§3.6.4) and the layout values pass
+3a addresses with reach them the same way. `passes.txt` is not an assembler file; its format is
+§3.9.
 
 The `.inc` files define every name with `.equiv` (an error if the name is already defined), so
 a clash between Sea's names and Baysick's `include/runtime.inc`, which Sea's runtime includes
@@ -471,6 +472,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `type` | the `type` node; for a literal, its `slit` (`unknown struct type`) or `array` (`arrays cannot hold %s`) node |
 | `target` | the assignment target (the position of its text) |
 | `results` | the `return` node, the `call` whose result is used or bound, or the `ptuple`/`tasg` node whose count differs |
+| `construct` | the AST node (§3.4) of the first construct, in source order, that the compiler does not implement yet (`not supported yet: %s`, the phase rule below) |
 
 * `args`: one letter per substitution, in text order, or `-` for none: `i` a decimal integer
   (`%d`), `f` an `f64` printed as Sea's `printf("%g")` prints it (LANGUAGE.md §11.1: `NaN`,
@@ -601,12 +603,44 @@ name (`seaparse`, `seacheck`, …), before the pass ends with `STOP 11`; a run-t
 | 256 | `PROJECTION` | C2 | dot | `ss` | `cannot project field '%s' of type %s` | defined here (LANGUAGE.md §4.7) |
 | 257 | `VIEW_RANK` | C2 | dot | `ss` | `view .%s is not defined for %s` | defined here (LANGUAGE.md §5.6) |
 | 258 | `ELEMENT_TYPE` | C2 | type | `s` | `arrays cannot hold %s` | defined here (LANGUAGE.md §4.1: handles) |
+| 259 | `NOT_SUPPORTED` | C2 | construct | `s` | `not supported yet: %s` | defined here (the phase rule below and §8; retired once v1 is complete) |
 | 400 | `TOO_LARGE` | CX | here | `s` | `program too large: %s` | LANGUAGE.md §3.1; §2.7 |
 | 500 | `TRUNCATED` | P | - | - | `internal error: truncated input` | §2.2 |
 | 501 | `BAD_HEADER` | P | - | - | `internal error: bad header` | defined here (§3.2) |
 | 502 | `BAD_RECORD` | P | - | - | `internal error: bad record` | defined here (§3.1: unknown opcode, wrong fields) |
 | 503 | `BAD_TREE` | P | - | - | `internal error: bad tree` | defined here (§3.3: a pop from an empty stack, a non-empty stack at a section end) |
 | 504 | `BAD_DATA` | P | - | - | `internal error: bad DATA table` | defined here (§2.2: a `DATA` table count disagrees with its sentinel) |
+
+**The phase rule: `not supported yet`.** While Sea v1 is built phase by phase (§8), a program that
+uses a construct the current compiler does not implement yet stops with the compile error `not
+supported yet: %s` (code 259, `NOT_SUPPORTED`; driver status 1), reported by pass 2a at the first
+such construct in source order (pass 1 parses the whole grammar of LANGUAGE.md Appendix A from
+phase 1 on, so syntax errors are always the real ones). The `%s` is one of the words below. It is
+not a rule of the language: LANGUAGE.md describes v1 complete, and a phase's compiler is a
+conforming v1 compiler for the programs it accepts. When v1 is complete (phase 10) no construct is
+reported any more; the message is retired and its code stays reserved, never reused. In phase 1
+(the scalar core, §8) these constructs are reported, with these words:
+
+| Construct (phase 1) | `%s` |
+|---------------------|------|
+| an array type, array literal, indexing, `$`, a range used as a value, a `for` over anything but a range, a view | `arrays` |
+| a `struct` item, a struct type, a struct literal, a field access or projection | `structs` |
+| a record literal or record type | `records` |
+| a `match` statement | `match` |
+| a `str` other than a string literal that is the argument of a `%s` conversion of `printf`: the `str` type, a `str` local, parameter or result, `+`, comparisons or `str(x)` on strings, a string literal anywhere else | `strings` |
+| an `elemental fn` | `elemental functions` |
+| a named argument | `named arguments` |
+| a parameter default | `default arguments` |
+| `%` with an `f64` operand (it needs the exact `fmod` of LANGUAGE.md §6.6) | `f64 %` |
+| `^` that is not a `powk` (it needs `pow`, phase 3) | `pow` |
+| a handle type | `handle types` |
+| a call of a library function other than `printf`, `now`, `f64`, `i64` and `idiv` (LANGUAGE.md §10–§13) | its name, e.g. `sqrt` |
+
+Included in phase 1, so not reported: `const` items, the constants `pi inf nan eps`, `i64`, `f64`
+and `bool` scalars, every scalar operator except those above, `if`/`while`/`for` over ranges,
+`break`/`continue`, functions with scalar parameters and results, `ref` parameters of scalar
+locals, multiple results, and `printf` with `%d %i %f %F %e %E %g %G %s`. Each later phase of §8
+removes the rows it implements from this table, together with its tests.
 
 Uses of an existing message, so no further text is needed: `&&`/`||` with an array
 operand, a `match` scrutinee that is not `str`, and a `return` value of the wrong type are `type
@@ -703,6 +737,55 @@ the decoding of §3.1, which reads `%22` as `"`. The generator writes one `DATA`
 
 numbers in decimal, and each table followed by its sentinel (§2.2): the line `<line> DATA -1`,
 read where the next record's first number would be.
+
+#### 2.6.3 The `DATA` generator and how a pass is built
+
+**Input line shapes of `limits.inc`, `rt.inc` and `passes.txt`** (those of `errors.inc` are in
+§2.6.2; every other line is ignored by the generator):
+
+* a **constant** is a line of `limits.inc` or `rt.inc` of the form `.equiv SEA_<NAME>, <value>`,
+  optionally followed by spaces and a `/* … */` comment, where `<value>` is decimal (with a
+  leading `-` for a negative value) or `0x` and upper-case hexadecimal digits; the include guards
+  `SEA_*_INC` are not constants;
+* an **entry record** is a line between `.macro SEA_ENTRY_LIST m` and the next `.endm` of
+  `rt.inc`: four spaces, `\m`, one space, then `id, NAME, symbol, site, args, results` (§4.8);
+* a **`passes.txt` line** is an `enum`, `head` or `rec` line of §3.9.
+
+**Generated `DATA` lines** (in addition to those of §2.6.2), one per record, numbers in decimal,
+strings quoted in the `DATA` escaping of §2.6.2:
+
+* constant: `<line> DATA "<NAME>",<l3>,<l2>,<l1>,<l0>`, the value's 64-bit two's-complement
+  pattern as four 16-bit limbs, most significant first (each 0 … 65 535), so a value of more
+  than 9 digits (`2147483647`), a hexadecimal one (`0x10FFFF`) or a negative one (`-1`) arrives
+  exactly (§2.8); the table ends with the sentinel `<line> DATA "-"`;
+* entry record: `<line> DATA <id>,"<NAME>","<symbol>","<site>","<args>","<results>"`, ending with
+  `<line> DATA -1`;
+* `passes.txt` line: `<line> DATA "<kind>",<n>,"<f1>",…,"<fn>"`, where kind is `enum`, `head` or
+  `rec` and f1 … fn are the line's other fields in order (for `rec`: set, code, opcode, pops, then
+  the field specifications); ending with `<line> DATA "end",0`.
+
+Every generated line, line number included, is at most 255 bytes (Baysick's physical line
+limit); the generator stops with status 1 and a message naming the record if one would be longer.
+
+**How a pass is built.** Each pass program `build/gen/<pass>.bas` is the concatenation, in this
+order, of: the pass's own files `passes/<pass>/*.bas` (in name order); the shared modules of
+`passes/lib/` it uses; the generated `DATA` blocks it uses, among `errors`, `errno`, `exits`,
+`consts`, `entries` and `records`, always in this order; and the line `99999 END`. The `Makefile`
+names each pass's modules and blocks, regenerates `build/gen/` on every build and compiles the
+result with `baysick`; nothing in `build/` is committed. The line numbers keep the parts apart:
+
+| Part | Line numbers |
+|------|--------------|
+| the pass's own files | 1 – 59 999 |
+| `passes/lib/io.bas`, `diag.bas`, `tables.bas` | 60 000 – 62 999, 63 000 – 65 999, 66 000 – 68 999 |
+| `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | 69 000 – 74 999, 75 000 – 81 999, 82 000 – 88 999 |
+| generated `DATA`, numbered consecutively | 89 000 – 99 998 |
+| `END` | 99 999 |
+
+The pass's own files and the modules contain no `END`, and the modules contain no `DATA`; a pass
+reads its own `DATA` (keyword tables and the like) before the generated blocks, which follow in
+line order (Baysick reads `DATA` in line order). All parts together count against Baysick's
+10 000 lines per program (§2.7; `make lines` reports each pass's count).
 
 ### 2.7 Living within Baysick's limits, and the size of the compiler
 
@@ -851,6 +934,30 @@ The Sea compiler stays a Baysick program. Sea is a numerical language: it has no
 structures, no maps, no pointer types — the things a compiler is made of — and adding them for
 the compiler's sake would work against the language's purpose. Writing the compiler in Baysick
 is also the point of the Baysick project.
+
+### 2.10 Repository layout
+
+| Path | Contents |
+|------|----------|
+| `driver/sea` | the driver (§2.2), a POSIX `sh` script |
+| `passes/lib/io.bas`, `diag.bas`, `tables.bas` | shared pass modules: the header protocol and record reading and writing (§2.2, §3.1–§3.3), diagnostics (§2.6.2), the tables of §2.7 |
+| `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | multi-limb integers, the exact IEEE binary64 emulation and the float-literal conversion (§2.8) |
+| `passes/seaparse/`, `seacheck/`, `seaexpand/`, `sealower/`, `seaopt/`, `seagen_a64/` (later `seagen_x64/`) | each pass's own Baysick files (§2.1), built as §2.6.3 says |
+| `tools/gendata.bas` | the `DATA` generator (§2.6.3) |
+| `tools/seaval.bas` | a validator of intermediate files against `passes.txt` (§3), used by the tests |
+| `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
+| `std/std.sea` | the prelude (§2.5) |
+| `runtime/arm64_macos/`, `runtime/x86_64_linux/` | the runtimes (§4); in phase 1 `rt_main.s`, `rt_out.s`, `rt_err.s`, `rt_fmt.s`, `rt_clock.s` |
+| `include/` | the contract files (§2.6) |
+| `tests/` | the tests (§6.2) |
+| `build/` | the build output and installation directory (pass executables, `sea`, `std.sea`, `errors.inc`, `libsea.a`, the generated `build/gen/`); never committed |
+
+`make` builds `build/`; `make test` runs the tests of §6.2; `make test-rt`, `make test-stage`
+and `make check-data` run single groups of them (§6.2); `make lines` reports each built pass's
+line count against Baysick's 10 000 lines, and `make check-limits` checks each built pass against
+Baysick's other per-program limits of §2.7 (1000 `FOR` statements, 65 536 bytes of string
+constants outside `DATA`, 255-byte lines); `make check-includes` and `make check-contracts`
+check the contract files (§2.6).
 
 ## 3. Intermediate files
 
@@ -1725,13 +1832,32 @@ instructions (vectorized loops, §5.1; on `x86_64-linux` each vectorized loop in
 fewer or hoisted checks, fewer slots (scalar replacement) and hoisted or strength-reduced
 instructions (§5.2–§5.3).
 
+**Pass 3b in phase 1** (§8). Pass 3b reads `sea.lir1` completely and validates it (the header
+records and `#end`, every record against `passes.txt`, register classes and the numbering of
+§3.6.1, block numbering and nesting, slots, data labels and their records) and writes it
+unchanged as `sea.lir`; it transforms nothing. The transformations of §5.2–§5.3 and §5.1 arrive
+in phases 5 and 7. So that the phase-1 `.lir` dump tests stay valid after them, they use only
+programs on which the complete pass 3b changes nothing either: no loop-invariant instruction in a
+loop, no array access or removable check, no slot that §5.3 could scalar-replace (the slots of
+phase 1, rules 8 and 12 below, escape to a call), no address to strength-reduce and nothing to
+vectorize.
+
 #### 3.6.6 Canonical lowering of scalar code
 
 So that LIR dumps are reproducible, pass 3a lowers the scalar subset (scalar `i64`, `f64` and
 `bool` parameters, locals and results; constants, `lv`, `cvt`, `un`, `bin` on scalars, `ifx`,
-`seq`, calls, `bind`, `tbind`, `eval` of a call, `asg` to a local, `if`, `while`, `forr`, `break`,
-`cont`, `ret`, `tret`, `block`) exactly as follows; pass 3a inlines exactly the calls LANGUAGE.md §8.6
-requires and the calls of prelude functions (§3.6.4, "Sites"), and no others.
+`seq`, calls, `rarg` of a scalar local, `bind`, `tbind`, `eval` of a call, `asg` to a local, `if`,
+`while`, `forr`, `break`, `cont`, `ret`, `tret`, `block`; the library calls `printf`, `now`, `f64`,
+`i64` and `idiv` and string constants as `printf` arguments) exactly as follows; pass 3a inlines
+exactly the calls LANGUAGE.md §8.6 requires and the calls of prelude functions (§3.6.4, "Sites"),
+and no others.
+
+**Inlining is deferred to phase 6** (§8). The phase-1 to phase-5 pass 3a inlines no call (the
+performance guarantee of LANGUAGE.md §8.6 is not observable in a program's output, and the prelude
+has no functions before phase 4, §2.5). The canonical LIR form of an inlined call is fixed in this
+section, with its dump tests, by phase 6; until then the dump tests use only programs in which
+LANGUAGE.md §8.6 requires no inlining (no function called from exactly one call site, none that
+rule (c) covers, no elemental function).
 
 1. Each local and parameter has one register of its class. Expressions are lowered in post-order,
    left operand first, one instruction per node, except: `lv` emits nothing (its register is the
@@ -1757,9 +1883,38 @@ requires and the calls of prelude functions (§3.6.4, "Sites"), and no others.
    nodes in order (rule 2), then its value, which is lowered as if it stood in the `seq`'s place.
 6. A function whose result type is `void` ends with `ret 0` unless its last statement is a
    `ret`; `.main` always ends with `ret 0`. `block` emits nothing for scalar locals.
+7. **String constants.** A `cs` (in phase 1 only as the argument of a `%s` conversion of
+   `printf`, §8) is a `str` data record `str dN v` (a new label for every occurrence, §3.6.2) and
+   `la P dN` into a new register P.
+8. **`printf`.** `lib printf` with its `fmt` of n conversions: the arguments of the conversions,
+   left to right, each by rule 1; then `sa S s` of a new slot s of 8·max(n, 1) bytes, alignment
+   8; then for each argument j (from 0) its store into slot word j: `sti`, `stf` or `stp` (by the
+   argument's class) `value S - 0 8j`; then `la F dM` of a `fmt dM n` data record whose
+   `ftext`/`fconv` records are the format's pieces in order (each `fconv` with the class of its
+   argument: `i` for `i64` and `bool`, `f` for `f64`, `p` for `str`); then `rcall sea_printf
+   site 0 2 F S`, with the `printf` call's line as site (§4.8: pass 4 adds the site index as the
+   entry's last argument).
+9. **`now`.** `lib now` is `rcall sea_now - 1 R 0` into a new register R (`f`).
+10. **Conversions.** `lib f64(x)`: `itof` for an `i64` or `bool` x, `mov` for an `f64` x; `lib
+    i64(x)`: `ftoi` with the call's line as site for an `f64` x, `mov` for an `i64` or `bool` x.
+11. **Integer division.** `lib idiv(a, b)` is `idivf` and `bin mod` of two `i64` is `imodf`, each
+    with the node's line as site.
+12. **`ref` arguments.** A `rarg` of a local L of the caller that is not itself a `ref` parameter:
+    when the argument is reached in the left-to-right order, `sa A s` of a new slot s of 8 bytes,
+    alignment 8, and `sti`/`stf L A - 0 0` (L's current value); A is the argument; after the
+    `call`, for each such argument in argument order, `ldi`/`ldf L A - 0 0` reloads L. A `rarg` of
+    a local that is a `ref` parameter of the caller passes that parameter's `p` register
+    unchanged (no slot, no store, no reload). In the callee a `ref` parameter's register is a `p`
+    (§3.6.3): a use of it is `ldi`/`ldf` into a new register from `P - 0 0`, and a store into it
+    (`asg`, rule 2) computes the value into a new register and writes it with `sti`/`stf V P - 0
+    0` (for `asg op`, the load, the operation, then the store).
 
-The lowering of arrays, strings, structs, output and fusion is given by §4 and §5; its dumps are
-pinned when the phases that implement them add their tests (§6.2, §8).
+Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8 and 12), and their `slot`
+records come at the start of the function in that order (§3.6.3).
+
+The lowering of arrays, strings beyond rule 7, structs, the rest of the output library and
+fusion is given by §4 and §5; its dumps are fixed when the phases that implement them add their
+tests (§6.2, §8).
 
 #### 3.6.7 Example
 
@@ -1984,9 +2139,17 @@ changes speed, never output, except for class-R results.
 ### 4.6 Stack and process
 
 `main` runs the program on a 64 MiB stack mapped with a guard page (Baysick's program-stack
-technique, Baysick DESIGN.md §6.9), with an alternate signal stack and a `SIGSEGV`/`SIGBUS` handler that
-turns a fault in the guard page into the run-time error `stack overflow`. Any other signal keeps
-its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
+technique, Baysick DESIGN.md §6.9). **Stack overflow is detected by the compiled code**: before it
+allocates its frame, every non-leaf function, and every leaf function whose frame is larger than
+`SEA_STACK_LEAF_MAX` bytes, compares sp minus its frame size with `_sea_stack_limit` (the top of
+the guard page plus `SEA_STACK_MARGIN`, set by `main` before `_sea_main`); if it is lower, the
+function calls `_sea_err(SEA_E_STACK_OVERFLOW, site)`, where site is the function's definition
+line: the `F:L` of its LIR `func` record's `pos` (§3.6.3), which pass 4 adds to `_sea_sites`
+(§4.8, §4.9). So `stack overflow` reports `<file>:<line>` of the `fn` whose call did not fit
+(LANGUAGE.md §8.6, §9.2). The margin leaves room for unchecked leaf frames and for `_sea_err`
+itself. The guard page stays as a safety net: an alternate signal stack and a `SIGSEGV`/`SIGBUS`
+handler turn a fault in it into `stack overflow` with no location (`SEA_SITE_NONE`). Any other
+signal keeps its default action. Programs ignore `SIGPIPE` and report a failed write as `cannot write`
 (status 1): a failed write of standard output as `cannot write '<stdout>': <reason>`, at the site
 of the output call whose buffer flush failed, or with no site (`SEA_SITE_NONE`, §4.8) when the
 final flush after `_sea_main` returns fails (LANGUAGE.md §9.2).
@@ -2023,6 +2186,24 @@ arguments and failure codes.
 | `_sea_err` | runtime | noreturn run-time error (LANGUAGE.md §9.2): arm64 `x0` / x86_64 `%rdi` = the code (`SEA_E_*`, 1 … `SEA_E_RT_END` − 1), `x1` / `%rsi` = the site index into `_sea_sites`, or `SEA_SITE_NONE` for an error with no location (the line is then `error: <message>`, LANGUAGE.md §9.2), `x2` / `%rdx` = the address of the argument slots that the code's `args` letters describe (§2.6.2), unused when it has none |
 | `_sea_sites` | program | the error-site table (below) |
 | `_sea_variant` | runtime | u64: the `SEA_VAR_*` id of the selected kernel variant, set before `_sea_main`; LIR `vfeat avx2` is `_sea_variant == SEA_VAR_AVX2` |
+| `_sea_stack_limit` | runtime | u64: the lowest address sp may reach, the top of the guard page plus `SEA_STACK_MARGIN`, set before `_sea_main`; read by the prologue check of §4.6 |
+
+**Runtime entry points** (`SEA_ENTRY_LIST` in `rt.inc`; LIR `rcall` records name them by their
+ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
+means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
+integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 2.
+
+| Id | Name | Symbol | Site | Args | Results | Contract |
+|---:|------|--------|------|------|---------|----------|
+| 1 | `PRINTF` | `sea_printf` | `S` | `pp` | `-` | `_sea_printf(fmt, slots, site)`: arm64 `x0` / x86_64 `%rdi` = the address of a pre-parsed format (`SEA_FMT_*`, below), `x1` / `%rsi` = the address of its argument slots (one `SEA_SLOT_SIZE` slot per conversion, in order: an `i64` or `bool` value, the bits of an `f64`, or a string object pointer, by the conversion's `SEA_CLS_*`), `x2` / `%rdx` = the site index; formats as LANGUAGE.md §11.1 says into the standard-output buffer; a failed write of the buffer is `_sea_err(SEA_E_CANNOT_WRITE, site, slots "<stdout>", errno)` (§4.6); no result |
+| 2 | `NOW` | `sea_now` | `-` | `-` | `f` | `_sea_now()`: the monotonic clock (`clock_gettime(CLOCK_MONOTONIC)`) in seconds as an `f64` in `d0` / `%xmm0` (LANGUAGE.md §13); cannot fail |
+
+| Name | Value | Meaning |
+|------|------:|---------|
+| `SEA_ENT_COUNT` | 2 | number of entry records |
+| `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
+| `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 
 **Reference-counted objects.** Every
 array, string and handle begins with the same 16-byte header, so `retain`/`release` (§3.6.4) work on any of them. A count of `SEA_RC_STATIC` (0) marks a
@@ -2192,6 +2373,36 @@ further results):
 | further results | written by the callee to an area of 8-byte slots whose address the caller passes as a hidden parameter after the hidden result addresses of §3.6.3 | same |
 | callee-saved | `x19`–`x28`, `d8`–`d15` (low 64 bits); `x18` never used; frame record `x29`/`x30` in every non-leaf function | `%rbx %rbp %r12`–`%r15` |
 | stack | 16-byte aligned at every call | 16-byte aligned at every call |
+
+### 4.9 Code generation (pass 4)
+
+Pass 4 (`seagen_a64`, `seagen_x64`) turns `sea.lir` into `sea.s` for the target of the `#target`
+record, under the calling convention of §4.8 and the style rules of Baysick's runtime assembly
+(frame record in every non-leaf function, `x18` never used, 16-byte aligned `sp`).
+
+**Sites.** `_sea_sites` (§4.8) holds one record per distinct `F:L` in this order of first
+occurrence in `sea.lir`: the `site` fields of the instructions, and the definition line of each
+checked function (§4.6), taken at its `func` record. A run-time check branches to an out-of-line
+call of `_sea_err` with its code, the site index and its argument slots; an `rcall` of an entry
+with site `S` passes the site index as its last argument (§4.8).
+
+**The phase-1 allocator** (§8; linear-scan allocation replaces it in phase 5, §5.2). Every virtual
+register of a function has its own 8-byte slot in the frame; the frame holds the frame record,
+the LIR `slot`s (§3.6.3) and the register slots, and its size is a multiple of 16. Each
+instruction loads its register operands from their slots into fixed scratch registers, computes
+into a scratch register and stores the result to the destination's slot:
+
+| Use | arm64-macos | x86_64-linux |
+|-----|-------------|--------------|
+| `i`/`p` operands, in operand order; result in the first | `x9`, `x10`, `x11` | `%rax`, `%rcx`, `%rdx` |
+| `f` operands, in operand order; result in the first | `d16`, `d17`, `d18` | `%xmm8`, `%xmm9`, `%xmm10` |
+| addresses of slots and data, the stack-limit check | `x16`, `x17` | `%r10`, `%r11` |
+
+Calls load their arguments from the slots into the argument registers of §4.8 and store the
+results back; no callee-saved register is used except the frame record (`x29`/`x30`;
+`%rbp`), so none is saved. Structured LIR constructs become compares and branches to local labels
+`L<function number>_<block>_<what>`. The phase-1 code is deliberately simple; §5.2 states what
+phase 5 must reach.
 
 ## 5. Performance model
 
@@ -2378,10 +2589,29 @@ sea/tests/
                       (`make cross-includes`)
   check_contracts.sh  the drift check (`make check-contracts`, run first by `make
                       check-includes`; POSIX sh and awk): every SEA_* name and value and every
-                      error and errno record of the .inc files equals the tables of §2.6.1,
+                      error, errno and entry record of the .inc files equals the tables of §2.6.1,
                       §2.6.2 and §4.8, and every record format of passes.txt equals the tables
                       of §3.2–§3.6 (§3.9), in both directions
   run.sh              Mac runner;  cross.sh, cross_pack.sh, cross_run.sh: Linux, as Baysick's
+  passes/NAME.out     (optional, beside a dump test) the program's expected standard output when
+                      built and run
+  NAME.meta           (optional, beside a programs/ or errors/ test) `key=value` lines for the
+                      runner: `stdout=epipe` connects standard output to a pipe whose reading
+                      end is closed before the program starts (for `cannot write '<stdout>':
+                      Broken pipe`, LANGUAGE.md §9.2)
+  rt/arm64_macos/NAME.s  (later rt/x86_64_linux/) a runtime test: an assembly program, in
+                      Baysick's assembly style, that calls runtime entry points through rt.inc
+                      and is linked with libsea.a; + NAME.out [+ NAME.err, NAME.status], the
+                      expected bytes derived from LANGUAGE.md and §4 (`make test-rt`)
+  stage.sh            runs one pass on the committed golden output of the previous pass
+                      (passes/NAME.ast → seacheck → compare with NAME.hir1, and so on), so each
+                      pass is tested on its own (`make test-stage`)
+  protocol.sh         the pass-protocol tests (truncated inputs, missing #end, §2.2)
+  check_data.sh       checks the generator (§2.6.3) on the contract files: every generated
+                      line ≤ 255 bytes, every record present (`make check-data`)
+  vectors/NAME.py     generators of exact test vectors (float-literal bits, printf digits),
+                      run with `uv run`; their outputs are committed beside them, and the tests
+                      read only the committed outputs (Python is never needed to run a test)
 ```
 
 Test names carry the spec area: `lex_*`, `type_*`, `idx_*`, `op_*`, `stmt_*`, `fn_*`, `elem_*`,
@@ -2622,7 +2852,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | # | Phase | Done when |
 |---|-------|-----------|
 | 0 | **Agreement and contracts.** The decisions of §9 are taken; the document is split into LANGUAGE.md and DESIGN.md with the intermediate record formats (§0, §3); `sea/include/*.inc`, `passes.txt`; the Baysick kernel contract change of §7.2 (in Baysick, by its own process); `compare.py --candidate`, the token maps' format, and `run_all.m` report capture, with the MATLAB rerun (Decision 7) | the user has agreed the documents; include checks pass on both assemblers; Baysick's tests pass with the new GEMM entry |
-| 1 | **Scalar core, arm64.** Driver with the `#end` discipline; passes 1–4 for: `i64`/`f64`/`bool`, `let`/`var`, arithmetic with the LANGUAGE.md §6.8 rules, `if`/`while`/`for` ranges, functions with scalar parameters, `ref`, multiple results, `printf` with `%d %f %e %g %s`, `now()`; runtime start-up, formatting, errors; float-literal conversion; **recalibration** of the size estimate of §2.7 from the real pass 1 | a Sea program running W5's LCG for 11 M steps prints `lcg_final` = 2145635252 (the reference value) and the first uniforms bit-exact; spec tests for this subset pass; the estimate is updated in §2.7 |
+| 1 | **Scalar core, arm64.** Driver with the `#end` discipline; passes 1–4 for: `i64`/`f64`/`bool`, `let`/`var`, arithmetic with the LANGUAGE.md §6.8 rules, `if`/`while`/`for` ranges, functions with scalar parameters, `ref`, multiple results, `const` items and `pi inf nan eps`, `printf` with `%d %i %f %F %e %E %g %G %s` (string literals only as `%s` arguments), `now()`, `f64()`, `i64()`, `idiv`; every other construct is `not supported yet` (§2.6.2, phase rule); no inlining (§3.6.6), pass 3b validates and copies (§3.6.5), the phase-1 allocator and the stack check (§4.9, §4.6), `std.sea` comments only (§2.5); runtime start-up, formatting, errors (`sea_printf`, `sea_now`, §4.8); float-literal conversion; the build of §2.6.3 and the layout of §2.10; **recalibration** of the size estimate of §2.7 from the real passes | a Sea program running W5's LCG for 11 M steps prints `lcg_final` = 2145635252 (the reference value) and the first uniforms bit-exact; spec tests for this subset pass; the estimate is updated in §2.7 |
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()` | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D |

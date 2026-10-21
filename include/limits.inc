@@ -13,6 +13,10 @@
 // 3.4). Every name is defined with .equiv, so a clash with any other
 // definition (for instance in Baysick's runtime.inc) is an assembly error.
 // Guarded so it may be included more than once.
+//
+// LINE SHAPE (read by the DATA generator, DESIGN.md 2.6.3; keep it exact):
+//   .equiv SEA_<NAME>, <value>   [spaces /* comment */]
+// value decimal (leading - if negative) or 0x + upper-case hex digits.
 // =====================================================================
 .ifndef SEA_LIMITS_INC
 .equiv SEA_LIMITS_INC, 1

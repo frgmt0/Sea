@@ -136,3 +136,12 @@ SEA_ASSERT ((SEA_TAG_CHOL - SEA_TAG_ARRAY) == 5),           "object tags are den
 SEA_ASSERT ((SEA_EK_STRUCT - SEA_EK_F64) == 4),             "element kinds are dense"
 SEA_ASSERT ((SEA_VAR_AVX2 - SEA_VAR_NEON) == 2),            "variant ids are dense"
 SEA_ASSERT (SEA_RC_STATIC == 0),                            "a static object has count 0"
+SEA_ASSERT (SEA_STACK_MARGIN >= (4*SEA_STACK_LEAF_MAX)),    "the stack margin covers unchecked leaf frames and _sea_err"
+// Walk the entry list: ids dense from 1 in list order.
+.set sea_chk_ent, 1
+.macro SEA_CHK_ENT id, name, sym, site, args, res
+SEA_ASSERT (\id == sea_chk_ent),                            "entry ids are dense from 1 in list order: \name"
+.set sea_chk_ent, sea_chk_ent + 1
+.endm
+SEA_ENTRY_LIST SEA_CHK_ENT
+SEA_ASSERT ((sea_chk_ent - 1) == SEA_ENT_COUNT),            "SEA_ENT_COUNT is the number of entry records"

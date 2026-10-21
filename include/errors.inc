@@ -141,6 +141,9 @@
     \m 256, PROJECTION, C2, dot, ss, "cannot project field '%s' of type %s"
     \m 257, VIEW_RANK, C2, dot, ss, "view .%s is not defined for %s"
     \m 258, ELEMENT_TYPE, C2, type, s, "arrays cannot hold %s"
+// phase rule (DESIGN.md 2.6.2, 8): a construct the compiler does not implement yet;
+// retired (never produced, code kept reserved) once Sea v1 is complete
+    \m 259, NOT_SUPPORTED, C2, construct, s, "not supported yet: %s"
 // any pass: capacity limits (DESIGN.md 2.7)
     \m 400, TOO_LARGE, CX, here, s, "program too large: %s"
 // passes: internal consistency checks, status SEA_EXIT_PASS_INTERNAL (DESIGN.md 2.2, 3.2, 3.3)

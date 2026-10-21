@@ -10,7 +10,8 @@
 #      of docs/DESIGN.md, and every such row is an .equiv of the same value;
 #   2. every error record of errors.inc (code, NAME, phase, at, args, text) equals a row of the
 #      error table of DESIGN.md 2.6.2, every errno record (id, NAME, darwin, linux, text) a row of
-#      the errno table, and vice versa;
+#      the errno table, every entry record of rt.inc (id, NAME, symbol, site, args, results) a
+#      row of the entry table of DESIGN.md 4.8, and vice versa;
 #   3. every `head` and `rec` line of include/passes.txt equals a row of the record tables of
 #      DESIGN.md 3.2-3.6 (opcode, pops, fields; DESIGN.md 3.9 says how the tables are read), and
 #      vice versa.
@@ -65,9 +66,11 @@ function unq(s) {
 }
 /^\.macro SEA_ERROR_LIST / { list = "E"; next }
 /^\.macro SEA_ERRNO_LIST / { list = "N"; next }
+/^\.macro SEA_ENTRY_LIST / { list = "R"; next }
 /^\.endm/ { list = ""; next }
 list != "" && /^    \\m / {
     s = substr($0, 8)
+    if (list == "R") { gsub(/, /, "|", s); print "R|" s; next }
     k = (list == "E") ? 5 : 4
     out = list
     for (i = 1; i <= k; i++) {
@@ -77,7 +80,7 @@ list != "" && /^    \\m / {
         s = substr(s, p + 2)
     }
     print out "|" unq(s)
-}' "$ROOT/include/errors.inc" | sort > "$TMP/err.inc" || exit 2
+}' "$ROOT/include/errors.inc" "$ROOT/include/rt.inc" | sort > "$TMP/err.inc" || exit 2
 
 # DESIGN.md: error table rows "| code | `NAME` | phase | at | args | `text` | source |" and
 # errno rows "| id | `NAME` | darwin | linux | `text` |".
@@ -94,6 +97,8 @@ function cell(s) {
     for (i = 2; i < n; i++) { c[i] = cell(c[i]); gsub(/\001/, "|", c[i]) }
     if (c[4] ~ /^(R|D|C1|C2|CX|P)$/)
         print "E|" c[2] "|" c[3] "|" c[4] "|" c[5] "|" c[6] "|" c[7]
+    else if (c[4] ~ /^sea_[a-z0-9_]+$/)
+        print "R|" c[2] "|" c[3] "|" c[4] "|" c[5] "|" c[6] "|" c[7]
     else if (c[4] ~ /^-?[0-9]+$/ && c[5] ~ /^-?[0-9]+$/)
         print "N|" c[2] "|" c[3] "|" c[4] "|" c[5] "|" c[6]
     else
@@ -187,7 +192,7 @@ report() {   # report LABEL LEFT RIGHT LEFT_NAME RIGHT_NAME
     fi
 }
 report "names" "$TMP/equ.inc" "$TMP/equ.doc" "include/*.inc" "docs/DESIGN.md"
-report "errors" "$TMP/err.inc" "$TMP/err.doc" "include/errors.inc" "docs/DESIGN.md 2.6.2"
+report "tables" "$TMP/err.inc" "$TMP/err.doc" "include/errors.inc, rt.inc" "docs/DESIGN.md 2.6.2, 4.8"
 report "records" "$TMP/rec.txt" "$TMP/rec.doc" "include/passes.txt" "docs/DESIGN.md 3"
 if grep -h '^BAD-' "$TMP/err.inc" "$TMP/err.doc" "$TMP/rec.doc" >&2; then st=1; fi
 
@@ -196,5 +201,5 @@ if [ $st -ne 0 ]; then
     echo "check_contracts.sh: the contract files and docs/DESIGN.md disagree (above)" >&2
     exit 1
 fi
-echo "contracts agree with docs/DESIGN.md:" $ne "names," $nr "error and errno records," $np "record formats"
+echo "contracts agree with docs/DESIGN.md:" $ne "names," $nr "error, errno and entry records," $np "record formats"
 exit 0
