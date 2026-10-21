@@ -1,0 +1,2 @@
+# test inputs and expected outputs are byte-exact: never convert line endings
+tests/** -text
