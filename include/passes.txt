@@ -6,7 +6,8 @@
 ; head <name> <field>...                  header record, written with a leading number sign
 ; rec <set> <code> <op> <pops> <field>...
 ;   set: A sea.ast and sea.res (codes 1-49 both files, 50- sea.res only: 3.4.1);
-;        H both HIR files; H1 sea.hir1 only; HF sea.hir only;
+;        H every HIR file (sea.hir1, sea.hir, sea.hirl); H1 sea.hir1 only;
+;        HF sea.hir and sea.hirl; HL sea.hirl only (3.5.9, from sub-phase 4e-0);
 ;        L both LIR files; LF sea.lir only
 ;   field: name:type, then optionally ? (the field may be -), then optionally *count
 ;          (the field is repeated count times, count = an earlier u field): name:type?*count
@@ -31,6 +32,7 @@ enum cc eq ne lt le gt ge
 enum feat avx2
 enum nkind loc cst fn st pd none
 enum cerr ovf div0
+enum wop add sub mul
 
 ; ---------------------------------------------------------------- header records (3.2)
 head sea ver:u
@@ -197,6 +199,23 @@ rec HF 68 jkey 0 pos:pos v:s
 rec HF 69 jval 1 pos:pos
 rec HF 70 jvec 1 pos:pos
 rec HF 71 jmat 1 pos:pos
+; sea.hirl only (3.5.9): the array constructs made explicit by sealoop, lowered by sealower
+rec HL 72 tptr 0 id:u elt:ty
+rec HL 73 xblk n+1 pos:pos ty:ty n:u
+rec HL 74 tmp 1 pos:pos lid:lid
+rec HL 75 hloop 4 pos:pos lid:lid
+rec HL 76 ext 1 pos:pos ty:ty dim:u
+rec HL 77 adat 1 pos:pos ty:ty
+rec HL 78 eld 2 pos:pos ty:ty sc:u off:i
+rec HL 79 est 3 pos:pos sc:u off:i
+rec HL 80 anew r pos:pos ty:ty z:u r:u
+rec HL 81 wbin 2 pos:pos ty:ty op:wop
+rec HL 82 chkb 2 pos:pos dim:u
+rec HL 83 chk n+1 pos:pos err:s n:u
+rec HL 84 rcnt 3 pos:pos incl:u l:lid e:lid
+rec HL 85 cow 1 pos:pos
+rec HL 86 mcpy 3 pos:pos
+rec HL 87 cdat n pos:pos ty:ty n:u
 
 ; ---------------------------------------------------------------- sea.lir1 and sea.lir (3.6)
 ; data (3.6.2)

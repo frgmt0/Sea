@@ -136,7 +136,7 @@ Strings are stored decoded. Row `i` is 1-based; the caller DIMs the arrays with 
   * enum row i: `N$(i)` name, `N(i,1)` = index of its first word in `W$()`, `N(i,2)` = count
     (`N(M1,2)`; `W$(M2)`); the words are `W$(N(i,1)) ... W$(N(i,1)+N(i,2)-1)`.
   * record row i (a head or a rec line): `R$(i)` = opcode name (head: the name without the
-    `#`), `R(i,1)` = set (0 head, 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF), `R(i,2)` = opcode number,
+    `#`), `R(i,1)` = set (0 head, 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF, 7 HL), `R(i,2)` = opcode number,
     `R(i,3)` = first field row in F, `R(i,4)` = number of fields, `R(i,5)` = number of pop
     terms (0..4), `R(i,6..9)` = the terms: a number >= 0 is a constant, -j means the value of
     the j-th field of the record (a u field). `R(M3,9)`.

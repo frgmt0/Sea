@@ -21,8 +21,11 @@ on both targets). **Phase 4** of DESIGN.md §8
 (**arrays and structs**) is under way: sub-phases 4a (pass 2a split into `seaname` and `seacheck`,
 sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, a59ca07) and 4d
 (dynamic arrays core, W4 scalar SOR accepted by `make test-accept`) are done. The size gate after
-4d (DESIGN.md §2.7) projects `sealower` to 9 481 lines, so **next: sub-phase 4e-0**, the split of
-pass 3a into `sealoop` and `sealower`, starting with its specification (the new HIR records).
+4d (DESIGN.md §2.7) projects `sealower` to 9 665 lines, so sub-phase 4e-0 splits pass 3a into
+`sealoop` (`sea.hir` → `sea.hirl`, the array constructs made explicit as scalar loops) and
+`sealower` (`sea.hirl` → `sea.lir1`). Its specification is agreed (Decisions 26–30, 2026-10-22:
+DESIGN.md §2.7, §3.5.9, §3.6.6, §6.2, §8; set `HL` of `passes.txt`); **next: the 4e-0 build** (the
+work packages of DESIGN.md §8, row 4e-0), with no change of behaviour.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

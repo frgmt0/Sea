@@ -719,7 +719,7 @@ build tab "$T/h_tab.bas" errors errno exits consts entries records
         $1 == "head" || $1 == "rec" {
             if ($1 == "head") { set = 0; code = 0; op = $2; pops = "0"; f0 = 3 }
             else {
-                set = ($2 == "A") ? 1 : ($2 == "H") ? 2 : ($2 == "H1") ? 3 : ($2 == "HF") ? 4 : ($2 == "L") ? 5 : 6
+                set = ($2 == "A") ? 1 : ($2 == "H") ? 2 : ($2 == "H1") ? 3 : ($2 == "HF") ? 4 : ($2 == "L") ? 5 : ($2 == "LF") ? 6 : ($2 == "HL") ? 7 : -1
                 code = $3; op = $4; pops = $5; f0 = 6
             }
             nf = 0; fl = ""

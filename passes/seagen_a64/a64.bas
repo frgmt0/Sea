@@ -146,6 +146,7 @@
 700 LET A(I5,1) = 0
 705 LET A(I5,2) = 0
 710 IF R(I5,1) < 5 THEN 770
+712 IF R(I5,1) > 6 THEN 770
 715 LET O$ = O$ & R$(I5) & "=" & STR$(I5) & "|"
 720 LET V0 = POS(S9$, "|" & R$(I5) & "=")
 725 IF V0 = 0 THEN 740
