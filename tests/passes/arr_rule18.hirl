@@ -1,0 +1,74 @@
+#sea 1
+#target arm64-macos
+#file arr_rule18.sea
+tmat 10 4
+fn 1 .main main 1 0 1 0:1:1
+loc A 10 var 0:1:5
+ci 0:1:15 3 2
+ci 0:1:18 3 3
+anew 0:1:9 10 1 2
+bind 0:1:1 1
+lv 0:2:1 10 1
+ci 0:2:3 3 1
+ci 0:2:6 3 2
+idx 0:2:1 4 2
+cf 0:2:11 4 #4014000000000000
+asg 0:2:1 set
+lv 0:3:18 10 1
+ci 0:3:21 3 2
+ci 0:3:24 3 2
+call 0:3:16 4 2 3
+fconv 0:3:8 1 - - - g
+ftext 0:3:8 1 %0A
+fmt 0:3:8 1 2
+lib 0:3:1 1 printf 1
+eval 0:3:1
+lv 0:4:18 10 1
+ci 0:4:21 3 0
+ci 0:4:24 3 1
+call 0:4:16 4 2 3
+fconv 0:4:8 1 - - - g
+ftext 0:4:8 1 %0A
+fmt 0:4:8 1 2
+lib 0:4:1 1 printf 1
+eval 0:4:1
+lv 0:5:16 10 1
+dol 0:5:18 3 0
+ci 0:5:22 3 1
+bin 0:5:18 3 sub
+dol 0:5:25 3 1
+ci 0:5:29 3 1
+bin 0:5:25 3 sub
+idx 0:5:16 4 2
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %0A
+fmt 0:5:8 1 2
+lib 0:5:1 1 printf 1
+eval 0:5:1
+block 0:1:1 5
+end
+fn 2 g fn 4 3 1 0:6:1
+par T 10 val
+par i 3 val
+par j 3 val
+loc r 4 var 0:7:9
+lv 0:7:13 10 1
+lv 0:7:15 3 3
+ci 0:7:17 3 1
+bin 0:7:15 3 sub
+lv 0:7:20 3 2
+idx 0:7:13 4 2
+bind 0:7:5 4
+lv 0:8:11 4 4
+cf 0:8:15 4 #0000000000000000
+bin 0:8:11 2 lt
+lv 0:9:9 4 4
+cf 0:9:13 4 #0000000000000000
+asg 0:9:9 set
+block 0:8:19 1
+while 0:8:5
+lv 0:11:12 4 4
+ret 0:11:5 1
+block 0:6:40 3
+end
+#end

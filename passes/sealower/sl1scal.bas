@@ -34,18 +34,25 @@
 3295 LET R9 = D2
 3300 GOTO 3090
 3305 REM ---- lv: no instruction (rule 1), mov into a dest (rule 2), a load for a ref parameter -----
+3306 REM (the register of a local is its own, or the one it names, A(.,3): sea.hirl T1, T3, 30 (1))
 3310 LET A1 = H(X, 5)
 3315 IF A(G(F0, 0) + A1, 2) = 1 THEN 3385
-3320 LET R9 = A1
-3325 IF D > 0 THEN 3355
+3320 LET R9 = A(G(F0, 0) + A1, 3)
+3321 IF R9 > 0 THEN 3325
+3322 LET R9 = A1
+3325 IF D > 0 THEN 3352
 3330 IF H(X, 6) = 0 THEN 3090
 3335 REM a snapshot (rule 12): mov T L into a new register
 3340 LET C1 = V(A1, 1)
 3345 GOSUB 7420
 3350 LET D = N2
+3351 GOTO 3355
+3352 IF R9 = A1 THEN 3355
+3353 REM a local that names the dest itself (T3) needs no mov
+3354 IF R9 = D THEN 3090
 3355 LET O$ = "mov"
 3360 LET V2 = D
-3365 LET V3 = A1
+3365 LET V3 = R9
 3370 GOSUB 7540
 3375 LET R9 = D
 3380 GOTO 16450
@@ -520,6 +527,7 @@
 5700 GOTO 5650
 5705 REM ---- bind: the value with the local as dest (rule 2) ---------------------------------------
 5710 LET S = 18
+5712 IF H(X, 6) = 1 THEN 33200
 5715 LET X1 = H(X, 7)
 5720 LET D1 = H(X, 5)
 5725 GOTO 7380

@@ -1063,6 +1063,20 @@ rejects "a fl field with a bad flag" hir1 "$T/mut/h15" BAD_RECORD "$(lineof "$T/
 mut_rep "$T/ex/hir1" '^fconv ' 'fconv 0:14:8 1 sp - 3 f' > "$T/mut/h16"
 rejects "flags out of order (s before p)" hir1 "$T/mut/h16" BAD_RECORD "$(lineof "$T/ex/hir1" '^fconv ')" "field fl"
 
+# sea.hirl (DESIGN 3.5.9, sets H HF HL): the committed golden of rule 30 is valid; mutated copies are rejected
+HIRL=$SEA/tests/passes/arr_rule30.hirl
+[ -s "$HIRL" ] || { echo "lib_check: $HIRL not found" >&2; exit 2; }
+valid "sea.hirl golden tests/passes/arr_rule30.hirl ($(wc -l < "$HIRL" | tr -d ' ') records)" hirl "$HIRL"
+rejects "a sea.hirl file read as sea.hir (an HL record under format hir)" hir "$HIRL" BAD_RECORD "$(lineof "$HIRL" '^tptr ')" "unknown opcode 'tptr' for format hir"
+mut_rep "$HIRL" '^tmp ' 'tmp 0:7:6' > "$T/mut/hl1"
+rejects "a tmp record with a missing field" hirl "$T/mut/hl1" BAD_RECORD "$(lineof "$HIRL" '^tmp ')" "too few fields"
+mut_rep "$HIRL" '^wbin ' 'wbin 0:7:6 3 div' > "$T/mut/hl2"
+rejects "a wbin with an operator outside enumeration wop" hirl "$T/mut/hl2" BAD_RECORD "$(lineof "$HIRL" '^wbin ')" "enumeration wop"
+mut_rep "$HIRL" '^tptr ' 'tptr 11 12' > "$T/mut/hl3"
+rejects "a tptr whose element type is not defined" hirl "$T/mut/hl3" BAD_RECORD "$(lineof "$HIRL" '^tptr ')" "defined type id"
+mut_del "$HIRL" '^est ' > "$T/mut/hl4"
+rejects "an est missing (nodes left on the stack at the end of the function)" hirl "$T/mut/hl4" BAD_TREE "$(lineof "$T/mut/hl4" '^end$')" "left on the stack"
+
 mut_rep "$T/ex/lir1" '^li i4 4$' 'li i9 4' > "$T/mut/l1"
 rejects "a register that skips a number" lir1 "$T/mut/l1" BAD_RECORD "$(lineof "$T/ex/lir1" '^li i4 4$')" "not the next register"
 mut_rep "$T/ex/lir1" '^fadd f3 f3 f10$' 'fadd f3 i3 f10' > "$T/mut/l2"
@@ -1089,7 +1103,7 @@ expect "seaval accepts the same unreferenced label as lir (no first-reference nu
 # the format line is compared with its length (Baysick: trailing blanks are ignored by =)
 for f in "lir1 " "lir1  " "ast " ; do
     (printf '%s\n' "$f"; cat "$T/ex/lir1") > "$T/v.in"
-    printf 'seaval: the first input line must name the format: ast, res, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
+    printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir\n' > "$T/fmt.err"
     runp "$T/seaval" "$T/v.in"
     if [ "$rc" -eq 11 ] && [ ! -s "$T/out" ] && grep -qF "the first input line must name the format" "$T/err"; then ok "seaval rejects the format line '$f' (trailing blank)"; else bad "seaval rejects the format line '$f'" "status $rc (wanted 11)" "stderr: $(head -c 200 "$T/err")"; fi
 done
@@ -1201,7 +1215,7 @@ rejects "a type table record after the tree began" res "$T/mut/t9" BAD_TREE "$(l
 rejects "an rtvec record in sea.ast (codes 64-72 are sea.res only)" ast "$T/ex/res4" BAD_RECORD "$(lineof "$T/ex/res4" '^rtst ')" "unknown opcode"
 
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
-printf 'seaval: the first input line must name the format: ast, res, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
+printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir\n' > "$T/fmt.err"
 expect "seaval: an unknown format name is reported (status 11)" "$T/seaval" "$T/v.in" 11 /dev/null "$T/fmt.err"
 
 echo

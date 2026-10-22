@@ -5,7 +5,7 @@
 50 REM consts records, and the line 99999 END.
 60 REM
 70 REM USAGE   the file to check is read on standard input. Its FIRST line (not part of the file)
-80 REM         names the format: ast, res, hir1, hir, lir1 or lir. The rest is the file, verbatim.
+80 REM         names the format: ast, res, hir1, hir, hirl, lir1 or lir. The rest is the file, verbatim.
 90 REM         (Baysick has no command-line arguments: the options travel on standard input,
 100 REM         DESIGN 2.2 step 4.) Example: ( echo hir1; cat sea.hir1 ) | seaval
 110 REM EXIT    0 the file is valid (nothing is printed); 11 it is not (DESIGN 2.2: an internal
@@ -19,7 +19,7 @@
 190 REM         limit, or a wrong format name, is also reported with status 11.
 200 REM CHECKED header records (order, version = SEA_FILE_VERSION, target in enum target, #file
 210 REM         paths); every body byte in 0x20-0x7E; every record: opcode of the file's sets (ast:
-220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; lir1: L; lir: L LF), field count including the repeated
+220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; hirl: H HF HL; lir1: L; lir: L LF), field count including the repeated
 230 REM         fields, each field's type (u i f s pos site fl, enumerations, references, registers
 240 REM         with their class); the tree stack of DESIGN 3.3 (pops from the pops column; a
 250 REM         section end - prog, cn, end - leaves the stack empty; end pops a block); in the
@@ -42,7 +42,7 @@
 420 REM            current line; U values of the u-like fields of the record; L limb scratch;
 430 REM            S tree stack (record rows); Q register class by number; K block stack
 440 REM            (number, kind); H$ #file paths; A allowed record sets of this format
-450 REM   P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir 4 lir1 5 lir
+450 REM   P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir and hirl 4 lir1 5 lir
 460 REM   L$ current line  L0 its number  C0 its field count  I0 its record row  Y0 its special code
 470 REM   M$ what is wrong  D$ error name for the final message
 480 REM   S0 tree stack depth  H8 HIR section (1 types, 2 constants / instances, 3 functions)
@@ -51,7 +51,7 @@
 510 REM   M8 LIR (0 outside, 1 after func, 2 in code, 3 data)  M7 last register  S6 slots  B1 block
 520 REM   depth  B2 last block number  D8 data labels defined  R8 highest label used  X9 sub-records
 530 REM   owed  Z9 kind owed (0 ftext / fconv, 1 dvi, 2 dvf, 3 soff; Z6 slay size, Z7 last soff)  V9 file version  R9 B9 S9 limits
-540 REM Special codes Y(i): 1 prog; 10 type definition  11 fd  12 cn  13 inst  14 fn  15 par  16 loc
+540 REM Special codes Y(i): 1 prog; 10 type definition (tptr too)  11 fd  12 cn  13 inst  14 fn  15 par  16 loc
 550 REM   17 end; 30 str  31 fmt  32 ftext  33 fconv  34 dat  35 dvi  36 dvf  37 func  38 slot
 560 REM   39 endfunc  40 loop  41 endloop  42 do  43 enddo  44 if / ifz  45 else  46 endif  47 exit
 570 REM   48 next  50 chk  25 slay  26 soff (phase 4: retain release mcopy are plain records); 0 every other record.
@@ -85,7 +85,7 @@
 850 GOTO 880
 860 CALL "dg_bug": P$, "register or block limit larger than the validator's arrays"
 870 REM ---- special code of every record row (see the legend) ------------------------------
-880 LET K1$ = "|tvec=10|tmat=10|tfvec=10|tfmat=10|tstruct=10|trec=10|ttuple=10|fd=11|cn=12|inst=13|fn=14|par=15|loc=16|end=17|"
+880 LET K1$ = "|tvec=10|tmat=10|tfvec=10|tfmat=10|tstruct=10|trec=10|tptr=10|ttuple=10|fd=11|cn=12|inst=13|fn=14|par=15|loc=16|end=17|"
 890 LET K2$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|slay=25|soff=26|"
 900 FOR I = 1 TO Z(7)
 910 LET Y(I) = 0
@@ -128,15 +128,16 @@
 1110 REM Baysick compares strings without trailing blanks: "lir1 " = "lir1", so check the last byte too (DESIGN 2.7)
 1120 IF LEN(K$) = 0 THEN 1210
 1130 IF SEG$(K$, LEN(K$), LEN(K$)) = " " THEN 1210
-1140 REM the allowed record sets A(s) of each format; sets 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF
+1140 REM the allowed record sets A(s) of each format; sets 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF, 7 HL
 1150 LET K0 = 0
 1160 IF K$ = "ast" THEN 1220
 1165 IF K$ = "res" THEN 1226
 1170 IF K$ = "hir1" THEN 1250
 1180 IF K$ = "hir" THEN 1290
+1185 IF K$ = "hirl" THEN 1322
 1190 IF K$ = "lir1" THEN 1330
 1200 IF K$ = "lir" THEN 1360
-1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, lir1 or lir"
+1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir"
 1220 LET K0 = 1
 1221 LET R6 = 0
 1222 GOTO 1230
@@ -152,6 +153,11 @@
 1300 LET A(2) = 1
 1310 LET A(4) = 1
 1320 GOTO 1390
+1322 LET K0 = 3
+1324 LET A(2) = 1
+1326 LET A(4) = 1
+1328 LET A(7) = 1
+1329 GOTO 1390
 1330 LET K0 = 4
 1340 LET A(5) = 1
 1350 GOTO 1390

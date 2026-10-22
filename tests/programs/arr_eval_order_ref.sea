@@ -1,0 +1,28 @@
+// arr_eval_order_ref -- a ref call in the index of an element target runs after the value (asg) or after
+// the call (tasg) is evaluated (LANGUAGE.md 5.5, 7.3; DESIGN.md 3.5.5 G1, 3.6.6
+// rule 12)
+fn bump(ref s: f64) -> i64 {
+    s = s + 10.0
+    return 1
+}
+fn h2(n: f64) -> (f64, f64) {
+    return (n, n * 2.0)
+}
+fn hr(ref j: i64) -> (f64, f64) {
+    j = j + 1
+    return (5.0, 7.0)
+}
+var v = zeros(3)
+var x = 1.0
+v[bump(ref x)] = x
+printf("%g %g\n", v[1], x)
+var w = zeros(3)
+var k = 1.0
+var a = 0.0
+(a, w[bump(ref k)]) = h2(k)
+printf("%g %g %g\n", a, w[1], k)
+var u = zeros(2)
+var i = 0
+var y = 0.0
+(y, u[i]) = hr(ref i)
+printf("%g %g %g %d\n", y, u[1], u[0], i)

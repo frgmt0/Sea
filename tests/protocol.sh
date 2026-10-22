@@ -112,7 +112,8 @@ truncated seaparse stdin
 truncated seaname sea.ast
 truncated seacheck sea.res
 truncated seaexpand sea.hir1
-truncated sealower sea.hir
+truncated sealoop sea.hir
+truncated sealower sea.hirl
 truncated seaopt sea.lir1
 truncated seagen_a64 sea.lir
 
@@ -129,7 +130,7 @@ fake_home() {
     mkdir -p "$_h"
     cp "$ROOT/include/errors.inc" "$ROOT/include/limits.inc" "$_h/"
     : > "$_h/std.sea"
-    for spec in seaparse:sea.ast seaname:sea.res seacheck:sea.hir1 seaexpand:sea.hir sealower:sea.lir1 seaopt:sea.lir seagen_a64:sea.s; do
+    for spec in seaparse:sea.ast seaname:sea.res seacheck:sea.hir1 seaexpand:sea.hir sealoop:sea.hirl sealower:sea.lir1 seaopt:sea.lir seagen_a64:sea.s; do
         _p=${spec%%:*}; _f=${spec##*:}
         {
             echo '#!/bin/sh'
@@ -153,13 +154,13 @@ fake_home() {
     done
 }
 
-order="seaparse seaname seacheck seaexpand sealower seaopt seagen_a64"
-file_of() { case $1 in seaparse) echo sea.ast ;; seaname) echo sea.res ;; seacheck) echo sea.hir1 ;; seaexpand) echo sea.hir ;; sealower) echo sea.lir1 ;; seaopt) echo sea.lir ;; esac; }
+order="seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64"
+file_of() { case $1 in seaparse) echo sea.ast ;; seaname) echo sea.res ;; seacheck) echo sea.hir1 ;; seaexpand) echo sea.hir ;; sealoop) echo sea.hirl ;; sealower) echo sea.lir1 ;; seaopt) echo sea.lir ;; esac; }
 
 if [ ! -x "$DRIVER" ]; then
     fail "protocol/driver" "driver '$DRIVER' not built (run make)"
 else
-    for bad in seaparse seaname seacheck seaexpand sealower seaopt; do
+    for bad in seaparse seaname seacheck seaexpand sealoop sealower seaopt; do
         for mode in noend nolf empty absent; do
             name=protocol/driver-rejects/$bad-$mode
             selected "$name" || continue

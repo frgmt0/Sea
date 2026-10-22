@@ -7,7 +7,8 @@
 #     pass 2a  seaname     NAME.ast  -> NAME.res
 #     pass 2a  seacheck    NAME.res  -> NAME.hir1
 #     pass 2b  seaexpand   NAME.hir1 -> NAME.hir
-#     pass 3a  sealower    NAME.hir  -> NAME.lir1
+#     pass 3a  sealoop     NAME.hir  -> NAME.hirl
+#     pass 3a  sealower    NAME.hirl -> NAME.lir1
 #     pass 3b  seaopt      NAME.lir1 -> NAME.lir
 #     pass 4   seagen_a64  NAME.lir  -> NAME.s     (golden assembly, optional)
 # the golden previous file is copied as sea.<prev> into a fresh directory, the pass runs there
@@ -17,6 +18,10 @@
 # --no-prelude NAME.sea`, which runs no other pass.
 #
 # A golden file whose pass executable is not built is a FAILURE ("not built"), not a skip.
+#
+# A NAME.hirl with neither NAME.hir nor NAME.sea is not a sealoop golden but the input of a
+# sealower test written by hand (a record sealoop does not write yet, DESIGN.md 3.5.9): the
+# sealoop pair skips it, the sealower pair runs on it.
 #
 # A NAME.lir with neither NAME.lir1 nor NAME.sea is not a seaopt golden but a pass-4 test: LIR
 # written by hand, with NAME.out (expected standard output) [+ NAME.err, NAME.status]. It runs
@@ -120,7 +125,9 @@ stage() {
         name=stage/$_p/$nm
         # a hand-written NAME.lir (no NAME.lir1, no NAME.sea) is a pass-4 test, not a golden
         if [ "$_next" = lir ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
-        # a hand-written NAME.lir1 (no NAME.hir, no NAME.sea) is a seaopt-only test: no sealower golden
+        # a hand-written NAME.hirl (no NAME.hir, no NAME.sea) is a sealower test: no sealoop golden
+        if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
+        # a hand-written NAME.lir1 (no NAME.hirl, no NAME.sea) is a seaopt-only test: no sealower golden
         if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         selected "$name" || continue
         if [ ! -f "$in" ]; then fail "$name" "golden input $nm.$_prev missing"; continue; fi
@@ -216,7 +223,8 @@ done
 stage seaname ast res
 stage seacheck res hir1
 stage seaexpand hir1 hir
-stage sealower hir lir1
+stage sealoop hir hirl
+stage sealower hirl lir1
 stage seaopt lir1 lir
 stage seagen_a64 lir s
 

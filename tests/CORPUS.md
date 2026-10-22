@@ -29,6 +29,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
 | sub-phase 4d `programs/arr_*`, `programs/heap_*`, `errors/err_rt_arr_*`, `errors/err_ns_arr_*` | `vectors/arr4d_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §7.3, §7.5, §7.7, §8.3, §9.2, §10.2, §10.4, §10.7, §11.1, the derivation in a comment beside each case; error lines and columns computed from a marker in the source text |
 | sub-phase 4d dump tests `passes/arr_rule{16,17,18,19,30,31,36}` | `vectors/dump4d_cases.py`: `.ast`, `.hir1` (= `.hir`), `.lir1` and `.out` written record by record from DESIGN.md §3.4, §3.5, §3.6 and §3.6.6 rules 1–19, 30, 31, 36 (each rule's example appears verbatim, with its registers and lines); `.res` from `res_gen.py`, which also checks the lids against the `.hir1` |
+| sub-phase 4e-0 `.hirl` goldens (the 17 dump tests with a `.sea` and a `.lir1`) and the `passes/loop_*` tests | `vectors/hirl4e0_cases.py`: the 11 tests without a rewritten construct have `.hirl` = `.hir` byte for byte (§3.5.9 "Unchanged functions", asserted by the script); the 6 tests that use `zeros`, `ones`, `len` or a `for` over a vector (`arr_rule{16,17,18,19,30,31}`) have every record written by hand from §3.5.9 (L1–L4, types, locals, positions), never printed by a pass; the `loop_*` tests are written there in full (`.hirl` by hand from §3.5.9, `.lir1` by hand from §3.6.6 rules 1–17, 30 and "Lowering of the `sea.hirl` records", `.out` from LANGUAGE.md), each `.hirl` read back and checked against `passes.txt` (sets `H HF HL`) |
 | `accept/w4_sor` (4d acceptance, DESIGN.md §6.3) | ported by hand from `workloads/w4_heat_plate.m` (inputs, scalar SOR); checked by `compare.py --candidate --keys it_sor,T_max` against `workloads/reference/w4_heat_plate.json`; a line-by-line IEEE mirror of the port in Python (scratch, not committed) prints `{"it_sor": 832, "T_max": 160.76267159277148}`, the reference values exactly |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
@@ -86,6 +87,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `heap_temps` | rule 15 (b), (h): call results indexed, measured, passed, discarded (`eval`, `let _`, `_` components) |
 | `heap_reassign` | rules 15 (d), 31: reassignment (also `a = a`, in a loop, through `ref`) releases the old array |
 | `heap_ifx` | rules 3, 15 (b): `if` expressions of an array type with fresh and borrowed arms |
+| `arr_eval_order_ref` | §5.5, §7.3; DESIGN.md §3.5.5 G1, §3.6.6 rule 12: `v[bump(ref x)] = x` stores x as it was before the index's `ref` call (the value first); tuple targets after the call (`(a, w[bump(ref k)]) = h2(k)`, `(y, u[i]) = hr(ref i)`) |
+| `heap_rule12_stale` | rules 12 (a), 15, 16 (c): `return (b, g(ref b))` returns the old array b held by its retained copy; the replacement is released, nothing leaks |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
@@ -125,7 +128,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | Test | Files | Spec (DESIGN.md unless noted) |
 |------|-------|------|
 | `ex` | ast | §3.4 example, verbatim |
-| `lx` | ast hir1 hir lir1 lir | §3.6.7 example (lir1/lir verbatim); ast §3.4, hir1/hir §3.5 |
+| `lx` | ast hir1 hir hirl lir1 lir | §3.6.7 example (lir1/lir verbatim); ast §3.4, hir1/hir §3.5 |
 | `ev` | ast | §3.5.5 example program (its hir1 needs structs: phase ≥ 2) |
 | `lex_int` | ast | LANGUAGE.md §3.4; §3.1 `i` field; §3.4 2⁶³ only under `neg` |
 | `lex_float_easy` | ast | LANGUAGE.md §3.4; §3.1 `f` field |
@@ -144,15 +147,15 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `type_powk` | ast hir1 hir | LANGUAGE.md §6.5; §3.5.5 "Constant exponents"; §3.5.2 (`K = 6 % 4` is the leaf 2) |
 | `type_const_neg` | ast hir1 hir (+ `.out`) | §3.1 field `i` (−10⁹ and −2⁶³ in hex, −999 999 999 in decimal); §3.5.2 leaf at the `neg`; §3.5.7 steps 1–2 |
 | `type_const` | ast hir1 hir | LANGUAGE.md §7.2 U2; §3.5.2 (each `cn` child one leaf at the root's position), §3.5.7 steps 1–2 |
-| `fn_ref` | ast hir1 hir lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
-| `fn_multi` | ast hir1 hir lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
-| `fn_ref_order` | ast hir1 hir lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
-| `fn_printf` | ast hir1 hir lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
-| `type_ifx_arm` | ast hir1 hir lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
+| `fn_ref` | ast hir1 hir hirl lir1 | LANGUAGE.md §8.3; §3.5.4, §3.6.3, §3.6.6 rule 12 |
+| `fn_multi` | ast hir1 hir hirl lir1 | LANGUAGE.md §8.4; §3.5.1 `ttuple`, §3.5.5 `tbind`/`tret`, §3.6.6 rules 2, 5 |
+| `fn_ref_order` | ast hir1 hir hirl lir1 | LANGUAGE.md §6.8 rule 5; §3.6.6 rule 12 (copy at the evaluation point, reloads, `mov x R` last) |
+| `fn_printf` | ast hir1 hir hirl lir1 | LANGUAGE.md §11.1, §13, §10.1; §3.5.5 `fmt`, §3.6.2, §3.6.6 rules 7–10 |
+| `type_ifx_arm` | ast hir1 hir hirl lir1 | LANGUAGE.md §4.2 (f); §3.6.6 rules 2–3 (ifx and `&&` at the root of a stored value: new R, then `mov`) |
 | `op_fold` | ast hir1 hir | §3.5.7 step 2, §2.8 (U1: overflow, `x / 0`, `inf`/`nan` operands fold; NaN bits) |
-| `op_shortcircuit` | ast hir1 hir lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
-| `stmt_tasg` | ast hir1 hir lir1 (+ `.out`) | LANGUAGE.md §7.3, §4.2 (b); §3.5.5 `tasg` `cv` flags; §3.6.6 rule 2 `tasg` steps (a)–(d): cv 1 into a local (`itof`, `mov`), cv 0 straight into the target register, `skip` a new register, a `ref`-parameter target with cv 1 (`itof`, `stf`), a target local the call passes by `ref` (new register, reload, then `mov`) |
-| `stmt_loops` | ast hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
+| `op_shortcircuit` | ast hir1 hir hirl lir1 | §3.5.5 `ifx`; §3.6.6 rule 3 |
+| `stmt_tasg` | ast hir1 hir hirl lir1 (+ `.out`) | LANGUAGE.md §7.3, §4.2 (b); §3.5.5 `tasg` `cv` flags; §3.6.6 rule 2 `tasg` steps (a)–(d): cv 1 into a local (`itof`, `mov`), cv 0 straight into the target register, `skip` a new register, a `ref`-parameter target with cv 1 (`itof`, `stf`), a target local the call passes by `ref` (new register, reload, then `mov`) |
+| `stmt_loops` | ast hir1 hir hirl lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
 | `lir4_retain_release` | lir (+ `.out`) | sub-phase 4c pass-4 test (§6.2): `retain`/`release` (§3.6.4, §4.9) on a fresh array (count 1 → 2 → 3, read with `ldi` at `SEA_OBJ_RC`), the same object shared (3 → 2 → 1), its last `release` freeing it (the next array of its 128-byte class is the same block, by the LIFO free lists of §4.1, again count 1 and zeroed), a static `str` object (count `SEA_RC_STATIC` 0 unchanged by `retain`/`release`), and a fresh `sea_str_i64` string (−2⁶³ in decimal, §4.8) |
 | `lir4_release_leaf` | lir (+ `.out`) | a function whose only call-like instruction is `release` (non-leaf by §4.9: frame record, §4.6 check): it frees an `str[]` and a string through `sea_free` and still returns to its caller |
@@ -161,7 +164,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `lir4_entries` | lir (+ `.out`) | the other returning entries of ids 9–20 through pass 4 (§4.8): `sea_str_f64` (an `f` argument with the site the first integer argument: `%.17g` text, `nan` for both NaN signs, `inf`, `-inf`, LANGUAGE.md §10.9), `sea_str_cmp` (unsigned bytes, prefix, empty), `sea_str_cat` (also of two empty strings: a new string), `sea_str_lower` (only A–Z), `sea_arr_new_u` (header), `sea_arr_unique` (count 1: the same array; count 2: a copy with count 1, the old count 1, a store into the copy leaves the old), `sea_args` (no arguments: rank 1, length 0, LANGUAGE.md §10.10); everything released |
 | `lir4_seaopt` | lir1 lir | stage test of pass 3b (§3.6.5 "Pass 3b from phase 4"): `retain`, `release`, `mcopy`, two `slay` groups (0 and 2 `soff`), a `dat` and `sea_arr_new_s` copied unchanged (`.lir` = `.lir1`), hand-written |
 | `fn_reach` | ast hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
-| `math_lower` | ast hir1 hir lir1 | §3.6.6 rule 14 (`rcall sea_<fn> - 1 d n args`, no site) for `log exp sin cos pow hypot` and a non-powk `^`, rules 1, 2, 10 (`cvt` and `f64()` are `itof`, the rcall writes the bound local), §3.6.1 numbering; §3.5.7 (nothing folded) |
+| `math_lower` | ast hir1 hir hirl lir1 | §3.6.6 rule 14 (`rcall sea_<fn> - 1 d n args`, no site) for `log exp sin cos pow hypot` and a non-powk `^`, rules 1, 2, 10 (`cvt` and `f64()` are `itof`, the rcall writes the bound local), §3.6.1 numbering; §3.5.7 (nothing folded) |
 | `const_pow` | ast hir1 | §3.5.2 (each `cn` leaf at the root position), §4.10.5 (`^` non-powk and `pow` folded by FEPOW: the model's bits from `math_model.eval_bits`, NaN `#7FF8000000000000`), §3.5.5 (`x ^ K` with `K = pow(9.0, 0.5)` is `powk 3`, `x ^ C` stays `bin pow`) |
 
 | `rs` | ast res hir1 | §3.4.1 example: `.res` verbatim (and reproduced by `vectors/res_gen.py`), `.ast` by §3.4, `.hir1` by hand from §3.5 (`ttuple`, `tbind`, `powk`, `cref`, `forr`, `fmt`) |
@@ -174,13 +177,16 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_struct` | ast res | §3.4.1: `rst`, `rname st` (a struct name as a value), `rerr 259 structs` at the item |
 | `res_arr_types` | ast res | §3.4.2 (4d): `rtype` with its type everywhere; `rtmat`/`rtvec`/`rtup` in the order of creation (signature types, the tuple after its components, then the `let` annotations in file order); an element loop resolved (`rfor`, its variable before the body's locals) |
 | `res_err_dim` | ast res | §3.4.2: `rerr 200` at an undeclared dim name of a fixed-size type (the node's first error, before the phase rule; the dim an `rname none`, the type 0) |
-| `arr_rule16` | ast res hir1 hir lir1 (+ `.out`) | §3.6.6 rule 16: the example function verbatim (release on `break` and at the end of the loop body) |
-| `arr_rule17` | ast res hir1 hir lir1 (+ `.out`) | rule 17: `let u = ones(n)` (line 1, n in `i1`) verbatim; then rule 18 and `len` |
-| `arr_rule18` | ast res hir1 hir lir1 (+ `.out`) | rule 18: `T[j-1, i]` (line 7, g's parameters) verbatim; `$` in both dimensions (`dol`), rule 19 in `.main` |
-| `arr_rule19` | ast res hir1 hir lir1 (+ `.out`) | rule 19: `T[j, i] = tn` (line 12, T = `mk()` in `p1`) verbatim; a store in a loop; an array result (retain, release, `ret`) |
-| `arr_rule30` | ast res hir1 hir lir1 (+ `.out`) | rule 30: the second example (`for x in v`, line 3, v a parameter in `p1`) verbatim |
-| `arr_rule31` | ast res hir1 hir lir1 (+ `.out`) | rule 31: `f(ref v[i])` (line 4) verbatim; a compound store through an `f64` `ref` parameter (rule 12) |
-| `arr_rule36` | ast res hir1 hir lir1 (+ `.out`) | rule 36: `let d = abs(tn - t)` (line 6) verbatim |
+| `arr_rule16` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.6.6 rule 16: the example function verbatim (release on `break` and at the end of the loop body) |
+| `arr_rule17` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 17: `let u = ones(n)` (line 1, n in `i1`) verbatim; then rule 18 and `len` |
+| `arr_rule18` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 18: `T[j-1, i]` (line 7, g's parameters) verbatim; `$` in both dimensions (`dol`), rule 19 in `.main` |
+| `arr_rule19` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 19: `T[j, i] = tn` (line 12, T = `mk()` in `p1`) verbatim; a store in a loop; an array result (retain, release, `ret`) |
+| `arr_rule30` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 30: the second example (`for x in v`, line 3, v a parameter in `p1`) verbatim |
+| `arr_rule31` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 31: `f(ref v[i])` (line 4) verbatim; a compound store through an `f64` `ref` parameter (rule 12) |
+| `arr_rule36` | ast res hir1 hir hirl lir1 (+ `.out`) | rule 36: `let d = abs(tn - t)` (line 6) verbatim |
+| `loop_fore_exits` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L4 (a `for` over a vector made explicit by `sealoop`): `return`, `continue` and `break` inside element loops, nested element loops, a `for` over an owned vector (`ones(3)`), over a `ref` parameter of array type and over an `if` expression of two vectors; `.lir1` from the unchanged rules 17 and 30 |
+| `loop_fill` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L1/L2 (`zeros`, `ones`, `filled` made explicit): `filled` of `f64`, `i64` and `bool` vectors and matrices, `ones` and `zeros` of a matrix, a count that is a `ref` parameter, `filled(k, grow(ref k))` (rule 12 copies `k`), `ones(if c {2} else {3})` and `filled(p && q, m)` (T1's `ifx`/`and` child) |
+| `loop_ext` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L3 (`len rows cols numel` made explicit): of locals, of `ref` and value parameters and of temporaries (`ones`, `zeros`, an `if` expression of two matrices) |
 | `res_err_predeclared` | ast res | §3.4.1: `rerr 212`; the item is entered (`rfn`) and `sqrt` resolves to it (`rname fn`) |
 | `res_err_redef_item` | ast res | §3.4.1: `rerr 235` at the later `const`; it is copied with its names unresolved |
 | `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
@@ -195,6 +201,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_err_first_pos` | ast res | §3.4.1: two `seaname` errors: the signature error at 3:6, found after the item error at 6:1, is first in source order and is the `rerr` |
 
 Every test above that has a `.hir1` also has a `.res` (phase 4a, §6.2), the stage input of `seacheck` and the golden output of `seaname`; each is derived from its `.ast` by `vectors/res_gen.py`, which cross-checks it against the `.hir1` (the lids of the `loc` records, the constants' values, the `powk` positions).
+
+From sub-phase 4e-0 every test above that has a `.sea` and a `.lir1` also has a `.hirl` (§6.2), the golden output of `sealoop` (`.hir` → `.hirl`) and the stage input of `sealower` (`.hirl` → `.lir1`); `stage.sh` checks each pair, so a hand-written `.hirl` is checked from both sides. A `.hirl` with neither `.sea` nor `.hir` would be a `sealower`-only test on hand-written `sea.hirl` (none yet; they come with 4e), skipped by the `sealoop` pair.
 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
@@ -452,4 +460,5 @@ the `at` position of DESIGN.md §2.6.2.
 | `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
 | `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_*`, `errors/err_ns_lib_{max1,min1}` |
 | `dump4d_cases.py` | `passes/arr_rule{16,17,18,19,30,31,36}.{sea,ast,hir1,hir,lir1,out}` (and their `.res` through `res_gen.py`) |
+| `hirl4e0_cases.py` | `passes/NAME.hirl` for the 17 dump tests with a `.sea` and a `.lir1`, and the `passes/loop_*.{sea,ast,res,hir1,hir,hirl,lir1,out}` tests (`.res` through `res_gen.py`) |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

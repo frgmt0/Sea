@@ -1,10 +1,11 @@
 9000 REM ====================================================================================
 9010 REM sealower part 2 (lines 9000-29999): phase 4, sub-phase 4d -- dynamic arrays of f64, i64 and
-9020 REM bool (DESIGN 3.6.6 rules 12 (phase 4), 15-19, 30, 31, 36). Line range of this file: 9000-29999.
+9020 REM bool (DESIGN 3.6.6 rules 12 (phase 4), 15, 16, 18, 19, 31, 36; 17 and 30 are sealoop's from 4e-0,
+9025 REM lowered in sl3hirl). Line range of this file: 9000-29999.
 9030 REM Ownership (rule 15): 9890 tells an owned reference value by its node (a call, a library
-9040 REM call, an ifx, a seq of one, a retained snapshot); the node that consumes a temporary releases
+9040 REM call, an ifx, an anew, a seq or xblk of one, a retained snapshot); its consumer releases
 9050 REM it. Scope stack (rule 16): J(k,2) the registers of the bound locals that hold counts and of
-9060 REM the hidden vectors of element loops, J9 entries; J(k,4) = 0, or for the .t local of a seq
+9060 REM the hidden vectors of element loops (L4's H), J9 entries; J(k,4) = 0, or for the .t local of a seq
 9070 REM the frame of the node that consumes the seq's value (released when that node completes).
 9080 REM Loop stack: J(j,1) the loop block, J(j,3) the scope height at the loop. An idx node keeps
 9090 REM its base register in H(idx,0) for $ (rule 18); a deferred ref argument (rule 31) is flagged
@@ -47,6 +48,9 @@
 9460 LET Q1$ = "ARR_UNIQUE"
 9470 GOSUB 9580
 9480 LET Y5 = Q9
+9482 LET Q1$ = "STR_LEN"
+9484 GOSUB 1850
+9486 LET H9 = Q1
 9490 IF Y$(Y3, 4) <> "iiii" THEN 9550
 9500 IF Y$(Y3, 5) <> "p" THEN 9550
 9510 IF Y$(Y4, 4) <> "iiii" THEN 9550
@@ -64,16 +68,20 @@
 9630 IF Q9 > 0 THEN 9650
 9640 CALL "dg_bug": P$, "entry " & Q1$ & " is not in the entries table"
 9650 RETURN
-9660 REM ---- reading: the records idx dol fore (nodes) and tmat (a type) ----------------------
+9660 REM ---- reading: the records idx dol (nodes) and tmat, tptr (types; sea.hirl nodes: 981) ------
 9670 IF K = 42 THEN 1310
+9675 IF K = 52 THEN 30100
 9680 IF K > 38 THEN 850
 9690 GOTO 1300
-9700 REM ---- dispatch of the node kinds 39-41 and of the resume codes from 39 ----------------
-9710 ON H(X, 1) - 38 GOTO 12800, 13290, 18380
-9720 ON S - 38 GOTO 12860, 12960, 13620, 13740, 13870, 14270, 17180, 17310, 18400, 19250, 19500, 14900, 24210, 24350
-9730 REM ---- class of an array type (7395 for T1 > 5): p ------------------------------------
+9700 REM ---- dispatch of the node kinds 39-40 (43-51: sl3hirl) and of the resume codes 39-52 (60-65) -
+9705 IF H(X, 1) > 42 THEN 32000
+9710 ON H(X, 1) - 38 GOTO 12800, 13290, 2365, 2365
+9715 IF S > 59 THEN 32010
+9720 ON S - 38 GOTO 12860, 12960, 13620, 13740, 13870, 14270, 17180, 17310, 2365, 2365, 19500, 14900, 24210, 24350
+9730 REM ---- class of an array or tptr type (7395 for T1 > 5): p ----------------------------------
 9740 IF T1 <= 9 THEN 2360
 9750 IF T(T1, 1) = 1 THEN 9770
+9755 IF T(T1, 1) = 4 THEN 9770
 9760 IF T(T1, 1) <> 3 THEN 2360
 9770 LET C1 = 3
 9780 RETURN
@@ -86,7 +94,7 @@
 9850 IF T(T3, 1) <> 3 THEN 9870
 9860 LET U3 = 1
 9870 RETURN
-9880 REM ---- 9890: Z0 = 1 if node X0 is an owned reference value (rule 15) ----------------------
+9880 REM ---- 9890: Z0 = 1 if node X0 is an owned reference value (rule 15; anew, xblk: 15 (k)) -----
 9890 LET Z0 = 0
 9900 LET P5 = X0
 9910 LET T3 = H(P5, 4)
@@ -95,6 +103,8 @@
 9940 IF H(P5, 1) = 10 THEN 10050
 9950 IF H(P5, 1) = 12 THEN 10050
 9960 IF H(P5, 1) = 17 THEN 10050
+9962 IF H(P5, 1) = 50 THEN 10050
+9964 IF H(P5, 1) = 43 THEN 33300
 9970 IF H(P5, 1) <> 5 THEN 10000
 9980 IF H(P5, 6) = 1 THEN 10050
 9990 RETURN
@@ -323,59 +333,6 @@
 12220 LET L1$ = "endif " & STR$(C6)
 12230 GOSUB 7695
 12240 RETURN
-12250 REM ---- 12260 / 12730: loop(R5; U1) of rule 17 (U2 its if block, U2 + 1 the loop) ----------
-12260 LET Z3 = 0
-12270 GOSUB 10590
-12280 LET U5 = N2
-12290 LET C1 = 1
-12300 GOSUB 7420
-12310 LET O$ = "icmp gt"
-12320 LET V2 = N2
-12330 LET V3 = R5
-12340 LET V4 = U5
-12350 GOSUB 7575
-12360 GOSUB 7885
-12370 LET U2 = B7
-12380 LET L1$ = "if " & STR$(U2) & " "
-12390 LET V1 = V2
-12400 GOSUB 7500
-12410 LET L1$ = L1$ & Z$
-12420 GOSUB 7695
-12430 LET Z3 = 1
-12440 GOSUB 10590
-12450 LET U6 = N2
-12460 LET C1 = 1
-12470 GOSUB 7420
-12480 LET O$ = "isub"
-12490 LET V2 = N2
-12500 LET V3 = R5
-12510 LET V4 = U6
-12520 GOSUB 7575
-12530 LET U7 = V2
-12540 GOSUB 7885
-12550 LET C1 = 1
-12560 GOSUB 7420
-12570 LET U1 = N2
-12580 LET L1$ = "loop " & STR$(B7)
-12590 LET V1 = U1
-12600 GOSUB 7500
-12610 LET L1$ = L1$ & " " & Z$
-12620 LET V1 = U5
-12630 GOSUB 7500
-12640 LET L1$ = L1$ & " " & Z$
-12650 LET V1 = U7
-12660 GOSUB 7500
-12670 LET L1$ = L1$ & " " & Z$
-12680 LET V1 = U6
-12690 GOSUB 7500
-12700 LET L1$ = L1$ & " " & Z$
-12710 GOSUB 7695
-12720 RETURN
-12730 LET L1$ = "endloop " & STR$(U2 + 1)
-12740 GOSUB 7695
-12750 LET L1$ = "endif " & STR$(U2)
-12760 GOSUB 7695
-12770 RETURN
 12780 REM ==== element reads by scalar indices (rule 18) ==========================================
 12790 REM frame: x1 = U0 at entry (U: the base, then the indices), x2 = the next child
 12800 LET W(W0 + 3) = U0
@@ -646,7 +603,7 @@
 15400 IF U3 = 0 THEN 15440
 15410 LET V1 = H(P3, 5)
 15420 GOSUB 10320
-15430 LET J(J9, 4) = W0 - 6
+15430 GOSUB 33400
 15440 LET P3 = H(P3, 8)
 15450 GOTO 15370
 15460 REM ---- tbind done: a _ result that holds counts is released, the locals are bound ----------
@@ -765,8 +722,15 @@
 16590 GOSUB 7170
 16600 RETURN
 16610 REM ==== block end (rule 16 (a)): its bound locals released in reverse order =================
+16612 REM (the entries just above U4 that wait for this block, J(.,4) = W0, are the .t locals of an L4
+16614 REM bind's seq: E3 is below them, and 3090 releases them after the others, rule 16 (e))
 16620 LET U4 = W(W0 + 3)
 16630 IF J9 = U4 THEN 3090
+16632 LET E3 = U4
+16634 IF E3 >= J9 THEN 16640
+16636 IF J(E3 + 1, 4) <> W0 THEN 16640
+16638 LET E3 = E3 + 1
+16639 GOTO 16634
 16640 IF X <> G(F0, 8) THEN 16660
 16650 IF G(F0, 3) <> 1 THEN 16730
 16660 LET P3 = H(X, 7)
@@ -775,6 +739,7 @@
 16690 GOTO 16670
 16700 IF H(P3, 1) = 30 THEN 16730
 16710 IF H(P3, 1) = 31 THEN 16730
+16715 LET U4 = E3
 16720 GOSUB 10390
 16730 LET J9 = U4
 16740 GOTO 3090
@@ -939,110 +904,14 @@
 18330 LET X0 = H(X0, 8)
 18340 GOTO 18280
 18350 RETURN
-18360 REM ==== element loops (rule 30) ===============================================================
-18370 REM frame: x1 = the loop block, x2 = the if block, x3 = the hidden vector H
-18380 LET S = 47
-18390 GOTO 7370
-18400 LET T3 = H(H(X, 7), 4)
-18410 IF T3 <= 9 THEN 2360
-18420 IF T(T3, 1) <> 1 THEN 2360
-18430 LET X0 = H(X, 7)
-18440 GOSUB 9890
-18450 LET C8 = R9
-18460 IF Z0 = 1 THEN 18560
-18470 LET C1 = 3
-18480 GOSUB 7420
-18490 LET C8 = N2
-18500 LET O$ = "mov"
-18510 LET V2 = C8
-18520 LET V3 = R9
-18530 GOSUB 7540
-18540 LET V1 = C8
-18550 GOSUB 10180
-18560 LET W(W0 + 5) = C8
-18570 LET V1 = C8
-18580 GOSUB 10320
-18590 LET V3 = C8
-18600 LET Z3 = 0
-18610 GOSUB 10680
-18620 LET C9 = N2
-18630 LET Z3 = 0
-18640 GOSUB 10590
-18650 LET R7 = N2
-18660 LET C1 = 1
-18670 GOSUB 7420
-18680 LET O$ = "icmp gt"
-18690 LET V2 = N2
-18700 LET V3 = C9
-18710 LET V4 = R7
-18720 GOSUB 7575
-18730 GOSUB 7885
-18740 LET W(W0 + 4) = B7
-18750 LET L1$ = "if " & STR$(B7) & " "
-18760 LET V1 = V2
-18770 GOSUB 7500
-18780 LET L1$ = L1$ & Z$
-18790 GOSUB 7695
-18800 LET V3 = C8
-18810 GOSUB 10740
-18820 LET R4 = N2
-18830 LET Z3 = 1
-18840 GOSUB 10590
-18850 LET R3 = N2
-18860 LET C1 = 1
-18870 GOSUB 7420
-18880 LET O$ = "isub"
-18890 LET V2 = N2
-18900 LET V3 = C9
-18910 LET V4 = R3
-18920 GOSUB 7575
-18930 LET R5 = V2
-18940 GOSUB 7885
-18950 LET W(W0 + 3) = B7
-18960 LET C1 = 1
-18970 GOSUB 7420
-18980 LET R6 = N2
-18990 LET L1$ = "loop " & STR$(B7)
-19000 LET V1 = R6
-19010 GOSUB 7500
-19020 LET L1$ = L1$ & " " & Z$
-19030 LET V1 = R7
-19040 GOSUB 7500
-19050 LET L1$ = L1$ & " " & Z$
-19060 LET V1 = R5
-19070 GOSUB 7500
-19080 LET L1$ = L1$ & " " & Z$
-19090 LET V1 = R3
-19100 GOSUB 7500
-19110 LET L1$ = L1$ & " " & Z$
-19120 GOSUB 7695
-19130 LET T2 = T(H(H(X, 7), 4), 2)
-19140 GOSUB 11300
-19150 LET O$ = "ld" & SEG$("ifb", C3, C3)
-19160 LET V2 = H(X, 5)
-19170 LET V3 = R4
-19180 LET V4 = R6
-19190 GOSUB 11410
-19200 GOSUB 7985
-19210 LET S = 48
-19220 LET X1 = H(H(X, 7), 8)
-19230 LET D1 = 0
-19240 GOTO 7380
-19250 LET J0 = J0 - 1
-19260 LET L1$ = "endloop " & STR$(W(W0 + 3))
-19270 GOSUB 7695
-19280 LET L1$ = "endif " & STR$(W(W0 + 4))
-19290 GOSUB 7695
-19300 LET V1 = W(W0 + 5)
-19310 GOSUB 10140
-19320 LET J9 = J9 - 1
-19330 GOTO 3090
-19340 REM ==== library functions of 4d (rules 17, 36): the arguments, then the function ===========
+19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled
+19345 REM len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3). W2 counts from 8
 19350 REM frame: x1 = U0 at entry (the arguments above it), x2 = the next argument, x3 = the function
-19360 LET K4$ = "|zeros   |ones    |filled  |len     |rows    |cols    |numel   |abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind "
+19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind "
 19370 LET W2$ = S$(H(X, 0))
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
 19390 IF W2 = 0 THEN 2360
+19395 LET W2 = W2 + 7
 19400 IF H(X, 6) < VAL(SEG$("11211111111111122323", W2, W2)) THEN 2360
 19410 IF H(X, 6) > VAL(SEG$("22311111111111122323", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
@@ -1060,135 +929,9 @@
 19540 GOTO 19450
 19550 LET Z6 = W(W0 + 3)
 19560 LET W2 = W(W0 + 5)
-19570 ON W2 GOTO 19610, 19610, 19610, 20520, 20520, 20520, 20520, 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980
+19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980
 19580 LET U0 = W(W0 + 3)
 19590 GOTO 3090
-19600 REM ---- zeros, ones, filled: arrnew(z) (rule 17), and for ones and filled the stores --------
-19610 LET T3 = H(X, 4)
-19620 IF T3 <= 9 THEN 2360
-19630 IF T(T3, 1) = 2 THEN 2360
-19640 LET C4 = 1 + INT(T(T3, 1) / 3)
-19650 LET K7 = Z6 + 1
-19660 IF W2 < 3 THEN 19680
-19670 LET K7 = Z6 + 2
-19680 IF U0 - K7 + 1 <> C4 THEN 2360
-19690 LET T2 = T(T3, 2)
-19700 GOSUB 11300
-19710 LET Z3 = G6
-19720 IF C3 = 1 THEN 19760
-19730 LET Z3 = G5
-19740 IF C3 = 2 THEN 19760
-19750 LET Z3 = G7
-19760 GOSUB 10590
-19770 LET R1 = N2
-19780 LET Z3 = C4
-19790 GOSUB 10590
-19800 LET R2 = N2
-19810 LET R3 = U(K7, 1)
-19820 IF C4 = 2 THEN 19870
-19830 LET Z3 = 1
-19840 GOSUB 10590
-19850 LET R4 = N2
-19860 GOTO 19880
-19870 LET R4 = U(K7 + 1, 1)
-19880 LET Q9 = Y4
-19890 IF W2 > 1 THEN 19910
-19900 LET Q9 = Y3
-19910 LET C1 = 3
-19920 GOSUB 7470
-19930 GOSUB 5590
-19940 LET V1 = D2
-19950 GOSUB 7500
-19960 LET L1$ = L1$ & " " & Z$ & " 4"
-19970 LET V1 = R1
-19980 GOSUB 7500
-19990 LET L1$ = L1$ & " " & Z$
-20000 LET V1 = R2
-20010 GOSUB 7500
-20020 LET L1$ = L1$ & " " & Z$
-20030 LET V1 = R3
-20040 GOSUB 7500
-20050 LET L1$ = L1$ & " " & Z$
-20060 LET V1 = R4
-20070 GOSUB 7500
-20080 LET L1$ = L1$ & " " & Z$
-20090 GOSUB 7695
-20100 LET R9 = D2
-20110 IF W2 = 1 THEN 19580
-20120 LET R5 = R3
-20130 IF C4 = 1 THEN 20220
-20140 LET C1 = 1
-20150 GOSUB 7420
-20160 LET O$ = "imul"
-20170 LET V2 = N2
-20180 LET V3 = R3
-20190 LET V4 = R4
-20200 GOSUB 7575
-20210 LET R5 = V2
-20220 IF W2 = 3 THEN 20370
-20230 IF C3 <> 2 THEN 20330
-20240 LET C1 = 2
-20250 GOSUB 7420
-20260 LET R6 = N2
-20270 LET V1 = R6
-20280 GOSUB 7500
-20290 GOSUB 7865
-20300 LET L1$ = "lf " & Z$ & " #3FF0000000000000"
-20310 GOSUB 7695
-20320 GOTO 20380
-20330 LET Z3 = 1
-20340 GOSUB 10590
-20350 LET R6 = N2
-20360 GOTO 20380
-20370 LET R6 = U(Z6 + 1, 1)
-20380 LET V3 = D2
-20390 GOSUB 10740
-20400 LET R7 = N2
-20410 GOSUB 12260
-20420 GOSUB 11300
-20430 LET O$ = "st" & SEG$("ifb", C3, C3)
-20440 LET V2 = R6
-20450 LET V3 = R7
-20460 LET V4 = U1
-20470 GOSUB 11410
-20480 GOSUB 12730
-20490 LET R9 = D2
-20500 GOTO 19580
-20510 REM ---- len, rows, cols, numel (rule 17) -------------------------------------------------
-20520 LET R6 = U(Z6 + 1, 1)
-20530 LET T3 = H(H(X, 7), 4)
-20540 IF T3 <= 9 THEN 2360
-20550 IF T(T3, 1) = 2 THEN 2360
-20560 LET C1 = 1
-20570 LET Z3 = 0
-20580 IF W2 = 6 THEN 20750
-20590 IF W2 <> 7 THEN 20760
-20600 IF T(T3, 1) = 1 THEN 20760
-20610 LET V3 = R6
-20620 GOSUB 10680
-20630 LET R3 = N2
-20640 LET V3 = R6
-20650 LET Z3 = 1
-20660 GOSUB 10680
-20670 LET R4 = N2
-20680 GOSUB 7470
-20690 LET O$ = "imul"
-20700 LET V2 = D2
-20710 LET V3 = R3
-20720 LET V4 = R4
-20730 GOSUB 7575
-20740 GOTO 20810
-20750 LET Z3 = 1
-20760 GOSUB 7470
-20770 LET V2 = D2
-20780 LET V3 = R6
-20790 LET Z3 = G2 + Z3 * (G3 - G2)
-20800 GOSUB 7640
-20810 LET R9 = D2
-20820 LET X0 = H(X, 7)
-20830 LET R0 = R6
-20840 GOSUB 10080
-20850 GOTO 19580
 20860 REM ---- the exact math functions on scalars (rule 36) ------------------------------------
 20870 LET A1 = U(Z6 + 1, 1)
 20880 LET T1 = H(H(X, 7), 4)
@@ -1425,11 +1168,19 @@
 23190 LET R9 = D2
 23200 GOTO 19580
 23210 REM ==== the rule-12 pre-pass, phase 4 part ==================================================
-23220 REM ---- 23230 / 23250: a fore is a statement whose expression is its vector -----------------
-23230 IF H(N4, 1) <> 41 THEN 2720
-23240 GOTO 2600
-23250 IF H(N4, 1) = 41 THEN 2620
-23260 GOTO 2625
+23220 REM ---- 23230 / 23250 (sea.hirl): a tmp is a statement whose expression is its child, an hloop
+23225 REM one whose expression is its range (its first three children); an xblk is no statement: its
+23226 REM subtree [E6, xblk] belongs to the statement that holds it (2588)
+23230 IF H(N4, 1) = 44 THEN 2600
+23232 IF H(N4, 1) = 45 THEN 2600
+23234 IF H(N4, 1) <> 43 THEN 2720
+23236 LET P4 = N4
+23238 GOSUB 13480
+23240 LET E6 = P4
+23242 GOTO 2720
+23250 IF H(N4, 1) <> 45 THEN 2625
+23252 LET B5 = H(H(H(N4, 7), 8), 8)
+23254 GOTO 2625
 23270 REM ---- 23280: U7 = 1 if N4 is an asg set to an idx (the value is evaluated first, 3.5.5 G1) --
 23280 LET U7 = 0
 23290 IF H(N4, 1) <> 23 THEN 24600

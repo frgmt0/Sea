@@ -1,0 +1,15 @@
+// heap_rule12_stale -- an array read before a ref call that replaces it is the old array, held by its
+// retained copy (DESIGN.md 3.6.6 rules 12 (a), 15, 16 (c))
+fn mk(n: i64) -> f64[] {
+    return ones(n)
+}
+fn g(ref v: f64[]) -> i64 {
+    v = zeros(5)
+    return 9
+}
+fn k(n: i64) -> (f64[], i64) {
+    var b = mk(n)
+    return (b, g(ref b))
+}
+let (r, c) = k(3)
+printf("%d %d %g\n", len(r), c, r[0])

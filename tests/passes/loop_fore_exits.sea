@@ -1,0 +1,45 @@
+fn where_is(v: f64[], t: f64) -> i64 {
+    var i = 0
+    for x in v {
+        if x == t { return i }
+        i += 1
+    }
+    return -1
+}
+fn sumto(ref v: f64[], cap: f64) -> f64 {
+    var s = 0.0
+    for x in v {
+        if x < 0.0 { continue }
+        if x > cap { break }
+        s += x
+    }
+    return s
+}
+fn pairs(a: f64[], b: f64[]) -> i64 {
+    var c = 0
+    for x in a {
+        for y in b {
+            if x < y { c += 1 }
+        }
+    }
+    return c
+}
+var a = filled(2.0, 4)
+a[1] = -1.0
+a[2] = 9.0
+let b = zeros(2)
+printf("%d %d\n", where_is(a, 9.0), where_is(b, 1.0))
+printf("%g %g\n", sumto(ref a, 5.0), sumto(ref a, 10.0))
+printf("%d %d\n", pairs(a, a), pairs(b, a))
+var n = 0.0
+for x in ones(3) {
+    n += x
+}
+let c = len(a) > 3
+for x in if c { b } else { a } {
+    n += x + 1.0
+}
+printf("%g\n", n)
+// loop_fore_exits -- DESIGN.md 3.5.9 L4 (a for over a vector made explicit by sealoop): return,
+// continue and break inside element loops, nested element loops, a for over an owned vector
+// (ones(3)), over a ref parameter of array type and over an if expression of two vectors

@@ -1,0 +1,182 @@
+#sea 1
+#target arm64-macos
+#file loop_fore_exits.sea
+tvec 10 4
+fn 1 .main main 1 0 6 0:1:1
+loc a 10 var 0:27:5
+loc b 10 let 0:30:5
+loc n 4 var 0:34:5
+loc x 4 for 0:35:5
+loc c 2 let 0:38:5
+loc x 4 for 0:39:5
+cf 0:27:16 4 #4000000000000000
+ci 0:27:21 3 4
+lib 0:27:9 10 filled 2
+bind 0:27:1 1
+lv 0:28:1 10 1
+ci 0:28:3 3 1
+idx 0:28:1 4 1
+cf 0:28:8 4 #BFF0000000000000
+asg 0:28:1 set
+lv 0:29:1 10 1
+ci 0:29:3 3 2
+idx 0:29:1 4 1
+cf 0:29:8 4 #4022000000000000
+asg 0:29:1 set
+ci 0:30:15 3 2
+lib 0:30:9 10 zeros 1
+bind 0:30:1 2
+lv 0:31:28 10 1
+cf 0:31:31 4 #4022000000000000
+call 0:31:19 3 2 2
+fconv 0:31:8 1 - - - d
+ftext 0:31:8 1 %20
+lv 0:31:46 10 2
+cf 0:31:49 4 #3FF0000000000000
+call 0:31:37 3 2 2
+fconv 0:31:8 1 - - - d
+ftext 0:31:8 1 %0A
+fmt 0:31:8 1 4
+lib 0:31:1 1 printf 1
+eval 0:31:1
+lv 0:32:29 10 1
+rarg 0:32:25 10
+cf 0:32:32 4 #4014000000000000
+call 0:32:19 4 3 2
+fconv 0:32:8 1 - - - g
+ftext 0:32:8 1 %20
+lv 0:32:48 10 1
+rarg 0:32:44 10
+cf 0:32:51 4 #4024000000000000
+call 0:32:38 4 3 2
+fconv 0:32:8 1 - - - g
+ftext 0:32:8 1 %0A
+fmt 0:32:8 1 4
+lib 0:32:1 1 printf 1
+eval 0:32:1
+lv 0:33:25 10 1
+lv 0:33:28 10 1
+call 0:33:19 3 4 2
+fconv 0:33:8 1 - - - d
+ftext 0:33:8 1 %20
+lv 0:33:38 10 2
+lv 0:33:41 10 1
+call 0:33:32 3 4 2
+fconv 0:33:8 1 - - - d
+ftext 0:33:8 1 %0A
+fmt 0:33:8 1 4
+lib 0:33:1 1 printf 1
+eval 0:33:1
+cf 0:34:9 4 #0000000000000000
+bind 0:34:1 3
+ci 0:35:15 3 3
+lib 0:35:10 10 ones 1
+lv 0:36:5 4 3
+lv 0:36:10 4 4
+asg 0:36:5 add
+block 0:35:18 1
+fore 0:35:1 4
+lv 0:38:13 10 1
+lib 0:38:9 3 len 1
+ci 0:38:18 3 3
+bin 0:38:9 2 gt
+bind 0:38:1 5
+lv 0:39:13 2 5
+lv 0:39:17 10 2
+lv 0:39:28 10 1
+ifx 0:39:10 10
+lv 0:40:5 4 3
+lv 0:40:10 4 6
+cf 0:40:14 4 #3FF0000000000000
+bin 0:40:10 4 add
+asg 0:40:5 add
+block 0:39:32 1
+fore 0:39:1 6
+lv 0:42:16 4 3
+fconv 0:42:8 1 - - - g
+ftext 0:42:8 1 %0A
+fmt 0:42:8 1 2
+lib 0:42:1 1 printf 1
+eval 0:42:1
+block 0:1:1 12
+end
+fn 2 where_is fn 3 2 2 0:1:1
+par v 10 val
+par t 4 val
+loc i 3 var 0:2:9
+loc x 4 for 0:3:9
+ci 0:2:13 3 0
+bind 0:2:5 3
+lv 0:3:14 10 1
+lv 0:4:12 4 4
+lv 0:4:17 4 2
+bin 0:4:12 2 eq
+lv 0:4:28 3 3
+ret 0:4:21 1
+block 0:4:19 1
+if 0:4:9 0
+lv 0:5:9 3 3
+ci 0:5:14 3 1
+asg 0:5:9 add
+block 0:3:16 2
+fore 0:3:5 4
+ci 0:7:12 3 -1
+ret 0:7:5 1
+block 0:1:38 3
+end
+fn 3 sumto fn 4 2 2 0:9:1
+par v 10 ref
+par cap 4 val
+loc s 4 var 0:10:9
+loc x 4 for 0:11:9
+cf 0:10:13 4 #0000000000000000
+bind 0:10:5 3
+lv 0:11:14 10 1
+lv 0:12:12 4 4
+cf 0:12:16 4 #0000000000000000
+bin 0:12:12 2 lt
+cont 0:12:22
+block 0:12:20 1
+if 0:12:9 0
+lv 0:13:12 4 4
+lv 0:13:16 4 2
+bin 0:13:12 2 gt
+break 0:13:22
+block 0:13:20 1
+if 0:13:9 0
+lv 0:14:9 4 3
+lv 0:14:14 4 4
+asg 0:14:9 add
+block 0:11:16 3
+fore 0:11:5 4
+lv 0:16:12 4 3
+ret 0:16:5 1
+block 0:9:41 3
+end
+fn 4 pairs fn 3 2 3 0:18:1
+par a 10 val
+par b 10 val
+loc c 3 var 0:19:9
+loc x 4 for 0:20:9
+loc y 4 for 0:21:13
+ci 0:19:13 3 0
+bind 0:19:5 3
+lv 0:20:14 10 1
+lv 0:21:18 10 2
+lv 0:22:16 4 4
+lv 0:22:20 4 5
+bin 0:22:16 2 lt
+lv 0:22:24 3 3
+ci 0:22:29 3 1
+asg 0:22:24 add
+block 0:22:22 1
+if 0:22:13 0
+block 0:21:20 1
+fore 0:21:9 5
+block 0:20:16 1
+fore 0:20:5 4
+lv 0:25:12 3 3
+ret 0:25:5 1
+block 0:18:37 3
+end
+#end

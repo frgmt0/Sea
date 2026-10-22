@@ -1,0 +1,19 @@
+fn shape(ref A: f64[,], v: f64[]) -> i64 {
+    var t = 0
+    for i in 0..2 {
+        t += rows(A) * cols(A) + len(v) + numel(v) + numel(A)
+    }
+    return t
+}
+let v = zeros(5)
+let m1 = zeros(2, 3)
+let m2 = ones(4, 1)
+printf("%d %d %d %d %d\n", len(v), numel(v), rows(m1), cols(m1), numel(m1))
+var m = m2
+printf("%d %d\n", shape(ref m, v), shape(ref m, zeros(0)))
+printf("%d %d\n", len(ones(4)), numel(zeros(2, 3)))
+printf("%d %d\n", rows(zeros(2, 3)), cols(ones(1, 7)))
+let c = rows(m1) > 2
+printf("%d\n", numel(if c { m1 } else { m2 }))
+// loop_ext -- DESIGN.md 3.5.9 L3 (len, rows, cols, numel made explicit by sealoop): of locals,
+// of ref and value parameters, and of temporaries (ones, zeros, an if expression of matrices)

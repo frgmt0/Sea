@@ -1,0 +1,39 @@
+fn grow(ref k: i64) -> i64 {
+    for i in 0..2 {
+        k += 1
+    }
+    return k
+}
+fn count(ref n: i64) -> f64 {
+    let v = filled(0.5, n)
+    var s = 0.0
+    for x in v {
+        s += x
+    }
+    return s
+}
+let vf = filled(2.5, 3)
+let vi = filled(4, 2)
+let vb = filled(true, 2)
+printf("%g %d %d %d\n", vf[2], vi[1], vb[0], len(vb))
+let mf = filled(0.25, 2, 3)
+let mi = filled(-7, 3, 1)
+let mb = filled(false, 1, 2)
+printf("%g %d %d\n", mf[1, 2], mi[2, 0], mb[0, 1])
+let mo = ones(2, 2)
+let mz = zeros(3, 2)
+printf("%g %g %d\n", mo[1, 1], mz[2, 1], rows(mz))
+var m = 4
+printf("%g %g\n", count(ref m), count(ref m))
+var k = 1
+let vk = filled(k, grow(ref k))
+printf("%d %d %d\n", vk[0], len(vk), k)
+let c = k > 2
+let vc = ones(if c { 2 } else { 3 })
+let p = true
+let q = k == 3
+let vq = filled(p && q, m)
+printf("%g %d %d %d\n", vc[1], len(vc), vq[3], grow(ref m))
+// loop_fill -- DESIGN.md 3.5.9 L1/L2 (zeros, ones, filled made explicit by sealoop): filled of
+// f64, i64 and bool vectors and matrices, ones and zeros of a matrix, a count that is a ref
+// parameter, filled(k, grow(ref k)) (rule 12 copies k), ones(ifx) and filled(p && q, m) (T1)

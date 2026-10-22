@@ -1539,6 +1539,25 @@ becomes a pass of its own in front of `sealoop` (it works on expression trees, a
 is done when `make check-limits` reports both programs and their measured sizes replace these
 estimates here.
 
+**Measured after 4e-0** (`make lines`, `make check-limits`, `wc -l` of the own files, and the
+`DIM`s of each main program, counted as at the gate after 4d). `sealoop`: 2 323 built lines (own
+files `lp0main` 339, `lp1walk` 402, `lp2out` 138; the rest is modules and `DATA`), 47 `FOR`s, 1 828
+string bytes, longest line 160; 19 numeric array letters used, so 7 free (`B C D J M V X`).
+`sealower`: 5 164 built lines (4 784 before the split; own files `sl0main` 646, `sl1scal` 1 120,
+`sl2arr` 1 347, `sl3hirl` 586), 89 `FOR`s, 3 570 string bytes, longest line 211; 4 free numeric
+array letters (`C O S X`), as before the split. Both are far below 9 000 lines, 1000 `FOR`s and
+65 536 string bytes. `sealoop` is inside its estimate (2 100–2 450). `sealower` is 254 lines above
+the top of its estimate (4 790–4 910): about 110 lines are the validation of the `sea.hirl`
+records it reads (which the estimate counted only as a reader) and the rest is comments in the
+new lowerings. (A review fix of the same round added one line to `sealower`, 5 165 in the final tree; the
+projections use 5 164.)
+Projected from the measured bases with the increments of the table above (`sealower` 1 310–1 990
+to the end of phase 4 and 2 010–3 090 to v1; `sealoop` unchanged, as its base is inside the
+estimate): `sealower` **6 470–7 150** after phase 4 and **7 170–8 250** at v1; `sealoop` 5 050–6 900
+after phase 4 and 6 450–9 500 at v1, so the size gate after phase 6 stands as agreed. `sealower`
+keeps its 4 free letters (4g's tables need at most 2); `sealoop` has 7 free letters for the tables
+of 4e–4h, which is the nearer limit there, to be counted again at each gate.
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -2956,7 +2975,9 @@ node; s is the element size of §4.8 (`SEA_ESIZE_F64`, `SEA_ESIZE_I64`, `SEA_ESI
   loop(N; K) counting as its two statements `tmp Z` and `if`), 8 for a matrix.
 * **L3** `lib len(a)` and `rows(a)`: `ext P 3 0` of a; `cols(a)`: `ext P 3 1` of a; `numel(a)` of a
   vector: `ext P 3 0` of a; of a matrix: `xblk P 3 1` with the statement `tmp A = a` and the value
-  `wbin P 3 mul (ext P 3 0 (lv A)) (ext P 3 1 (lv A))`.
+  `wbin P 3 mul (ext P 3 0 (lv A)) (ext P 3 1 (lv A))`. In 4e-0 `sealoop` accepts `len` only of a
+  numeric vector; 4g extends L3 to `len` of a `str` (`ext P 3 0` with dim 0), which `sealower`
+  already lowers.
 * **L4** `fore X v body` (X the loop variable, of element type E): a `block P 4` (a scope) with the
   statements `bind H = v` (H a new local of v's type: the vector the loop holds, rule 30); `tmp N =
   ext P 3 0 (lv H)`; `tmp Z = ci 0`; `if` (e = 0) with the condition `bin gt (lv N) (lv Z)` and the
@@ -2996,9 +3017,14 @@ format `hirl` (sets `H HF HL`) with its generic checks (§2.10).
 
 **Capacity.** `sealoop` counts `sea.hirl` as a whole: all its nodes against `SEA_LIM_NODES`
 (`program too large: nodes`), all its locals, the new `.l` locals included, against
-`SEA_LIM_SYMBOLS` as pass 2b counts its `.j` locals (`symbols`), and all its types, the appended
-`tptr` types included, against `SEA_LIM_TYPES` (`types`); a limit is reported at the position of
-the node whose rewrite would exceed it (status 10, §2.6.2). Only a program near a limit can see it.
+`SEA_LIM_SYMBOLS` (`symbols`), and all its types, the appended `tptr` types included, against
+`SEA_LIM_TYPES` (`types`); a limit is reported at the position of the node whose rewrite would
+exceed it (status 10, §2.6.2). Only a program near a limit can see it. The symbols count is the
+number of `par` and `loc` records of all the functions (counted while `sealoop` reads the file)
+plus the `.l` locals the rewrites add, and it is checked only when a rewrite adds a local, so a
+program without rewrites is never rejected on symbols; a program near the limit may see `program
+too large: symbols` from `sealoop` at the position of the rewritten node, although `seaname`
+accepted it (pass 2b keeps no running count of its `.j` locals and is not the model).
 
 **Example** (the test `arr_rule30`, §3.6.6 rule 30's second example): `fn walk(v: f64[]) { for x in
 v { } … }`, whose `fore` is at 0:3:5. In `sea.hirl` the type table gains `tptr 11 4` after `tvec 10

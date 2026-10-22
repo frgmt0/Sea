@@ -1,0 +1,262 @@
+#sea 1
+#target arm64-macos
+#file loop_fore_exits.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 8 8
+slot s3 8 8
+slot s4 16 8
+slot s5 16 8
+slot s6 8 8
+lf f1 #4000000000000000
+li i2 4
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new_u 0:27 1 p6 4 i3 i4 i2 i5
+ldp p7 p6 - 0 40
+li i8 0
+icmp gt i9 i2 i8
+if 1 i9
+li i10 1
+isub i11 i2 i10
+loop 2 i12 i8 i11 i10
+stf f1 p7 i12 8 0
+endloop 2
+endif 1
+lf f13 #BFF0000000000000
+li i14 1
+ldi i15 p6 - 0 16
+chkb i14 i15 0 0:28
+ldi i16 p6 - 0 0
+li i17 1
+icmp ne i18 i16 i17
+if 3 i18
+rcall sea_arr_unique 0:28 1 p19 1 p6
+mov p6 p19
+endif 3
+ldp p20 p6 - 0 40
+stf f13 p20 i14 8 0
+lf f21 #4022000000000000
+li i22 2
+ldi i23 p6 - 0 16
+chkb i22 i23 0 0:29
+ldi i24 p6 - 0 0
+li i25 1
+icmp ne i26 i24 i25
+if 4 i26
+rcall sea_arr_unique 0:29 1 p27 1 p6
+mov p6 p27
+endif 4
+ldp p28 p6 - 0 40
+stf f21 p28 i22 8 0
+li i29 2
+li i30 1
+li i31 1
+li i32 1
+rcall sea_arr_new 0:30 1 p33 4 i30 i31 i29 i32
+lf f34 #4022000000000000
+call where_is 1 i35 2 p6 f34
+lf f36 #3FF0000000000000
+call where_is 1 i37 2 p33 f36
+sa p38 s1
+sti i35 p38 - 0 0
+sti i37 p38 - 0 8
+la p39 d1
+rcall sea_printf 0:31 0 2 p39 p38
+sa p40 s2
+stp p6 p40 - 0 0
+lf f41 #4014000000000000
+call sumto 1 f42 2 p40 f41
+ldp p6 p40 - 0 0
+sa p43 s3
+stp p6 p43 - 0 0
+lf f44 #4024000000000000
+call sumto 1 f45 2 p43 f44
+ldp p6 p43 - 0 0
+sa p46 s4
+stf f42 p46 - 0 0
+stf f45 p46 - 0 8
+la p47 d2
+rcall sea_printf 0:32 0 2 p47 p46
+call pairs 1 i48 2 p6 p6
+call pairs 1 i49 2 p33 p6
+sa p50 s5
+sti i48 p50 - 0 0
+sti i49 p50 - 0 8
+la p51 d3
+rcall sea_printf 0:33 0 2 p51 p50
+lf f52 #0000000000000000
+li i53 3
+li i54 1
+li i55 1
+li i56 1
+rcall sea_arr_new_u 0:35 1 p57 4 i54 i55 i53 i56
+lf f58 #3FF0000000000000
+ldp p59 p57 - 0 40
+li i60 0
+icmp gt i61 i53 i60
+if 5 i61
+li i62 1
+isub i63 i53 i62
+loop 6 i64 i60 i63 i62
+stf f58 p59 i64 8 0
+endloop 6
+endif 5
+ldi i65 p57 - 0 16
+li i66 0
+icmp gt i67 i65 i66
+if 7 i67
+ldp p68 p57 - 0 40
+li i69 1
+isub i70 i65 i69
+loop 8 i71 i66 i70 i69
+ldf f72 p68 i71 8 0
+fadd f52 f52 f72
+endloop 8
+endif 7
+release p57
+ldi i73 p6 - 0 16
+li i74 3
+icmp gt i75 i73 i74
+if 9 i75
+mov p76 p33
+retain p76
+else 9
+mov p76 p6
+retain p76
+endif 9
+ldi i77 p76 - 0 16
+li i78 0
+icmp gt i79 i77 i78
+if 10 i79
+ldp p80 p76 - 0 40
+li i81 1
+isub i82 i77 i81
+loop 11 i83 i78 i82 i81
+ldf f84 p80 i83 8 0
+lf f85 #3FF0000000000000
+fadd f86 f84 f85
+fadd f52 f52 f86
+endloop 11
+endif 10
+release p76
+sa p87 s6
+stf f52 p87 - 0 0
+la p88 d4
+rcall sea_printf 0:42 0 2 p88 p87
+release p33
+release p6
+ret 0
+endfunc
+func where_is fn 0:1:1 2 p1 f2 1 i
+li i3 0
+mov p4 p1
+retain p4
+ldi i5 p4 - 0 16
+li i6 0
+icmp gt i7 i5 i6
+if 1 i7
+ldp p8 p4 - 0 40
+li i9 1
+isub i10 i5 i9
+loop 2 i11 i6 i10 i9
+ldf f12 p8 i11 8 0
+fcmp eq i13 f12 f2
+if 3 i13
+release p4
+ret 1 i3
+endif 3
+li i14 1
+iaddc i3 i3 i14 0:5
+endloop 2
+endif 1
+release p4
+li i15 -1
+ret 1 i15
+endfunc
+func sumto fn 0:9:1 2 p1 f2 1 f
+lf f3 #0000000000000000
+ldp p4 p1 - 0 0
+mov p5 p4
+retain p5
+ldi i6 p5 - 0 16
+li i7 0
+icmp gt i8 i6 i7
+if 1 i8
+ldp p9 p5 - 0 40
+li i10 1
+isub i11 i6 i10
+loop 2 i12 i7 i11 i10
+ldf f13 p9 i12 8 0
+lf f14 #0000000000000000
+fcmp lt i15 f13 f14
+if 3 i15
+next 2
+endif 3
+fcmp gt i16 f13 f2
+if 4 i16
+exit 2
+endif 4
+fadd f3 f3 f13
+endloop 2
+endif 1
+release p5
+ret 1 f3
+endfunc
+func pairs fn 0:18:1 2 p1 p2 1 i
+li i3 0
+mov p4 p1
+retain p4
+ldi i5 p4 - 0 16
+li i6 0
+icmp gt i7 i5 i6
+if 1 i7
+ldp p8 p4 - 0 40
+li i9 1
+isub i10 i5 i9
+loop 2 i11 i6 i10 i9
+ldf f12 p8 i11 8 0
+mov p13 p2
+retain p13
+ldi i14 p13 - 0 16
+li i15 0
+icmp gt i16 i14 i15
+if 3 i16
+ldp p17 p13 - 0 40
+li i18 1
+isub i19 i14 i18
+loop 4 i20 i15 i19 i18
+ldf f21 p17 i20 8 0
+fcmp lt i22 f12 f21
+if 5 i22
+li i23 1
+iaddc i3 i3 i23 0:22
+endif 5
+endloop 4
+endif 3
+release p13
+endloop 2
+endif 1
+release p4
+ret 1 i3
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d3 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 2
+fconv - - - g f
+ftext %0A
+#end

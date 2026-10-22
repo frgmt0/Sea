@@ -8,7 +8,7 @@
 # <dir>/<wl>.json, and then
 #     uv run --no-project --with numpy python <workloads>/reference_py/compare.py \
 #         --candidate <dir> --keys <keys> <wl>
-# must exit 0 (under the same timeout). <workloads> is sea/workloads (the submodule).
+# must exit 0 (under the same timeout). <workloads> is sea/workloads (a directory of the sea repo).
 #
 # usage: sh tests/accept4.sh [-v] [--save-out DIR] [PATTERN...]
 #   -v              show the comparer's report for failures
@@ -18,7 +18,7 @@
 # Environment: BUILD (default build/), SEA (default $BUILD/sea), WORKLOADS (default
 # sea/workloads), SEA_ACCEPT_TIMEOUT (seconds per run and per comparison, default 120).
 # Output as tests/run.sh: `FAIL accept/NAME: <reason>`, `----`, `passed: P  failed: F`.
-# Exit status: 0 all passed, 1 a failure, 2 setup error (no uv, no workloads checkout, ...).
+# Exit status: 0 all passed, 1 a failure, 2 setup error (no uv, no workloads directory, ...).
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${BUILD:-$ROOT/build}
@@ -44,7 +44,7 @@ PATTERNS="$*"
 COMPARE=$WORKLOADS/reference_py/compare.py
 [ -x "$SEA" ] || { echo "accept4.sh: driver '$SEA' not found or not executable; run 'make' first" >&2; exit 2; }
 command -v uv >/dev/null 2>&1 || { echo "accept4.sh: uv not found (it runs compare.py)" >&2; exit 2; }
-[ -f "$COMPARE" ] || { echo "accept4.sh: '$COMPARE' not found (is the sea/workloads submodule checked out?)" >&2; exit 2; }
+[ -f "$COMPARE" ] || { echo "accept4.sh: '$COMPARE' not found (is the sea/workloads directory there?)" >&2; exit 2; }
 if [ -n "$SAVE" ]; then mkdir -p "$SAVE" || { echo "accept4.sh: cannot create '$SAVE'" >&2; exit 2; }; fi
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea-accept.XXXXXX") || exit 2

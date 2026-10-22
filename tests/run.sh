@@ -42,7 +42,7 @@
 #   succeeds, it is a run-time test: the program's stderr, status and (NAME.out, default
 #   empty) stdout are compared; .in, .args, .files/, .expect/ and .meta apply as above.
 #
-# tests/passes/NAME.sea    dump tests (DESIGN.md 3.8): for each NAME.X (X = ast res hir1 hir lir1
+# tests/passes/NAME.sea    dump tests (DESIGN.md 3.8): for each NAME.X (X = ast res hir1 hir hirl lir1
 #   lir) present, `sea build --emit X --no-prelude NAME.sea` must exit 0 with empty stderr and
 #   write exactly NAME.X to stdout. If NAME.out exists, the program built with --no-prelude and
 #   run (no stdin, no arguments) must print exactly NAME.out, with empty stderr and status 0.
@@ -320,7 +320,7 @@ for src in "$ROOT"/tests/passes/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     base=${src%.sea}
-    for x in ast res hir1 hir lir1 lir; do
+    for x in ast res hir1 hir hirl lir1 lir; do
         [ -f "$base.$x" ] || continue
         name=passes/$nm.$x
         selected "$name" || continue

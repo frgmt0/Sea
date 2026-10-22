@@ -1,0 +1,56 @@
+#sea 1
+#target arm64-macos
+#file fn_ref.sea
+tvec 10 3
+fn 1 .main main 1 0 1 0:1:1
+loc t 3 var 0:15:5
+ci 0:15:9 3 0
+bind 0:15:1 1
+lv 0:16:10 3 1
+rarg 0:16:6 3
+ci 0:16:13 3 3
+call 0:16:1 1 2 2
+eval 0:16:1
+lv 0:17:11 3 1
+rarg 0:17:7 3
+ci 0:17:14 3 2
+call 0:17:1 1 3 2
+eval 0:17:1
+lv 0:18:11 3 1
+rarg 0:18:7 3
+ci 0:18:14 3 1
+call 0:18:1 1 3 2
+eval 0:18:1
+block 0:1:1 4
+end
+fn 2 bump fn 1 2 1 0:5:1
+par s 3 ref
+par n 3 val
+loc i 3 for 0:6:9
+ci 0:6:14 3 0
+lv 0:6:17 3 2
+rng 0:6:14 10 0 0
+lv 0:7:9 3 1
+lv 0:7:14 3 3
+asg 0:7:9 add
+block 0:6:19 1
+forr 0:6:5 3
+block 0:5:29 1
+end
+fn 3 bump2 fn 1 2 1 0:10:1
+par s 3 ref
+par n 3 val
+loc i 3 for 0:11:9
+ci 0:11:14 3 0
+lv 0:11:17 3 2
+rng 0:11:14 10 0 0
+lv 0:12:18 3 1
+rarg 0:12:14 3
+lv 0:12:21 3 3
+call 0:12:9 1 2 2
+eval 0:12:9
+block 0:11:19 1
+forr 0:11:5 3
+block 0:10:30 1
+end
+#end

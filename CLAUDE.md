@@ -21,11 +21,12 @@ on both targets). **Phase 4** of DESIGN.md §8
 (**arrays and structs**) is under way: sub-phases 4a (pass 2a split into `seaname` and `seacheck`,
 sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, a59ca07) and 4d
 (dynamic arrays core, W4 scalar SOR accepted by `make test-accept`) are done. The size gate after
-4d (DESIGN.md §2.7) projects `sealower` to 9 665 lines, so sub-phase 4e-0 splits pass 3a into
+4d (DESIGN.md §2.7) projected `sealower` to 9 665 lines, so sub-phase 4e-0 split pass 3a into
 `sealoop` (`sea.hir` → `sea.hirl`, the array constructs made explicit as scalar loops) and
-`sealower` (`sea.hirl` → `sea.lir1`). Its specification is agreed (Decisions 26–30, 2026-10-22:
-DESIGN.md §2.7, §3.5.9, §3.6.6, §6.2, §8; set `HL` of `passes.txt`); **next: the 4e-0 build** (the
-work packages of DESIGN.md §8, row 4e-0), with no change of behaviour.
+`sealower` (`sea.hirl` → `sea.lir1`, unchanged). **4e-0 is done** (built and tested, no change of
+behaviour; Decisions 26–30; measured: `sealoop` 2 323 lines with 7 free array letters, `sealower`
+5 164 lines with 4 free, DESIGN.md §2.7); **next: 4e (array expressions)**, starting with its
+specification step (the `sealoop` rewrites of rules 20–25, 26 numeric and 28, DESIGN.md §8).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -43,7 +44,7 @@ work packages of DESIGN.md §8, row 4e-0), with no change of behaviour.
   `build/gen/<pass>.bas` (its own files, the modules and `DATA` blocks of its `build.list`,
   `99999 END`; DESIGN.md §2.6.3) and compiled with Baysick (`BAYSICK=<dir>`, default `..`; run
   `make` there first). `build/` is the installation directory (DESIGN.md §2.10).
-- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|lir1|lir]
+- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|hirl|lir1|lir]
   [--no-prelude] [--keep-temps]`, `build/sea run <file.sea> [-- args…]` (DESIGN.md §2.2).
 - Tests: `make test` runs, after `make all` and `make check-contracts`, every group even if one
   fails: `test-driver` (`tests/driver_check.sh`), `check-data` (`tests/check_data.sh`, the DATA
@@ -76,9 +77,9 @@ work packages of DESIGN.md §8, row 4e-0), with no change of behaviour.
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
-- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealower seaopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
+- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
   (`io diag tables limb f64emu fltlit`), interfaces in `passes/lib/API.md`, `API-arith.md`.
-- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir lir1 lir`),
+- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirl lir1 lir`),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.

@@ -1056,6 +1056,65 @@ printf("%g\\n", c[0])
 4
 ''')
 
+# The value of an element assignment is evaluated before its indices (LANGUAGE.md 5.5, 7.3; DESIGN.md
+# 3.5.5 G1, 3.6.6 rule 12): v[bump(ref x)] = x stores x as it was (1), then bump makes x 11 and the
+# index 1. A tuple assignment calls first, then its targets in order: (a, w[bump(ref k)]) = h2(k)
+# calls h2(1) = (1, 2), a = 1, then the index bump(ref k) = 1 (k 11), w[1] = 2; (y, u[i]) = hr(ref i)
+# calls hr (i becomes 1) = (5, 7), y = 5, then the index i reads 1, u[1] = 7, u[0] stays 0.
+prog('arr_eval_order_ref', ['a ref call in the index of an element target runs after the value (asg) or after',
+                            'the call (tasg) is evaluated (LANGUAGE.md 5.5, 7.3; DESIGN.md 3.5.5 G1, 3.6.6',
+                            'rule 12)'],
+     '''fn bump(ref s: f64) -> i64 {
+    s = s + 10.0
+    return 1
+}
+fn h2(n: f64) -> (f64, f64) {
+    return (n, n * 2.0)
+}
+fn hr(ref j: i64) -> (f64, f64) {
+    j = j + 1
+    return (5.0, 7.0)
+}
+var v = zeros(3)
+var x = 1.0
+v[bump(ref x)] = x
+printf("%g %g\\n", v[1], x)
+var w = zeros(3)
+var k = 1.0
+var a = 0.0
+(a, w[bump(ref k)]) = h2(k)
+printf("%g %g %g\\n", a, w[1], k)
+var u = zeros(2)
+var i = 0
+var y = 0.0
+(y, u[i]) = hr(ref i)
+printf("%g %g %g %d\\n", y, u[1], u[0], i)
+''', '''1 11
+1 2 11
+5 7 0 1
+''')
+# Rule 12 (a): in return (b, g(ref b)) the read of b comes before the ref call, so it is copied and
+# retained; g gives b a new zeros(5) and releases its count on the old array, which the copy keeps.
+# The function returns the old array (3 elements, all 1.0) and 9, and releases b (the zeros(5)) on
+# return: len(r) 3, c 9, r[0] 1; nothing is left on the heap.
+prog('heap_rule12_stale', ['an array read before a ref call that replaces it is the old array, held by its',
+                           'retained copy (DESIGN.md 3.6.6 rules 12 (a), 15, 16 (c))'],
+     '''fn mk(n: i64) -> f64[] {
+    return ones(n)
+}
+fn g(ref v: f64[]) -> i64 {
+    v = zeros(5)
+    return 9
+}
+fn k(n: i64) -> (f64[], i64) {
+    var b = mk(n)
+    return (b, g(ref b))
+}
+let (r, c) = k(3)
+printf("%d %d %g\\n", len(r), c, r[0])
+''', '''3 9 1
+''')
+
 # ================================================================ phase-rule errors of step 4d (2.6.2)
 NS = 'not supported yet: %s'
 err_c('err_ns_arr_range_index', ['4d: an index that is a range is still arrays, at the index\'s node',

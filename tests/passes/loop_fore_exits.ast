@@ -1,0 +1,181 @@
+#sea 1
+#target arm64-macos
+#file loop_fore_exits.sea
+type 0:1:16 f64 v 0
+param 0:1:13 v 0 0
+type 0:1:26 f64 s 0
+param 0:1:23 t 0 0
+type 0:1:34 i64 s 0
+pname 0:2:9 i
+int 0:2:13 0
+var 0:2:5 0
+name 0:3:14 v
+name 0:4:12 x
+name 0:4:17 t
+bin 0:4:12 eq
+name 0:4:28 i
+return 0:4:21 1
+block 0:4:19 1
+if 0:4:9 0
+name 0:5:9 i
+int 0:5:14 1
+asg 0:5:9 add
+block 0:3:16 2
+for 0:3:5 x 0:3:9
+int 0:7:13 1
+neg 0:7:12
+return 0:7:5 1
+block 0:1:38 3
+fn 0:1:1 where_is 0 2 1
+type 0:9:17 f64 v 0
+param 0:9:10 v 1 0
+type 0:9:29 f64 s 0
+param 0:9:24 cap 0 0
+type 0:9:37 f64 s 0
+pname 0:10:9 s
+float 0:10:13 #0000000000000000
+var 0:10:5 0
+name 0:11:14 v
+name 0:12:12 x
+float 0:12:16 #0000000000000000
+bin 0:12:12 lt
+continue 0:12:22
+block 0:12:20 1
+if 0:12:9 0
+name 0:13:12 x
+name 0:13:16 cap
+bin 0:13:12 gt
+break 0:13:22
+block 0:13:20 1
+if 0:13:9 0
+name 0:14:9 s
+name 0:14:14 x
+asg 0:14:9 add
+block 0:11:16 3
+for 0:11:5 x 0:11:9
+name 0:16:12 s
+return 0:16:5 1
+block 0:9:41 3
+fn 0:9:1 sumto 0 2 1
+type 0:18:13 f64 v 0
+param 0:18:10 a 0 0
+type 0:18:23 f64 v 0
+param 0:18:20 b 0 0
+type 0:18:33 i64 s 0
+pname 0:19:9 c
+int 0:19:13 0
+var 0:19:5 0
+name 0:20:14 a
+name 0:21:18 b
+name 0:22:16 x
+name 0:22:20 y
+bin 0:22:16 lt
+name 0:22:24 c
+int 0:22:29 1
+asg 0:22:24 add
+block 0:22:22 1
+if 0:22:13 0
+block 0:21:20 1
+for 0:21:9 y 0:21:13
+block 0:20:16 1
+for 0:20:5 x 0:20:9
+name 0:25:12 c
+return 0:25:5 1
+block 0:18:37 3
+fn 0:18:1 pairs 0 2 1
+pname 0:27:5 a
+name 0:27:9 filled
+float 0:27:16 #4000000000000000
+int 0:27:21 4
+call 0:27:9 2
+var 0:27:1 0
+name 0:28:1 a
+int 0:28:3 1
+index 0:28:1 1
+float 0:28:9 #3FF0000000000000
+neg 0:28:8
+asg 0:28:1 set
+name 0:29:1 a
+int 0:29:3 2
+index 0:29:1 1
+float 0:29:8 #4022000000000000
+asg 0:29:1 set
+pname 0:30:5 b
+name 0:30:9 zeros
+int 0:30:15 2
+call 0:30:9 1
+let 0:30:1 0
+name 0:31:1 printf
+str 0:31:8 %25d%20%25d%0A
+name 0:31:19 where_is
+name 0:31:28 a
+float 0:31:31 #4022000000000000
+call 0:31:19 2
+name 0:31:37 where_is
+name 0:31:46 b
+float 0:31:49 #3FF0000000000000
+call 0:31:37 2
+call 0:31:1 3
+cstmt 0:31:1
+name 0:32:1 printf
+str 0:32:8 %25g%20%25g%0A
+name 0:32:19 sumto
+name 0:32:29 a
+ref 0:32:25
+float 0:32:32 #4014000000000000
+call 0:32:19 2
+name 0:32:38 sumto
+name 0:32:48 a
+ref 0:32:44
+float 0:32:51 #4024000000000000
+call 0:32:38 2
+call 0:32:1 3
+cstmt 0:32:1
+name 0:33:1 printf
+str 0:33:8 %25d%20%25d%0A
+name 0:33:19 pairs
+name 0:33:25 a
+name 0:33:28 a
+call 0:33:19 2
+name 0:33:32 pairs
+name 0:33:38 b
+name 0:33:41 a
+call 0:33:32 2
+call 0:33:1 3
+cstmt 0:33:1
+pname 0:34:5 n
+float 0:34:9 #0000000000000000
+var 0:34:1 0
+name 0:35:10 ones
+int 0:35:15 3
+call 0:35:10 1
+name 0:36:5 n
+name 0:36:10 x
+asg 0:36:5 add
+block 0:35:18 1
+for 0:35:1 x 0:35:5
+pname 0:38:5 c
+name 0:38:9 len
+name 0:38:13 a
+call 0:38:9 1
+int 0:38:18 3
+bin 0:38:9 gt
+let 0:38:1 0
+name 0:39:13 c
+name 0:39:17 b
+name 0:39:28 a
+ifx 0:39:10
+name 0:40:5 n
+name 0:40:10 x
+float 0:40:14 #3FF0000000000000
+bin 0:40:10 add
+asg 0:40:5 add
+block 0:39:32 1
+for 0:39:1 x 0:39:5
+name 0:42:1 printf
+str 0:42:8 %25g%0A
+name 0:42:16 n
+call 0:42:1 2
+cstmt 0:42:1
+prog 15
+#end

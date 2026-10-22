@@ -1,10 +1,10 @@
 100 REM ====================================================================================
-105 REM sealower -- pass 3a: sea.hir -> sea.lir1 (docs/DESIGN.md 2.1, 3.5, 3.6). Phase 1: the
+105 REM sealower -- pass 3a: sea.hirl -> sea.lir1 (docs/DESIGN.md 2.1, 3.5.9, 3.6). Phase 1: the
 110 REM canonical lowering of scalar code (DESIGN 3.6.6 rules 1-12); no call is inlined (3.6.6).
 115 REM Built as DESIGN 2.6.3 says: this file, the modules io diag tables, the DATA blocks errors
 120 REM exits consts entries records, and 99999 END. Exit status: 0, 10 (program too large, 2.7),
 125 REM 11 (internal error: truncated input, bad header, bad record, bad tree; DESIGN 2.2).
-130 REM Reads all of sea.hir into tables; lowers each function in file order into L$ (its slot
+130 REM Reads all of sea.hirl into tables; lowers each function in file order into L$ (its slot
 135 REM records come first, 3.6.3) and writes it; then the data records in label order (3.6.2).
 140 REM A record outside the phase-1 subset of 3.6.6 (arrays, structs, strings beyond printf %s,
 145 REM f64 %, pow, other library functions, elemental code) is rejected by pass 2a, so meeting
@@ -20,16 +20,18 @@
 195 REM Node kinds (column 1 of H, R(i,0) per record row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7 un
 200 REM   8 bin 9 powk 10 call 11 rarg 12 lib 13 fmt 14 ftext 15 fconv 16 rng 17 ifx 18 skip
 205 REM   19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont
-210 REM   30 ret 31 tret 32 block; records 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple.
+210 REM   30 ret 31 tret 32 block; records 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple; 39 idx
+211 REM   40 dol 42 tmat; sea.hirl (sl3hirl): 43 xblk 44 tmp 45 hloop 46 ext 47 adat 48 eld 49 est
+212 REM   50 anew 51 wbin 52 tptr. Locals A: 0 the tmp binding it, 3 its register if not its own, 4 flags.
 215 REM Dest D of a node (rules 2, 3): 0 a new register; 1..N7 the register of a local; above N7
 220 REM   a given new register R; -1 a call whose results are discarded (nr 0); -2 a call whose
 225 REM   result registers are the top of U (tbind, tasg, tret). Registers are virtual numbers
 230 REM   (locals 1..N7 = their lid) numbered for output on first appearance (3.6.1).
 235 REM ====================================================================================
-240 FILES "sea.hir"; "sea.lir1"
+240 FILES "sea.hirl"; "sea.lir1"
 245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(22), Y$(22,5), Z(8), I(40), L(4)
 250 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
-255 DIM H(99999,8), G(49999,8), A(99999,2), T(20008,3), M(199999), S$(199999), A$(2)
+255 DIM H(99999,8), G(49999,8), A(99999,4), T(20008,3), M(199999), S$(199999), A$(2)
 260 DIM V(199999,2), W(599999), U(199999,2), D(49999,2), B(9999,2), J(59999,4), P(131071)
 265 DIM L$(199999)
 270 LET P$ = "sealower"
@@ -117,17 +119,19 @@
 655 LET K1$ = "|ci=01|cf=02|cb=03|cs=04|lv=05|cvt=06|un=07|bin=08|powk=09|call=10|rarg=11|lib=12|fmt=13|ftext=14|fconv=15|rng=16|ifx=17|skip=18|seq=19|bind=20|"
 656 GOSUB 9130
 660 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
-662 LET K2$ = K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
+662 LET K2$ = K2$ & "|idx=39|dol=40|tmat=42|"
+663 LET K2$ = K2$ & "|xblk=43|tmp=44|hloop=45|ext=46|adat=47|eld=48|est=49|anew=50|wbin=51|tptr=52|"
 665 LET K1$ = K1$ & K2$
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0
 680 IF R(I, 1) = 2 THEN 690
+682 IF R(I, 1) = 7 THEN 690
 685 IF R(I, 1) <> 4 THEN 705
 690 LET P1 = POS(K1$, "|" & R$(I) & "=")
 695 IF P1 = 0 THEN 705
 700 LET R(I, 0) = VAL(SEG$(K1$, P1 + LEN(R$(I)) + 2, P1 + LEN(R$(I)) + 3))
 705 NEXT I
-710 REM ==== reading sea.hir ===================================================================
+710 REM ==== reading sea.hirl ==================================================================
 715 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), V8, T$, H$(), 100, N1, L$
 720 LET L9 = N1 + 3
 725 LET Y9 = 9
@@ -185,6 +189,7 @@
 970 NEXT I
 975 LET W1 = W1 - P1 + 1
 980 LET W(W1) = H1
+981 IF K > 42 THEN 30200
 983 IF K < 33 THEN 985
 984 ON K - 38 GOTO 1040, 1015, 1050
 985 ON K GOTO 995, 995, 1015, 995, 1015, 1285, 1070, 1095, 1135, 1025, 1285, 1155, 1040, 995, 1180, 1025, 1285, 1285, 1040, 1050, 1200, 1285, 1255, 8105, 1050, 1285, 1050, 1285, 1285, 1060, 1285, 1060
@@ -225,7 +230,7 @@
 1160 LET S$(S0) = G$(4)
 1165 LET H(H1, 0) = S0
 1170 LET H(H1, 6) = I(4)
-1175 GOTO 1285
+1175 GOTO 30050
 1180 GOSUB 1900
 1185 LET S$(S0) = G$(4) & " " & G$(5) & " " & G$(6) & " " & G$(7)
 1190 LET H(H1, 0) = S0
@@ -253,6 +258,7 @@
 1300 ON K - 32 GOTO 1430, 1550, 1585, 1650, 1310, 1350
 1305 REM types come first, ids from 10 in order (3.5.1)
 1310 IF G0 > 0 THEN 2360
+1312 IF Y7 = 1 THEN 2360
 1315 IF I(1) <> Y9 + 1 THEN 2360
 1320 LET Y9 = I(1)
 1325 IF Y9 <= T9 THEN 1340
@@ -262,6 +268,7 @@
 1342 LET T(Y9, 2) = I(2)
 1345 GOTO 1285
 1350 IF G0 > 0 THEN 2360
+1352 IF Y7 = 1 THEN 2360
 1355 IF I(1) <> Y9 + 1 THEN 2360
 1360 LET Y9 = I(1)
 1365 IF Y9 > T9 THEN 1415
@@ -298,12 +305,14 @@
 1520 LET G(G0, 7) = C1
 1525 LET G(G0, 8) = 0
 1530 LET F7 = 1
+1532 LET H2 = H0 + 1
 1535 LET P7 = I(5)
 1540 LET L7 = I(6)
 1545 GOTO 1285
 1550 IF F7 = 0 THEN 2365
 1555 IF P7 = 0 THEN 2365
 1560 LET P7 = P7 - 1
+1562 LET H3 = 0
 1565 LET Q2 = 0
 1570 IF G$(4) = "val" THEN 1610
 1575 LET Q2 = 1
@@ -313,19 +322,21 @@
 1595 IF L7 = 0 THEN 2365
 1600 LET L7 = L7 - 1
 1605 LET Q2 = 0
+1606 GOSUB 30060
 1610 IF A0 < 99999 THEN 1625
 1615 LET P8$ = "symbols"
 1620 GOTO 1285
 1625 LET A0 = A0 + 1
 1630 LET A(A0, 1) = I(2)
 1635 LET A(A0, 2) = Q2
-1640 GOTO 1285
+1640 GOTO 30075
 1645 REM end pops the body block; the stack is then empty (3.3)
 1650 IF F7 = 0 THEN 2365
 1655 IF P7 + L7 > 0 THEN 2365
 1660 IF W1 <> 1 THEN 2365
 1665 IF H(W(1), 1) <> 32 THEN 2365
 1670 LET G(G0, 8) = W(1)
+1672 GOSUB 31000
 1675 LET W1 = 0
 1680 LET F7 = 0
 1685 GOTO 1285
@@ -509,14 +520,18 @@
 2546 LET K8 = G(F0, 6)
 2547 GOSUB 7795
 2548 LET X = G(F0, 8)
-2550 REM rule 12 snapshots: in one statement (its expressions; an if, while or forr only its
+2550 REM rule 12 snapshots: in one statement (its expressions; an if, while, forr or hloop only its
 2555 REM condition or range), a read of a local L before a ref argument of L is flagged H(.,6) = 1
-2560 REM (an lv's own column 6 is free); the read then copies L into a new register
+2560 REM (an lv's own column 6 is free); the read then copies L into a new register. The nodes are
+2561 REM visited last first, so an xblk is met before its subtree [E6, xblk]: the statements inside
+2562 REM an xblk belong to the statement that holds it (3.6.6 rule 12, sea.hirl)
 2565 LET N3 = G(F0, 8)
-2570 IF H(N3, 7) = 0 THEN 2585
+2570 IF H(N3, 7) = 0 THEN 2582
 2575 LET N3 = H(N3, 7)
 2580 GOTO 2570
-2585 FOR N4 = N3 TO G(F0, 8)
+2582 LET E6 = G(F0, 8) + 1
+2585 FOR N4 = G(F0, 8) TO N3 STEP -1
+2588 IF N4 >= E6 THEN 2720
 2590 IF H(N4, 1) < 20 THEN 2720
 2595 IF H(N4, 1) > 31 THEN 23230
 2600 IF H(N4, 7) = 0 THEN 2720
@@ -525,9 +540,10 @@
 2615 IF H(N4, 1) > 27 THEN 23250
 2620 LET B5 = H(N4, 7)
 2625 LET A5 = N4
-2630 IF H(A5, 7) = 0 THEN 2645
+2630 IF H(A5, 7) = 0 THEN 2642
 2635 LET A5 = H(A5, 7)
 2640 GOTO 2630
+2642 REM U7, U8: the statement's evaluation order (an asg set to an idx, a tasg; 3.5.5 G1)
 2643 GOSUB 23280
 2645 FOR K5 = A5 TO B5
 2650 IF H(K5, 1) <> 11 THEN 2715
@@ -615,7 +631,7 @@
 3060 LET W(W0 + 5) = 0
 3065 LET X = X1
 3070 LET D = D1
-3072 IF H(X, 1) > 32 THEN 9710
+3072 IF H(X, 1) > 32 THEN 9705
 3075 ON H(X, 1) GOTO 3140, 3210, 3175, 3250, 3310, 3435, 3490, 3575, 4150, 4450, 3080, 4985, 3080, 3080, 3080, 3080, 4025, 3080, 5645, 5710, 5735, 6045, 6070, 5850, 6395, 6515, 6650, 7060, 7070, 7100, 7220, 7320
 3080 GOTO 2365
 3085 REM 3090: the node of the top frame is done, its value in R9; resume the frame below it
@@ -625,7 +641,7 @@
 3100 LET X = W(W0)
 3105 LET D = W(W0 + 1)
 3110 LET S = W(W0 + 2)
-3112 IF S > 38 THEN 9720
+3112 IF S > 38 THEN 9715
 3115 IF S > 20 THEN 3125
 3120 ON S GOTO 3445, 3500, 3595, 3620, 3850, 3915, 4035, 16360, 16400, 4160, 4500, 5080, 5400, 5510, 5535, 5695, 15360, 15230, 5835, 5995
 3125 ON S - 20 GOTO 16210, 3090, 6180, 15010, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8620
