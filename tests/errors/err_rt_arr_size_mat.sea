@@ -1,0 +1,4 @@
+// err_rt_arr_size_mat -- filled(1.0, r, c) with a bad column extent -3 (LANGUAGE.md 10.2, 9.2)
+let c = 0 - 3
+let A = filled(1.0, 2, c)
+printf("%d\n", rows(A))

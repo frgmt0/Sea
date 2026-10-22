@@ -257,10 +257,14 @@ do_case() {
     programs) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     errors) [ -f "$base.err" ] && [ -f "$base.status" ] || { fail "$name" "missing $_n.err or $_n.status"; return; } ;;
     passes) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
+    accept) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     esac
     asm_link "$name" "$base.s" "" || return
+    _savet=$TIMEOUT
+    if [ "$_kind" = accept ]; then TIMEOUT=${SEA_ACCEPT_TIMEOUT:-120}; fi
     if ! newwork "$base"; then fail "$name" "cannot prepare the work directory"; rm -rf "$WORK"; return; fi
     run_prog "$base" "$TMP/prog"
+    TIMEOUT=$_savet
     experr=$TMP/empty; [ -f "$base.err" ] && experr=$base.err
     expout=$TMP/empty; [ -f "$base.out" ] && expout=$base.out
     want=$(want_status "$base")
@@ -276,7 +280,7 @@ do_case() {
     [ $ok = 1 ] && pass
 }
 
-for k in programs errors passes; do
+for k in programs errors passes accept; do
     for n in $(case_names $k); do do_case $k "$n"; done
 done
 

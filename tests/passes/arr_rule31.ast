@@ -1,0 +1,86 @@
+#sea 1
+#target arm64-macos
+#file arr_rule31.sea
+pname 0:1:5 v
+name 0:1:9 mkv
+call 0:1:9 0
+var 0:1:1 0
+pname 0:2:5 i
+int 0:2:9 1
+var 0:2:1 0
+name 0:4:1 f
+name 0:4:7 v
+name 0:4:9 i
+index 0:4:7 1
+ref 0:4:3
+call 0:4:1 1
+cstmt 0:4:1
+name 0:5:1 f
+name 0:5:7 v
+int 0:5:9 0
+index 0:5:7 1
+ref 0:5:3
+call 0:5:1 1
+cstmt 0:5:1
+name 0:6:1 printf
+str 0:6:8 %25g%0A
+name 0:6:16 v
+int 0:6:18 0
+index 0:6:16 1
+call 0:6:1 2
+cstmt 0:6:1
+name 0:7:1 printf
+str 0:7:8 %25g%0A
+name 0:7:16 v
+int 0:7:18 1
+index 0:7:16 1
+call 0:7:1 2
+cstmt 0:7:1
+pname 0:8:5 w
+name 0:8:9 mkv
+call 0:8:9 0
+let 0:8:1 0
+name 0:9:1 printf
+str 0:9:8 %25g%0A
+name 0:9:16 w
+int 0:9:18 1
+index 0:9:16 1
+call 0:9:1 2
+cstmt 0:9:1
+type 0:10:13 f64 v 0
+pname 0:11:9 a
+name 0:11:13 zeros
+int 0:11:19 2
+call 0:11:13 1
+var 0:11:5 0
+int 0:12:14 0
+int 0:12:17 2
+range 0:12:14 0 0
+name 0:13:9 a
+name 0:13:11 k
+index 0:13:9 1
+name 0:13:20 k
+conv 0:13:16 f64
+float 0:13:25 #3FE0000000000000
+bin 0:13:16 add
+asg 0:13:9 set
+block 0:12:19 1
+for 0:12:5 k 0:12:9
+name 0:15:12 a
+return 0:15:5 1
+block 0:10:19 3
+fn 0:10:1 mkv 0 0 1
+type 0:17:13 f64 s 0
+param 0:17:6 x 1 0
+int 0:18:14 0
+int 0:18:17 2
+range 0:18:14 0 0
+name 0:19:9 x
+float 0:19:14 #3FF0000000000000
+asg 0:19:9 add
+block 0:18:19 1
+for 0:18:5 k 0:18:9
+block 0:17:18 1
+fn 0:17:1 f 0 1 0
+prog 10
+#end

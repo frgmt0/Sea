@@ -1,0 +1,1 @@
+err_rt_arr_sub2ind_oob.sea:5: error: index 3 out of bounds for dimension 0 of extent 3

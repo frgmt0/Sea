@@ -1,0 +1,21 @@
+// arr_dollar -- $ in each dimension, in an arithmetic index, nested, in a store and in a compound
+// store (LANGUAGE.md 5.3)
+var v = zeros(5)
+for i in 0..5 {
+    v[i] = f64(i)
+}
+var A = zeros(3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        A[i, j] = f64(i + 10 * j)
+    }
+}
+printf("%g %g\n", v[$ - 1], v[$ - 5])
+printf("%g %g %g\n", A[$ - 1, 0], A[0, $ - 1], A[$ - 1, $ - 2])
+var w = filled(0, 3)
+w[2] = 4
+printf("%g\n", v[w[$ - 1]])
+v[$ - 2] = 9.0
+printf("%g %g\n", v[3], v[$ - 2])
+A[$ - 1, $ - 1] += 1.0
+printf("%g\n", A[2, 3])

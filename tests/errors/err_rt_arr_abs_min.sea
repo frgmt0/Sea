@@ -1,0 +1,4 @@
+// err_rt_arr_abs_min -- abs(-2^63) of an i64 is integer overflow (LANGUAGE.md 10.4, 6.5)
+let m = -9223372036854775808
+printf("%d\n", abs(m + 1))
+printf("%d\n", abs(m))

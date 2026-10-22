@@ -236,7 +236,7 @@ prog 10''')
 
 # ---------------------------------------------------------------- rpowk, skipped regions, rtup
 case('res_powk_skip', ('rpowk from a constant, none where a local shadows it; rtup 10 reused; a',
-                       'not-entered fn, a for over an array and a match copied unresolved (3.4.1)'),
+                       'not-entered fn and a match copied unresolved, a for over an array resolved (3.4.1, 3.4.2)'),
      '''const K = 2
 fn g(x: f64) -> (f64, i64) {
     return (x ^ K, 1)
@@ -495,20 +495,109 @@ block 0:3:22 1
 fn 0:3:1 f 0 0 2
 prog 1''')
 
-case('res_err_array', ('rerr 259 arrays at an array type of a signature (its type node)',
-                       '(DESIGN.md 3.4.1, 2.6.2)'),
-     '''fn f(v: f64[], k: i64) -> i64 {
+case('res_err_array', ('rerr 259 arrays at a fixed-size array type of a signature (its type node,',
+                       'still reported in 4d); its type is 0 (DESIGN.md 3.4.2, 2.6.2)'),
+     '''fn f(v: f64[3], k: i64) -> i64 {
     return k
 }
-''', '''type 0:3:9 f64 v 0
+''', '''int 0:3:13 3
+type 0:3:9 f64 fv 1
 param 0:3:6 v 0 0
-type 0:3:19 i64 s 0
-param 0:3:16 k 0 0
-type 0:3:27 i64 s 0
+type 0:3:20 i64 s 0
+param 0:3:17 k 0 0
+type 0:3:28 i64 s 0
 name 0:4:12 k
 return 0:4:5 1
-block 0:3:31 1
+block 0:3:32 1
 fn 0:3:1 f 0 2 1
+prog 1''')
+
+# ---------------------------------------------------------------- 4d: array types (3.4.2)
+case('res_arr_types', ('rtype everywhere; rtvec/rtmat in the order of creation (signatures, a tuple after',
+                       'its components, then the let annotations); an element loop resolved (DESIGN.md 3.4.2)'),
+     '''fn f(a: f64[,], b: i64[]) -> (bool[], f64[,]) {
+    var r = filled(true, len(b))
+    for x in b {
+        r[0] = x > 0
+    }
+    return (r, a)
+}
+let m: f64[,] = zeros(2, 2)
+let v: i64[] = filled(1, 3)
+let w: f64[] = zeros(1)
+let (p, q) = f(m, v)
+''', '''type 0:3:9 f64 m 0
+param 0:3:6 a 0 0
+type 0:3:20 i64 v 0
+param 0:3:17 b 0 0
+type 0:3:31 bool v 0
+type 0:3:39 f64 m 0
+pname 0:4:9 r
+name 0:4:13 filled
+true 0:4:20
+name 0:4:26 len
+name 0:4:30 b
+call 0:4:26 1
+call 0:4:13 2
+var 0:4:5 0
+name 0:5:14 b
+name 0:6:9 r
+int 0:6:11 0
+index 0:6:9 1
+name 0:6:16 x
+int 0:6:20 0
+bin 0:6:16 gt
+asg 0:6:9 set
+block 0:5:16 1
+for 0:5:5 x 0:5:9
+name 0:8:13 r
+name 0:8:16 a
+return 0:8:5 2
+block 0:3:47 3
+fn 0:3:1 f 0 2 2
+pname 0:10:5 m
+type 0:10:8 f64 m 0
+name 0:10:17 zeros
+int 0:10:23 2
+int 0:10:26 2
+call 0:10:17 2
+let 0:10:1 1
+pname 0:11:5 v
+type 0:11:8 i64 v 0
+name 0:11:16 filled
+int 0:11:23 1
+int 0:11:26 3
+call 0:11:16 2
+let 0:11:1 1
+pname 0:12:5 w
+type 0:12:8 f64 v 0
+name 0:12:16 zeros
+int 0:12:22 1
+call 0:12:16 1
+let 0:12:1 1
+pname 0:13:6 p
+pname 0:13:9 q
+ptuple 0:13:5 2
+name 0:13:14 f
+name 0:13:16 m
+name 0:13:19 v
+call 0:13:14 2
+let 0:13:1 0
+prog 5''')
+
+case('res_err_dim', ('rerr 200 at an undeclared dim name of a fixed-size type: the first error of the',
+                     'node (base, dims, shape) wins over the phase rule; the dim is an rname none (DESIGN.md 3.4.2)'),
+     '''fn f(v: f64[N]) -> i64 {
+    return 1
+}
+''', '''name 0:3:13 N
+type 0:3:9 f64 fv 1
+param 0:3:6 v 0 0
+type 0:3:20 i64 s 0
+int 0:4:12 1
+return 0:4:5 1
+block 0:3:24 1
+fn 0:3:1 f 0 1 1
 prog 1''')
 
 case('res_err_handle', ('rerr 259 handle types at a handle type of a signature (its type node)',

@@ -1,0 +1,31 @@
+#sea 1
+#target arm64-macos
+#file arr_rule30.sea
+type 0:2:12 f64 v 0
+param 0:2:9 v 0 0
+name 0:3:14 v
+block 0:3:16 0
+for 0:3:5 x 0:3:9
+name 0:5:5 printf
+str 0:5:12 walked%20%25d%0A
+name 0:5:27 len
+name 0:5:31 v
+call 0:5:27 1
+call 0:5:5 2
+cstmt 0:5:5
+block 0:2:19 2
+fn 0:2:1 walk 0 1 0
+name 0:7:1 walk
+name 0:7:6 ones
+int 0:7:11 3
+call 0:7:6 1
+call 0:7:1 1
+cstmt 0:7:1
+name 0:8:1 walk
+name 0:8:6 zeros
+int 0:8:12 0
+call 0:8:6 1
+call 0:8:1 1
+cstmt 0:8:1
+prog 3
+#end

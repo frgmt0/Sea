@@ -5,10 +5,10 @@ rerr 0:11:1 235 1 g
 rtup 10 2 4 3
 rint 0:3:11 2 #4000000000000000
 rcni 0:3:1 K 0 1 2
-type 0:4:9 f64 s 0
+rtype 0:4:9 f64 s 0 4
 param 0:4:6 x 0 0
-type 0:4:18 f64 s 0
-type 0:4:23 i64 s 0
+rtype 0:4:18 f64 s 0 4
+rtype 0:4:23 i64 s 0 3
 rname 0:5:13 x loc 1
 rname 0:5:17 K cst 1
 rpowk 0:5:13 2
@@ -16,10 +16,10 @@ rint 0:5:20 1 #3FF0000000000000
 return 0:5:5 2
 block 0:4:28 1
 rfn 0:4:1 g 0 1 2 2 10 4
-type 0:7:9 f64 s 0
+rtype 0:7:9 f64 s 0 4
 param 0:7:6 x 0 0
-type 0:7:18 f64 s 0
-type 0:7:23 i64 s 0
+rtype 0:7:18 f64 s 0 4
+rtype 0:7:23 i64 s 0 3
 rpname 0:8:9 K 2
 rint 0:8:13 3 #4008000000000000
 let 0:8:5 0
@@ -43,11 +43,11 @@ rint 0:14:11 1 #3FF0000000000000
 rint 0:14:14 2 #4000000000000000
 row 0:14:11 2
 array 0:14:10 1
-pname 0:15:9 w
-name 0:15:13 e
+rpname 0:15:9 w 2
+rname 0:15:13 e loc 1
 let 0:15:5 0
 block 0:14:17 1
-for 0:14:1 e 0:14:5
+rfor 0:14:1 e 0:14:5 1
 str 0:17:7 a
 str 0:18:5 a
 pname 0:18:18 m
@@ -61,7 +61,7 @@ let 0:19:12 0
 block 0:19:10 1
 arm 0:19:5 0
 match 0:17:1 2
-rpname 0:21:5 t 1
+rpname 0:21:5 t 3
 rname 0:21:9 g fn 2
 float 0:21:11 #4000000000000000
 call 0:21:9 1

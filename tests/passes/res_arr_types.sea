@@ -1,0 +1,13 @@
+// res_arr_types -- rtype everywhere; rtvec/rtmat in the order of creation (signatures, a tuple after
+// its components, then the let annotations); an element loop resolved (DESIGN.md 3.4.2)
+fn f(a: f64[,], b: i64[]) -> (bool[], f64[,]) {
+    var r = filled(true, len(b))
+    for x in b {
+        r[0] = x > 0
+    }
+    return (r, a)
+}
+let m: f64[,] = zeros(2, 2)
+let v: i64[] = filled(1, 3)
+let w: f64[] = zeros(1)
+let (p, q) = f(m, v)

@@ -1,0 +1,5 @@
+// res_err_dim -- rerr 200 at an undeclared dim name of a fixed-size type: the first error of the
+// node (base, dims, shape) wins over the phase rule; the dim is an rname none (DESIGN.md 3.4.2)
+fn f(v: f64[N]) -> i64 {
+    return 1
+}

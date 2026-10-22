@@ -1,0 +1,4 @@
+let n = 3; let u = ones(n)
+printf("%g %d\n", u[2], len(u))
+// arr_rule17 -- DESIGN.md 3.6.6 rule 17 (array headers and allocation): its example verbatim
+// (ones: arrnew with sea_arr_new_u, then the fill loop), then rule 18 and len

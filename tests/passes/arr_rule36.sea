@@ -1,0 +1,12 @@
+printf("%g\n", dist(0.5, 2.0))
+printf("%g\n", dist(4.0, 1.5))
+// arr_rule36 -- DESIGN.md 3.6.6 rule 36 (exact math functions on scalars): its example verbatim
+// on line 6 (f64 abs is fabs, its destination d's register)
+fn dist(tn: f64, t: f64) -> f64 {
+    let d = abs(tn - t)
+    var r = d
+    while r > 1.0 {
+        r = r / 2.0
+    }
+    return r
+}

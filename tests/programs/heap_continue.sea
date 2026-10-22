@@ -1,0 +1,22 @@
+// heap_continue -- array locals of the blocks a continue leaves are released (LANGUAGE.md 7.7;
+// DESIGN.md 3.6.6 rule 16 (b))
+var s = 0.0
+for i in 0..4 {
+    let v = filled(f64(i), 2)
+    if i % 2 == 0 {
+        let w = ones(1)
+        continue
+    }
+    s += v[1]
+}
+printf("%g\n", s)
+var n = 0
+while n < 3 {
+    let a = zeros(2)
+    n += 1
+    if n == 2 {
+        let b = zeros(1)
+        continue
+    }
+    printf("n %d\n", n)
+}

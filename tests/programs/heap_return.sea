@@ -1,0 +1,26 @@
+// heap_return -- a return from nested blocks and loops releases every enclosing array local
+// (LANGUAGE.md 7.7; DESIGN.md 3.6.6 rule 16 (c))
+fn findpair(n: i64) -> i64 {
+    let a = zeros(n)
+    for i in 0..n {
+        let b = ones(i + 1)
+        for j in 0..i {
+            let c = filled(j, 2)
+            if i * j == 6 {
+                let d = zeros(1)
+                return i * 10 + j
+            }
+        }
+    }
+    return -1
+}
+fn early(c: bool) -> f64 {
+    let a = ones(2)
+    if c {
+        let b = zeros(2)
+        return b[0]
+    }
+    return a[0]
+}
+printf("%d %d\n", findpair(5), findpair(3))
+printf("%g %g\n", early(true), early(false))

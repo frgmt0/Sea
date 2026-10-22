@@ -35,7 +35,7 @@
 3300 GOTO 3090
 3305 REM ---- lv: no instruction (rule 1), mov into a dest (rule 2), a load for a ref parameter -----
 3310 LET A1 = H(X, 5)
-3315 IF V(A1, 1) = 3 THEN 3385
+3315 IF A(G(F0, 0) + A1, 2) = 1 THEN 3385
 3320 LET R9 = A1
 3325 IF D > 0 THEN 3355
 3330 IF H(X, 6) = 0 THEN 3090
@@ -48,7 +48,7 @@
 3365 LET V3 = A1
 3370 GOSUB 7540
 3375 LET R9 = D
-3380 GOTO 3090
+3380 GOTO 16450
 3385 LET T1 = A(G(F0, 0) + A1, 1)
 3390 GOSUB 7395
 3395 GOSUB 7470
@@ -57,7 +57,7 @@
 3410 LET Z3 = 0
 3415 GOSUB 7640
 3420 LET R9 = D2
-3425 GOTO 3090
+3425 GOTO 16450
 3430 REM ---- cvt: itof (rule 1) --------------------------------------------------------------------
 3435 LET S = 1
 3440 GOTO 7370
@@ -266,7 +266,7 @@
 4455 LET W(W0 + 3) = U0
 4460 LET W(W0 + 4) = H(X, 7)
 4465 LET X2 = W(W0 + 4)
-4470 IF X2 = 0 THEN 4660
+4470 IF X2 = 0 THEN 17930
 4475 IF H(X2, 1) = 11 THEN 4515
 4480 LET S = 11
 4485 LET X1 = X2
@@ -276,14 +276,16 @@
 4505 GOTO 4630
 4510 REM a rarg of a local L: its ref parameter register, or a slot holding L, reloaded later
 4515 LET X3 = H(X2, 7)
-4520 IF H(X3, 1) <> 5 THEN 2360
+4520 IF H(X3, 1) = 39 THEN 17130
+4522 IF H(X3, 1) <> 5 THEN 2360
 4525 LET A1 = H(X3, 5)
 4530 LET R9 = A1
 4535 LET Q5 = 0
-4540 IF V(A1, 1) = 3 THEN 4630
+4540 IF A(G(F0, 0) + A1, 2) = 1 THEN 4630
 4545 LET Z1 = E7
 4550 IF V(A1, 1) = 1 THEN 4560
 4555 LET Z1 = E8
+4557 IF V(A1, 1) = 3 THEN 17040
 4560 LET Z2 = Z1
 4565 GOSUB 7905
 4570 LET C1 = 3
@@ -292,6 +294,7 @@
 4585 GOSUB 7500
 4590 LET L1$ = "sa " & Z$ & " s" & STR$(S5)
 4595 GOSUB 7695
+4597 GOTO 17070
 4600 LET V2 = A1
 4605 LET V3 = N2
 4610 LET Z3 = 0
@@ -366,13 +369,14 @@
 4955 LET U(I, 1) = V2
 4960 LET U(I, 2) = 0
 4965 NEXT I
+4967 GOSUB 18260
 4970 LET U0 = W(W0 + 3)
 4975 GOTO 3090
 4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14)-------------------------
 4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  "
 4990 LET W2$ = S$(H(X, 0))
 4995 GOSUB 1875
-5000 IF W2 = 0 THEN 2360
+5000 IF W2 = 0 THEN 19360
 5005 IF H(X, 6) <> VAL(SEG$("10112111122", W2, W2)) THEN 2360
 5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600
 5015 REM printf: frame x1 = U0 at entry, x2 = the next piece of the fmt
@@ -540,23 +544,21 @@
 5820 LET X1 = X2
 5825 LET D1 = -2
 5830 GOTO 7380
-5835 LET U0 = W(W0 + 3)
-5840 GOTO 3090
+5835 GOTO 15470
 5845 REM ---- tasg: rule 2 steps (a)-(d), at 8200 (the call) and 8400 (step (d)) -------------
 5850 GOTO 8205
-5995 GOTO 8405
+5995 GOTO 8401
 6040 REM ---- eval: the expression, a call discarding its results (rule 5) --------------------------
-6045 LET S = 21
-6050 LET X1 = H(X, 7)
-6055 LET D1 = -1
-6060 GOTO 7380
+6045 GOTO 15920
 6065 REM ---- asg to lv L (rules 2, 12) ------------------------------------------------------------
 6070 LET X2 = H(X, 7)
-6075 IF H(X2, 1) <> 5 THEN 2360
+6075 IF H(X2, 1) = 39 THEN 13550
+6077 IF H(X2, 1) <> 5 THEN 2360
 6080 LET A1 = H(X2, 5)
 6085 LET X1 = H(X2, 8)
 6090 LET D1 = 0
-6095 IF V(A1, 1) = 3 THEN 6205
+6095 IF A(G(F0, 0) + A1, 2) = 1 THEN 6205
+6097 IF V(A1, 1) = 3 THEN 14830
 6100 IF H(X, 5) > 1 THEN 6120
 6105 LET S = 22
 6110 LET D1 = A1
@@ -609,7 +611,7 @@
 6345 LET V3 = A2
 6350 LET V4 = R9
 6355 GOSUB 7575
-6360 IF V(H(H(X, 7), 5), 1) <> 3 THEN 3090
+6360 IF A(G(F0, 0) + H(H(X, 7), 5), 2) = 0 THEN 3090
 6365 LET V2 = A1
 6370 LET V3 = H(H(X, 7), 5)
 6375 LET Z3 = 0
@@ -749,11 +751,13 @@
 7045 GOSUB 7695
 7050 GOTO 3090
 7055 REM ---- break / cont: exit / next of the innermost loop (rule 4) ------------------------------
-7060 LET L1$ = "exit "
+7060 LET O$ = "exit "
 7065 GOTO 7075
-7070 LET L1$ = "next "
+7070 LET O$ = "next "
 7075 IF J0 = 0 THEN 2365
-7080 LET L1$ = L1$ & STR$(J(J0))
+7077 LET U4 = J(J0, 3)
+7078 GOSUB 10390
+7080 LET L1$ = O$ & STR$(J(J0, 1))
 7085 GOSUB 7695
 7090 GOTO 3090
 7095 REM ---- ret k: the values, ret k regs (rule 5) ------------------------------------------------
@@ -766,9 +770,10 @@
 7130 GOTO 7380
 7135 GOSUB 7970
 7140 LET U(U0, 1) = R9
+7142 GOSUB 16530
 7145 LET W(W0 + 4) = H(W(W0 + 4), 8)
 7150 GOTO 7110
-7155 GOSUB 7170
+7155 GOSUB 16560
 7160 GOTO 3090
 7165 REM 7170: ret of the registers U(W(W0+3)+1 .. U0); U0 back to W(W0+3)
 7170 LET L1$ = "ret " & STR$(U0 - W(W0 + 3))
@@ -798,11 +803,12 @@
 7290 LET X1 = X2
 7295 LET D1 = -2
 7300 GOTO 7380
-7305 GOSUB 7170
+7305 GOSUB 16560
 7310 GOTO 3090
 7315 REM ---- block: the statements in order (rule 6: no instruction of its own) -------------------
 7320 LET W(W0 + 4) = H(X, 7)
-7325 IF W(W0 + 4) = 0 THEN 3090
+7322 LET W(W0 + 3) = J9
+7325 IF W(W0 + 4) = 0 THEN 16620
 7330 LET S = 37
 7335 LET X1 = W(W0 + 4)
 7340 LET D1 = 0
@@ -817,7 +823,7 @@
 7385 GOTO 3030
 7390 REM ---- 7395: C1 = the register class of the scalar type T1 (1 i: bool, i64; 2 f; 3 p: str) ---
 7395 IF T1 < 2 THEN 2360
-7400 IF T1 > 5 THEN 2360
+7400 IF T1 > 5 THEN 9740
 7405 LET C1 = VAL(SEG$("1123", T1 - 1, T1 - 1))
 7410 RETURN
 7415 REM ---- 7420: N2 = a new register of class C1 -------------------------------------------------
@@ -936,7 +942,8 @@
 7975 LET U0 = U0 + 1
 7980 RETURN
 7985 LET J0 = J0 + 1
-7990 LET J(J0) = W(W0 + 3)
+7990 LET J(J0, 1) = W(W0 + 3)
+7992 LET J(J0, 3) = J9
 7995 RETURN
 8100 REM ---- reading tasg: n, then one cv flag (0 or 1) per target, kept in M from H(H1, 0) ------
 8105 LET H(H1, 6) = I(2)
@@ -963,25 +970,28 @@
 8250 IF T(Z6, 2) <> H(X, 6) THEN 2360
 8255 REM X4 = the call (the value of a seq)
 8260 LET X4 = X3
-8265 IF H(X4, 1) <> 19 THEN 8290
+8265 IF H(X4, 1) <> 19 THEN 8288
 8270 LET X4 = H(X4, 7)
-8275 IF H(X4, 8) = 0 THEN 8290
+8275 IF H(X4, 8) = 0 THEN 8288
 8280 LET X4 = H(X4, 8)
 8285 GOTO 8275
+8288 IF H(X4, 1) = 12 THEN 8295
 8290 IF H(X4, 1) <> 10 THEN 2360
 8295 FOR I = 1 TO H(X, 6)
 8300 GOSUB 7970
 8305 LET U(U0, 2) = 0
 8310 LET Q3 = M(H(X, 0) + I - 1)
 8315 IF H(X2, 1) = 18 THEN 8375
-8320 IF H(X2, 1) <> 5 THEN 2360
+8320 IF H(X2, 1) = 39 THEN 24040
+8322 IF H(X2, 1) <> 5 THEN 2360
 8325 LET A1 = H(X2, 5)
 8330 LET U(U0, 1) = A1
 8335 LET A2 = A1 + 100000 * Q3
-8340 IF V(A1, 1) <> 3 THEN 8350
+8340 IF A(G(F0, 0) + A1, 2) = 0 THEN 8350
 8345 LET A2 = A2 + 200000
 8347 GOTO 8370
 8350 IF Q3 = 1 THEN 8370
+8351 IF V(A1, 1) = 3 THEN 8370
 8352 REM a local keeps its register unless the call passes it by ref
 8355 LET X8 = H(X4, 7)
 8357 IF X8 = 0 THEN 8390
@@ -1001,9 +1011,14 @@
 8397 LET D1 = -2
 8398 GOTO 7380
 8400 REM step (d), components in order: itof F Ri if cv is 1 (V = F, else V = Ri), then mov L V or sti/stf V P
-8405 FOR I = W(W0 + 3) + 1 TO U0
+8401 LET W(W0 + 5) = U0
+8403 LET W(W0 + 4) = W(W0 + 3)
+8405 LET W(W0 + 4) = W(W0 + 4) + 1
+8406 IF W(W0 + 4) > W(W0 + 5) THEN 8482
+8407 LET I = W(W0 + 4)
 8410 IF U(I, 2) >= 0 THEN 8480
 8415 LET A2 = -U(I, 2)
+8417 IF A2 >= 400000 THEN 24070
 8420 LET A3 = 0
 8425 IF A2 < 200000 THEN 8440
 8430 LET A3 = 1
@@ -1017,16 +1032,19 @@
 8458 LET V3 = V2
 8460 LET V2 = N2
 8462 GOSUB 7540
-8465 IF A3 = 1 THEN 8475
+8465 IF A3 = 1 THEN 8473
+8466 IF V(A2, 1) = 3 THEN 15630
 8467 LET O$ = "mov"
 8468 LET V3 = V2
 8469 LET V2 = A2
 8470 GOSUB 7540
 8472 GOTO 8480
+8473 IF V(V2, 1) = 3 THEN 15670
 8475 LET V3 = A2
 8476 LET Z3 = 0
 8477 GOSUB 7650
-8480 NEXT I
+8480 GOTO 8405
+8482 GOSUB 15830
 8485 LET U0 = W(W0 + 3)
 8490 GOTO 3090
 8500 REM ---- bin pow (a ^ that is not a powk): rcall sea_pow - 1 d 2 a b into D2 (rule 14) ---------

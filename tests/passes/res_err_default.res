@@ -2,10 +2,10 @@
 #target arm64-macos
 #file res_err_default.sea
 rerr 0:3:6 259 1 default%20arguments
-type 0:3:9 i64 s 0
+rtype 0:3:9 i64 s 0 3
 name 0:3:15 K
 param 0:3:6 a 0 1
-type 0:3:21 i64 s 0
+rtype 0:3:21 i64 s 0 3
 rname 0:4:12 a loc 1
 return 0:4:5 1
 block 0:3:25 1

@@ -4,6 +4,7 @@
 Usage (from sea/workloads):
     uv run --no-project --with numpy python reference_py/compare.py [name ...]
     uv run --no-project --with numpy python reference_py/compare.py --candidate DIR [name ...]
+    uv run --no-project --with numpy python reference_py/compare.py --candidate DIR --keys K1,K2,... name
     uv run --no-project --with numpy python reference_py/compare.py --self-test
 
 NumPy mode (default): MATLAB reference/<name>.json against reference/<name>.py.json; a workload
@@ -12,6 +13,17 @@ with no MATLAB file yet is reported MISSING and does not fail.
 Candidate mode (--candidate DIR): MATLAB reference/<name>.json against DIR/<name>.json (a Sea
 port's --export-reference output), with the same RULES except the near-tie keys (see below). A
 missing MATLAB reference or a missing candidate file is a FAILURE here.
+
+Keys mode (--candidate DIR --keys K1,K2,... NAME; exactly one workload): only the listed keys are
+compared, by the same rules as candidate mode. A listed key must be in both files; a key of the
+candidate file that is not listed fails ("not requested"); the MATLAB file's other keys are
+ignored. A listed key's candidate value must have the MATLAB value's nesting (number against
+number, flat list against a flat list of the same length, list of rows against the same number of
+rows each of the MATLAB row's length) or it fails with "shape <candidate> vs <MATLAB>"; the
+elements are then flattened in row order and judged by the key's rule. Usage errors (exit 2):
+--keys without --candidate, with --self-test, with no or several workload names, an empty list or
+element, a key not in the workload's MATLAB reference, an argmax_tol/argmin_tol key whose array
+key is not listed.
 
 Rules (a key not listed uses DEFAULT):
     ("exact",)         strings, booleans, indices: must be identical
@@ -30,6 +42,10 @@ Rules (a key not listed uses DEFAULT):
                        NaN entries are ignored. Use "exact" where the winner is well separated.
     ("small", bound)   noise-level quantities (residuals, balance errors, solver
                         differences): both values must be finite and <= bound in magnitude.
+    ("field", thr, frac, mean)
+                       a density field in [0, 1] (W6): both fields finite and of the same size;
+                       the fraction of elements on different sides of thr (value > thr) must
+                       be <= frac, and the mean |a - b| over all elements <= mean.
 Exit status: 0 if every compared key passes, 1 otherwise.
 """
 
@@ -97,6 +113,27 @@ RULES = {
         "profile_x": ("num", 1e-6, 0.0), "profile_y": ("num", 1e-6, 0.0),
         "T_sub": ("num", 1e-6, 0.0),
     },
+    # W6: evidence in reference_py/w6_roundoff.py and the W6 section of ../README.md. The run
+    # is stable under round-off (ulp-level changes move every key by <= 3e-9); the loose
+    # rules cover only an iteration count changed by up to 2 (the "stop+-2" rows).
+    "w6_topopt": {
+        "workload": ("exact",), "case_name": ("exact",), "case_load": ("exact",),
+        "case_filter": ("exact",), "case_nelx": ("exact",), "case_nely": ("exact",),
+        "case_rmin": ("exact",), "converged": ("exact",),
+        "ke": ("num", 0.0, 1e-13),
+        "c_first": ("num", 0.0, 1e-8),             # one solve: ulp class <= 1.9e-10
+        "c_early": ("num", 0.0, 1e-7),             # iterations 1..10: ulp class <= 3.1e-9
+        "c_mid": ("num", 0.0, 1e-7),               # iteration 50: ulp class <= 8.1e-10
+        "c_final": ("num", 0.0, 2e-4),             # +-2 iterations: <= 7.8e-5
+        "iters": ("int", 2),
+        "change_final": ("small", 0.01),           # both converged (tolChange)
+        "vol_final": ("num", 1e-8, 0.0), "vol_err_max": ("small", 1e-8),
+        "gray": ("num", 5e-4, 0.0),                # +-2 iterations: <= 1.5e-4
+        "n_solid": ("int", 20),                    # +-2 iterations: <= 5
+        "x_mbb_density": ("field", 0.5, 0.01, 5e-3),         # +-2 iterations: <= 0.0034,
+        "x_mbb_sensitivity": ("field", 0.5, 0.01, 5e-3),     # 2.4e-3
+        "x_cantilever_density": ("field", 0.5, 0.01, 5e-3),
+    },
     "w5_tolerance_mc": {
         "workload": ("exact",), "n_sample": ("exact",), "lcg_final": ("exact",),
         "first_top": ("num", 0.0, 1e-15), "first_dev": ("num", 1e-15, 0.0),
@@ -127,6 +164,29 @@ def flatten(v):
     return [v]
 
 
+def nesting(v):
+    """The nesting of a JSON value: None for a leaf (number, string, bool, null), else the list of
+    its elements' nestings."""
+    if isinstance(v, list):
+        return [nesting(x) for x in v]
+    return None
+
+
+def describe_shape(n):
+    """A nesting as text: "scalar", "vector[n]", "matrix[r x c]", "rows[l0,l1,...]" (rows of
+    different lengths) or "nested" (deeper than two levels)."""
+    if n is None:
+        return "scalar"
+    if all(x is None for x in n):
+        return "vector[%d]" % len(n)
+    if all(isinstance(x, list) and all(y is None for y in x) for x in n):
+        lens = [len(x) for x in n]
+        if all(l == lens[0] for l in lens):
+            return "matrix[%d x %d]" % (len(n), lens[0])
+        return "rows[%s]" % ",".join(str(l) for l in lens)
+    return "nested"
+
+
 def as_float(x):
     if x is None:
         return math.nan
@@ -151,6 +211,15 @@ def check(rule, a, b):
         return ok, "identical" if ok else "differs"
     xa = np.array([as_float(x) for x in fa])
     xb = np.array([as_float(x) for x in fb])
+    if kind == "field":
+        thr, max_frac, max_mean = rule[1], rule[2], rule[3]
+        if xa.size == 0 or not (np.all(np.isfinite(xa)) and np.all(np.isfinite(xb))):
+            return False, "empty or non-finite field"
+        frac = float(np.mean((xa > thr) != (xb > thr)))
+        mean = float(np.mean(np.abs(xa - xb)))
+        ok = frac <= max_frac and mean <= max_mean
+        return ok, "%d of %d elements on the other side of %g (frac %.5f, allowed %g); mean |diff| %.2e (allowed %.0e)" % (
+            int(round(frac * xa.size)), xa.size, thr, frac, max_frac, mean, max_mean)
     if kind == "small":
         bound = rule[1]
         ok = bool(np.all(np.isfinite(xa)) and np.all(np.isfinite(xb))
@@ -286,7 +355,36 @@ def self_test_arg():
     return bad
 
 
-def compare(name, mat_path, other_path, candidate=False, quiet=False):
+def self_test_field():
+    """Synthetic pass/fail cases for the "field" rule."""
+    rule = ("field", 0.5, 0.01, 5e-3)
+    base = [[0.0, 1.0] * 50] * 2                       # 200 elements
+    flip1 = [[1.0, 1.0] + [0.0, 1.0] * 49, [0.0, 1.0] * 50]
+    flip3 = [[1.0, 0.0, 1.0, 0.0] + [0.0, 1.0] * 48, [0.0, 1.0] * 50]
+    shift = [[min(1.0, v + 0.004) for v in row] for row in base]
+    cases = [
+        ("identical fields pass", base, True),
+        ("1 of 200 flipped (frac 0.005, mean 0.005) passes", flip1, True),
+        ("4 of 200 flipped (frac 0.02) fails", flip3, False),
+        ("void elements raised by 0.004 (mean 0.002) pass", shift, True),
+        ("void elements raised by 0.012 (mean 0.006) fail", [[min(1.0, v + 0.012) for v in row]
+                                                    for row in base], False),
+        ("a NaN element fails", [[float("nan")] + base[0][1:], base[1]], False),
+        ("different size fails", [base[0]], False),
+    ]
+    bad = 0
+    print("== field rule self-test")
+    for label, cand, want in cases:
+        ok, _ = check(rule, base, cand)
+        good = ok == want
+        bad += 0 if good else 1
+        print("  %s %-52s -> %s (expected %s)" % ("ok  " if good else "FAIL", label,
+                                                   "pass" if ok else "fail",
+                                                   "pass" if want else "fail"))
+    return bad
+
+
+def compare(name, mat_path, other_path, candidate=False, quiet=False, keys=None):
     """Compare one workload. Returns the list of failed keys (empty = pass).
 
     candidate=False: other_path is the NumPy file; True: a Sea port's export (stricter near-tie
@@ -307,13 +405,25 @@ def compare(name, mat_path, other_path, candidate=False, quiet=False):
         npy = json.load(fh)
     other = "candidate" if candidate else "NumPy"
     rules = RULES.get(name, {})
-    for key in sorted(set(mat) | set(npy)):
-        if key.startswith("_"):
+    wanted = None if keys is None else set(keys)
+    all_keys = set(mat) | set(npy) if wanted is None else wanted | set(npy)
+    for key in sorted(all_keys):
+        if wanted is None and key.startswith("_"):
+            continue
+        if wanted is not None and key not in wanted:
+            say("  FAIL %-22s not requested" % key)
+            failed.append(key)
             continue
         if key not in mat or key not in npy:
             say("  FAIL %-22s present only in %s" % (key, "MATLAB" if key in mat else other))
             failed.append(key)
             continue
+        if wanted is not None:
+            nm, nc = nesting(mat[key]), nesting(npy[key])
+            if nm != nc:
+                say("  FAIL %-22s shape %s vs %s" % (key, describe_shape(nc), describe_shape(nm)))
+                failed.append(key)
+                continue
         rule = rules.get(key, DEFAULT)
         if rule[0] in ("argmax_tol", "argmin_tol"):
             fn = check_arg_candidate if candidate else check_arg
@@ -422,9 +532,141 @@ def self_test_candidate():
     return bad
 
 
+def self_test_keys():
+    """--keys cases: reduced and corrupted real MATLAB files, shapes, extra keys, usage errors."""
+    import contextlib
+    import copy
+    import io
+    import shutil
+    import tempfile
+    bad = 0
+    print("== --keys self-test")
+
+    def report(good, label, extra=""):
+        nonlocal bad
+        bad += 0 if good else 1
+        print("  %s %s%s" % ("ok  " if good else "FAIL", label, extra))
+
+    wl, keys = "w5_tolerance_mc", ["first_dev", "mean_cold", "std_cold", "hist_counts"]
+    mat_path = os.path.join(REF_DIR, wl + ".json")
+    if not os.path.exists(mat_path) or not os.path.exists(os.path.join(REF_DIR, "w2_truss_fem.json")):
+        report(False, "--keys self-test needs reference/%s.json and reference/w2_truss_fem.json" % wl)
+        return bad
+    with open(mat_path) as fh:
+        mat = json.load(fh)
+    tmp = tempfile.mkdtemp(prefix="compare_selftest_keys_")
+
+    def run(cand, klist=None, name=wl, ref=mat_path):
+        path = os.path.join(tmp, name + ".json")
+        with open(path, "w") as fh:
+            json.dump(cand, fh)
+        return compare(name, ref, path, candidate=True, quiet=True, keys=klist or keys)
+
+    def reduced():
+        return {k: copy.deepcopy(mat[k]) for k in keys}
+
+    try:
+        report(run(reduced()) == [], "MATLAB file reduced to the listed keys passes")
+        c = reduced()
+        del c["mean_cold"]
+        report(run(c) == ["mean_cold"], "a listed key missing from the candidate fails")
+        c = reduced()
+        c["n_low"] = mat["n_low"]
+        report(run(c) == ["n_low"], "an unlisted extra key fails")
+        c = reduced()
+        c["_note"] = "x"
+        report(run(c) == ["_note"], "an unlisted extra key starting with _ fails")
+        c = reduced()
+        c["first_dev"] = [x for row in mat["first_dev"] for x in row]
+        report(run(c) == ["first_dev"], "matrix key written as one flat list fails")
+        c = reduced()
+        c["first_dev"] = c["first_dev"][:-1]
+        report(run(c) == ["first_dev"], "matrix key with a row missing fails")
+        c = reduced()
+        c["first_dev"][3] = c["first_dev"][3][:-1]
+        report(run(c) == ["first_dev"], "matrix key with a row one element short fails")
+        c = reduced()
+        c["first_dev"] = c["first_dev"][0]
+        report(run(c) == ["first_dev"], "matrix key written as a single row (flat list) fails")
+        c = reduced()
+        c["mean_cold"] = [c["mean_cold"]]
+        report(run(c) == ["mean_cold"], "a number written as a list fails")
+        c = reduced()
+        c["hist_counts"] = [c["hist_counts"]]
+        report(run(c) == ["hist_counts"], "a flat list written as a list of rows fails")
+        report(run(reduced()) == [], "matrix key written as rows passes")
+        c = reduced()
+        c["std_cold"] = mat["std_cold"] * 1.01
+        report(run(c) == ["std_cold"], "a corrupted listed key fails with exactly that key")
+        c = reduced()
+        c["hist_counts"][0] += 3
+        report(run(c) == ["hist_counts"], "hist_counts off by 3 fails (int rule 2)")
+        c = reduced()
+        c["hist_counts"][0] += 2
+        report(run(c) == [], "hist_counts off by 2 passes (int rule 2)")
+        # argmin_tol key with its array key listed
+        w2 = "w2_truss_fem"
+        w2_ref = os.path.join(REF_DIR, w2 + ".json")
+        with open(w2_ref) as fh:
+            m2 = json.load(fh)
+        k2 = ["e_crit0", "fos0"]
+        c = {k: m2[k] for k in k2}
+        report(run(c, k2, w2, w2_ref) == [], "argmin_tol key with its array key listed passes")
+        c["e_crit0"] = c["e_crit0"] + 1
+        report(run(c, k2, w2, w2_ref) == ["e_crit0"], "argmin_tol key naming another element fails")
+        # usage errors
+        def usage(argv, label):
+            err = io.StringIO()
+            out = io.StringIO()
+            with contextlib.redirect_stderr(err), contextlib.redirect_stdout(out):
+                rc = main(argv)
+            report(rc == 2 and err.getvalue().strip() != "", "usage error exits 2: " + label,
+                   "" if rc == 2 else " (exit %s)" % rc)
+        usage(["--keys", "mean_cold", wl], "--keys without --candidate")
+        usage(["--candidate", tmp, "--keys", "mean_cold"], "--keys with no workload name")
+        usage(["--candidate", tmp, "--keys", "mean_cold", wl, "w4_heat_plate"],
+              "--keys with two workload names")
+        usage(["--self-test", "--keys", "mean_cold"], "--keys with --self-test")
+        usage(["--candidate", tmp, "--keys", "", wl], "an empty key list")
+        usage(["--candidate", tmp, "--keys", "mean_cold,,std_cold", wl], "an empty element")
+        usage(["--candidate", tmp, "--keys", "mean_cold,", wl], "a trailing comma")
+        usage(["--candidate", tmp, "--keys", "mean_cold,nonesuch", wl],
+              "a key not in the MATLAB reference")
+        usage(["--candidate", tmp, "--keys", "e_crit0", w2], "argmin_tol key without its array key")
+        usage(["--candidate", tmp, "--keys"], "--keys without a value")
+        # main end to end: exit 0 on a passing candidate, 1 on a failing one
+        for label, cand, want in (("passes", reduced(), 0), ("fails", dict(reduced(), n_low=1), 1)):
+            with open(os.path.join(tmp, wl + ".json"), "w") as fh:
+                json.dump(cand, fh)
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["--candidate", tmp, "--keys", ",".join(keys), wl])
+            report(rc == want, "main with a candidate that %s exits %d" % (label, want),
+                   "" if rc == want else " (exit %s)" % rc)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return bad
+
+
+def argv_names(argv):
+    """The workload names of an argument list: the arguments that are neither options nor the value
+    of --candidate / --keys."""
+    out = []
+    skip = False
+    for a in argv:
+        if skip:
+            skip = False
+        elif a in ("--candidate", "--keys"):
+            skip = True
+        elif not a.startswith("--"):
+            out.append(a)
+    return out
+
+
 def main(argv):
     self_test = False
     cand_dir = None
+    keys_arg = None
     names = []
     i = 0
     while i < len(argv):
@@ -437,6 +679,12 @@ def main(argv):
                 return 2
             i += 1
             cand_dir = argv[i]
+        elif a == "--keys":
+            if i + 1 >= len(argv):
+                print("--keys needs a comma-separated list of keys", file=sys.stderr)
+                return 2
+            i += 1
+            keys_arg = argv[i]
         elif a.startswith("--"):
             print("unknown option %s" % a, file=sys.stderr)
             return 2
@@ -447,9 +695,44 @@ def main(argv):
     if self_test and cand_dir is not None:
         print("--self-test and --candidate cannot be combined", file=sys.stderr)
         return 2
+    keys = None
+    if keys_arg is not None:
+        if self_test:
+            print("--keys cannot be combined with --self-test", file=sys.stderr)
+            return 2
+        if cand_dir is None:
+            print("--keys needs --candidate", file=sys.stderr)
+            return 2
+        if len(argv_names(argv)) != 1:
+            print("--keys needs exactly one workload name", file=sys.stderr)
+            return 2
+        keys = keys_arg.split(",")
+        if any(k == "" for k in keys):
+            print("--keys: empty key list or empty element", file=sys.stderr)
+            return 2
+        keys = sorted(set(keys))
+        name = names[0]
+        if name not in RULES:
+            print("unknown workload %s" % name, file=sys.stderr)
+            return 2
+        mat_ref = os.path.join(REF_DIR, name + ".json")
+        if os.path.exists(mat_ref):
+            with open(mat_ref) as fh:
+                mat = json.load(fh)
+            for k in keys:
+                if k not in mat:
+                    print("--keys: %s is not a key of the MATLAB reference of %s" % (k, name),
+                          file=sys.stderr)
+                    return 2
+                rule = RULES[name].get(k, DEFAULT)
+                if rule[0] in ("argmax_tol", "argmin_tol") and rule[1] not in keys:
+                    print("--keys: %s is judged against the array key %s, which is not listed"
+                          % (k, rule[1]), file=sys.stderr)
+                    return 2
     total_fail = 0
     if self_test:
-        total_fail += self_test_arg() + self_test_candidate()
+        total_fail += (self_test_arg() + self_test_field() + self_test_candidate()
+                       + self_test_keys())
     for name in names:
         if name not in RULES:
             print("unknown workload %s" % name, file=sys.stderr)
@@ -458,7 +741,7 @@ def main(argv):
         mat_ref = os.path.join(REF_DIR, name + ".json")
         if cand_dir is not None:
             total_fail += len(compare(name, mat_ref, os.path.join(cand_dir, name + ".json"),
-                                      candidate=True))
+                                      candidate=True, keys=keys))
             continue
         py_path = os.path.join(REF_DIR, name + ".py.json")
         mat_path = py_path if self_test else mat_ref

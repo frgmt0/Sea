@@ -1,0 +1,1 @@
+err_rt_arr_oob_compound_order.sea:12: error: index 5 out of bounds for dimension 0 of extent 3

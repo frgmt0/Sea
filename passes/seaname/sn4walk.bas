@@ -59,8 +59,8 @@
 5415 LET X(12) = X(12) + 2
 5420 SUBEND
 5425 REM ---- rs_st: statement I (LANGUAGE 7.1-7.6): its expressions are resolved and typed
-5430 REM (rs_expr), its names declared (nloc); a match and a for over anything but a range are
-5435 REM skipped regions: never walked, they keep their sea.ast records (DESIGN 3.4.1) ----------
+5430 REM (rs_expr), its type annotations looked up (tylk), its names declared (nloc); a match is a
+5435 REM skipped region: never walked, it keeps its sea.ast records (DESIGN 3.4.1, 3.4.2) ---------
 5440 SUB "rs_st": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 5445 LET X(19) = I
 5450 LET K = N(I, 0)
@@ -68,12 +68,15 @@
 5460 IF K > 24 THEN 5760
 5465 ON K - 7 GOTO 5470, 5470, 5760, 5760, 5760, 5560, 5575, 5610, 5620, 5680, 5695, 5760, 5760, 5760, 5760, 5740, 5755
 5470 REM let/var: the value first (a name is visible from the statement after it, LANGUAGE 7.2),
-5475 REM then the names of the pattern from left to right; the type annotation is not walked
+5475 REM then the annotation (its names where the statement stands), then the names of the pattern
+5477 REM from left to right
 5480 LET P = N(I, 7)
 5485 LET E = N(P, 8)
 5490 IF N(I, 1) = 0 THEN 5500
 5495 LET E = N(E, 8)
 5500 CALL "rs_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
+5501 IF N(I, 1) = 0 THEN 5505
+5502 CALL "tylk": N(), M(), Y(), W(), S$(), X(), X$(), N(P, 8)
 5505 IF N(P, 0) <> 10 THEN 5525
 5510 CALL "nloc": N(), Y(), W(), X(), X$(), N(P, 6), P, R
 5515 LET M(P, 2) = R
@@ -121,10 +124,9 @@
 5685 CALL "rs_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 5690 CALL "rs_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(E, 8)
 5692 GOTO 5760
-5695 REM a range loop: the range, then the loop variable (a local before those of the body) in a
-5700 REM scope of its own; any other iterable is a skipped region
+5695 REM a loop over a range or a vector (DESIGN 3.4.2): the iterable, then the loop variable (a
+5700 REM local before those of the body) in a scope of its own
 5705 LET E = N(I, 7)
-5710 IF N(E, 0) <> 41 THEN 5760
 5715 CALL "rs_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 5720 CALL "sc_push": N(), W(), X(), X$(), I
 5725 CALL "nloc": N(), Y(), W(), X(), X$(), N(I, 6), I, R

@@ -1,9 +1,9 @@
 #sea 1
 #target arm64-macos
 #file fn_ref.sea
-type 0:5:16 i64 s 0
+rtype 0:5:16 i64 s 0 3
 param 0:5:9 s 1 0
-type 0:5:24 i64 s 0
+rtype 0:5:24 i64 s 0 3
 param 0:5:21 n 0 0
 rint 0:6:14 0 #0000000000000000
 rname 0:6:17 n loc 2
@@ -15,9 +15,9 @@ block 0:6:19 1
 rfor 0:6:5 i 0:6:9 3
 block 0:5:29 1
 rfn 0:5:1 bump 0 2 0 2 1 3 3
-type 0:10:17 i64 s 0
+rtype 0:10:17 i64 s 0 3
 param 0:10:10 s 1 0
-type 0:10:25 i64 s 0
+rtype 0:10:25 i64 s 0 3
 param 0:10:22 n 0 0
 rint 0:11:14 0 #0000000000000000
 rname 0:11:17 n loc 2

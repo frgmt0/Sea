@@ -1,0 +1,10 @@
+// arr_rule30 -- DESIGN.md 3.6.6 rule 30 (element loops): the second example verbatim on line 3
+fn walk(v: f64[]) {
+    for x in v {
+    }
+    printf("walked %d\n", len(v))
+}
+walk(ones(3))
+walk(zeros(0))
+// a borrowed vector (a parameter) is held in a hidden local, retained before and released after
+// the loop; the loop variable x is loaded from the held vector's data

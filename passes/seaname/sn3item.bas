@@ -1,7 +1,7 @@
-3425 REM ---- sn_check: the work of seaname (DESIGN 3.4.1): the items in stream order (names, LANGUAGE
-3430 REM 7.2: visible everywhere), the signatures of the entered functions, every entered const in
-3435 REM the constant order (typed path, value), then the resolution walk of the body of every
-3440 REM entered fn in fid order and of .main (the symbols limit counts in this order). Locals: S I K.
+3425 REM ---- sn_check: the work of seaname (DESIGN 3.4.1, 3.4.2): the items in stream order (names,
+3430 REM LANGUAGE 7.2: visible everywhere), every entered const in the constant order (typed path,
+3435 REM value), the struct fields and signatures, the resolution walk of the body of every entered fn
+3440 REM in fid order and of .main (the symbols limit counts in this order), the other type nodes.
 3445 SUB "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
 3450 LET X(3) = 1
 3455 LET X(4) = 9
@@ -28,16 +28,21 @@
 3565 LET I = N(I, 8)
 3570 GOTO 3520
 3575 LET X(33) = X(3)
-3580 FOR S = 2 TO X(33)
-3585 IF Y(S, 0) <> 1 THEN 3595
-3590 CALL "ck_sig": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
-3595 NEXT S
-3600 CALL "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
-3605 FOR S = 2 TO X(33)
-3610 IF Y(S, 0) <> 1 THEN 3620
-3615 CALL "rs_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
-3620 NEXT S
+3577 REM the type nodes in the order of DESIGN 3.4.2: scalar const annotations, the constants,
+3578 REM the struct fields, the signatures, then (after the walks) every other one in file order
+3580 CALL "tyconst": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
+3585 CALL "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
+3590 CALL "tyfld": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
+3595 FOR S = 2 TO X(33)
+3600 IF Y(S, 0) <> 1 THEN 3610
+3605 CALL "ck_sig": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
+3610 NEXT S
+3612 FOR S = 2 TO X(33)
+3614 IF Y(S, 0) <> 1 THEN 3618
+3616 CALL "rs_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
+3618 NEXT S
 3625 CALL "rs_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), 1
+3627 CALL "tyfin": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 3630 SUBEND
 3635 REM ---- ck_item: one top-level item I becomes a symbol (fn 1, const 2, struct 3) ---------------
 3640 REM A predeclared name is 'redefinition of predeclared name'; a name already taken by an earlier
@@ -79,34 +84,17 @@
 3807 LET Y(R, 5) = X(42)
 3810 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "structs", "", "", 1
 3815 SUBEND
-3820 REM ---- tyof: R = the type written by type node I (phase 1: f64 i64 bool; str is returned as 5
-3825 REM and reported by the caller at the node DESIGN 2.6.2 names; others are errors here) ---------
+3820 REM ---- tyof: R = the type of type node I of a signature (DESIGN 3.4.2): looked up with no local
+3825 REM in scope (tylk) and resolved (tyres, which reports its errors); 0 after an error and for a
+3827 REM str type (X(44): the signature reports it, DESIGN 2.6.2) --------------------------------
 3830 SUB "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, R
-3835 LET R = 0
-3840 IF N(I, 1) = 1 THEN 3855
-3845 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "arrays", "", "", 1
-3850 GOTO 3955
-3855 LET B$ = S$(N(I, 6))
-3860 LET L0 = LEN(B$)
-3865 IF L0 > 6 THEN 3915
-3870 IF L0 < 3 THEN 3915
-3875 LET P = POS("|f64   |i64   |bool  |str   |Figure|Axes  |Lu    |Chol  |", "|" & SEG$(B$ & "      ", 1, 6) & "|")
-3880 IF P = 0 THEN 3915
-3885 LET P = (P - 1) / 7 + 1
-3890 IF P > 4 THEN 3905
-3895 LET R = VAL(SEG$("4325", P, P))
-3900 GOTO 3955
-3905 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "handle types", "", "", 1
-3910 GOTO 3955
-3915 REM an identifier: a declared struct (not in phase 1) or no type at all
-3920 FOR J = 2 TO X(33)
-3925 IF Y(J, 1) <> N(I, 6) THEN 3945
-3930 IF Y(J, 0) <> 3 THEN 3945
-3935 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "structs", "", "", 1
-3940 GOTO 3955
-3945 NEXT J
-3950 CALL "er": N(), X(), X$(), I, "UNKNOWN_STRUCT", "", "", "", 0
-3955 SUBEND
+3835 LET X(12) = 200000
+3840 CALL "tylk": N(), M(), Y(), W(), S$(), X(), X$(), I
+3842 LET X(44) = 1
+3845 CALL "tyres": N(), M(), Y(), T(), C(), S$(), X(), X$(), I
+3847 LET X(44) = 0
+3850 LET R = M(I, 1)
+3855 SUBEND
 3960 REM ---- ck_sig: the signature of fn S: parameter types in M(param,1), result types in
 3965 REM M(type,1), the result type in Y(S,2) (1 none, a type, or a ttuple; 0 after an error) -------
 3970 SUB "ck_sig": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
@@ -131,29 +119,33 @@
 4065 CALL "er": N(), X(), X$(), I, "SHADOWS_PREDECLARED", "", "", "", 0
 4070 IF N(I, 2) = 0 THEN 4080
 4075 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "default arguments", "", "", 1
-4080 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(I, 7), D
-4085 IF D <> 5 THEN 4100
+4080 REM a str parameter (any shape) is 'strings' at its param node; its type is 0 (tyres)
+4085 CALL "tyb": S$(N(N(I, 7), 6)), B
+4087 IF B <> 5 THEN 4095
 4090 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "strings", "", "", 1
-4095 LET D = 0
+4095 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(I, 7), D
 4100 LET M(I, 1) = D
 4105 LET I = N(I, 8)
 4110 NEXT J
 4115 REM the result types follow the parameters
 4120 LET Z = 0
 4125 FOR J = 1 TO R0
-4130 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, D
-4135 IF D <> 5 THEN 4150
+4130 CALL "tyb": S$(N(I, 6)), B
+4135 IF B <> 5 THEN 4145
 4140 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "strings", "", "", 1
-4145 LET D = 0
-4150 LET M(I, 1) = D
+4145 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, D
+4150 IF J > 1 THEN 4155
+4152 LET V0 = D
 4155 LET U(J) = D
+4157 IF D < 10 THEN 4160
+4158 LET U(J) = T(D, 9)
 4160 IF D <> 0 THEN 4170
 4165 LET Z = 1
 4170 LET I = N(I, 8)
 4175 NEXT J
 4180 LET Y(S, 2) = 1
 4185 IF R0 = 0 THEN 4220
-4190 LET Y(S, 2) = U(1)
+4190 LET Y(S, 2) = V0
 4195 IF R0 = 1 THEN 4220
 4200 LET Y(S, 2) = 0
 4205 IF Z = 1 THEN 4220
@@ -172,7 +164,7 @@
 4270 CALL "rs_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 4275 IF N(F, 1) = 0 THEN 4310
 4280 REM an annotation: a scalar f64, i64 or bool; any other fails the typed path
-4285 CALL "cty": N(), S$(), N(F, 7), D
+4285 CALL "cty": N(), M(), N(F, 7), D
 4290 IF D > 0 THEN 4300
 4295 CALL "fl": X()
 4300 CALL "cv": N(), M(), T(), C(), X(), X$(), E, D
@@ -187,17 +179,14 @@
 4345 IF D = 0 THEN 4355
 4350 CALL "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S
 4355 SUBEND
-4360 REM ---- cty: D = the type written by the type node G of a const if seaname can use it (a scalar
-4365 REM f64, i64 or bool: 4, 3, 2), else 0 (seacheck reports the annotation's errors) ----------
-4370 SUB "cty": N(), S$(), G, D
+4360 REM ---- cty: D = the type of the annotation G of a const, resolved before the constants (tyconst),
+4365 REM if seaname can use it (a scalar f64, i64 or bool: 4, 3, 2), else 0 -------------------------
+4370 SUB "cty": N(), M(), G, D
 4375 LET D = 0
 4380 IF N(G, 1) <> 1 THEN 4415
-4385 LET B$ = S$(N(G, 6))
-4390 IF LEN(B$) < 3 THEN 4415
-4395 IF LEN(B$) > 4 THEN 4415
-4400 LET P = POS("|f64 |i64 |bool|", "|" & SEG$(B$ & " ", 1, 4) & "|")
-4405 IF P = 0 THEN 4415
-4410 LET D = VAL(SEG$("432", (P + 4) / 5, (P + 4) / 5))
+4385 IF M(G, 1) < 2 THEN 4415
+4390 IF M(G, 1) > 4 THEN 4415
+4395 LET D = M(G, 1)
 4415 SUBEND
 4820 REM ---- ck_cord: every const item, each after the constants its expression names (a depth-first
 4825 REM order with an explicit stack in W(1..): pairs (const, next node to scan), so chains of any

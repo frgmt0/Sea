@@ -1,0 +1,17 @@
+var T = mk()
+var j = 1
+var i = 0
+let tn = 2.5
+fn mk() -> f64[,] {
+    var A = zeros(2, 2)
+    for k in 0..2 {
+        A[k, k] = 1.0
+    }
+    return A
+}
+T[j, i] = tn
+printf("%g\n", T[1, 0])
+let U = mk()
+printf("%g\n", U[1, 0])
+// arr_rule19 -- DESIGN.md 3.6.6 rule 19 (element stores by scalar indices, copy on write): its
+// example verbatim on line 12; a store in a loop and an array result (rules 15 (a), 16 (c)) in mk

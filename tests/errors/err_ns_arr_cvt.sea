@@ -1,0 +1,4 @@
+// err_ns_arr_cvt -- 4d: an array conversion f64(a) is still arrays, at the conv node (DESIGN.md 2.6.2
+// step 4d)
+let a = filled(1, 3)
+let b = f64(a)

@@ -2,10 +2,10 @@
 #target arm64-macos
 #file stmt_tasg.sea
 rtup 10 2 3 3
-type 0:4:11 i64 s 0
+rtype 0:4:11 i64 s 0 3
 param 0:4:8 n 0 0
-type 0:4:20 i64 s 0
-type 0:4:25 i64 s 0
+rtype 0:4:20 i64 s 0 3
+rtype 0:4:25 i64 s 0 3
 rpname 0:5:9 s 2
 rint 0:5:13 0 #0000000000000000
 var 0:5:5 0
@@ -22,10 +22,10 @@ rname 0:9:16 n loc 1
 return 0:9:5 2
 block 0:4:30 3
 rfn 0:4:1 two 0 1 2 2 10 3
-type 0:11:16 i64 s 0
+rtype 0:11:16 i64 s 0 3
 param 0:11:9 c 1 0
-type 0:11:25 i64 s 0
-type 0:11:30 i64 s 0
+rtype 0:11:25 i64 s 0 3
+rtype 0:11:30 i64 s 0 3
 rint 0:12:14 0 #0000000000000000
 rint 0:12:17 2 #4000000000000000
 range 0:12:14 0 0
@@ -43,11 +43,11 @@ bin 0:15:21 add
 return 0:15:5 2
 block 0:11:35 2
 rfn 0:11:1 bump 0 1 2 3 10 3
-type 0:17:15 f64 s 0
+rtype 0:17:15 f64 s 0 4
 param 0:17:8 p 1 0
-type 0:17:23 i64 s 0
+rtype 0:17:23 i64 s 0 3
 param 0:17:20 n 0 0
-type 0:17:31 i64 s 0
+rtype 0:17:31 i64 s 0 3
 rpname 0:18:9 k 3
 rint 0:18:13 0 #0000000000000000
 var 0:18:5 0

@@ -1,0 +1,59 @@
+#sea 1
+#target arm64-macos
+#file arr_rule30.sea
+func .main main 0:1:1 0 0
+li i1 3
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new_u 0:7 1 p5 4 i2 i3 i1 i4
+lf f6 #3FF0000000000000
+ldp p7 p5 - 0 40
+li i8 0
+icmp gt i9 i1 i8
+if 1 i9
+li i10 1
+isub i11 i1 i10
+loop 2 i12 i8 i11 i10
+stf f6 p7 i12 8 0
+endloop 2
+endif 1
+call walk 0 1 p5
+release p5
+li i13 0
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new 0:8 1 p17 4 i14 i15 i13 i16
+call walk 0 1 p17
+release p17
+ret 0
+endfunc
+func walk fn 0:2:1 1 p1 0
+slot s1 8 8
+mov p2 p1
+retain p2
+ldi i3 p2 - 0 16
+li i4 0
+icmp gt i5 i3 i4
+if 1 i5
+ldp p6 p2 - 0 40
+li i7 1
+isub i8 i3 i7
+loop 2 i9 i4 i8 i7
+ldf f10 p6 i9 8 0
+endloop 2
+endif 1
+release p2
+ldi i11 p1 - 0 16
+sa p12 s1
+sti i11 p12 - 0 0
+la p13 d1
+rcall sea_printf 0:5 0 2 p13 p12
+ret 0
+endfunc
+fmt d1 3
+ftext walked%20
+fconv - - - d i
+ftext %0A
+#end

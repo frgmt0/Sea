@@ -1,0 +1,12 @@
+// err_rt_arr_ref_nested_empty -- f(ref v[0], g(ref v)) where g empties v: INDEX_OOB at the call's line
+// (DESIGN.md 3.6.6 rule 31; LANGUAGE.md 5.4)
+fn shrink(ref v: f64[]) -> f64 {
+    v = zeros(0)
+    return 1.5
+}
+fn put(ref e: f64, x: f64) {
+    e = e + x
+}
+var w = ones(2)
+printf("%d\n", len(w))
+put(ref w[0], shrink(ref w))

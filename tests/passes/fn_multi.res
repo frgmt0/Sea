@@ -2,10 +2,10 @@
 #target arm64-macos
 #file fn_multi.sea
 rtup 10 2 3 4
-type 0:4:12 i64 s 0
+rtype 0:4:12 i64 s 0 3
 param 0:4:9 n 0 0
-type 0:4:21 i64 s 0
-type 0:4:26 f64 s 0
+rtype 0:4:21 i64 s 0 3
+rtype 0:4:26 f64 s 0 4
 rpname 0:5:9 a 2
 rint 0:5:13 0 #0000000000000000
 var 0:5:5 0
@@ -28,10 +28,10 @@ rname 0:11:16 b loc 3
 return 0:11:5 2
 block 0:4:31 4
 rfn 0:4:1 sums 0 1 2 2 10 3
-type 0:13:13 i64 s 0
+rtype 0:13:13 i64 s 0 3
 param 0:13:10 n 0 0
-type 0:13:22 i64 s 0
-type 0:13:27 f64 s 0
+rtype 0:13:22 i64 s 0 3
+rtype 0:13:27 f64 s 0 4
 rname 0:14:8 n loc 1
 rint 0:14:12 0 #0000000000000000
 bin 0:14:8 gt

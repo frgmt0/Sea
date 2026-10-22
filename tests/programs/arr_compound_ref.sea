@@ -1,0 +1,11 @@
+// arr_compound_ref -- v[0] += g(ref v) where g replaces v: the read sees the old array, the store
+// the new one (LANGUAGE.md 5.5, 7.3, 8.3)
+fn repl(ref v: f64[]) -> f64 {
+    v = filled(10.0, 2)
+    return 1.0
+}
+var v = ones(1)
+v[0] += repl(ref v)
+printf("%d %g %g\n", len(v), v[0], v[1])
+v[1] += repl(ref v)
+printf("%d %g %g\n", len(v), v[0], v[1])

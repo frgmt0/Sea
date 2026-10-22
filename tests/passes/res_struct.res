@@ -2,7 +2,7 @@
 #target arm64-macos
 #file res_struct.sea
 rerr 0:3:1 259 1 structs
-type 0:4:8 f64 s 0
+rtype 0:4:8 f64 s 0 4
 field 0:4:5 x
 rst 0:3:1 P 1 1
 rpname 0:6:5 q 1

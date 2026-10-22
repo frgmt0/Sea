@@ -1,0 +1,12 @@
+// arr_index_util -- ind2sub and sub2ind on scalars (LANGUAGE.md 10.7, 6.6)
+let (i, j) = ind2sub(3, 7)
+printf("%d %d\n", i, j)
+let (a, b) = ind2sub(4, 0)
+printf("%d %d\n", a, b)
+let (c, d) = ind2sub(3, -1)
+printf("%d %d\n", c, d)
+printf("%d %d %d\n", sub2ind(3, 1, 2), sub2ind(3, 2, 0), sub2ind(5, 0, 4))
+var A = zeros(3, 4)
+A[2, 3] = 1.0
+let (r, s) = ind2sub(rows(A), sub2ind(rows(A), 2, 3))
+printf("%d %d %g\n", r, s, A[r, s])

@@ -1,0 +1,1 @@
+err_rt_arr_oob_col_ext.sea:3: error: index 3 out of bounds for dimension 1 of extent 3

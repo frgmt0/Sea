@@ -1,0 +1,11 @@
+// heap_ifx -- if expressions of an array type: fresh and borrowed arms (DESIGN.md 3.6.6 rules 3, 15 (b))
+fn choose(c: bool, v: f64[]) -> f64[] {
+    return if c { v } else { ones(1) }
+}
+let z = zeros(2)
+let a = if len(z) > 1 { z } else { ones(3) }
+let b = if len(z) > 5 { z } else { ones(3) }
+printf("%d %d\n", len(a), len(b))
+printf("%d %d\n", len(choose(true, z)), len(choose(false, z)))
+let c = if len(a) == 2 { filled(4.0, 1) } else { a }
+printf("%g\n", c[0])

@@ -1,0 +1,10 @@
+// err_rt_arr_ref_in_target_shrink -- a ref call in an assignment target's index shrinks the array:
+// the check uses the new extent (LANGUAGE.md 5.5, 5.4)
+fn shrink(ref v: f64[]) -> i64 {
+    v = zeros(1)
+    return 1
+}
+var h = ones(2)
+printf("%d\n", len(h))
+h[shrink(ref h)] = 5.0
+printf("%d\n", len(h))

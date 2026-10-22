@@ -10,6 +10,7 @@ progfmt.py (LANGUAGE.md 11.1: NaN, Inf, -Inf spelled as MATLAB does).
 """
 
 import os
+import struct
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -158,11 +159,14 @@ err('err_const_sin', 'sin inside a constant expression is not constant: at the w
     2, 11, 'not a constant expression')
 err('err_no_overload_hypot', 'hypot takes two arguments: no overload for one (LANGUAGE.md 10.4)',
     'let h = hypot(1.0)\n', 2, 9, "no overload of 'hypot' accepts (f64)")
-# sqrt is still outside the phase-3 library (DESIGN.md 2.6.2 phase rule: only printf now f64 i64
-# idiv and the six of 4.10.5), also inside a const.
-err('err_const_sqrt', 'sqrt in a constant: phase 3 still reports it under the phase rule '
-    '(DESIGN.md 2.6.2)', 'const S = sqrt(2.0)\nprintf("%g\\n", S)\n', 2, 11,
-    'not supported yet: sqrt')
+# From sub-phase 4d sqrt is in the library (DESIGN.md 2.6.2 step 4d), so a constant calling it
+# has its value: the correctly rounded square root, evaluated by seaname (f64emu f_sqrt) and
+# printed with %.17g (17 significant digits, round to nearest, C99).
+from f64emu import f_sqrt  # noqa: E402
+_s2 = struct.unpack('<d', struct.pack('<Q', f_sqrt(0x4000000000000000)))[0]
+prog('lib_const_sqrt', 'sqrt in a constant has its value from 4d (LANGUAGE.md 7.2, 10.4; '
+     'DESIGN.md 2.6.2 step 4d)', ['const S = sqrt(2.0)', 'printf("%.17g\\n", S)'],
+     '%.17g\n' % _s2)
 
 print('math_progs: written')
 

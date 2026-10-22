@@ -1,9 +1,9 @@
 #sea 1
 #target arm64-macos
 #file type_untyped.sea
-type 0:4:9 f64 s 0
+rtype 0:4:9 f64 s 0 4
 param 0:4:6 v 0 0
-type 0:4:17 f64 s 0
+rtype 0:4:17 f64 s 0 4
 rname 0:5:12 v loc 1
 return 0:5:5 1
 block 0:4:21 1
@@ -25,7 +25,7 @@ rint 0:10:13 3 #4008000000000000
 rpowk 0:10:9 3
 let 0:10:1 0
 rpname 0:11:5 d 5
-type 0:11:8 f64 s 0
+rtype 0:11:8 f64 s 0 4
 rint 0:11:14 4 #4010000000000000
 rint 0:11:18 5 #4014000000000000
 bin 0:11:14 add

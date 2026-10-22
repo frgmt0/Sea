@@ -1,0 +1,3 @@
+// lib_const_sqrt -- sqrt in a constant has its value from 4d (LANGUAGE.md 7.2, 10.4; DESIGN.md 2.6.2 step 4d)
+const S = sqrt(2.0)
+printf("%.17g\n", S)

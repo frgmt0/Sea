@@ -1,7 +1,7 @@
 #sea 1
 #target arm64-macos
 #file type_var_rule.sea
-type 0:4:16 f64 s 0
+rtype 0:4:16 f64 s 0 4
 param 0:4:9 v 1 0
 rname 0:5:5 v loc 1
 rname 0:5:9 v loc 1
@@ -50,7 +50,7 @@ ref 0:18:6
 call 0:18:1 1
 cstmt 0:18:1
 rpname 0:19:5 n 6
-type 0:19:8 i64 s 0
+rtype 0:19:8 i64 s 0 3
 rint 0:19:14 0 #0000000000000000
 var 0:19:1 1
 rpname 0:20:5 k 7

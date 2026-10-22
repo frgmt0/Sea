@@ -1,0 +1,22 @@
+// heap_reassign -- assigning a new array to an array variable releases the old one, also a = a, in a
+// loop and through ref (LANGUAGE.md 7.7; DESIGN.md 3.6.6 rules 15 (d), 31)
+var a = zeros(3)
+a = ones(2)
+a = a
+printf("%d %g\n", len(a), a[1])
+for i in 0..5 {
+    a = filled(f64(i), i + 1)
+}
+printf("%d %g\n", len(a), a[4])
+fn reset(ref v: f64[], n: i64) {
+    v = zeros(n)
+    v = ones(n)
+}
+reset(ref a, 2)
+printf("%d %g\n", len(a), a[0])
+let b = a
+a = zeros(1)
+printf("%d %d %g\n", len(a), len(b), b[1])
+var M = zeros(2, 2)
+M = filled(3.0, 1, 1)
+printf("%g\n", M[0, 0])

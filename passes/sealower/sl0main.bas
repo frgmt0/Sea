@@ -30,7 +30,7 @@
 245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(22), Y$(22,5), Z(8), I(40), L(4)
 250 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 255 DIM H(99999,8), G(49999,8), A(99999,2), T(20008,3), M(199999), S$(199999), A$(2)
-260 DIM V(199999,2), W(599999), U(199999,2), D(49999,2), B(9999,2), J(9999), P(131071)
+260 DIM V(199999,2), W(599999), U(199999,2), D(49999,2), B(9999,2), J(59999,4), P(131071)
 265 DIM L$(199999)
 270 LET P$ = "sealower"
 275 REM ---- the tables (canonical order: errors exits consts entries records) ----------------
@@ -115,7 +115,9 @@
 645 CALL "dg_bug": P$, "entry PRINTF (pp, -) or NOW (-, f) is not in the entries table"
 650 REM ---- R(i,0) = the node kind of every HIR record row of the phase-1 subset, else 0 -----
 655 LET K1$ = "|ci=01|cf=02|cb=03|cs=04|lv=05|cvt=06|un=07|bin=08|powk=09|call=10|rarg=11|lib=12|fmt=13|ftext=14|fconv=15|rng=16|ifx=17|skip=18|seq=19|bind=20|"
+656 GOSUB 9130
 660 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
+662 LET K2$ = K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
 665 LET K1$ = K1$ & K2$
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0
@@ -151,7 +153,7 @@
 825 IF P8$ = "" THEN 840
 830 LET Q2$ = P8$
 835 GOTO 2375
-840 IF K > 32 THEN 1300
+840 IF K > 32 THEN 9670
 845 REM ---- a node: inside a function whose par and loc records are complete -----------------
 850 IF F7 = 0 THEN 2365
 855 IF P7 + L7 > 0 THEN 2365
@@ -165,8 +167,11 @@
 895 LET H(H1, 2) = F1 * 1E9 + L1
 900 LET H(H1, 3) = C1
 905 LET H(H1, 4) = 0
-910 IF K > 19 THEN 920
+910 IF K > 19 THEN 916
 915 LET H(H1, 4) = I(2)
+916 IF K < 39 THEN 920
+917 IF K > 40 THEN 920
+918 LET H(H1, 4) = I(2)
 920 LET H(H1, 5) = 0
 925 LET H(H1, 6) = 0
 930 LET H(H1, 7) = 0
@@ -180,6 +185,8 @@
 970 NEXT I
 975 LET W1 = W1 - P1 + 1
 980 LET W(W1) = H1
+983 IF K < 33 THEN 985
+984 ON K - 38 GOTO 1040, 1015, 1050
 985 ON K GOTO 995, 995, 1015, 995, 1015, 1285, 1070, 1095, 1135, 1025, 1285, 1155, 1040, 995, 1180, 1025, 1285, 1285, 1040, 1050, 1200, 1285, 1255, 8105, 1050, 1285, 1050, 1285, 1285, 1060, 1285, 1060
 990 REM the value of field 3 (ci cf cs ftext) as a string
 995 GOSUB 1900
@@ -251,7 +258,8 @@
 1325 IF Y9 <= T9 THEN 1340
 1330 LET P8$ = "types"
 1335 GOTO 1285
-1340 LET T(Y9, 1) = 1
+1340 LET T(Y9, 1) = 1 + 2 * INT(K / 42)
+1342 LET T(Y9, 2) = I(2)
 1345 GOTO 1285
 1350 IF G0 > 0 THEN 2360
 1355 IF I(1) <> Y9 + 1 THEN 2360
@@ -490,6 +498,7 @@
 2520 LET B7 = 0
 2525 LET S5 = 0
 2530 LET J0 = 0
+2532 LET J9 = 0
 2535 LET U0 = 0
 2540 LET S7 = 0
 2541 REM the func record's pos is a site too (2.7, 4.9); a capacity error here is reported at
@@ -509,28 +518,29 @@
 2580 GOTO 2570
 2585 FOR N4 = N3 TO G(F0, 8)
 2590 IF H(N4, 1) < 20 THEN 2720
-2595 IF H(N4, 1) > 31 THEN 2720
+2595 IF H(N4, 1) > 31 THEN 23230
 2600 IF H(N4, 7) = 0 THEN 2720
 2605 LET B5 = N4 - 1
 2610 IF H(N4, 1) < 25 THEN 2625
-2615 IF H(N4, 1) > 27 THEN 2625
+2615 IF H(N4, 1) > 27 THEN 23250
 2620 LET B5 = H(N4, 7)
 2625 LET A5 = N4
 2630 IF H(A5, 7) = 0 THEN 2645
 2635 LET A5 = H(A5, 7)
 2640 GOTO 2630
+2643 GOSUB 23280
 2645 FOR K5 = A5 TO B5
 2650 IF H(K5, 1) <> 11 THEN 2715
 2655 LET C5 = H(K5, 7)
-2660 IF H(C5, 1) <> 5 THEN 2715
+2660 IF H(C5, 1) = 39 THEN 23450
+2662 IF H(C5, 1) <> 5 THEN 2715
 2665 LET L5 = H(C5, 5)
-2670 IF V(L5, 1) = 3 THEN 2715
-2675 FOR J5 = A5 TO K5 - 1
+2670 IF A(G(F0, 0) + L5, 2) = 1 THEN 23490
+2675 FOR J5 = A5 TO B5
 2680 IF H(J5, 1) <> 5 THEN 2710
 2685 IF H(J5, 5) <> L5 THEN 2710
-2690 REM the lv of another rarg is not a read
-2695 IF H(J5 + 1, 1) <> 11 THEN 2705
-2700 IF H(J5 + 1, 7) = J5 THEN 2710
+2690 REM the evaluation order, the targets of ref arguments and the consumers of reference values
+2695 GOTO 23550
 2705 LET H(J5, 6) = 1
 2710 NEXT J5
 2715 NEXT K5
@@ -585,7 +595,7 @@
 2960 LET Z5 = 1
 2965 LET Z5$ = " " & SEG$("ifp", C1, C1)
 2970 GOTO 3015
-2975 IF T(T1, 1) <> 2 THEN 2360
+2975 IF T(T1, 1) <> 2 THEN 2955
 2980 LET Z6 = T1
 2985 FOR X6 = 1 TO T(Z6, 2)
 2990 LET T1 = M(T(Z6, 3) + X6 - 1)
@@ -605,14 +615,17 @@
 3060 LET W(W0 + 5) = 0
 3065 LET X = X1
 3070 LET D = D1
+3072 IF H(X, 1) > 32 THEN 9710
 3075 ON H(X, 1) GOTO 3140, 3210, 3175, 3250, 3310, 3435, 3490, 3575, 4150, 4450, 3080, 4985, 3080, 3080, 3080, 3080, 4025, 3080, 5645, 5710, 5735, 6045, 6070, 5850, 6395, 6515, 6650, 7060, 7070, 7100, 7220, 7320
 3080 GOTO 2365
 3085 REM 3090: the node of the top frame is done, its value in R9; resume the frame below it
-3090 LET W0 = W0 - 6
+3090 GOSUB 10450
+3091 LET W0 = W0 - 6
 3095 IF W0 = 0 THEN 2820
 3100 LET X = W(W0)
 3105 LET D = W(W0 + 1)
 3110 LET S = W(W0 + 2)
+3112 IF S > 38 THEN 9720
 3115 IF S > 20 THEN 3125
-3120 ON S GOTO 3445, 3500, 3595, 3620, 3850, 3915, 4035, 4100, 4130, 4160, 4500, 5080, 5400, 5510, 5535, 5695, 3090, 3090, 5835, 5995
-3125 ON S - 20 GOTO 3090, 3090, 6180, 6275, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8620
+3120 ON S GOTO 3445, 3500, 3595, 3620, 3850, 3915, 4035, 16360, 16400, 4160, 4500, 5080, 5400, 5510, 5535, 5695, 15360, 15230, 5835, 5995
+3125 ON S - 20 GOTO 16210, 3090, 6180, 15010, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8620

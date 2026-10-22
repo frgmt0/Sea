@@ -611,9 +611,11 @@ structs exists only by annotation (`let names: str[3] = …`, converted with the
 below). A fixed-size array converts
 implicitly to the dynamic type of the same rank and element type (a heap copy is made when
 needed); a dynamic array is assigned to a fixed-size variable or parameter only after a
-run-time shape check (`shape mismatch: expected 4, got 5`). The extents of a fixed-size type are
-`i64` constant expressions (§7.2); a negative extent is the compile error `invalid array size %d`
-with its value, at the first such extent (`f64[-1]` reports `invalid array size -1`).
+run-time shape check (`shape mismatch: expected 4, got 5`). Each extent of a fixed-size type is an
+integer literal or the name of an `i64` constant (§7.2; the grammar's `dim`, Appendix A), so `f64[-1]`
+is a syntax error and only a constant can give a negative extent: that is the compile error
+`invalid array size %d` with its value, at the first such extent (`const N = 0 - 4` and then
+`f64[N]` reports `invalid array size -4` at `N`).
 
 **Value semantics.** Assigning an array, passing it as an ordinary argument or storing it in a
 struct never makes two variables share mutable state: after `var B = A`, writing `B[0] = 1`

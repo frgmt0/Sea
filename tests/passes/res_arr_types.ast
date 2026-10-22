@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file res_arr_types.sea
+type 0:3:9 f64 m 0
+param 0:3:6 a 0 0
+type 0:3:20 i64 v 0
+param 0:3:17 b 0 0
+type 0:3:31 bool v 0
+type 0:3:39 f64 m 0
+pname 0:4:9 r
+name 0:4:13 filled
+true 0:4:20
+name 0:4:26 len
+name 0:4:30 b
+call 0:4:26 1
+call 0:4:13 2
+var 0:4:5 0
+name 0:5:14 b
+name 0:6:9 r
+int 0:6:11 0
+index 0:6:9 1
+name 0:6:16 x
+int 0:6:20 0
+bin 0:6:16 gt
+asg 0:6:9 set
+block 0:5:16 1
+for 0:5:5 x 0:5:9
+name 0:8:13 r
+name 0:8:16 a
+return 0:8:5 2
+block 0:3:47 3
+fn 0:3:1 f 0 2 2
+pname 0:10:5 m
+type 0:10:8 f64 m 0
+name 0:10:17 zeros
+int 0:10:23 2
+int 0:10:26 2
+call 0:10:17 2
+let 0:10:1 1
+pname 0:11:5 v
+type 0:11:8 i64 v 0
+name 0:11:16 filled
+int 0:11:23 1
+int 0:11:26 3
+call 0:11:16 2
+let 0:11:1 1
+pname 0:12:5 w
+type 0:12:8 f64 v 0
+name 0:12:16 zeros
+int 0:12:22 1
+call 0:12:16 1
+let 0:12:1 1
+pname 0:13:6 p
+pname 0:13:9 q
+ptuple 0:13:5 2
+name 0:13:14 f
+name 0:13:16 m
+name 0:13:19 v
+call 0:13:14 2
+let 0:13:1 0
+prog 5
+#end

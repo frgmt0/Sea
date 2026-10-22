@@ -1,0 +1,14 @@
+var A = zeros(2, 3)
+A[1, 2] = 5.0
+printf("%g\n", g(A, 2, 2))
+printf("%g\n", g(A, 0, 1))
+printf("%g\n", A[$ - 1, $ - 1])
+fn g(T: f64[,], i: i64, j: i64) -> f64 {
+    var r = T[j-1, i]
+    while r < 0.0 {
+        r = 0.0
+    }
+    return r
+}
+// arr_rule18 -- DESIGN.md 3.6.6 rule 18 (element reads by scalar indices, $): the first example
+// verbatim in g (line 7); $ in both dimensions and an element store (rule 19) in .main

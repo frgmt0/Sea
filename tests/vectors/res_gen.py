@@ -13,8 +13,15 @@ decisions (each rpowk position must be a powk record of the hir1 and vice versa)
 Decision 25 as refined (3.4.1 rule 2, 3.5.2): a call in a constant is evaluated only when its
 callee is an `rname pd` naming pow or sqrt, so a call of a function item (also one the program
 names pow or sqrt) makes the constant rcn, and so does naming such a constant; `&&`/`||` cannot
-rescue it, because the whole expression is typed (static_kind) before it is evaluated. The
-subtree of a `type` node is never resolved (its dims keep `name`, its ints become rint).
+rescue it, because the whole expression is typed (static_kind) before it is evaluated.
+
+Sub-phase 4d (3.4.2): every type node of an entered item and of a resolved region is an `rtype`
+with its type (its dims resolved: rint, rname), after the constants; the type table holds the
+rtvec/rtmat/rtup records in the order of creation of 3.4.2 (field types, signatures with a
+tuple after its components, then every other rtype in file order); a type with an error is 0
+and creates nothing; the phase rule of step 4d reports fixed-size array types (`arrays`), struct
+types (`structs`) and handle types at the type node, a `str` parameter at its param node (type
+0), a `str` result at its type node; a `for` over a vector is a resolved region.
 """
 
 import os
@@ -46,6 +53,8 @@ panel plot pow print printf rcond round rows save_svg setdiff sign sin solve sor
 sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim y_reverse
 y_ticks ylabel ylim zeros'''.split())
 SCALAR_TY = {'bool': 2, 'i64': 3, 'f64': 4}
+HANDLE_TY = {'Figure': 6, 'Axes': 7, 'Lu': 8, 'Chol': 9}
+LIM_FIXED_ELEMS = 256             # SEA_LIM_FIXED_ELEMS (include/limits.inc)
 F_CONST = {'pi': 0x400921FB54442D18, 'inf': 0x7FF0000000000000, 'nan': 0x7FF8000000000000,
            'eps': 0x3CB0000000000000}
 
@@ -431,11 +440,6 @@ def eval_const(cn, ctx):
 
 
 # ---------------------------------------------------------------- seaname
-def type_id(tnode):
-    if tnode.f[2] == 's' and tnode.f[1] in SCALAR_TY:
-        return SCALAR_TY[tnode.f[1]]
-    return 0
-
 
 def seaname(prog):
     items = [k for k in prog.kids if k.op in ('fn', 'const', 'struct')]
@@ -466,29 +470,13 @@ def seaname(prog):
     fid = {it.f[1]: i + 2 for i, it in enumerate(fns)}
     sid = {it.f[1]: i + 1 for i, it in enumerate(sts)}
     cid = {it.f[1]: i + 1 for i, it in enumerate(cns)}
-    structs = set(sid)
 
-    # signatures, in item order: parameters in order, then result types
-    def sig_type_errors(tn, at_pos, strings_at):
-        base, shape = tn.f[1], tn.f[2]
-        if shape != 's':
-            err(tn.pos, 259, ['arrays'])
-        elif base == 'str':
-            err(strings_at, 259, ['strings'])
-        elif base in ('Figure', 'Axes', 'Lu', 'Chol'):
-            err(tn.pos, 259, ['handle types'])
-        elif base not in SCALAR_TY:
-            if base in structs:
-                err(tn.pos, 259, ['structs'])
-            else:
-                err(tn.pos, 229, [])
-
-    rtups, rtup_ids = [], {}
+    # signatures, in item order: the parameter checks of 3.4.1 (the type nodes are resolved
+    # after the constants, 3.4.2); a str parameter is `strings` at its param node and has type 0
     for it in fns:
-        np_, nr = int(it.f[3]), int(it.f[4])
-        params, rtypes = it.kids[:np_], it.kids[np_:np_ + nr]
+        np_ = int(it.f[3])
         pnames = set()
-        for p in params:
+        for p in it.kids[:np_]:
             if p.f[1] in pnames:
                 err(p.pos, 235, [p.f[1]])
             pnames.add(p.f[1])
@@ -496,25 +484,8 @@ def seaname(prog):
                 err(p.pos, 213, [])
             if p.f[3] == '1':
                 err(p.pos, 259, ['default arguments'])
-            sig_type_errors(p.kids[0], p.pos, p.pos)
-        for tn in rtypes:
-            sig_type_errors(tn, tn.pos, tn.pos)
-        ts = [type_id(p.kids[0]) for p in params]
-        rs = [type_id(t) for t in rtypes]
-        if nr == 0:
-            rty = 1
-        elif nr == 1:
-            rty = rs[0]
-        elif 0 in rs:
-            rty = 0
-        else:
-            key = tuple(rs)
-            if key not in rtup_ids:
-                rtup_ids[key] = 10 + len(rtups)
-                rtups.append(key)
-            rty = rtup_ids[key]
-        it.rop = 'rfn'
-        it.rf = it.f + [str(fid[it.f[1]]), str(rty)] + [str(t) for t in ts]
+            if p.kids[0].f[1] == 'str':
+                err(p.pos, 259, ['strings'])
     for it in sts:
         it.rop, it.rf = 'rst', it.f + [str(sid[it.f[1]])]
 
@@ -551,6 +522,7 @@ def seaname(prog):
         return ('none', 0)
 
     powk_sites = []                           # bin pow nodes of the resolved regions
+    local_types = []                          # (type node, scopes) of let/var annotations
 
     class Fn:
         def __init__(self, np_):
@@ -565,8 +537,7 @@ def seaname(prog):
         if op == 'match':
             return                            # skipped region
         if op == 'for':
-            if n.kids[0].op != 'range':
-                return                        # skipped region
+            # from 4d an element loop is a resolved region too (3.4.2 "Skipped regions")
             resolve(n.kids[0], scopes, fn)
             lid = fn.next
             fn.next += 1
@@ -597,6 +568,8 @@ def seaname(prog):
 
     def resolve_stmt(s, scopes, fn, sc):
         if s.op in ('let', 'var'):
+            if s.f[1] == '1':                 # the annotation: resolved after the constants
+                local_types.append((s.kids[1], [dict(d) for d in scopes]))
             resolve(s.kids[-1], scopes, fn)   # visible from the statement after it (7.2)
             declare(s.kids[0], fn, sc)
         else:
@@ -669,6 +642,133 @@ def seaname(prog):
         else:
             c.rop, c.rf = 'rcnb', base + [str(out[1])]
 
+    # type nodes (3.4.2): resolved after the constants; then the type table, in the order of
+    # creation of 3.4.2 (field types, signatures, every other rtype node in file order)
+    def outcome_of(cid_):
+        return outcome[cns[cid_ - 1].f[1]]
+
+    def resolve_type(tn, scopes, str_ok):
+        for d in tn.kids:
+            if d.op == 'name':
+                k, ref = lookup(d.f[1], scopes)
+                d.rop, d.rf = 'rname', d.f + [k, str(ref)]
+        tn.rop = 'rtype'
+        base, shape = tn.f[1], tn.f[2]
+        if base in SCALAR_TY:
+            bt = SCALAR_TY[base]
+        elif base == 'str':
+            bt = 5
+        elif base in HANDLE_TY:
+            bt = HANDLE_TY[base]
+        else:
+            k, ref = lookup(base, scopes)
+            if k != 'st':
+                err(tn.pos, 229, [])
+                return None
+            bt = ('st', ref)
+        vals = []
+        for d in tn.kids:
+            if d.op == 'int':
+                vals.append(dec_i(d.f[1]))
+                continue
+            k = d.rf[2]
+            if k == 'cst':
+                out = outcome_of(int(d.rf[3]))
+                if out is not None and out[0] == 'i':
+                    vals.append(out[1])
+                    continue
+                if out is not None and out[0] in ('f', 'b'):
+                    err(d.pos, 201, ['i64', {'f': 'f64', 'b': 'bool'}[out[0]]])
+                return None                   # rcne/rcn: type 0, the constant's own error
+            if k == 'none':
+                err(d.pos, 200, [d.f[1]])
+            else:
+                err(d.pos, 237, [])
+            return None
+        if shape in ('fv', 'fm'):
+            for d, v in zip(tn.kids, vals):
+                if v < 0:
+                    err(d.pos, 263, [str(v)])
+                    return None
+            prod = 1
+            for v in vals:
+                prod *= v
+            if prod > LIM_FIXED_ELEMS:
+                err(tn.pos, 216, [])
+                return None
+        if shape != 's' and bt in HANDLE_TY.values():
+            err(tn.pos, 258, [base])
+            return None
+        # the phase rule of sub-phase 4d (2.6.2): fixed-size arrays, structs, handle types
+        if shape in ('fv', 'fm'):
+            err(tn.pos, 259, ['arrays'])
+            return None
+        if isinstance(bt, tuple):
+            err(tn.pos, 259, ['structs'])
+            return None
+        if bt in HANDLE_TY.values():
+            err(tn.pos, 259, ['handle types'])
+            return None
+        if bt == 5 and not str_ok:
+            return None                       # a str parameter (reported at its param node)
+        return bt if shape == 's' else (shape, bt)
+
+    keys = {}
+    for c in cns:
+        if c.f[2] == '1':
+            keys[id(c.kids[0])] = resolve_type(c.kids[0], [], True)
+    for st in sts:
+        for fd in st.kids:
+            keys[id(fd.kids[0])] = resolve_type(fd.kids[0], [], True)
+    for it in fns:
+        np_, nr = int(it.f[3]), int(it.f[4])
+        for p in it.kids[:np_]:
+            keys[id(p.kids[0])] = resolve_type(p.kids[0], [], False)
+        for tn in it.kids[np_:np_ + nr]:
+            if tn.f[1] == 'str':
+                err(tn.pos, 259, ['strings'])
+            keys[id(tn)] = resolve_type(tn, [], False)
+    for tn, scopes in local_types:
+        keys[id(tn)] = resolve_type(tn, scopes, True)
+
+    table, tids = [], {}
+
+    def mk(key):
+        if key is None:
+            return 0
+        if isinstance(key, int):
+            return key
+        if key not in tids:
+            tids[key] = 10 + len(table)
+            table.append(key)
+        return tids[key]
+
+    def typed(tn):
+        ty = mk(keys[id(tn)])
+        tn.rf = tn.f + [str(ty)]
+        return ty
+
+    for st in sts:
+        for fd in st.kids:
+            typed(fd.kids[0])
+    for it in fns:
+        np_, nr = int(it.f[3]), int(it.f[4])
+        ts = [typed(p.kids[0]) for p in it.kids[:np_]]
+        rs = [typed(t) for t in it.kids[np_:np_ + nr]]
+        if nr == 0:
+            rty = 1
+        elif nr == 1:
+            rty = rs[0]
+        elif 0 in rs:
+            rty = 0
+        else:
+            rty = mk(('t', tuple(rs)))
+        it.rop = 'rfn'
+        it.rf = it.f + [str(fid[it.f[1]]), str(rty)] + [str(t) for t in ts]
+    for x in walk(prog):
+        if x.rop == 'rtype' and x.rf is None:
+            typed(x)
+
     # constant exponents (3.4.1, 3.5.5)
     for n in powk_sites:
         k = powk_of(n.kids[1], ctx)
@@ -681,8 +781,11 @@ def seaname(prog):
     if errors:
         e = min(errors)
         out.append(' '.join(['rerr', e[2], str(e[3]), str(len(e[4]))] + [esc(a) for a in e[4]]))
-    for i, key in enumerate(rtups):
-        out.append(' '.join(['rtup', str(10 + i), str(len(key))] + [str(t) for t in key]))
+    for i, key in enumerate(table):
+        if key[0] == 't':
+            out.append(' '.join(['rtup', str(10 + i), str(len(key[1]))] + [str(t) for t in key[1]]))
+        else:
+            out.append('%s %d %d' % ({'v': 'rtvec', 'm': 'rtmat'}[key[0]], 10 + i, key[1]))
     emit(prog, out)
     return out
 
@@ -694,32 +797,24 @@ def cross_check(name, res):
         return
     with open(path) as fh:
         hir = [ln.split(' ') for ln in fh.read().split('\n') if ln and not ln.startswith('#')]
-    # locals: per function, loc records give lid np+1... with name and pos
-    hlocs, cur, npar = {}, None, 0
+    # locals: the loc records give lids np+1, ... with name and pos; a declaration's (name, pos) is
+    # unique in the file, so the two files are compared as one map (the top-level statements of
+    # .main may stand between the functions in sea.res)
+    hlocs = {}
     for r in hir:
         if r[0] == 'fn':
-            cur, npar = r[1], int(r[5])
-            hlocs[cur] = {}
-            cnt = npar
+            cnt = int(r[5])
         elif r[0] == 'loc' and not r[1].startswith('.'):
             cnt += 1
-            hlocs[cur][(r[1], r[4])] = cnt
-    rlocs, fidc = {}, '1'
-    pending = []
+            hlocs[(r[1], r[4])] = cnt
+    rlocs = {}
     for ln in res:
         r = ln.split(' ')
         if r[0] == 'rpname':
-            pending.append(((r[2], r[1]), int(r[3])))
+            rlocs[(r[2], r[1])] = int(r[3])
         elif r[0] == 'rfor':
-            pending.append(((r[2], r[3]), int(r[4])))
-        elif r[0] == 'rfn':
-            rlocs[r[6]] = dict(pending)
-            pending = []
-    rlocs['1'] = dict(pending)
-    for f, locs in rlocs.items():
-        if f not in hlocs:
-            continue                           # a function pass 2a does not write (none here)
-        assert locs == hlocs[f], (name, f, locs, hlocs[f])
+            rlocs[(r[2], r[3])] = int(r[4])
+    assert rlocs == hlocs, (name, rlocs, hlocs)
     # constants
     hc = {}
     prev = None

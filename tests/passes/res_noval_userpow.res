@@ -7,11 +7,11 @@ float 0:1:15 #4000000000000000
 float 0:1:20 #4008000000000000
 call 0:1:11 2
 rcn 0:1:1 C 0 1
-type 0:2:11 f64 s 0
+rtype 0:2:11 f64 s 0 4
 param 0:2:8 x 0 0
-type 0:2:19 f64 s 0
+rtype 0:2:19 f64 s 0 4
 param 0:2:16 y 0 0
-type 0:2:27 f64 s 0
+rtype 0:2:27 f64 s 0 4
 rname 0:2:40 x loc 1
 return 0:2:33 1
 block 0:2:31 1

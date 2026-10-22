@@ -1,0 +1,5 @@
+// err_rt_arr_size_neg -- zeros(n) with n = -1: invalid array size -1 (LANGUAGE.md 10.2, 9.2)
+let n = 1 - 2
+printf("before\n")
+let v = zeros(n)
+printf("%d\n", len(v))

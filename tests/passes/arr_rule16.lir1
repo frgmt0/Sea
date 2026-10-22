@@ -1,0 +1,50 @@
+#sea 1
+#target arm64-macos
+#file arr_rule16.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 5
+call f 1 i2 1 i1
+sa p3 s1
+sti i2 p3 - 0 0
+la p4 d1
+rcall sea_printf 0:10 0 2 p4 p3
+li i5 2
+call f 1 i6 1 i5
+sa p7 s2
+sti i6 p7 - 0 0
+la p8 d2
+rcall sea_printf 0:11 0 2 p8 p7
+ret 0
+endfunc
+func f fn 0:1:1 1 i1 1 i
+li i2 0
+do 1
+icmp lt i3 i2 i1
+ifz 2 i3
+exit 1
+endif 2
+li i4 1
+li i5 1
+li i6 1
+rcall sea_arr_new 0:4 1 p7 4 i4 i5 i1 i6
+li i8 3
+icmp eq i9 i2 i8
+if 3 i9
+release p7
+exit 1
+endif 3
+li i10 1
+iaddc i2 i2 i10 0:6
+release p7
+enddo 1
+ret 1 i2
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+fmt d2 2
+fconv - - - d i
+ftext %0A
+#end

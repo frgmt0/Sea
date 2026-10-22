@@ -1,0 +1,22 @@
+// arr_ref_nested_var -- f(ref x, g(ref x)) for an i64 and an f64[] local: f sees g's update (LANGUAGE.md
+// 8.3; DESIGN.md 3.6.6 rule 31, deferred ref arguments)
+fn gi(ref x: i64) -> i64 {
+    x = x + 10
+    return 1
+}
+fn fi(ref x: i64, d: i64) {
+    x = x * 2 + d
+}
+var k = 1
+fi(ref k, gi(ref k))
+printf("%d\n", k)
+fn ga(ref v: f64[]) -> i64 {
+    v = zeros(4)
+    return 2
+}
+fn fa(ref v: f64[], i: i64) {
+    v[i] = 7.0
+}
+var b = ones(2)
+fa(ref b, ga(ref b))
+printf("%d %g %g\n", len(b), b[2], b[0])

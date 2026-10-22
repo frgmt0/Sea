@@ -1,0 +1,67 @@
+// arr_locals_params -- arrays as let and var locals, ordinary parameters, results (one and several),
+// matrices (LANGUAGE.md 4.5, 8.2, 8.4)
+fn total(v: f64[]) -> f64 {
+    var s = 0.0
+    for i in 0..len(v) {
+        s += v[i]
+    }
+    return s
+}
+fn scaled(v: f64[], c: f64) -> f64[] {
+    var w = zeros(len(v))
+    for i in 0..len(v) {
+        w[i] = c * v[i]
+    }
+    return w
+}
+fn split(v: f64[]) -> (f64[], f64[]) {
+    let h = len(v) / 2
+    var a = zeros(i64(h))
+    var b = zeros(len(v) - i64(h))
+    for i in 0..len(v) {
+        if f64(i) < h {
+            a[i] = v[i]
+        } else {
+            b[i - i64(h)] = v[i]
+        }
+    }
+    return (a, b)
+}
+fn dup(v: i64[]) -> (i64[], i64[]) {
+    return (v, v)
+}
+fn tr(A: f64[,]) -> f64[,] {
+    var T = zeros(cols(A), rows(A))
+    for i in 0..rows(A) {
+        for j in 0..cols(A) {
+            T[j, i] = A[i, j]
+        }
+    }
+    return T
+}
+var v = zeros(3)
+for i in 0..3 {
+    v[i] = f64(i)
+}
+printf("%g\n", total(v))
+let w = scaled(v, 2.0)
+printf("%g %g %g %g\n", w[0], w[1], w[2], total(w))
+var u = zeros(4)
+for i in 0..4 {
+    u[i] = f64(i)
+}
+let (p, q) = split(u)
+printf("%d %d %g %g %g %g\n", len(p), len(q), p[0], p[1], q[0], q[1])
+let (d1, d2) = dup(filled(3, 2))
+printf("%d %d\n", d1[0], d2[1])
+var A = zeros(2, 3)
+for j in 0..3 {
+    for i in 0..2 {
+        A[i, j] = f64(i + 10 * j)
+    }
+}
+let T = tr(A)
+printf("%d %d %g %g\n", rows(T), cols(T), T[2, 1], T[1, 0])
+var x = v
+x = scaled(x, 10.0)
+printf("%g %g\n", x[2], v[2])

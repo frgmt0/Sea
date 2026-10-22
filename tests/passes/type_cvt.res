@@ -1,16 +1,16 @@
 #sea 1
 #target arm64-macos
 #file type_cvt.sea
-type 0:4:13 i64 s 0
+rtype 0:4:13 i64 s 0 3
 param 0:4:10 k 0 0
-type 0:4:21 f64 s 0
+rtype 0:4:21 f64 s 0 4
 rname 0:5:12 k loc 1
 return 0:5:5 1
 block 0:4:25 1
 rfn 0:4:1 widen 0 1 1 2 4 3
-type 0:7:13 f64 s 0
+rtype 0:7:13 f64 s 0 4
 param 0:7:10 x 0 0
-type 0:7:21 f64 s 0
+rtype 0:7:21 f64 s 0 4
 rname 0:8:12 x loc 1
 float 0:8:16 #4000000000000000
 bin 0:8:12 mul
@@ -26,7 +26,7 @@ float 0:11:13 #3FE0000000000000
 bin 0:11:9 mul
 let 0:11:1 0
 rpname 0:12:5 b 3
-type 0:12:8 f64 s 0
+rtype 0:12:8 f64 s 0 4
 rname 0:12:14 n loc 1
 let 0:12:1 1
 rpname 0:13:5 c 4

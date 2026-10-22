@@ -17,11 +17,12 @@ host. Decision 7 (the user's MATLAB rerun) is done: the MATLAB baseline is commi
 commit c1736f7. **Phase 3** (elementary functions: Sea's own scalar `log exp sin cos pow hypot`
 on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete at sea commit 98e1e14: the
 `math/` tests pass on both targets (≤ 1 ulp against the high-precision references, identical bits
-on both targets). **Next: phase 4** of DESIGN.md §8, **arrays and structs**;
-sub-phase 4a splits pass 2a into two programs, `seaname` (`sea.ast` → `sea.res`: names, scopes,
-items, signatures, constants) and `seacheck` (`sea.res` → `sea.hir1`; DESIGN.md §2.1, §3.4.1), so
-the pipeline is `seaparse seaname seacheck seaexpand sealower seaopt seagen_a64` (`seagen_x64`)
-and `--emit res` dumps `sea.res`.
+on both targets). **Phase 4** of DESIGN.md §8
+(**arrays and structs**) is under way: sub-phases 4a (pass 2a split into `seaname` and `seacheck`,
+sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, a59ca07) and 4d
+(dynamic arrays core, W4 scalar SOR accepted by `make test-accept`) are done. The size gate after
+4d (DESIGN.md §2.7) projects `sealower` to 9 481 lines, so **next: sub-phase 4e-0**, the split of
+pass 3a into `sealoop` and `sealower`, starting with its specification (the new HIR records).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

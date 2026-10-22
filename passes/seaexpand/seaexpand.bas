@@ -23,6 +23,10 @@
 110 REM (DESIGN 8, phase 6): pass 2a rejects elemental functions and write_json as not supported
 115 REM yet, so no emap, elem function or lib write_json can reach this pass in phase 1. Such a
 120 REM record is reported as an internal error (BAD_RECORD), never passed on.
+121 REM Phase 4d (G12, 3.5.7): array type records (element a scalar, str or struct; fixed extents fit LIM_FIXED_ELEMS),
+122 REM idx (n = rank of the base, or 1 for a bool-matrix mask; index kinds of LANGUAGE 5.2), dol (claimed by the idx it
+123 REM sits in, dim < n; none left at a function end), fore (vector iterable, loop variable of the element type) are
+124 REM validated (BAD_RECORD) and copied; array records otherwise pass through the generic path (4500-4966).
 125 REM
 130 REM TABLES  (arrays one letter; DIM below)
 135 REM  E E$ errors  N N$ W$ enums  R R$ records  F F$ fields  Z counts  C C$ constants
@@ -70,7 +74,7 @@
 333 CALL "dg_bug": P$, "constant LIM_POWK is not in the consts table"
 334 REM special code and ty field index of each record row of the HIR files (sets H and H1)
 335 LET K1$ = "|tvec=01|tmat=02|tfvec=03|tfmat=04|tstruct=05|trec=06|ttuple=07|fd=08|cn=09|fn=11|par=12|loc=13|end=14|"
-340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|"
+340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|dol=24|fore=25|idx=26|"
 341 GOSUB 4400
 345 LET N2 = 0
 350 LET R5 = 0
@@ -165,6 +169,9 @@
 820 IF Y0 = 21 THEN 1885
 825 IF Y0 = 22 THEN 1800
 826 IF Y0 = 23 THEN 1700
+827 IF Y0 = 24 THEN 4600
+828 IF Y0 = 25 THEN 4650
+829 IF Y0 = 26 THEN 4700
 830 IF Y0 = 9 THEN 1115
 835 IF Y0 = 11 THEN 1260
 840 IF Y0 = 14 THEN 1375
@@ -273,6 +280,7 @@
 1325 LET F5 = 1
 1330 LET F7 = 1
 1335 LET X9 = U(5) + U(6)
+1336 LET H3 = X9
 1340 LET K(F6, 1) = O0 + 1
 1345 LET K(F6, 3) = 0
 1350 LET K1 = 0
@@ -289,6 +297,8 @@
 1405 LET D$ = "BAD_RECORD"
 1410 LET M$ = "fewer par and loc records than np + nl"
 1415 IF X9 <> 0 THEN 2915
+1416 LET M$ = "a dollar outside the indices of an idx"
+1417 GOSUB 4560
 1420 LET K1 = 0
 1425 LET T$ = L$
 1430 GOSUB 3070
@@ -461,7 +471,7 @@
 2170 LET M$ = "a type component is not an earlier type"
 2175 IF P(P9) < 1 THEN 2915
 2180 IF P(P9) >= I9 THEN 2915
-2185 GOTO 1920
+2185 GOTO 4500
 2190 LET M$ = "fd without a tstruct / trec that owes it"
 2195 IF X8 = 0 THEN 2915
 2200 LET M$ = "a type component is not an earlier type"
@@ -845,8 +855,138 @@
 4405 IF W1 <> 0 THEN 4440
 4410 CALL "tb_cval": C(), C$(), N5, "LIM_TYPES", T7, W1
 4415 IF W1 <> 0 THEN 4440
+4416 CALL "tb_cval": C(), C$(), N5, "LIM_FIXED_ELEMS", H2, W1
+4417 IF W1 <> 0 THEN 4440
 4420 IF S7 > 49999 THEN 4445
 4425 IF T7 + 9 > 20009 THEN 4445
 4430 RETURN
-4440 CALL "dg_bug": P$, "LIM_SYMBOLS or LIM_TYPES is not in the consts table"
+4440 CALL "dg_bug": P$, "LIM_SYMBOLS, LIM_TYPES or LIM_FIXED_ELEMS is not in the consts table"
 4445 CALL "dg_bug": P$, "LIM_SYMBOLS or LIM_TYPES is larger than the arrays of seaexpand"
+4450 REM ---- 4500: phase 4 type records tvec tmat tfvec tfmat: the element type is a scalar, str or struct, a fixed extent fits ----
+4500 LET M$ = "an array's element type is not a scalar, str or struct (a handle, an array or a tuple)"
+4502 LET Q1 = U(2)
+4504 IF Q1 < 2 THEN 2915
+4506 IF Q1 <= 5 THEN 4516
+4508 IF Q1 < 10 THEN 2915
+4510 IF T(Q1, 1) = 5 THEN 4516
+4512 IF T(Q1, 1) <> 6 THEN 2915
+4516 IF Y0 < 3 THEN 1920
+4518 LET M$ = "a fixed-size array has more than LIM_FIXED_ELEMS elements"
+4520 LET Q2 = U(3)
+4522 IF Y0 <> 4 THEN 4526
+4524 LET Q2 = U(3) * U(4)
+4526 IF Q2 > H2 THEN 2915
+4528 GOTO 1920
+4550 REM ---- 4560: at the end of a function every dol was inside the indices of an idx (claimed at that idx, 4700) ----
+4560 FOR Q3 = K(F6, 1) TO O0
+4562 IF M(Q3, 0) <> 0 THEN 4570
+4564 IF V(M(Q3, 3)) <> 24 THEN 4570
+4566 IF M(Q3, 2) = 0 THEN 2915
+4570 NEXT Q3
+4572 RETURN
+4595 REM ---- 4600: dol, a leaf; M(.,1) = dim + 1, M(.,2) = 1 once an idx has claimed it ----
+4600 GOSUB 2980
+4602 LET K1 = 0
+4604 LET T$ = L$
+4606 GOSUB 3070
+4608 GOSUB 3150
+4610 LET M(O0, 1) = U(3) + 1
+4612 GOTO 1920
+4645 REM ---- 4650: fore, the iterable is a vector and the loop variable (a local of the function) has its element type ----
+4650 LET M$ = "fore outside a function"
+4652 IF F7 = 0 THEN 2915
+4654 GOSUB 2980
+4656 LET Q4 = S(S0 + 2) - 1
+4658 GOSUB 4900
+4660 GOSUB 4950
+4662 LET M$ = "fore over something that is not a vector"
+4664 IF Q6 = 1 THEN 4668
+4666 IF Q6 <> 3 THEN 2915
+4668 LET M$ = "the loop variable of a fore is not a local, or not of the element type"
+4670 IF U(2) < 1 THEN 2915
+4672 IF U(2) > H3 THEN 2915
+4674 LET T$ = O$(K(F6, 1) + U(2))
+4676 LET T1 = 3
+4678 GOSUB 3345
+4680 IF VAL(Z$) <> Q7 THEN 2915
+4682 LET K1 = 0
+4684 LET T$ = L$
+4686 GOSUB 3070
+4688 GOSUB 3150
+4690 GOTO 1920
+4695 REM ---- 4700: idx, n = the rank of the base (or 1 for a mask of a matrix), indices of the kinds of LANGUAGE 5.2; claims the dols ----
+4700 GOSUB 2980
+4702 LET Q1 = U(3)
+4704 LET M$ = "idx with n not 1 or 2"
+4706 IF Q1 < 1 THEN 2915
+4708 IF Q1 > 2 THEN 2915
+4710 LET Q4 = S(S0 + 2) - 1
+4712 GOSUB 4900
+4714 GOSUB 4950
+4716 LET M$ = "idx of something that is not a vector or a matrix"
+4718 LET Q8 = 1
+4720 IF Q6 = 1 THEN 4732
+4722 IF Q6 = 3 THEN 4732
+4724 LET Q8 = 2
+4726 IF Q6 = 2 THEN 4732
+4728 IF Q6 = 4 THEN 4732
+4730 GOTO 2915
+4732 LET M$ = "idx with more indices than its base has dimensions"
+4734 IF Q1 > Q8 THEN 2915
+4736 LET Q9 = 0
+4738 IF Q1 < Q8 THEN 4742
+4740 GOTO 4744
+4742 LET Q9 = 1
+4744 LET M$ = "an index of an idx is not an i64, a range, :, an i64 vector or a bool vector (a bool matrix for a mask)"
+4746 FOR Q2 = 1 TO Q1
+4748 LET Q4 = O0
+4750 IF Q2 >= Q1 THEN 4754
+4752 LET Q4 = S(S0 + 2 + Q2) - 1
+4754 IF Q9 = 1 THEN 4760
+4756 IF SEG$(O$(Q4), 1, 4) = "all " THEN 4790
+4760 GOSUB 4900
+4762 GOSUB 4950
+4763 LET M$ = "an index of an idx is not an i64, a range, : , an i64 vector or a bool vector (a bool matrix for a mask)"
+4764 IF Q9 = 1 THEN 4780
+4766 IF Q5 = 3 THEN 4790
+4768 IF Q6 = 1 THEN 4772
+4770 IF Q6 <> 3 THEN 2915
+4772 IF Q7 = 2 THEN 4790
+4774 IF Q7 = 3 THEN 4790
+4776 GOTO 2915
+4780 IF Q6 = 2 THEN 4784
+4782 IF Q6 <> 4 THEN 2915
+4784 IF Q7 <> 2 THEN 2915
+4790 NEXT Q2
+4792 LET M$ = "a dollar names a dimension the idx does not have"
+4794 FOR Q3 = S(S0 + 2) TO O0
+4796 IF M(Q3, 0) <> 0 THEN 4806
+4798 IF V(M(Q3, 3)) <> 24 THEN 4806
+4800 IF M(Q3, 2) = 1 THEN 4806
+4802 IF M(Q3, 1) - 1 >= Q1 THEN 2915
+4804 LET M(Q3, 2) = 1
+4806 NEXT Q3
+4808 LET K1 = 0
+4810 LET T$ = L$
+4812 GOSUB 3070
+4814 GOSUB 3150
+4816 GOTO 1920
+4895 REM ---- 4900: Q5 = the type id of the out node Q4 (the field its record's ty names) ----
+4900 LET Q5 = M(Q4, 3)
+4902 LET M$ = "a node of an idx or a fore has no type"
+4904 IF A(Q5) = 0 THEN 2915
+4906 LET T$ = O$(Q4)
+4908 LET T1 = A(Q5) + 1
+4910 GOSUB 3345
+4912 LET Q5 = VAL(Z$)
+4914 RETURN
+4945 REM ---- 4950: Q6 = the kind of type Q5 (0 scalar, 1-4 tvec tmat tfvec tfmat, 5-7 tstruct trec ttuple), Q7 = its element type ----
+4950 LET Q6 = 0
+4952 LET Q7 = 0
+4954 IF Q5 < 10 THEN 4966
+4956 LET M$ = "a type id that is not in the type table"
+4958 IF Q5 > 9 + T9 THEN 2915
+4960 LET Q6 = T(Q5, 1)
+4962 IF Q6 > 4 THEN 4966
+4964 LET Q7 = P(T(Q5, 2))
+4966 RETURN

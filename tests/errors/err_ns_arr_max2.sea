@@ -1,0 +1,4 @@
+// err_ns_arr_max2 -- 4d: max(v, x) with an array argument is arrays, at the call (DESIGN.md 2.6.2
+// step 4d)
+let v = ones(3)
+let w = max(v, 0.5)

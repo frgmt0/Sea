@@ -1,0 +1,12 @@
+// err_rt_arr_oob_compound_order -- a compound element store checks its read before it evaluates the value
+// (LANGUAGE.md 5.5 C6, 7.3)
+fn ix(k: i64) -> i64 {
+    printf("ix %d\n", k)
+    return k
+}
+fn val() -> f64 {
+    printf("val\n")
+    return 1.0
+}
+var v = zeros(3)
+v[ix(5)] += val()

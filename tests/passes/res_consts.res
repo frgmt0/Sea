@@ -7,7 +7,7 @@ bin 0:3:11 mod
 rint 0:3:19 10 #4024000000000000
 bin 0:3:11 sub
 rcni 0:3:1 I 0 1 -9
-type 0:4:10 f64 s 0
+rtype 0:4:10 f64 s 0 4
 rname 0:4:16 I cst 1
 rint 0:4:20 2 #4000000000000000
 bin 0:4:16 mul

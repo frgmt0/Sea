@@ -24,9 +24,12 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | printf output (`fmt_*`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts`) | `vectors/progfmt.py`: C99 `%d %i %f %F %e %E %g %G %s` from the exact decimal value of each argument (ties to even), plus the MATLAB `%d`-on-f64 rule and the non-finite rules of LANGUAGE.md §11.1. It writes both `.sea` and `.out` from one table; Python's `%` only as a cross-check |
 | `op_lcg_w5` | `vectors/lcg_w5.py`: the LCG in exact integers in W5's draw order (11 M steps), the uniform `first_dev` columns and `first_top` with the oracle; asserted bit for bit against `workloads/reference/w5_tolerance_mc.json` (`lcg_final = 2145635252`) |
 | `.res` files and the `res_*` tests (phase 4a) | `vectors/res_gen.py`: an independent Python reading of DESIGN.md §3.4.1 (entered items, scopes of LANGUAGE.md §3.3/§7.2/§7.5, lids of §3.5.4, the constant order and the typed evaluation of §3.5.2 with `float_oracle.py` and `math_model.py`, `powk` of §3.5.5, the declaration errors of §2.6.2) applied to the hand-derived `.ast`; it reproduces the §3.4.1 `rs` example byte for byte and agrees with every `.hir1` golden; the `res_*` `.ast` files come from `vectors/res_cases.py`, written by hand with every position checked against the source |
-| phase-3 elementary functions (`lib_math_*`, `passes/math_lower.lir1`, `passes/const_pow.hir1`, `err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot`) | `vectors/math_progs.py`: each result is the bits of the reference model `vectors/math_model.py` (DESIGN.md §4.10.6) for the argument bits of `float_oracle.py` (i64/untyped arguments converted exactly, §4.2), printed by `progfmt.py`; const results are the same model bits (FEPOW = the model, DESIGN.md §4.10.5) |
+| phase-3 elementary functions (`lib_math_*`, `passes/math_lower.lir1`, `passes/const_pow.hir1`, `err_const_log`, `err_const_sin`, `lib_const_sqrt`, `err_no_overload_hypot`) | `vectors/math_progs.py`: each result is the bits of the reference model `vectors/math_model.py` (DESIGN.md §4.10.6) for the argument bits of `float_oracle.py` (i64/untyped arguments converted exactly, §4.2), printed by `progfmt.py`; const results are the same model bits (FEPOW = the model, DESIGN.md §4.10.5) |
 | wave-2 tests (`fold_*`, `stmt_else_if_2000`, `const_reverse_1000`, `fmt_prec_zeros`, `stmt_tasg_cvt`, `lib_conv_identity`, `stmt_for_blanks` and their `err_*`) | `vectors/wave2_gen.py`: each expected value derived in its comments; folded values with the exact oracles of `f64emu.py`/`float_oracle.py` |
 | `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
+| sub-phase 4d `programs/arr_*`, `programs/heap_*`, `errors/err_rt_arr_*`, `errors/err_ns_arr_*` | `vectors/arr4d_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §7.3, §7.5, §7.7, §8.3, §9.2, §10.2, §10.4, §10.7, §11.1, the derivation in a comment beside each case; error lines and columns computed from a marker in the source text |
+| sub-phase 4d dump tests `passes/arr_rule{16,17,18,19,30,31,36}` | `vectors/dump4d_cases.py`: `.ast`, `.hir1` (= `.hir`), `.lir1` and `.out` written record by record from DESIGN.md §3.4, §3.5, §3.6 and §3.6.6 rules 1–19, 30, 31, 36 (each rule's example appears verbatim, with its registers and lines); `.res` from `res_gen.py`, which also checks the lids against the `.hir1` |
+| `accept/w4_sor` (4d acceptance, DESIGN.md §6.3) | ported by hand from `workloads/w4_heat_plate.m` (inputs, scalar SOR); checked by `compare.py --candidate --keys it_sor,T_max` against `workloads/reference/w4_heat_plate.json`; a line-by-line IEEE mirror of the port in Python (scratch, not committed) prints `{"it_sor": 832, "T_max": 160.76267159277148}`, the reference values exactly |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
 | `passes/` (validated with `build/tools/seaval`, exit 0 for every dump) | by hand from DESIGN.md §3 record by record (post-order, positions §3.3/§3.5.5, numbering §3.5.1/§3.5.4/§3.6.1, canonical lowering §3.6.6). `ex.ast`, `lx.lir1`, `lx.lir` are the DESIGN examples verbatim |
@@ -57,6 +60,32 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_many` | §8.1, §8.4 (10 + 10 parameters, 10 results) |
 | `heap_env_unset` | DESIGN.md §4.5 `SEA_HEAP_CHECK`, §6.2: run with `heap=off` (the variable unset), standard error stays empty (no `heap:` line) |
 | `heap_env_other` | DESIGN.md §4.5, §6.2: run with `env=SEA_HEAP_CHECK=2` (not exactly `1`), standard error stays empty |
+| `lib_const_sqrt` | LANGUAGE.md §7.2, §10.4; DESIGN.md §2.6.2 step 4d: `sqrt` in a constant has its value from 4d (the correctly rounded √2, `%.17g`; replaces phase 3's `err_const_sqrt`) |
+| `arr_construct` | LANGUAGE.md §10.2, §4.5: `zeros(0)`, `zeros(3)`, `zeros(3, 0)`, `zeros(0, 4)`, `ones`, `filled` of `f64`, `i64` (an untyped integer value, bound to an `i64` annotation) and `bool`, `len rows cols numel`, empty arrays |
+| `arr_rw` | §5.1, §5.2, §5.5: element read and write of `f64[] i64[] bool[] f64[,] i64[,] bool[,]` |
+| `arr_dollar` | §5.3: `$` in each dimension, in arithmetic, nested (`v[w[$ - 1]]` is `len(w)`), in a store and a compound store |
+| `arr_compound` | §5.5, §7.3: `+= -= *= /=` on elements of `f64[]`, `i64[]` (checked), `f64[,]`, an index expression on both sides |
+| `arr_compound_ref` | §5.5 C6, §8.3: `v[0] += g(ref v)` with g replacing v: the read sees the old array, the store the new |
+| `arr_locals_params` | §4.5, §8.2, §8.4: arrays as `let`/`var` locals, parameters, one and several results (the same array twice), matrices |
+| `arr_ref_param` | §8.3, §4.5: an element store through `ref` copies a shared array (`let b = a` unchanged), a whole-array store through `ref`, a `ref` passed on, a matrix |
+| `arr_fore` | §7.5: the vector is held (reassigning it in the body keeps the iteration), `i64[]`, `bool[]`, empty and fresh vectors |
+| `arr_cow` | §4.5, §8.2: `var b = a; b[0] = 1.0` leaves `a`; stores in a loop; a `var` copy of a parameter; a matrix |
+| `arr_ref_nested_old` | §6.8 rule 5, §8.3; DESIGN.md §3.6.6 rule 12 (a): `f(a, g(ref a))`, f sees the old array, nothing leaks |
+| `arr_ref_nested_var` | DESIGN.md §3.6.6 rule 31 (deferred `ref` arguments): `f(ref x, g(ref x))` for an `i64` (23, not the phase-1 3) and an `f64[]` local |
+| `arr_ref_nested_elem` | rule 31: `f(ref v[0], g(ref v))` with g growing v (vector and matrix): f updates the new array's element |
+| `arr_math_f64` | LANGUAGE.md §10.4, §6.7, §11.1: `abs sign sqrt floor ceil trunc round isnan min max where` on ±0, NaN, ±∞ (`sign(-0.0)` prints `-0`, NaN never signed, `min(-0, 0)` the first) |
+| `arr_math_i64` | §10.4: `abs sign min max` on `i64` with ±(2⁶³ − 1) and −2⁶³ |
+| `arr_index_util` | §10.7, §6.6: `ind2sub` (floored, negative k), `sub2ind`, their round trip |
+| `arr_ref_in_target` | §5.5 C4, C6, §7.3; DESIGN.md §3.6.6 rule 12: a `ref` call in an assignment target's own index (`=`, `op=`, a tuple target, through a `ref` parameter) grows the array; the checks and the store use the new one, nothing leaks |
+| `arr_tasg_lib` | §10.7, §7.3, §4.2: a tuple assignment from `ind2sub` to scalars, to elements (converted to `f64`) and with `_` |
+| `heap_break` | §7.7; DESIGN.md §3.6.6 rule 16 (b): array locals of every block a `break` leaves (nested blocks, nested loops) |
+| `heap_continue` | rule 16 (b): the same for `continue` (`for` and `while`) |
+| `heap_return` | rule 16 (c): `return` from nested blocks and loops (`findpair`, `early`) |
+| `heap_pick` | rules 15 (a), 16 (c): returning one of two array locals or parameters; temporaries as arguments |
+| `heap_fore_exit` | rules 16 (f), 30: the held vector released after the loop, by a `return` inside it, once on `break`/`continue`, nested element loops |
+| `heap_temps` | rule 15 (b), (h): call results indexed, measured, passed, discarded (`eval`, `let _`, `_` components) |
+| `heap_reassign` | rules 15 (d), 31: reassignment (also `a = a`, in a loop, through `ref`) releases the old array |
+| `heap_ifx` | rules 3, 15 (b): `if` expressions of an array type with fresh and borrowed arms |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
@@ -139,10 +168,19 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_names` | ast res | §3.4.1: rname `loc` (a parameter, `var lo = lo`, a block-scope shadowing `let`, a loop variable, an outer local read by a shadowing `let n = i + n`), `cst`, `fn`, `pd`, `none`; lids numbered as §3.5.4 |
 | `res_rint` | ast res | §3.4.1: `rint` `fv`: `-` for 2⁵³ + 1, `#C3E0000000000000` for the 2⁶³ literal under `neg`, an exact large value |
 | `res_consts` | ast res | §3.4.1: `rcni`, `rcnf` (an `i64` value into an `f64` annotation), `rcnb`, `rcne ovf` (at the `mul`) and `rcne div0` (at the `%`), `rcn` for `now()` (not typable), for a constant naming one without a value (Decision 25), and for both constants of a cycle; the constant order |
-| `res_powk_skip` | ast res | §3.4.1: `rpowk 2` from a constant, a plain `bin pow` where a local shadows it; `rtup 10` reused by two signatures; `rerr 235` at a not-entered `fn` copied unchanged; a `for` over an array literal and a `match` copied unresolved (their `pname`s take no lid) |
+| `res_powk_skip` | ast res | §3.4.1: `rpowk 2` from a constant, a plain `bin pow` where a local shadows it; `rtup 10` reused by two signatures; `rerr 235` at a not-entered `fn` copied unchanged; a `match` copied unresolved; from 4d (§3.4.2) the `for` over an array literal is resolved (`rfor`, its `pname` a lid) |
 | `res_powk_mod` | ast res | §3.4.1, §3.5.5: the operands of an untyped `%` are `i64` (LANGUAGE.md §4.2), so `x ^ (6 % 4)` is `rpowk 2`; `x ^ (5.0 % 3.0)` is `rpowk 2` by the exact `f64` `%` of LANGUAGE.md §6.6 |
 | `res_noval_calltype`, `res_noval_shortcircuit`, `res_noval_userpow` | ast res | §3.4.1 (Decision 25 refined): the programs of the three `err_const_noval_*` refinement tests (lines 1–3, comment after); every constant `rcn` (a call of a function item is not evaluated; `D` names `B` without a value; `pow` resolves to the entered `fn pow`, `rname fn`), with their `rerr` (259 `strings` twice, 212) |
 | `res_struct` | ast res | §3.4.1: `rst`, `rname st` (a struct name as a value), `rerr 259 structs` at the item |
+| `res_arr_types` | ast res | §3.4.2 (4d): `rtype` with its type everywhere; `rtmat`/`rtvec`/`rtup` in the order of creation (signature types, the tuple after its components, then the `let` annotations in file order); an element loop resolved (`rfor`, its variable before the body's locals) |
+| `res_err_dim` | ast res | §3.4.2: `rerr 200` at an undeclared dim name of a fixed-size type (the node's first error, before the phase rule; the dim an `rname none`, the type 0) |
+| `arr_rule16` | ast res hir1 hir lir1 (+ `.out`) | §3.6.6 rule 16: the example function verbatim (release on `break` and at the end of the loop body) |
+| `arr_rule17` | ast res hir1 hir lir1 (+ `.out`) | rule 17: `let u = ones(n)` (line 1, n in `i1`) verbatim; then rule 18 and `len` |
+| `arr_rule18` | ast res hir1 hir lir1 (+ `.out`) | rule 18: `T[j-1, i]` (line 7, g's parameters) verbatim; `$` in both dimensions (`dol`), rule 19 in `.main` |
+| `arr_rule19` | ast res hir1 hir lir1 (+ `.out`) | rule 19: `T[j, i] = tn` (line 12, T = `mk()` in `p1`) verbatim; a store in a loop; an array result (retain, release, `ret`) |
+| `arr_rule30` | ast res hir1 hir lir1 (+ `.out`) | rule 30: the second example (`for x in v`, line 3, v a parameter in `p1`) verbatim |
+| `arr_rule31` | ast res hir1 hir lir1 (+ `.out`) | rule 31: `f(ref v[i])` (line 4) verbatim; a compound store through an `f64` `ref` parameter (rule 12) |
+| `arr_rule36` | ast res hir1 hir lir1 (+ `.out`) | rule 36: `let d = abs(tn - t)` (line 6) verbatim |
 | `res_err_predeclared` | ast res | §3.4.1: `rerr 212`; the item is entered (`rfn`) and `sqrt` resolves to it (`rname fn`) |
 | `res_err_redef_item` | ast res | §3.4.1: `rerr 235` at the later `const`; it is copied with its names unresolved |
 | `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
@@ -151,7 +189,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_err_default` | ast res | §3.4.1: `rerr 259 default arguments`; the default `K` is copied as `name` |
 | `res_err_str_param` | ast res | §3.4.1: `rerr 259 strings` at the `param`; its `rfn` type 0 |
 | `res_err_str_result` | ast res | §3.4.1: `rerr 259 strings` at the result `type`; `rty` 0, no `rtup` |
-| `res_err_array` | ast res | §3.4.1: `rerr 259 arrays` at the `type` node of a parameter |
+| `res_err_array` | ast res | §3.4.2, §2.6.2 step 4d: `rerr 259 arrays` at the `type` node of a fixed-size parameter type (still reported in 4d), its type 0 |
 | `res_err_handle` | ast res | §3.4.1: `rerr 259 handle types` at the `type` node |
 | `res_err_unknown_struct` | ast res | §3.4.1: `rerr 229` at the `type` node of an undeclared type name |
 | `res_err_first_pos` | ast res | §3.4.1: two `seaname` errors: the signature error at 3:6, found after the item error at 6:1, is first in source order and is the `rerr` |
@@ -161,6 +199,12 @@ Every test above that has a `.hir1` also has a `.res` (phase 4a, §6.2), the sta
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
 (§3.6.5: the other loop bodies hold constants that a later pass 3b may hoist).
+
+## accept/ (DESIGN.md §6.3, run by `tests/accept4.sh`)
+
+| Test | Spec |
+|------|------|
+| `w4_sor` | `.keys` `it_sor,T_max`, `.wl` `w4_heat_plate`: W4's scalar SOR (grid, channel, source, boundary values, lexicographic SOR with the max-change test, the hot spot by a scalar loop over the unknown nodes), the JSON subset written with `%d`/`%.17g`; MATLAB's two configuration checks are not ported (`error` is 4g; this grid never trips them) |
 
 ## errors/
 
@@ -219,7 +263,6 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_const_poison_and` | `integer overflow` | a constant whose operand constant failed reports only that failure (LANGUAGE.md 7.2 U2) |
 | `err_const_poison_pow` | `integer overflow` | a constant exponent whose evaluation overflows reports the overflow (LANGUAGE.md 7.2 U2) |
 | `err_const_sin` | `not a constant expression` | sin inside a larger constant expression: at the whole initialiser (LANGUAGE.md 7.2; DESIGN.md 2.6.2 expr) |
-| `err_const_sqrt` | `not supported yet: sqrt` | sqrt is admitted in constants (LANGUAGE.md 7.2) but still outside the phase-3 library (DESIGN.md 2.6.2 phase rule; at the call) |
 | `err_continue_outside` | `continue outside a loop` | continue in a function called from a loop is still outside one |
 | `err_conv_no_paren` | `unexpected token '+'` | a conversion keyword without ( names the next token (LANGUAGE.md App. A) |
 | `err_dollar_array_literal` | `'$' outside an index` | array-literal brackets are not index brackets (LANGUAGE.md 5.3) |
@@ -273,19 +316,49 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_not_function` | `'a' is not a function` | calling a local (DESIGN.md 2.6.2; at the call) |
 | `err_not_function_const` | `'C' is not a function` | calling a constant (DESIGN.md 2.6.2; at the call) |
 | `err_ns_array_literal` | `not supported yet: arrays` | phase 1: an array literal (at the array node) |
-| `err_ns_array_type` | `not supported yet: arrays` | phase 1: an array type (at the type node) |
+| `err_ns_array_type` | `not supported yet: arrays` | 4d: a fixed-size array type (at the type node) is still reported (DESIGN.md 2.6.2 step 4d) |
 | `err_ns_default_arg` | `not supported yet: default arguments` | phase 1: a parameter default, reported at the param node (DESIGN.md 2.6.2) |
 | `err_ns_elemental` | `not supported yet: elemental functions` | phase 1: an elemental fn (at the item, its elemental keyword) |
 | `err_ns_f64_mod` | `not supported yet: f64 %` | phase 1: % with an f64 operand (at the bin node) |
 | `err_ns_handle` | `not supported yet: handle types` | phase 1: a handle type (at the type node) |
-| `err_ns_lib_abs` | `not supported yet: abs` | phase 1: abs is a library function not yet supported |
-| `err_ns_lib_sqrt` | `not supported yet: sqrt` | phase 1: a library function other than printf now f64 i64 idiv |
+| `err_ns_lib_sum` | `not supported yet: sum` | 4d: `sum` (a 4f reduction) is still a library function not yet supported, at the call (DESIGN.md 2.6.2 step 4d) |
 | `err_ns_match` | `not supported yet: match` | phase 1: a match statement (at the match node) |
 | `err_ns_named_arg` | `not supported yet: named arguments` | phase 1: a named argument (at the narg) |
 | `err_ns_record` | `not supported yet: records` | phase 1: a record literal (at the rlit) |
 | `err_ns_string_let` | `not supported yet: strings` | phase 1: a string literal that is not a printf %s argument |
 | `err_ns_string_type` | `not supported yet: strings` | phase 1: the str type (at the type node) |
 | `err_ns_struct` | `not supported yet: structs` | phase 1: a struct item (at the item) |
+| `err_ns_arr_range_index` | `not supported yet: arrays` | 4d: a range index, at the range node (DESIGN.md 2.6.2 step 4d) |
+| `err_ns_arr_all_index` | `not supported yet: arrays` | 4d: a `:` index, at the `all` node |
+| `err_ns_arr_view` | `not supported yet: arrays` | 4d: a view `A.T`, at the `dot` node, whose position is the operand's start (§3.3) |
+| `err_ns_arr_ew` | `not supported yet: arrays` | 4d: an element-wise operator with an array operand, at the operator node (its left operand's start) |
+| `err_ns_arr_elem_arg` | `not supported yet: arrays` | 4d: an array argument of an elemental library function (`sqrt(v)`), at the call |
+| `err_ns_arr_max2` | `not supported yet: arrays` | 4d: `max(v, 0.5)` with an array argument, at the call |
+| `err_ns_lib_max1` | `not supported yet: max` | 4d: `max(v)` of one vector (the 4f reduction), at the call |
+| `err_ns_lib_min1` | `not supported yet: min` | 4d: `min(v)` of one vector, at the call |
+| `err_ns_arr_cvt` | `not supported yet: arrays` | 4d: an array conversion `f64(a)`, at the conv node |
+| `err_ns_arr_fixed_local` | `not supported yet: arrays` | 4d: a fixed-size `let` annotation, at its type node (`seaname`, §3.4.2) |
+| `err_ns_arr_str_elem` | `not supported yet: strings` | 4d: a `str[]` parameter, at the param node |
+| `err_rt_arr_size_neg` | `invalid array size -1` | LANGUAGE.md 10.2, 9.2: a negative extent of `zeros`, after the output before it |
+| `err_rt_arr_size_big` | `invalid array size 2147483648` | 4.5, 10.2: an extent of 2³¹ (`ones`) |
+| `err_rt_arr_size_mat` | `invalid array size -3` | 10.2: a bad column extent of `filled` |
+| `err_rt_arr_size_order` | `invalid array size -1` | rows before cols (DESIGN.md 4.8 `sea_arr_new`) |
+| `err_rt_arr_oob_neg` | `index -1 out of bounds for dimension 0 of extent 3` | 5.4: `v[-1]` is an error |
+| `err_rt_arr_oob_ext` | `index 3 out of bounds for dimension 0 of extent 3` | 5.4: the extent |
+| `err_rt_arr_oob_row_neg` | `index -1 … dimension 0 of extent 2` | 5.4: a matrix's rows are dimension 0 |
+| `err_rt_arr_oob_row_ext` | `index 2 … dimension 0 of extent 2` | 5.4 |
+| `err_rt_arr_oob_col_neg` | `index -1 … dimension 1 of extent 3` | 5.4: the columns are dimension 1 |
+| `err_rt_arr_oob_col_ext` | `index 3 … dimension 1 of extent 3` | 5.4, in a store |
+| `err_rt_arr_oob_order` | `index 5 … dimension 0 of extent 2` | 5.4 C1: both indices evaluated (their output) before the first failing check |
+| `err_rt_arr_oob_store_order` | `index 3 … dimension 1 of extent 3` | 5.5 C4: the value, then the indices, then the checks |
+| `err_rt_arr_oob_compound_order` | `index 5 … dimension 0 of extent 3` | 5.5 C6, 7.3: the read's check comes before the value |
+| `err_rt_arr_compound_ovf` | `integer overflow` | 6.5: a checked `i64` compound element store |
+| `err_rt_arr_compound_ref_empty` | `index 0 … dimension 0 of extent 0` | DESIGN.md 3.6.6 rule 19: the store's repeated check after the value emptied the array |
+| `err_rt_arr_ref_nested_empty` | `index 0 … dimension 0 of extent 0` | rule 31: `f(ref v[0], g(ref v))` with g emptying v, at the call's line |
+| `err_rt_arr_abs_min` | `integer overflow` | LANGUAGE.md 10.4: `abs(-2^63)` |
+| `err_rt_arr_sub2ind_oob` | `index 3 … dimension 0 of extent 3` | 10.7: sub2ind checks i against r |
+| `err_rt_arr_ind2sub_zero` | `integer division by zero` | 10.7, 6.6: ind2sub(0, k) |
+| `err_rt_arr_ref_in_target_shrink` | `index 1 … dimension 0 of extent 1` | 5.5 C4: a `ref` call in the target's index shrinks the array; the check uses the new extent |
 | `err_predeclared_const` | `redefinition of predeclared name` | a constant may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_predeclared_fn` | `redefinition of predeclared name` | a top-level function may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_redefinition_const` | `redefinition of 'C'` | two constants of one name (DESIGN.md 2.6.2) |
@@ -373,8 +446,10 @@ the `at` position of DESIGN.md §2.6.2.
 | `f64emu.py` | `f64emu.txt`, `limb.txt` (read by `arith_check.sh` through `harness/f64emu_h.bas`, `harness/limb_h.bas`) |
 | `wave2_gen.py` | the wave-2 and round-3 `programs/` and `errors/` tests listed above |
 | `edges_gen.py` | the phase-2 edge tests `op_mod_idiv_edges`, `op_ftoi_edges`, `op_itof_round`, `op_cmp_nan_zero`, `op_neg_zero`, `err_rt_mod_zero_min`, `err_rt_idiv_zero_min`, `err_rt_conv_below` (min/max, floor/ceil/round/trunc, abs and sqrt are `not supported yet` in phases 1–2, Sea has no shifts) |
-| `math_progs.py` | the phase-3 `programs/lib_math_*.{sea,out}`, `passes/math_lower.{sea,ast,hir1,hir,lir1}`, `passes/const_pow.{sea,ast,hir1}` and `errors/err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot` |
-| `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`) |
+| `math_progs.py` | the phase-3 `programs/lib_math_*.{sea,out}`, `passes/math_lower.{sea,ast,hir1,hir,lir1}`, `passes/const_pow.{sea,ast,hir1}` and `errors/err_const_log`, `err_const_sin`, `err_no_overload_hypot`, `programs/lib_const_sqrt` |
+| `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`); from 4d with `rtype` and the array types of §3.4.2 |
 | `lir4_gen.py` | the 4c pass-4 tests `passes/lir4_{retain_release,release_leaf,mcopy,slay,entries}.{lir,out}` |
 | `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
+| `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_*`, `errors/err_ns_lib_{max1,min1}` |
+| `dump4d_cases.py` | `passes/arr_rule{16,17,18,19,30,31,36}.{sea,ast,hir1,hir,lir1,out}` (and their `.res` through `res_gen.py`) |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

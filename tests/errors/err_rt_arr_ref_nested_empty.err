@@ -1,0 +1,1 @@
+err_rt_arr_ref_nested_empty.sea:12: error: index 0 out of bounds for dimension 0 of extent 0

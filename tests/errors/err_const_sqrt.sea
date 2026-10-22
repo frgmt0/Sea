@@ -1,3 +1,0 @@
-// err_const_sqrt -- sqrt in a constant: phase 3 still reports it under the phase rule (DESIGN.md 2.6.2)
-const S = sqrt(2.0)
-printf("%g\n", S)

@@ -1,0 +1,7 @@
+// arr_math_i64 -- abs, sign, min, max on i64 including the edge values (LANGUAGE.md 10.4)
+let lo = -9223372036854775807 - 1
+let hi = 9223372036854775807
+printf("%d %d %d %d\n", abs(-5), abs(0), abs(hi), abs(-hi))
+printf("%d %d %d %d %d\n", sign(-7), sign(0), sign(42), sign(lo), sign(hi))
+printf("%d %d %d %d\n", min(3, -4), max(3, -4), min(lo, 0), max(lo, hi))
+printf("%d %d\n", min(lo, lo), max(hi, hi))

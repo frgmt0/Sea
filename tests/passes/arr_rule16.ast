@@ -1,0 +1,48 @@
+#sea 1
+#target arm64-macos
+#file arr_rule16.sea
+type 0:1:9 i64 s 0
+param 0:1:6 n 0 0
+type 0:1:17 i64 s 0
+pname 0:2:9 k
+int 0:2:13 0
+var 0:2:5 0
+name 0:3:11 k
+name 0:3:15 n
+bin 0:3:11 lt
+pname 0:4:13 v
+name 0:4:17 zeros
+name 0:4:23 n
+call 0:4:17 1
+let 0:4:9 0
+name 0:5:12 k
+int 0:5:17 3
+bin 0:5:12 eq
+break 0:5:21
+block 0:5:19 1
+if 0:5:9 0
+name 0:6:9 k
+int 0:6:14 1
+asg 0:6:9 add
+block 0:3:17 3
+while 0:3:5
+name 0:8:12 k
+return 0:8:5 1
+block 0:1:21 3
+fn 0:1:1 f 0 1 1
+name 0:10:1 printf
+str 0:10:8 %25d%0A
+name 0:10:16 f
+int 0:10:18 5
+call 0:10:16 1
+call 0:10:1 2
+cstmt 0:10:1
+name 0:11:1 printf
+str 0:11:8 %25d%0A
+name 0:11:16 f
+int 0:11:18 2
+call 0:11:16 1
+call 0:11:1 2
+cstmt 0:11:1
+prog 3
+#end

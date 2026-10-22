@@ -4,7 +4,7 @@
 # usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]
 #   -o BUNDLE_DIR  output directory; must not exist or must be empty (else exit 2)
 #   PATTERN        only pack cases whose name (programs/NAME, errors/NAME, passes/NAME,
-#                  rt/NAME) contains one of the patterns (matched literally)
+#                  accept/NAME, rt/NAME) contains one of the patterns (matched literally)
 #
 # Environment:
 #   SEA      the driver (default: build/sea of the Sea repository); the pass executables are
@@ -70,7 +70,7 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 
 mkdir -p "$BUNDLE/include" "$BUNDLE/runtime/x86_64_linux" "$BUNDLE/tests/rt/x86_64_linux" \
     "$BUNDLE/baysick/include" "$BUNDLE/baysick/src/runtime_x86_64_linux" \
-    "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" \
+    "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" "$BUNDLE/cases/accept" \
     || setup_fail "cannot create bundle directory '$BUNDLE'"
 echo "sea-x86_64-linux-bundle 1" > "$BUNDLE/BUNDLE" || setup_fail "cannot write $BUNDLE/BUNDLE"
 printf '%s\n' "$PATTERNS" > "$BUNDLE/PATTERNS" || setup_fail "cannot write $BUNDLE/PATTERNS"
@@ -210,6 +210,29 @@ for src in "$ROOT"/tests/passes/*.sea; do
     pack_sea passes "$ROOT/tests/passes" "$nm" --no-prelude
     check_meta "$base"
     sidecars "$base" "$BUNDLE/cases/passes/$nm" out meta
+    PACKED=$((PACKED + 1))
+done
+
+# accept/NAME (DESIGN.md 6.3, 6.6.1): the Mac builds and runs the program and checks it with
+# tests/accept4.sh (heap check, compare.py --keys); its standard output is packed as NAME.out
+# and no other sidecar. A Mac run that fails its check is a pack failure (NAME.packfail).
+for src in "$ROOT"/tests/accept/*.sea; do
+    [ -e "$src" ] || continue
+    nm=$(basename "$src" .sea)
+    selected "accept/$nm" || continue
+    mkdir -p "$BUNDLE/cases/accept" || setup_fail "cannot create $BUNDLE/cases/accept"
+    rm -rf "$TMP/acc"
+    SEA="$SEA" sh "$ROOT/tests/accept4.sh" --save-out "$TMP/acc" "accept/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
+    st=$?
+    if [ $st -eq 2 ]; then setup_fail "tests/accept4.sh: $(head -3 "$TMP/acc.err" | tr '\n' ' ')"; fi
+    if [ $st -eq 0 ] && [ -f "$TMP/acc/$nm.out" ]; then
+        if pack_sea accept "$ROOT/tests/accept" "$nm"; then
+            cp "$TMP/acc/$nm.out" "$BUNDLE/cases/accept/$nm.out" || setup_fail "cannot write $nm.out"
+        fi
+    else
+        cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"
+        packfail "$BUNDLE/cases/accept/$nm" "$st" "$TMP/acc.all"
+    fi
     PACKED=$((PACKED + 1))
 done
 

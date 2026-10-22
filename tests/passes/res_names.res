@@ -3,9 +3,9 @@
 #file res_names.sea
 rint 0:3:11 2 #4000000000000000
 rcni 0:3:1 K 0 1 2
-type 0:4:10 i64 s 0
+rtype 0:4:10 i64 s 0 3
 param 0:4:6 lo 0 0
-type 0:4:18 i64 s 0
+rtype 0:4:18 i64 s 0 3
 rpname 0:5:9 lo 2
 rname 0:5:14 lo loc 1
 var 0:5:5 0

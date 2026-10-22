@@ -1,0 +1,40 @@
+// heap_fore_exit -- the vector an element loop holds is released after the loop, by a return inside it,
+// and not twice on break or continue (LANGUAGE.md 7.5, 7.7; DESIGN.md 3.6.6 rules 16 (f), 30)
+fn firstneg(v: f64[]) -> i64 {
+    var k = 0
+    for x in v {
+        let t = zeros(1)
+        if x < 0.0 {
+            return k
+        }
+        k += 1
+    }
+    return -1
+}
+var v = zeros(4)
+v[2] = -1.0
+printf("%d %d\n", firstneg(v), firstneg(zeros(2)))
+var n = 0
+for x in v {
+    if x < 0.0 {
+        break
+    }
+    n += 1
+}
+printf("%d\n", n)
+var m = 0
+for x in ones(4) {
+    m += 1
+    if m % 2 == 1 {
+        continue
+    }
+    printf("m %d\n", m)
+}
+for x in v {
+    for y in ones(2) {
+        if x < 0.0 {
+            break
+        }
+    }
+}
+printf("end\n")

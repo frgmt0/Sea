@@ -1,6 +1,6 @@
-12360 REM ---- sn_emit: the body of sea.res (DESIGN 3.4.1): the rerr of the first error, the rtup
-12365 REM records in id order, then every node of sea.ast in file order (= node order), copied as
-12370 REM read (D$) or replaced (rfn rst rcni rcnf rcnb rcne rcn rpname rfor rint rname rpowk), and
+12360 REM ---- sn_emit: the body of sea.res (DESIGN 3.4.1, 3.4.2): the rerr of the first error, the type
+12365 REM table in id order (rtup rtvec rtmat), then every node of sea.ast in file order (= node order),
+12370 REM copied as read (D$) or replaced (rfn rst rcn* rpname rfor rint rname rpowk rtype), and
 12375 REM prog. A replacement keeps the record's fields and adds its own (rpowk drops pow). -------
 12380 SUB "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$
 12385 IF X(6) = 0 THEN 12450
@@ -14,9 +14,12 @@
 12425 LET L$ = L$ & " " & A$
 12430 NEXT J
 12435 PRINT #2, L$
-12450 REM the tuple types of the signatures (ttup), in id order = row order
+12450 REM the types created (ttup, tarr), in id order = row order
 12455 LET R = 10
 12460 IF R > X(4) THEN 12510
+12461 IF T(R, 0) = 7 THEN 12465
+12462 LET L$ = SEG$("rtvecrtmat", 5 * T(R, 0) - 4, 5 * T(R, 0)) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
+12463 GOTO 12485
 12465 LET L$ = "rtup " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
 12470 FOR J = 1 TO T(R, 1)
 12475 LET L$ = L$ & " " & STR$(T(R + 1 + INT((J - 1) / 9), J - 1 - 9 * INT((J - 1) / 9)))
@@ -42,6 +45,7 @@
 12585 IF K = 2 THEN 12750
 12590 IF K = 3 THEN 12840
 12595 IF K = 5 THEN 12860
+12597 IF K = 7 THEN 12920
 12600 GOTO 12935
 12605 REM rint: the literal's value as f64 bits when exact in f64 (2^63 is read as -2^63, whose
 12610 REM bits #C3E0000000000000 3.4.1 asks for), else -
@@ -118,7 +122,17 @@
 12890 LET L$ = "rfn" & SEG$(L$, 3, LEN(L$)) & " " & STR$(Y(S, 5)) & " " & STR$(Q)
 12895 LET G = N(I, 7)
 12900 FOR J = 1 TO Y(S, 6)
-12905 LET L$ = L$ & " " & STR$(M(G, 1))
+12905 LET Q = M(G, 1)
+12906 IF Q < 10 THEN 12908
+12907 LET Q = T(Q, 9)
+12908 LET L$ = L$ & " " & STR$(Q)
 12910 LET G = N(G, 8)
 12915 NEXT J
+12917 GOTO 12935
+12920 REM rtype: the resolved type of a type node (0 after an error; a created type by its id)
+12922 IF M(I, 4) <> 1 THEN 12935
+12924 LET Q = M(I, 1)
+12926 IF Q < 10 THEN 12930
+12928 LET Q = T(Q, 9)
+12930 LET L$ = "r" & L$ & " " & STR$(Q)
 12935 SUBEND

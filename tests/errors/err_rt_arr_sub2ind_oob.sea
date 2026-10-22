@@ -1,0 +1,5 @@
+// err_rt_arr_sub2ind_oob -- sub2ind(r, i, j) checks i against r: INDEX_OOB, dimension 0 (LANGUAGE.md
+// 10.7, 5.4)
+let r = 3
+printf("%d\n", sub2ind(r, 2, 1))
+printf("%d\n", sub2ind(r, 3, 0))

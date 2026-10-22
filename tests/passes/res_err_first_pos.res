@@ -2,7 +2,7 @@
 #target arm64-macos
 #file res_err_first_pos.sea
 rerr 0:3:6 259 1 strings
-type 0:3:9 str s 0
+rtype 0:3:9 str s 0 0
 param 0:3:6 s 0 0
 rname 0:4:5 printf pd 0
 str 0:4:12 x%0A

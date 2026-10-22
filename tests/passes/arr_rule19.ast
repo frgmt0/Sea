@@ -1,0 +1,66 @@
+#sea 1
+#target arm64-macos
+#file arr_rule19.sea
+pname 0:1:5 T
+name 0:1:9 mk
+call 0:1:9 0
+var 0:1:1 0
+pname 0:2:5 j
+int 0:2:9 1
+var 0:2:1 0
+pname 0:3:5 i
+int 0:3:9 0
+var 0:3:1 0
+pname 0:4:5 tn
+float 0:4:10 #4004000000000000
+let 0:4:1 0
+type 0:5:12 f64 m 0
+pname 0:6:9 A
+name 0:6:13 zeros
+int 0:6:19 2
+int 0:6:22 2
+call 0:6:13 2
+var 0:6:5 0
+int 0:7:14 0
+int 0:7:17 2
+range 0:7:14 0 0
+name 0:8:9 A
+name 0:8:11 k
+name 0:8:14 k
+index 0:8:9 2
+float 0:8:19 #3FF0000000000000
+asg 0:8:9 set
+block 0:7:19 1
+for 0:7:5 k 0:7:9
+name 0:10:12 A
+return 0:10:5 1
+block 0:5:19 3
+fn 0:5:1 mk 0 0 1
+name 0:12:1 T
+name 0:12:3 j
+name 0:12:6 i
+index 0:12:1 2
+name 0:12:11 tn
+asg 0:12:1 set
+name 0:13:1 printf
+str 0:13:8 %25g%0A
+name 0:13:16 T
+int 0:13:18 1
+int 0:13:21 0
+index 0:13:16 2
+call 0:13:1 2
+cstmt 0:13:1
+pname 0:14:5 U
+name 0:14:9 mk
+call 0:14:9 0
+let 0:14:1 0
+name 0:15:1 printf
+str 0:15:8 %25g%0A
+name 0:15:16 U
+int 0:15:18 1
+int 0:15:21 0
+index 0:15:16 2
+call 0:15:1 2
+cstmt 0:15:1
+prog 9
+#end

@@ -1,0 +1,3 @@
+// err_ns_lib_sum -- 4d: sum (a reduction, sub-phase 4f) is still a library function not yet
+// supported, reported at the call (DESIGN.md 2.6.2 step 4d)
+printf("%g\n", sum(zeros(3)))

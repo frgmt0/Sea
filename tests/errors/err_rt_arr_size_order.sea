@@ -1,0 +1,6 @@
+// err_rt_arr_size_order -- zeros(-1, 2^31): rows are checked first, so -1 is named (LANGUAGE.md 10.2;
+// DESIGN.md 4.8 sea_arr_new)
+let r = 0 - 1
+let c = 2147483648
+let A = zeros(r, c)
+printf("%d\n", rows(A))

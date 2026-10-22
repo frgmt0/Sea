@@ -2,9 +2,9 @@
 #target arm64-macos
 #file res_err_elemental.sea
 rerr 0:3:1 259 1 elemental%20functions
-type 0:3:20 f64 s 0
+rtype 0:3:20 f64 s 0 4
 param 0:3:17 x 0 0
-type 0:3:28 f64 s 0
+rtype 0:3:28 f64 s 0 4
 rname 0:4:12 x loc 1
 rname 0:4:16 x loc 1
 bin 0:4:12 mul

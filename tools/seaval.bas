@@ -101,13 +101,23 @@
 1010 IF R$(I) = "prog" THEN 1020
 1012 IF R$(I) = "rerr" THEN 1016
 1014 IF R$(I) = "rtup" THEN 1018
-1015 GOTO 1070
+1015 GOTO 1022
 1016 LET Y(I) = 20
 1017 GOTO 1070
 1018 LET Y(I) = 21
 1019 GOTO 1070
 1020 LET Y(I) = 1
+1021 GOTO 1070
+1022 IF POS("|rtvec|rtmat|rtfvec|rtfmat|", "|" & R$(I) & "|") > 0 THEN 1027
+1023 IF R$(I) = "rtst" THEN 1029
+1024 IF R$(I) = "rtfd" THEN 1031
+1025 GOTO 1070
+1027 LET Y(I) = 22
+1028 GOTO 1070
+1029 LET Y(I) = 23
 1030 GOTO 1070
+1031 LET Y(I) = 24
+1032 GOTO 1070
 1040 LET P1 = POS(K2$, "|" & R$(I) & "=")
 1050 IF P1 = 0 THEN 1070
 1060 LET Y(I) = VAL(SEG$(K2$, P1 + LEN(R$(I)) + 2, P1 + LEN(R$(I)) + 3))
@@ -151,6 +161,7 @@
 1390 CALL "io_hdr": 0, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), V9, T$, H$(), 100, N1, L$
 1400 LET L0 = N1 + 3
 1410 LET Y9 = 9
+1412 LET Z5 = 0
 1420 REM ---- one record per round: L$ is line L0 ---------------------------------------------------
 1430 LET D$ = "BAD_RECORD"
 1440 CALL "io_plain": L$, O
@@ -207,13 +218,18 @@
 1920 LET D$ = "BAD_TREE"
 1930 LET M$ = "fd record expected after tstruct / trec"
 1940 IF X8 = 0 THEN 1960
-1950 IF Y0 <> 11 THEN 4910
+1950 IF Y0 = 11 THEN 1960
+1952 IF Y0 = 24 THEN 1960
+1954 GOTO 4910
 1960 IF Y0 = 0 THEN 2085
 1970 IF Y0 = 1 THEN 2260
 1980 IF Y0 = 10 THEN 2320
 1990 IF Y0 = 11 THEN 2490
 1992 IF Y0 = 20 THEN 6600
 1994 IF Y0 = 21 THEN 6800
+1996 IF Y0 = 22 THEN 7100
+1997 IF Y0 = 23 THEN 7140
+1998 IF Y0 = 24 THEN 7180
 2000 IF Y0 = 12 THEN 2540
 2010 IF Y0 = 13 THEN 2660
 2020 IF Y0 = 14 THEN 2760
@@ -480,6 +496,8 @@
 4570 IF C0 <> 1 THEN 4910
 4580 LET D$ = "BAD_TREE"
 4590 IF K0 > 3 THEN 4720
+4592 LET M$ = "an rtfd record names type " & STR$(Z5) & " but the type table ends at " & STR$(Y9)
+4594 IF Z5 > Y9 THEN 4910
 4600 LET M$ = "nodes left on the stack at #end"
 4610 IF S0 > 0 THEN 4910
 4620 LET D$ = "BAD_RECORD"
@@ -591,9 +609,13 @@
 5680 IF T <> 0 THEN 6530
 5690 LET U(J) = V
 5700 LET M$ = B$ & " is not a defined type id (the last is " & STR$(Y9) & ")"
-5710 IF V >= 1 THEN 5720
+5710 IF V >= 1 THEN 5716
 5712 IF R6 = 1 THEN 5730
 5714 GOTO 4910
+5716 IF Y0 <> 24 THEN 5720
+5717 IF V <= Z5 THEN 5730
+5718 LET Z5 = V
+5719 GOTO 5730
 5720 IF V > Y9 THEN 4910
 5730 RETURN
 5740 REM lid: a local of the current function
@@ -738,3 +760,34 @@
 7032 LET Z6 = V
 7034 LET Z7 = -1
 7036 GOTO 4520
+7090 REM ---- sea.res type table (DESIGN 3.4.2): rtvec rtmat rtfvec rtfmat rtst rtfd, before the tree ----
+7100 LET M$ = "type table record after the tree began"
+7102 IF T9 = 2 THEN 4910
+7104 LET T9 = 1
+7106 LET Z$ = "id"
+7108 GOSUB 5090
+7110 LET M$ = R$(I0) & " id " & STR$(V) & " where " & STR$(Y9 + 1) & " was expected (ids count from 10, in order)"
+7112 IF V <> Y9 + 1 THEN 4910
+7114 LET Y9 = V
+7116 GOTO 4520
+7140 LET M$ = "type table record after the tree began"
+7142 IF T9 = 2 THEN 4910
+7144 LET T9 = 1
+7146 LET Z$ = "id"
+7148 GOSUB 5090
+7150 LET Q1 = V
+7152 LET M$ = "rtst id " & STR$(V) & " where " & STR$(Y9 + 1) & " was expected (ids count from 10, in order)"
+7154 IF V <> Y9 + 1 THEN 4910
+7156 LET Y9 = V
+7158 LET Z$ = "sid"
+7160 GOSUB 5090
+7162 LET M$ = "rtst sid " & STR$(V) & ": the struct with sid s has type id 9 + s (DESIGN 3.4.2)"
+7164 IF Q1 <> 9 + V THEN 4910
+7166 LET Z$ = "n"
+7168 GOSUB 5090
+7170 LET X8 = V
+7172 GOTO 4520
+7180 LET M$ = "rtfd record outside an rtst"
+7182 IF X8 = 0 THEN 4910
+7184 LET X8 = X8 - 1
+7186 GOTO 4520

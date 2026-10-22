@@ -1,0 +1,26 @@
+// arr_cow -- copy on write: var b = a; b[0] = 1.0 leaves a; a store in a loop copies once; a var
+// copy of a parameter; a matrix (LANGUAGE.md 4.5, 8.2)
+let a = filled(2.0, 3)
+var b = a
+b[0] = 1.0
+printf("%g %g / %g %g\n", a[0], a[1], b[0], b[1])
+var c = b
+for i in 0..3 {
+    c[i] = f64(i) * 10.0
+}
+printf("%g %g %g / %g %g %g\n", c[0], c[1], c[2], b[0], b[1], b[2])
+fn bumped(v: f64[]) -> f64[] {
+    var w = v
+    w[0] += 1.0
+    return w
+}
+let d = bumped(a)
+printf("%g %g\n", d[0], a[0])
+let M = ones(2, 2)
+var N = M
+N[0, 1] = 5.0
+printf("%g %g\n", M[0, 1], N[0, 1])
+var e = c
+e[2] = -1.0
+e[2] = -2.0
+printf("%g %g\n", e[2], c[2])

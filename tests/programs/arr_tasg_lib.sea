@@ -1,0 +1,14 @@
+// arr_tasg_lib -- a tuple assignment from ind2sub to scalars, to elements and with _
+// (LANGUAGE.md 10.7, 7.3, 4.2)
+var e = 0
+var f = 0
+(e, f) = ind2sub(3, 7)
+printf("%d %d\n", e, f)
+var a = zeros(2)
+(a[0], a[1]) = ind2sub(3, 7)
+printf("%g %g\n", a[0], a[1])
+var w = filled(0, 3)
+(w[2], e) = ind2sub(4, 10)
+printf("%d %d %d\n", w[2], e, w[0])
+(_, f) = ind2sub(3, -1)
+printf("%d\n", f)

@@ -1,0 +1,22 @@
+// heap_pick -- a function returning one of two array locals: the returned one survives, the other is
+// released (LANGUAGE.md 7.7; DESIGN.md 3.6.6 rules 15 (a), 16 (c))
+fn pick(c: bool) -> f64[] {
+    let a = filled(1.0, 2)
+    let b = filled(2.0, 3)
+    if c {
+        return a
+    }
+    return b
+}
+fn first(c: bool, v: f64[], w: f64[]) -> f64[] {
+    if c {
+        return v
+    }
+    return w
+}
+let x = pick(true)
+let y = pick(false)
+printf("%d %d %g %g\n", len(x), len(y), x[0], y[0])
+let z = first(false, x, y)
+printf("%d\n", len(z))
+printf("%d\n", len(first(true, pick(false), pick(true))))

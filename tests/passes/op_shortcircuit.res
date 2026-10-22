@@ -1,11 +1,11 @@
 #sea 1
 #target arm64-macos
 #file op_shortcircuit.sea
-type 0:3:12 i64 s 0
+rtype 0:3:12 i64 s 0 3
 param 0:3:9 a 0 0
-type 0:3:20 i64 s 0
+rtype 0:3:20 i64 s 0 3
 param 0:3:17 b 0 0
-type 0:3:28 i64 s 0
+rtype 0:3:28 i64 s 0 3
 rpname 0:4:9 r 3
 rint 0:4:13 0 #0000000000000000
 var 0:4:5 0

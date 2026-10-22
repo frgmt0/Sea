@@ -1,9 +1,9 @@
 #sea 1
 #target arm64-macos
 #file stmt_loops.sea
-type 0:4:12 i64 s 0
+rtype 0:4:12 i64 s 0 3
 param 0:4:9 n 0 0
-type 0:4:20 i64 s 0
+rtype 0:4:20 i64 s 0 3
 rpname 0:5:9 k 2
 rint 0:5:13 0 #0000000000000000
 var 0:5:5 0

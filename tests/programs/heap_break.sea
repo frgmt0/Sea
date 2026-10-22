@@ -1,0 +1,30 @@
+// heap_break -- array locals of the blocks a break leaves are released (LANGUAGE.md 7.7; DESIGN.md
+// 3.6.6 rule 16 (b))
+var total = 0.0
+var k = 0
+while true {
+    let v = filled(1.0, 4)
+    if k == 2 {
+        let w = zeros(3)
+        if w[0] == 0.0 {
+            let x = ones(2)
+            break
+        }
+    }
+    total += v[0]
+    k += 1
+}
+printf("%g %d\n", total, k)
+for i in 0..10 {
+    let a = zeros(i + 1)
+    for j in 0..10 {
+        let b = ones(j + 1)
+        if j == 1 {
+            break
+        }
+    }
+    if i == 2 {
+        break
+    }
+}
+printf("done\n")

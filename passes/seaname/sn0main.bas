@@ -66,16 +66,20 @@
 315 LET Q$(6) = "LIM_STRINGS"
 320 LET Q$(7) = "LIM_POWK"
 325 LET Q$(8) = "LIM_DEC_FIELD"
-330 FOR I = 1 TO 8
+327 LET Q$(9) = "LIM_FIXED_ELEMS"
+330 FOR I = 1 TO 9
 335 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
 340 IF T = 0 THEN 350
 345 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
 350 IF I = 1 THEN 380
+352 IF I = 9 THEN 377
 355 IF I = 8 THEN 370
 360 LET X(18 + I) = V
 365 GOTO 385
 370 LET X(35) = V
 375 GOTO 385
+377 LET X(43) = V
+378 GOTO 385
 380 LET X(34) = V
 385 NEXT I
 390 IF X(20) > 49999 THEN 425
@@ -84,6 +88,7 @@
 405 IF X(22) > 19999 THEN 425
 410 IF X(23) > 99999 THEN 425
 415 IF X(24) > 199999 THEN 425
+417 IF X(43) > 2000000 THEN 425
 420 GOTO 430
 425 CALL "dg_bug": P$, "a capacity limit is larger than the pass tables"
 430 SUBEND

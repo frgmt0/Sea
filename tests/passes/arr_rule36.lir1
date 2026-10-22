@@ -1,0 +1,44 @@
+#sea 1
+#target arm64-macos
+#file arr_rule36.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+lf f1 #3FE0000000000000
+lf f2 #4000000000000000
+call dist 1 f3 2 f1 f2
+sa p4 s1
+stf f3 p4 - 0 0
+la p5 d1
+rcall sea_printf 0:1 0 2 p5 p4
+lf f6 #4010000000000000
+lf f7 #3FF8000000000000
+call dist 1 f8 2 f6 f7
+sa p9 s2
+stf f8 p9 - 0 0
+la p10 d2
+rcall sea_printf 0:2 0 2 p10 p9
+ret 0
+endfunc
+func dist fn 0:5:1 2 f1 f2 1 f
+fsub f3 f1 f2
+fabs f4 f3
+mov f5 f4
+do 1
+lf f6 #3FF0000000000000
+fcmp gt i7 f5 f6
+ifz 2 i7
+exit 1
+endif 2
+lf f8 #4000000000000000
+fdiv f5 f5 f8
+enddo 1
+ret 1 f5
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,4 @@
+// err_ns_arr_view -- 4d: a view is still arrays, at its field node, whose position is the start of the
+// operand (DESIGN.md 2.6.2 step 4d, 3.3)
+let A = zeros(2, 3)
+let B = A.T

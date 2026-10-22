@@ -1,0 +1,19 @@
+// arr_math_f64 -- the scalar exact math functions on f64 with +-0, NaN and +-inf (LANGUAGE.md 10.4,
+// 6.7, 11.1)
+let pz = 0.0
+let nz = -0.0
+let pinf = inf
+let ninf = -inf
+let qn = nan
+printf("%g %g %g %g %g\n", abs(nz), abs(ninf), abs(-2.5), abs(qn), abs(3.0))
+printf("%g %g %g %g %g %g\n", sign(nz), sign(pz), sign(-3.5), sign(ninf), sign(qn), sign(pinf))
+printf("%g %g %g %g %.17g\n", sqrt(nz), sqrt(4.0), sqrt(-1.0), sqrt(pinf), sqrt(2.0))
+printf("%g %g %g %g\n", floor(-0.5), ceil(-0.5), trunc(-2.7), trunc(nz))
+printf("%g %g %g %g\n", round(2.5), round(-2.5), round(0.49999999999999994), round(-0.4))
+printf("%g %g %g %g\n", floor(pinf), ceil(qn), round(ninf), floor(2.0))
+printf("%d %d %d\n", isnan(qn), isnan(pinf), isnan(nz))
+printf("%g %g %g\n", min(1.0, qn), min(qn, 2.0), max(qn, qn))
+printf("%g %g %g %g\n", min(nz, pz), min(pz, nz), max(nz, pz), max(pz, nz))
+printf("%g %g %g\n", max(ninf, 3.0), min(2, 3.5), max(2, 3.5))
+printf("%g %d %d\n", where(true, 1.5, 2.5), where(false, 1, 2), where(1 > 2, true, false))
+printf("%g\n", where(pinf > 0.0, 1, 2.5))

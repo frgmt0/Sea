@@ -1,0 +1,40 @@
+// arr_fore -- for over a vector: the vector is held (reassigning its variable in the body does not
+// change the iteration); i64[], bool[], empty and fresh vectors (LANGUAGE.md 7.5)
+var v = filled(1.0, 3)
+v[1] = 2.0
+v[2] = 3.0
+var s = 0.0
+var n = 0
+for x in v {
+    v = zeros(1)
+    s += x
+    n += 1
+}
+printf("%g %d %d\n", s, n, len(v))
+var iv = filled(0, 4)
+for i in 0..4 {
+    iv[i] = 10 * i
+}
+var t = 0
+for k in iv {
+    t += k
+}
+printf("%d\n", t)
+var bv = filled(false, 3)
+bv[2] = true
+var nt = 0
+for b in bv {
+    if b {
+        nt += 1
+    }
+}
+printf("%d\n", nt)
+for x in zeros(0) {
+    printf("never\n")
+}
+var c = 0
+for x in zeros(3) {
+    c += 1
+    printf("%g ", x)
+}
+printf("%d\n", c)

@@ -1,0 +1,13 @@
+fn f(n: i64) -> i64 {
+    var k = 0
+    while k < n {
+        let v = zeros(n)
+        if k == 3 { break }
+        k += 1
+    }
+    return k
+}
+printf("%d\n", f(5))
+printf("%d\n", f(2))
+// arr_rule16 -- DESIGN.md 3.6.6 rule 16 (scopes and exits): its example function verbatim; the
+// array local v is released by the break and at the end of the loop body

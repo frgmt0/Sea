@@ -1,0 +1,26 @@
+// arr_ref_in_target -- a ref call in an assignment target's own index: the checks and the store use
+// the variable as the call left it (LANGUAGE.md 5.5, 7.3; DESIGN.md 3.6.6 rule 12)
+fn grow3(ref v: f64[]) -> i64 {
+    v = filled(2.0, 4)
+    return 3
+}
+fn two(ref v: f64[]) -> (i64, f64[]) {
+    v = filled(3.0, 5)
+    return (4, zeros(2))
+}
+fn viaref(ref p: f64[]) {
+    p[grow3(ref p)] = 5.0
+}
+var g = ones(2)
+g[grow3(ref g)] = 5.0
+printf("%d %g %g\n", len(g), g[3], g[0])
+var h = ones(2)
+h[grow3(ref h)] += 1.0
+printf("%d %g\n", len(h), h[3])
+var c = ones(2)
+var d = ones(2)
+(c[grow3(ref c)], d) = two(ref d)
+printf("%d %g %d\n", len(c), c[3], len(d))
+var r = ones(2)
+viaref(ref r)
+printf("%d %g\n", len(r), r[3])

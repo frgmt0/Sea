@@ -1,5 +1,5 @@
 // res_powk_skip -- rpowk from a constant, none where a local shadows it; rtup 10 reused; a
-// not-entered fn, a for over an array and a match copied unresolved (3.4.1)
+// not-entered fn and a match copied unresolved, a for over an array resolved (3.4.1, 3.4.2)
 const K = 2
 fn g(x: f64) -> (f64, i64) {
     return (x ^ K, 1)

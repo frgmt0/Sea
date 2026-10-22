@@ -1,0 +1,27 @@
+// heap_temps -- array temporaries: a call result indexed, measured, passed and discarded are released
+// (LANGUAGE.md 7.7; DESIGN.md 3.6.6 rule 15 (b), (h))
+fn make(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) + 0.5
+    }
+    return v
+}
+fn total(v: f64[]) -> f64 {
+    var s = 0.0
+    for x in v {
+        s += x
+    }
+    return s
+}
+printf("%g %d %g\n", make(3)[1], len(make(4)), total(make(2)))
+make(5)
+let _ = make(6)
+printf("%g %d\n", ones(2)[0], numel(zeros(2, 3)))
+fn two(n: i64) -> (f64[], i64[]) {
+    return (zeros(n), filled(n, n))
+}
+let (a, _) = two(3)
+let (_, b) = two(2)
+printf("%d %d\n", len(a), b[1])
+two(1)

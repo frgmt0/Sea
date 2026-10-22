@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file arr_rule16.sea
+tvec 10 4
+fn 1 .main main 1 0 0 0:1:1
+ci 0:10:18 3 5
+call 0:10:16 3 2 1
+fconv 0:10:8 1 - - - d
+ftext 0:10:8 1 %0A
+fmt 0:10:8 1 2
+lib 0:10:1 1 printf 1
+eval 0:10:1
+ci 0:11:18 3 2
+call 0:11:16 3 2 1
+fconv 0:11:8 1 - - - d
+ftext 0:11:8 1 %0A
+fmt 0:11:8 1 2
+lib 0:11:1 1 printf 1
+eval 0:11:1
+block 0:1:1 2
+end
+fn 2 f fn 3 1 2 0:1:1
+par n 3 val
+loc k 3 var 0:2:9
+loc v 10 let 0:4:13
+ci 0:2:13 3 0
+bind 0:2:5 2
+lv 0:3:11 3 2
+lv 0:3:15 3 1
+bin 0:3:11 2 lt
+lv 0:4:23 3 1
+lib 0:4:17 10 zeros 1
+bind 0:4:9 3
+lv 0:5:12 3 2
+ci 0:5:17 3 3
+bin 0:5:12 2 eq
+break 0:5:21
+block 0:5:19 1
+if 0:5:9 0
+lv 0:6:9 3 2
+ci 0:6:14 3 1
+asg 0:6:9 add
+block 0:3:17 3
+while 0:3:5
+lv 0:8:12 3 2
+ret 0:8:5 1
+block 0:1:21 3
+end
+#end

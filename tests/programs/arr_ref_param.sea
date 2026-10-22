@@ -1,0 +1,28 @@
+// arr_ref_param -- ref array parameters: an element store through ref copies a shared array (the
+// caller's other variable unchanged), a whole-array store, a ref passed on (LANGUAGE.md 8.3, 4.5)
+fn set0(ref v: f64[], x: f64) {
+    v[0] = x
+}
+fn resize(ref v: f64[], n: i64) {
+    v = filled(f64(n), n)
+}
+fn pass(ref v: f64[], x: f64) {
+    set0(ref v, x)
+    v[1] += 1.0
+}
+var a = ones(3)
+let b = a
+set0(ref a, 5.0)
+printf("%g %g %g / %g %g %g\n", a[0], a[1], a[2], b[0], b[1], b[2])
+var c = zeros(2)
+resize(ref c, 5)
+printf("%d %g\n", len(c), c[4])
+pass(ref a, 7.0)
+printf("%g %g %g\n", a[0], a[1], b[1])
+var m = zeros(2, 2)
+var n = m
+fn setm(ref A: f64[,]) {
+    A[1, 1] = 4.0
+}
+setm(ref m)
+printf("%g %g\n", m[1, 1], n[1, 1])

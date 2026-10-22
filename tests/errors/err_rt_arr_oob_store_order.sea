@@ -1,0 +1,12 @@
+// err_rt_arr_oob_store_order -- an element store evaluates the value, then the indices, then checks
+// (LANGUAGE.md 5.5, C4)
+fn ix(k: i64) -> i64 {
+    printf("ix %d\n", k)
+    return k
+}
+fn val() -> f64 {
+    printf("val\n")
+    return 1.0
+}
+var A = zeros(2, 3)
+A[ix(1), ix(3)] = val()

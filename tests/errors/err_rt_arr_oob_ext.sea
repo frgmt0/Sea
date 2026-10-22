@@ -1,0 +1,4 @@
+// err_rt_arr_oob_ext -- v[3] of a 3-element vector: the extent is out of range (LANGUAGE.md 5.4)
+let v = ones(3)
+printf("%g\n", v[2])
+printf("%g\n", v[3])

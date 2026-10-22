@@ -1,0 +1,23 @@
+var v = mkv()
+var i = 1
+// arr_rule31 -- DESIGN.md 3.6.6 rule 31 (ref arguments of elements): its example verbatim on line 4
+f(ref v[i])
+f(ref v[0])
+printf("%g\n", v[0])
+printf("%g\n", v[1])
+let w = mkv()
+printf("%g\n", w[1])
+fn mkv() -> f64[] {
+    var a = zeros(2)
+    for k in 0..2 {
+        a[k] = f64(k) + 0.5
+    }
+    return a
+}
+fn f(ref x: f64) {
+    for k in 0..2 {
+        x += 1.0
+    }
+}
+// the element's address is the argument (no reload); the callee's compound store through the f64
+// ref parameter loads, adds and stores (rule 12)

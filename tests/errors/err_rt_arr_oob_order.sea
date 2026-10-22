@@ -1,0 +1,9 @@
+// err_rt_arr_oob_order -- all indices are evaluated before any check; the first failing check left to
+// right is reported (LANGUAGE.md 5.4, C1)
+fn ix(k: i64) -> i64 {
+    printf("ix %d\n", k)
+    return k
+}
+let A = zeros(2, 3)
+let x = A[ix(5), ix(-1)]
+let y = A[ix(0), ix(0)]

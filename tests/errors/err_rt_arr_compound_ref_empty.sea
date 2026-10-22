@@ -1,0 +1,8 @@
+// err_rt_arr_compound_ref_empty -- v[0] += g(ref v) where g empties v: the store's repeated check fails
+// (LANGUAGE.md 5.5, 8.3; DESIGN.md 3.6.6 rule 19)
+fn empty(ref v: f64[]) -> f64 {
+    v = zeros(0)
+    return 1.0
+}
+var v = ones(1)
+v[0] += empty(ref v)

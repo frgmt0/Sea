@@ -1,11 +1,11 @@
 #sea 1
 #target arm64-macos
 #file lx.sea
-type 0:1:11 i64 s 0
+rtype 0:1:11 i64 s 0 3
 param 0:1:8 n 0 0
-type 0:1:19 f64 s 0
+rtype 0:1:19 f64 s 0 4
 param 0:1:16 x 0 0
-type 0:1:27 f64 s 0
+rtype 0:1:27 f64 s 0 4
 rpname 0:2:9 s 3
 float 0:2:13 #0000000000000000
 var 0:2:5 0

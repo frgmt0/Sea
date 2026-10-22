@@ -6,10 +6,10 @@ rint 0:1:11 2 #4000000000000000
 rint 0:1:15 3 #4008000000000000
 bin 0:1:11 mul
 rcni 0:1:1 N 0 1 6
-type 0:2:13 f64 s 0
+rtype 0:2:13 f64 s 0 4
 param 0:2:10 x 0 0
-type 0:2:22 f64 s 0
-type 0:2:27 i64 s 0
+rtype 0:2:22 f64 s 0 4
+rtype 0:2:27 i64 s 0 3
 rpname 0:3:9 k 2
 rname 0:3:17 x loc 1
 conv 0:3:13 i64

@@ -1,0 +1,4 @@
+// err_rt_arr_ind2sub_zero -- ind2sub(0, k) divides by zero (LANGUAGE.md 10.7, 6.6)
+let r = 0
+let (i, j) = ind2sub(r, 5)
+printf("%d %d\n", i, j)

@@ -1,0 +1,6 @@
+// err_rt_arr_compound_ovf -- an i64 compound element store overflows: integer overflow at its line
+// (LANGUAGE.md 6.5, 5.5)
+var iv = filled(9223372036854775807, 2)
+iv[0] -= 1
+printf("%d\n", iv[0])
+iv[1] += 1

@@ -1,9 +1,9 @@
 #sea 1
 #target arm64-macos
 #file fn_ref_order.sea
-type 0:4:13 i64 s 0
+rtype 0:4:13 i64 s 0 3
 param 0:4:6 s 1 0
-type 0:4:21 i64 s 0
+rtype 0:4:21 i64 s 0 3
 rint 0:5:14 0 #0000000000000000
 rint 0:5:17 2 #4000000000000000
 range 0:5:14 0 0
@@ -18,11 +18,11 @@ bin 0:8:12 mul
 return 0:8:5 1
 block 0:4:25 2
 rfn 0:4:1 g 0 1 1 2 3 3
-type 0:10:9 i64 s 0
+rtype 0:10:9 i64 s 0 3
 param 0:10:6 a 0 0
-type 0:10:17 i64 s 0
+rtype 0:10:17 i64 s 0 3
 param 0:10:14 b 0 0
-type 0:10:25 i64 s 0
+rtype 0:10:25 i64 s 0 3
 rpname 0:11:9 r 3
 rname 0:11:13 b loc 2
 var 0:11:5 0

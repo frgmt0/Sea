@@ -2,7 +2,7 @@
 #target arm64-macos
 #file res_err_handle.sea
 rerr 0:3:9 259 1 handle%20types
-type 0:3:9 Figure s 0
+rtype 0:3:9 Figure s 0 0
 param 0:3:6 a 0 0
 rname 0:4:5 printf pd 0
 str 0:4:12 x%0A

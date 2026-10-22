@@ -1,5 +1,5 @@
-// res_err_array -- rerr 259 arrays at an array type of a signature (its type node)
-// (DESIGN.md 3.4.1, 2.6.2)
-fn f(v: f64[], k: i64) -> i64 {
+// res_err_array -- rerr 259 arrays at a fixed-size array type of a signature (its type node,
+// still reported in 4d); its type is 0 (DESIGN.md 3.4.2, 2.6.2)
+fn f(v: f64[3], k: i64) -> i64 {
     return k
 }

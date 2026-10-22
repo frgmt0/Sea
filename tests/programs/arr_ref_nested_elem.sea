@@ -1,0 +1,19 @@
+// arr_ref_nested_elem -- f(ref v[0], g(ref v)) where g replaces v by a longer array: f writes the new
+// array's element 0 (LANGUAGE.md 8.3; DESIGN.md 3.6.6 rule 31)
+fn grow(ref v: f64[]) -> f64 {
+    v = filled(3.0, 5)
+    return 1.5
+}
+fn put(ref e: f64, x: f64) {
+    e = e + x
+}
+var w = ones(2)
+put(ref w[0], grow(ref w))
+printf("%d %g %g %g\n", len(w), w[0], w[1], w[4])
+var m = zeros(2, 2)
+fn growm(ref A: f64[,]) -> f64 {
+    A = filled(1.0, 3, 3)
+    return 2.0
+}
+put(ref m[1, 1], growm(ref m))
+printf("%d %g %g\n", rows(m), m[1, 1], m[2, 2])

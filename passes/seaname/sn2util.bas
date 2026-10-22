@@ -9,15 +9,17 @@
 1515 REM >= 10 a T row; param: its type (ck_sig); M(i,2) symbol (Y row, -p predeclared slot p, 0 none;
 1520 REM an entered item: its own row; pname, param, for: the local); M(i,4) 1: name, pname or for
 1525 REM is replaced (rname rpname rfor); M(i,5) C row of a literal; M(i,6) children; M(i,7) cvt to f64
-1530 REM after the node (1); M(i,8) bin: rpowk k + 10.
+1530 REM after the node (1); M(i,8) bin: rpowk k + 10. A type node (tylk, tyres): M(i,1) its type, M(i,2)
+1532 REM the symbol of an identifier base, M(i,3) the id of a predefined base (0: an identifier),
+1533 REM M(i,4) 1: it becomes rtype, M(i,9) 1: resolved.
 1535 REM Y(s,0) 1 fn 2 const 3 struct 4 local; Y(s,1) name; Y(s,2) type (fn: result; const: derived);
 1540 REM Y(s,3) node; Y(s,4) local: mut, fn: elemental, const: 1 ovf, 2 div0 (rcne); Y(s,5) lid /
 1545 REM fid / cid / sid; Y(s,6) fn: np, const: constant order (1 waiting, 2 done); Y(s,7) fn: nr,
 1550 REM const: outcome (0 not yet 1 i64 2 f64 3 bool 5 none 6 failed); Y(s,8) local: function,
 1555 REM const: value limbs 3,2 as L3*65536+L2 (bool: 0 or 1); Y(s,9) const: limbs 1,0, or rcne's node.
 1560 REM Row 1 is .main, items follow (rows 2..X(33)), then the locals of each function.
-1565 REM T(t,0) 7 ttuple 0 continuation; T(t,1) count; components in the next rows, 9 per row
-1570 REM (columns 0-8); T(t,9) the rtup id (DESIGN 3.4.1). Only rtup types are created here.
+1565 REM T(t,0) 1 T[] 2 T[,] 7 ttuple 0 continuation; T(t,1) element id, or count with components (ids)
+1570 REM in the next rows, 9 per row (columns 0-8); T(t,9) the id (DESIGN 3.4.1, 3.4.2).
 1575 REM W(1..) the constant order's stack, then the value stack of evx; W(..199999) scope stack,
 1580 REM pairs (name, symbol), marker -1. X(1) nodes X(2) strings X(3) symbols X(4) last T row
 1585 REM X(5) C rows X(6) key of the first error (0 none) X(7) its node X(8) its argument count
@@ -26,7 +28,7 @@
 1600 REM CONSTS NODES STRINGS POWK X(30) functions X(31) constants X(33) items X(34) FILE_VERSION
 1605 REM X(35) LIM_DEC_FIELD X(36) X(37) npos of a symbols overflow X(38) types X(39) X(41) the
 1610 REM predeclared slots of pow, sqrt X(40) the rules the typed path does not accept (fl) X(42)
-1615 REM structs; C(r,0) 3 i64 4 f64, C(r,1..4) limbs; X$(1) error name, X$(2)-X$(4) its arguments, X$(10) predeclared names.
+1615 REM structs X(43) LIM_FIXED_ELEMS X(44) 1: a signature type (tyof); C(r,0) 3 i64 4 f64, C(r,1..4) limbs; X$(1) error name, X$(2)-X$(4) its arguments, X$(10) predeclared names.
 1620 REM ---- er: record error Q$ at node I (K arguments); the first in source order is kept ------
 1625 SUB "er": N(), X(), X$(), I, Q$, A$, B$, C$, K
 1630 LET X(9) = X(9) + 1

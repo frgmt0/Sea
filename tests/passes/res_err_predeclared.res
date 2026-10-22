@@ -2,9 +2,9 @@
 #target arm64-macos
 #file res_err_predeclared.sea
 rerr 0:3:1 212 0
-type 0:3:12 f64 s 0
+rtype 0:3:12 f64 s 0 4
 param 0:3:9 x 0 0
-type 0:3:20 f64 s 0
+rtype 0:3:20 f64 s 0 4
 rname 0:4:12 x loc 1
 return 0:4:5 1
 block 0:3:24 1
