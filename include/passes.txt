@@ -5,7 +5,8 @@
 ; enum <name> <word>...
 ; head <name> <field>...                  header record, written with a leading number sign
 ; rec <set> <code> <op> <pops> <field>...
-;   set: A sea.ast; H both HIR files; H1 sea.hir1 only; HF sea.hir only;
+;   set: A sea.ast and sea.res (codes 1-49 both files, 50- sea.res only: 3.4.1);
+;        H both HIR files; H1 sea.hir1 only; HF sea.hir only;
 ;        L both LIR files; LF sea.lir only
 ;   field: name:type, then optionally ? (the field may be -), then optionally *count
 ;          (the field is repeated count times, count = an earlier u field): name:type?*count
@@ -28,6 +29,8 @@ enum rcls i f p
 enum delt i64 f64 bool
 enum cc eq ne lt le gt ge
 enum feat avx2
+enum nkind loc cst fn st pd none
+enum cerr ovf div0
 
 ; ---------------------------------------------------------------- header records (3.2)
 head sea ver:u
@@ -85,6 +88,24 @@ rec A 46 slit n pos:pos name:s n:u
 rec A 47 rlit n pos:pos n:u
 rec A 48 init 1 pos:pos name:s
 rec A 49 ifx 3 pos:pos
+
+; ---------------------------------------------------------------- sea.res only (3.4.1)
+; declaration records (not nodes)
+rec A 50 rerr 0 pos:pos code:u k:u a:s*k
+rec A 51 rtup 0 id:u n:u t:ty*n
+; nodes that replace sea.ast nodes (same pops)
+rec A 52 rfn np+nr+1 pos:pos name:s el:u np:u nr:u fid:u rty:ty t:ty*np
+rec A 53 rst n pos:pos name:s n:u sid:u
+rec A 54 rcni 1+t pos:pos name:s t:u cid:u v:i
+rec A 55 rcnf 1+t pos:pos name:s t:u cid:u v:f
+rec A 56 rcnb 1+t pos:pos name:s t:u cid:u v:u
+rec A 57 rcne 1+t pos:pos name:s t:u cid:u e:cerr epos:pos
+rec A 58 rcn 1+t pos:pos name:s t:u cid:u
+rec A 59 rpname 0 pos:pos name:s lid:lid
+rec A 60 rfor 2 pos:pos name:s npos:pos lid:lid
+rec A 61 rint 0 pos:pos v:i fv:f?
+rec A 62 rname 0 pos:pos name:s k:nkind ref:u
+rec A 63 rpowk 2 pos:pos k:i
 
 ; ---------------------------------------------------------------- sea.hir1 and sea.hir (3.5)
 ; types (3.5.1)

@@ -35,7 +35,8 @@ the user's agreement. Phase 0 (§8) did:
    sections, under the same contract rule as Baysick's (`CLAUDE.md`: a shared layout, code,
    limit or symbol changes only in the include file and its doc section together);
 3. implementation follows the milestones of §8: phases 0, 1, 2 and 3 are complete (the MATLAB
-   rerun of Decision 7 is done: sea commit c1736f7); next is phase 4, arrays and structs.
+   rerun of Decision 7 is done: sea commit c1736f7); next is phase 4, arrays and structs, built in
+   the sub-phases 4a–4h of §8, starting with 4a, the split of pass 2a.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -128,6 +129,34 @@ every NaN result `#7FF8000000000000`, the ABI of the six `rt.inc` entries 3–8)
 user decided Decision 16 (a) on 2026-10-21: a `const` may use `^` and `pow` (LANGUAGE.md §7.2),
 evaluated by pass 2a with `FEPOW` of `f64emu.bas` and the generated `mtab` `DATA` block
 (§4.10.5, §2.6.3); `log exp sin cos hypot` stay outside constant expressions.
+
+**Decided for phase 4 (2026-10-21).** The user took Decisions 17–24 of §9 (each the recommended
+option): the split of pass 2a into `seaname` and `seacheck` (17), prelude calls inlined by pass 3a
+from phase 4 (18), the phase-4 acceptance by a `printf` JSON subset and `compare.py --keys` (19),
+`str` and struct array literals dynamic (20), the library's named options in phase 4 (21), inline
+loops with a small runtime (22), the scope edges with `f64 %` left to phase 6 (23) and
+`SEA_HEAP_CHECK=1` (24); phase 4 is built in the sub-phases 4a–4h of §8. On review of the 4a
+specification the user also decided Decision 25 (2026-10-21): a constant that names a constant
+without a value, or whose type is an error type, is not evaluated and gives no further error
+(LANGUAGE.md §7.2, §3.5.2); it lands in the single `seacheck` first, as sub-phase 4a-0. **Specified for 4a**
+(lead decisions within Decision 17): `sea.res` (§3.4.1) is set `A` of `passes.txt` with codes
+50–63, its own records occurring only in `sea.res` (so the record tables of every pass stay as
+they are, §3.9); its `rerr` record is the one record with more than one string field (§3.1); the
+errors `seaname` reports are exactly the declaration checks a single program found first, and
+`seacheck` reports every other one, those of `const` items included (§2.6.2, "Which program
+reports it"); `seaname` evaluates constants on the well-typed path only and checks no rule,
+`seacheck` checks every constant and accepts `seaname`'s value only where Decision 25 gives the
+constant one, a missing or impossible outcome there being `BAD_RECORD` (§3.4.1); `seacheck`
+counts the values of constants for the `constants` limit; a compilation exceeding a limit of
+`seaname` and the `types` limit, or the `constants` limit through values of constants, in
+`seacheck` reports `seaname`'s (§2.6.2); the regions the single program never walks (a
+`match`, a `for` over anything but a range) are copied unresolved and count no symbol (§3.4.1); `sealower.bas` is cut into two files without changing a line (§2.7).
+**Left open for 4b** (to be settled with the phase-4 specification): which index the bounds
+message names for a range index out of bounds; `str(x)` of NaN and ±∞; the order of the two shapes
+in `shape mismatch` for an indexed or masked assignment, and the pair reported for a 3-operand
+`where`; the order of the checks of an indexed assignment (value, indices, shapes); the type of
+`[]` under a matrix context and `filled` with `str` and struct values; the evaluation order of
+`x[sel] op= e`.
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -242,8 +271,10 @@ The non-goals of v1, each with its reason, are LANGUAGE.md §1.3.
                   │   temporary directory, all passes run with it as working directory
                   ▼
    1   seaparse    stdin   ─► sea.ast   lex, parse
-   2a  seacheck    sea.ast ─► sea.hir1  names, scopes, types, ranks, untyped constants,
-                                        library overloads, format strings, match, ref aliasing
+   2a  seaname     sea.ast ─► sea.res   names and scopes, items and signatures, the values of
+                                        constants, constant exponents (§3.4.1)
+       seacheck    sea.res ─► sea.hir1  types, ranks, untyped constants, library overloads,
+                                        format strings, match, ref aliasing; writes the HIR
    2b  seaexpand   sea.hir1 ─► sea.hir  elemental instantiation per call shape, write_json
                                         expansion, constant folding, reachability
    3a  sealower    sea.hir ─► sea.lir1  inlining, fusion into loop nests, views to strided
@@ -263,9 +294,12 @@ The non-goals of v1, each with its reason, are LANGUAGE.md §1.3.
 Each pass is an ordinary Baysick program (Baysick 0.6.0), compiled once with `baysick` into a
 native executable. Passes communicate only through text files with fixed names in the
 temporary directory (Baysick `FILES` names are fixed at compile time, Baysick LANGUAGE.md §7.21), and
-report through their exit status and standard error. The number of passes (seven programs, plus
+report through their exit status and standard error. The number of passes (eight programs, plus
 the second code generator) follows from the size calibration of §2.7; it is part of Decision 2
-in §9.
+in §9. Pass 2a is two programs from phase 4a on (Decision 17, §2.7, §8): `seaname` resolves and checks
+the declarations and evaluates the constants, `seacheck` checks and types the rest and writes
+`sea.hir1`; "pass 2a" in this document means the two together, and §2.6.2 says which of them
+reports each error.
 
 ### 2.2 The driver: `sea`
 
@@ -273,7 +307,7 @@ A POSIX `sh` script (name: Decision 15 in §9):
 
 ```
 sea build <file.sea> [-o <out>] [--target arm64-macos|x86_64-linux] [-S]
-                     [--emit ast|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]
+                     [--emit ast|res|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]
 sea run <file.sea> [-- program arguments…]          build into the temporary directory, run
 sea --version | --help
 ```
@@ -366,8 +400,11 @@ exists on both hosts, and the script needs nothing beyond POSIX utilities (`mkte
    run-time error inside the pass (a compiler bug or a Baysick limit; Baysick's message is on
    standard error). Status 0 without a final `#end` in the output is treated like 11. The driver
    stops at the first failure.
-8. `-S`: copy `sea.s` to the output. `--emit X` (X one of `ast`, `hir1`, `hir`, `lir1`,
-   `lir`; formats in §3): stop after the pass that writes `sea.X` and copy it unchanged. Otherwise (arm64-macos): assemble and link exactly as Baysick does (Baysick DESIGN.md §4.3,
+8. `-S`: copy `sea.s` to the output. `--emit X` (X one of `ast`, `res`, `hir1`, `hir`, `lir1`,
+   `lir`; formats in §3): stop after the pass that writes `sea.X` and copy it unchanged. `seaname`
+   ends with status 0 also when it found an error (it hands the error to `seacheck` in the
+   `rerr` record, §3.4.1), so `--emit res` writes such a file and exits 0, as `--emit ast` does
+   for a program with a type error: an error is reported only by the program that reports it. Otherwise (arm64-macos): assemble and link exactly as Baysick does (Baysick DESIGN.md §4.3,
    §5.2: `as -arch arm64 -mmacosx-version-min=11.0`, `ld … -lSystem -syslibroot <sdk> -e _main`,
    the SDK from `xcrun --show-sdk-path`, never a made-up `SDKROOT`, and `SDKROOT` removed from
    the tools' environment). `x86_64-linux` is a cross target: `sea build` writes the `.s`, and
@@ -476,7 +513,7 @@ change only together with the matching doc section:
 | `sea/include/errors.inc` | every compile-time and run-time error text, with codes | passes (messages), runtime (`_sea_err`) |
 | `sea/include/rt.inc` | array, string and handle layouts, entry-point names, error-site table layout, kernel variant ids | pass 4 (both), runtime (both targets) |
 | `sea/include/passes.txt` | the record opcodes and fields of every intermediate file | all passes |
-| `sea/include/math_tables.inc` | the constants and tables of the elementary functions (§4.10.3), **generated** by `tools/math_tables.py` from their definitions in §4.10 and committed; no contract names (`SEA_*` `.equiv`s) other than its guard, so `make check-contracts` does not read it, while `make check-includes` assembles it on both assemblers | both runtimes (`rt_math.s`); `tools/gendata.bas`, for the `mtab` `DATA` block of pass 2a (§2.6.3) |
+| `sea/include/math_tables.inc` | the constants and tables of the elementary functions (§4.10.3), **generated** by `tools/math_tables.py` from their definitions in §4.10 and committed; no contract names (`SEA_*` `.equiv`s) other than its guard, so `make check-contracts` does not read it, while `make check-includes` assembles it on both assemblers | both runtimes (`rt_math.s`); `tools/gendata.bas`, for the `mtab` `DATA` block of `seaname` (pass 2a, §2.6.3) |
 | **Baysick's `include/runtime.inc`** (cross-repository) | `MV_*` (matrix views), `KS_*` (kernel statuses), `KV_*` (variant records), `KF_*` (feature bits), and the `_bsk_kern_*` entry points of Baysick DESIGN.md §6.6 | Sea's runtime, which `.include`s it from the Baysick checkout; a change there is a change to Sea's contract too, so Baysick's contract rule (CLAUDE.md) covers it, and a Sea test assembles Sea's runtime against the current file |
 
 The `.inc` files follow Baysick's dual-assembler rules (Baysick DESIGN.md §3.4). Baysick programs
@@ -563,7 +600,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
   checks 500 … 599. The assembler name is `SEA_E_<NAME>`; LIR's `chk` record names the code by
   `<NAME>` (§3.6.4), and pass 4 turns it into `SEA_E_<NAME>`.
 * `phase`: `R` a run-time error (`_sea_err`, exit status 1); `D` reported by the driver before any
-  pass (§2.2 step 2); `C1` pass 1; `C2` pass 2a or 2b; `CX` any pass (a capacity limit of §2.7);
+  pass (§2.2 step 2); `C1` pass 1; `C2` pass 2a (`seaname` or `seacheck`: "Which program reports it" below) or 2b; `CX` any pass (a capacity limit of §2.7);
   `P` a pass's internal consistency check (pass status 11, §2.2).
 * `at` (LANGUAGE.md §9.1 requires a position but names none; this column names it): the
   position a compile-time diagnostic `<file>:<line>:<col>` reports (LANGUAGE.md §9.1); `-` for
@@ -575,7 +612,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
-| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a, 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit of pass 2a, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
+| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
 | `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
@@ -620,7 +657,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 
 **Output.** A compile-time message is written by the pass (or the driver) as LANGUAGE.md §9.1
 says; a `P` message as `<pass>: <text>` + LF on standard error, where `<pass>` is the program's
-name (`seaparse`, `seacheck`, …), exactly one line, before the pass ends with `STOP 11`
+name (`seaparse`, `seaname`, `seacheck`, …), exactly one line, before the pass ends with `STOP 11`
 (`SEA_EXIT_PASS_INTERNAL`); this holds for every `P` message, `TRUNCATED` and `BAD_HEADER`
 included; a run-time message by `_sea_err` as LANGUAGE.md §9.2 says. One text is copied
 outside `errors.inc`: the text of `BAD_DATA` is needed before a pass has read its `DATA`
@@ -738,7 +775,8 @@ it equals the error record.
 
 **The phase rule: `not supported yet`.** While Sea v1 is built phase by phase (§8), a program that
 uses a construct the current compiler does not implement yet stops with the compile error `not
-supported yet: %s` (code 259, `NOT_SUPPORTED`; driver status 1), reported by pass 2a (pass 1
+supported yet: %s` (code 259, `NOT_SUPPORTED`; driver status 1), reported by pass 2a (by `seaname` at
+an item or in a signature, by `seacheck` elsewhere: "Which program reports it" below; pass 1
 parses the whole grammar of LANGUAGE.md Appendix A from phase 1 on, so syntax errors are always
 the real ones). It takes part in pass 2a's plain source order with every other pass-2 error: the
 first error in source order is reported, whichever kind it is. Its position is the AST node that
@@ -776,6 +814,49 @@ locals, multiple results, and `printf` with `%d %i %f %F %e %E %g %G %s`. Each l
 removes the rows it implements from this table, together with its tests. Because named
 arguments, struct literals and fixed-size arrays are reported first, the errors 204–208,
 216–222, 224 and 225 cannot occur in phase 1.
+
+**Which program reports it** (phase 4a on, Decision 17: pass 2a is `seaname` and then
+`seacheck`, §2.1, §3.4.1). `seaname` reports the errors of the declaration checks, which a
+single pass-2a program finds before all others:
+
+* of the items, in stream order: `redefinition of predeclared name` (212), `redefinition of
+  '%s'` (235) of two items, and `not supported yet` (259) at an item (`elemental functions`,
+  `structs`);
+* then of the signatures of the entered functions (§3.4.1), in item order, each function's
+  parameters in order and then its result types: `redefinition of '%s'` (235) of two parameters,
+  `local name shadows a predeclared name` (213) at a parameter, `not supported yet` (259) for a
+  parameter default (`default arguments`), for a `str` parameter or result type (`strings`) and
+  for a type of a signature (`arrays`, `structs`, `handle types`), and `unknown struct type`
+  (229) in a signature;
+* the capacity limits (400) `symbols` (§3.4.1), `types` for the types it creates, and, while
+  it reads `sea.ast`, `nodes`, `strings` and `constants` for the literals (§2.7).
+
+`seacheck` reports every other pass-2a error: every code of 200–261 at every other place,
+among them `undeclared name` (at an `rname none`), `local name shadows a predeclared name` at a
+local or loop variable, `not a constant expression` (also at the name that closes a cycle), all
+errors of `const` items (it checks every constant, §3.4.1; 260 and 261 from an `rcne` outcome),
+those of the type annotations of `const` items and of `let`/`var`, `missing return`, the
+`types` limit for the types it adds and the `constants` limit for the values of constants. The
+limits `nesting`, `parameters`, `results` and `fields` are pass 1's alone (§2.7): neither
+program of pass 2a reports them, and both size their stacks and records from them (a tree
+nested at most `SEA_LIM_NESTING` deep, at most `SEA_LIM_PARAMS` parameters and
+`SEA_LIM_RESULTS` results).
+
+**Order across the two programs.** The rule is that of one program: the first error in source
+order (file, line, column), of two at one position the first found, and a capacity error before
+every other. `seaname` hands its first error to `seacheck` in the `rerr` record (§3.4.1), and
+`seacheck` starts its search with that error as the first one found. Because `seaname`'s errors
+are exactly those a single program finds first (items and signatures come before constants and
+bodies), and an `rcne` outcome is reported by `seacheck` where a single program evaluated the
+constant, the error reported is the one a single program reports. A capacity error of `seaname`
+is reported by `seaname` at once (status 10), before `seacheck` runs; a capacity error of
+`seacheck` wins over every other error, the `rerr` one included. The two differences from a
+single program, both only for a compilation over two capacity limits at once: one that exceeds
+a limit `seaname` enforces and the `types` limit in `seacheck` reports `seaname`'s, and one that
+exceeds a limit `seaname` enforces and the `constants` limit through the values of constants
+(counted by `seacheck`, §3.4.1) reports `seaname`'s, wherever the two lie. A later phase may move an error into
+`seaname` only if a single program finds it before every error that stays in `seacheck` at the
+same position (or no other error can occur at its position), so that this rule keeps holding.
 
 **Within one formatting call** (`printf`, `format`, `error`) pass 2a first parses the format
 literal (`format must be a string literal`, `invalid format conversion`), then compares the
@@ -950,15 +1031,30 @@ blocks it uses, among `errors`, `errno`, `exits`,
 `consts`, `entries`, `records` and `mtab`, always in this order; and the line `99999 END`. The file
 `passes/<pass>/build.list` names the modules and blocks: lines `lib <module>…` (among `io diag
 tables limb f64emu fltlit`) and `data <block>…` (among `errors errno exits consts entries records
-mtab`; only pass 2a lists `mtab`, §4.10.5), comment lines starting with `#`; the parts are
+mtab`; only `seaname` lists `mtab`, §4.10.5), comment lines starting with `#`; the parts are
 concatenated in the order above whatever the order of the list, and a name outside the two sets
 is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`. The
 build regenerates `build/gen/` every time and compiles each result with `baysick`; nothing in
 `build/` is committed. The modules' interfaces are internal to the compiler (not contract
 files): `passes/lib/API.md` documents the `SUB`s of `io`, `diag` and `tables`, and
 `passes/lib/API-arith.md` those of `limb`, `f64emu` and `fltlit` (each module's prerequisites
-included); the `.bas` files carry one summary line per `SUB`. The line numbers keep the parts
-apart:
+included); the `.bas` files carry one summary line per `SUB`.
+
+**The build lists** (each `passes/<pass>/build.list`; the parts in the order above):
+
+| Program | `lib` | `data` |
+|---------|-------|--------|
+| `seaparse` | `io diag tables limb fltlit` | `errors exits consts records` |
+| `seaname` | `io diag tables limb f64emu` | `errors exits consts records mtab` |
+| `seacheck` | `io diag tables` | `errors exits consts records` |
+| `seaexpand` | `io diag tables limb f64emu` | `errors exits consts records` |
+| `sealower`, `seaopt`, `seagen_a64`, `seagen_x64` | `io diag tables` | `errors exits consts entries records` |
+| `tools/seaval.bas` (`tools/seaval.build.list`) | `io diag tables` | `errors consts records` |
+
+So from phase 4a on the exact arithmetic of constants (`limb`, `f64emu`, `FEPOW` and `mtab`, §2.8,
+§4.10.5) lives in `seaname`, and `seacheck` holds none: it takes every value it writes from its
+input (literals as written, the `f64` bits of integer literals from `rint`, the values of
+constants from the `rcn…` records, §3.4.1). The line numbers keep the parts apart:
 
 | Part | Line numbers |
 |------|--------------|
@@ -993,7 +1089,8 @@ line order (Baysick reads `DATA` in line order). All parts together count agains
 | 1000 `FOR` statements per program | counted in each pass by a build check; a pass near it is split |
 
 **Table layout and the capacity limits derived from it.** The largest pass (2a) needs these
-tables; every other pass uses a subset of the same layout:
+tables (from phase 4a both its programs, `seaname` and `seacheck`, keep this layout and read the
+same tree into `N`, §3.4.1); every other pass uses a subset of the same layout:
 
 | Table | `DIM` | Elements | Rows | Fields |
 |-------|-------|---------:|-----:|--------|
@@ -1014,7 +1111,9 @@ reads from the generated consts table (§2.6.3), never with a written number;
 nesting depth ≤ 64, ≤ 64 parameters and ≤ 64 results per function, ≤ 64 fields per struct.
 Pass 1 enforces the nesting, parameter, result and field limits as it parses (and the node and
 string limits as it builds the tree; the `prog` root is not counted as a node, and the `#file`
-paths count as strings); pass 2a the symbol, type and constant limits; passes 3a,
+paths count as strings); pass 2a the symbol, type and constant limits (`seaname` the symbol limit,
+the constant limit for literals and the types it creates, `seacheck` the types it adds and the
+constant limit for the values of constants, §2.6.2); passes 3a,
 3b and 4 the LIR limits. **Nesting depth** counts the constructs that make pass 1 recurse: a
 block `{ … }` (of any statement or function), a parenthesized expression, the argument list of a
 call, an index list, an array literal, a struct or record literal, an `if` expression, a unary
@@ -1171,6 +1270,48 @@ statements and calls, then fusion and inlining), done when `make check-limits` f
 pass above 9 000 lines, so that the split is made before a phase's work is blocked; Baysick is
 grown only if a pass cannot be split cleanly (§7.3, step 2).
 
+**The split of pass 2a (phase 4a, Decision 17).** Phase 4 adds an estimated 3 000–4 300 own lines
+to pass 2a (struct and record items and literals, array types and their extents, indexing and
+`$`, array literals, broadcasting, views and projections, `ref` paths, `dyn`/`fix`, `str`,
+`match`, about 40 library overloads with their options, and their emission), which would take the
+one program from about 5 900 lines to 8 900–10 200, across the 9 000-line trigger. So phase 4
+starts by splitting it (sub-phase 4a, before any phase-4 code goes in): `seaname` (`sea.ast` →
+`sea.res`) resolves names and scopes, checks items and signatures and owns the exact arithmetic
+(constant values, constant exponents, the `f64` bits of integer literals, `limb`, `f64emu`,
+`FEPOW` and `mtab`); `seacheck` (`sea.res` → `sea.hir1`) keeps typing, every other check and the
+emission, and no arithmetic module (§2.6.3, §3.4.1). Estimates (judged from the phase-1 files;
+±30 % on own lines; modules and `DATA` as built):
+
+| Program | Own lines | Modules | `DATA` | After 4a | After phase 4 | v1 |
+|---------|----------:|--------:|-------:|---------:|--------------:|---:|
+| `seaname` | 1 850–2 200 (reading, items and signatures, scopes and the resolution walk, the constant order, the typing of constant expressions on their well-typed path, the evaluator moved from `seacheck`, writing `sea.res`) | 2 452 (io diag tables limb f64emu) | about 600 (with `mtab`) | **4 900–5 250** | 5 700–6 200 (struct declarations, extents of type nodes, literal field sets, syntactic checks of paths: 750–900) | 5 900–6 600 |
+| `seacheck` | 2 300–2 600 (the phase-1 code without items, signatures, scopes and the evaluator; reading `sea.res`, the constant outcomes) | 892 (io diag tables) | about 515 | **3 700–4 000** | 5 950–7 400 (the typing side of phase 4: 2 250–3 400) | 7 000–9 250 (phases 6, 8 and 9: 1 050–1 850) |
+
+Both stay below 9 000 after phase 4 with a margin of at least 1 600 lines; `seacheck` reaches
+the trigger at v1 only at the high end of every range, so the measurement after phase 4 (§8,
+phase 4h) decides whether its library-overload checks move to a third program then. 4a is done
+when `make check-limits` reports the two programs and their measured sizes replace these
+estimates here.
+
+**`sealower` in phase 4, and its seam.** Phase 4 adds an estimated 3 000–4 500 own lines to pass 3a
+(allocation and addressing, five index kinds read and written, `$`, bounds checks, element-wise
+loops with broadcasting, reductions, literals, fixed arrays, structs and hidden results,
+projections, reference counts on every exit, copy on write, strings, `match`, `error`, `args`,
+`fore`, and the inlining of prelude calls, Decision 18), more than the 2 500–3 500 above, which
+counted neither the prelude inlining nor reference counts on every exit: about 6 100–7 600 lines
+after phase 4, below the trigger, and 7 900–10 600 after phases 6 and 7. It is not split in
+phase 4. Sub-phase 4a cuts its one file `sealower.bas` into files by area without changing any
+line or line number (§2.6.3 builds a pass from its files in name order, so the files are named in
+line order): `sl0main.bas`, its lines 100–3125 (the header, the tables, reading `sea.hir`, writing functions
+and data, the frame machine), and `sl1scal.bas`, its lines 3130–8745 (the nodes and their
+rules, §3.6.6); the files later phases add take line ranges after 8745 (or free ranges between,
+keeping name order equal to line order). When it reaches
+9 000 (expected in phase 7, possibly 6) the planned seam is a pass **`sealoop`** (`sea.hir` →
+`sea.hir`: every array expression made explicit as scalar loops over element accesses, its
+checks, temporaries and reference-count and copy-on-write points as new HIR statements, and the
+fusion grouping of phase 7) before **`sealower`** (that HIR → LIR: the scalar rules plus the
+explicit points); it needs new HIR records, so it is specified with the phase that needs it.
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -1232,9 +1373,9 @@ is also the point of the Baysick project.
 | `passes/lib/io.bas`, `diag.bas`, `tables.bas` | shared pass modules: the header protocol and record reading and writing (§2.2, §3.1–§3.3), diagnostics (§2.6.2), the tables of §2.7 |
 | `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | multi-limb integers, the exact IEEE binary64 emulation and the float-literal conversion (§2.8) |
 | `passes/lib/API.md`, `API-arith.md` | the interfaces of the shared modules (§2.6.3): `io`, `diag`, `tables`; `limb`, `f64emu`, `fltlit` |
-| `passes/seaparse/`, `seacheck/`, `seaexpand/`, `sealower/`, `seaopt/`, `seagen_a64/` (later `seagen_x64/`) | each pass's own Baysick files (§2.1), built as §2.6.3 says |
+| `passes/seaparse/`, `seaname/`, `seacheck/`, `seaexpand/`, `sealower/`, `seaopt/`, `seagen_a64/`, `seagen_x64/` | each pass's own Baysick files (§2.1; `seaname/` from phase 4a), built as §2.6.3 says |
 | `tools/gendata.bas` | the `DATA` generator (§2.6.3) |
-| `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
+| `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: its standard input names the format (`ast`, `res`, `hir1`, `hir`, `lir1`, `lir`; a file of format `ast` may hold only the records of §3.4's table, one of format `res` also those of §3.4.1); the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
 | `passes/<pass>/build.list` | the modules and `DATA` blocks of each pass (§2.6.3) |
 | `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
 | `tools/math_tables.py` | the generator of `include/math_tables.inc` (§4.10.3, §4.10.6), run with `uv run --with mpmath`; `--check` verifies the committed file |
@@ -1259,13 +1400,14 @@ check the contract files (§2.6).
 
 ## 3. Intermediate files
 
-The passes of §2.1 communicate through five text files in the temporary directory. This section
+The passes of §2.1 communicate through six text files in the temporary directory. This section
 fixes their exact formats; `sea/include/passes.txt` (§3.9) is the same information in a form the
 passes' generated `DATA` blocks are made from (§2.6), and the two change only together.
 
 | File | Written by | Read by | Content |
 |------|-----------|---------|---------|
-| `sea.ast` | 1 `seaparse` | 2a | the syntax tree as parsed, untyped (§3.4) |
+| `sea.ast` | 1 `seaparse` | 2a `seaname` | the syntax tree as parsed, untyped (§3.4) |
+| `sea.res` | 2a `seaname` | 2a `seacheck` | the same tree with names resolved, declarations checked and constants evaluated (§3.4.1) |
 | `sea.hir1` | 2a `seacheck` | 2b | the resolved, typed tree (§3.5) |
 | `sea.hir` | 2b `seaexpand` | 3a | the same after constant substitution and folding, elemental instantiation, `write_json` expansion and reachability (§3.5) |
 | `sea.lir1` | 3a `sealower` | 3b | loop-level code over virtual registers (§3.6) |
@@ -1291,9 +1433,10 @@ dump is the file itself; §3.8 says how dumps are tested.
     value has at most as many bytes as its source text, and escaping writes each byte as at most
     3 bytes; a `#file` path is at most 4096 bytes (the operating systems' path limit); names and
     keys are identifiers of at most 63 bytes. No record carries a variable number of strings
-    (the patterns of an `arm` are child `str`/`cs` nodes, §3.4, §3.5.5);
-  * the records with a variable number of fields (`ttuple`, `inst`, `tbind`, `func`, `call`,
-    `rcall`, `ret`, `chk`) repeat numbers or registers, each at most 7 bytes with its separator,
+    (the patterns of an `arm` are child `str`/`cs` nodes, §3.4, §3.5.5), except `rerr` of
+    `sea.res` (§3.4.1): at most three substitutions of one error, each at most 4 096 bytes;
+  * the records with a variable number of fields (`rtup`, `rfn`, `ttuple`, `inst`, `tbind`,
+    `func`, `call`, `rcall`, `ret`, `chk`) repeat numbers or registers, each at most 7 bytes with its separator,
     and their counts are bounded by the limits of §2.6.1: at most `SEA_LIM_PARAMS` parameters
     and `SEA_LIM_RESULTS` results per function, plus one hidden address per result (§3.6.3),
     and the fixed arities of the runtime entry points and error codes (§4.8, §2.6.2); so such a
@@ -1366,9 +1509,9 @@ right). Each node record **pops** a number of nodes, fixed by its opcode or give
 fields (the "pops" column below and in `passes.txt`): those nodes are its children, the
 earliest-written first. A reader therefore needs one stack: for each node record it pops that
 many entries, builds the node with them as children in order, and pushes the node. Records never
-refer to other nodes by number; the structure is given by the order alone. The header records
-and the declaration records of §3.5 (`t…`, `fd`, `inst`, `fn`, `par`, `loc`) are not nodes and
-do not touch the stack; this list, not `passes.txt`, says which records are not nodes, and tools
+refer to other nodes by number; the structure is given by the order alone. The header records,
+the declaration records of §3.4.1 (`rerr`, `rtup`) and those of §3.5 (`t…`, `fd`, `inst`, `fn`,
+`par`, `loc`) are not nodes and do not touch the stack; this list, not `passes.txt`, says which records are not nodes, and tools
 take it from here. The records that end a section (`prog`, `cn`, `end`) pop their nodes and
 push nothing, and the stack must then be empty; anything else is an internal error (status 11).
 
@@ -1545,6 +1688,251 @@ prog 7
 (`#4000000000000000`), 0.5 (`#3FE0000000000000`) and 1.5 (`#3FF8000000000000`); the format
 string's bytes are `%.3f` and LF.
 
+#### 3.4.1 `sea.res`
+
+The syntax tree of `sea.ast` with its names resolved and its declarations checked: the output of
+`seaname` and the input of `seacheck`, the two programs of pass 2a (§2.1, Decision 17). Nothing
+in it is typed except what the declarations fix. Its records are those of `sea.ast` (§3.4) and
+the records of this section (codes 50–63 of set `A` in `passes.txt`, §3.9), which occur only in
+`sea.res`.
+
+**Body**, in this order: at most one `rerr`; the `rtup` records, in id order; then the tree: the
+records of the body of `sea.ast`, in the same order, each copied unchanged except the
+replacements below. A replacement record is a node at the same position with the same children
+(the same pops); its fields are those of the record it replaces, in the same order, followed by
+its new fields (`rpowk` drops the operator field, always `pow`). So both programs build the same
+tree and number its nodes alike, and every position, child count and error position of `sea.ast`
+is unchanged in `sea.res`.
+
+**Entered items and resolved regions.** An *entered* item is a top-level item that becomes a
+symbol: every `fn`, `const` and `struct` item except one whose name an earlier item already has
+(the later one is `redefinition of '%s'` and is not entered; an item with a predeclared name is
+entered, after its `redefinition of predeclared name`). The *resolved regions* are the body block
+of every entered `fn`, the top-level statements of the program's file (the body of `.main`),
+and the expression (not the type annotation) of every entered `const`, without the *skipped
+regions*: every `match` statement and every `for` whose iterable is not a `range` (each whole
+statement, the iterable and the body included), which the single program never walks while the
+phase rule reports them (`not supported yet: match`, and `not supported yet: arrays` at the
+`for`; until phase 4 implements them, which then removes them from this list). Then:
+
+* every entered `fn`, `struct` and `const` item record is replaced by `rfn`, `rst`, or one of
+  `rcni rcnf rcnb rcne rcn` respectively; a not-entered item is copied unchanged;
+* every `int` record of the file becomes `rint`;
+* in the resolved regions, every `name` becomes `rname`, every `pname` `rpname`, every `for`
+  `rfor`, and every `bin` with operator `pow` that is a `powk` by the rule below becomes `rpowk`;
+* nothing else changes: `type` records (also those of signatures), parameter defaults, struct
+  fields, and everything outside the resolved regions (the bodies of not-entered functions
+  among it) are copied unchanged apart from their `int` records.
+
+**Declaration records** (not nodes, §3.3):
+
+| Record | Fields | Meaning |
+|--------|--------|---------|
+| `rerr` | `pos:pos code:u k:u a:s*k` | the first error `seaname` found ("Errors" below): its position, its code (§2.6.2) and its k substitutions in text order, spelled as §2.6.2 says (k ≤ 3, the most `args` letters an error has; each a name, a word or a type, at most 4 096 bytes); the one record with more than one string field (§3.1) |
+| `rtup` | `id:u n:u t:ty*n` | a tuple type (§3.5.1 `ttuple`): the results of a function with n ≥ 2 results; ids from 10, dense, in order of creation (the signatures of the entered functions in item order, a tuple already created reused) |
+
+A `ty` field of `sea.res` is 0 (a type that has an error, already reported), 1–9 (the predefined
+types of §3.5.1) or the id of an `rtup` of the same file. `seacheck` adds the types it infers and
+numbers all types again when it writes `sea.hir1` (§3.5.1).
+
+**Replacement records:**
+
+| Record | Fields after `pos` | Pops | Replaces | Meaning |
+|--------|--------------------|------|----------|---------|
+| `rfn` | `name:s el:u np:u nr:u fid:u rty:ty t:ty*np` | `np+nr+1` | `fn` | an entered function: its `fid` (§3.5.4: `.main` is 1, the entered `fn` items follow from 2 in stream order), its result type `rty` (1 for none, the type of one result, the `rtup` of several; 0 when a result type has an error) and its parameters' types `t` in order (0 for a parameter whose type has an error, among them a `str` parameter while strings are `not supported yet`, §2.6.2) |
+| `rst` | `name:s n:u sid:u` | `n` | `struct` | an entered struct: its number `sid`, from 1 in stream order among the entered structs |
+| `rcni` | `name:s t:u cid:u v:i` | `1+t` | `const` | an entered constant (`cid` from 1 in stream order among the entered constants, as `cn`, §3.5.2) whose value is the `i64` v |
+| `rcnf` | `name:s t:u cid:u v:f` | `1+t` | `const` | … whose value is the `f64` v |
+| `rcnb` | `name:s t:u cid:u v:u` | `1+t` | `const` | … whose value is the `bool` v (0 or 1) |
+| `rcne` | `name:s t:u cid:u e:cerr epos:pos` | `1+t` | `const` | … whose evaluation fails: e `ovf` (`integer overflow`, code 260) or `div0` (`integer division by zero`, 261) at the operator node at `epos` |
+| `rcn` | `name:s t:u cid:u` | `1+t` | `const` | … for which `seaname` has no value ("Constants" below) |
+| `rpname` | `name:s lid:lid` | `0` | `pname` | the local the name declares |
+| `rfor` | `name:s npos:pos lid:lid` | `2` | `for` | the local of the loop variable |
+| `rint` | `v:i fv:f?` | `0` | `int` | `fv`: the bits of the literal's value as an `f64` when that value is exact in `f64`, else `-`; for the literal 2⁶³ (only the operand of a `neg`, §3.4) the bits of −2⁶³, `#C3E0000000000000`, because the two are written as one constant (§3.5.5) |
+| `rname` | `name:s k:nkind ref:u` | `0` | `name` | what the name denotes where it stands: k `loc` a local or parameter of the current function (ref its lid), `cst` an entered constant (its cid), `fn` an entered function (its fid), `st` an entered struct (its sid), `pd` a predeclared name (LANGUAGE.md Appendix C; ref 0), `none` nothing (ref 0) |
+| `rpowk` | `k:i` | `2` | `bin` (`pow`) | a `^` whose exponent is a constant integer k with \|k\| ≤ `SEA_LIM_POWK` (below); both children are kept |
+
+**Names.** Each name is looked up by the scope rules of LANGUAGE.md §3.3, §7.2 and §7.7: the
+locals and parameters of the current function that are in scope (innermost first), then the
+entered items, then the predeclared names. Locals are numbered as §3.5.4 says (the parameters
+1 … np, then the declared names in source order; a shadowing declaration is a new local), and
+the lids of `rpname`, `rfor` and `rname loc` are those numbers, so they are the lids of the
+`loc` records `seacheck` writes. The expression of a constant sees no locals. A skipped
+region keeps its `sea.ast` records: it declares no local, so its `pname`s and its `for` carry no
+lid and take no number, and the locals after it are numbered as if it were absent (as the single
+program numbered them). `seacheck` takes every lid from `sea.res`; it never derives a lid from a
+counter of its own and never compares such a counter with the lids of `sea.res` (it checks only
+what "What `seacheck` validates" lists).
+
+**The `symbols` limit** is `seaname`'s. It counts cumulatively, as the single program entered its
+symbols: 1 for `.main`, then each entered item in stream order, then for each entered function
+in fid order its parameters and then the locals of its body, then the locals of `.main`, each
+function's locals in the order of their lids; skipped regions count nothing. The declaration
+that would make the count exceed `SEA_LIM_SYMBOLS` is reported (`program too large: symbols`,
+at the position §2.6.2 gives for it).
+
+**Reading `sea.res` in `seacheck`.** Its reader is that of the single program with these
+requirements: a record has up to 72 fields with its opcode (`rfn` with 64 parameters: 71 after
+the opcode; `rtup` with 64 components: 66), and every `u`, reference and enumerated field of a
+record is kept (up to 69 for `rfn`, 66 for `rtup`), not only the first three, so the splitting
+of a record into at most 12 fields and the three `u` slots of a node row must change; `rerr` and
+`rtup` are not nodes and are never pushed on the tree stack; the strings of `rerr` are not
+interned (they count against no limit); an `fv` creates no row of the constants table (a
+literal's row comes from its `v`, as for `sea.ast`); and the count of types for the `types`
+limit starts at the number of `rtup` records.
+
+**Constants.** Both programs take the entered constants in one *constant order*: for each
+entered constant in stream order that is not yet visited, it is visited: marked *waiting*, then
+the nodes of its expression are scanned in file order, and each `rname cst` among them that
+names a constant not yet visited is visited first, recursively (an explicit stack, no Baysick
+recursion); when a constant's scan ends it is *checked* (`seacheck`) or *evaluated*
+(`seaname`) and marked done. In `seacheck`, a name of a waiting constant met during a check
+closes a cycle: it is `not a constant expression` (code 237) at that name.
+
+`seaname` evaluates each entered constant, in the constant order, on the well-typed path only:
+it types the expression by the rules of LANGUAGE.md §4.2 and §6 (untyped integer constants,
+the conversion to an annotated `f64`, `i64` → `f64` where an operator converts), decides the
+`powk` of every `^` in it (below), and evaluates it as §3.5.2 says (`FEPOW` for the other `^`
+and for `pow`). It reports no error and checks no rule: where it cannot type or evaluate the
+expression (a node other than a literal, `true`, `false`, `neg`, `not`, `bin`, `rpowk`, a name
+of a constant or of `pi inf nan eps`, or a call of `pow` or `sqrt` with positional arguments;
+operand types the rules do not accept; an annotation it cannot use; a name of a waiting
+constant), and wherever the rule of LANGUAGE.md §7.2 leaves a constant unevaluated (it names a
+constant without a value, Decision 25), it writes `rcn`. Its outcome is written in the item's
+record: `rcni`, `rcnf`, `rcnb` a value; `rcne` an evaluation that fails (the first failing
+operation in evaluation order); `rcn` none of these (no value). A constant with an `rcne` or
+`rcn` outcome has no value for the constants after it.
+
+`seacheck` checks every entered constant itself, in the constant order, as the single program
+does, reports its errors, and then decides its value (§3.5.2, Decision 25):
+
+1. if the check found an error, the constant has no value, and the outcome is ignored;
+2. otherwise, if its expression names a constant without a value, or its type is the error type
+   (0), it has no value and no error, and the outcome is ignored;
+3. otherwise the outcome must be a value of the kind of its derived type (`rcni` for `i64`,
+   `rcnf` for `f64`, `rcnb` for `bool`), which becomes its value, or an `rcne` whose `epos` is
+   the position of a `bin` or `neg` node of that constant's expression, `ovf` only at an `add`,
+   `sub`, `mul` or `neg` and `div0` only at a `mod`: `seacheck` then reports `integer overflow`
+   or `integer division by zero` at `epos` at that moment, so it takes its place in its find
+   order, and the constant has no value. Any other outcome (`rcn` among them) is `BAD_RECORD`
+   (status 11).
+
+So a program without errors has a value for every constant, and `seacheck` reports
+`BAD_RECORD` if it would write `sea.hir1` with a constant that has none. `seacheck` adds each
+value to its constants table (`C` rows, §2.7) and enforces the `constants` limit for the
+values of constants, at the constant's item (§2.6.2); `seaname` does not count them. A constant
+without a value is read as a poisoned value (§3.5.2): it makes no `powk` and no further error.
+
+**Constant exponents.** A `^` in a resolved region becomes `rpowk k` when, were it well typed,
+§3.5.5's rule ("Constant exponents") would make it `powk k`: the exponent typed by the rules of
+LANGUAGE.md §4.2 and §6 as `seacheck` types it (an untyped exponent taken as `f64`, an `i64` one
+converted), its names resolved as above, and evaluated exactly; an exponent that names a
+constant without a value is not constant. `seacheck` writes `powk k` for an `rpowk` whose `^` it
+finds well typed, exactly where the phase-1 rule did (§3.5.5), and checks and writes nothing of
+the exponent's value itself.
+
+**Errors.** `seaname` reports the errors of the declaration checks only: those of the items (in
+stream order) and then those of the signatures of the entered functions (in item order), the
+codes §2.6.2 assigns to it ("Which program reports it"). It keeps the first of them in source
+order (of two at one position, the first found), writes it as the `rerr` record, and still
+writes the whole file and ends with status 0, so that `seacheck` checks the rest; with no such
+error there is no `rerr`. A capacity limit `seaname` enforces (§2.7) is reported by `seaname`
+itself at once, status 10 (the driver then uses no output). `seacheck` starts its own search
+with the `rerr` error as the first error found, so of two errors at one position `seaname`'s is
+reported (it was found first, by the order of §2.6.2).
+
+**Protocol** (§2.2 steps 5–7). `seaname` reads `sea.ast` (Baysick file 1) and writes `sea.res`
+(file 2); `seacheck` reads `sea.res` (file 1) and writes `sea.hir1` (file 2). Each copies the
+header records of its input (§3.2), reads its input only with `LINPUT #1` after `IF END #1`,
+requires the final `#end` (else `<program>: internal error: truncated input`, status 11, where
+`<program>` is `seaname` or `seacheck`), writes `#end` last, and writes nothing to standard output.
+The driver runs `seacheck` only on a `sea.res` that ends with `#end` (§2.2 step 6), and also when
+it holds an `rerr`. `seaname` validates `sea.ast` as the single program did (a record of codes
+50–63 in `sea.ast` is `BAD_RECORD`), and reports its errors and capacity errors as §2.6.2 says.
+
+**What `seacheck` validates** (before checking anything; any violation is `BAD_RECORD`, status
+11): every record against `passes.txt` (every enumerated field one of its words, every `pos`
+well formed, only bytes 0x20–0x7E); `rerr` and `rtup` only before the tree, at most one `rerr`,
+its `code` a code of phase `C2` with k equal to the number of its `args` letters; `rtup` ids
+dense from 10 and every `ty` field 0, 1–9 or a defined id; no record of codes 50–63 outside the
+places listed above, and none of `fn`, `const`, `struct`, `name`, `pname`, `for` or `int` where a
+replacement is required; `fid`, `sid` and `cid` dense from 2, 1 and 1 in stream order; in each
+function the lids of `rpname` and `rfor` dense from np + 1 in the source order of their
+declarations (a loop variable before the locals of its body, although post-order writes its
+`rfor` after them) and every `rname loc` naming a lid of that function; every `rname cst`, `fn` and `st` naming an entered item. The
+constant guards above.
+
+**Example** (`rs.sea`, compiled with `--no-prelude`):
+
+```sea
+const N = 2 * 3
+fn split(x: f64) -> (f64, i64) {
+    let k = i64(x)
+    return (x ^ 2, k + N)
+}
+let (a, b) = split(pi)
+for i in 0..b {
+    printf("%g\n", a)
+}
+```
+
+`sea build --emit res --no-prelude rs.sea`:
+
+```
+#sea 1
+#target arm64-macos
+#file rs.sea
+rtup 10 2 4 3
+rint 0:1:11 2 #4000000000000000
+rint 0:1:15 3 #4008000000000000
+bin 0:1:11 mul
+rcni 0:1:1 N 0 1 6
+type 0:2:13 f64 s 0
+param 0:2:10 x 0 0
+type 0:2:22 f64 s 0
+type 0:2:27 i64 s 0
+rpname 0:3:9 k 2
+rname 0:3:17 x loc 1
+conv 0:3:13 i64
+let 0:3:5 0
+rname 0:4:13 x loc 1
+rint 0:4:17 2 #4000000000000000
+rpowk 0:4:13 2
+rname 0:4:20 k loc 2
+rname 0:4:24 N cst 1
+bin 0:4:20 add
+return 0:4:5 2
+block 0:2:32 2
+rfn 0:2:1 split 0 1 2 2 10 4
+rpname 0:6:6 a 1
+rpname 0:6:9 b 2
+ptuple 0:6:5 2
+rname 0:6:14 split fn 2
+rname 0:6:20 pi pd 0
+call 0:6:14 1
+let 0:6:1 0
+rint 0:7:10 0 #0000000000000000
+rname 0:7:13 b loc 2
+range 0:7:10 0 0
+rname 0:8:5 printf pd 0
+str 0:8:12 %25g%0A
+rname 0:8:20 a loc 1
+call 0:8:5 2
+cstmt 0:8:5
+block 0:7:15 1
+rfor 0:7:1 i 0:7:5 3
+prog 4
+#end
+```
+
+`split` is function 2 with the result type `(f64, i64)`, the tuple type 10, and one parameter of
+type 4 (`f64`); `N` is constant 1, of value 6, evaluated in `i64`.
+In `split`, `x` is local 1 (the parameter) and `k` local 2; in `.main`, `a`, `b` and `i` are
+locals 1, 2 and 3. The exponent `2` of `x ^ 2` is an untyped constant, taken as `f64` and
+integral, so the `^` is `rpowk 2`. The `type` records of the signature stay as they are. The
+`int` values 2, 3 and 0 are exact in `f64` (`#4000000000000000`, `#4008000000000000`,
+`#0000000000000000`).
+
 ### 3.5 `sea.hir1` and `sea.hir`
 
 Both files have the same records; §3.5.6 lists what may appear in which. The body has up to four
@@ -1592,8 +1980,14 @@ with the emulation of §2.8 for `f64` and exact `i64`), and writes the result as
 `ci`, `cf`, `cb` or `cs` of the constant's type, at the position of the expression's root. So the
 child of a `cn` is always a single leaf, and constant substitution (§3.5.7) puts one leaf in place
 of each `cref`. An evaluation that overflows `i64` or divides an `i64` by zero is the compile
-error 260 or 261 (§2.6.2) and writes nothing. `pos` is that of the `const` keyword. A use of the
-constant is a `cref` node.
+error 260 or 261 (§2.6.2) and writes nothing. A constant that names a constant without a value
+(one with an error, a failed evaluation or none of its own), or whose type is the error type
+(after another error), is not evaluated at all and reports nothing of its evaluation
+(LANGUAGE.md §7.2, Decision 25); a use of a constant without a value reads a poisoned value
+(no `powk`, no further error). `pos` is that of the `const` keyword. A use of the
+constant is a `cref` node. From phase 4a `seaname` evaluates the constants and hands each value, or
+the outcome without one, to `seacheck` in the constant's `sea.res` record (`rcni` … `rcn`,
+§3.4.1); `seacheck` writes the `cn` leaf from it.
 
 #### 3.5.3 Elemental instances (`sea.hir`)
 
@@ -1788,7 +2182,8 @@ end
 The program of §3.4 needs no temporary: its struct literal's values are
 constants, and its named argument `k: i` is already in parameter order.
 
-**Constant exponents** (pass 2a). For every `^` whose exponent is a constant
+**Constant exponents** (pass 2a). (From phase 4a `seaname` decides it and marks the `^` `rpowk k` in
+`sea.res`; `seacheck` writes the `powk` for a well-typed `^`, §3.4.1.) For every `^` whose exponent is a constant
 expression (LANGUAGE.md §7.2: literals, constants, operators, `pi inf nan eps`, `sqrt`, `pow`), pass 2a
 computes the exponent's value exactly as the run time would: `f64` operations by exact
 multi-limb arithmetic emulating IEEE binary64 round-to-nearest-even (`+ − × ÷`, `%` by the
@@ -2366,10 +2761,10 @@ to numbers with its generated `DATA` table, so a pass dispatches on a number wit
 
 ### 3.8 Dump tests
 
-`sea/tests/passes/NAME.sea` with `NAME.ast`, `NAME.hir1`, `NAME.hir`, `NAME.lir1` and/or
+`sea/tests/passes/NAME.sea` with `NAME.ast`, `NAME.res`, `NAME.hir1`, `NAME.hir`, `NAME.lir1` and/or
 `NAME.lir` (§6.2): the runner, in `sea/tests/passes/`, runs `sea build --emit X --no-prelude
 NAME.sea` for each expected file present and compares the output byte for byte. The examples of
-§3.4, §3.5.8 and §3.6.7 are the first such tests (`ex`, `lx`). As for every test, the expected
+§3.4, §3.4.1, §3.5.8 and §3.6.7 are the first such tests (`ex`, `rs`, `lx`). As for every test, the expected
 dumps are derived by hand from this section, never from what a pass writes (§6.1).
 
 ### 3.9 `passes.txt`
@@ -2391,7 +2786,8 @@ cell (where the table has one; else 0) starts with the pop expression below. Its
 * `enum <name> <word> …` defines an enumeration: a field of type `<name>` holds one of the words.
 * `head <name> <field> …` defines the header record written `#<name>` (§3.2).
 * `rec <set> <code> <op> <pops> <field> …` defines a record:
-  * `<set>`: `A` (`sea.ast`), `H` (both HIR files), `H1` (`sea.hir1` only), `HF` (`sea.hir`
+  * `<set>`: `A` (`sea.ast` and `sea.res`: codes 1–49 in both, codes 50–63 only in `sea.res`,
+    §3.4.1), `H` (both HIR files), `H1` (`sea.hir1` only), `HF` (`sea.hir`
     only), `L` (both LIR files), `LF` (`sea.lir` only);
   * `<code>`: its opcode number, unique within `A`, within `H H1 HF`, and within `L LF`;
   * `<pops>`: the number of nodes it pops: a sum of terms joined by `+` (no spaces), each a
@@ -3464,13 +3860,13 @@ program needs them. They are `not a constant expression` (code 237) as before.
 * **Tables.** `FEMTI` reads the `mtab` block (§2.6.3) into a list `MT()` that the caller
   dimensions with 4·672 + 1 = 2689 elements: `MT(0)` = 672, word w (0-based, in the block's order:
   the 32 constants, then the `exp` table, then the `log` table) at `MT(4w+1)` … `MT(4w+4)`, most
-  significant limb first. `FEPOW` takes `MT()` as its first parameter. Pass 2a lists `data … mtab`
-  in its `build.list`, reads its other `DATA` blocks first and calls `FEMTI` once at start-up; a
+  significant limb first. `FEPOW` takes `MT()` as its first parameter. Pass 2a (from phase 4a its program `seaname`,
+  §2.6.3) lists `data … mtab` in its `build.list`, reads its other `DATA` blocks first and calls `FEMTI` once at start-up; a
   count, limb or sentinel that disagrees is `BAD_DATA` (code 504, §2.6.2).
 * **Pass 2b does not fold `pow`.** Outside `const` items, a `^` that is not a `powk` and a call
   `pow` with constant operands stay run-time `rcall`s (§3.5.7 keeps folding only the operations it
   lists): the result has the same bits either way, folding them would make pass 2b load `mtab` too,
-  and the workloads' `pow` calls have run-time operands. So `mtab` is loaded by pass 2a only; pass
+  and the workloads' `pow` calls have run-time operands. So `mtab` is loaded by pass 2a only (`seaname`); pass
   2b carries the `FEPOW` code in its copy of `f64emu.bas` without calling it.
 * **Cost**: about 400–600 lines in `f64emu.bas` (75 000 – 81 999 has room) and 86 `DATA` lines,
   counted against pass 2a's 10 000 lines (§2.7).
@@ -3744,8 +4140,11 @@ sea/tests/
                       NAME.files/ (fixtures copied into the working directory),
                       NAME.expect/ (files that must exist afterwards, byte-exact)]
   errors/NAME.sea     + NAME.err (the expected compile-time or run-time diagnostic) + NAME.status
-  passes/NAME.sea     + NAME.ast | NAME.hir1 | NAME.hir | NAME.lir1 | NAME.lir (the --emit
-                      dumps of §3, built with --no-prelude, §3.8; pinned like Baysick's tests/ir)
+  passes/NAME.sea     + NAME.ast | NAME.res | NAME.hir1 | NAME.hir | NAME.lir1 | NAME.lir (the
+                      --emit dumps of §3, built with --no-prelude, §3.8; pinned like Baysick's
+                      tests/ir); every NAME.hir1 has a NAME.res (the input of seacheck in
+                      stage.sh), and a NAME.res without NAME.hir1 is a program whose sea.res
+                      holds an rerr (seaname hands an error on, §3.4.1)
   plots/NAME.sea      + NAME.struct (the expected structure of each SVG it writes, LANGUAGE.md §12.8)
   math/               elementary-function identity tests (§4.10.6): <fn>.vec vectors written by
                       vectors/math_vectors.py from the model vectors/math_model.py, and the
@@ -3794,10 +4193,12 @@ sea/tests/
                       and is linked with libsea.a; + NAME.out [+ NAME.err, NAME.status], the
                       expected bytes derived from LANGUAGE.md and §4 (`make test-rt`)
   stage.sh            runs one pass on the committed golden output of the previous pass
-                      (passes/NAME.ast → seacheck → compare with NAME.hir1, and so on), so each
-                      pass is tested on its own (`make test-stage`); a passes/NAME.lir with
+                      (passes/NAME.ast → seaname → compare with NAME.res, NAME.res → seacheck →
+                      compare with NAME.hir1, and so on), so each pass is tested on its own (`make test-stage`); a passes/NAME.lir with
                       neither NAME.sea nor NAME.lir1 is the input of a pass-4 test (above)
-  protocol.sh         the pass-protocol tests (truncated inputs, missing #end, §2.2)
+  protocol.sh         the pass-protocol tests (truncated inputs, missing #end, §2.2), for every
+                      pass program (seaname on a truncated sea.ast, seacheck on a truncated
+                      sea.res, …)
   check_data.sh       checks the generator (§2.6.3) on the contract files: every generated
                       line ≤ 255 bytes, every record present (`make check-data`)
   vectors/NAME.py     generators of exact test vectors (float-literal bits, printf digits),
@@ -3805,7 +4206,7 @@ sea/tests/
                       read only the committed outputs (Python is never needed to run a test)
 ```
 
-Test names carry the spec area: `lex_*`, `type_*`, `idx_*`, `op_*`, `stmt_*`, `fn_*`, `elem_*`,
+Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`, `idx_*`, `op_*`, `stmt_*`, `fn_*`, `elem_*`,
 `err_*`, `lib_*`, `fmt_*`, `json_*`, `plot_*`, `la_*`, `perf_*`.
 
 * **Format tests** compare `printf` output for chosen values against the bytes the C99 rules give
@@ -3829,6 +4230,32 @@ Test names carry the spec area: `lex_*`, `type_*`, `idx_*`, `op_*`, `stmt_*`, `f
 * **Pass-protocol tests** feed each pass a truncated input (no `#end`) and check status 11 and
   the one line `<pass>: internal error: truncated input` on standard error, and check that the
   driver rejects a pass output without `#end` (§2.2).
+* **Tests of the pass-2a split** (phase 4a, §3.4.1, §2.6.2 "Which program reports it"): a
+  `NAME.res` beside every `NAME.hir1` dump test, hand-derived from §3.4.1; the example `rs` of
+  §3.4.1 (`rs.sea`, `.ast`, `.res`, `.hir1`); `res_*` dump tests (`NAME.sea`, `.ast`, `.res`) for
+  every replacement record and every outcome: `rname` of each kind (a local shadowing an outer one,
+  `var lo = lo`, a loop variable, a block scope, a struct name, an undeclared name), `rint` with
+  `fv` `-` and the 2⁶³ literal, `rcni rcnf rcnb`, `rcne` (`ovf`, `div0`), `rcn` (an expression
+  `seaname` cannot type or evaluate, and a constant naming one without a value), a cycle, a
+  skipped region (a `match`, a `for` over an array) copied unresolved, `rpowk` from a constant and none
+  where a local shadows the constant, a not-entered function copied unchanged, `rtup` reused;
+  and an `rerr` of each error `seaname` reports, the first of two by position, and the first
+  found of two at one position; `errors/` tests of the merge: a `seaname` error after and before
+  a `seacheck` error in source order, two at one position (`not supported yet: elemental
+  functions` and `missing return` at one `fn` keyword: the first is reported), a constant's
+  `integer overflow` before and after another error. Every test of the corpus (`programs/`,
+  `errors/`, the dumps, `rt/`, `math/`) passes unchanged; the scripts `driver_check.sh`,
+  `protocol.sh` and `stage.sh` change as §8 (4a) lists.
+* **Constants without a value** (Decision 25, sub-phase 4a-0; LANGUAGE.md §7.2): `errors/` tests,
+  the lines below are lines 1, 2 (and 3) of each file (a comment, if any, follows them), and
+  the expected output is derived from the rule:
+  `err_const_noval_overflow`: `const B = 9223372036854775807 + 1 + A` / `const A: i64 = 1 + x`
+  prints `err_const_noval_overflow.sea:2:20: error: undeclared name 'x'` (before the rule
+  `1:11: integer overflow`); `err_const_noval_pow`: the same with `const A: i64 = pow(2.0)`,
+  `…:2:16: error: no overload of 'pow' accepts (f64)`; `err_const_noval_errtype`: `const B = A +
+  1 % 0` / `const A = f()` / `fn f() -> str { return 1 }`, `…:3:11: error: not supported yet:
+  strings` (`A` has the error type and no value, so `B` is not evaluated and its `1 % 0` reports
+  nothing; before the rule `1:15: integer division by zero`); all with status 1.
 
 ### 6.3 Workload acceptance
 
@@ -4121,7 +4548,9 @@ If a measured need appears (a pass that cannot be written within a limit), the r
 this order:
 
 1. **Restructure without Baysick changes**: split the pass into two programs with an
-   intermediate file; move text to `DATA`; pack tables; build constants by arithmetic.
+   intermediate file; move text to `DATA`; pack tables; build constants by arithmetic. (Applied
+   first in phase 4a: pass 2a becomes `seaname` and `seacheck` with the file `sea.res`, Decision
+   17, §2.7; the planned next seam is `sealoop` before `sealower`, §2.7.)
 2. **Grow Baysick only on a measured need**, one change at a time, through Baysick's own
    process (spec first in LANGUAGE.md, `include/*.inc` with its doc section, tests on both
    targets), preferring a feature from a later Dartmouth edition where one exists, and
@@ -4142,7 +4571,7 @@ this order:
 
 | Limit | Expected use | If reached |
 |-------|--------------|------------|
-| 10 000 lines per program | 2 349–5 403 per pass measured in phase 1; 3 900–11 300 per pass re-estimated for v1, pass 2a at the limit around phase 6, pass 3a near it from phase 7 (§2.7) | §7.3: split the pass |
+| 10 000 lines per program | 2 349–5 403 per pass measured in phase 1; pass 2a split in phase 4a before it reaches the limit (`seaname` 4 900–5 250 and `seacheck` 3 700–4 000 estimated after 4a, 5 900–6 600 and 7 000–9 250 at v1), pass 3a near it from phase 7 (§2.7) | §7.3: split the pass |
 | 1000 `FOR` statements per program | 55–127 per pass measured in phase 1; at most about 450 in v1 (§2.7) | split the pass |
 | 26 array letters per program unit | 6–8 tables per pass | pack tables into 2-D arrays |
 | 10⁶ elements per array | the tables of §2.7 | lower a capacity limit or split the table |
@@ -4160,13 +4589,30 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 1 | **Scalar core, arm64.** Driver with the `#end` discipline; passes 1–4 for: `i64`/`f64`/`bool`, `let`/`var`, arithmetic with the LANGUAGE.md §6.8 rules, `if`/`while`/`for` ranges, functions with scalar parameters, `ref`, multiple results, `const` items and `pi inf nan eps`, `printf` with `%d %i %f %F %e %E %g %G %s` (string literals only as `%s` arguments), `now()`, `f64()`, `i64()`, `idiv`; every other construct is `not supported yet` (§2.6.2, phase rule); no inlining (§3.6.6), pass 3b validates and copies (§3.6.5), the phase-1 allocator and the stack check (§4.9, §4.6), `std.sea` comments only (§2.5); runtime start-up, formatting, errors (`sea_printf`, `sea_now`, §4.8); float-literal conversion; the build of §2.6.3 and the layout of §2.10; **recalibration** of the size estimate of §2.7 from the real passes | a Sea program running W5's LCG for 11 M steps prints `lcg_final` = 2145635252 (the reference value) and the first uniforms bit-exact; spec tests for this subset pass; the estimate is updated in §2.7 |
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
-| 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()` | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D |
+| 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()`, and the exact math functions, `ind2sub`, `sub2ind`, `lower`, `str(x)`, `meshgrid`, `setdiff` (Decision 23); built in the serial sub-phases 4a–4h below (Decisions 17–24) | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D; checked by `compare.py --keys` on the Mac and byte identity on the Linux host (Decision 19) |
 | 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output); a micro-benchmark of each is recorded |
 | 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) | W1 and W5 complete (without figures): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
 | 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all five workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
+
+**Phase 4 sub-phases** (decided 2026-10-21, Decisions 17–24). They run in this order, because each
+touches the passes the next one extends; inside a sub-phase the passes are written in parallel
+against hand-written goldens (stage.sh). Each starts from its specification text and ends with
+`make test` and `make cross` passing.
+
+| Sub-phase | Contents | Done when |
+|-----------|----------|-----------|
+| 4a-0 | **Decision 25 in the single `seacheck`** (precondition of 4a, its own change): a constant that names a constant without a value, or whose type is the error type, is not evaluated (LANGUAGE.md §7.2, §3.5.2); the `errors/` tests of §6.2 ("Constants without a value") | every earlier test passes unchanged (the existing tests of constants, `err_const_*`, `err_not_constant_cycle` and the overflow and `%` tests, keep their output under the rule) and the three new tests print their derived output |
+| 4a | **Split of pass 2a and scaffolding; no change of behaviour.** `seaname` and `seacheck` as §2.1, §2.6.2 ("Which program reports it"), §2.6.3 and §3.4.1 say; `--emit res` and the driver's pass sequence (§2.2); `Makefile`, `tools/passlines.sh`, `tools/seaval.bas` (format `res`), `tests/run.sh` (dumps `res`), and these test scripts: `tests/stage.sh` (the pair `seacheck ast hir1` becomes `seaname ast res` and `seacheck res hir1`), `tests/protocol.sh` (a truncated `sea.ast` for `seaname`, a truncated `sea.res` for `seacheck`, `seaname` in the pass lists, files and fake-pass chain), `tests/driver_check.sh` (the usage line with `--emit ast\|res\|hir1\|hir\|lir1\|lir`, the pass logs with `seaname`, the fake passes, `--emit res`), the `--emit` list and the pass list in `CLAUDE.md`; the tests of §6.2 ("Tests of the pass-2a split"); `sealower.bas` cut into `sl0main.bas` and `sl1scal.bas` (§2.7). Not changed: LANGUAGE.md (beyond 4a-0's rule), every other intermediate format, `sea.hir1` byte for byte, every message, position and exit status of every compilation that exceeds at most one capacity limit (§2.6.2 states the two orders that differ for a compilation over two limits at once), `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2b, 3a (other than the file cut), 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`), the edited scripts pass, and so do the new tests; `make cross` passes; `make check-limits` reports `seaname` and `seacheck` below 9 000 lines and their measured sizes replace the estimates of §2.7 |
+| 4b | **Phase-4 specification** (documents and contracts only): LANGUAGE.md (Decision 20's sentence, the clarifications left open in §0), §0, the phase-rule table after phase 4 (§2.6.2), `sea.res` extensions for phase 4 (the extents of type nodes, struct declarations and literal field sets, §3.4.1), the HIR and LIR records and lowering rules of arrays, structs, strings, reference counts and copy on write (§3.5, §3.6), prelude inlining (Decision 18), the runtime ABI (§4.1, §4.2, §4.8, §4.9; Decision 22's split between inline code and the runtime; Decision 24's heap check), the phase-4 acceptance (§6.3, Decision 19); `rt.inc`, `passes.txt`; in the workload repository `compare.py --keys` | `make check-contracts`, `make check-includes` and `make cross-includes` pass; the user has agreed the text |
+| 4c | **Runtime foundation and pass-4 support**: allocation, arrays (new, unique, free), strings, `args`, `error` on both targets; `retain`/`release` and the new data records in `seagen_a64`/`seagen_x64`; `seaopt` accepts the new records; `SEA_HEAP_CHECK` (Decision 24) | `make test-rt` and the Linux `test-rt` pass (allocation across size classes and the large-block cache, copy on write of shared and static objects, release of `str[]` and struct arrays, string operations byte-exact, `args`, `error`); the hand-written LIR tests of the new records pass on both targets |
+| 4d | **Dynamic arrays core** (`f64`/`i64`/`bool`): array types, `zeros ones filled len rows cols numel`, scalar indexing read and write with bounds checks, `$`, arrays as locals, parameters, results and `ref` parameters, copy on write, reference counts on every exit, `for` over vectors, the scalar exact math functions (Decision 23) | W4's scalar SOR prints `it_sor` 832 ± 1 and `T_max` within 1e-6 (`compare.py --keys` on the Mac) and the same bytes on the Linux host; the sub-phase's tests pass on both targets with no leak under `SEA_HEAP_CHECK=1` |
+| 4e | **Array expressions**: ranges, `:`, steps, index vectors and masks (read, assignment, compound assignment), views, range values, array literals and concatenation (Decision 20), fixed-size arrays, `dyn`/`fix`, element-wise operators and comparisons with broadcasting, array `cvt`, `where` and the math functions element-wise | its tests pass on both targets; a W4 program whose set-up uses whole-array code prints the same bytes as 4d's |
+| 4f | **Reductions, sorting, searching, library options**: `sum mean variance std max min argmax argmin nnz any all` (with `dim:`), `sort`/`argsort` (with `desc:`), `find find_first find_last`, the named options of library calls (Decision 21) | its tests pass on both targets (summation order, NaN, −0, ties, stability, empty inputs); W4's `T_max` by `max(Thot.flat)` prints the same bytes |
+| 4g | **Strings, structs, records, `match`, `error`, `args`** | its tests pass on both targets; the first part of LANGUAGE.md Appendix D (options loop with `match`, the `Dim` array, validation, analytic limits) prints its hand-derived output |
+| 4h | **Prelude and W5; close-out**: prelude inlining (Decision 18), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea`, the W5 acceptance program (JSON subset by `printf("%.17g")`, Decision 19), the sizes of §2.7 measured, the retired phase-rule rows removed | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 |
 
 ## 9. Decisions (agreed)
 
@@ -4321,3 +4767,72 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
     (LANGUAGE.md §7.2 now lists `pow` beside `sqrt`); `log exp sin cos hypot` stay outside
     constant expressions; pass 2b still folds no `pow` (§3.5.7). Affects LANGUAGE.md §7.2;
     §2.6.3, §2.7, §3.5.2, §3.5.5, §4.10.5, §4.10.6.
+17. **Shape of the split of pass 2a** (raised by phase 4's plan, §2.7: phase 4 takes the one
+    program to 8 900–10 200 lines). Options: (a) **resolve, then type**: a new program `seaname`
+    (`sea.ast` → `sea.res`) resolves names and scopes, checks items and signatures and evaluates
+    constants and constant exponents, and `seacheck` (`sea.res` → `sea.hir1`) types, checks the
+    rest and emits; `seacheck` sheds the exact arithmetic (`limb`, `f64emu`, `FEPOW`, `mtab`), and
+    both stay below 9 000 lines after phase 4; it costs a new intermediate format, `--emit res`,
+    `.res` goldens and an error hand-over between the programs; (b) **declarations, then bodies**:
+    a smaller format, but the body checker keeps the arithmetic modules and reaches the limit
+    again around v1; (c) **typing, then the late checks and emission**: moves about 1 000 lines,
+    too few. **Decided: (a)** (the user, 2026-10-21). Affects §2.1, §2.2, §2.6.2, §2.6.3, §2.7,
+    §2.10, §3, §3.4.1, §6.2, §8.
+18. **Prelude functions in phase 4** (`linspace`, `bincount`, and `meshgrid`, `setdiff`).
+    Options: (a) **inline prelude calls in pass 3a in phase 4**: the inlined-call form (a return
+    becomes the exit of a block, parameters bound to the arguments, run-time error sites mapped to
+    the program's call, §3.6.4) is brought forward from phase 6 for prelude calls only; phase 6
+    reuses it for the inlining rule of LANGUAGE.md §8.6, and the inlining of user functions stays
+    in phase 6; (b) move them into the runtime on both targets, changing their (P) marks in
+    LANGUAGE.md §10; (c) compile prelude functions as LIR functions with a hidden call-site
+    argument, changing the "Sites" rule of §3.6.4. **Decided: (a)** (the user, 2026-10-21).
+    Affects §3.6.6 (in 4b), §2.7, §8.
+19. **How phase 4's numeric "done when" is checked** (no `write_json` before phase 6). Options:
+    (a) **the acceptance programs print a JSON subset with `printf("%.17g")`, and the workload
+    repository's `compare.py` gains `--keys k1,k2,…`** (the same rules, restricted to those keys);
+    the Linux host is checked by byte identity with the Mac's output; (b) a shell checker in
+    `tests/` that re-implements the rules for the listed keys; (c) only hand-derived spec tests in
+    phase 4, the workload numbers moved to phase 6. **Decided: (a)** (the user, 2026-10-21).
+    Affects §6.3 (in 4b), §8; the workload repository.
+20. **Array literals of `str` or struct elements.** LANGUAGE.md §6.9 makes a row of scalars a
+    fixed-size array, and `str` and structs are not scalars. Options: (a) **such literals are
+    dynamic** (`str[]`, `S[]`); fixed-size `str` and struct arrays exist by annotation; (b) they
+    are fixed-size like numbers; (c) fixed up to 256 elements of any kind, dynamic beyond.
+    **Decided: (a)** (the user, 2026-10-21). LANGUAGE.md §4.5 and §6.9 gain one sentence in 4b.
+21. **Named options of library functions in phase 4.** Options: (a) **the library options
+    (`desc:`, `dim:`) in phase 4**; named and default arguments of user functions stay in phase 6
+    (the phase-rule row becomes "a named argument of a user function"); (b) all named arguments in
+    phase 6, so phase 4 has ascending sorts only and no `dim:` reductions; (c) all named and
+    default arguments in phase 4. **Decided: (a)** (the user, 2026-10-21). Affects §2.6.2 (in
+    4b), §8.
+22. **Which whole-array operations are runtime calls.** Options: (a) **inline LIR for element-wise
+    loops, reductions, indexing, gathers and scatters, mask compaction, `find*`, concatenation
+    and projections; the runtime only for memory, copy on write and freeing, strings,
+    `sort`/`argsort`, `args` and `error`**: the inline loops are what phase 7 fuses and
+    vectorizes, and the pinned orders are exact in LIR by construction; (b) a generic runtime
+    layer of strided descriptors and per-operation entries; (c) (a) with the variable-length
+    results (`find`, `x[m]`, concatenation) in the runtime. **Decided: (a)** (the user,
+    2026-10-21). Affects §3.6.6, §4.8 (in 4b).
+23. **Scope edges of phase 4.** Options: (a) **include the exact math functions `abs sign sqrt
+    floor ceil trunc round min max where isnan`, `ind2sub`/`sub2ind`, `lower`, `str(x)`,
+    `meshgrid` and `setdiff`; leave `%` with an `f64` operand (the exact `fmod`) to phase 6** as
+    a phase-rule row; (b) only what the "done when" needs (the math functions), the rest in phase
+    6; (c) everything, `f64 %` included. **Decided: (a)** (the user, 2026-10-21). Affects §2.6.2
+    (in 4b), §8.
+24. **A heap-leak check for tests.** Options: (a) **`SEA_HEAP_CHECK=1` in the environment makes
+    the runtime write the number of live dynamic objects to standard error at a normal exit**, a
+    test aid, not a language feature; tests set it through a `.meta` line; (b) no leak check.
+    **Decided: (a)** (the user, 2026-10-21). Affects §4.5, §4.8, §6.2 (in 4b).
+25. **Constants that read a constant without a value** (raised by the review of 4a's
+    specification). The single program evaluated a constant whose check found no error even when
+    it named a constant whose check or evaluation had failed, and reported an `integer overflow`
+    of that evaluation if the overflow came, in evaluation order, before the read of the failed
+    constant (`const B = 9223372036854775807 + 1 + A` with `const A: i64 = 1 + x` reported
+    `1:11: integer overflow`, not `A`'s `undeclared name 'x'`). Splitting pass 2a would have to
+    reproduce that order in two programs. Options: (a) **a constant that names a constant without
+    a value, or whose type is an error type, is not evaluated and gives no further error**: the
+    error reported is the one that caused the missing value, and `seaname` needs to replicate no
+    check (§3.4.1); (b) keep the evaluation order and replicate the checks of constants in
+    `seaname`. **Decided: (a)** (the user, 2026-10-21). It is made in the single `seacheck`
+    first, as its own change (sub-phase 4a-0, §8), with its tests (§6.2). Affects LANGUAGE.md
+    §7.2; §3.4.1, §3.5.2, §6.2, §8.

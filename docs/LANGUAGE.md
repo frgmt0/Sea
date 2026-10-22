@@ -1072,6 +1072,13 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   `i64` or divides an `i64` by zero (`%` by 0) is the **compile error** `integer overflow` or
   `integer division by zero`, reported at the operator whose evaluation fails (as in Rust),
   instead of the run-time errors of §6.5 and §6.6. A use of the constant is that one value.
+* **A constant without a value.** A constant has no value when it has a compile error, when its
+  evaluation fails, or when it is not evaluated: a constant whose expression names a constant
+  without a value, or whose type could not be determined because of another error, is **not
+  evaluated**, so its own evaluation reports nothing (`const B = 9223372036854775807 + 1 + A`
+  with a faulty `A` reports `A`'s error, not an overflow in `B`). A program with a compile
+  error is not compiled, so a constant without a value is never used at run time (DESIGN.md §9
+  Decision 25).
 * `let _: T = e` (an annotated `_`) is a single-value binding: e must have one value of type T,
   and a multiple-result call there is `wrong number of results: expected n, found 1` (§8.4).
 
