@@ -1,0 +1,5 @@
+3 live
+1 live after freeing the array
+shared string count 1
+static string untouched
+0 live at the end

@@ -119,6 +119,9 @@ check_meta() {
     while IFS= read -r _l || [ -n "$_l" ]; do
         case $_l in
         "" | stdout=epipe | stdout=closed) ;;
+        env=SEA_HEAP_CHECK=*) ;;
+        heap=off) [ "$2" = rt ] || continue
+            echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         stdout=slowpipe | env=*) [ "$2" = rt ] && continue
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         *) echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
@@ -174,10 +177,33 @@ asm_link() {
     return 0
 }
 
+# heap_begin / heap_end: exactly as tests/run.sh (DESIGN.md 6.2): SEA_HEAP_CHECK=1 for the run unless
+# the meta says heap=off or env=SEA_HEAP_CHECK=V; the line `heap: 0 live objects` is required and
+# removed after an exit with status 0 when the value is exactly 1 (LEAK set otherwise).
+heap_begin() {
+    HEAPVAL=1
+    if [ "$(meta_get "$1.meta" heap)" = off ]; then HEAPVAL=; fi
+    _e=$(meta_get "$1.meta" env)
+    case $_e in SEA_HEAP_CHECK=*) HEAPVAL=${_e#SEA_HEAP_CHECK=} ;; esac
+    if [ -n "$HEAPVAL" ]; then SEA_HEAP_CHECK=$HEAPVAL; export SEA_HEAP_CHECK; else unset SEA_HEAP_CHECK; fi
+}
+heap_end() {
+    LEAK=
+    unset SEA_HEAP_CHECK
+    if [ "$HEAPVAL" != 1 ] || [ "$st" != 0 ]; then return 0; fi
+    _l=$(tail -n 1 "$TMP/r.err" 2>/dev/null)
+    if [ "$_l" = "heap: 0 live objects" ]; then
+        sed '$d' "$TMP/r.err" > "$TMP/r.err.new" && mv "$TMP/r.err.new" "$TMP/r.err"
+    else
+        LEAK="leak: ${_l:-no heap line}"
+    fi
+}
+
 # run_prog BASE EXE : as tests/run.sh: stdin, arguments, stdout=epipe|closed. Sets st,
 # leaves $TMP/r.out and $TMP/r.err.
 run_prog() {
     _b=$1; _exe=$2
+    heap_begin "$_b"
     set --
     if [ -f "$_b.args" ]; then
         while IFS= read -r _a || [ -n "$_a" ]; do set -- "$@" "$_a"; done < "$_b.args"
@@ -208,6 +234,7 @@ RUNIT
         run_limited "$TIMEOUT" "$(stdin_for "$_b")" "$WORK" "$_exe" "$@" >"$TMP/r.out" 2>"$TMP/r.err"
         st=$?
     fi
+    heap_end
 }
 
 want_status() { if [ -f "$1.status" ]; then sed -n 1p "$1.status"; else echo 0; fi; }
@@ -239,6 +266,7 @@ do_case() {
     want=$(want_status "$base")
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
+    [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
     if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ] && [ "$(meta_get "$base.meta" stdout)" != closed ]; then
         same "$expout" "$TMP/r.out" "stdout" "$name" || ok=0
     fi
@@ -291,7 +319,7 @@ for src in "$BUNDLE"/tests/rt/x86_64_linux/*.s; do
     "") ;; epipe) mode=epipe ;; slowpipe) mode=slowpipe ;;
     *) echo "cross_run.sh: $name: bad stdout= in $n.meta" >&2; exit 2 ;;
     esac
-    envargs="-u SEA_KERNELS -u BAYSICK_KERNELS"
+    envargs="-u SEA_KERNELS -u BAYSICK_KERNELS -u SEA_HEAP_CHECK"
     for kv in $(meta_all "$base.meta" env); do envargs="$envargs $kv"; done
     WORK=$(mktemp -d "$TMP/work.XXXXXX") || { fail "$name" "cannot prepare the work directory"; continue; }
     rm -f "$TMP/r.out" "$TMP/r.err" "$TMP/r.out.fifo"

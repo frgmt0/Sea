@@ -13,6 +13,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 * `errors/NAME.meta` with `stdout=epipe`: standard output is a pipe whose reading end is closed
   before the program starts (DESIGN.md §6.2); with `stdout=closed` the program starts with
   standard output closed (`>&-`, its writes fail with `EBADF`).
+* From 4c every program runs with `SEA_HEAP_CHECK=1`: on status 0 its standard error must end with `heap: 0 live objects`, which the runner removes before comparing (DESIGN.md §6.2); `NAME.meta` with `heap=off` runs it without the variable, and `env=SEA_HEAP_CHECK=V` sets another value (the line is expected only for exactly `1`).
 * `passes/`: `sea build --emit X --no-prelude NAME.sea` for each `NAME.X` present (§3.8).
 
 ## How the expected outputs were derived
@@ -54,6 +55,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `fn_ref_order` | §6.8 rule 5, §8.3 (reads before a `ref` call see the old value, reads after it the new one, `x = g(ref x)` keeps the result) |
 | `fn_multi` | §8.4, §7.2, §7.3 (tuple patterns, `_`, tuple assignment, `return f()`) |
 | `fn_many` | §8.1, §8.4 (10 + 10 parameters, 10 results) |
+| `heap_env_unset` | DESIGN.md §4.5 `SEA_HEAP_CHECK`, §6.2: run with `heap=off` (the variable unset), standard error stays empty (no `heap:` line) |
+| `heap_env_other` | DESIGN.md §4.5, §6.2: run with `env=SEA_HEAP_CHECK=2` (not exactly `1`), standard error stays empty |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
@@ -122,6 +125,12 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `stmt_tasg` | ast hir1 hir lir1 (+ `.out`) | LANGUAGE.md §7.3, §4.2 (b); §3.5.5 `tasg` `cv` flags; §3.6.6 rule 2 `tasg` steps (a)–(d): cv 1 into a local (`itof`, `mov`), cv 0 straight into the target register, `skip` a new register, a `ref`-parameter target with cv 1 (`itof`, `stf`), a target local the call passes by `ref` (new register, reload, then `mov`) |
 | `stmt_loops` | ast hir1 hir lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
+| `lir4_retain_release` | lir (+ `.out`) | sub-phase 4c pass-4 test (§6.2): `retain`/`release` (§3.6.4, §4.9) on a fresh array (count 1 → 2 → 3, read with `ldi` at `SEA_OBJ_RC`), the same object shared (3 → 2 → 1), its last `release` freeing it (the next array of its 128-byte class is the same block, by the LIFO free lists of §4.1, again count 1 and zeroed), a static `str` object (count `SEA_RC_STATIC` 0 unchanged by `retain`/`release`), and a fresh `sea_str_i64` string (−2⁶³ in decimal, §4.8) |
+| `lir4_release_leaf` | lir (+ `.out`) | a function whose only call-like instruction is `release` (non-leaf by §4.9: frame record, §4.6 check): it frees an `str[]` and a string through `sea_free` and still returns to its caller |
+| `lir4_mcopy` | lir (+ `.out`) | `mcopy` of 0, 7, 8, 9 and 100 bytes from a `dat` buffer + 5 to a zeroed 128-byte slot + 3 (both unaligned); the 16 words of each slot printed with `%d` (little-endian, computed by `vectors/lir4_gen.py`), so bytes beyond n stay 0 |
+| `lir4_slay` | lir (+ `.out`) | `slay`/`soff` with 0 and 3 offsets (§3.6.2, §4.9: `SEA_SL_*` words read back), `sea_arr_new_s` (§4.8: count 1, ek 5, rank, rows, cols, cap, esize = size, `SEA_ARR_SLAY` = the descriptor, data at header + 64, buffer zeroed); a string stored with a `retain` into two reference fields goes from count 3 back to 1 when the array is released (`sea_free` releases the non-null reference fields by the descriptor) |
+| `lir4_entries` | lir (+ `.out`) | the other returning entries of ids 9–20 through pass 4 (§4.8): `sea_str_f64` (an `f` argument with the site the first integer argument: `%.17g` text, `nan` for both NaN signs, `inf`, `-inf`, LANGUAGE.md §10.9), `sea_str_cmp` (unsigned bytes, prefix, empty), `sea_str_cat` (also of two empty strings: a new string), `sea_str_lower` (only A–Z), `sea_arr_new_u` (header), `sea_arr_unique` (count 1: the same array; count 2: a copy with count 1, the old count 1, a store into the copy leaves the old), `sea_args` (no arguments: rank 1, length 0, LANGUAGE.md §10.10); everything released |
+| `lir4_seaopt` | lir1 lir | stage test of pass 3b (§3.6.5 "Pass 3b from phase 4"): `retain`, `release`, `mcopy`, two `slay` groups (0 and 2 `soff`), a `dat` and `sea_arr_new_s` copied unchanged (`.lir` = `.lir1`), hand-written |
 | `fn_reach` | ast hir1 hir | §3.5.7 step 5, §3.5.1 renumbering |
 | `math_lower` | ast hir1 hir lir1 | §3.6.6 rule 14 (`rcall sea_<fn> - 1 d n args`, no site) for `log exp sin cos pow hypot` and a non-powk `^`, rules 1, 2, 10 (`cvt` and `f64()` are `itof`, the rcall writes the bound local), §3.6.1 numbering; §3.5.7 (nothing folded) |
 | `const_pow` | ast hir1 | §3.5.2 (each `cn` leaf at the root position), §4.10.5 (`^` non-powk and `pow` folded by FEPOW: the model's bits from `math_model.eval_bits`, NaN `#7FF8000000000000`), §3.5.5 (`x ^ K` with `K = pow(9.0, 0.5)` is `powk 3`, `x ^ C` stays `bin pow`) |
@@ -366,5 +375,6 @@ the `at` position of DESIGN.md §2.6.2.
 | `edges_gen.py` | the phase-2 edge tests `op_mod_idiv_edges`, `op_ftoi_edges`, `op_itof_round`, `op_cmp_nan_zero`, `op_neg_zero`, `err_rt_mod_zero_min`, `err_rt_idiv_zero_min`, `err_rt_conv_below` (min/max, floor/ceil/round/trunc, abs and sqrt are `not supported yet` in phases 1–2, Sea has no shifts) |
 | `math_progs.py` | the phase-3 `programs/lib_math_*.{sea,out}`, `passes/math_lower.{sea,ast,hir1,hir,lir1}`, `passes/const_pow.{sea,ast,hir1}` and `errors/err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot` |
 | `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`) |
+| `lir4_gen.py` | the 4c pass-4 tests `passes/lir4_{retain_release,release_leaf,mcopy,slay,entries}.{lir,out}` |
 | `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

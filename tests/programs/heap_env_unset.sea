@@ -1,0 +1,2 @@
+// heap_env_unset -- SEA_HEAP_CHECK unset (heap=off): main writes no heap line to standard error (DESIGN.md 4.5, 6.2)
+printf("unset\n")

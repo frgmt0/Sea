@@ -161,8 +161,20 @@
     \m 6, COS, sea_cos, -, f, f
     \m 7, POW, sea_pow, -, ff, f
     \m 8, HYPOT, sea_hypot, -, ff, f
+    \m 9, ARR_NEW, sea_arr_new, S, iiii, p
+    \m 10, ARR_NEW_S, sea_arr_new_s, S, piii, p
+    \m 11, ARR_UNIQUE, sea_arr_unique, S, p, p
+    \m 12, FREE, sea_free, -, p, -
+    \m 13, STR_CAT, sea_str_cat, S, pp, p
+    \m 14, STR_CMP, sea_str_cmp, -, pp, i
+    \m 15, STR_LOWER, sea_str_lower, S, p, p
+    \m 16, STR_I64, sea_str_i64, S, i, p
+    \m 17, STR_F64, sea_str_f64, S, f, p
+    \m 18, ERROR, sea_error, S, pp, -
+    \m 19, ARGS, sea_args, S, -, p
+    \m 20, ARR_NEW_U, sea_arr_new_u, S, iiii, p
 .endm
-.equiv SEA_ENT_COUNT,           8   /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           20  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm

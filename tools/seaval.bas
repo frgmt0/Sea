@@ -50,11 +50,11 @@
 500 REM   X8 fd records owed  C7 cn count  I7 inst count  F6 fn count  D9 prog seen
 510 REM   M8 LIR (0 outside, 1 after func, 2 in code, 3 data)  M7 last register  S6 slots  B1 block
 520 REM   depth  B2 last block number  D8 data labels defined  R8 highest label used  X9 sub-records
-530 REM   owed  Z9 kind owed (0 ftext / fconv, 1 dvi, 2 dvf)  V9 file version  R9 B9 S9 limits
+530 REM   owed  Z9 kind owed (0 ftext / fconv, 1 dvi, 2 dvf, 3 soff; Z6 slay size, Z7 last soff)  V9 file version  R9 B9 S9 limits
 540 REM Special codes Y(i): 1 prog; 10 type definition  11 fd  12 cn  13 inst  14 fn  15 par  16 loc
 550 REM   17 end; 30 str  31 fmt  32 ftext  33 fconv  34 dat  35 dvi  36 dvf  37 func  38 slot
 560 REM   39 endfunc  40 loop  41 endloop  42 do  43 enddo  44 if / ifz  45 else  46 endif  47 exit
-570 REM   48 next  50 chk; 0 every other record.
+570 REM   48 next  50 chk  25 slay  26 soff (phase 4: retain release mcopy are plain records); 0 every other record.
 580 REM ====================================================================================
 590 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 600 DIM C(299,4), C$(299), Y(399), G$(300), U(40), L(4), S(100000), Q(100000), K(10000,2), H$(100), A(6)
@@ -86,7 +86,7 @@
 860 CALL "dg_bug": P$, "register or block limit larger than the validator's arrays"
 870 REM ---- special code of every record row (see the legend) ------------------------------
 880 LET K1$ = "|tvec=10|tmat=10|tfvec=10|tfmat=10|tstruct=10|trec=10|ttuple=10|fd=11|cn=12|inst=13|fn=14|par=15|loc=16|end=17|"
-890 LET K2$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|"
+890 LET K2$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|slay=25|soff=26|"
 900 FOR I = 1 TO Z(7)
 910 LET Y(I) = 0
 920 LET S1 = R(I, 1)
@@ -332,6 +332,8 @@
 3140 GOTO 4520
 3150 REM ---- LIR records ---------------------------------------------------------------------------------
 3160 IF X9 = 0 THEN 3310
+3162 IF Z9 <> 3 THEN 3170
+3164 GOTO 7000
 3170 LET M$ = "ftext / fconv records expected after fmt"
 3180 IF Z9 > 0 THEN 3220
 3190 IF Y0 = 32 THEN 3290
@@ -346,7 +348,8 @@
 3280 GOTO 4910
 3290 LET X9 = X9 - 1
 3300 GOTO 4520
-3310 LET M$ = "ftext, fconv, dvi or dvf record outside its fmt or dat"
+3310 LET M$ = "ftext, fconv, dvi, dvf or soff record outside its fmt, dat or slay"
+3312 IF Y0 = 26 THEN 4910
 3320 IF Y0 < 32 THEN 3360
 3330 IF Y0 > 36 THEN 3360
 3340 IF Y0 = 34 THEN 3360
@@ -354,6 +357,7 @@
 3360 IF Y0 = 30 THEN 4050
 3370 IF Y0 = 31 THEN 4050
 3380 IF Y0 = 34 THEN 4050
+3385 IF Y0 = 25 THEN 4050
 3390 IF Y0 = 37 THEN 4270
 3400 IF Y0 = 38 THEN 4310
 3410 IF Y0 = 39 THEN 4450
@@ -430,6 +434,7 @@
 4120 IF V <> D8 + 1 THEN 4910
 4130 LET D8 = V
 4140 IF Y0 = 30 THEN 4520
+4142 IF Y0 = 25 THEN 7020
 4150 LET Z$ = "n"
 4160 IF Y0 = 34 THEN 4180
 4170 LET Z$ = "k"
@@ -618,6 +623,7 @@
 5970 IF Y0 = 30 THEN 6050
 5980 IF Y0 = 31 THEN 6050
 5990 IF Y0 = 34 THEN 6050
+5995 IF Y0 = 25 THEN 6050
 6000 IF K0 <> 4 THEN 6030
 6010 LET M$ = B$ & " is used before d" & STR$(R8 + 1) & " (lir1 numbers labels by first use)"
 6020 IF V > R8 + 1 THEN 4910
@@ -711,3 +717,24 @@
 6900 LET M$ = "rtup with fewer than 2 components"
 6910 IF V < 2 THEN 4910
 6920 GOTO 4520
+6990 REM ---- soff inside a slay group: a multiple of 8, above the previous one, at most size - 8 ----
+7000 LET M$ = "a record other than soff inside a slay group"
+7002 IF Y0 <> 26 THEN 4910
+7004 LET Z$ = "v"
+7006 GOSUB 5090
+7008 LET M$ = "soff " & STR$(V) & " is not a multiple of 8, not above the previous soff, or above the slay size - 8"
+7010 IF V <> 8 * INT(V / 8) THEN 4910
+7012 IF V <= Z7 THEN 4910
+7014 IF V > Z6 - 8 THEN 4910
+7016 LET Z7 = V
+7018 GOTO 3290
+7019 REM ---- slay lab size n: n soff records follow ----
+7020 LET Z$ = "n"
+7022 GOSUB 5090
+7024 LET X9 = V
+7026 LET Z9 = 3
+7028 LET Z$ = "size"
+7030 GOSUB 5090
+7032 LET Z6 = V
+7034 LET Z7 = -1
+7036 GOTO 4520

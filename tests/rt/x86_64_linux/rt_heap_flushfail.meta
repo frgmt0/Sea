@@ -1,0 +1,2 @@
+env=SEA_HEAP_CHECK=1
+stdout=epipe

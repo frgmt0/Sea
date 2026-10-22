@@ -74,7 +74,7 @@ BSKRT    := $(BAYSICK)/build/libbaysickrt.a
 PASSES   := seaparse seaname seacheck seaexpand sealower seaopt seagen_a64 seagen_x64
 LIBS_CANON := io diag tables limb f64emu fltlit
 DATA_CANON := errors errno exits consts entries records mtab
-RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock rt_math
+RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock rt_math rt_mem rt_arr rt_str rt_args
 
 INCLUDES := include/limits.inc include/errors.inc include/rt.inc include/math_tables.inc
 ASFLAGS_BASE := -arch arm64 -mmacosx-version-min=11.0 -I include -I tests

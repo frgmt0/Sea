@@ -1,0 +1,32 @@
+#sea 1
+#target arm64-macos
+#file lir4_seaopt.sea
+func .main main 0:1:1 0 0
+la p1 d1
+li i2 1
+li i3 2
+li i4 1
+rcall sea_arr_new_s 0:2 1 p5 4 p1 i2 i3 i4
+retain p5
+release p5
+ldp p6 p5 - 0 40
+la p7 d2
+li i8 16
+mcopy p6 p7 i8
+release p5
+la p9 d3
+li i10 2
+li i11 1
+li i12 3
+rcall sea_arr_new_s 0:3 1 p13 4 p9 i10 i11 i12
+release p13
+ret 0
+endfunc
+slay d1 8 0
+dat d2 i64 2
+dvi 7
+dvi -7
+slay d3 24 2
+soff 0
+soff 16
+#end

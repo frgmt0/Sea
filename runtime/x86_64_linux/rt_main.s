@@ -5,12 +5,19 @@
 # The x86_64-linux twin of runtime/arm64_macos/rt_main.s.
 #
 # Defines: main, sea_stack_limit, sea_variant   (global, rt.inc)
+#          sea_argc, sea_argv   (.globl + .hidden: internal, DESIGN.md
+#                               4.5; read by sea_args, rt_args.s)
 # Uses   : sea_main and sea_sites (the program), sea_err (rt_err.s),
-#          sea_out_flush and sea_out_fail (rt_out.s), Baysick's
+#          sea_out_flush and sea_out_fail (rt_out.s), sea_write_all
+#          (rt_out.s), sea_live (rt_mem.s), Baysick's
 #          bsk_kern_init, bsk_kern_use, bsk_kern_variants, bsk_kern_name
 #          (libbaysickrt.a), and glibc through the PLT.
 #
 # Start-up (Baysick's program-stack technique, Baysick DESIGN.md 6.9):
+#   0. argc (sign-extended) and argv are saved in sea_argc and sea_argv
+#      before anything else (DESIGN.md 4.5, sea_args), and the heap
+#      check is armed when the environment variable SEA_HEAP_CHECK is
+#      exactly "1" (DESIGN.md 4.5).
 #   1. SIGPIPE is ignored, so a write to a closed pipe is EPIPE, which
 #      the output layer reports as `cannot write '<stdout>': Broken pipe`.
 #   2. The program stack: G = sysconf(_SC_PAGESIZE); mmap of
@@ -45,9 +52,13 @@
 # When sea_main returns: the final flush of standard output
 # (sea_out_flush). If it fails: sea_err(SEA_E_CANNOT_WRITE,
 # SEA_SITE_NONE, {"<stdout>", errno}), i.e. `error: cannot write
-# '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise
-# _exit(SEA_EXIT_RUN_OK) (all output is already written). The stack is
-# never unmapped.
+# '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise,
+# when the heap check is armed, the line `heap: N live objects` + LF
+# goes to standard error (N = sea_live in decimal, no sign or padding;
+# a failed write of it is ignored), and then _exit(SEA_EXIT_RUN_OK) (all
+# output is already written). A run-time error, `error` and a failed
+# final flush end in sea_err without the heap line. The stack is never
+# unmapped.
 # =====================================================================
 .include "limits.inc"
 .include "errors.inc"
@@ -83,6 +94,11 @@
 .equ RT_SA_SIZE,        152
 .equ RT_MAIN_SA,        32          # the sigaction in main's scratch (stack_t at 0)
 .equ RT_MAIN_SCRATCH,   (RT_MAIN_SA + RT_SA_SIZE + 8) # 192: a multiple of 16
+# The heap line (DESIGN.md 4.5): "heap: " (6 bytes), at most 20 digits,
+# " live objects\n" (14 bytes), built in RT_MAIN_HEAPLINE bytes.
+.equ RT_MAIN_S_HEAP_LEN, 6
+.equ RT_MAIN_S_LIVE_LEN, 14
+.equ RT_MAIN_HEAPLINE,  48          # >= 6 + 20 + 14, a multiple of 16
 
     .text
 
@@ -91,7 +107,7 @@
 #   glibc's start code).
 #   Purpose : the start-up sequence of the file header, the call of
 #             sea_main on the new stack, the final flush and exit.
-#   Inputs  : %edi = argc, %rsi = argv (ignored)
+#   Inputs  : %edi = argc, %rsi = argv (saved in sea_argc, sea_argv)
 #   Outputs : never returns
 #   Clobbers: everything (control never comes back)
 #   Callee-saved used (not restored: the function never returns):
@@ -112,6 +128,20 @@ main:
     pushq %r12                      # %rsp = 0 (mod 16)
     subq $RT_MAIN_SCRATCH, %rsp     # scratch at 0(%rsp)
 
+    # 0. The arguments for sea_args, and the heap check (DESIGN.md 4.5).
+    movslq %edi, %rax
+    movq %rax, sea_argc(%rip)
+    movq %rsi, sea_argv(%rip)
+    leaq .Lrt_main_s_heapenv(%rip), %rdi
+    call getenv@PLT                 # SEA_HEAP_CHECK or NULL
+    testq %rax, %rax
+    jz 1f                           # unset: no check
+    cmpb $49, (%rax)                # '1' ...
+    jne 1f
+    cmpb $0, 1(%rax)                # ... and nothing after it
+    jne 1f
+    movq $1, .Lrt_main_heapchk(%rip)
+1:
     # 1. Ignore SIGPIPE: signal(SIGPIPE, SIG_IGN).
     movl $RT_SIGPIPE, %edi
     movl $RT_SIG_IGN, %esi
@@ -222,6 +252,39 @@ main:
     movq $SEA_SITE_NONE, %rsi
     call sea_out_fail               # noreturn
 .Lrt_main_exit:
+    cmpq $0, .Lrt_main_heapchk(%rip)
+    je .Lrt_main_exit0
+    # The heap line, built right to left in RT_MAIN_HEAPLINE bytes at
+    # 0(%rsp) (%rsp = 0 (mod 16) here, the top of the program stack):
+    # "heap: " N " live objects" LF. main never returns, so %rbx and
+    # %r12 (no longer needed) hold the line's start and end.
+    subq $RT_MAIN_HEAPLINE, %rsp
+    leaq RT_MAIN_HEAPLINE(%rsp), %r12 # the end of the line
+    leaq -RT_MAIN_S_LIVE_LEN(%r12), %rbx
+    movq %rbx, %rdi
+    leaq .Lrt_main_s_live(%rip), %rsi
+    movl $RT_MAIN_S_LIVE_LEN, %edx
+    call memcpy@PLT                 # " live objects\n" at the end
+    movq sea_live(%rip), %rax       # N, unsigned, digits right to left
+    movl $10, %ecx
+2:  xorl %edx, %edx
+    divq %rcx                       # %rdx = the next digit
+    addb $48, %dl                   # '0'
+    decq %rbx
+    movb %dl, (%rbx)
+    testq %rax, %rax
+    jnz 2b
+    subq $RT_MAIN_S_HEAP_LEN, %rbx
+    movq %rbx, %rdi
+    leaq .Lrt_main_s_heap(%rip), %rsi
+    movl $RT_MAIN_S_HEAP_LEN, %edx
+    call memcpy@PLT                 # "heap: " in front
+    movl $2, %edi                   # fd 2
+    movq %rbx, %rsi
+    movq %r12, %rdx
+    subq %rbx, %rdx                 # the line's length
+    call sea_write_all              # a failure is ignored
+.Lrt_main_exit0:
     movl $SEA_EXIT_RUN_OK, %edi
     call _exit@PLT                  # does not return
     ud2                             # not reached
@@ -304,6 +367,14 @@ main:
     .section .rodata
 .Lrt_main_s_env:    .asciz "SEA_KERNELS"
 .Lrt_main_s_avx2:   .asciz "avx2"
+.Lrt_main_s_heapenv: .asciz "SEA_HEAP_CHECK"
+.Lrt_main_s_heap:   .ascii "heap: "
+.Lrt_main_s_heap_end:
+.Lrt_main_s_live:   .ascii " live objects\n"
+.Lrt_main_s_live_end:
+.if ((.Lrt_main_s_heap_end - .Lrt_main_s_heap) != RT_MAIN_S_HEAP_LEN) || ((.Lrt_main_s_live_end - .Lrt_main_s_live) != RT_MAIN_S_LIVE_LEN)
+    .error "rt_main: the heap-line texts do not match their lengths"
+.endif
 
     .bss
     .p2align 3
@@ -317,6 +388,20 @@ sea_stack_limit:
     .size sea_variant, 8
 sea_variant:
     .zero 8                         # SEA_VAR_* of the selected variant
+    .globl sea_argc
+    .hidden sea_argc
+    .type sea_argc, @object
+    .size sea_argc, 8
+sea_argc:
+    .zero 8                         # main's argc, sign-extended (for sea_args)
+    .globl sea_argv
+    .hidden sea_argv
+    .type sea_argv, @object
+    .size sea_argv, 8
+sea_argv:
+    .zero 8                         # main's argv (for sea_args)
+.Lrt_main_heapchk:
+    .zero 8                         # 1: SEA_HEAP_CHECK is "1", write the heap line
 .Lrt_main_guard:
     .zero 16                        # guard page [lo, hi)
     .p2align 4

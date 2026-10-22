@@ -1,0 +1,6 @@
+slay 24 0
+count 1 ek 5 rank 1 rows 2 cols 1 cap 2 esize 24 slay 1 data 1
+zero 0 0 0 0 0 0
+slay 40 3 refs 0 16 32
+ek 5 rank 2 rows 1 cols 2 cap 2 esize 40
+42 count 3 after the array 1

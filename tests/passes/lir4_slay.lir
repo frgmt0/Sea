@@ -1,0 +1,205 @@
+#sea 1
+#target arm64-macos
+#file lir4_slay.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 8 8
+slot s3 8 8
+slot s4 72 8
+slot s5 48 8
+slot s6 40 8
+slot s7 48 8
+slot s8 24 8
+la p1 d1
+ldi i2 p1 - 0 0
+ldi i3 p1 - 0 8
+sa p4 s1
+sti i2 p4 - 0 0
+sti i3 p4 - 0 8
+la p5 d2
+rcall sea_printf 0:2 0 2 p5 p4
+li i6 1
+li i7 2
+li i8 1
+rcall sea_arr_new_s 0:3 1 p9 4 p1 i6 i7 i8
+ldi i10 p9 - 0 0
+ldb i11 p9 - 0 9
+ldb i12 p9 - 0 10
+ldi i13 p9 - 0 16
+ldi i14 p9 - 0 24
+ldi i15 p9 - 0 32
+ldi i16 p9 - 0 48
+sa p17 s2
+stp p1 p17 - 0 0
+ldi i18 p17 - 0 0
+ldi i19 p9 - 0 56
+icmp eq i20 i18 i19
+sa p21 s3
+stp p9 p21 - 0 0
+ldi i22 p21 - 0 0
+li i23 64
+iadd i24 i22 i23
+ldi i25 p9 - 0 40
+icmp eq i26 i24 i25
+sa p27 s4
+sti i10 p27 - 0 0
+sti i11 p27 - 0 8
+sti i12 p27 - 0 16
+sti i13 p27 - 0 24
+sti i14 p27 - 0 32
+sti i15 p27 - 0 40
+sti i16 p27 - 0 48
+sti i20 p27 - 0 56
+sti i26 p27 - 0 64
+la p28 d3
+rcall sea_printf 0:4 0 2 p28 p27
+ldi i29 p9 - 0 64
+ldi i30 p9 - 0 72
+ldi i31 p9 - 0 80
+ldi i32 p9 - 0 88
+ldi i33 p9 - 0 96
+ldi i34 p9 - 0 104
+sa p35 s5
+sti i29 p35 - 0 0
+sti i30 p35 - 0 8
+sti i31 p35 - 0 16
+sti i32 p35 - 0 24
+sti i33 p35 - 0 32
+sti i34 p35 - 0 40
+la p36 d4
+rcall sea_printf 0:5 0 2 p36 p35
+release p9
+la p37 d5
+ldi i38 p37 - 0 0
+ldi i39 p37 - 0 8
+ldi i40 p37 - 0 16
+ldi i41 p37 - 0 24
+ldi i42 p37 - 0 32
+sa p43 s6
+sti i38 p43 - 0 0
+sti i39 p43 - 0 8
+sti i40 p43 - 0 16
+sti i41 p43 - 0 24
+sti i42 p43 - 0 32
+la p44 d6
+rcall sea_printf 0:6 0 2 p44 p43
+li i45 2
+li i46 1
+li i47 2
+rcall sea_arr_new_s 0:7 1 p48 4 p37 i45 i46 i47
+ldb i49 p48 - 0 9
+ldb i50 p48 - 0 10
+ldi i51 p48 - 0 16
+ldi i52 p48 - 0 24
+ldi i53 p48 - 0 32
+ldi i54 p48 - 0 48
+sa p55 s7
+sti i49 p55 - 0 0
+sti i50 p55 - 0 8
+sti i51 p55 - 0 16
+sti i52 p55 - 0 24
+sti i53 p55 - 0 32
+sti i54 p55 - 0 40
+la p56 d7
+rcall sea_printf 0:8 0 2 p56 p55
+li i57 42
+rcall sea_str_i64 0:9 1 p58 1 i57
+ldp p59 p48 - 0 40
+retain p58
+stp p58 p59 - 0 0
+retain p58
+stp p58 p59 - 0 56
+lf f60 #4004000000000000
+stf f60 p59 - 0 8
+ldi i61 p58 - 0 0
+release p48
+ldi i62 p58 - 0 0
+sa p63 s8
+stp p58 p63 - 0 0
+sti i61 p63 - 0 8
+sti i62 p63 - 0 16
+la p64 d8
+rcall sea_printf 0:10 0 2 p64 p63
+release p58
+ret 0
+endfunc
+slay d1 24 0
+fmt d2 5
+ftext slay%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 19
+ftext count%20
+fconv - - - d i
+ftext %20ek%20
+fconv - - - d i
+ftext %20rank%20
+fconv - - - d i
+ftext %20rows%20
+fconv - - - d i
+ftext %20cols%20
+fconv - - - d i
+ftext %20cap%20
+fconv - - - d i
+ftext %20esize%20
+fconv - - - d i
+ftext %20slay%20
+fconv - - - d i
+ftext %20data%20
+fconv - - - d i
+ftext %0A
+fmt d4 14
+ftext zero
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+slay d5 40 3
+soff 0
+soff 16
+soff 32
+fmt d6 11
+ftext slay%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20refs%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d7 13
+ftext ek%20
+fconv - - - d i
+ftext %20rank%20
+fconv - - - d i
+ftext %20rows%20
+fconv - - - d i
+ftext %20cols%20
+fconv - - - d i
+ftext %20cap%20
+fconv - - - d i
+ftext %20esize%20
+fconv - - - d i
+ftext %0A
+fmt d8 6
+fconv - - - s p
+ftext %20count%20
+fconv - - - d i
+ftext %20after%20the%20array%20
+fconv - - - d i
+ftext %0A
+#end

@@ -15,6 +15,8 @@
 50070 REM    Numeric labels 1-4 are template-local; 9 is the far form's. A line ending in ":"
 50075 REM    is written unindented. The cold lines precede mov x0 code, x1 site, x2 sp,
 50080 REM    bl _sea_err. Sentinel "-".
+50082 REM    retain, release (a in x9; $M = _<symbol of the FREE entry>) and mcopy (d s n in x9 x10
+50083 REM    x11) are the sequences of DESIGN 4.9, emitted by their own code (a64.bas 6500).
 50085 REM ====================================================================================
 50100 DATA "SLOT_SIZE","STACK_LEAF_MAX","RC_STATIC","TAG_STR","STR_RC","STR_TAG","STR_LEN"
 50105 DATA "STR_BYTES","FMT_NPIECE","FMT_NCONV","FMT_PIECES","FP_KIND","FP_CONV","FP_FLAGS"
@@ -22,11 +24,12 @@
 50115 DATA "FF_LEFT","FF_PLUS","FF_SPACE","FF_ZERO","FF_ALT","CLS_I","CLS_F","CLS_P"
 50120 DATA "SITE_FILE","SITE_LINE","SITE_SIZE","DATA_ALIGN","ESIZE_I64","ESIZE_F64","ESIZE_BOOL"
 50125 DATA "LIM_LIR_INSTRS","LIM_LIR_OPERANDS","LIM_LIR_REGS","LIM_LIR_BLOCKS","LIM_LIR_SLOTS"
-50130 DATA "LIM_LIR_IMMS","LIM_LIR_LABELS","LIM_LIR_SITES","FILE_VERSION","-"
+50130 DATA "LIM_LIR_IMMS","LIM_LIR_LABELS","LIM_LIR_SITES","FILE_VERSION","SL_SIZE","SL_NREF"
+50135 DATA "SL_REFS","-"
 50200 DATA "func",1,"slot",2,"endfunc",3,"li",4,"lf",5,"sa",7,"loop",8,"endloop",9,"do",10
 50205 DATA "enddo",11,"if",12,"ifz",13,"else",14,"endif",15,"exit",16,"next",17,"ret",18
 50210 DATA "call",19,"rcall",20,"chk",21,"str",30,"fmt",31,"ftext",32,"fconv",33,"dat",34
-50215 DATA "dvi",35,"dvf",36,"-"
+50215 DATA "dvi",35,"dvf",36,"retain",22,"release",23,"mcopy",24,"slay",37,"soff",38,"-"
 50300 DATA "eq","eq","eq","ne","ne","ne","lt","lt","mi","le","le","ls","gt","gt","gt"
 50305 DATA "ge","ge","ge","-"
 50400 DATA "b.eq","b.ne","b.ne","b.eq","b.vs","b.vc","b.vc","b.vs","b.lt","b.ge","b.ge","b.lt"
@@ -120,4 +123,8 @@
 50980 REM chkb (LANGUAGE 5.4): unsigned idx >= ext catches idx < 0; arguments idx, dim, ext
 50985 DATA "chkb","INDEX_OOB","-",2,4,"cmp x9, x10","b.hs $C","str x9, [sp, #$0]"
 50990 DATA "mov x9, #$U","str x9, [sp, #$1]","str x10, [sp, #$2]"
+50991 DATA "retain","-","-",5,0,"ldr x10, [x9]","cbz x10, 1f","add x10, x10, #1","str x10, [x9]","1:"
+50992 DATA "release","-","-",8,0,"ldr x10, [x9]","cbz x10, 1f","subs x10, x10, #1","str x10, [x9]"
+50993 DATA "b.ne 1f","mov x0, x9","bl $M","1:","mcopy","-","-",16,0,"cmp x11, #8","b.lo 2f","1:"
+50994 DATA "ldr x16, [x10], #8","str x16, [x9], #8","sub x11, x11, #8","cmp x11, #8","b.hs 1b","2:","cbz x11, 4f","3:","ldrb w16, [x10], #1","strb w16, [x9], #1","subs x11, x11, #1","b.ne 3b","4:"
 50995 DATA "-"

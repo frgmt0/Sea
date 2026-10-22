@@ -34,7 +34,7 @@
 #                                     before it starts reading (a full pipe: EAGAIN on a
 #                                     non-blocking stdout)
 #                  env=NAME=VALUE     an environment variable (repeatable);
-#                                     SEA_KERNELS and BAYSICK_KERNELS are
+#                                     SEA_KERNELS, BAYSICK_KERNELS and SEA_HEAP_CHECK are
 #                                     otherwise unset
 #                Empty lines are ignored; any other line is a setup error (exit 2),
 #                as in cross_run.sh (DESIGN.md 4.7.1, 6.6.1).
@@ -200,7 +200,7 @@ for src in "$TESTDIR"/*.s; do
     mode=plain
     case "$(meta_get "$meta" stdout)" in "") ;; epipe) mode=epipe ;; slowpipe) mode=slowpipe ;;
         *) echo "run_rt_linux.sh: $name: bad stdout= in $name.meta" >&2; exit 2 ;; esac
-    envargs="-u SEA_KERNELS -u BAYSICK_KERNELS"
+    envargs="-u SEA_KERNELS -u BAYSICK_KERNELS -u SEA_HEAP_CHECK"
     for kv in $(meta_all "$meta" env); do envargs="$envargs $kv"; done
 
     rm -rf "$TMP/work"; mkdir "$TMP/work"

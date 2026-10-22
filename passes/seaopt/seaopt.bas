@@ -50,6 +50,8 @@
 335 REM Special codes B(row): 30 str 31 fmt 32 ftext 33 fconv 34 dat 35 dvi 36 dvf 37 func 38 slot
 340 REM   39 endfunc 40 loop 41 endloop 42 do 43 enddo 44 if / ifz 45 else 46 endif 47 exit 48 next
 345 REM   50 chk 51 rcall 52 mov 53 ret 54 call; 0 every other instruction.
+346 REM   20 slay 21 soff (phase 4 data records; retain release mcopy are plain instructions, 0).
+347 REM   Z8 3 and X9 > 0: inside a slay group, Z6 its size, Z7 the last soff (3.6.5 from phase 4).
 350 REM State: M8 0 outside a function, 1 after func (slots allowed), 2 in code, 3 in the data.
 355 REM ====================================================================================
 360 FILES "sea.lir1"; "sea.lir"
@@ -106,7 +108,7 @@
 610 IF M9 > 199999 THEN 2205
 615 IF S8 > 60000 THEN 2205
 620 REM ---- the rows of set L and the special code of every record row ---------------------------
-625 LET K1$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|"
+625 LET K1$ = "|str=30|fmt=31|ftext=32|fconv=33|dat=34|dvi=35|dvf=36|func=37|slot=38|endfunc=39|loop=40|endloop=41|slay=20|soff=21|"
 630 LET K2$ = "|do=42|enddo=43|if=44|ifz=44|else=45|endif=46|exit=47|next=48|chk=50|rcall=51|mov=52|ret=53|call=54|"
 635 LET A8 = 0
 640 FOR I1 = 1 TO Z(7)
@@ -361,6 +363,8 @@
 1850 RETURN
 1855 REM ---- data records: str fmt dat and their sub-records ftext fconv dvi dvf ----------------------------
 1860 IF X9 = 0 THEN 1935
+1861 IF Z8 <> 3 THEN 1865
+1862 IF X9 > 0 THEN 5200
 1865 LET M$ = "ftext / fconv records expected after fmt"
 1870 IF Z8 > 0 THEN 1890
 1875 IF Y0 = 32 THEN 1925
@@ -379,6 +383,7 @@
 1940 IF Y0 = 30 THEN 1965
 1945 IF Y0 = 31 THEN 1965
 1950 IF Y0 = 34 THEN 1965
+1952 IF Y0 = 20 THEN 1965
 1955 GOTO 2180
 1960 REM str, fmt, dat: after the last function; labels d1, d2, ... in order
 1965 LET M$ = "data record inside a function"
@@ -392,6 +397,7 @@
 2005 IF D8 > Q9 THEN 2280
 2010 IF Y0 = 30 THEN 2060
 2015 IF Y0 = 31 THEN 2045
+2016 IF Y0 = 20 THEN 5220
 2020 LET X9 = U(3)
 2025 LET Z8 = 2
 2030 IF E1$ = "f64" THEN 2060
@@ -950,3 +956,19 @@
 5125 NEXT Q3
 5130 LET V1 = A6
 5160 RETURN
+5195 REM ---- 5200: soff inside a slay group: a multiple of 8, above the previous one, at most size - 8 ----
+5200 LET M$ = "a record other than soff inside a slay group"
+5202 IF Y0 <> 21 THEN 2180
+5204 LET V = U(1)
+5206 LET M$ = "soff " & STR$(V) & " is not a multiple of 8, not above the previous soff, or above the slay size - 8"
+5208 IF V <> 8 * INT(V / 8) THEN 2180
+5210 IF V <= Z7 THEN 2180
+5212 IF V > Z6 - 8 THEN 2180
+5214 LET Z7 = V
+5216 GOTO 1925
+5217 REM ---- 5220: slay lab size n: n soff records follow ----
+5220 LET X9 = U(3)
+5222 LET Z8 = 3
+5224 LET Z6 = U(2)
+5226 LET Z7 = -1
+5228 GOTO 2060

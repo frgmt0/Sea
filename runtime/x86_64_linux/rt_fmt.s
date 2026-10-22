@@ -11,7 +11,13 @@
 #   sea_fmt_g    (.globl + .hidden: private to the runtime) an f64 as
 #                Sea's printf("%g") prints it, for sea_err's `f`
 #                arguments (DESIGN.md 2.6.2)
+#   sea_error    (global, SEA_ENT_ERROR) format like sea_printf into the
+#                sink, then sea_err(SEA_E_USER, site, {the text})
+#   sea_fmt_sink (.globl + .hidden: private to the runtime) the growing
+#                text buffer sea_error formats into (RTF_SINK_*)
 # Uses:
+#   sea_alloc, sea_free_block, sea_live (rt_mem.s) the sink's blocks and
+#                sea_error's string object; sea_err (rt_err.s)
 #   sea_out_bytes (rt_out.s) %rdi = bytes, %rsi = length (> 0), %rdx =
 #                site index; appends to the standard-output buffer and
 #                returns normally (a failed write is reported there)
@@ -48,6 +54,7 @@
 # SSE4.1 roundsd.
 # =====================================================================
 .include "limits.inc"
+.include "errors.inc"
 .include "rt.inc"
 
 # Size of the conversion buffer in sea_printf's frame. The longest text
@@ -63,6 +70,14 @@
 .equ RTF_GBUF,          32
 # Bits of +Inf shifted left by one: |bits| << 1 >= this means NaN or Inf.
 .equ RTF_INF2,          0xFFE0000000000000
+# The sink sea_fmt_sink (internal, DESIGN.md 4.5): a descriptor of three
+# u64 words; the buffer is a block of rt_mem.s whose byte count is the
+# capacity (a power of two, at least RTF_SINK_MIN), kept between uses.
+.equ RTF_SINK_PTR,      0           # ptr  the block, 0 before the first use
+.equ RTF_SINK_LEN,      8           # u64  bytes of text in it
+.equ RTF_SINK_CAP,      16          # u64  its byte count (0 before the first use)
+.equ RTF_SINK_SIZE,     24
+.equ RTF_SINK_MIN,      256         # the first capacity
 
 # sea_printf's locals, below the five saved registers (offsets from %rbp).
 .equ RTF_W,             -48         # width (-1 absent)
@@ -673,6 +688,8 @@ sea_printf:
 # ---------------------------------------------------------------------
     .p2align 4
 .Lrt_fmt_fill:
+    cmpq $0, .Lrt_fmt_tosink(%rip)
+    jne .Lrt_fmt_sink_fill          # sea_error: into the sink (tail call)
     pushq %rbp
     movq %rsp, %rbp
     pushq %rbx
@@ -705,8 +722,214 @@ sea_printf:
 .Lrt_fmt_out:
     testq %rsi, %rsi
     jz 1f
+    cmpq $0, .Lrt_fmt_tosink(%rip)
+    jne .Lrt_fmt_sink_put           # sea_error: into the sink (tail call)
     jmp sea_out_bytes               # tail call: returns to our caller
 1:  ret
+
+# ---------------------------------------------------------------------
+# .Lrt_fmt_sink_room -- make room in the sink (sea_fmt_sink).
+#   Purpose : grow the sink's buffer so that it holds at least `need`
+#             bytes: the capacity doubles from RTF_SINK_MIN until it is
+#             large enough (every capacity is a power of two, a class
+#             size of rt_mem.s); the bytes so far are copied into the new
+#             block and the old block is freed. A need above
+#             SEA_LIM_STR_BYTES (the text could not become a str) is
+#             `out of memory` at the site before anything is allocated,
+#             and so is no memory.
+#   Inputs  : %rdi = need (bytes in all), %rsi = site
+#   Outputs : none; SINK_CAP >= need afterwards
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = need / the new
+#             capacity, %r12 = site, %r13 = the new block, %rbp = frame
+#             pointer
+#   Frame   : 32 bytes (%rbp %rbx %r12 %r13) + 8 pad = 40 bytes
+# ---------------------------------------------------------------------
+    .p2align 4
+.Lrt_fmt_sink_room:
+    cmpq $SEA_LIM_STR_BYTES, %rdi
+    ja .Lrt_fmt_sink_oom            # longer than any str may be: out of memory at once
+    leaq sea_fmt_sink(%rip), %rax
+    cmpq RTF_SINK_CAP(%rax), %rdi
+    ja 1f
+    ret                             # it fits already
+1:  pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    subq $8, %rsp                   # %rsp = 0 (mod 16)
+    movq %rsi, %r12
+    movq RTF_SINK_CAP(%rax), %rcx
+    movl $RTF_SINK_MIN, %edx
+    testq %rcx, %rcx
+    cmovzq %rdx, %rcx               # no buffer yet: start at the minimum
+2:  cmpq %rdi, %rcx
+    jae 3f
+    shlq $1, %rcx                   # double until need fits (need <= SEA_LIM_STR_BYTES:
+    jmp 2b                          # no overflow)
+3:  movq %rcx, %rbx                 # the new capacity
+    movq %rbx, %rdi
+    movq %r12, %rsi
+    call sea_alloc                  # out of memory there
+    movq %rax, %r13
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_PTR(%rax), %rsi
+    testq %rsi, %rsi
+    jz 4f                           # nothing to keep
+    movq %r13, %rdi
+    movq RTF_SINK_LEN(%rax), %rdx
+    call memcpy@PLT                 # the bytes so far
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_PTR(%rax), %rdi
+    movq RTF_SINK_CAP(%rax), %rsi
+    call sea_free_block             # the old block
+4:  leaq sea_fmt_sink(%rip), %rax
+    movq %r13, RTF_SINK_PTR(%rax)
+    movq %rbx, RTF_SINK_CAP(%rax)
+    addq $8, %rsp
+    popq %r13
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+.Lrt_fmt_sink_oom:
+    movl $SEA_E_OUT_OF_MEMORY, %edi # (%rsi = site)
+    xorl %edx, %edx
+    call sea_err                    # noreturn
+    ud2
+
+# ---------------------------------------------------------------------
+# .Lrt_fmt_sink_put -- append bytes to the sink.
+#   Inputs  : %rdi = bytes, %rsi = length (> 0), %rdx = site
+#   Outputs : none
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = bytes, %r12 =
+#             length, %rbp = frame pointer
+#   Frame   : 24 bytes (%rbp %rbx %r12)
+# ---------------------------------------------------------------------
+    .p2align 4
+.Lrt_fmt_sink_put:
+    pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12                      # %rsp = 0 (mod 16)
+    movq %rdi, %rbx
+    movq %rsi, %r12
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_LEN(%rax), %rdi
+    addq %r12, %rdi                 # need
+    movq %rdx, %rsi
+    call .Lrt_fmt_sink_room
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_PTR(%rax), %rdi
+    addq RTF_SINK_LEN(%rax), %rdi   # the end of the text so far
+    addq %r12, RTF_SINK_LEN(%rax)
+    movq %rbx, %rsi
+    movq %r12, %rdx
+    call memcpy@PLT
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+
+# ---------------------------------------------------------------------
+# .Lrt_fmt_sink_fill -- append `count` copies of a byte to the sink.
+#   Inputs  : %rdi = count (may be 0), %esi = the byte, %rdx = site
+#   Outputs : none
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = count, %r12 = the
+#             byte, %rbp = frame pointer
+#   Frame   : 24 bytes (%rbp %rbx %r12)
+# ---------------------------------------------------------------------
+    .p2align 4
+.Lrt_fmt_sink_fill:
+    testq %rdi, %rdi
+    jnz 1f
+    ret                             # nothing to append
+1:  pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12                      # %rsp = 0 (mod 16)
+    movq %rdi, %rbx
+    movl %esi, %r12d
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_LEN(%rax), %rdi
+    addq %rbx, %rdi                 # need
+    movq %rdx, %rsi
+    call .Lrt_fmt_sink_room
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_PTR(%rax), %rdi
+    addq RTF_SINK_LEN(%rax), %rdi
+    addq %rbx, RTF_SINK_LEN(%rax)
+    movl %r12d, %esi
+    movq %rbx, %rdx
+    call memset@PLT
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+
+# ---------------------------------------------------------------------
+# sea_error -- entry ERROR (DESIGN.md 4.8; LANGUAGE.md 9.3).
+#   Purpose : format exactly as sea_printf does, into the sink
+#             sea_fmt_sink instead of standard output (sea_printf's
+#             output primitives .Lrt_fmt_out and .Lrt_fmt_fill test
+#             .Lrt_fmt_tosink), make a string object of the bytes (count
+#             1, counted in sea_live) and call sea_err(SEA_E_USER, site,
+#             {that string}), which flushes standard output and reports
+#             the message. A text longer than SEA_LIM_STR_BYTES (stopped by
+#             .Lrt_fmt_sink_room as soon as it is needed), or no memory, is
+#             `out of memory` at the site.
+#   Inputs  : %rdi = pre-parsed format, %rsi = argument slots, %rdx =
+#             site
+#   Outputs : never returns
+#   Clobbers: everything
+#   Callee-saved used (not restored: it never returns): %rbx = site,
+#             %r12 = the string, %rbp = frame pointer; the slot at
+#             0(%rsp)
+#   Frame   : 24 bytes (%rbp %rbx %r12) + 16 (slot, pad) = 40 bytes
+# ---------------------------------------------------------------------
+    .globl sea_error
+    .type sea_error, @function
+    .p2align 4
+sea_error:
+    pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12
+    subq $16, %rsp                  # %rsp = 0 (mod 16); the slot at 0(%rsp)
+    movq %rdx, %rbx
+    leaq sea_fmt_sink(%rip), %rax
+    movq $0, RTF_SINK_LEN(%rax)     # an empty text
+    movq $1, .Lrt_fmt_tosink(%rip)
+    call sea_printf                 # (%rdi, %rsi, %rdx as given) into the sink
+    movq $0, .Lrt_fmt_tosink(%rip)
+    # The string object of the text.
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_LEN(%rax), %r12   # <= SEA_LIM_STR_BYTES (.Lrt_fmt_sink_room)
+    leaq SEA_STR_BYTES(%r12), %rdi
+    movq %rbx, %rsi
+    call sea_alloc
+    movq $1, SEA_STR_RC(%rax)       # count 1
+    movq $0, SEA_STR_TAG(%rax)      # the tag and the 7 bytes after it
+    movb $SEA_TAG_STR, SEA_STR_TAG(%rax)
+    movq %r12, SEA_STR_LEN(%rax)
+    incq sea_live(%rip)             # one more live object
+    movq %rax, 0(%rsp)              # the USER error's slot
+    testq %r12, %r12
+    jz 1f                           # an empty message: no bytes to copy
+    leaq SEA_STR_BYTES(%rax), %rdi
+    leaq sea_fmt_sink(%rip), %rcx
+    movq RTF_SINK_PTR(%rcx), %rsi
+    movq %r12, %rdx
+    call memcpy@PLT
+1:  movl $SEA_E_USER, %edi
+    movq %rbx, %rsi
+    movq %rsp, %rdx
+    call sea_err                    # noreturn
+    ud2
+    .size sea_error, . - sea_error
 
 # ---------------------------------------------------------------------
 # sea_fmt_g -- an f64 as Sea's printf("%g") prints it.
@@ -761,5 +984,16 @@ sea_fmt_g:
     popq %rbp
     ret
     .size sea_fmt_g, . - sea_fmt_g
+
+    .bss
+    .p2align 3
+    .globl sea_fmt_sink
+    .hidden sea_fmt_sink
+    .type sea_fmt_sink, @object
+    .size sea_fmt_sink, RTF_SINK_SIZE
+sea_fmt_sink:
+    .zero RTF_SINK_SIZE             # the growing text buffer: block, length, capacity
+.Lrt_fmt_tosink:
+    .zero 8                         # 1 while sea_error formats into the sink
 
     .section .note.GNU-stack,"",@progbits

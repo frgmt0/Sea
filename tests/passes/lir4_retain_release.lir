@@ -1,0 +1,135 @@
+#sea 1
+#target arm64-macos
+#file lir4_retain_release.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 16 8
+slot s3 8 8
+slot s4 8 8
+slot s5 40 8
+slot s6 32 8
+slot s7 24 8
+li i1 1
+li i2 1
+li i3 3
+li i4 1
+rcall sea_arr_new 0:2 1 p5 4 i1 i2 i3 i4
+ldi i6 p5 - 0 0
+retain p5
+ldi i7 p5 - 0 0
+retain p5
+ldi i8 p5 - 0 0
+sa p9 s1
+sti i6 p9 - 0 0
+sti i7 p9 - 0 8
+sti i8 p9 - 0 16
+la p10 d1
+rcall sea_printf 0:3 0 2 p10 p9
+release p5
+ldi i11 p5 - 0 0
+release p5
+ldi i12 p5 - 0 0
+sa p13 s2
+sti i11 p13 - 0 0
+sti i12 p13 - 0 8
+la p14 d2
+rcall sea_printf 0:4 0 2 p14 p13
+sa p15 s3
+stp p5 p15 - 0 0
+ldi i16 p15 - 0 0
+release p5
+li i17 2
+li i18 1
+li i19 3
+li i20 1
+rcall sea_arr_new 0:5 1 p21 4 i17 i18 i19 i20
+sa p22 s4
+stp p21 p22 - 0 0
+ldi i23 p22 - 0 0
+icmp eq i24 i16 i23
+ldi i25 p21 - 0 0
+ldb i26 p21 - 0 9
+ldi i27 p21 - 0 64
+ldi i28 p21 - 0 80
+sa p29 s5
+sti i24 p29 - 0 0
+sti i25 p29 - 0 8
+sti i26 p29 - 0 16
+sti i27 p29 - 0 24
+sti i28 p29 - 0 32
+la p30 d3
+rcall sea_printf 0:6 0 2 p30 p29
+release p21
+la p31 d4
+ldi i32 p31 - 0 0
+retain p31
+ldi i33 p31 - 0 0
+release p31
+release p31
+ldi i34 p31 - 0 0
+sa p35 s6
+stp p31 p35 - 0 0
+sti i32 p35 - 0 8
+sti i33 p35 - 0 16
+sti i34 p35 - 0 24
+la p36 d5
+rcall sea_printf 0:7 0 2 p36 p35
+li i37 #8000000000000000
+rcall sea_str_i64 0:8 1 p38 1 i37
+retain p38
+ldi i39 p38 - 0 0
+release p38
+ldi i40 p38 - 0 0
+sa p41 s7
+stp p38 p41 - 0 0
+sti i39 p41 - 0 8
+sti i40 p41 - 0 16
+la p42 d6
+rcall sea_printf 0:9 0 2 p42 p41
+release p38
+ret 0
+endfunc
+fmt d1 7
+ftext fresh%20
+fconv - - - d i
+ftext %20retained%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 5
+ftext shared%20released%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 11
+ftext freed,%20same%20block%20
+fconv - - - d i
+ftext %20count%20
+fconv - - - d i
+ftext %20ek%20
+fconv - - - d i
+ftext %20elements%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+str d4 static
+fmt d5 8
+fconv - - - s p
+ftext %20count%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d6 6
+fconv - - - s p
+ftext %20count%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

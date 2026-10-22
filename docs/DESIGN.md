@@ -4456,7 +4456,7 @@ Baysick's do.
 ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
 means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
 integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
-results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 8.
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 20.
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
@@ -4468,17 +4468,29 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 6 | `COS` | `sea_cos` | `-` | `f` | `f` | `_sea_cos(x)`: §4.10; as `LOG` |
 | 7 | `POW` | `sea_pow` | `-` | `ff` | `f` | `_sea_pow(x, y)`: xʸ, §4.10 (x in `d0` / `%xmm0`, y in `d1` / `%xmm1`, result in `d0` / `%xmm0`); cannot fail |
 | 8 | `HYPOT` | `sea_hypot` | `-` | `ff` | `f` | `_sea_hypot(x, y)`: √(x² + y²) without undue overflow or underflow, §4.10; as `POW` |
+| 9 | `ARR_NEW` | `sea_arr_new` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, rank 1 or 2, cols 1 for a vector. The first of rows, cols (in this order) outside 0 … `SEA_LIM_EXTENT` is `ARRAY_SIZE` with that value; a size that does not fit, or no memory, `OUT_OF_MEMORY` (§4.1). Returns a new array: count 1, `SEA_TAG_ARRAY`, ek, rank, rows, cols, cap rows · cols, data at header + 64, esize 8, 8, 1, 8 by ek, slay 0, the buffer zeroed (§4.1) |
+| 10 | `ARR_NEW_S` | `sea_arr_new_s` | `S` | `piii` | `p` | `(slay, rank, rows, cols, site)`: the same for struct elements, slay the address of a `SEA_SL_*` descriptor (a LIR `slay` record): ek `SEA_EK_STRUCT`, esize `SEA_SL_SIZE`, `SEA_ARR_SLAY` = slay |
+| 11 | `ARR_UNIQUE` | `sea_arr_unique` | `S` | `p` | `p` | `(a, site)`: copy on write. If a's count is 1, returns a. Otherwise allocates an array with a's ek, rank, rows, cols, esize and slay (cap rows · cols), copies the rows · cols · esize data bytes, retains every non-null `str` element and every non-null reference field of every struct element (offsets from the descriptor), then decrements a's count if it is above 1 (a static a, count 0, stays), and returns the copy (count 1). No memory: `OUT_OF_MEMORY` |
+| 12 | `FREE` | `sea_free` | `-` | `p` | `-` | `(obj)`: called by the `release` sequence of pass 4 (§4.9) when a count has just reached 0; never with a static object. An array first releases (decrement, and free at 0, skipping null and static objects) each `str` element, or each reference field of each struct element by its descriptor, then its block is freed; a string's block is freed; the live count drops by one (§4.1). Cannot fail |
+| 13 | `STR_CAT` | `sea_str_cat` | `S` | `pp` | `p` | `(a, b, site)`: a new string of a's bytes followed by b's (always a new object). A length above `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (LANGUAGE.md §9.2) |
+| 14 | `STR_CMP` | `sea_str_cmp` | `-` | `pp` | `i` | `(a, b)`: −1, 0 or 1 as a is less than, equal to or greater than b, comparing bytes as unsigned values, a proper prefix being the lesser (LANGUAGE.md §4.4: no padding). Cannot fail |
+| 15 | `STR_LOWER` | `sea_str_lower` | `S` | `p` | `p` | `(s, site)`: a new string, the bytes `A`–`Z` (0x41–0x5A) replaced by `a`–`z`, every other byte unchanged (LANGUAGE.md §10.9). No memory: `OUT_OF_MEMORY` |
+| 16 | `STR_I64` | `sea_str_i64` | `S` | `i` | `p` | `(v, site)`: a new string of v in decimal, `-` before a negative value, no leading zeros (`-9223372036854775808` for −2⁶³). No memory: `OUT_OF_MEMORY` |
+| 17 | `STR_F64` | `sea_str_f64` | `S` | `f` | `p` | `(x, site)`, x in `d0` / `%xmm0`, site in `x0` / `%rdi`: a new string: `nan` for every NaN (whatever its sign and payload), `inf` for +∞, `-inf` for −∞ (LANGUAGE.md §10.9, C's spelling), otherwise the bytes of C's `%.17g` of x (through `snprintf`, as `_sea_printf` converts, §4.5: `0.10000000000000001`, `-0`, `100`, `1.0000000000000001e+300`). No memory: `OUT_OF_MEMORY` |
+| 18 | `ERROR` | `sea_error` | `S` | `pp` | `-` | `(fmt, slots, site)`: formats exactly as `sea_printf` does (LANGUAGE.md §9.3, §11.1), into the internal sink instead of standard output, makes a string object of the bytes and calls `_sea_err(SEA_E_USER, site, slot: that string)`, which flushes standard output and reports the message (LANGUAGE.md §9.2). No memory while formatting: `OUT_OF_MEMORY`. Never returns |
+| 19 | `ARGS` | `sea_args` | `S` | `-` | `p` | `(site)`: a new `str[]` (rank 1) of the command-line arguments after the program name, in order, each a new string of the argument's bytes (LANGUAGE.md §10.10). No memory: `OUT_OF_MEMORY` |
+| 20 | `ARR_NEW_U` | `sea_arr_new_u` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: exactly `ARR_NEW` for ek `SEA_EK_F64`, `SEA_EK_I64` or `SEA_EK_BOOL` (no other ek is passed), except that the buffer is not cleared: its contents are unspecified until written. Pass 3a uses it only for an array whose creating node writes every element before any code reads one (§3.6.6 rule 17, *arrnew*), so the bytes a program prints never depend on them |
 
 **Entries of phase 4** (Decision 22: the runtime does memory, copy on write, strings, `error`,
 `args` and sorting; every loop over elements is inline LIR, §3.6.6). They are specified here and
 enter `rt.inc`'s `SEA_ENTRY_LIST` and the table above in two steps: ids 9–20 in sub-phase 4c
 (`SEA_ENT_COUNT` = 20) and ids 21–22 in 4f (`SEA_ENT_COUNT` = 22, with `rt_sort.s`). A pass whose
 `entries` table (`tb_entries`, §2.6.3) is smaller than the list stops with `BAD_DATA`, so each
-step goes in the same change as the capacities it needs: today `sealower` holds 9 entries,
-`seagen_a64` and `seagen_x64` 19 and `seaopt` 399; 4c (20 entries) raises `sealower`'s and both
-`seagen`s' to at least 22, which also covers 4f, and `seaopt` needs no change. The rows below are
-then moved into the Id-first contract table above (columns as there), which `make
-check-contracts` compares with `rt.inc` (the contract rule of §2.6: `rt.inc` and that table
+step goes in the same change as the capacities it needs: before 4c `sealower` held 9 entries,
+`seagen_a64` and `seagen_x64` 19 and `seaopt` 399; 4c (20 entries) raised `sealower`'s and both
+`seagen`s' to at least 22, which also covers 4f, and `seaopt` needed no change. Ids 9–20 are now
+in the Id-first contract table above (columns as there), which `make
+check-contracts` compares with `rt.inc`; the two rows below (21–22) move there in 4f (the contract rule of §2.6: `rt.inc` and that table
 change together, and only then). Argument
 registers follow the calling convention below (arm64 `x0`… / `d0`…, x86_64 `%rdi`… / `%xmm0`…);
 "site" is the last integer argument of an `S` entry. Every returned object is owned by the caller
@@ -4487,24 +4499,12 @@ never returns.
 
 | Name | Id | Symbol | Site | Args | Results | Contract |
 |------|---:|--------|------|------|---------|----------|
-| `ARR_NEW` | 9 | `sea_arr_new` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, rank 1 or 2, cols 1 for a vector. The first of rows, cols (in this order) outside 0 … `SEA_LIM_EXTENT` is `ARRAY_SIZE` with that value; a size that does not fit, or no memory, `OUT_OF_MEMORY` (§4.1). Returns a new array: count 1, `SEA_TAG_ARRAY`, ek, rank, rows, cols, cap rows · cols, data at header + 64, esize 8, 8, 1, 8 by ek, slay 0, the buffer zeroed (§4.1) |
-| `ARR_NEW_S` | 10 | `sea_arr_new_s` | `S` | `piii` | `p` | `(slay, rank, rows, cols, site)`: the same for struct elements, slay the address of a `SEA_SL_*` descriptor (a LIR `slay` record): ek `SEA_EK_STRUCT`, esize `SEA_SL_SIZE`, `SEA_ARR_SLAY` = slay |
-| `ARR_UNIQUE` | 11 | `sea_arr_unique` | `S` | `p` | `p` | `(a, site)`: copy on write. If a's count is 1, returns a. Otherwise allocates an array with a's ek, rank, rows, cols, esize and slay (cap rows · cols), copies the rows · cols · esize data bytes, retains every non-null `str` element and every non-null reference field of every struct element (offsets from the descriptor), then decrements a's count if it is above 1 (a static a, count 0, stays), and returns the copy (count 1). No memory: `OUT_OF_MEMORY` |
-| `FREE` | 12 | `sea_free` | `-` | `p` | `-` | `(obj)`: called by the `release` sequence of pass 4 (§4.9) when a count has just reached 0; never with a static object. An array first releases (decrement, and free at 0, skipping null and static objects) each `str` element, or each reference field of each struct element by its descriptor, then its block is freed; a string's block is freed; the live count drops by one (§4.1). Cannot fail |
-| `STR_CAT` | 13 | `sea_str_cat` | `S` | `pp` | `p` | `(a, b, site)`: a new string of a's bytes followed by b's (always a new object). A length above `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (LANGUAGE.md §9.2) |
-| `STR_CMP` | 14 | `sea_str_cmp` | `-` | `pp` | `i` | `(a, b)`: −1, 0 or 1 as a is less than, equal to or greater than b, comparing bytes as unsigned values, a proper prefix being the lesser (LANGUAGE.md §4.4: no padding). Cannot fail |
-| `STR_LOWER` | 15 | `sea_str_lower` | `S` | `p` | `p` | `(s, site)`: a new string, the bytes `A`–`Z` (0x41–0x5A) replaced by `a`–`z`, every other byte unchanged (LANGUAGE.md §10.9). No memory: `OUT_OF_MEMORY` |
-| `STR_I64` | 16 | `sea_str_i64` | `S` | `i` | `p` | `(v, site)`: a new string of v in decimal, `-` before a negative value, no leading zeros (`-9223372036854775808` for −2⁶³). No memory: `OUT_OF_MEMORY` |
-| `STR_F64` | 17 | `sea_str_f64` | `S` | `f` | `p` | `(x, site)`, x in `d0` / `%xmm0`, site in `x0` / `%rdi`: a new string: `nan` for every NaN (whatever its sign and payload), `inf` for +∞, `-inf` for −∞ (LANGUAGE.md §10.9, C's spelling), otherwise the bytes of C's `%.17g` of x (through `snprintf`, as `_sea_printf` converts, §4.5: `0.10000000000000001`, `-0`, `100`, `1.0000000000000001e+300`). No memory: `OUT_OF_MEMORY` |
-| `ERROR` | 18 | `sea_error` | `S` | `pp` | `-` | `(fmt, slots, site)`: formats exactly as `sea_printf` does (LANGUAGE.md §9.3, §11.1), into the internal sink instead of standard output, makes a string object of the bytes and calls `_sea_err(SEA_E_USER, site, slot: that string)`, which flushes standard output and reports the message (LANGUAGE.md §9.2). No memory while formatting: `OUT_OF_MEMORY`. Never returns |
-| `ARGS` | 19 | `sea_args` | `S` | `-` | `p` | `(site)`: a new `str[]` (rank 1) of the command-line arguments after the program name, in order, each a new string of the argument's bytes (LANGUAGE.md §10.10). No memory: `OUT_OF_MEMORY` |
-| `ARR_NEW_U` | 20 | `sea_arr_new_u` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: exactly `ARR_NEW` for ek `SEA_EK_F64`, `SEA_EK_I64` or `SEA_EK_BOOL` (no other ek is passed), except that the buffer is not cleared: its contents are unspecified until written. Pass 3a uses it only for an array whose creating node writes every element before any code reads one (§3.6.6 rule 17, *arrnew*), so the bytes a program prints never depend on them |
 | `SORT` | 21 | `sea_sort` | `S` | `pi` | `p` | `(v, desc, site)`: v a vector of ek `SEA_EK_F64`, `SEA_EK_I64` or `SEA_EK_STR`, desc 0 or 1. A new vector of v's elements (their bits unchanged, `str` elements retained) in the stable order of LANGUAGE.md §10.6: ascending, or with desc 1 descending, where equal elements (−0 and +0 are equal, every NaN equals every NaN) keep their input order in both directions; NaN after every number ascending, before every number descending; `str` byte-wise as `STR_CMP`. Any stable algorithm gives these bytes; the runtime uses an LSD radix sort on the order-preserving 64-bit key (−0 and every NaN canonicalized first; descending on the inverted key) for `f64` and `i64` and a stable merge sort for `str` (§4.5). No memory: `OUT_OF_MEMORY` |
 | `ARGSORT` | 22 | `sea_argsort` | `S` | `pi` | `p` | `(v, desc, site)`: the same order, returned as a new `i64` vector p (0-based) such that v[p[0]], v[p[1]], … is that order |
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_ENT_COUNT` | 8 | number of entry records |
+| `SEA_ENT_COUNT` | 20 | number of entry records |
 | `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
 | `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 

@@ -888,6 +888,42 @@ endfunc
 EOS
 valid "a sea.lir file with vector, mask and vfeat instructions" lir "$T/ex/lirv"
 
+# a hand-written LIR file with the phase-4 records (DESIGN 3.6.2, 3.6.4, 3.6.5): retain, release, mcopy, slay, soff
+cat > "$T/ex/lir4" <<'EOS'
+#sea 1
+#target arm64-macos
+#file t.sea
+func .main main 0:1:1 0 0
+la p1 d1
+li i2 1
+li i3 2
+li i4 1
+rcall sea_arr_new_s 0:2 1 p5 4 p1 i2 i3 i4
+retain p5
+release p5
+la p6 d2
+la p7 d3
+li i8 16
+mcopy p6 p7 i8
+la p9 d4
+ret 0
+endfunc
+slay d1 24 2
+soff 0
+soff 16
+slay d2 8 0
+dat d3 i64 2
+dvi 7
+dvi -7
+slay d4 40 3
+soff 8
+soff 16
+soff 32
+#end
+EOS
+valid "a LIR file with retain, release, mcopy, slay and soff records, as lir1" lir1 "$T/ex/lir4"
+valid "the same as lir" lir "$T/ex/lir4"
+
 # mutations: awk helpers (portable). del FILE REGEX removes the first matching line; rep FILE REGEX LINE replaces it.
 mut_del() { awk -v p="$2" '$0 ~ p && !d { d = 1; next } { print }' "$1"; }
 mut_rep() { awk -v p="$2" -v r="$3" '$0 ~ p && !d { d = 1; print r; next } { print }' "$1"; }
@@ -1109,6 +1145,38 @@ awk '/^ret 0$/ { print "ret 0"; print "li i11 1"; next } { print }' "$T/ex/lirx"
 rejects "a register that skips a number (the next after i8 is i9)" lir1 "$T/mut/x18" BAD_RECORD "$(lineof "$T/mut/x18" '^li i11 1$')" "not the next register"
 awk '/^func f / { print "li i1 1" } { print }' "$T/ex/lirx" > "$T/mut/x19"
 rejects "an instruction outside a function" lir1 "$T/mut/x19" BAD_RECORD "$(lineof "$T/mut/x19" '^li i1 1$')" "outside a function"
+# phase-4 records (DESIGN 3.6.5 "Pass 3b from phase 4"): slay / soff / retain / release / mcopy
+mut_rep "$T/ex/lir4" '^soff 16$' 'soff 0' > "$T/mut/p1"
+rejects "soff not above the previous one" lir1 "$T/mut/p1" BAD_RECORD "$(lineof "$T/ex/lir4" '^soff 16$')" "not above the previous"
+mut_rep "$T/ex/lir4" '^soff 0$' 'soff 4' > "$T/mut/p2"
+rejects "soff that is not a multiple of 8" lir1 "$T/mut/p2" BAD_RECORD "$(lineof "$T/ex/lir4" '^soff 0$')" "not a multiple of 8"
+mut_rep "$T/ex/lir4" '^soff 16$' 'soff 24' > "$T/mut/p3"
+rejects "soff above the slay size - 8" lir1 "$T/mut/p3" BAD_RECORD "$(lineof "$T/ex/lir4" '^soff 16$')" "slay size - 8"
+mut_del "$T/ex/lir4" '^soff 16$' > "$T/mut/p4"
+rejects "a slay with an soff record missing" lir1 "$T/mut/p4" BAD_RECORD "$(lineof "$T/mut/p4" '^slay d2 ')" "inside a slay group"
+mut_del "$T/ex/lir4" '^soff 32$' > "$T/mut/p5"
+rejects "the last slay with an soff record missing" lir1 "$T/mut/p5" BAD_RECORD "$(lineof "$T/mut/p5" '^#end$')" "sub-records"
+awk '{ print } /^soff 32$/ { print "soff 32" }' "$T/ex/lir4" > "$T/mut/p6"
+rejects "an soff after the n soff records of its slay" lir1 "$T/mut/p6" BAD_RECORD "$(awk '/^soff 32$/ { n++ } n == 2 { print NR; exit }' "$T/mut/p6")" "outside"
+awk '/^endfunc$/ { print; print "soff 0"; next } { print }' "$T/ex/lir4" > "$T/mut/p7"
+rejects "an soff before any slay" lir1 "$T/mut/p7" BAD_RECORD "$(lineof "$T/mut/p7" '^soff 0$')" "outside"
+mut_rep "$T/ex/lir4" '^slay d2 8 0$' 'slay d5 8 0' > "$T/mut/p8"
+rejects "a slay label out of order" lir1 "$T/mut/p8" BAD_RECORD "$(lineof "$T/ex/lir4" '^slay d2 ')" "d5 where d2 was expected"
+mut_rep "$T/ex/lir4" '^slay d1 24 2$' 'slay d1 24' > "$T/mut/p9"
+rejects "a slay record without n" lir1 "$T/mut/p9" BAD_RECORD "$(lineof "$T/ex/lir4" '^slay d1 ')" "too few fields"
+mut_rep "$T/ex/lir4" '^soff 16$' 'soff -8' > "$T/mut/p10"
+rejects "a negative soff" lir1 "$T/mut/p10" BAD_RECORD "$(lineof "$T/ex/lir4" '^soff 16$')" "field v"
+mut_rep "$T/ex/lir4" '^retain p5$' 'retain i5' > "$T/mut/p11"
+rejects "retain of a register of class i" lir1 "$T/mut/p11" BAD_RECORD "$(lineof "$T/ex/lir4" '^retain ')" "register class"
+mut_rep "$T/ex/lir4" '^release p5$' 'release f5' > "$T/mut/p12"
+rejects "release of a register of class f" lir1 "$T/mut/p12" BAD_RECORD "$(lineof "$T/ex/lir4" '^release ')" "register class"
+mut_rep "$T/ex/lir4" '^mcopy p6 p7 i8$' 'mcopy p6 p7 p8' > "$T/mut/p13"
+rejects "mcopy with a count of class p" lir1 "$T/mut/p13" BAD_RECORD "$(lineof "$T/ex/lir4" '^mcopy ')" "register class"
+mut_rep "$T/ex/lir4" '^mcopy p6 p7 i8$' 'mcopy p6 p7' > "$T/mut/p14"
+rejects "mcopy without its count" lir1 "$T/mut/p14" BAD_RECORD "$(lineof "$T/ex/lir4" '^mcopy ')" "too few fields"
+mut_rep "$T/ex/lir4" '^retain p5$' 'retain p5 p5' > "$T/mut/p15"
+rejects "retain with two operands" lir1 "$T/mut/p15" BAD_RECORD "$(lineof "$T/ex/lir4" '^retain ')" "too many fields"
+
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
 printf 'seaval: the first input line must name the format: ast, res, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
 expect "seaval: an unknown format name is reported (status 11)" "$T/seaval" "$T/v.in" 11 /dev/null "$T/fmt.err"

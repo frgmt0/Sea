@@ -22,7 +22,8 @@
 52 REM FMT_NPIECE NCONV PIECES, K(12-20) FP_KIND CONV FLAGS CLS WIDTH PREC TEXT TLEN SIZE,
 54 REM K(21-22) FPK_TEXT CONV, K(23-27) FF_LEFT PLUS SPACE ZERO ALT, K(28-30) CLS_I F P,
 56 REM K(31-33) SITE_FILE LINE SIZE, K(34) DATA_ALIGN, K(35-37) ESIZE_I64 F64 BOOL, K(38-45)
-58 REM LIM_LIR_INSTRS OPERANDS REGS BLOCKS SLOTS IMMS LABELS SITES, K(46) FILE_VERSION);
+58 REM LIM_LIR_INSTRS OPERANDS REGS BLOCKS SLOTS IMMS LABELS SITES, K(46) FILE_VERSION,
+59 REM K(47-49) SL_SIZE NREF REFS, K(50) ESIZE_PTR);
 60 REM A(row,1) special code, A(row,2) template of each LIR record row; P$ M Q$ T$ templates
 62 REM (M: first line, code lines, cold lines, error rows of @C @D, argument slots); V$ cc
 64 REM map (icmp cc, fcmp operands, set cc 1 and 2, combining op); B$ the function's records,
@@ -39,7 +40,7 @@
 82 REM blocks; L1 leaf; X8 definition site; X9 sites; D9 data section; D8 last label; M9 mains;
 83 REM L8 highest label referenced; Z0$ the hex text of 9050.
 84 REM ====================================================================================
-200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(19), Y$(19,5)
+200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(29), Y$(29,5)
 205 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 210 DIM K(60), K$(60), A(399,2), P$(199), M(199,6), Q$(1999), T$(199,2), V$(10,6), U$(30,2)
 215 DIM B$(219999), O(219999), G(219999), G$(300), U(40), L(4), Q(200), P(200), J$(200), V(4)
@@ -118,7 +119,7 @@
 500 CALL "tb_errors": P$, E(), E$(), 299, E0
 505 CALL "tb_exits": P$, E(), E$(), E0, X(), X$(), 19, N7
 510 CALL "tb_consts": P$, E(), E$(), E0, C(), C$(), 299, C9
-515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 19, Y9
+515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 29, Y9
 520 LET Z(1) = 39
 525 LET Z(2) = 299
 530 LET Z(3) = 399
@@ -252,6 +253,7 @@
 1285 IF Y0 = 30 THEN 7000
 1290 IF Y0 = 31 THEN 7100
 1292 IF Y0 = 34 THEN 7300
+1293 IF Y0 = 37 THEN 7455
 1295 GOTO 9990
 1300 IF D9 <> 0 THEN 9990
 1305 GOSUB 3700
@@ -522,6 +524,7 @@
 3616 NEXT I5
 3618 RETURN
 3620 REM la: the highest data label referenced, L8; the file must define it (checked at #end)
+3621 IF R$(I0) = "release" THEN 3640
 3622 IF R$(I0) <> "la" THEN 3480
 3624 IF H0 <= L8 THEN 3480
 3626 LET L8 = H0
@@ -531,6 +534,15 @@
 3634 GOSUB 9660
 3636 LET B(B7,1) = 1
 3638 RETURN
+3640 REM release calls entry FREE (DESIGN 4.9): the function is non-leaf; G(J) = the entry
+3641 LET L1 = 0
+3642 LET M$ = "entry FREE is not in the entries table"
+3643 FOR I5 = 1 TO Y9
+3644 IF Y$(I5,1) = "FREE" THEN 3648
+3645 NEXT I5
+3646 GOTO 9975
+3648 LET G(J) = I5
+3649 GOTO 3480
 3700 REM ---- the func record (in G$): name, kind, position --------------------------------
 3705 IF C0 < 6 THEN 9990
 3710 LET F5$ = G$(2)
@@ -1249,6 +1261,51 @@
 7440 NEXT I3
 7445 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 7450 GOTO 1250
+7455 REM ---- data: slay lab size n, then n soff -- a struct layout descriptor (rt.inc SEA_SL_*):
+7456 REM offsets strictly ascending multiples of ESIZE_PTR, each <= size - ESIZE_PTR (DESIGN 3.6.5)
+7457 GOSUB 7900
+7458 GOSUB 9400
+7459 IF H0 <> D8 + 1 THEN 9990
+7460 LET D8 = H0
+7461 LET Y8 = U(2)
+7462 LET Y7 = U(3)
+7463 LET X$ = ".p2align 3"
+7464 GOSUB 9010
+7465 LET X$ = ".Ld" & STR$(H0) & ":"
+7466 GOSUB 9000
+7467 LET Z7 = 0
+7468 LET Z6 = K(47)
+7469 LET Z5 = Y8
+7470 GOSUB 7493
+7471 LET Z6 = K(48)
+7472 LET Z5 = Y7
+7473 GOSUB 7493
+7474 LET Y6 = -1
+7475 FOR I3 = 1 TO Y7
+7476 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+7477 CALL "io_split": L$, G$(), 300, C0
+7478 IF C0 < 1 THEN 9990
+7479 IF G$(1) <> "soff" THEN 9990
+7480 LET Z$ = G$(1)
+7481 GOSUB 9350
+7482 GOSUB 9400
+7483 IF U(1) <= Y6 THEN 9990
+7484 IF U(1) - INT(U(1) / K(50)) * K(50) <> 0 THEN 9990
+7485 IF U(1) > Y8 - K(50) THEN 9990
+7486 LET Y6 = U(1)
+7487 LET Z6 = K(49) + 8 * (I3 - 1)
+7488 LET Z5 = Y6
+7489 GOSUB 7493
+7490 NEXT I3
+7491 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+7492 GOTO 1250
+7493 REM ---- .quad Z5 at offset Z6 (the gap before it .zero, 7600) ----------------------------
+7494 GOSUB 7600
+7495 GOSUB 9050
+7496 LET X$ = ".quad " & Z0$
+7497 GOSUB 9010
+7498 LET Z7 = Z7 + 8
+7499 RETURN
 7500 REM ---- a static string object Z9$ with the bytes R9$ (rt.inc SEA_STR_*, 8-byte aligned) ---
 7505 LET X$ = ".p2align 3"
 7510 GOSUB 9010
@@ -1529,6 +1586,7 @@
 9180 IF SEG$(R$, LEN(R$), LEN(R$)) = ":" THEN 9000
 9182 GOTO 9010
 9200 REM ---- the value of placeholder Y3$, appended to R$ ------------------------------------
+9201 IF Y3$ = "E" THEN 9695
 9202 IF Y3$ <> "C" THEN 9206
 9204 LET R$ = R$ & L9$ & "e" & STR$(J)
 9205 RETURN
@@ -1727,9 +1785,8 @@
 9530 GOSUB 9550
 9531 IF F$(J2) = "e" THEN 9546
 9532 IF F$(J2) <> "d" THEN 9536
-9533 LET D1 = R0
-9534 LET D2 = R1
-9535 GOTO 9547
+9533 IF R$(I0) <> "mcopy" THEN 9690
+9534 GOTO 9536
 9536 LET P0 = P0 + 1
 9537 LET Q(P0) = R0
 9538 LET P(P0) = R1
@@ -1802,6 +1859,13 @@
 9682 IF T1 <> 6 THEN 9686
 9684 LET X5 = X5 + 1
 9686 RETURN
+9688 REM ---- a destination d (not mcopy's: its d is an address it reads, DESIGN 3.6.4) --------
+9690 LET D1 = R0
+9691 LET D2 = R1
+9692 GOTO 9547
+9694 REM ---- @E: the symbol of the entry in G(J) (release: FREE) -----------------------------
+9695 LET R$ = R$ & Y$(G(J),2)
+9696 RETURN
 9960 CALL "dg_compile": P$, H$(), N1, F1, F2, F3, "TOO_LARGE", A$(), 1, E(), E$(), E0
 9970 CALL "dg_boot": P$
 9975 CALL "dg_bug": P$, M$

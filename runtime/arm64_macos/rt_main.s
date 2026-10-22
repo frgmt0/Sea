@@ -4,11 +4,16 @@
 // (DESIGN.md 4.4, 4.5, 4.6, 4.8; LANGUAGE.md 9.2, 9.4).
 //
 // Defines: _main, _sea_stack_limit, _sea_variant   (global, rt.inc)
+//          _sea_argc, _sea_argv   (private to the runtime: main's argc
+//                                  and argv, read by _sea_args, rt_args.s)
 // Uses   : _sea_main and _sea_sites (the program), _sea_err (rt_err.s),
-//          _sea_out_flush and _sea_out_fail (rt_out.s), and Baysick's
+//          _sea_out_flush, _sea_out_fail and _sea_write_all (rt_out.s),
+//          _sea_live (rt_mem.s), and Baysick's
 //          _bsk_kern_init, _bsk_kern_use, _bsk_kern_variants.
 //
 // Start-up (Baysick's program-stack technique, Baysick DESIGN.md 6.9):
+//   0. argc and argv are saved in _sea_argc / _sea_argv (DESIGN.md 4.5,
+//      sea_args), before anything else and before the stack switch.
 //   1. SIGPIPE is ignored, so a write to a closed pipe is EPIPE, which
 //      the output layer reports as `cannot write '<stdout>': Broken pipe`.
 //   2. The program stack: G = sysconf(_SC_PAGESIZE); mmap of
@@ -35,13 +40,19 @@
 //      `baseline`, else the first name of _bsk_kern_variants() (the best
 //      usable variant) (DESIGN.md 4.4). _sea_variant = SEA_VAR_NEON: the
 //      only variant id of arm64-macos (`baseline` is also NEON code).
-//   5. sp := the top of the new stack, x29 := 0, call _sea_main.
+//   5. The heap check (DESIGN.md 4.5, Decision 24): it is on when the
+//      environment variable SEA_HEAP_CHECK is exactly "1" now.
+//   6. sp := the top of the new stack, x29 := 0, call _sea_main.
 // When _sea_main returns: the final flush of standard output
 // (_sea_out_flush). If it fails: _sea_err(SEA_E_CANNOT_WRITE,
 // SEA_SITE_NONE, {"<stdout>", errno}), i.e. `error: cannot write
-// '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise
-// _exit(SEA_EXIT_RUN_OK) (all output is already written). The stack is
-// never unmapped.
+// '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise, with
+// the heap check on, the line `heap: N live objects` + LF goes to
+// standard error (N = _sea_live in decimal, no sign or padding; a failed
+// write is ignored: there is no better channel); then
+// _exit(SEA_EXIT_RUN_OK) (all output is already written). A run-time
+// error ends the process in _sea_err and never reaches the heap line.
+// The stack is never unmapped.
 // =====================================================================
 .include "limits.inc"
 .include "errors.inc"
@@ -73,6 +84,7 @@
 .equ RT_SA_MASK,        8
 .equ RT_SA_FLAGS,       12
 .equ RT_MAIN_SCRATCH,   48          /* stack_t at +0 (24 bytes), sigaction at +32 (16 bytes) */
+.equ RT_HEAP_LINE_BYTES, 64         /* "heap: " + at most 20 digits + " live objects\n" */
 
     .section __TEXT,__text,regular,pure_instructions
 
@@ -80,7 +92,7 @@
 // _main -- process entry point of every compiled Sea program.
 //   Purpose : the start-up sequence of the file header, the call of
 //             _sea_main on the new stack, the final flush and exit.
-//   Inputs  : w0 = argc, x1 = argv (ignored)
+//   Inputs  : w0 = argc, x1 = argv (saved for _sea_args)
 //   Outputs : never returns
 //   Clobbers: everything (control never comes back)
 //   Callee-saved used: x19 = G (page size), x20 = mapping base
@@ -95,6 +107,13 @@ _main:
     mov x29, sp
     stp x19, x20, [sp, #16]
     sub sp, sp, #RT_MAIN_SCRATCH    // scratch at [sp]
+
+    // 0. argc and argv for sea_args (DESIGN.md 4.5).
+    sxtw x9, w0
+    adrp x10, _sea_argc@PAGE
+    str x9, [x10, _sea_argc@PAGEOFF]
+    adrp x10, _sea_argv@PAGE
+    str x1, [x10, _sea_argv@PAGEOFF]
 
     // 1. Ignore SIGPIPE: signal(SIGPIPE, SIG_IGN).
     mov w0, #RT_SIGPIPE
@@ -182,7 +201,22 @@ Lrt_main_kern_done:
     adrp x10, _sea_variant@PAGE
     str x9, [x10, _sea_variant@PAGEOFF]
 
-    // 5. Switch to the new stack (page-aligned, hence 16-byte aligned)
+    // 5. The heap check: SEA_HEAP_CHECK exactly "1".
+    adrp x0, Lrt_main_s_heapenv@PAGE
+    add x0, x0, Lrt_main_s_heapenv@PAGEOFF
+    bl _getenv                      // the value or NULL
+    mov w9, #0                      // off unless the value is "1"
+    cbz x0, 1f
+    ldrb w10, [x0]
+    cmp w10, #'1'
+    b.ne 1f
+    ldrb w10, [x0, #1]
+    cbnz w10, 1f                    // "1" followed by more: off
+    mov w9, #1
+1:  adrp x10, Lrt_main_heapchk@PAGE
+    strb w9, [x10, Lrt_main_heapchk@PAGEOFF]
+
+    // 6. Switch to the new stack (page-aligned, hence 16-byte aligned)
     //    and run the program there. The old frame is not used again.
     adrp x10, Lrt_main_guard@PAGE
     ldr x9, [x10, Lrt_main_guard@PAGEOFF + 8]   // guard hi = base + G
@@ -199,7 +233,11 @@ Lrt_main_kern_done:
     mov x1, #SEA_SITE_NONE
     bl _sea_out_fail                // noreturn
 Lrt_main_exit:
-    mov w0, #SEA_EXIT_RUN_OK
+    adrp x9, Lrt_main_heapchk@PAGE
+    ldrb w9, [x9, Lrt_main_heapchk@PAGEOFF]
+    cbz w9, 1f
+    bl Lrt_main_heap_line           // `heap: N live objects` on stderr
+1:  mov w0, #SEA_EXIT_RUN_OK
     bl _exit                        // does not return
     brk #1                          // not reached
 
@@ -208,6 +246,67 @@ Lrt_main_oom:
     mov x1, #SEA_SITE_NONE
     mov x2, #0
     bl _sea_err                     // noreturn
+
+// ---------------------------------------------------------------------
+// Lrt_main_heap_line -- write `heap: N live objects` + LF to standard
+//   error (DESIGN.md 4.5), N = _sea_live in decimal, without sign or
+//   padding. One write; a failure is ignored.
+//   Inputs  : none
+//   Outputs : none
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: none
+//   Frame   : 16 bytes (frame record) + RT_HEAP_LINE_BYTES (the line at
+//             [sp]) = 80 bytes
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_main_heap_line:
+    stp x29, x30, [sp, #-16]!       // frame record
+    mov x29, sp
+    sub sp, sp, #RT_HEAP_LINE_BYTES
+    // "heap: " at [sp].
+    adrp x9, Lrt_main_s_heap@PAGE
+    add x9, x9, Lrt_main_s_heap@PAGEOFF
+    mov x10, #0
+2:  ldrb w11, [x9, x10]
+    strb w11, [sp, x10]
+    add x10, x10, #1
+    cmp x10, #6
+    b.lo 2b
+    // The count's digits, written right to left into the last bytes of
+    // the buffer and then moved down after "heap: ".
+    adrp x9, _sea_live@PAGE
+    ldr x12, [x9, _sea_live@PAGEOFF]
+    add x13, sp, #RT_HEAP_LINE_BYTES  // end of the buffer
+    mov x14, #10
+3:  udiv x15, x12, x14
+    msub x16, x15, x14, x12         // the next digit
+    add w16, w16, #'0'
+    strb w16, [x13, #-1]!
+    mov x12, x15
+    cbnz x12, 3b
+    add x9, sp, #6                  // destination after "heap: "
+    add x15, sp, #RT_HEAP_LINE_BYTES
+4:  ldrb w16, [x13], #1
+    strb w16, [x9], #1
+    cmp x13, x15
+    b.lo 4b
+    // " live objects\n" after the digits.
+    adrp x10, Lrt_main_s_live@PAGE
+    add x10, x10, Lrt_main_s_live@PAGEOFF
+    mov x11, #0
+5:  ldrb w12, [x10, x11]
+    strb w12, [x9, x11]
+    add x11, x11, #1
+    cmp x11, #14
+    b.lo 5b
+    add x9, x9, #14
+    mov w0, #2                      // standard error
+    mov x1, sp
+    sub x2, x9, x1                  // the line's length
+    bl _sea_write_all               // result ignored
+    add sp, sp, #RT_HEAP_LINE_BYTES
+    ldp x29, x30, [sp], #16
+    ret
 
 // ---------------------------------------------------------------------
 // Lrt_main_segv -- SIGSEGV / SIGBUS handler (runs on the alternate stack).
@@ -275,11 +374,20 @@ Lrt_main_segv_other:
 // ---------------------------------------------------------------------
     .section __TEXT,__cstring,cstring_literals
 Lrt_main_s_env:     .asciz "SEA_KERNELS"
+Lrt_main_s_heapenv: .asciz "SEA_HEAP_CHECK"
+    .section __TEXT,__const
+Lrt_main_s_heap:    .ascii "heap: "
+Lrt_main_s_live:    .ascii " live objects\n"
 
     .section __DATA,__bss
     .globl _sea_stack_limit
     .globl _sea_variant
 .zerofill __DATA,__bss,_sea_stack_limit,8,3 /* lowest sp the prologue check accepts */
 .zerofill __DATA,__bss,_sea_variant,8,3     /* SEA_VAR_* of the selected variant */
+    .private_extern _sea_argc
+    .private_extern _sea_argv
+.zerofill __DATA,__bss,_sea_argc,8,3        /* main's argc (sign-extended) */
+.zerofill __DATA,__bss,_sea_argv,8,3        /* main's argv */
+.zerofill __DATA,__bss,Lrt_main_heapchk,1,0 /* 1: SEA_HEAP_CHECK is "1" */
 .zerofill __DATA,__bss,Lrt_main_guard,16,3  /* guard page [lo, hi) */
 .zerofill __DATA,__bss,Lrt_main_altstack,RT_ALTSTACK_BYTES,4

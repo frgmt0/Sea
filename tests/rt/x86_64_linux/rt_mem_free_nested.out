@@ -1,0 +1,5 @@
+6 live
+2 live after freeing the array
+shared str[] count 1
+static string untouched
+0 live at the end

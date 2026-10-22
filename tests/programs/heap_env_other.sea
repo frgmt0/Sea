@@ -1,0 +1,2 @@
+// heap_env_other -- SEA_HEAP_CHECK=2 (not exactly 1): main writes no heap line to standard error (DESIGN.md 4.5, 6.2)
+printf("other\n")

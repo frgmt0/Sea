@@ -6,13 +6,31 @@
 //   _sea_printf   (global, SEA_ENT_PRINTF) format a pre-parsed format
 //                 (SEA_FMT_*) with its argument slots into the standard
 //                 output, through _sea_out_bytes
+//   _sea_error    (global, SEA_ENT_ERROR) format like _sea_printf into the
+//                 sink, then the run-time error USER with that text
+//                 (LANGUAGE.md 9.3; DESIGN.md 4.8)
 //   _sea_fmt_g    (private to the runtime) an f64 as Sea's printf("%g")
 //                 prints it, for _sea_err's `f` arguments (DESIGN.md 2.6.2)
+//   _sea_fmt_sink (private to the runtime) the growing text buffer that
+//                 _sea_error formats into (DESIGN.md 4.5), three u64:
+//                 RTF_SINK_PTR the block (0 until first used),
+//                 RTF_SINK_LEN the bytes in it, RTF_SINK_CAP its size
+//                 (a power of two >= RTF_SINK_MIN, from _sea_alloc)
 // Uses:
 //   _sea_out_bytes (rt_out.s) x0 = bytes, x1 = length (> 0), x2 = site
 //                 index; appends to the standard-output buffer and returns
 //                 normally (a failed write is reported there, noreturn)
 //   _snprintf     (libSystem) the digits of finite f64 conversions
+//   _sea_alloc, _sea_free_block, _sea_live (rt_mem.s), _sea_err (rt_err.s),
+//   memcpy, memset (libSystem): the sink and _sea_error's string
+//
+// Destination. The engine (Lrt_fmt_run) writes every piece through
+// Lrt_fmt_out and Lrt_fmt_fill, which send it to the standard-output
+// buffer or, while Lrt_fmt_dest is 1, append it to the sink. _sea_printf
+// sets the destination to standard output, _sea_error to the sink; the
+// bytes are the same either way (LANGUAGE.md 9.3, 11.1). The sink grows
+// by doubling; a text longer than SEA_LIM_STR_BYTES (it becomes a str) or
+// no memory is _sea_err(SEA_E_OUT_OF_MEMORY, site).
 //
 // How each conversion is made (LANGUAGE.md 11.1, DESIGN.md 4.5):
 //   * integers (i64, bool; %d of an integral f64 below 2^63) by own code;
@@ -39,6 +57,7 @@
 // ('.' as the decimal point) and in the default rounding mode.
 // =====================================================================
 .include "limits.inc"
+.include "errors.inc"
 .include "rt.inc"
 
 // Size of the conversion buffer in _sea_printf's frame. The longest text
@@ -52,12 +71,36 @@
 .equ RTF_PREC_DEFAULT,  6
 // Buffer of _sea_fmt_g: "%g" text is at most 13 bytes ("-2.22507e-308").
 .equ RTF_GBUF,          32
+// The sink descriptor _sea_fmt_sink and its first size.
+.equ RTF_SINK_PTR,      0
+.equ RTF_SINK_LEN,      8
+.equ RTF_SINK_CAP,      16
+.equ RTF_SINK_SIZE,     24
+.equ RTF_SINK_MIN,      256
 
     .section __TEXT,__text,regular,pure_instructions
 
 // ---------------------------------------------------------------------
 // _sea_printf -- format a pre-parsed format into the standard output.
-//   Purpose : LANGUAGE.md 11.1; the entry PRINTF of DESIGN.md 4.8.
+//   Purpose : LANGUAGE.md 11.1; the entry PRINTF of DESIGN.md 4.8. Sets
+//             the destination to standard output and runs the engine.
+//   Inputs  : x0 = pre-parsed format, x1 = argument slots, x2 = site
+//   Outputs : none
+//   Clobbers: as Lrt_fmt_run
+//   Callee-saved used: none
+//   Frame   : none (tail call of Lrt_fmt_run)
+// ---------------------------------------------------------------------
+    .globl _sea_printf
+    .p2align 2
+_sea_printf:
+    adrp x9, Lrt_fmt_dest@PAGE
+    strb wzr, [x9, Lrt_fmt_dest@PAGEOFF]   // standard output
+    b Lrt_fmt_run
+
+// ---------------------------------------------------------------------
+// Lrt_fmt_run -- the engine: format a pre-parsed format into the current
+//   destination (Lrt_fmt_dest).
+//   Purpose : LANGUAGE.md 11.1.
 //   Inputs  : x0 = pre-parsed format (SEA_FMT_*), x1 = argument slots
 //             (SEA_SLOT_SIZE each, one per conversion piece, in order),
 //             x2 = site index (passed to _sea_out_bytes for the error
@@ -73,9 +116,8 @@
 //   Frame   : 96 bytes (frame record + x19..x28) + RTF_BUF (conversion
 //             buffer at [sp]) = 1632 bytes
 // ---------------------------------------------------------------------
-    .globl _sea_printf
     .p2align 2
-_sea_printf:
+Lrt_fmt_run:
     stp x29, x30, [sp, #-96]!
     mov x29, sp
     stp x19, x20, [sp, #16]
@@ -304,7 +346,7 @@ Lrt_fmt_printf_done:
     ldp x29, x30, [sp], #96
     ret
 
-    // Local subroutine of _sea_printf (shares its frame: called with bl
+    // Local subroutine of Lrt_fmt_run (shares its frame: called with bl
     // from inside it, so [sp] here is _sea_printf's buffer).
     //   Inputs : w11 = negative (0/1), w24 = flags
     //   Outputs: the sign byte at [sp] ('-', '+' or ' ') if any;
@@ -579,15 +621,19 @@ Lrt_fmt_emit:
     ret
 
 // ---------------------------------------------------------------------
-// Lrt_fmt_fill -- write `count` copies of a space or a zero.
+// Lrt_fmt_fill -- write `count` copies of a space or a zero to the
+//   destination (the sink: Lrt_fmt_sink_repeat, by a tail call).
 //   Inputs  : x0 = count (may be 0), w1 = ' ' or '0', x2 = site index
 //   Outputs : none (a failed write is the run-time error at the site)
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags (calls _sea_out_repeat)
 //   Callee-saved used: x19 = site index
-//   Frame   : 32 bytes (frame record + x19 + pad)
+//   Frame   : 32 bytes (frame record + x19 + pad); none for the sink
 // ---------------------------------------------------------------------
     .p2align 2
 Lrt_fmt_fill:
+    adrp x9, Lrt_fmt_dest@PAGE
+    ldrb w9, [x9, Lrt_fmt_dest@PAGEOFF]
+    cbnz w9, Lrt_fmt_sink_repeat    // the sink (tail call)
     stp x29, x30, [sp, #-32]!
     mov x29, sp
     str x19, [sp, #16]
@@ -604,7 +650,8 @@ Lrt_fmt_fill:
     bl _sea_out_fail                // noreturn
 
 // ---------------------------------------------------------------------
-// Lrt_fmt_out -- _sea_out_bytes unless the length is 0.
+// Lrt_fmt_out -- bytes to the destination unless the length is 0:
+//   _sea_out_bytes, or Lrt_fmt_sink_bytes while Lrt_fmt_dest is 1.
 //   Inputs  : x0 = bytes, x1 = length, x2 = site index
 //   Outputs : none
 //   Clobbers: as _sea_out_bytes (x0-x17, d0-d7, d16-d31, flags)
@@ -614,8 +661,189 @@ Lrt_fmt_fill:
     .p2align 2
 Lrt_fmt_out:
     cbz x1, 1f
+    adrp x9, Lrt_fmt_dest@PAGE
+    ldrb w9, [x9, Lrt_fmt_dest@PAGEOFF]
+    cbnz w9, Lrt_fmt_sink_bytes     // the sink (tail call)
     b _sea_out_bytes                // tail call: returns to our caller
 1:  ret
+
+// ---------------------------------------------------------------------
+// Lrt_fmt_sink_reserve -- make room for n more bytes in the sink.
+//   Purpose : grows the block by doubling (from RTF_SINK_MIN) until it
+//             holds RTF_SINK_LEN + n bytes, copying what it holds and
+//             giving the old block back; then RTF_SINK_LEN += n. A total
+//             above SEA_LIM_STR_BYTES, or no memory, is
+//             _sea_err(SEA_E_OUT_OF_MEMORY, site).
+//   Inputs  : x0 = n, x1 = site index
+//   Outputs : x0 = where the n bytes go (the old end of the text)
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: x19 = &_sea_fmt_sink, x20 = new length,
+//             x21 = site, then the new block, x22 = new size
+//   Frame   : 48 bytes (frame record + x19..x22)
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_fmt_sink_reserve:
+    stp x29, x30, [sp, #-48]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    stp x21, x22, [sp, #32]
+    adrp x19, _sea_fmt_sink@PAGE
+    add x19, x19, _sea_fmt_sink@PAGEOFF
+    mov x21, x1
+    ldr x9, [x19, #RTF_SINK_LEN]
+    add x20, x9, x0                 // the length afterwards (no overflow:
+                                    // each piece is below 2^32 bytes)
+    mov x10, #SEA_LIM_STR_BYTES
+    cmp x20, x10
+    b.hi Lrt_fmt_sink_oom           // longer than a str may be
+    ldr x22, [x19, #RTF_SINK_CAP]
+    cmp x20, x22
+    b.ls Lrt_fmt_sink_room          // it fits
+    // The new size: double (from RTF_SINK_MIN) until the text fits.
+    mov x9, #RTF_SINK_MIN
+    cmp x22, x9
+    csel x22, x9, x22, lo
+1:  cmp x22, x20
+    b.hs 2f
+    lsl x22, x22, #1
+    b 1b
+2:  mov x0, x22
+    mov x1, x21
+    bl _sea_alloc                   // noreturn on failure
+    mov x21, x0                     // the new block (the site is no longer needed)
+    // Move the text over and give the old block (its old size) back.
+    ldr x1, [x19, #RTF_SINK_PTR]
+    ldr x2, [x19, #RTF_SINK_LEN]
+    cbz x1, 3f                      // first use: nothing to move
+    bl _memcpy                      // x0 = new, x1 = old, x2 = length
+    ldr x0, [x19, #RTF_SINK_PTR]
+    ldr x1, [x19, #RTF_SINK_CAP]    // still the old size
+    bl _sea_free_block
+3:  str x21, [x19, #RTF_SINK_PTR]
+    str x22, [x19, #RTF_SINK_CAP]
+Lrt_fmt_sink_room:
+    ldr x9, [x19, #RTF_SINK_LEN]
+    ldr x0, [x19, #RTF_SINK_PTR]
+    add x0, x0, x9                  // the old end of the text
+    str x20, [x19, #RTF_SINK_LEN]
+    ldp x21, x22, [sp, #32]
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #48
+    ret
+Lrt_fmt_sink_oom:
+    mov w0, #SEA_E_OUT_OF_MEMORY
+    mov x1, x21
+    mov x2, #0
+    bl _sea_err                     // noreturn
+
+// ---------------------------------------------------------------------
+// Lrt_fmt_sink_bytes -- append bytes to the sink.
+//   Inputs  : x0 = bytes, x1 = length, x2 = site index
+//   Outputs : none
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: x19 = bytes, x20 = length
+//   Frame   : 32 bytes (frame record + x19, x20)
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_fmt_sink_bytes:
+    stp x29, x30, [sp, #-32]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    mov x19, x0
+    mov x20, x1
+    mov x0, x1
+    mov x1, x2
+    bl Lrt_fmt_sink_reserve         // x0 = destination
+    mov x1, x19
+    mov x2, x20
+    bl _memcpy
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #32
+    ret
+
+// ---------------------------------------------------------------------
+// Lrt_fmt_sink_repeat -- append `count` copies of a byte to the sink.
+//   Inputs  : x0 = count (may be 0), w1 = the byte, x2 = site index
+//   Outputs : none
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: x19 = count, x20 = the byte
+//   Frame   : 32 bytes (frame record + x19, x20)
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_fmt_sink_repeat:
+    stp x29, x30, [sp, #-32]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    mov x19, x0
+    mov w20, w1
+    mov x1, x2
+    bl Lrt_fmt_sink_reserve         // x0 = destination
+    mov w1, w20
+    mov x2, x19
+    bl _memset
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #32
+    ret
+
+// ---------------------------------------------------------------------
+// _sea_error -- the entry ERROR (DESIGN.md 4.8; LANGUAGE.md 9.3).
+//   Purpose : format exactly as _sea_printf does, into the sink (emptied
+//             first), make a string object of the text (count 1, one
+//             more live object) and call _sea_err(SEA_E_USER, site,
+//             {that string}), which flushes standard output and reports
+//             `<file>:<line>: error: <text>` (LANGUAGE.md 9.2).
+//   Inputs  : x0 = pre-parsed format, x1 = argument slots, x2 = site
+//   Outputs : never returns
+//   Clobbers: everything (noreturn)
+//   Callee-saved used: x19 = site, x20 = the string
+//   Frame   : 32 bytes (frame record + x19, x20) + 16 (the argument slot
+//             at [sp]) = 48 bytes
+// ---------------------------------------------------------------------
+    .globl _sea_error
+    .p2align 2
+_sea_error:
+    stp x29, x30, [sp, #-32]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    sub sp, sp, #16                 // the slot of _sea_err
+    mov x19, x2
+    adrp x9, Lrt_fmt_dest@PAGE
+    mov w10, #1
+    strb w10, [x9, Lrt_fmt_dest@PAGEOFF]   // the sink
+    adrp x9, _sea_fmt_sink@PAGE
+    add x9, x9, _sea_fmt_sink@PAGEOFF
+    str xzr, [x9, #RTF_SINK_LEN]    // empty
+    bl Lrt_fmt_run                  // x0, x1, x2 as given
+    // The string object: count 1, tag, length, the sink's bytes.
+    adrp x9, _sea_fmt_sink@PAGE
+    add x9, x9, _sea_fmt_sink@PAGEOFF
+    ldr x0, [x9, #RTF_SINK_LEN]
+    add x0, x0, #SEA_STR_BYTES      // header and bytes: one block
+    mov x1, x19
+    bl _sea_alloc                   // noreturn on failure
+    mov x20, x0
+    mov x9, #1
+    str x9, [x20, #SEA_STR_RC]
+    str xzr, [x20, #SEA_STR_TAG]    // bytes 8..15 zero
+    mov w9, #SEA_TAG_STR
+    strb w9, [x20, #SEA_STR_TAG]
+    adrp x9, _sea_fmt_sink@PAGE
+    add x9, x9, _sea_fmt_sink@PAGEOFF
+    ldr x2, [x9, #RTF_SINK_LEN]
+    str x2, [x20, #SEA_STR_LEN]
+    ldr x1, [x9, #RTF_SINK_PTR]
+    add x0, x20, #SEA_STR_BYTES
+    cbz x2, 1f                      // an empty text (the sink may be unused)
+    bl _memcpy
+1:  adrp x9, _sea_live@PAGE
+    ldr x10, [x9, _sea_live@PAGEOFF]
+    add x10, x10, #1                // one more live object
+    str x10, [x9, _sea_live@PAGEOFF]
+    str x20, [sp]                   // the slot: the message string
+    mov w0, #SEA_E_USER
+    mov x1, x19
+    mov x2, sp
+    bl _sea_err                     // noreturn
 
 // ---------------------------------------------------------------------
 // _sea_fmt_g -- an f64 as Sea's printf("%g") prints it.
@@ -664,3 +892,11 @@ _sea_fmt_g:
     ldr x19, [sp, #16]
     ldp x29, x30, [sp], #32
     ret
+
+// ---------------------------------------------------------------------
+// State: the destination of the engine (0 standard output, 1 the sink)
+// and the sink descriptor.
+// ---------------------------------------------------------------------
+    .private_extern _sea_fmt_sink
+.zerofill __DATA,__bss,_sea_fmt_sink,RTF_SINK_SIZE,3   /* ptr, len, cap */
+.zerofill __DATA,__bss,Lrt_fmt_dest,1,0                /* 0 stdout, 1 the sink */

@@ -1,0 +1,18 @@
+count 1: same array
+count 1: count unchanged
+count 2: a new array
+count 2: copy count 1
+count 2: old count 1
+count 2: same header and data
+static: a new array
+static: copy count 1
+static: count stays 0
+static: same header and data
+str[]: same header and elements
+str[]: element 0 count 2
+str[]: element 3 count 2
+str[]: static element count 0
+str[]: old count 1
+struct: same header and elements
+struct: reference field count 2
+struct: old count 1

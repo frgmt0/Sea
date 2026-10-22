@@ -22,7 +22,8 @@
 52 REM FMT_NPIECE NCONV PIECES, K(12-20) FP_KIND CONV FLAGS CLS WIDTH PREC TEXT TLEN SIZE,
 54 REM K(21-22) FPK_TEXT CONV, K(23-27) FF_LEFT PLUS SPACE ZERO ALT, K(28-30) CLS_I F P,
 56 REM K(31-33) SITE_FILE LINE SIZE, K(34) DATA_ALIGN, K(35-37) ESIZE_I64 F64 BOOL, K(38-45)
-58 REM LIM_LIR_INSTRS OPERANDS REGS BLOCKS SLOTS IMMS LABELS SITES, K(46) FILE_VERSION);
+58 REM LIM_LIR_INSTRS OPERANDS REGS BLOCKS SLOTS IMMS LABELS SITES, K(46) FILE_VERSION, K(47-49)
+59 REM SL_SIZE NREF REFS);
 60 REM A(row,1) special code, A(row,2) template of each LIR record row; P$ M Q$ T$ templates
 62 REM (M: first line, code lines, cold lines, error rows of $C $D, argument slots); V$ cc
 64 REM map; U$ inversions; B$ the function's records, O their rows, G their callee, entry or
@@ -34,9 +35,10 @@
 76 REM Scalars: W0 mode (0 count, 1 code, 2 cold, 3 analysis), W1 far, W2 lines counted; F0
 78 REM function number; F1 F2 F3 its pos; F4 kind; F5$ name; F6$ F7$ classes; F8 own extra
 80 REM results; N0 records; M0 registers; S0 slots; A0 largest alignment; B7 blocks; K7 open
-82 REM blocks; L1 leaf; X8 definition site; X9 sites; D9 data section; D8 last label; M9 mains.
+82 REM blocks; L1 leaf; X8 definition site; X9 sites; D9 data section; D8 last label; M9 mains;
+83 REM Y3 the entries row of FREE (release calls it). Phase 4c: retain release mcopy slay soff.
 84 REM ====================================================================================
-200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(19), Y$(19,5)
+200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(29), Y$(29,5)
 205 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 210 DIM K(60), K$(60), A(399,2), P$(199), M(199,6), Q$(1999), T$(199,2), V$(10,3), U$(30,2)
 215 DIM B$(219999), O(219999), G(219999), G$(300), U(40), L(4), Q(200), P(200), J$(200), V(4)
@@ -104,7 +106,7 @@
 500 CALL "tb_errors": P$, E(), E$(), 299, E0
 505 CALL "tb_exits": P$, E(), E$(), E0, X(), X$(), 19, N7
 510 CALL "tb_consts": P$, E(), E$(), E0, C(), C$(), 299, C9
-515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 19, Y9
+515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 29, Y9
 520 LET Z(1) = 39
 525 LET Z(2) = 299
 530 LET Z(3) = 399
@@ -164,6 +166,20 @@
 795 NEXT I6
 800 LET M$ = "template rcount1 missing"
 805 IF T9 = 0 THEN 9975
+810 REM the phase-4 records retain release mcopy (codes 22-24) are emitted from their templates
+815 FOR I5 = 1 TO Z(7)
+820 IF A(I5,1) < 22 THEN 840
+825 IF A(I5,1) > 24 THEN 840
+830 LET M$ = "template " & R$(I5) & " missing"
+835 IF A(I5,2) = 0 THEN 9975
+840 NEXT I5
+845 REM Y3 = the row of the entry FREE, which release calls (DESIGN 4.8, 4.9); 0: checked at a
+850 REM release
+855 LET Y3 = 0
+860 FOR I5 = 1 TO Y9
+865 IF Y$(I5,1) <> "FREE" THEN 875
+870 LET Y3 = I5
+875 NEXT I5
 1000 REM ---- pass A: the signature of every function ---------------------------------------
 1005 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), K(46), T$, H$(), 100, N1, L$
 1010 IF T$ <> "arm64-macos" THEN 9980
@@ -238,6 +254,7 @@
 1285 IF Y0 = 30 THEN 7000
 1290 IF Y0 = 31 THEN 7100
 1292 IF Y0 = 34 THEN 7300
+1293 IF Y0 = 37 THEN 7455
 1295 GOTO 9990
 1300 IF D9 <> 0 THEN 9990
 1305 GOSUB 3700
@@ -325,7 +342,7 @@
 3262 LET N9 = N9 + 1
 3264 LET O0 = O0 + C0 - 1 - X5
 3266 IF Y0 = 0 THEN 3300
-3268 ON Y0 GOTO 9990,9990,9990,3290,3290,9990,3295,3320,3360,3320,3360,3320,3320,3380,3360,3400,3400,3410,3420,3442,3460
+3268 ON Y0 GOTO 9990,9990,9990,3290,3290,9990,3295,3320,3360,3320,3360,3320,3320,3380,3360,3400,3400,3410,3420,3442,3460,3480,3496,3480
 3290 LET I9 = I9 + 1
 3292 GOTO 3480
 3295 IF H1 < 1 THEN 9990
@@ -467,6 +484,11 @@
 3490 GOSUB 3800
 3492 GOSUB 3900
 3494 RETURN
+3496 REM release: its sequence calls the FREE entry, so the function is not a leaf (DESIGN 4.9)
+3497 LET L1 = 0
+3498 LET M$ = "entry FREE is not in the entries table"
+3499 IF Y3 = 0 THEN 9975
+3500 GOTO 3480
 3550 REM ---- arguments P() against classes Z7$, result registers G$(Y4..) against Z6$ (Y7 of
 3551 REM them, or 0); the stack bytes of the arguments (Y6 = 1: x0 holds the results area;
 3552 REM Y8 = 1: the site index is one more integer argument) into A1
@@ -723,7 +745,7 @@
 5020 GOSUB 9400
 5025 LET L9$ = "L" & STR$(F0) & "_"
 5030 IF Y0 = 0 THEN 5100
-5035 ON Y0 GOTO 9990,9990,9990,5300,5350,9990,5400,5450,5500,5550,5600,5650,5650,5700,5750,5800,5850,5900,6000,6200,6400
+5035 ON Y0 GOTO 9990,9990,9990,5300,5350,9990,5400,5450,5500,5550,5600,5650,5650,5700,5750,5800,5850,5900,6000,6200,6400,6500,6500,6500
 5100 REM ---- an instruction from its template --------------------------------------------------
 5102 LET T5 = A(I0,2)
 5104 IF R$(I0) <> "rcount" THEN 5110
@@ -1128,6 +1150,30 @@
 6454 LET Z8 = E(G(J))
 6456 GOSUB 9375
 6458 GOTO 5290
+6500 REM ---- retain a / release a / mcopy d s n (DESIGN 4.9 phase-4 code): the operands into x9
+6502 REM (x10 x11; mcopy's d first, it is read, not written), then the record's template; $M of
+6504 REM release is _<symbol of FREE>
+6506 IF W0 = 2 THEN 5290
+6508 LET Z1$ = "ldr"
+6510 LET Z4$ = "sp"
+6512 LET G1 = 0
+6514 IF D1 = 0 THEN 6524
+6516 LET Z2$ = "x9"
+6518 LET Z3 = A5 + 8 * (D1 - 1)
+6520 GOSUB 9020
+6522 LET G1 = 1
+6524 FOR K2 = 1 TO P0
+6526 LET Z2$ = "x" & STR$(8 + G1 + K2)
+6528 LET Z3 = A5 + 8 * (Q(K2) - 1)
+6530 GOSUB 9020
+6532 NEXT K2
+6534 LET M$ = "_" & Y$(Y3,2)
+6536 LET T5 = A(I0,2)
+6538 FOR I6 = M(T5,1) TO M(T5,1) + M(T5,2) - 1
+6540 LET Z$ = Q$(I6)
+6542 GOSUB 9150
+6544 NEXT I6
+6546 GOTO 5290
 7000 REM ---- data: str lab v -- a static string object (rt.inc SEA_STR_*) ---------------------
 7005 GOSUB 7900
 7010 GOSUB 9400
@@ -1237,6 +1283,49 @@
 7440 NEXT I3
 7445 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 7450 GOTO 1250
+7455 REM ---- data: slay lab size n, then n soff -- a struct layout descriptor (SEA_SL_*, DESIGN
+7456 REM 4.9); the offsets strictly ascending multiples of 8, each at most size - 8 (DESIGN 3.6.5)
+7457 GOSUB 7900
+7458 GOSUB 9400
+7459 IF H0 <> D8 + 1 THEN 9990
+7460 LET D8 = H0
+7461 LET Y8 = U(2)
+7462 LET Y7 = U(3)
+7463 LET X$ = ".p2align 3"
+7464 GOSUB 9010
+7465 LET X$ = "Ld" & STR$(H0) & ":"
+7466 GOSUB 9000
+7467 LET Z7 = 0
+7468 LET Z6 = K(47)
+7469 GOSUB 7600
+7470 LET X$ = ".quad " & STR$(Y8)
+7471 GOSUB 9010
+7472 LET Z7 = Z7 + 8
+7473 LET Z6 = K(48)
+7474 GOSUB 7600
+7475 LET X$ = ".quad " & STR$(Y7)
+7476 GOSUB 9010
+7477 LET Z7 = Z7 + 8
+7478 LET Z6 = K(49)
+7479 GOSUB 7600
+7480 LET V4 = -8
+7481 FOR I3 = 1 TO Y7
+7482 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+7483 CALL "io_split": L$, G$(), 300, C0
+7484 IF C0 < 1 THEN 9990
+7485 LET Z$ = G$(1)
+7486 GOSUB 9350
+7487 IF Y0 <> 38 THEN 9990
+7488 GOSUB 9400
+7489 IF U(1) <= V4 THEN 9990
+7490 IF U(1) <> INT(U(1) / 8) * 8 THEN 9990
+7491 IF U(1) > Y8 - 8 THEN 9990
+7492 LET V4 = U(1)
+7493 LET X$ = ".quad " & STR$(V4)
+7494 GOSUB 9010
+7495 NEXT I3
+7496 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
+7497 GOTO 1250
 7500 REM ---- a static string object Z9$ with the bytes R9$ (rt.inc SEA_STR_*, 8-byte aligned) ---
 7505 LET X$ = ".p2align 3"
 7510 GOSUB 9010

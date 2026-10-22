@@ -14,7 +14,7 @@
 50065 REM    Operands are in %rax %rcx %rdx (i, p) and %xmm8 %xmm9 %xmm10 (f) in operand order,
 50070 REM    the result in %rax or %xmm8 (rcount: its flag in %rcx). @C @D cold labels, @K the
 50075 REM    icmp condition, @F @G @H @I the fcmp parts, @M the memory operand, @L the data
-50080 REM    label, @U the first u field, @S the site index, @0..@9 argument slot k (k * SLOT_SIZE).
+50080 REM    label, @U the first u field, @S the site index, @E the entry symbol in G(J), @0..@9 slot k.
 50085 REM    Numeric labels 1-4 are template-local. A line ending in ":" is written unindented.
 50090 REM    The cold lines precede movl code %edi, movq site %rsi, movq %rsp %rdx, call
 50095 REM    sea_err. %r10 %r11 are free inside a template. Sentinel "-".
@@ -25,11 +25,12 @@
 50115 DATA "FF_LEFT","FF_PLUS","FF_SPACE","FF_ZERO","FF_ALT","CLS_I","CLS_F","CLS_P"
 50120 DATA "SITE_FILE","SITE_LINE","SITE_SIZE","DATA_ALIGN","ESIZE_I64","ESIZE_F64","ESIZE_BOOL"
 50125 DATA "LIM_LIR_INSTRS","LIM_LIR_OPERANDS","LIM_LIR_REGS","LIM_LIR_BLOCKS","LIM_LIR_SLOTS"
-50130 DATA "LIM_LIR_IMMS","LIM_LIR_LABELS","LIM_LIR_SITES","FILE_VERSION","-"
+50130 DATA "LIM_LIR_IMMS","LIM_LIR_LABELS","LIM_LIR_SITES","FILE_VERSION","SL_SIZE","SL_NREF"
+50135 DATA "SL_REFS","ESIZE_PTR","-"
 50200 DATA "func",1,"slot",2,"endfunc",3,"li",4,"lf",5,"sa",7,"loop",8,"endloop",9,"do",10
 50205 DATA "enddo",11,"if",12,"ifz",13,"else",14,"endif",15,"exit",16,"next",17,"ret",18
 50210 DATA "call",19,"rcall",20,"chk",21,"str",30,"fmt",31,"ftext",32,"fconv",33,"dat",34
-50215 DATA "dvi",35,"dvf",36,"-"
+50215 DATA "dvi",35,"dvf",36,"slay",37,"soff",38,"-"
 50300 DATA "eq","e","%xmm9, %xmm8","e","np","andb"
 50305 DATA "ne","ne","%xmm9, %xmm8","ne","p","orb"
 50310 DATA "lt","l","%xmm8, %xmm9","a","a","andb"
@@ -158,4 +159,15 @@
 50980 REM chkb (LANGUAGE 5.4): unsigned idx >= ext catches idx < 0; arguments idx, dim, ext
 50985 DATA "chkb","INDEX_OOB","-",2,4,"cmpq %rcx, %rax","jae @C","movq %rax, @0(%rsp)"
 50990 DATA "movq $@U, %rax","movq %rax, @1(%rsp)","movq %rcx, @2(%rsp)"
-50995 DATA "-"
+50991 REM ---- phase 4 (DESIGN 4.9, 4.9.1): counts at offset 0, a count of 0 is a static object;
+50992 REM release calls @E, the symbol of entry FREE (sea_free), with %rsp = 0 mod 16
+50993 DATA "retain","-","-",6,0,"movq (%rax), %rcx","testq %rcx, %rcx","je 1f","incq %rcx"
+50994 DATA "movq %rcx, (%rax)","1:"
+50995 DATA "release","-","-",9,0,"movq (%rax), %rcx","testq %rcx, %rcx","je 1f","decq %rcx"
+50996 DATA "movq %rcx, (%rax)","jne 1f","movq %rax, %rdi","call @E","1:"
+50997 REM mcopy d s n (n >= 0, no overlap): 8 bytes at a time, then single bytes, ascending
+50998 DATA "mcopy","-","-",21,0,"cmpq $8, %rdx","jb 2f","1:","movq (%rcx), %r10","movq %r10, (%rax)"
+50999 DATA "addq $8, %rcx","addq $8, %rax","subq $8, %rdx","cmpq $8, %rdx","jae 1b","2:"
+51000 DATA "testq %rdx, %rdx","je 4f","3:","movzbl (%rcx), %r10d","movb %r10b, (%rax)","incq %rcx"
+51001 DATA "incq %rax","decq %rdx","jne 3b","4:"
+51005 DATA "-"

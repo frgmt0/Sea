@@ -86,6 +86,30 @@ run_limited() {
     return $_st
 }
 
+# meta_get FILE KEY ; heap_begin BASE ; heap_end : the heap check of DESIGN.md 6.2, exactly as
+# tests/run.sh: SEA_HEAP_CHECK=1 for a program run (heap=off or env=SEA_HEAP_CHECK=V in
+# BASE.meta change it); after an exit with status 0 under the value 1 the last line of standard
+# error must be `heap: 0 live objects` and is removed (LEAK is set otherwise).
+meta_get() { sed -n "s/^$2=//p" "$1" 2>/dev/null | head -1; }
+heap_begin() {
+    HEAPVAL=1
+    if [ "$(meta_get "$1.meta" heap)" = off ]; then HEAPVAL=; fi
+    _e=$(meta_get "$1.meta" env)
+    case $_e in SEA_HEAP_CHECK=*) HEAPVAL=${_e#SEA_HEAP_CHECK=} ;; esac
+    if [ -n "$HEAPVAL" ]; then SEA_HEAP_CHECK=$HEAPVAL; export SEA_HEAP_CHECK; else unset SEA_HEAP_CHECK; fi
+}
+heap_end() {
+    LEAK=
+    unset SEA_HEAP_CHECK
+    if [ "$HEAPVAL" != 1 ] || [ "$st" != 0 ]; then return 0; fi
+    _l=$(tail -n 1 "$TMP/p.err" 2>/dev/null)
+    if [ "$_l" = "heap: 0 live objects" ]; then
+        sed '$d' "$TMP/p.err" > "$TMP/p.err.new" && mv "$TMP/p.err.new" "$TMP/p.err"
+    else
+        LEAK="leak: ${_l:-no heap line}"
+    fi
+}
+
 # stage PASS PREV NEXT : one pass over every golden pair
 stage() {
     _p=$1; _prev=$2; _next=$3
@@ -96,6 +120,8 @@ stage() {
         name=stage/$_p/$nm
         # a hand-written NAME.lir (no NAME.lir1, no NAME.sea) is a pass-4 test, not a golden
         if [ "$_next" = lir ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
+        # a hand-written NAME.lir1 (no NAME.hir, no NAME.sea) is a seaopt-only test: no sealower golden
+        if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         selected "$name" || continue
         if [ ! -f "$in" ]; then fail "$name" "golden input $nm.$_prev missing"; continue; fi
         if [ ! -x "$BUILD/$_p" ]; then fail "$name" "pass '$_p' not built ($BUILD/$_p)"; continue; fi
@@ -174,8 +200,11 @@ for g in "$ROOT"/tests/passes/*.lir; do
         [ $st -eq 0 ] || { fail "$name" "ld failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
     fi
     if [ $ok = 1 ]; then
+        heap_begin "$d/$nm"
         run_limited "$TIMEOUT" "$w" "$w/prog" >"$TMP/p.out" 2>"$TMP/p.err"
         st=$?
+        heap_end
+        [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
         [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
         [ $ok = 1 ] && { same "$d/$nm.out" "$TMP/p.out" "standard output" "$name" || ok=0; }
         [ $ok = 1 ] && { same "$exp_err" "$TMP/p.err" "standard error" "$name" || ok=0; }

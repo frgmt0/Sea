@@ -27,6 +27,12 @@
 #   NAME.meta   optional  key=value lines: stdout=epipe connects standard output to a pipe
 #                         whose reading end is closed before the program starts;
 #                         stdout=closed starts the program with standard output closed (>&-)
+#                         heap=off runs the program without SEA_HEAP_CHECK; env=SEA_HEAP_CHECK=V
+#                         runs it with that value (DESIGN.md 6.2, 4.5)
+#   Every program run has SEA_HEAP_CHECK=1 in its environment: after an exit with status 0
+#   its standard error must end with the line `heap: 0 live objects`, which is removed before
+#   the comparison (any other line, or none, is the FAIL `leak: ...`); with another status, or
+#   when the value is not exactly 1, the line must be absent (standard error compared unchanged).
 #   Afterwards the working directory may hold only the expected files and unchanged fixtures.
 #
 # tests/errors/NAME.sea    a program with a compile-time or run-time error
@@ -124,7 +130,7 @@ check_meta() {
     [ -f "$1.meta" ] || return 0
     while IFS= read -r _l || [ -n "$_l" ]; do
         case $_l in
-        "" | stdout=epipe | stdout=closed) ;;
+        "" | stdout=epipe | stdout=closed | heap=off | env=SEA_HEAP_CHECK=*) ;;
         *) echo "run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         esac
     done < "$1.meta"
@@ -164,10 +170,34 @@ sea_build() {
     run_limited "$CTIMEOUT" /dev/null "$_d" "$SEA" build "$@" >"$TMP/c.out" 2>"$TMP/c.err"
 }
 
+# heap_begin BASE : the SEA_HEAP_CHECK value of this run (DESIGN.md 6.2): heap=off in BASE.meta
+# leaves it unset, env=SEA_HEAP_CHECK=V sets V, else 1. HEAPVAL is the value, empty if unset.
+heap_begin() {
+    HEAPVAL=1
+    if [ "$(meta_get "$1.meta" heap)" = off ]; then HEAPVAL=; fi
+    _e=$(meta_get "$1.meta" env)
+    case $_e in SEA_HEAP_CHECK=*) HEAPVAL=${_e#SEA_HEAP_CHECK=} ;; esac
+    if [ -n "$HEAPVAL" ]; then SEA_HEAP_CHECK=$HEAPVAL; export SEA_HEAP_CHECK; else unset SEA_HEAP_CHECK; fi
+}
+# heap_end : after a run (st, $TMP/r.err): when the value was exactly 1 and the status 0, the last
+# line of standard error must be `heap: 0 live objects`; it is removed. LEAK is set otherwise.
+heap_end() {
+    LEAK=
+    unset SEA_HEAP_CHECK
+    if [ "$HEAPVAL" != 1 ] || [ "$st" != 0 ]; then return 0; fi
+    _l=$(tail -n 1 "$TMP/r.err" 2>/dev/null)
+    if [ "$_l" = "heap: 0 live objects" ]; then
+        sed '$d' "$TMP/r.err" > "$TMP/r.err.new" && mv "$TMP/r.err.new" "$TMP/r.err"
+    else
+        LEAK="leak: ${_l:-no heap line}"
+    fi
+}
+
 # run_prog BASE EXE : run a compiled program in $WORK with BASE.in, BASE.args and BASE.meta;
 # sets st and leaves $TMP/r.out, $TMP/r.err.
 run_prog() {
     _b=$1; _exe=$2
+    heap_begin "$_b"
     set --
     if [ -f "$_b.args" ]; then
         while IFS= read -r _a || [ -n "$_a" ]; do set -- "$@" "$_a"; done < "$_b.args"
@@ -202,6 +232,7 @@ RUNIT
         run_limited "$TIMEOUT" "$(stdin_for "$_b")" "$WORK" "$_exe" "$@" >"$TMP/r.out" 2>"$TMP/r.err"
         st=$?
     fi
+    heap_end
 }
 
 want_status() { # want_status BASE : expected exit status (BASE.status or 0)
@@ -230,6 +261,7 @@ for src in "$ROOT"/tests/programs/*.sea; do
     want=$(want_status "$base")
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
+    [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
     if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ] && [ "$(meta_get "$base.meta" stdout)" != closed ]; then
         same "$base.out" "$TMP/r.out" "stdout" "$name" || ok=0
     fi
@@ -273,6 +305,7 @@ for src in "$ROOT"/tests/errors/*.sea; do
     expout=$TMP/empty; [ -f "$base.out" ] && expout=$base.out
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "program exit status $st, expected $want"; ok=0; }
+    [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
     [ $ok = 1 ] && { same "$base.err" "$TMP/r.err" "stderr" "$name" || ok=0; }
     if [ $ok = 1 ] && [ "$(meta_get "$base.meta" stdout)" != epipe ] && [ "$(meta_get "$base.meta" stdout)" != closed ]; then
         same "$expout" "$TMP/r.out" "stdout" "$name" || ok=0
@@ -306,11 +339,14 @@ for src in "$ROOT"/tests/passes/*.sea; do
         sea_build "$ROOT/tests/passes" --no-prelude "$nm.sea" -o "$exe"
         if [ $? -ne 0 ]; then fail "$name" "compile failed: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; continue; fi
         WORK=$(mktemp -d "$TMP/work.XXXXXX")
+        heap_begin "$base"
         run_limited "$TIMEOUT" /dev/null "$WORK" "$exe" >"$TMP/r.out" 2>"$TMP/r.err"
         st=$?
+        heap_end
         rm -rf "$WORK"
         ok=1
         [ $st -eq 0 ] || { fail "$name" "exit status $st, expected 0"; ok=0; }
+        [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
         [ $ok = 1 ] && { same "$base.out" "$TMP/r.out" "stdout" "$name" || ok=0; }
         [ $ok = 1 ] && { same "$TMP/empty" "$TMP/r.err" "stderr" "$name" || ok=0; }
         [ $ok = 1 ] && pass

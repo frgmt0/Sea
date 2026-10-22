@@ -132,7 +132,7 @@ check_meta() {
     [ -f "$1.meta" ] || return 0
     while IFS= read -r _l || [ -n "$_l" ]; do
         case $_l in
-        "" | stdout=epipe | stdout=closed) ;;
+        "" | stdout=epipe | stdout=closed | heap=off | env=SEA_HEAP_CHECK=*) ;;
         *) setup_fail "$(basename "$1").meta: unknown line '$_l'" ;;
         esac
     done < "$1.meta"
@@ -208,7 +208,8 @@ for src in "$ROOT"/tests/passes/*.sea; do
     [ -f "$base.out" ] || continue
     selected "passes/$nm" || continue
     pack_sea passes "$ROOT/tests/passes" "$nm" --no-prelude
-    sidecars "$base" "$BUNDLE/cases/passes/$nm" out
+    check_meta "$base"
+    sidecars "$base" "$BUNDLE/cases/passes/$nm" out meta
     PACKED=$((PACKED + 1))
 done
 
@@ -220,6 +221,7 @@ for lir in "$ROOT"/tests/passes/*.lir; do
     [ -f "$base.lir1" ] && continue
     [ -f "$base.sea" ] && continue
     selected "passes/$nm" || continue
+    check_meta "$base"
     w=$(mktemp -d "$TMP/w.XXXXXX") || setup_fail "cannot create temporary directory"
     if ! awk '!d && $1 == "#target" { print "#target x86_64-linux"; d = 1; next } { print }' "$lir" > "$w/sea.lir"; then
         setup_fail "cannot retarget $lir"
@@ -235,7 +237,7 @@ for lir in "$ROOT"/tests/passes/*.lir; do
         packfail "$dest" "$st" "$TMP/c.err"
     fi
     rm -rf "$w"
-    sidecars "$base" "$dest" out err status
+    sidecars "$base" "$dest" out err status meta
     PACKED=$((PACKED + 1))
 done
 

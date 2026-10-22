@@ -1,0 +1,5 @@
+fresh 1 retained 2 3
+shared released 2 1
+freed, same block 1 count 1 ek 2 elements 0 0
+static count 0 0 0
+-9223372036854775808 count 2 1
