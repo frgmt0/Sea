@@ -1,0 +1,3 @@
+const B = 9223372036854775807 + 1 + A
+const A: i64 = pow(2.0)
+// err_const_noval_pow -- A has a compile error (pow takes two arguments), so B is not evaluated and its overflow is not reported (LANGUAGE.md 7.2; DESIGN.md 3.5.2, Decision 25)

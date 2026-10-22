@@ -1,0 +1,1 @@
+err_const_noval_overflow.sea:2:20: error: undeclared name 'x'

@@ -284,14 +284,14 @@
 4840 REM ck_name reports as 'not a constant expression'. -------------------------------------
 4845 SUB "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
 4850 FOR S0 = 2 TO X(33)
-4855 IF Y(S0, 0) <> 2 THEN 5055
-4860 IF Y(S0, 6) <> 0 THEN 5055
+4855 IF Y(S0, 0) <> 2 THEN 5105
+4860 IF Y(S0, 6) <> 0 THEN 5105
 4865 LET P = 2
 4870 LET W(1) = S0
 4875 CALL "cexp": N(), Y(), S0, E
 4880 LET W(2) = M(E, 0)
 4885 LET Y(S0, 6) = 1
-4890 IF P = 0 THEN 5055
+4890 IF P = 0 THEN 5105
 4895 LET S = W(P - 1)
 4900 LET J = W(P)
 4905 CALL "cexp": N(), Y(), S, E
@@ -318,17 +318,27 @@
 5010 REM a constant is evaluated (LANGUAGE 7.2) when its check found no error; else it is failed
 5015 REM (6): its uses read a poisoned value, so no second error follows from it (cval)
 5020 LET Y(S, 7) = 6
-5025 IF X(9) > X9 THEN 5040
-5030 LET Y(S, 7) = 0
-5035 CALL "cval": N(), M(), Y(), C(), W(), X(), X$(), H(), Q(), S
-5040 LET X(11) = 0
-5045 LET Y(S, 6) = 2
-5050 GOTO 4890
-5055 NEXT S0
-5060 SUBEND
-5065 REM ---- cexp: E = the expression node of const item S (after its type, if annotated) ----------
-5070 SUB "cexp": N(), Y(), S, E
-5075 LET E = N(Y(S, 3), 7)
-5080 IF N(Y(S, 3), 1) = 0 THEN 5090
-5085 LET E = N(E, 8)
-5090 SUBEND
+5025 IF X(9) > X9 THEN 5090
+5030 REM not evaluated, silently without a value (6), when its type is the error type or it names a
+5035 REM constant without a value (5, 6: LANGUAGE 7.2 "A constant without a value", Decision 25)
+5040 IF Y(S, 2) = 0 THEN 5090
+5045 CALL "cexp": N(), Y(), S, E
+5050 FOR J = M(E, 0) TO E
+5055 IF N(J, 0) <> 30 THEN 5075
+5060 IF M(J, 2) <= 0 THEN 5075
+5065 IF Y(M(J, 2), 0) <> 2 THEN 5075
+5070 IF Y(M(J, 2), 7) >= 5 THEN 5090
+5075 NEXT J
+5080 LET Y(S, 7) = 0
+5085 CALL "cval": N(), M(), Y(), C(), W(), X(), X$(), H(), Q(), S
+5090 LET X(11) = 0
+5095 LET Y(S, 6) = 2
+5100 GOTO 4890
+5105 NEXT S0
+5110 SUBEND
+5115 REM ---- cexp: E = the expression node of const item S (after its type, if annotated) ----------
+5120 SUB "cexp": N(), Y(), S, E
+5125 LET E = N(Y(S, 3), 7)
+5130 IF N(Y(S, 3), 1) = 0 THEN 5140
+5135 LET E = N(E, 8)
+5140 SUBEND

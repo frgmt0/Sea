@@ -174,6 +174,9 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_const_log` | `not a constant expression` | log is not a constant expression (LANGUAGE.md 7.2; DESIGN.md 4.10.5; at expr, the whole initialiser) |
 | `err_const_mod_chain` | `integer division by zero` | the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time (LANGUAGE.md 7.2 U2; at the operator) |
 | `err_const_mod_zero` | `integer division by zero` | a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6) |
+| `err_const_noval_errtype` | `not supported yet: strings` | A has the error type and no value: B = A + 1 % 0 is not evaluated, the str result (3:11) is the only error (LANGUAGE.md 7.2; DESIGN.md 3.5.2, Decision 25, 6.2) |
+| `err_const_noval_overflow` | `undeclared name 'x'` | A has an error, so B (which would overflow at 1:11) names a constant without a value and is not evaluated (LANGUAGE.md 7.2; Decision 25, 6.2) |
+| `err_const_noval_pow` | `no overload of 'pow' accepts (f64)` | the same with A = pow(2.0): the call error at 2:16 only (LANGUAGE.md 7.2; Decision 25, 6.2) |
 | `err_const_overflow_inner` | `integer overflow` | the innermost failing operation in evaluation order is reported (DESIGN.md 2.6.2 expr; LANGUAGE.md 7.2) |
 | `err_const_overflow_neg` | `integer overflow` | unary minus of -2^63 in a constant (LANGUAGE.md 7.2, 6.5) |
 | `err_const_overflow_unused` | `integer overflow` | a constant that overflows i64 is a compile error even unused (LANGUAGE.md 7.2 U2; at the operator) |
