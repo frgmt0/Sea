@@ -604,10 +604,16 @@ fields in declaration order, §4.6). Arithmetic is defined on `f64` and `i64` ar
 compiler keeps them in registers or in the stack frame, never on the heap (DESIGN.md §5.3). They exist
 for small state vectors and element matrices (W2's `ke` and `idx`, W3's RK4 state). An array
 literal of `n` scalars has the fixed type `T[n]` when `n` ≤ 256, and the dynamic type `T[]`
-otherwise (§6.9); the same for matrix literals by element count. A fixed-size array converts
+otherwise (§6.9); the same for matrix literals by element count. Here and in §6.9 a *scalar* is
+an `f64`, `i64` or `bool` value: an array literal whose elements are `str` or struct values is
+always dynamic (`str[]`, `S[]`; Decision 20 in DESIGN.md §9), and a fixed-size array of `str` or
+structs exists only by annotation (`let names: str[3] = …`, converted with the run-time check
+below). A fixed-size array converts
 implicitly to the dynamic type of the same rank and element type (a heap copy is made when
 needed); a dynamic array is assigned to a fixed-size variable or parameter only after a
-run-time shape check (`shape mismatch: expected 4, got 5`).
+run-time shape check (`shape mismatch: expected 4, got 5`). The extents of a fixed-size type are
+`i64` constant expressions (§7.2); a negative extent is the compile error `invalid array size %d`
+with its value, at the first such extent (`f64[-1]` reports `invalid array size -1`).
 
 **Value semantics.** Assigning an array, passing it as an ordinary argument or storing it in a
 struct never makes two variables share mutable state: after `var B = A`, writing `B[0] = 1`
@@ -703,6 +709,9 @@ fields (§8.4). Ignored results cost nothing after inlining (§8.6).
   run-time error `range step is zero`. Range bounds and steps are `i64`; there are no
   floating-point ranges (use `linspace`, §10.3, so the MATLAB colon's rounding subtleties
   cannot occur).
+* A range used as a value (§6.1, item 11) is the `i64[]` of its positions in order. One with more
+  than 2³¹ − 1 positions is the run-time error `invalid array size %d` with its length (or with
+  9223372036854775807 when the length exceeds the `i64` range, as `-2^63..=2^63-1` does).
 
 **Rationale for 0-based.** Sea's syntax family (C, Rust, Python/NumPy) is 0-based; half-open
 ranges compose without `−1` corrections (`0..n`, `T[1..ny-1, :]` for the interior rows, a
@@ -728,7 +737,12 @@ So `A[i, :]` and `A[:, j]` are vectors, `A[1..ny-1, :]` is a matrix, `A[i, j]` a
 
 **Masks.** `v[m]` with `m: bool[]` and `A[M]` with `M: bool[,]` of the same shape as `A` select
 the elements where the mask is true, as a **vector**, in increasing linear (column-major)
-order, exactly MATLAB's `x(mask)`. A mask of the wrong extent is `shape mismatch`.
+order, exactly MATLAB's `x(mask)`. A mask of the wrong extent is `shape mismatch: %s vs %s` with
+the shape of what it selects from first and the mask's shape second: for `v[m]` and for a mask
+index of one dimension of a matrix (`A[m, :]`) the dimension's extent, as a vector shape, and
+`len(m)` (`v[m]` with a 5-element `v` and a 4-element `m` reports `shape mismatch: 5 vs 4`); for
+`A[M]` the shapes of `A` and `M` (`shape mismatch: 3x4 vs 4x3`). This check is the mask's bounds
+check: it takes the mask's place among the index checks of §5.4.
 
 **Linear indexing** of a matrix is written through its flat view, `A.flat[k]` (§5.6), with
 `k = i + j·rows(A)`; `A[k]` with one index on a matrix is a compile error. `ind2sub` and
@@ -757,6 +771,16 @@ vector reports `index 5 out of bounds for dimension 0 of extent 5`).
 There are no negative indices that count from the end (`v[-1]` is an error, not the last
 element).
 
+**Which index the message names, and in which order.** All the indices of an index expression
+are evaluated (left to right, §6.8) before any of them is checked; then each index is checked
+against its dimension, left to right, and the first failure is reported. Within one index the
+value `i` in the message is: for a scalar index, its value; for an index vector, its first
+element, in order, that is out of range; for a non-empty range, its first position `a` if that is
+out of range, otherwise its last position `a + (n − 1)·s` (a range's positions are monotone, so it
+is in range exactly when its first and last positions are). So `v[2..10]` on a 5-element vector
+reports `index 9 out of bounds for dimension 0 of extent 5`, and `v[7..9]` reports 7. An empty
+range, and `:`, never fail.
+
 Checks are **always on** (Decision 12 in DESIGN.md §9). They cost almost nothing where it matters
 because the compiler removes the checks it can prove (loop induction variables over
 `0..len(v)`, `0..rows(A)`, and the like) and hoists the others out of loops (DESIGN.md §5.2); what
@@ -767,15 +791,24 @@ remains is a compare and a never-taken branch off the latency chain.
 * `v[idx] = e` and `A[ri, ci] = e` assign the selected elements. `e` is a scalar (assigned to
   every selected element) or an array of exactly the selected shape (`shape mismatch`
   otherwise; a rank-reduced selection takes a vector).
-* **Evaluation order**: the right side is evaluated completely, then the indices, then the
-  elements are stored in increasing linear order of the selection. With an index vector that
-  repeats a position, the last store wins, as in MATLAB.
+* **Evaluation order and checks** (`=`): the right side is evaluated completely; then the
+  indices, left to right; then the checks, in this order: each index against its dimension, left
+  to right (§5.4; a mask's extent is its check, §5.2), then the shape of the value against the
+  shape of the selection, written `shape mismatch: %s vs %s` with the **selection's shape first**
+  and the value's second (`v[0..3] = [1.0, 2.0]` with a dynamic `v` reports `shape mismatch: 3 vs
+  2`); then the elements are stored in increasing linear order of the selection. With an index
+  vector that repeats a position, the last store wins, as in MATLAB. An error stops the program
+  before any element is stored.
 * **Compound assignment** `x[sel] op= e` (`+= -= *= /=`) means `x[sel] = x[sel] op e` with the
-  selection evaluated once: W2's `K[idx, idx] += ke` gathers the 4 × 4 block, adds `ke`, and
-  scatters it back — exactly MATLAB's `K(idx,idx) = K(idx,idx) + ke`, including the case of a
-  repeated index.
+  selection evaluated once, in this order: the indices (left to right); the read of the selected
+  elements, with the checks of §5.4; `e`; the operation, with the broadcasting and shape check of
+  §6.3 (the selection's shape as the left operand's); the store, with the checks above. This is
+  the order of the scalar `x op= e`, which reads `x` before it evaluates `e` (§7.3, §8.3): a `ref`
+  argument in `e` that changes `x` is seen by the store, not by the read. W2's `K[idx, idx] += ke`
+  gathers the 4 × 4 block, adds `ke`, and scatters it back — exactly MATLAB's `K(idx,idx) =
+  K(idx,idx) + ke`, including the case of a repeated index.
 * Masked assignment `v[m] = e` assigns where `m` is true; `e` is a scalar or a vector of length
-  `nnz(m)`.
+  `nnz(m)` (the selection's shape is the vector shape `nnz(m)`).
 * **Aliasing**: an assignment behaves as if its right side were computed into a temporary
   first, whatever the overlap between the right side and the target (`T[1..ny-1, :] = …T…`).
   The compiler avoids the temporary when it can prove that every element is read before it is
@@ -847,10 +880,16 @@ For an element-wise binary operator, an elemental function call (§8.5) or `wher
 |----------|--------|------|
 | scalar, any | the other's shape | the scalar applies to every element |
 | vector `n`, vector `m` | vector `n` | `n == m` required |
-| matrix `r1×c1`, matrix `r2×c2` | matrix `max(r1,r2) × max(c1,c2)` | per dimension: equal, or one of them 1 (MATLAB implicit expansion) |
+| matrix `r1×c1`, matrix `r2×c2` | matrix: per dimension, the common extent if `r1 == r2` (`c1 == c2`), else the extent that is not 1 | per dimension: equal, or one of them 1, and the result is the other (MATLAB implicit expansion: `0×3` with `1×3` is `0×3`) |
 | vector, matrix | — | compile error `cannot combine a vector with a matrix: use .col or .row` |
 
 So MATLAB's `xh(:) * nk + phik` (column times row plus row) is `xh.col * nk.row + phik.row`.
+
+With more than two operands (`where(c, a, b)`, an elemental call with several array arguments)
+the shapes are combined left to right, scalars skipped: the first array operand's shape with the
+second's by the table, the result with the third's, and so on; a mismatch reports the shape
+combined so far, then the operand's (`where(c, a, b)` with `c` and `a` of 16001 elements and `b` of
+60 reports `shape mismatch: 16001 vs 60`).
 Mismatched dynamic extents are the run-time error `shape mismatch: 16001x60 vs 60x1`; if both
 extents are compile-time constants it is a compile error. The result element type is the
 scalar operator's result type (§6.5): `bool` for comparisons and logic; `f64` for `/` and `^`
@@ -977,6 +1016,10 @@ using FMA-free elementary functions gives up some speed on compute-bound scalar 
   length (`ragged matrix literal`).
 * A literal of scalars with more than 256 elements is dynamic (`T[]`, `T[,]`) instead (§4.5),
   so a long table of constants never hits the fixed-size limit.
+* **Strings and structs.** A literal whose elements are `str` or struct values (and none is an
+  array) is dynamic whatever its size: one row is a `str[]` or `S[]`, several rows a `str[,]` or
+  `S[,]` (`["bottom chord", "top chord"]` is a `str[]`, Appendix D's `[Dim { … }, …]` a `Dim[]`).
+  (Decision 20 in DESIGN.md §9.)
 * **Concatenation.** If any element is an array, the literal concatenates. Within a row, the
   elements are joined horizontally: scalars and vectors join into a vector (`[mats.name,
   "target"]` is a `str[]`); matrices (and scalars, as 1 × 1) join into a matrix whose row counts
@@ -985,7 +1028,10 @@ using FMA-free elementary functions gives up some speed on compute-bound scalar 
   is a compile error (`use .row or .col`). The result is dynamic unless all parts are fixed.
 * The element type is the common type of the elements (`i64` and `f64` → `f64`; struct
   elements must all be the same struct; `str` with `str`).
-* `[]` is the empty vector; it needs a type from context (`let names: str[] = []`).
+* `[]` is an empty array; it needs a type from context (`let names: str[] = []`): under a
+  vector type it is the vector of length 0, under a matrix type the 0 × 0 matrix, under a
+  fixed-size type without elements (`T[0]`, `T[0,c]`, `T[r,0]`) that type; under a fixed-size type
+  with elements it is the compile error `shape mismatch` (§4.10, the target's shape first).
 
 ### 6.10 `if` expressions
 
@@ -1333,7 +1379,7 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | `chol` of a matrix that is not positive definite | `matrix is not positive definite` |
 | `eig_sym` of a non-symmetric matrix | `matrix is not symmetric` |
 | non-square matrix where square required | `matrix is not square (%s)` |
-| out of memory | `out of memory` |
+| out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+`) | `out of memory` |
 | stack overflow | `stack overflow` |
 | file or directory cannot be created/written (`write_json`, `save_svg`, `make_dir`) | `cannot open '%s': %s`, `cannot write '%s': %s`, `cannot create directory '%s': %s` (reason from a fixed table of errno texts so both targets print the same bytes) |
 | invalid plot argument (§12.3) | `invalid line style "%s"`, `invalid color "%s"` |
@@ -1386,7 +1432,7 @@ specification of it exists in this document.
 |----------|--------|
 | `zeros(n)`, `zeros(r, c)` | `f64[]` / `f64[,]` of zeros (MATLAB `zeros(n,1)`, `zeros(r,c)`) |
 | `ones(n)`, `ones(r, c)` | of ones |
-| `filled(v, n)`, `filled(v, r, c)` | a vector / matrix with every element `v`, of `v`'s type (`filled(false, n)`, `filled(0.005, r, c)`, `filled("", n)`) |
+| `filled(v, n)`, `filled(v, r, c)` | a vector / matrix with every element `v`, of `v`'s type: `f64`, `i64`, `bool`, `str` or a struct (`filled(false, n)`, `filled(0.005, r, c)`, `filled("", n)`; an untyped integer `v` is `i64`, §4.2, so `filled(0, n)` is an `i64[]`) |
 | `len(v)` | `i64` length of a vector or `str` |
 | `rows(A)`, `cols(A)` | `i64` extents of a matrix |
 | `numel(A)` | `i64` element count of a vector or matrix |
@@ -1422,6 +1468,15 @@ linspace.m`, as reproduced by `common.mlinspace`), with `n1 = n − 1` and all a
 `log(0) = -inf`, `log(-1) = nan`, `sqrt(-1) = nan`: IEEE values, no errors (MATLAB would return
 complex results, which Sea does not have; no workload takes these branches).
 
+**Argument types.** `abs`, `sign`, `min` and `max` accept `i64` or `f64` and return that type
+(`min` and `max` of an `i64` and an `f64` convert the `i64`, §4.2); on `i64`, `abs(-2⁶³)` is
+`integer overflow` and `sign` is −1, 0 or 1. `sign(x)` of an `f64` is 1.0 for x > 0, −1.0 for
+x < 0, and x itself otherwise (±0.0 and NaN). `sqrt`, `floor`, `ceil`, `trunc`, `round`, `isnan`
+and the functions `log` … `hypot` accept `f64` (an `i64` argument is converted, §4.2). In
+`where(c, a, b)`, `c` is `bool` and `a` and `b` are `f64`, `i64` or `bool` of one type after the
+conversions of §4.2 (an `i64` with an `f64` converts). Each accepts arrays element by element
+(elemental, §8.5).
+
 ### 10.5 Reductions
 
 On vectors (`T[]`, `T[n]`); a matrix is reduced with `dim:` or through `A.flat`.
@@ -1437,7 +1492,14 @@ On vectors (`T[]`, `T[n]`); a matrix is reduced with `dim:` or through `A.flat`.
 | `nnz(m)`, `any(m)`, `all(m)` | count of `true` (`i64`), or-, and-reduction of a `bool` vector |
 | `sum(A, dim: 0)`, `max(A, dim: 0)`, … | reduce each column (result: vector of `cols(A)`); `dim: 1` reduces each row (vector of `rows(A)`); each in the vector rule's order. Implemented for `sum mean variance std max min any all nnz` (W2 uses `max(…, [], 1)`) |
 
-On `i64` vectors `sum` is exact with an overflow check (order irrelevant).
+On `i64` vectors `sum` is exact with an overflow check (order irrelevant). `mean` of an `i64`
+vector divides that exact sum by `len(v)`, both converted (§6.5's `i64 / i64`); `variance` and
+`std` of an `i64` vector use that mean and the converted elements in the `f64` rule above; `max`
+and `min` of an `i64` vector are `i64`. `sum`, `mean`, `variance`, `std`, `max`, `min`, `argmax`
+and `argmin` accept `f64` and `i64` vectors, `nnz`, `any` and `all` `bool` vectors.
+
+The `dim:` option is a constant expression (§7.2) whose value is 0 or 1: anything else is the
+compile error `not a constant expression` or `dim must be 0 or 1`, at the argument.
 
 **The pinned 8-lane order.** For a non-empty `f64` `sum` (and the sums inside `mean`,
 `variance` and the vector @ matrix product, §6.8): eight accumulators `a[0..8]` start at −0.0;
@@ -1462,6 +1524,7 @@ a few ulps times the number of terms, far below 1e-12).
 | `find_first(m)`, `find_last(m)` | `i64` index of the first/last `true`, **−1** if none (MATLAB `find(m, 1)`, `find(m, 1, 'last')`, `isempty`) |
 | `setdiff(a, b)` (P) | sorted unique `i64` values of `a` not in `b` (W2's free DOFs) |
 
+`sort` and `argsort` accept `f64`, `i64` and `str` vectors; `desc:` is any `bool` expression.
 Order for `f64`: ascending numeric order with `-0 == +0` (equal values keep their input order);
 NaN after every number ascending, before every number descending (MATLAB). `str`: byte-wise.
 Sorting is exact (class E) whatever the algorithm; the runtime uses an LSD radix sort on the
@@ -1511,7 +1574,7 @@ rules in every operation of this table.
 | `a + b`, `==`, `!=`, `<`, … | §4.4 |
 | `len(s)` | bytes |
 | `format(fmt, args…)` | the formatted `str` (§11.1; MATLAB `sprintf`; W1's `DG-%03d` labels, W1/W2's legend strings) |
-| `str(x)` | `i64`: decimal; `f64`: `%.17g` (§11.4); `bool`: `true`/`false` |
+| `str(x)` | `i64`: decimal; `f64`: `%.17g` (§11.4) for a finite value, and `nan`, `inf`, `-inf` for the others (C's spelling; `printf` keeps its own, §11.1); `bool`: `true`/`false` |
 | `lower(s)` | ASCII lower case (W1's `switch lower(finish)`) |
 
 ### 10.10 Program environment and files

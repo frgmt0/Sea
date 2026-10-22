@@ -147,6 +147,10 @@
 // pass 2a: the evaluation of a const item fails (LANGUAGE.md 7.2)
     \m 260, INT_OVERFLOW_C, C2, expr, -, "integer overflow"
     \m 261, INT_DIV_ZERO_C, C2, expr, -, "integer division by zero"
+// pass 2a, phase 4: the dim: option of a reduction (LANGUAGE.md 10.5) and a negative
+// fixed-size extent (LANGUAGE.md 4.5)
+    \m 262, DIM_VALUE, C2, expr, -, "dim must be 0 or 1"
+    \m 263, ARRAY_SIZE_C, C2, expr, i, "invalid array size %d"
 // any pass: capacity limits (DESIGN.md 2.7)
     \m 400, TOO_LARGE, CX, here, s, "program too large: %s"
 // passes: internal consistency checks, status SEA_EXIT_PASS_INTERNAL (DESIGN.md 2.2, 3.2, 3.3)

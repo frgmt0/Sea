@@ -107,6 +107,18 @@ rec A 61 rint 0 pos:pos v:i fv:f?
 rec A 62 rname 0 pos:pos name:s k:nkind ref:u
 rec A 63 rpowk 2 pos:pos k:i
 
+; sea.res only, from phase 4 (3.4.2): the declared types (not nodes) and the resolved type
+; nodes and struct literals (same pops as the type and slit nodes they replace)
+rec A 64 rtvec 0 id:u elt:ty
+rec A 65 rtmat 0 id:u elt:ty
+rec A 66 rtfvec 0 id:u elt:ty n:u
+rec A 67 rtfmat 0 id:u elt:ty r:u c:u
+rec A 68 rtst 0 id:u name:s sid:u n:u
+rec A 69 rtfd 0 name:s ty:ty
+rec A 70 rtype nd pos:pos base:s shape:shape nd:u ty:ty
+rec A 71 rslit n pos:pos name:s n:u sid:u
+rec A 72 rcns 1+t pos:pos name:s t:u cid:u v:s
+
 ; ---------------------------------------------------------------- sea.hir1 and sea.hir (3.5)
 ; types (3.5.1)
 rec H 1 tvec 0 id:u elt:ty
@@ -195,6 +207,8 @@ rec L 4 fconv 0 fl:fl w:u? p:u? conv:conv cls:rcls
 rec L 5 dat 0 lab:lab elt:delt n:u
 rec L 6 dvi 0 v:i
 rec L 7 dvf 0 v:f
+rec L 128 slay 0 lab:lab size:u n:u
+rec L 129 soff 0 v:u
 ; functions (3.6.3)
 rec L 8 func 0 name:s kind:lkind pos:pos np:u par:reg*np nr:u cls:rcls*nr
 rec L 9 slot 0 id:slot size:u align:u
@@ -265,6 +279,7 @@ rec LF 69 stx 0 s:rx base:rp idx:ri? scale:u off:i
 rec LF 70 sty 0 s:ry base:rp idx:ri? scale:u off:i
 rec LF 71 stm2 0 s:rm base:rp idx:ri? scale:u off:i
 rec LF 72 stm4 0 s:rm base:rp idx:ri? scale:u off:i
+rec L 130 mcopy 0 d:rp s:rp n:ri
 ; 2-lane vectors
 rec LF 73 xadd 0 d:rx a:rx b:rx
 rec LF 74 xsub 0 d:rx a:rx b:rx
