@@ -1,0 +1,43 @@
+#sea 1
+#target arm64-macos
+#file rs.sea
+int 0:1:11 2
+int 0:1:15 3
+bin 0:1:11 mul
+const 0:1:1 N 0
+type 0:2:13 f64 s 0
+param 0:2:10 x 0 0
+type 0:2:22 f64 s 0
+type 0:2:27 i64 s 0
+pname 0:3:9 k
+name 0:3:17 x
+conv 0:3:13 i64
+let 0:3:5 0
+name 0:4:13 x
+int 0:4:17 2
+bin 0:4:13 pow
+name 0:4:20 k
+name 0:4:24 N
+bin 0:4:20 add
+return 0:4:5 2
+block 0:2:32 2
+fn 0:2:1 split 0 1 2
+pname 0:6:6 a
+pname 0:6:9 b
+ptuple 0:6:5 2
+name 0:6:14 split
+name 0:6:20 pi
+call 0:6:14 1
+let 0:6:1 0
+int 0:7:10 0
+name 0:7:13 b
+range 0:7:10 0 0
+name 0:8:5 printf
+str 0:8:12 %25g%0A
+name 0:8:20 a
+call 0:8:5 2
+cstmt 0:8:5
+block 0:7:15 1
+for 0:7:1 i 0:7:5
+prog 4
+#end

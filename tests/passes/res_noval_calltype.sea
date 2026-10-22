@@ -1,0 +1,3 @@
+const A: f64 = f()
+fn f() -> str { return 1 }
+// res_noval_calltype -- A calls a faulty f: rcn; rerr 259 strings at the result type (DESIGN.md 3.4.1, Decision 25 refined)

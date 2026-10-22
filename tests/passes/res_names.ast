@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file res_names.sea
+int 0:3:11 2
+const 0:3:1 K 0
+type 0:4:10 i64 s 0
+param 0:4:6 lo 0 0
+type 0:4:18 i64 s 0
+pname 0:5:9 lo
+name 0:5:14 lo
+var 0:5:5 0
+name 0:6:8 lo
+name 0:6:13 K
+bin 0:6:8 gt
+pname 0:7:13 lo
+int 0:7:18 1
+let 0:7:9 0
+name 0:8:16 lo
+return 0:8:9 1
+block 0:6:15 2
+if 0:6:5 0
+name 0:10:12 lo
+return 0:10:5 1
+block 0:4:22 3
+fn 0:4:1 f 0 1 1
+pname 0:12:5 n
+name 0:12:9 f
+name 0:12:11 K
+call 0:12:9 1
+let 0:12:1 0
+int 0:13:10 0
+name 0:13:13 n
+range 0:13:10 0 0
+pname 0:14:9 n
+name 0:14:13 i
+name 0:14:17 n
+bin 0:14:13 add
+let 0:14:5 0
+block 0:13:15 1
+for 0:13:1 i 0:13:5
+name 0:16:1 printf
+str 0:16:8 %25d%0A
+name 0:16:16 n
+name 0:16:20 z
+bin 0:16:16 add
+call 0:16:1 2
+cstmt 0:16:1
+prog 5
+#end

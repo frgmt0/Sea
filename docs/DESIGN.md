@@ -1291,7 +1291,11 @@ Both stay below 9 000 after phase 4 with a margin of at least 1 600 lines; `seac
 the trigger at v1 only at the high end of every range, so the measurement after phase 4 (§8,
 phase 4h) decides whether its library-overload checks move to a third program then. 4a is done
 when `make check-limits` reports the two programs and their measured sizes replace these
-estimates here.
+estimates here. **Measured after 4a** (`make lines`): `seaname` 4 776 lines (1 720 own), below
+the estimate; `seacheck` 4 268, about 270 above it. Projected from these (same increments):
+`seaname` 5 530–5 680 after phase 4 and 5 730–6 080 at v1; `seacheck` 6 520–7 670 after phase 4
+and 7 570–9 520 at v1, so the measurement after phase 4 decides whether its library-overload
+checks move to a third program.
 
 **`sealower` in phase 4, and its seam.** Phase 4 adds an estimated 3 000–4 500 own lines to pass 3a
 (allocation and addressing, five index kinds read and written, `$`, bounds checks, element-wise
@@ -1718,7 +1722,8 @@ phase rule reports them (`not supported yet: match`, and `not supported yet: arr
 * every entered `fn`, `struct` and `const` item record is replaced by `rfn`, `rst`, or one of
   `rcni rcnf rcnb rcne rcn` respectively; a not-entered item is copied unchanged;
 * every `int` record of the file becomes `rint`;
-* in the resolved regions, every `name` becomes `rname`, every `pname` `rpname`, every `for`
+* in the resolved regions, every `name` becomes `rname` (the subtree of a `type` node is not
+  part of a resolved region: its `int` and `name` dims stay as they are, apart from `rint`), every `pname` `rpname`, every `for`
   `rfor`, and every `bin` with operator `pow` that is a `powk` by the rule below becomes `rpowk`;
 * nothing else changes: `type` records (also those of signatures), parameter defaults, struct
   fields, and everything outside the resolved regions (the bodies of not-entered functions
@@ -1795,8 +1800,10 @@ the conversion to an annotated `f64`, `i64` → `f64` where an operator converts
 `powk` of every `^` in it (below), and evaluates it as §3.5.2 says (`FEPOW` for the other `^`
 and for `pow`). It reports no error and checks no rule: where it cannot type or evaluate the
 expression (a node other than a literal, `true`, `false`, `neg`, `not`, `bin`, `rpowk`, a name
-of a constant or of `pi inf nan eps`, or a call of `pow` or `sqrt` with positional arguments;
-operand types the rules do not accept; an annotation it cannot use; a name of a waiting
+of a constant or of `pi inf nan eps`, or a call whose callee is an `rname pd` naming `pow` or
+`sqrt`, with positional arguments only (a call of a function item named `pow` or `sqrt`,
+entered after its `redefinition of predeclared name`, is none of these); operand types the rules
+do not accept; an annotation it cannot use; a name of a waiting
 constant), and wherever the rule of LANGUAGE.md §7.2 leaves a constant unevaluated (it names a
 constant without a value, Decision 25), it writes `rcn`. Its outcome is written in the item's
 record: `rcni`, `rcnf`, `rcnb` a value; `rcne` an evaluation that fails (the first failing
@@ -1808,7 +1815,11 @@ does, reports its errors, and then decides its value (§3.5.2, Decision 25):
 
 1. if the check found an error, the constant has no value, and the outcome is ignored;
 2. otherwise, if its expression names a constant without a value, or its type is the error type
-   (0), it has no value and no error, and the outcome is ignored;
+   (0), or a node of its expression has the error type, or its expression holds a node `seaname`
+   does not evaluate (one outside the list above: in a constant without an error of its own this
+   is a call of a function item named `pow` or `sqrt`, or a node below an error-typed one), it has
+   no value and no error, and the outcome is ignored (Decision 25 as refined: "a part of the
+   expression whose type is in error");
 3. otherwise the outcome must be a value of the kind of its derived type (`rcni` for `i64`,
    `rcnf` for `f64`, `rcnb` for `bool`), which becomes its value, or an `rcne` whose `epos` is
    the position of a `bin` or `neg` node of that constant's expression, `ovf` only at an `add`,
@@ -1981,8 +1992,9 @@ with the emulation of §2.8 for `f64` and exact `i64`), and writes the result as
 child of a `cn` is always a single leaf, and constant substitution (§3.5.7) puts one leaf in place
 of each `cref`. An evaluation that overflows `i64` or divides an `i64` by zero is the compile
 error 260 or 261 (§2.6.2) and writes nothing. A constant that names a constant without a value
-(one with an error, a failed evaluation or none of its own), or whose type is the error type
-(after another error), is not evaluated at all and reports nothing of its evaluation
+(one with an error, a failed evaluation or none of its own), whose type is the error type (after
+another error), any node of whose expression has the error type, or that calls a function item
+named `pow` or `sqrt` (entered after its `redefinition of predeclared name`), is not evaluated at all and reports nothing of its evaluation
 (LANGUAGE.md §7.2, Decision 25); a use of a constant without a value reads a poisoned value
 (no `powk`, no further error). `pos` is that of the `const` keyword. A use of the
 constant is a `cref` node. From phase 4a `seaname` evaluates the constants and hands each value, or
@@ -4256,6 +4268,15 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
   1 % 0` / `const A = f()` / `fn f() -> str { return 1 }`, `…:3:11: error: not supported yet:
   strings` (`A` has the error type and no value, so `B` is not evaluated and its `1 % 0` reports
   nothing; before the rule `1:15: integer division by zero`); all with status 1.
+  For the refinement of Decision 25 (§9), also with status 1: `err_const_noval_calltype`:
+  `const A: f64 = f()` / `fn f() -> str { return 1 }` prints `…:2:11: error: not supported yet:
+  strings` (as before); `err_const_noval_shortcircuit`: `const D = B || 9223372036854775807 + 1 >
+  0` / `const B: bool = false && f() == 1.0` / `fn f() -> str { return 1 }` prints `…:3:11:
+  error: not supported yet: strings` (`B` has no value, so `D` is not evaluated; the single
+  program printed `…:1:16: error: integer overflow`); `err_const_noval_userpow`: `const C =
+  pow(2.0, 3.0)` / `fn pow(x: f64, y: f64) -> f64 { return x }` prints `…:2:1: error:
+  redefinition of predeclared name` (as before); and `res_*` dump tests of these three programs
+  (their constants written `rcn`, their `rerr`).
 
 ### 6.3 Workload acceptance
 
@@ -4605,7 +4626,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | Sub-phase | Contents | Done when |
 |-----------|----------|-----------|
 | 4a-0 | **Decision 25 in the single `seacheck`** (precondition of 4a, its own change): a constant that names a constant without a value, or whose type is the error type, is not evaluated (LANGUAGE.md §7.2, §3.5.2); the `errors/` tests of §6.2 ("Constants without a value") | every earlier test passes unchanged (the existing tests of constants, `err_const_*`, `err_not_constant_cycle` and the overflow and `%` tests, keep their output under the rule) and the three new tests print their derived output |
-| 4a | **Split of pass 2a and scaffolding; no change of behaviour.** `seaname` and `seacheck` as §2.1, §2.6.2 ("Which program reports it"), §2.6.3 and §3.4.1 say; `--emit res` and the driver's pass sequence (§2.2); `Makefile`, `tools/passlines.sh`, `tools/seaval.bas` (format `res`), `tests/run.sh` (dumps `res`), and these test scripts: `tests/stage.sh` (the pair `seacheck ast hir1` becomes `seaname ast res` and `seacheck res hir1`), `tests/protocol.sh` (a truncated `sea.ast` for `seaname`, a truncated `sea.res` for `seacheck`, `seaname` in the pass lists, files and fake-pass chain), `tests/driver_check.sh` (the usage line with `--emit ast\|res\|hir1\|hir\|lir1\|lir`, the pass logs with `seaname`, the fake passes, `--emit res`), the `--emit` list and the pass list in `CLAUDE.md`; the tests of §6.2 ("Tests of the pass-2a split"); `sealower.bas` cut into `sl0main.bas` and `sl1scal.bas` (§2.7). Not changed: LANGUAGE.md (beyond 4a-0's rule), every other intermediate format, `sea.hir1` byte for byte, every message, position and exit status of every compilation that exceeds at most one capacity limit (§2.6.2 states the two orders that differ for a compilation over two limits at once), `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2b, 3a (other than the file cut), 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`), the edited scripts pass, and so do the new tests; `make cross` passes; `make check-limits` reports `seaname` and `seacheck` below 9 000 lines and their measured sizes replace the estimates of §2.7 |
+| 4a | **Split of pass 2a and scaffolding; no change of behaviour.** `seaname` and `seacheck` as §2.1, §2.6.2 ("Which program reports it"), §2.6.3 and §3.4.1 say; `--emit res` and the driver's pass sequence (§2.2); `Makefile`, `tools/passlines.sh`, `tools/seaval.bas` (format `res`), `tests/run.sh` (dumps `res`), and these test scripts: `tests/stage.sh` (the pair `seacheck ast hir1` becomes `seaname ast res` and `seacheck res hir1`), `tests/protocol.sh` (a truncated `sea.ast` for `seaname`, a truncated `sea.res` for `seacheck`, `seaname` in the pass lists, files and fake-pass chain), `tests/driver_check.sh` (the usage line with `--emit ast\|res\|hir1\|hir\|lir1\|lir`, the pass logs with `seaname`, the fake passes, `--emit res`), the `--emit` list and the pass list in `CLAUDE.md`; the tests of §6.2 ("Tests of the pass-2a split"); `sealower.bas` cut into `sl0main.bas` and `sl1scal.bas` (§2.7). Not changed: LANGUAGE.md (beyond 4a-0's rule), every other intermediate format, `sea.hir1` byte for byte, every message, position and exit status of every compilation that exceeds at most one capacity limit (§2.6.2 states the two orders that differ for a compilation over two limits at once) and outside the class of programs of Decision 25's refinement (§9), which 4a's `seacheck` applies, `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2b, 3a (other than the file cut), 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`), the edited scripts pass, and so do the new tests; `make cross` passes; `make check-limits` reports `seaname` and `seacheck` below 9 000 lines and their measured sizes replace the estimates of §2.7 |
 | 4b | **Phase-4 specification** (documents and contracts only): LANGUAGE.md (Decision 20's sentence, the clarifications left open in §0), §0, the phase-rule table after phase 4 (§2.6.2), `sea.res` extensions for phase 4 (the extents of type nodes, struct declarations and literal field sets, §3.4.1), the HIR and LIR records and lowering rules of arrays, structs, strings, reference counts and copy on write (§3.5, §3.6), prelude inlining (Decision 18), the runtime ABI (§4.1, §4.2, §4.8, §4.9; Decision 22's split between inline code and the runtime; Decision 24's heap check), the phase-4 acceptance (§6.3, Decision 19); `rt.inc`, `passes.txt`; in the workload repository `compare.py --keys` | `make check-contracts`, `make check-includes` and `make cross-includes` pass; the user has agreed the text |
 | 4c | **Runtime foundation and pass-4 support**: allocation, arrays (new, unique, free), strings, `args`, `error` on both targets; `retain`/`release` and the new data records in `seagen_a64`/`seagen_x64`; `seaopt` accepts the new records; `SEA_HEAP_CHECK` (Decision 24) | `make test-rt` and the Linux `test-rt` pass (allocation across size classes and the large-block cache, copy on write of shared and static objects, release of `str[]` and struct arrays, string operations byte-exact, `args`, `error`); the hand-written LIR tests of the new records pass on both targets |
 | 4d | **Dynamic arrays core** (`f64`/`i64`/`bool`): array types, `zeros ones filled len rows cols numel`, scalar indexing read and write with bounds checks, `$`, arrays as locals, parameters, results and `ref` parameters, copy on write, reference counts on every exit, `for` over vectors, the scalar exact math functions (Decision 23) | W4's scalar SOR prints `it_sor` 832 ± 1 and `T_max` within 1e-6 (`compare.py --keys` on the Mac) and the same bytes on the Linux host; the sub-phase's tests pass on both targets with no leak under `SEA_HEAP_CHECK=1` |
@@ -4836,3 +4857,17 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
     `seaname`. **Decided: (a)** (the user, 2026-10-21). It is made in the single `seacheck`
     first, as its own change (sub-phase 4a-0, §8), with its tests (§6.2). Affects LANGUAGE.md
     §7.2; §3.4.1, §3.5.2, §6.2, §8.
+    **Refined (2026-10-21, found by the 4a implementation; the user to be told):** "whose type is
+    an error type" covers any part of the expression whose type is in error, and a call of a
+    function item named `pow` or `sqrt` (an error already, `redefinition of predeclared name`)
+    also leaves the constant unevaluated (LANGUAGE.md §7.2; §3.4.1 rule 2, §3.5.2). Without it
+    `seaname`, which evaluates only what it can type, would have to type every node a faulty
+    declaration poisons. It differs from the single program (and from 4a-0) only in programs
+    that already have an error in an item or a signature, and there only where a constant
+    without an error of its own holds such a part yet got a value or an evaluation error: by
+    `&&`/`||` not reaching the part (`const B: bool = false && f() == 1.0`, f faulty: no value
+    now, `false` before), or by an `i64` overflow or division by zero evaluated before it. The
+    first error then changes when that value or evaluation error made an error earlier in source
+    order: with `const D = B || 9223372036854775807 + 1 > 0` before `B`, the single program
+    reports `D`'s overflow (1:16), the rule reports `f`'s error. Applied by 4a's `seacheck` (§8);
+    tests in §6.2.

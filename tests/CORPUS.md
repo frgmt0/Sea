@@ -22,6 +22,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | f64 bits of literals and constant arithmetic | `vectors/float_oracle.py`: exact `Fraction` decimal-to-binary, round to nearest even, subnormals, overflow; `+ − × ÷` and i64→f64 the same way. Python floats only as a cross-check |
 | printf output (`fmt_*`, `op_f64_arith`, `op_order`, `op_powk`, `lib_consts`) | `vectors/progfmt.py`: C99 `%d %i %f %F %e %E %g %G %s` from the exact decimal value of each argument (ties to even), plus the MATLAB `%d`-on-f64 rule and the non-finite rules of LANGUAGE.md §11.1. It writes both `.sea` and `.out` from one table; Python's `%` only as a cross-check |
 | `op_lcg_w5` | `vectors/lcg_w5.py`: the LCG in exact integers in W5's draw order (11 M steps), the uniform `first_dev` columns and `first_top` with the oracle; asserted bit for bit against `workloads/reference/w5_tolerance_mc.json` (`lcg_final = 2145635252`) |
+| `.res` files and the `res_*` tests (phase 4a) | `vectors/res_gen.py`: an independent Python reading of DESIGN.md §3.4.1 (entered items, scopes of LANGUAGE.md §3.3/§7.2/§7.5, lids of §3.5.4, the constant order and the typed evaluation of §3.5.2 with `float_oracle.py` and `math_model.py`, `powk` of §3.5.5, the declaration errors of §2.6.2) applied to the hand-derived `.ast`; it reproduces the §3.4.1 `rs` example byte for byte and agrees with every `.hir1` golden; the `res_*` `.ast` files come from `vectors/res_cases.py`, written by hand with every position checked against the source |
 | phase-3 elementary functions (`lib_math_*`, `passes/math_lower.lir1`, `passes/const_pow.hir1`, `err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot`) | `vectors/math_progs.py`: each result is the bits of the reference model `vectors/math_model.py` (DESIGN.md §4.10.6) for the argument bits of `float_oracle.py` (i64/untyped arguments converted exactly, §4.2), printed by `progfmt.py`; const results are the same model bits (FEPOW = the model, DESIGN.md §4.10.5) |
 | wave-2 tests (`fold_*`, `stmt_else_if_2000`, `const_reverse_1000`, `fmt_prec_zeros`, `stmt_tasg_cvt`, `lib_conv_identity`, `stmt_for_blanks` and their `err_*`) | `vectors/wave2_gen.py`: each expected value derived in its comments; folded values with the exact oracles of `f64emu.py`/`float_oracle.py` |
 | `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
@@ -125,6 +126,29 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `math_lower` | ast hir1 hir lir1 | §3.6.6 rule 14 (`rcall sea_<fn> - 1 d n args`, no site) for `log exp sin cos pow hypot` and a non-powk `^`, rules 1, 2, 10 (`cvt` and `f64()` are `itof`, the rcall writes the bound local), §3.6.1 numbering; §3.5.7 (nothing folded) |
 | `const_pow` | ast hir1 | §3.5.2 (each `cn` leaf at the root position), §4.10.5 (`^` non-powk and `pow` folded by FEPOW: the model's bits from `math_model.eval_bits`, NaN `#7FF8000000000000`), §3.5.5 (`x ^ K` with `K = pow(9.0, 0.5)` is `powk 3`, `x ^ C` stays `bin pow`) |
 
+| `rs` | ast res hir1 | §3.4.1 example: `.res` verbatim (and reproduced by `vectors/res_gen.py`), `.ast` by §3.4, `.hir1` by hand from §3.5 (`ttuple`, `tbind`, `powk`, `cref`, `forr`, `fmt`) |
+| `res_names` | ast res | §3.4.1: rname `loc` (a parameter, `var lo = lo`, a block-scope shadowing `let`, a loop variable, an outer local read by a shadowing `let n = i + n`), `cst`, `fn`, `pd`, `none`; lids numbered as §3.5.4 |
+| `res_rint` | ast res | §3.4.1: `rint` `fv`: `-` for 2⁵³ + 1, `#C3E0000000000000` for the 2⁶³ literal under `neg`, an exact large value |
+| `res_consts` | ast res | §3.4.1: `rcni`, `rcnf` (an `i64` value into an `f64` annotation), `rcnb`, `rcne ovf` (at the `mul`) and `rcne div0` (at the `%`), `rcn` for `now()` (not typable), for a constant naming one without a value (Decision 25), and for both constants of a cycle; the constant order |
+| `res_powk_skip` | ast res | §3.4.1: `rpowk 2` from a constant, a plain `bin pow` where a local shadows it; `rtup 10` reused by two signatures; `rerr 235` at a not-entered `fn` copied unchanged; a `for` over an array literal and a `match` copied unresolved (their `pname`s take no lid) |
+| `res_powk_mod` | ast res | §3.4.1, §3.5.5: the operands of an untyped `%` are `i64` (LANGUAGE.md §4.2), so `x ^ (6 % 4)` is `rpowk 2`; `x ^ (5.0 % 3.0)` is `rpowk 2` by the exact `f64` `%` of LANGUAGE.md §6.6 |
+| `res_noval_calltype`, `res_noval_shortcircuit`, `res_noval_userpow` | ast res | §3.4.1 (Decision 25 refined): the programs of the three `err_const_noval_*` refinement tests (lines 1–3, comment after); every constant `rcn` (a call of a function item is not evaluated; `D` names `B` without a value; `pow` resolves to the entered `fn pow`, `rname fn`), with their `rerr` (259 `strings` twice, 212) |
+| `res_struct` | ast res | §3.4.1: `rst`, `rname st` (a struct name as a value), `rerr 259 structs` at the item |
+| `res_err_predeclared` | ast res | §3.4.1: `rerr 212`; the item is entered (`rfn`) and `sqrt` resolves to it (`rname fn`) |
+| `res_err_redef_item` | ast res | §3.4.1: `rerr 235` at the later `const`; it is copied with its names unresolved |
+| `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
+| `res_err_param_redef` | ast res | §3.4.1: `rerr 235` at the second parameter `a` |
+| `res_err_param_shadow` | ast res | §3.4.1: two errors at one `param` (213 and default arguments): the first found, 213, is the `rerr` |
+| `res_err_default` | ast res | §3.4.1: `rerr 259 default arguments`; the default `K` is copied as `name` |
+| `res_err_str_param` | ast res | §3.4.1: `rerr 259 strings` at the `param`; its `rfn` type 0 |
+| `res_err_str_result` | ast res | §3.4.1: `rerr 259 strings` at the result `type`; `rty` 0, no `rtup` |
+| `res_err_array` | ast res | §3.4.1: `rerr 259 arrays` at the `type` node of a parameter |
+| `res_err_handle` | ast res | §3.4.1: `rerr 259 handle types` at the `type` node |
+| `res_err_unknown_struct` | ast res | §3.4.1: `rerr 229` at the `type` node of an undeclared type name |
+| `res_err_first_pos` | ast res | §3.4.1: two `seaname` errors: the signature error at 3:6, found after the item error at 6:1, is first in source order and is the `rerr` |
+
+Every test above that has a `.hir1` also has a `.res` (phase 4a, §6.2), the stage input of `seacheck` and the golden output of `seaname`; each is derived from its `.ast` by `vectors/res_gen.py`, which cross-checks it against the `.hir1` (the lids of the `loc` records, the constants' values, the `powk` positions).
+
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
 (§3.6.5: the other loop bodies hold constants that a later pass 3b may hoist).
@@ -174,9 +198,12 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_const_log` | `not a constant expression` | log is not a constant expression (LANGUAGE.md 7.2; DESIGN.md 4.10.5; at expr, the whole initialiser) |
 | `err_const_mod_chain` | `integer division by zero` | the reviewer's % chain: C3 = 0 % 0 divides by zero at compile time (LANGUAGE.md 7.2 U2; at the operator) |
 | `err_const_mod_zero` | `integer division by zero` | a constant % by zero is a compile error (LANGUAGE.md 7.2 U2, 6.6) |
+| `err_const_noval_calltype` | `not supported yet: strings` | `const A: f64 = f()` with a faulty `f`: the str result (2:11) only (DESIGN.md 6.2, Decision 25 refined) |
 | `err_const_noval_errtype` | `not supported yet: strings` | A has the error type and no value: B = A + 1 % 0 is not evaluated, the str result (3:11) is the only error (LANGUAGE.md 7.2; DESIGN.md 3.5.2, Decision 25, 6.2) |
 | `err_const_noval_overflow` | `undeclared name 'x'` | A has an error, so B (which would overflow at 1:11) names a constant without a value and is not evaluated (LANGUAGE.md 7.2; Decision 25, 6.2) |
 | `err_const_noval_pow` | `no overload of 'pow' accepts (f64)` | the same with A = pow(2.0): the call error at 2:16 only (LANGUAGE.md 7.2; Decision 25, 6.2) |
+| `err_const_noval_shortcircuit` | `not supported yet: strings` | `B` holds a faulty call behind `false &&` and has no value, so `D` (line 1) is not evaluated: 3:11, not `D`'s overflow (Decision 25 refined) |
+| `err_const_noval_userpow` | `redefinition of predeclared name` | `C` calls the program's `fn pow` (2:1), so it is not evaluated (Decision 25 refined) |
 | `err_const_overflow_inner` | `integer overflow` | the innermost failing operation in evaluation order is reported (DESIGN.md 2.6.2 expr; LANGUAGE.md 7.2) |
 | `err_const_overflow_neg` | `integer overflow` | unary minus of -2^63 in a constant (LANGUAGE.md 7.2, 6.5) |
 | `err_const_overflow_unused` | `integer overflow` | a constant that overflows i64 is a compile error even unused (LANGUAGE.md 7.2 U2; at the operator) |
@@ -212,6 +239,11 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_int_too_large_neg` | `integer literal too large` | -(2^63 + 1): the literal is too large (LANGUAGE.md 3.4; at token) |
 | `err_keyword_ident` | `unexpected token 'if'` | a keyword is never an identifier (LANGUAGE.md 3.3) |
 | `err_line_too_long` | `line too long` | line 3 has 4097 bytes: the driver reports column 4097 before any pass |
+| `err_merge_check_first` | `undeclared name 'y'` | a `seacheck` error (2:9) before a `seaname` error (3:1) in source order (DESIGN.md 2.6.2 order across the two programs) |
+| `err_merge_const_after` | `redefinition of predeclared name` | a `seaname` error (2:1) before a constant's `integer overflow` (5:11) |
+| `err_merge_const_first` | `integer overflow` | a constant's `integer overflow` (an `rcne`, 2:11) before a `seaname` error (3:1) |
+| `err_merge_name_first` | `redefinition of predeclared name` | a `seaname` error (2:1) before a `seacheck` error (5:9) |
+| `err_merge_same_pos` | `not supported yet: elemental functions` | two errors at one `fn` keyword: `seaname`'s (the `rerr`, found first) wins over `seacheck`'s `missing return` |
 | `err_missing_arg` | `missing argument` | a parameter without a default must be given (LANGUAGE.md 8.1; at the call) |
 | `err_missing_return` | `missing return` | a function with a result must end every path with return (LANGUAGE.md 8.1; at fn) |
 | `err_missing_return_while` | `missing return` | a loop never ends every path, even while true (LANGUAGE.md 8.1) |
@@ -333,4 +365,6 @@ the `at` position of DESIGN.md §2.6.2.
 | `wave2_gen.py` | the wave-2 and round-3 `programs/` and `errors/` tests listed above |
 | `edges_gen.py` | the phase-2 edge tests `op_mod_idiv_edges`, `op_ftoi_edges`, `op_itof_round`, `op_cmp_nan_zero`, `op_neg_zero`, `err_rt_mod_zero_min`, `err_rt_idiv_zero_min`, `err_rt_conv_below` (min/max, floor/ceil/round/trunc, abs and sqrt are `not supported yet` in phases 1–2, Sea has no shifts) |
 | `math_progs.py` | the phase-3 `programs/lib_math_*.{sea,out}`, `passes/math_lower.{sea,ast,hir1,hir,lir1}`, `passes/const_pow.{sea,ast,hir1}` and `errors/err_const_log`, `err_const_sin`, `err_const_sqrt`, `err_no_overload_hypot` |
+| `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`) |
+| `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

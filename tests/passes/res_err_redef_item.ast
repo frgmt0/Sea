@@ -1,0 +1,14 @@
+#sea 1
+#target arm64-macos
+#file res_err_redef_item.sea
+int 0:3:11 1
+const 0:3:1 A 0
+name 0:4:11 A
+int 0:4:15 1
+bin 0:4:11 add
+const 0:4:1 A 0
+pname 0:5:5 b
+name 0:5:9 A
+let 0:5:1 0
+prog 3
+#end

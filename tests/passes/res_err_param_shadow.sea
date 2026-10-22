@@ -1,0 +1,5 @@
+// res_err_param_shadow -- two errors at one param node: 213 (shadows a predeclared name) is
+// found before 259 default arguments and is the rerr (3.4.1, 2.6.2)
+fn f(len: i64 = 1) -> i64 {
+    return len
+}

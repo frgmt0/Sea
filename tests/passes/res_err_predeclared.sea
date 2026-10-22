@@ -1,0 +1,6 @@
+// res_err_predeclared -- rerr 212 at an fn with a predeclared name; the item is entered and its
+// name resolves to it (DESIGN.md 3.4.1, 2.6.2)
+fn sqrt(x: f64) -> f64 {
+    return x
+}
+let y = sqrt(2.0)

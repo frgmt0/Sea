@@ -1,0 +1,21 @@
+// res_powk_skip -- rpowk from a constant, none where a local shadows it; rtup 10 reused; a
+// not-entered fn, a for over an array and a match copied unresolved (3.4.1)
+const K = 2
+fn g(x: f64) -> (f64, i64) {
+    return (x ^ K, 1)
+}
+fn h(x: f64) -> (f64, i64) {
+    let K = 3
+    return (x ^ K, K)
+}
+fn g(y: f64) -> f64 {
+    return y ^ K
+}
+for e in [1, 2] {
+    let w = e
+}
+match "a" {
+    "a" => { let m = 1 }
+    _ => { let m = 2 }
+}
+let t = g(2.0)

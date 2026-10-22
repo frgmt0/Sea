@@ -801,9 +801,10 @@ doc_block() {
 }
 doc_block '`sea build --emit ast --no-prelude ex.sea`:' > "$T/ex/ast"
 doc_block '`sea build --emit hir1 --no-prelude ex.sea`:' > "$T/ex/hir1"
+doc_block '`sea build --emit res --no-prelude rs.sea`:' > "$T/ex/res"
 doc_block '`sea build --emit hir --no-prelude ex.sea` differs only' > "$T/ex/hir.fn"
 doc_block '`sea build --emit lir1 --no-prelude lx.sea`:' > "$T/ex/lir1"
-for f in ast hir1 hir.fn lir1; do
+for f in ast res hir1 hir.fn lir1; do
     [ -s "$T/ex/$f" ] || { echo "lib_check: example $f not found in $DOC" >&2; exit 2; }
 done
 # sea.hir = sea.hir1 up to the function "scale", then the dump of DESIGN 3.5.8 for that function:
@@ -819,6 +820,7 @@ valid() { # DESC KIND FILE
     expect "seaval accepts $1" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
 }
 valid "sea.ast of DESIGN 3.4 ($(wc -l < "$T/ex/ast" | tr -d ' ') records)" ast "$T/ex/ast"
+valid "sea.res of DESIGN 3.4.1 ($(wc -l < "$T/ex/res" | tr -d ' ') records)" res "$T/ex/res"
 valid "sea.hir1 of DESIGN 3.5.8 ($(wc -l < "$T/ex/hir1" | tr -d ' ') records)" hir1 "$T/ex/hir1"
 valid "sea.hir of DESIGN 3.5.8 ($(wc -l < "$T/ex/hir" | tr -d ' ') records)" hir "$T/ex/hir"
 valid "sea.lir1 of DESIGN 3.6.7" lir1 "$T/ex/lir1"
@@ -957,6 +959,38 @@ mut_rep "$T/ex/ast" '^#file ' '#file a%zz' > "$T/mut/a17"
 rejects "a bad %-escape in a #file path" ast "$T/mut/a17" BAD_HEADER 0 "internal error: bad header"
 (echo '#sea 1'; echo '#file ex.sea'; echo '#target arm64-macos'; echo '#end') > "$T/mut/a18"
 rejects "header records in the wrong order" ast "$T/mut/a18" BAD_HEADER 0 "internal error: bad header"
+# sea.res (DESIGN 3.4.1): the records of codes 50-63 exist only in it; rerr and rtup are declarations
+mut_rep "$T/ex/res" '^rtup 10 2 4 3$' 'rtup 11 2 4 3' > "$T/mut/r1"
+rejects "an rtup whose id does not start at 10" res "$T/mut/r1" BAD_TREE "$(lineof "$T/ex/res" '^rtup ')" "rtup id 11 where 10"
+mut_rep "$T/ex/res" '^rtup 10 2 4 3$' 'rtup 10 2 4 10' > "$T/mut/r2"
+rejects "an rtup that names itself" res "$T/mut/r2" BAD_RECORD "$(lineof "$T/ex/res" '^rtup ')" "defined type id"
+mut_rep "$T/ex/res" '^rtup 10 2 4 3$' 'rtup 10 1 4' > "$T/mut/r3"
+rejects "an rtup with one component" res "$T/mut/r3" BAD_TREE "$(lineof "$T/ex/res" '^rtup ')" "fewer than 2"
+(sed -n '1,3p' "$T/ex/res"; echo 'rerr 0:2:5 200 1 q'; sed -n '4,$p' "$T/ex/res") > "$T/mut/r4"
+(echo res; cat "$T/mut/r4") > "$T/v.in"
+expect "seaval accepts an rerr (code 200, one argument) before the rtup records" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
+(sed -n '1,4p' "$T/ex/res"; echo 'rerr 0:2:5 200 1 q'; sed -n '5,$p' "$T/ex/res") > "$T/mut/r5"
+rejects "an rerr after an rtup" res "$T/mut/r5" BAD_TREE "$(lineof "$T/mut/r5" '^rerr ')" "rerr is not the first"
+(sed -n '1,3p' "$T/ex/res"; echo 'rerr 0:2:5 200 2 q r'; sed -n '4,$p' "$T/ex/res") > "$T/mut/r6"
+rejects "an rerr whose k differs from the arguments of its code" res "$T/mut/r6" BAD_TREE "$(lineof "$T/mut/r6" '^rerr ')" "phase C2 with 2 arguments"
+(sed -n '1,3p' "$T/ex/res"; echo 'rerr 0:2:5 100 0'; sed -n '4,$p' "$T/ex/res") > "$T/mut/r7"
+rejects "an rerr with a code of another phase" res "$T/mut/r7" BAD_TREE "$(lineof "$T/mut/r7" '^rerr ')" "phase C2"
+(sed '$d' "$T/ex/res" | sed '$d'; echo 'rtup 11 2 4 3'; echo 'prog 4'; echo '#end') > "$T/mut/r8"
+rejects "an rtup after the tree began" res "$T/mut/r8" BAD_TREE "$(lineof "$T/mut/r8" '^rtup 11')" "after the tree began"
+mut_rep "$T/ex/res" '^rname 0:3:17 x loc 1$' 'rname 0:3:17 x sideways 1' > "$T/mut/r9"
+rejects "a word outside the enumeration (nkind)" res "$T/mut/r9" BAD_RECORD "$(lineof "$T/ex/res" '^rname 0:3:17 ')" "enumeration nkind"
+mut_rep "$T/ex/res" '^rcni 0:1:1 N 0 1 6$' 'rcni 0:1:1 N 0 1 six' > "$T/mut/r10"
+rejects "an rcni whose value is not a number" res "$T/mut/r10" BAD_RECORD "$(lineof "$T/ex/res" '^rcni ')" "field v"
+mut_rep "$T/ex/res" '^rpname 0:3:9 k 2$' 'rpname 0:3:9 k 0' > "$T/mut/r11"
+rejects "an rpname with the local number 0" res "$T/mut/r11" BAD_RECORD "$(lineof "$T/ex/res" '^rpname 0:3:9 ')" "not a local"
+rejects "an rtup record in sea.ast (codes 50-63 are sea.res only)" ast "$T/ex/res" BAD_RECORD "$(lineof "$T/ex/res" '^rtup ')" "unknown opcode 'rtup' for format ast"
+mut_del "$T/ex/res" '^rtup ' > "$T/mut/r13"
+rejects "an rint record in sea.ast, not only rtup" ast "$T/mut/r13" BAD_RECORD "$(lineof "$T/mut/r13" '^rint ')" "unknown opcode 'rint' for format ast"
+mut_rep "$T/ex/res" '^rfn 0:2:1 split 0 1 2 2 10 4$' 'rfn 0:2:1 split 0 1 2 2 11 4' > "$T/mut/r14"
+rejects "an rfn result type that is not defined" res "$T/mut/r14" BAD_RECORD "$(lineof "$T/ex/res" '^rfn ')" "defined type id"
+mut_rep "$T/ex/res" '^rfn 0:2:1 split 0 1 2 2 10 4$' 'rfn 0:2:1 split 0 1 2 2 0 0' > "$T/mut/r15"
+(echo res; cat "$T/mut/r15") > "$T/v.in"
+expect "seaval accepts the type 0 (a type with an error) in sea.res" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
 mut_rep "$T/ex/hir1" '^cf 0:6:27 ' 'cf 0:6:27 4 #3FE0000000000000' > "$T/mut/h0"
 rejects "a sea.hir1 file read as sea.ast (opcodes of another format)" ast "$T/ex/hir1" BAD_RECORD "$(lineof "$T/ex/hir1" '^tstruct ')" "unknown opcode 'tstruct' for format ast"
 
@@ -1019,7 +1053,7 @@ expect "seaval accepts the same unreferenced label as lir (no first-reference nu
 # the format line is compared with its length (Baysick: trailing blanks are ignored by =)
 for f in "lir1 " "lir1  " "ast " ; do
     (printf '%s\n' "$f"; cat "$T/ex/lir1") > "$T/v.in"
-    printf 'seaval: the first input line must name the format: ast, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
+    printf 'seaval: the first input line must name the format: ast, res, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
     runp "$T/seaval" "$T/v.in"
     if [ "$rc" -eq 11 ] && [ ! -s "$T/out" ] && grep -qF "the first input line must name the format" "$T/err"; then ok "seaval rejects the format line '$f' (trailing blank)"; else bad "seaval rejects the format line '$f'" "status $rc (wanted 11)" "stderr: $(head -c 200 "$T/err")"; fi
 done
@@ -1076,7 +1110,7 @@ rejects "a register that skips a number (the next after i8 is i9)" lir1 "$T/mut/
 awk '/^func f / { print "li i1 1" } { print }' "$T/ex/lirx" > "$T/mut/x19"
 rejects "an instruction outside a function" lir1 "$T/mut/x19" BAD_RECORD "$(lineof "$T/mut/x19" '^li i1 1$')" "outside a function"
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
-printf 'seaval: the first input line must name the format: ast, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
+printf 'seaval: the first input line must name the format: ast, res, hir1, hir, lir1 or lir\n' > "$T/fmt.err"
 expect "seaval: an unknown format name is reported (status 11)" "$T/seaval" "$T/v.in" 11 /dev/null "$T/fmt.err"
 
 echo

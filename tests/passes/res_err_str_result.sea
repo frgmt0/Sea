@@ -1,0 +1,5 @@
+// res_err_str_result -- rerr 259 strings at a str result type (its type node); rty 0 and no
+// rtup (DESIGN.md 3.4.1, 2.6.2)
+fn f() -> (i64, str) {
+    return (1, 2)
+}

@@ -1,0 +1,8 @@
+// res_err_first_pos -- two seaname errors: the item error (6:1) is found first, the signature
+// error (3:6) comes first in source order and is the rerr (3.4.1)
+fn f(s: str) {
+    printf("x\n")
+}
+fn f() {
+    printf("y\n")
+}

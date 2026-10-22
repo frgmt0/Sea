@@ -1,0 +1,16 @@
+// res_names -- rname loc (a parameter, var lo = lo, a block scope shadowing, a loop
+// variable, an outer local read by a shadowing let), cst, fn, pd, none (DESIGN.md 3.4.1)
+const K = 2
+fn f(lo: i64) -> i64 {
+    var lo = lo
+    if lo > K {
+        let lo = 1
+        return lo
+    }
+    return lo
+}
+let n = f(K)
+for i in 0..n {
+    let n = i + n
+}
+printf("%d\n", n + z)

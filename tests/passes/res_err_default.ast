@@ -1,0 +1,15 @@
+#sea 1
+#target arm64-macos
+#file res_err_default.sea
+type 0:3:9 i64 s 0
+name 0:3:15 K
+param 0:3:6 a 0 1
+type 0:3:21 i64 s 0
+name 0:4:12 a
+return 0:4:5 1
+block 0:3:25 1
+fn 0:3:1 f 0 1 1
+int 0:6:11 1
+const 0:6:1 K 0
+prog 2
+#end

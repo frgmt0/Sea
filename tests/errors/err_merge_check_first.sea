@@ -1,0 +1,5 @@
+// err_merge_check_first -- a seacheck error (undeclared, 2:9) before a seaname error (3:1) in source order is reported (DESIGN.md 2.6.2 order across the two programs)
+let x = y
+fn len() {
+    printf("x\n")
+}

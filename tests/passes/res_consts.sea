@@ -1,0 +1,12 @@
+// res_consts -- rcni, rcnf (an i64 value into an f64 annotation), rcnb, rcne ovf and div0,
+// rcn (cannot be typed; names a constant without a value; a cycle) (3.4.1)
+const I = 7 % 3 - 10
+const F: f64 = I * 2
+const B = F < 0.0 && !false
+const O = 1 + 9223372036854775807 * 2
+const D = 5 % (I + 9)
+const N = now()
+const M = N + 1
+const P = Q * 2
+const Q = P + 1
+let x = I + M

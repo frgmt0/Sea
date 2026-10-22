@@ -1,11 +1,10 @@
 10470 REM ---- powk: Z = 1 when the exponent B of a ^ is a constant whose exact value is an integer K0
-10475 REM with |K0| <= LIM_POWK (DESIGN 3.5.5 "Constant exponents", LANGUAGE 6.5); Z = 2 when B reads
-10480 REM a failed constant (no further error) ------------------------------------------------------
+10475 REM with |K0| <= LIM_POWK (DESIGN 3.5.5 "Constant exponents", LANGUAGE 6.5); Z = 2 when B names
+10480 REM a constant without a value (Decision 25): no powk ------------------------------------------
 10485 SUB "powk": N(), M(), Y(), C(), W(), X(), X$(), B, K0, Z
 10490 LET Z = 0
 10495 LET K0 = 0
-10500 REM W() fills evx's mtab slot Q(): with F = 0 evx never reads it, and Q() is not in scope here
-10505 REM W() only fills the mtab slot Q() of evx: F = 0 never reads it, and Q() is not in scope here
+10500 REM W() stands in for the mtab words Q() of evx: with F = 0 evx never reads them
 10510 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), W(), B, 0, K, A3, A2, A1, A0
 10515 IF K = 0 THEN 10635
 10520 IF K < 4 THEN 10545
@@ -36,12 +35,12 @@
 10645 REM DESIGN 2.8, 3.5.2, 3.5.5): K 1 i64, 2 f64 (limbs A3..A0), 3 bool (A0 0 or 1), 4 an error:
 10650 REM the i64 operation at node A0 overflowed (A1 = 1) or divided by zero (A1 = 2), the first in
 10655 REM evaluation order that the program would evaluate (&& and || skip their right operand as at
-10660 REM run time; A1 = 3: a poisoned value from a failed constant, already reported, A0 = 0);
+10660 REM run time; A1 = 3: a poisoned value from a constant without a value, A0 = 0);
 10665 REM 0 not a constant value (a call, a variable, a ^ that is not a powk). Post-order
 10670 REM with a value stack in W from X(11) up, five words per value (kind, four limbs); a
-10675 REM constant's value was computed before (ck_cord, cval). F = 1 (a const item, cval): pow(x, y)
-10680 REM and a ^ that is not a powk are evaluated by FEPOW with the mtab words Q() (DESIGN 4.10.5);
-10685 REM F = 0 (powk; Q() unused): they are no constant value. --------------------------------
+10675 REM constant's value was computed before (ck_cord, cval). F = 1 (a const item, cval): pow(x, y),
+10680 REM sqrt(x) and a ^ that is not a powk are evaluated (FEPOW with the mtab words Q(), DESIGN 4.10.5;
+10685 REM FESQR); F = 0 (powk; Q() unused): a call or such a ^ is no constant value. ------------------
 10690 SUB "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, F, K, A3, A2, A1, A0
 10695 LET B9 = X(11)
 10700 LET P = B9
@@ -92,8 +91,8 @@
 10925 IF S = 0 THEN 11390
 10930 IF S < 0 THEN 11045
 10935 IF Y(S, 0) <> 2 THEN 11390
-10940 REM the value of a constant (computed before, ck_cord): 1 i64 2 f64 (C row Y(S,8)), 3 bool (Y(S,8) itself)
-10945 REM 6 failed (an error was reported for it): a poisoned value, kind 4 with A1 = 3
+10940 REM the value of a constant (sn_const, before): 1 i64 2 f64 (limbs packed in Y(S,8), Y(S,9)),
+10945 REM 3 bool (Y(S,8) itself); 6 failed: a poisoned value, kind 4 with A1 = 3; 5 none
 10950 IF Y(S, 7) = 6 THEN 11030
 10955 IF Y(S, 7) = 0 THEN 11390
 10960 IF Y(S, 7) > 3 THEN 11390
@@ -105,10 +104,10 @@
 10990 LET R1 = 0
 10995 LET R0 = H
 11000 GOTO 11390
-11005 LET R3 = C(H, 1)
-11010 LET R2 = C(H, 2)
-11015 LET R1 = C(H, 3)
-11020 LET R0 = C(H, 4)
+11005 LET R3 = INT(H / 65536)
+11010 LET R2 = H - 65536 * R3
+11015 LET R1 = INT(Y(S, 9) / 65536)
+11020 LET R0 = Y(S, 9) - 65536 * R1
 11025 GOTO 11390
 11030 LET V = 4
 11035 LET R1 = 3
@@ -162,12 +161,20 @@
 11275 LET R1 = W(P0 + 4)
 11280 LET R0 = W(P0 + 5)
 11285 GOTO 11390
-11290 REM pow(x, y) (F = 1): x at W(P0+6..), y at W(P0+11..) after the callee name's slot; an error
-11295 REM operand passes up, the first one first
+11290 REM pow(x, y) and sqrt(x) (F = 1): x at W(P0+6..), y at W(P0+11..) after the callee name's
+11295 REM slot; an error operand passes up, the first one first
 11300 IF F = 0 THEN 11390
-11305 IF M(N(J, 7), 2) <> -X(39) THEN 11390
-11310 LET Q9 = 5
-11315 IF W(P0 + 6) = 4 THEN 11355
+11302 IF M(N(J, 7), 2) = -X(41) THEN 11312
+11304 IF M(N(J, 7), 2) <> -X(39) THEN 11390
+11306 LET Q9 = 5
+11308 IF W(P0 + 6) = 4 THEN 11355
+11310 GOTO 11320
+11312 REM sqrt(x): the correctly rounded square root (FESQR, DESIGN 2.8)
+11313 LET Q9 = 5
+11314 IF W(P0 + 6) = 4 THEN 11355
+11315 IF W(P0 + 6) <> 2 THEN 11390
+11316 CALL "FESQR": W(P0 + 7), W(P0 + 8), W(P0 + 9), W(P0 + 10), R3, R2, R1, R0
+11318 GOTO 11345
 11320 LET Q9 = 10
 11325 IF W(P0 + 11) = 4 THEN 11355
 11330 IF W(P0 + 6) <> 2 THEN 11390
@@ -341,38 +348,26 @@
 12170 LET R0 = Q0
 12175 LET V = 2
 12180 SUBEND
-12185 REM ---- cval: the value of const item S (LANGUAGE 7.2): Y(S,7) 1 i64, 2 f64, 3 bool, 5 none, 6 failed
-12190 REM (number: C row Y(S,8); bool: Y(S,8) is 0 or 1); an i64 overflow or zero divisor is error
-12195 REM 260 or 261 at its operator ----
-12200 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), H(), Q(), S
-12205 IF Y(S, 7) <> 0 THEN 12355
-12210 LET Y(S, 7) = 6
-12215 LET F = Y(S, 3)
-12220 LET E = N(F, 7)
-12225 IF N(F, 1) = 0 THEN 12235
-12230 LET E = N(E, 8)
+12185 REM ---- cval: the value of const item S (LANGUAGE 7.2, DESIGN 3.4.1): Y(S,7) 1 i64, 2 f64, 3
+12190 REM bool (limbs packed in Y(S,8), Y(S,9); bool: Y(S,8) 0 or 1), 5 none, 6 failed; an i64
+12195 REM overflow or zero divisor (rcne) is Y(S,4) 1 or 2 at the operator node Y(S,9) ------------
+12200 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S
+12205 LET Y(S, 7) = 6
+12210 CALL "cexp": N(), Y(), S, E
 12235 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, 1, K, A3, A2, A1, A0
 12240 IF K > 0 THEN 12260
-12245 REM no constant value (an error was reported by the check): none
+12245 REM not a constant value
 12250 LET Y(S, 7) = 5
 12255 GOTO 12355
 12260 IF K < 4 THEN 12300
-12265 REM a failed operand (A1 = 3) was reported already: this constant fails too, silently
+12265 REM a poisoned operand (A1 = 3) gives no value; an overflow or zero divisor is rcne
 12270 IF A1 = 3 THEN 12355
-12275 IF A1 = 2 THEN 12290
-12280 CALL "er": N(), X(), X$(), A0, "INT_OVERFLOW_C", "", "", "", 0
+12275 LET Y(S, 4) = A1
+12280 LET Y(S, 9) = A0
 12285 GOTO 12355
-12290 CALL "er": N(), X(), X$(), A0, "INT_DIV_ZERO_C", "", "", "", 0
-12295 GOTO 12355
-12300 REM a bool value is kept in Y(S,8) itself (0 or 1): only numbers count as constants (DESIGN
-12305 REM 2.7); the C row is keyed by type: 3 i64, 4 f64
-12310 LET R = A0
-12315 IF K = 3 THEN 12345
-12320 LET D = K + 2
-12325 CALL "cnew": C(), H(), X(), D, A3, A2, A1, A0, R
-12330 IF R > 0 THEN 12345
-12335 CALL "fatal": N(), X(), X$(), F, "constants"
-12340 GOTO 12355
-12345 LET Y(S, 8) = R
-12350 LET Y(S, 7) = K
+12300 LET Y(S, 7) = K
+12305 LET Y(S, 8) = A0
+12310 IF K = 3 THEN 12355
+12315 LET Y(S, 8) = A3 * 65536 + A2
+12320 LET Y(S, 9) = A1 * 65536 + A0
 12355 SUBEND

@@ -1,0 +1,3 @@
+const C = pow(2.0, 3.0)
+fn pow(x: f64, y: f64) -> f64 { return x }
+// err_const_noval_userpow -- C calls the program's fn pow, itself an error: C is not evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)

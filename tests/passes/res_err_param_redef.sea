@@ -1,0 +1,5 @@
+// res_err_param_redef -- rerr 235 at the later of two parameters of one name (DESIGN.md 3.4.1,
+// 2.6.2)
+fn g(a: i64, a: i64) {
+    printf("x\n")
+}

@@ -1,0 +1,5 @@
+// res_powk_mod -- the operands of an untyped % are i64 (LANGUAGE.md 4.2): x ^ (6 % 4) is rpowk 2
+// (DESIGN.md 3.5.5); x ^ (5.0 % 3.0) is rpowk 2 by the exact f64 % (6.6)
+let x = 1.5
+let a = x ^ (6 % 4)
+let b = x ^ (5.0 % 3.0)

@@ -1074,8 +1074,11 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   instead of the run-time errors of §6.5 and §6.6. A use of the constant is that one value.
 * **A constant without a value.** A constant has no value when it has a compile error, when its
   evaluation fails, or when it is not evaluated: a constant whose expression names a constant
-  without a value, or whose type could not be determined because of another error, is **not
-  evaluated**, so its own evaluation reports nothing (`const B = 9223372036854775807 + 1 + A`
+  without a value, or any part of whose expression (the whole included) has a type that could
+  not be determined because of another error, or that calls a function the program declares
+  under a predeclared name (`fn pow`, itself an error), is **not evaluated**, also where `&&` or
+  `||` would not reach that part (`const B: bool = false && f() == 1.0` with a faulty `f` has no
+  value), so its own evaluation reports nothing (`const B = 9223372036854775807 + 1 + A`
   with a faulty `A` reports `A`'s error, not an overflow in `B`). A program with a compile
   error is not compiled, so a constant without a value is never used at run time (DESIGN.md §9
   Decision 25).

@@ -1,0 +1,5 @@
+// res_err_elemental -- rerr 259 elemental functions at the fn item (at elemental); rfn el 1
+// (DESIGN.md 3.4.1, 2.6.2)
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}

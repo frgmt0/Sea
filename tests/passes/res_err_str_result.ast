@@ -1,0 +1,12 @@
+#sea 1
+#target arm64-macos
+#file res_err_str_result.sea
+type 0:3:12 i64 s 0
+type 0:3:17 str s 0
+int 0:4:13 1
+int 0:4:16 2
+return 0:4:5 2
+block 0:3:22 1
+fn 0:3:1 f 0 0 2
+prog 1
+#end

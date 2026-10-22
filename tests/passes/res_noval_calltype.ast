@@ -1,0 +1,14 @@
+#sea 1
+#target arm64-macos
+#file res_noval_calltype.sea
+type 0:1:10 f64 s 0
+name 0:1:16 f
+call 0:1:16 0
+const 0:1:1 A 1
+type 0:2:11 str s 0
+int 0:2:24 1
+return 0:2:17 1
+block 0:2:15 1
+fn 0:2:1 f 0 0 1
+prog 2
+#end

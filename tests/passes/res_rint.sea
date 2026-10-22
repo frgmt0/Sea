@@ -1,0 +1,5 @@
+// res_rint -- rint: fv - for 2^53 + 1 (not exact in f64), #C3E0000000000000 for the 2^63
+// literal under neg, an exact large value (DESIGN.md 3.4.1)
+let a = 9007199254740993
+let b = -9223372036854775808
+let c = 9007199254740992 * 4

@@ -65,7 +65,8 @@ pwd >> "$SEA_LOG.cwd"
 if [ "$SEA_FAIL_PASS" = "$p" ]; then printf '%s\n' "$SEA_FAIL_MSG" >&2; exit "$SEA_FAIL_STATUS"; fi
 case $p in
 seaparse) cat > sea.ast ;;
-seacheck) cp sea.ast sea.hir1 ;;
+seaname) cp sea.ast sea.res ;;
+seacheck) cp sea.res sea.hir1 ;;
 seaexpand) cp sea.hir1 sea.hir ;;
 sealower) cp sea.hir sea.lir1 ;;
 seaopt) cp sea.lir1 sea.lir ;;
@@ -80,7 +81,7 @@ install_fakes() { # install_fakes DIR : a complete scratch installation
     mkdir -p "$1"
     cp "$ROOT/include/errors.inc" "$ROOT/include/limits.inc" "$1/"
     printf '// fake prelude\n' > "$1/std.sea"
-    for p in seaparse seacheck seaexpand sealower seaopt seagen_a64 seagen_x64; do mkpass "$1" "$p"; done
+    for p in seaparse seaname seacheck seaexpand sealower seaopt seagen_a64 seagen_x64; do mkpass "$1" "$p"; done
 }
 install_fakes "$HOME_"
 if [ $DARWIN = 1 ]; then
@@ -129,7 +130,7 @@ echo 'let x = 1' > "$W/p.sea"
 
 # ---- usage errors (status 2) ----------------------------------------------------------------
 if begin driver/no-arguments; then
-    drive; want_status 2; want_out_empty; first_line_is 'sea: usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]'; want_log ""; end; fi
+    drive; want_status 2; want_out_empty; first_line_is 'sea: usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|res|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]'; want_log ""; end; fi
 if begin driver/unknown-command; then
     drive frob p.sea; want_status 2; first_line_is "sea: unknown command 'frob'"; end; fi
 if begin driver/unknown-option; then
@@ -156,7 +157,7 @@ if begin driver/run-needs-native-target; then
     drive run p.sea --target x86_64-linux; want_status 2; first_line_is "sea: unknown option '--target'"; end; fi
 if begin driver/help; then
     drive --help; want_status 0; want_file "$T/e" "$T/empty" "standard error"
-    [ "$(sed -n 1p "$T/o")" = 'usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]' ] || bad "help text"; end; fi
+    [ "$(sed -n 1p "$T/o")" = 'usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|res|hir1|hir|lir1|lir] [--keep-temps] [--no-prelude]' ] || bad "help text"; end; fi
 if begin driver/version; then
     drive --version; want_status 0; want_file "$T/e" "$T/empty" "standard error"
     case $(cat "$T/o") in "sea "[0-9]*) ;; *) bad "version text '$(cat "$T/o")'" ;; esac; end; fi
@@ -177,7 +178,7 @@ if begin driver/unwritable-output; then
 # A line of 4096 bytes after CR removal is allowed; 4097 is `line too long` at column 4097.
 if begin driver/line-4096-ok; then
     { bytes 4096; printf '\n'; } > "$W/l.sea"
-    drive build -S -o "$T/o.s" l.sea; want_status 0; want_log "seaparse seacheck seaexpand sealower seaopt seagen_a64"; end; fi
+    drive build -S -o "$T/o.s" l.sea; want_status 0; want_log "seaparse seaname seacheck seaexpand sealower seaopt seagen_a64"; end; fi
 if begin driver/line-4097; then
     { bytes 4097; printf '\n'; } > "$W/l.sea"
     drive build -S -o "$T/o.s" l.sea; want_status 1; want_out_empty; want_err 'l.sea:1:4097: error: line too long'; want_log ""; want_tmp_clean; end; fi
@@ -231,12 +232,17 @@ if begin driver/missing-later-pass; then
     mkdir -p "$T/home4"; install_fakes "$T/home4"; rm "$T/home4/sealower"
     : > "$T/log"
     (cd "$W" && SEA_HOME=$T/home4 TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build -S -o "$T/o.s" p.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
-    want_status 4; want_err "sea: internal error: pass executable '$T/home4/sealower' not found (run make)"; want_log "seaparse seacheck seaexpand"; want_tmp_clean; end; fi
+    want_status 4; want_err "sea: internal error: pass executable '$T/home4/sealower' not found (run make)"; want_log "seaparse seaname seacheck seaexpand"; want_tmp_clean; end; fi
 if begin driver/emit-needs-only-its-passes; then
-    mkdir -p "$T/home5"; install_fakes "$T/home5"; rm "$T/home5/seacheck" "$T/home5/sealower"
+    mkdir -p "$T/home5"; install_fakes "$T/home5"; rm "$T/home5/seaname" "$T/home5/seacheck" "$T/home5/sealower"
     : > "$T/log"
     (cd "$W" && SEA_HOME=$T/home5 TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build --emit ast p.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
     want_status 0; want_log "seaparse"; end; fi
+if begin driver/emit-res-needs-only-its-passes; then
+    mkdir -p "$T/home5b"; install_fakes "$T/home5b"; rm "$T/home5b/seacheck" "$T/home5b/sealower"
+    : > "$T/log"
+    (cd "$W" && SEA_HOME=$T/home5b TMPDIR=$TD SEA_LOG=$T/log "$DRIVER" build --emit res p.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
+    want_status 0; want_log "seaparse seaname"; end; fi
 if begin driver/missing-std; then
     mkdir -p "$T/home6"; cp "$HOME_/errors.inc" "$HOME_/limits.inc" "$T/home6/"
     (cd "$W" && SEA_HOME=$T/home6 TMPDIR=$TD "$DRIVER" build p.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
@@ -245,8 +251,8 @@ if begin driver/missing-std; then
 # ---- the pass sequence and the pass-1 input stream ---------------------------------------------------
 printf 'let x = 1\r\n\n  y\nz' > "$W/s.sea"
 if begin driver/pass-order; then
-    drive build -S -o "$T/o.s" p.sea; want_status 0; want_out_empty; want_log "seaparse seacheck seaexpand sealower seaopt seagen_a64"; want_tmp_clean; end; fi
-for x in ast:seaparse hir1:"seaparse seacheck" hir:"seaparse seacheck seaexpand" lir1:"seaparse seacheck seaexpand sealower" lir:"seaparse seacheck seaexpand sealower seaopt"; do
+    drive build -S -o "$T/o.s" p.sea; want_status 0; want_out_empty; want_log "seaparse seaname seacheck seaexpand sealower seaopt seagen_a64"; want_tmp_clean; end; fi
+for x in ast:seaparse res:"seaparse seaname" hir1:"seaparse seaname seacheck" hir:"seaparse seaname seacheck seaexpand" lir1:"seaparse seaname seacheck seaexpand sealower" lir:"seaparse seaname seacheck seaexpand sealower seaopt"; do
     k=${x%%:*}; passes=${x#*:}
     if begin driver/emit-$k-stops; then
         drive build --emit $k p.sea; want_status 0; want_log "$passes"; [ -s "$T/o" ] || bad "no dump on standard output"; want_tmp_clean; end; fi
@@ -390,7 +396,7 @@ if begin driver/S-name-without-extension; then
     cp "$W/p.sea" "$W/noext"; rm -f "$W/noext.out.s"; drive build -S noext; want_status 0; [ -s "$W/noext.out.s" ] || bad "noext.out.s not written"; end; fi
 if begin driver/x86-64-target-writes-asm; then
     rm -f "$W/p.s"; drive build --target x86_64-linux p.sea; want_status 0
-    want_log "seaparse seacheck seaexpand sealower seaopt seagen_x64"; [ -s "$W/p.s" ] || bad "p.s not written"; end; fi
+    want_log "seaparse seaname seacheck seaexpand sealower seaopt seagen_x64"; [ -s "$W/p.s" ] || bad "p.s not written"; end; fi
 if begin driver/x86-64-target-o; then
     rm -f "$W/x.s"; drive build --target x86_64-linux p.sea -o x.s; want_status 0; [ -s "$W/x.s" ] || bad "x.s not written"; end; fi
 if begin driver/keep-temps; then
@@ -414,16 +420,18 @@ fail_case() { # fail_case NAME PASS STATUS DRIVER-STATUS EXTRA-STDERR-LINE
     fi
 }
 fail_case driver/pass-compile-error-1 seaparse 10 1 ""
+fail_case driver/pass-compile-error-seaname seaname 10 1 ""
 fail_case driver/pass-compile-error-2 seacheck 10 1 ""
 fail_case driver/pass-compile-error-last seagen_a64 10 1 ""
 fail_case driver/pass-internal-11 seaexpand 11 4 "sea: internal error: seaexpand failed with exit status 11"
+fail_case driver/pass-internal-11-seaname seaname 11 4 "sea: internal error: seaname failed with exit status 11"
 fail_case driver/pass-baysick-error-1 sealower 1 4 "sea: internal error: sealower failed with exit status 1"
 fail_case driver/pass-killed-137 seaopt 137 4 "sea: internal error: seaopt failed with exit status 137"
 if begin driver/pass-error-stops-the-chain; then
     rm -f "$T/o.s"
     : > "$T/log"
     (cd "$W" && SEA_HOME=$HOME_ TMPDIR=$TD SEA_LOG=$T/log SEA_FAIL_PASS=seacheck SEA_FAIL_STATUS=10 SEA_FAIL_MSG=m "$DRIVER" build -S -o "$T/o.s" p.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
-    want_log "seaparse seacheck"; [ -e "$T/o.s" ] && bad "an output was written"; rm -f "$T/o.s"; end; fi
+    want_log "seaparse seaname seacheck"; [ -e "$T/o.s" ] && bad "an output was written"; rm -f "$T/o.s"; end; fi
 if begin driver/pass-stdout-goes-to-stderr; then
     mkdir -p "$T/home7"; install_fakes "$T/home7"
     sed 's/^exit 0$/echo noise; exit 0/' "$T/home7/seacheck" > "$T/home7/seacheck.new" && mv "$T/home7/seacheck.new" "$T/home7/seacheck" && chmod +x "$T/home7/seacheck"

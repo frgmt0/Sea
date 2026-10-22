@@ -1,0 +1,13 @@
+#sea 1
+#target arm64-macos
+#file res_err_param_shadow.sea
+type 0:3:11 i64 s 0
+int 0:3:17 1
+param 0:3:6 len 0 1
+type 0:3:23 i64 s 0
+name 0:4:12 len
+return 0:4:5 1
+block 0:3:27 1
+fn 0:3:1 f 0 1 1
+prog 1
+#end

@@ -1,0 +1,3 @@
+const A: f64 = f()
+fn f() -> str { return 1 }
+// err_const_noval_calltype -- A: f64 = f() with a faulty f: the str result is the error, A is not evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)

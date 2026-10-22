@@ -1,0 +1,5 @@
+// err_merge_const_after -- a seaname error (2:1) before a constant's integer overflow (5:11) is reported (DESIGN.md 2.6.2, 3.4.1)
+fn len() {
+    printf("x\n")
+}
+const A = 9223372036854775807 + 1

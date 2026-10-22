@@ -5,7 +5,7 @@
 50 REM consts records, and the line 99999 END.
 60 REM
 70 REM USAGE   the file to check is read on standard input. Its FIRST line (not part of the file)
-80 REM         names the format: ast, hir1, hir, lir1 or lir. The rest is the file, verbatim.
+80 REM         names the format: ast, res, hir1, hir, lir1 or lir. The rest is the file, verbatim.
 90 REM         (Baysick has no command-line arguments: the options travel on standard input,
 100 REM         DESIGN 2.2 step 4.) Example: ( echo hir1; cat sea.hir1 ) | seaval
 110 REM EXIT    0 the file is valid (nothing is printed); 11 it is not (DESIGN 2.2: an internal
@@ -19,7 +19,7 @@
 190 REM         limit, or a wrong format name, is also reported with status 11.
 200 REM CHECKED header records (order, version = SEA_FILE_VERSION, target in enum target, #file
 210 REM         paths); every body byte in 0x20-0x7E; every record: opcode of the file's sets (ast:
-220 REM         A; hir1: H H1; hir: H HF; lir1: L; lir: L LF), field count including the repeated
+220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; lir1: L; lir: L LF), field count including the repeated
 230 REM         fields, each field's type (u i f s pos site fl, enumerations, references, registers
 240 REM         with their class); the tree stack of DESIGN 3.3 (pops from the pops column; a
 250 REM         section end - prog, cn, end - leaves the stack empty; end pops a block); in the
@@ -98,7 +98,14 @@
 980 IF P1 = 0 THEN 1070
 990 LET Y(I) = VAL(SEG$(K1$, P1 + LEN(R$(I)) + 2, P1 + LEN(R$(I)) + 3))
 1000 GOTO 1070
-1010 IF R$(I) <> "prog" THEN 1070
+1010 IF R$(I) = "prog" THEN 1020
+1012 IF R$(I) = "rerr" THEN 1016
+1014 IF R$(I) = "rtup" THEN 1018
+1015 GOTO 1070
+1016 LET Y(I) = 20
+1017 GOTO 1070
+1018 LET Y(I) = 21
+1019 GOTO 1070
 1020 LET Y(I) = 1
 1030 GOTO 1070
 1040 LET P1 = POS(K2$, "|" & R$(I) & "=")
@@ -114,12 +121,17 @@
 1140 REM the allowed record sets A(s) of each format; sets 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF
 1150 LET K0 = 0
 1160 IF K$ = "ast" THEN 1220
+1165 IF K$ = "res" THEN 1226
 1170 IF K$ = "hir1" THEN 1250
 1180 IF K$ = "hir" THEN 1290
 1190 IF K$ = "lir1" THEN 1330
 1200 IF K$ = "lir" THEN 1360
-1210 CALL "dg_bug": P$, "the first input line must name the format: ast, hir1, hir, lir1 or lir"
+1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, lir1 or lir"
 1220 LET K0 = 1
+1221 LET R6 = 0
+1222 GOTO 1230
+1226 LET K0 = 1
+1227 LET R6 = 1
 1230 LET A(1) = 1
 1240 GOTO 1390
 1250 LET K0 = 2
@@ -154,6 +166,9 @@
 1540 LET I0 = 0
 1550 FOR I = 1 TO Z(7)
 1560 IF A(R(I, 1)) = 0 THEN 1600
+1562 IF R6 = 1 THEN 1570
+1564 IF R(I, 1) <> 1 THEN 1570
+1566 IF R(I, 2) >= 50 THEN 1600
 1570 IF R$(I) <> G$(1) THEN 1600
 1580 LET I0 = I
 1590 GOTO 1630
@@ -193,10 +208,12 @@
 1930 LET M$ = "fd record expected after tstruct / trec"
 1940 IF X8 = 0 THEN 1960
 1950 IF Y0 <> 11 THEN 4910
-1960 IF Y0 = 0 THEN 2090
+1960 IF Y0 = 0 THEN 2085
 1970 IF Y0 = 1 THEN 2260
 1980 IF Y0 = 10 THEN 2320
 1990 IF Y0 = 11 THEN 2490
+1992 IF Y0 = 20 THEN 6600
+1994 IF Y0 = 21 THEN 6800
 2000 IF Y0 = 12 THEN 2540
 2010 IF Y0 = 13 THEN 2660
 2020 IF Y0 = 14 THEN 2760
@@ -206,6 +223,7 @@
 2060 LET M$ = "record kind not handled"
 2070 GOTO 4910
 2080 REM ---- a node: pops its children, pushes itself ----------------------------------------------
+2085 LET T9 = 2
 2090 IF K0 = 1 THEN 2190
 2100 LET M$ = "node outside a function"
 2110 IF F7 = 1 THEN 2160
@@ -568,7 +586,9 @@
 5680 IF T <> 0 THEN 6530
 5690 LET U(J) = V
 5700 LET M$ = B$ & " is not a defined type id (the last is " & STR$(Y9) & ")"
-5710 IF V < 1 THEN 4910
+5710 IF V >= 1 THEN 5720
+5712 IF R6 = 1 THEN 5730
+5714 GOTO 4910
 5720 IF V > Y9 THEN 4910
 5730 RETURN
 5740 REM lid: a local of the current function
@@ -577,6 +597,7 @@
 5770 LET U(J) = V
 5780 LET M$ = B$ & " is not a local of the function (it has " & STR$(F8) & ")"
 5790 IF V < 1 THEN 4910
+5795 IF R6 = 1 THEN 5810
 5800 IF V > F8 THEN 4910
 5810 RETURN
 5820 REM fid, cid, iid: numbers from 1 (the tables they name are checked by the passes)
@@ -655,3 +676,38 @@
 6550 GOTO 4910
 6560 LET M$ = B$ & " is not a word of enumeration " & N$(T1 - 100)
 6570 GOTO 4910
+6580 REM ---- sea.res: rerr and rtup (DESIGN 3.4.1): declarations, not nodes, never on the tree stack --------
+6590 REM T9 body state: 0 nothing yet, 1 rerr / rtup seen, 2 the tree has begun
+6600 LET M$ = "rerr is not the first record of the body"
+6610 IF T9 <> 0 THEN 4910
+6620 LET T9 = 1
+6630 LET Z$ = "code"
+6640 GOSUB 5090
+6650 LET Q1 = V
+6660 LET Z$ = "k"
+6670 GOSUB 5090
+6680 LET Q2 = V
+6690 LET M$ = "rerr code " & STR$(Q1) & " is not a code of phase C2 with " & STR$(Q2) & " arguments"
+6700 FOR W2 = 1 TO E0
+6710 IF E(W2) <> Q1 THEN 6780
+6720 IF E$(W2, 2) <> "C2" THEN 4910
+6730 LET Q3 = LEN(E$(W2, 4))
+6740 IF E$(W2, 4) <> "-" THEN 6760
+6750 LET Q3 = 0
+6760 IF Q3 <> Q2 THEN 4910
+6770 GOTO 4520
+6780 NEXT W2
+6790 GOTO 4910
+6800 LET M$ = "rtup after the tree began"
+6810 IF T9 = 2 THEN 4910
+6820 LET T9 = 1
+6830 LET Z$ = "id"
+6840 GOSUB 5090
+6850 LET M$ = "rtup id " & STR$(V) & " where " & STR$(Y9 + 1) & " was expected (ids count from 10, in order)"
+6860 IF V <> Y9 + 1 THEN 4910
+6870 LET Y9 = V
+6880 LET Z$ = "n"
+6890 GOSUB 5090
+6900 LET M$ = "rtup with fewer than 2 components"
+6910 IF V < 2 THEN 4910
+6920 GOTO 4520

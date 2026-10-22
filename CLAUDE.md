@@ -17,8 +17,11 @@ host. Decision 7 (the user's MATLAB rerun) is done: the MATLAB baseline is commi
 commit c1736f7. **Phase 3** (elementary functions: Sea's own scalar `log exp sin cos pow hypot`
 on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete at sea commit 98e1e14: the
 `math/` tests pass on both targets (≤ 1 ulp against the high-precision references, identical bits
-on both targets). **Next: phase 4** of DESIGN.md §8, **arrays and structs**; seacheck is expected
-to split into two programs in this phase (DESIGN.md §2.7, §7.3).
+on both targets). **Next: phase 4** of DESIGN.md §8, **arrays and structs**;
+sub-phase 4a splits pass 2a into two programs, `seaname` (`sea.ast` → `sea.res`: names, scopes,
+items, signatures, constants) and `seacheck` (`sea.res` → `sea.hir1`; DESIGN.md §2.1, §3.4.1), so
+the pipeline is `seaparse seaname seacheck seaexpand sealower seaopt seagen_a64` (`seagen_x64`)
+and `--emit res` dumps `sea.res`.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -36,7 +39,7 @@ to split into two programs in this phase (DESIGN.md §2.7, §7.3).
   `build/gen/<pass>.bas` (its own files, the modules and `DATA` blocks of its `build.list`,
   `99999 END`; DESIGN.md §2.6.3) and compiled with Baysick (`BAYSICK=<dir>`, default `..`; run
   `make` there first). `build/` is the installation directory (DESIGN.md §2.10).
-- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|hir1|hir|lir1|lir]
+- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|lir1|lir]
   [--no-prelude] [--keep-temps]`, `build/sea run <file.sea> [-- args…]` (DESIGN.md §2.2).
 - Tests: `make test` runs, after `make all` and `make check-contracts`, every group even if one
   fails: `test-driver` (`tests/driver_check.sh`), `check-data` (`tests/check_data.sh`, the DATA
@@ -69,9 +72,9 @@ to split into two programs in this phase (DESIGN.md §2.7, §7.3).
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
-- `passes/<pass>/` each pass's Baysick files and `build.list`; `passes/lib/` the shared modules
+- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealower seaopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
   (`io diag tables limb f64emu fltlit`), interfaces in `passes/lib/API.md`, `API-arith.md`.
-- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator),
+- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir lir1 lir`),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.

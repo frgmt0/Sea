@@ -1,0 +1,13 @@
+#sea 1
+#target arm64-macos
+#file res_err_handle.sea
+type 0:3:9 Figure s 0
+param 0:3:6 a 0 0
+name 0:4:5 printf
+str 0:4:12 x%0A
+call 0:4:5 1
+cstmt 0:4:5
+block 0:3:17 1
+fn 0:3:1 f 0 1 0
+prog 1
+#end

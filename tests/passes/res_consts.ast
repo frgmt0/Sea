@@ -1,0 +1,55 @@
+#sea 1
+#target arm64-macos
+#file res_consts.sea
+int 0:3:11 7
+int 0:3:15 3
+bin 0:3:11 mod
+int 0:3:19 10
+bin 0:3:11 sub
+const 0:3:1 I 0
+type 0:4:10 f64 s 0
+name 0:4:16 I
+int 0:4:20 2
+bin 0:4:16 mul
+const 0:4:1 F 1
+name 0:5:11 F
+float 0:5:15 #0000000000000000
+bin 0:5:11 lt
+false 0:5:23
+not 0:5:22
+bin 0:5:11 and
+const 0:5:1 B 0
+int 0:6:11 1
+int 0:6:15 #7FFFFFFFFFFFFFFF
+int 0:6:37 2
+bin 0:6:15 mul
+bin 0:6:11 add
+const 0:6:1 O 0
+int 0:7:11 5
+name 0:7:16 I
+int 0:7:20 9
+bin 0:7:16 add
+bin 0:7:11 mod
+const 0:7:1 D 0
+name 0:8:11 now
+call 0:8:11 0
+const 0:8:1 N 0
+name 0:9:11 N
+int 0:9:15 1
+bin 0:9:11 add
+const 0:9:1 M 0
+name 0:10:11 Q
+int 0:10:15 2
+bin 0:10:11 mul
+const 0:10:1 P 0
+name 0:11:11 P
+int 0:11:15 1
+bin 0:11:11 add
+const 0:11:1 Q 0
+pname 0:12:5 x
+name 0:12:9 I
+name 0:12:13 M
+bin 0:12:9 add
+let 0:12:1 0
+prog 10
+#end

@@ -1,0 +1,5 @@
+// res_err_unknown_struct -- rerr 229 unknown struct type at an undeclared type name of a
+// signature (its type node) (DESIGN.md 3.4.1, 2.6.2)
+fn f(p: Q) {
+    printf("x\n")
+}

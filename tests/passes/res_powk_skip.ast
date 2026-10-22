@@ -1,0 +1,68 @@
+#sea 1
+#target arm64-macos
+#file res_powk_skip.sea
+int 0:3:11 2
+const 0:3:1 K 0
+type 0:4:9 f64 s 0
+param 0:4:6 x 0 0
+type 0:4:18 f64 s 0
+type 0:4:23 i64 s 0
+name 0:5:13 x
+name 0:5:17 K
+bin 0:5:13 pow
+int 0:5:20 1
+return 0:5:5 2
+block 0:4:28 1
+fn 0:4:1 g 0 1 2
+type 0:7:9 f64 s 0
+param 0:7:6 x 0 0
+type 0:7:18 f64 s 0
+type 0:7:23 i64 s 0
+pname 0:8:9 K
+int 0:8:13 3
+let 0:8:5 0
+name 0:9:13 x
+name 0:9:17 K
+bin 0:9:13 pow
+name 0:9:20 K
+return 0:9:5 2
+block 0:7:28 2
+fn 0:7:1 h 0 1 2
+type 0:11:9 f64 s 0
+param 0:11:6 y 0 0
+type 0:11:17 f64 s 0
+name 0:12:12 y
+name 0:12:16 K
+bin 0:12:12 pow
+return 0:12:5 1
+block 0:11:21 1
+fn 0:11:1 g 0 1 1
+int 0:14:11 1
+int 0:14:14 2
+row 0:14:11 2
+array 0:14:10 1
+pname 0:15:9 w
+name 0:15:13 e
+let 0:15:5 0
+block 0:14:17 1
+for 0:14:1 e 0:14:5
+str 0:17:7 a
+str 0:18:5 a
+pname 0:18:18 m
+int 0:18:22 1
+let 0:18:14 0
+block 0:18:12 1
+arm 0:18:5 1
+pname 0:19:16 m
+int 0:19:20 2
+let 0:19:12 0
+block 0:19:10 1
+arm 0:19:5 0
+match 0:17:1 2
+pname 0:21:5 t
+name 0:21:9 g
+float 0:21:11 #4000000000000000
+call 0:21:9 1
+let 0:21:1 0
+prog 7
+#end

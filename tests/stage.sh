@@ -4,7 +4,8 @@
 # build/ (run make first).
 #
 # For every tests/passes/NAME.<prev> that has the golden next file NAME.<next>:
-#     pass 2a  seacheck    NAME.ast  -> NAME.hir1
+#     pass 2a  seaname     NAME.ast  -> NAME.res
+#     pass 2a  seacheck    NAME.res  -> NAME.hir1
 #     pass 2b  seaexpand   NAME.hir1 -> NAME.hir
 #     pass 3a  sealower    NAME.hir  -> NAME.lir1
 #     pass 3b  seaopt      NAME.lir1 -> NAME.lir
@@ -183,7 +184,8 @@ for g in "$ROOT"/tests/passes/*.lir; do
     [ $ok = 1 ] && pass
 done
 
-stage seacheck ast hir1
+stage seaname ast res
+stage seacheck res hir1
 stage seaexpand hir1 hir
 stage sealower hir lir1
 stage seaopt lir1 lir

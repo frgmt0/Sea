@@ -1,0 +1,6 @@
+// res_struct -- rst and rname st (a struct name used as a value); rerr not supported yet:
+// structs at the struct item (DESIGN.md 3.4.1, 2.6.2)
+struct P {
+    x: f64
+}
+let q = P

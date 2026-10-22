@@ -1,0 +1,5 @@
+// res_err_str_param -- rerr 259 strings at a str parameter (its param node); its type in rfn
+// is 0 (DESIGN.md 3.4.1, 2.6.2)
+fn f(s: str, n: i64) {
+    printf("x\n")
+}

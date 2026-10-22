@@ -1,0 +1,19 @@
+#sea 1
+#target arm64-macos
+#file res_noval_userpow.sea
+name 0:1:11 pow
+float 0:1:15 #4000000000000000
+float 0:1:20 #4008000000000000
+call 0:1:11 2
+const 0:1:1 C 0
+type 0:2:11 f64 s 0
+param 0:2:8 x 0 0
+type 0:2:19 f64 s 0
+param 0:2:16 y 0 0
+type 0:2:27 f64 s 0
+name 0:2:40 x
+return 0:2:33 1
+block 0:2:31 1
+fn 0:2:1 pow 0 2 1
+prog 2
+#end
