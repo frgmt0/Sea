@@ -19,7 +19,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 NAMES = ["w1_shaft_design", "w2_truss_fem", "w3_quarter_car", "w4_heat_plate",
-         "w5_tolerance_mc"]
+         "w5_tolerance_mc", "w6_topopt"]
 
 
 def main():

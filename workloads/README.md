@@ -1,8 +1,10 @@
 # Sea acceptance workloads
 
-Five MATLAB scripts that look like everyday engineering work. They are the acceptance targets
-for Sea: a Sea port of each script must produce the same numbers and an equivalent text report,
-and should run much faster than MATLAB does.
+Six MATLAB scripts that look like everyday engineering work. W1-W5 are the acceptance targets
+of Sea v1 (DESIGN.md §1.2): a Sea port of each script must produce the same numbers and an
+equivalent text report, and should run much faster than MATLAB does. W6 (topology
+optimisation) is an additional reference workload for phase 8 or later; it is not part of the
+v1 acceptance set unless the user decides so.
 
 **Originality rule.** Every script here is original. The hardware, materials, loads, geometry,
 tolerances and catalogs are invented for this benchmark. The methods are public textbook ones
@@ -20,6 +22,7 @@ with Sea.
 | `w3_quarter_car.m` | Choose suspension damping for a nonlinear quarter car | 2-DOF model with an asymmetric damper, a cubic bump stop, tire damping and tire lift-off. Hand-written fixed-step **RK4** (dt = 1 ms, 8000 steps), a bump run and a random-road run for each of 30 damping values (480k RK4 steps, 1.9M derivative calls). The road comes from 60 harmonics with LCG phases, evaluated vectorized on a 16001 x 60 grid. Metrics: peak and RMS acceleration, travel, tire load, lift-off, settling time, a cost minimum with parabolic refinement, and `eig` for the linear natural frequencies |
 | `w4_heat_plate.m` | Steady temperature of a 300 x 200 mm aluminium plate with a heat source, a coolant channel, two fixed-temperature edges and two insulated edges | 241 x 161 grid (37,662 unknowns), 5-point finite differences. **Scalar-loop SOR** (lexicographic, about 830 sweeps, 31M point updates) and a **vectorized red-black SOR** (about 760 sweeps) to a 1e-8 K tolerance. Residuals, a conservative heat-flow balance, the flux field, and centerline profiles |
 | `w5_tolerance_mc.m` | Axial end play of a bearing/gear stack in an aluminium housing, cold and at operating temperature | 7-member tolerance chain. Worst-case and RSS limits, then 1,000,000-sample **Monte Carlo** from an in-script Park-Miller LCG (11M scalar LCG steps), with Box-Muller normals, uniform and triangular (inverse-CDF) distributions, and thermal expansion. Reports mean/std/Cpk, rejects, a 60-bin histogram via `accumarray`, percentiles, variance shares, and a 25-step tolerance-scaling yield sweep |
+| `w6_topopt.m` | Find the stiffest layout of half the material in an MBB half-beam (two filters) and a cantilever | 2D **SIMP** minimum compliance: Q4 plane-stress elements, sparse assembly and sparse direct `K\f` per iteration, density or sensitivity filter (`conv2`), **optimality criteria** with a 0.2 move limit and bisection on the Lagrange multiplier (to 1e-9 relative). Meshes 120 x 40, 120 x 40, 100 x 50 (9,922 / 9,922 / 10,302 DOF); 94-158 design iterations per case (376 solves and ~18k filter applications and ~23k bisection steps in all) |
 
 Each script:
 
@@ -77,6 +80,11 @@ workload has to express, and what has to be fast.
 
 **x** = a central, performance-relevant use; x = used.
 
+W6 needs, beyond the rows above: **sparse assembly** from triplets (`sparse(iK, jK, sK)`) and a
+**sparse SPD solve** `K(free,free)\f(free)` on ~10k DOF per iteration (the hot path), `conv2`
+with a small kernel (the filter, ~60 calls per design iteration with the density filter), `kron`/`repmat` index
+building, `ndgrid`, a scalar bisection loop around whole-array updates, and `imagesc` figures.
+
 ## Running in MATLAB
 
 Open MATLAB R2026a and set the current folder to `sea/workloads` (any folder works, because
@@ -88,7 +96,16 @@ run_all(true)         % same, plus figures saved to output/
 run_all(false, 5)     % 5 repetitions for timing (the default)
 run_all(false, 5, 1)  % the same with MATLAB limited to one computational thread
 w3_quarter_car        % one workload on its own: report + figures, writes nothing
+run_all(false, 5, 1, {'w6_topopt'})          % W6 only (single thread), then:
+run_all(false, 5, 'default', {'w6_topopt'})  % W6 only: reference/w6_topopt.json + .txt
 ```
+
+A fourth argument `names` (a cell array of workload names, or `'all'` for W1-W6) selects the
+workloads; without it `run_all` runs W1-W5 exactly as before. With any other set the timing file
+name carries the suffix `_<name>...` (`baseline_timings_matlab_w6_topopt.json`,
+`baseline_timings_matlab_1thread_w6_topopt.json`), so the committed W1-W5 baseline is not
+overwritten. With a single workload `jsonencode` writes the timing fields as flat arrays and
+plain numbers rather than arrays of rows.
 
 `run_all(makePlots, nRepeat, threads)` runs each script in its own function workspace with
 `SEA_EXPORT_REFERENCE = true`. Arguments: `makePlots` (default `false`), `nRepeat` (default
@@ -307,6 +324,15 @@ The rule for each key is in `reference_py/compare.py` (`RULES`). In summary:
 | Residuals, solver differences, energy balance | below a stated bound only | They are noise-level by construction |
 | Monte Carlo counts (W5) | +-2 samples | `log`/`cos` can differ in the last bit between math libraries, which matters only for a sample within ~1e-16 of a limit |
 | Monte Carlo statistics and percentiles (W5) | 1e-14 mm absolute or about 1e-11 relative | |
+| W6 case setup, `converged` | exact | |
+| W6 element matrix `ke` | 1e-13 relative | Gauss quadrature, a few ulps between BLAS orders |
+| W6 `c_first` (compliance at iteration 1) | 1e-8 relative | One solve. A compliance from a direct solve on this mesh carries ~1e-10 relative rounding (`u'\|K\|u >> u'Ku`): ulp-level input or solver-order changes move it by up to 1.9e-10 |
+| W6 `c_early` (iterations 1-10), `c_mid` (iteration 50) | 1e-7 relative | Ulp-level changes move them by at most 3.1e-9 and 8.1e-10 |
+| W6 `iters` | +-2 | No ulp-level change moved it; the closest stop is 2.0e-5 inside the 0.01 test (cantilever) |
+| W6 `c_final` | 2e-4 relative | Stopping 2 iterations earlier or later moves it by up to 7.8e-5; ulp-level changes by <= 6.4e-11 |
+| W6 `gray`, `n_solid` | 5e-4 absolute, +-20 elements | +-2 iterations: 1.5e-4 and 5 |
+| W6 density fields `x_*` | `field` rule: <= 1 % of elements on the other side of 0.5 and mean \|diff\| <= 5e-3 | +-2 iterations: 0.33 % and 2.4e-3; ulp-level changes: 0 and <= 2e-11 |
+| W6 `vol_final`, `vol_err_max` | 1e-8 absolute / below 1e-8 | The bisection holds the volume to ~3e-10 |
 
 ### Verification already done
 
@@ -322,6 +348,14 @@ Done without MATLAB:
 * W5: the Monte Carlo standard deviation (0.037967 mm) matches the analytic RSS sigma
   (0.037990 mm) within sampling error.
 * W1: the scalar and vectorized bisections agree to 7e-8 m, inside the 1e-7 m tolerance.
+* W6: `reference_py/w6_validate.py` checks the FE solver and the optimiser against independent
+  truths (cantilever deflection under refinement against Euler-Bernoulli + Timoshenko shear,
+  patch tests on the grid and on a distorted patch, energy identities, the volume constraint,
+  finite-difference sensitivities), and `reference_py/w6_roundoff.py` measures how far each key
+  moves under ulp-level perturbations, solver noise and a changed iteration count; the W6
+  tolerances above come from it. Run each with
+  `uv run --no-project --with numpy python reference_py/w6_validate.py` (or `w6_roundoff.py
+  CASE`, one case per process).
 
 The MATLAB reference JSON comes from a `run_all` run in the MATLAB desktop (there is no MATLAB
 command-line launcher on the development machine). The report texts `reference/<name>.txt`
@@ -340,6 +374,7 @@ MATLAB R2026a, compute time per workload is expected to be about 0.5-5 s:
 | W3 | 1.9M calls to the derivative function, 4x1 vector arithmetic | 2-5 s |
 | W4 | 31M scalar SOR updates plus ~1500 vectorized half-sweeps | 1-3 s |
 | W5 | 11M scalar LCG steps, 1M-element sort and vector arithmetic | 0.5-2 s |
+| W6 | 376 sparse assemblies and Cholesky solves of ~10k DOF, ~18k `conv2` filter calls | 3-8 s |
 
 For comparison, the NumPy cross-checks take 0.5-4 s each on an M2 Pro (Python 3.12,
 NumPy 2.5). Those times are not a baseline for Sea.
@@ -350,11 +385,13 @@ NumPy 2.5). Those times are not a baseline for Sea.
 workloads/
   README.md               this file
   run_all.m               MATLAB driver: export references and report texts, time everything
-  w1_shaft_design.m       ... w5_tolerance_mc.m: the workloads
+  w1_shaft_design.m       ... w6_topopt.m: the workloads
   reference/              <name>.json (MATLAB, authority), <name>.txt (MATLAB report),
                           <name>.py.json (NumPy cross-check), baseline_timings_matlab.json and
                           baseline_timings_matlab_1thread.json (from run_all.m)
-  reference_py/           common.py, w1..w5 *.py, run_all.py, compare.py (also --candidate),
-                          compare_report.py (report comparison with token maps)
+  reference_py/           common.py, w1..w6 *.py, run_all.py, compare.py (also --candidate),
+                          compare_report.py (report comparison with token maps),
+                          w6_validate.py (W6 physics checks), w6_roundoff.py (W6 tolerance
+                          evidence)
   output/                 figures, only when SEA_SAVE_FIGURES is true (not committed)
 ```

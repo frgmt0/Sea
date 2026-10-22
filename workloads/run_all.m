@@ -1,4 +1,4 @@
-function run_all(makePlots, nRepeat, threads)
+function run_all(makePlots, nRepeat, threads, names)
 %RUN_ALL  Run every Sea acceptance workload, export the reference JSON and report, time each one.
 %
 %   run_all                    run each workload 5 times without figures, write reference/*
@@ -6,6 +6,9 @@ function run_all(makePlots, nRepeat, threads)
 %   run_all(false, N)          run each workload N times (timing statistics over N runs)
 %   run_all(false, N, 1)       the same with MATLAB limited to one computational thread
 %   run_all(false, N, 'default')  the default (all threads); same as leaving it out
+%   run_all(false, N, T, NAMES)   only the workloads in the cell array NAMES, e.g.
+%                                 {'w6_topopt'}; 'all' = W1-W6. Leaving NAMES out runs the
+%                                 five v1 acceptance workloads W1-W5 (DESIGN.md §1.2).
 %
 %   Works from any current folder: all paths are relative to this file. Each workload runs
 %   in its own workspace with SEA_EXPORT_REFERENCE = true, so reference/<name>.json is
@@ -22,7 +25,13 @@ function run_all(makePlots, nRepeat, threads)
 %   reference/baseline_timings_matlab_1thread.json. With N < 5 (a quick run) no timing file is
 %   written. The timing file records the MATLAB version, architecture, the number of
 %   computational threads in effect (max_num_comp_threads), the machine model and CPU brand,
-%   and all timings.
+%   and all timings. When NAMES is not the default W1-W5 set, the timing file name gets the
+%   suffix _<name1>_<name2>... (baseline_timings_matlab_w6_topopt.json,
+%   baseline_timings_matlab_1thread_w6_topopt.json), so the committed W1-W5 baseline is not
+%   overwritten.
+%   With a single workload, jsonencode writes the per-workload timing fields as flat arrays
+%   (total_seconds, compute_seconds) and plain numbers (the medians and bests) instead of
+%   arrays of rows.
 %
 %   threads = 1 calls maxNumCompThreads(1) for the duration of the run and restores the
 %   previous value afterwards (also on error).
@@ -34,11 +43,27 @@ function run_all(makePlots, nRepeat, threads)
 %
 %   Reference procedure: run_all(false, 5, 1) first, then run_all(false, 5), so that the
 %   reference JSON and report texts last written come from the default-threaded run.
+%   For W6 alone: run_all(false, 5, 1, {'w6_topopt'}) then run_all(false, 5, 'default',
+%   {'w6_topopt'}).
 
 minBaselineRepeat = 5;
 if nargin < 1, makePlots = false; end
 if nargin < 2, nRepeat = 5; end
 if nargin < 3, threads = 'default'; end
+v1Names = {'w1_shaft_design', 'w2_truss_fem', 'w3_quarter_car', 'w4_heat_plate', ...
+           'w5_tolerance_mc'};
+allNames = [v1Names, {'w6_topopt'}];
+if nargin < 4
+    names = v1Names;
+elseif (ischar(names) && strcmp(names, 'all')) ...
+        || (isstring(names) && isscalar(names) && names == "all")
+    names = allNames;
+end
+if ~iscellstr(names) || isempty(names) || ~all(ismember(names, allNames)) ...
+        || numel(unique(names)) ~= numel(names)
+    error('run_all:args', 'names must be ''all'' or a cell array of distinct workload names');
+end
+names = names(:).';   % a row, whatever shape was passed
 if ~(isnumeric(nRepeat) && isscalar(nRepeat) && isfinite(nRepeat) && nRepeat >= 1 ...
         && nRepeat == fix(nRepeat))
     error('run_all:args', 'nRepeat must be a positive integer');
@@ -56,8 +81,6 @@ refDir = fullfile(here, 'reference');
 if ~isfolder(refDir)
     mkdir(refDir);
 end
-names = {'w1_shaft_design', 'w2_truss_fem', 'w3_quarter_car', 'w4_heat_plate', ...
-         'w5_tolerance_mc'};
 nW = numel(names);
 totalS = zeros(nW, nRepeat);
 computeS = zeros(nW, nRepeat);
@@ -121,9 +144,14 @@ fprintf('%-18s | %8.3fs %8.3fs %8.3fs | %8.3fs %8.3fs %8.3fs\n', 'sum', ...
     sum(computeS(:, 1)), sum(median(computeS, 2)), sum(min(computeS, [], 2)));
 
 if singleThread
-    timingName = 'baseline_timings_matlab_1thread.json';
+    timingStem = 'baseline_timings_matlab_1thread';
 else
-    timingName = 'baseline_timings_matlab.json';
+    timingStem = 'baseline_timings_matlab';
+end
+if isequal(names, v1Names)
+    timingName = [timingStem '.json'];
+else
+    timingName = [timingStem '_' strjoin(names, '_') '.json'];
 end
 writeTiming = nRepeat >= minBaselineRepeat;
 if writeTiming
