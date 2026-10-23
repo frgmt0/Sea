@@ -1,0 +1,3 @@
+// err_rt_ew_elem_call -- an elemental call with arrays of 3 and 2 elements (LANGUAGE.md 6.3, 10.4)
+let w = hypot(zeros(3), ones(2))
+printf("%d\n", len(w))

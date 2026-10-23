@@ -121,6 +121,7 @@
 660 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
 662 LET K2$ = K2$ & "|idx=39|dol=40|tmat=42|"
 663 LET K2$ = K2$ & "|xblk=43|tmp=44|hloop=45|ext=46|adat=47|eld=48|est=49|anew=50|wbin=51|tptr=52|"
+664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|"
 665 LET K1$ = K1$ & K2$
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0
@@ -189,7 +190,8 @@
 970 NEXT I
 975 LET W1 = W1 - P1 + 1
 980 LET W(W1) = H1
-981 IF K > 42 THEN 30200
+981 GOSUB 40100
+982 IF K > 42 THEN 30200
 983 IF K < 33 THEN 985
 984 ON K - 38 GOTO 1040, 1015, 1050
 985 ON K GOTO 995, 995, 1015, 995, 1015, 1285, 1070, 1095, 1135, 1025, 1285, 1155, 1040, 995, 1180, 1025, 1285, 1285, 1040, 1050, 1200, 1285, 1255, 8105, 1050, 1285, 1050, 1285, 1285, 1060, 1285, 1060
@@ -353,6 +355,7 @@
 1740 REM the data records, in label order (3.6.2)
 1745 FOR I = 1 TO D0
 1750 LET X = D(I, 2)
+1752 IF D(I, 1) = 3 THEN 41562
 1755 IF D(I, 1) = 2 THEN 1770
 1760 CALL "io_put": 2, "str d" & STR$(I) & " " & S$(H(X, 0))
 1765 GOTO 1825
@@ -499,9 +502,13 @@
 2470 IF A(G(F0, 0) + I, 2) = 0 THEN 2480
 2475 LET V(I, 1) = 3
 2480 LET V(I, 2) = 0
+2481 LET T5 = T1
+2482 GOSUB 40600
+2483 LET V(I, 0) = F5
 2485 NEXT I
 2490 LET V0 = N7
 2495 LET V9 = N7
+2497 GOSUB 41170
 2500 LET M7 = 0
 2505 LET L0 = 0
 2510 LET O7 = 0
@@ -533,6 +540,8 @@
 2585 FOR N4 = G(F0, 8) TO N3 STEP -1
 2588 IF N4 >= E6 THEN 2720
 2590 IF H(N4, 1) < 20 THEN 2720
+2591 GOSUB 41750
+2592 IF A5 > 0 THEN 2642
 2595 IF H(N4, 1) > 31 THEN 23230
 2600 IF H(N4, 7) = 0 THEN 2720
 2605 LET B5 = N4 - 1
@@ -567,7 +576,8 @@
 2740 LET F9$ = "func " & S$(G(F0, 1)) & " main"
 2745 IF G(F0, 2) = 1 THEN 2755
 2750 LET F9$ = "func " & S$(G(F0, 1)) & " fn"
-2755 LET F9$ = F9$ & " " & STR$(F1) & ":" & STR$(L1) & ":" & STR$(G(F0, 7)) & " " & STR$(N6)
+2755 LET F9$ = F9$ & " " & STR$(F1) & ":" & STR$(L1) & ":" & STR$(G(F0, 7)) & " " & STR$(N6 + H7)
+2757 GOSUB 41200
 2760 FOR I = 1 TO N6
 2765 LET V1 = I
 2770 GOSUB 7500
@@ -611,14 +621,17 @@
 2960 LET Z5 = 1
 2965 LET Z5$ = " " & SEG$("ifp", C1, C1)
 2970 GOTO 3015
-2975 IF T(T1, 1) <> 2 THEN 2955
+2975 IF T(T1, 1) >= 5 THEN 3015
+2977 IF T(T1, 1) <> 2 THEN 2955
 2980 LET Z6 = T1
 2985 FOR X6 = 1 TO T(Z6, 2)
 2990 LET T1 = M(T(Z6, 3) + X6 - 1)
+2992 IF T1 <= 9 THEN 2995
+2993 IF T(T1, 1) >= 5 THEN 3005
 2995 GOSUB 7395
 3000 LET Z5$ = Z5$ & " " & SEG$("ifp", C1, C1)
+3002 LET Z5 = Z5 + 1
 3005 NEXT X6
-3010 LET Z5 = T(Z6, 2)
 3015 RETURN
 3020 REM ==== the frame machine ======================================================================
 3025 REM 3030: lower node X1 with dest D1 (the caller has stored its resume code in its frame)
@@ -631,6 +644,7 @@
 3060 LET W(W0 + 5) = 0
 3065 LET X = X1
 3070 LET D = D1
+3071 GOSUB 40740
 3072 IF H(X, 1) > 32 THEN 9705
 3075 ON H(X, 1) GOTO 3140, 3210, 3175, 3250, 3310, 3435, 3490, 3575, 4150, 4450, 3080, 4985, 3080, 3080, 3080, 3080, 4025, 3080, 5645, 5710, 5735, 6045, 6070, 5850, 6395, 6515, 6650, 7060, 7070, 7100, 7220, 7320
 3080 GOTO 2365

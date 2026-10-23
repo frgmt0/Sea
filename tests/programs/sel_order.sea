@@ -1,0 +1,41 @@
+// sel_order -- evaluation order of selection stores (LANGUAGE.md 5.5, 6.8 rule 5): x[sel] op= e with a
+// ref argument in e that replaces x; the value, range bounds and index-vector elements in order
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn grow(ref v: f64[]) -> f64 {
+    v = [10.0, 20.0, 30.0, 40.0]
+    return 1.0
+}
+fn ix(k: i64) -> i64 {
+    printf("ix %d\n", k)
+    return k
+}
+fn val(x: f64) -> f64 {
+    printf("val %g\n", x)
+    return x
+}
+var v: f64[] = [1.0, 2.0, 3.0]
+v[0..2] += grow(ref v)
+pf(v)
+var A = zeros(3, 3)
+A[ix(0)..ix(2), ix(1)] = val(5.0)
+A[ix(1), ix(0)..ix(3)] += val(1.0)
+pmf(A)
+var w = zeros(3)
+w[[ix(2), ix(0)]] = [val(7.0), val(8.0)]
+pf(w)

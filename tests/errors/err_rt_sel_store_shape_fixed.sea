@@ -1,0 +1,4 @@
+// err_rt_sel_store_shape_fixed -- a fixed-size v with a constant range: the selection's shape is a run-time
+// value, so the check is made at run time (LANGUAGE.md 5.5)
+var f = [1.0, 2.0, 3.0, 4.0]
+f[0..3] = [1.0, 2.0]

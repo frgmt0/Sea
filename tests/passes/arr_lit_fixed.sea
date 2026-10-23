@@ -1,0 +1,9 @@
+let f = [1.5, 2.5, 4.0]
+let e: f64[] = []
+let z: f64[0] = []
+let m = [1, 2; 3, 4]
+printf("%g %d %d %d\n", f[1], len(e), len(z), m[1, 0])
+// arr_lit_fixed -- DESIGN.md 3.5.9 L9 (rule 26 (a), (d)): fixed-size vector and matrix literals
+// (a home slot, one est per element at its column-major offset), copied into the homes of the
+// locals (rule 27 (b)); [] under a dynamic type (anew of extent 0) and under a fixed-size type
+// without elements (a home slot, no store)

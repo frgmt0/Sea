@@ -1,0 +1,4 @@
+// err_shape_static_mask_dim -- a fixed mask of 3 for the 2 rows of a fixed matrix: the dimension's extent
+// as a vector shape, then len(m) (LANGUAGE.md 5.2)
+let A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let B = A[[true, false, true], :]

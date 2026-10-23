@@ -1,0 +1,5 @@
+// err_rt_sel_mask_vec -- v[m] with a 5-element v and a 4-element m: shape mismatch: 5 vs 4 (LANGUAGE.md 5.2)
+var v = zeros(5)
+let m = filled(true, 4)
+let w = v[m]
+printf("%d\n", len(w))

@@ -1,0 +1,6 @@
+var k = filled(7, 2)
+k[1] = 2
+let (i, j) = ind2sub(3, k)
+printf("%d %d %d %d\n", i[0], i[1], j[0], j[1])
+// ew_ind2sub -- DESIGN.md 3.5.9 L11 (Decision 33): ind2sub of a scalar r and a vector k is two
+// element-wise loops over held arguments, k % r and then idiv(k, r), in place of the tbind

@@ -1,0 +1,74 @@
+#sea 1
+#target arm64-macos
+#file arr_rule21.sea
+pname 0:1:6 v
+pname 0:1:9 m
+ptuple 0:1:5 2
+name 0:1:14 two
+call 0:1:14 0
+var 0:1:1 0
+name 0:5:1 v
+name 0:5:3 m
+index 0:5:1 1
+float 0:5:8 #0000000000000000
+asg 0:5:1 set
+name 0:6:1 printf
+str 0:6:8 %25g%20%25g%20%25g%0A
+name 0:6:22 v
+int 0:6:24 0
+index 0:6:22 1
+name 0:6:28 v
+int 0:6:30 1
+index 0:6:28 1
+name 0:6:34 v
+int 0:6:36 2
+index 0:6:34 1
+call 0:6:1 4
+cstmt 0:6:1
+pname 0:7:6 w
+pskip 0:7:9
+ptuple 0:7:5 2
+name 0:7:14 two
+call 0:7:14 0
+let 0:7:1 0
+name 0:8:1 printf
+str 0:8:8 %25g%0A
+name 0:8:16 w
+int 0:8:18 3
+index 0:8:16 1
+call 0:8:1 2
+cstmt 0:8:1
+type 0:9:14 f64 v 0
+type 0:9:21 bool v 0
+pname 0:10:9 v
+name 0:10:13 ones
+int 0:10:18 4
+call 0:10:13 1
+var 0:10:5 0
+pname 0:11:9 m
+name 0:11:13 filled
+true 0:11:20
+int 0:11:26 4
+call 0:11:13 2
+var 0:11:5 0
+int 0:12:14 0
+int 0:12:17 2
+range 0:12:14 0 0
+name 0:13:9 m
+int 0:13:11 2
+name 0:13:15 k
+bin 0:13:11 mul
+int 0:13:19 1
+bin 0:13:11 add
+index 0:13:9 1
+false 0:13:24
+asg 0:13:9 set
+block 0:12:19 1
+for 0:12:5 k 0:12:9
+name 0:15:13 v
+name 0:15:16 m
+return 0:15:5 2
+block 0:9:29 4
+fn 0:9:1 two 0 0 2
+prog 6
+#end

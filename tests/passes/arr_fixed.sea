@@ -1,0 +1,14 @@
+fn mk(a: f64) -> f64[2] {
+    var r = [a, a]
+    for k in 0..2 {
+        r[k] = r[k] + 1.0
+    }
+    return r
+}
+let p = mk(1.5)
+let q = mk(0.5)
+printf("%g %g\n", p[1], q[0])
+// arr_fixed -- DESIGN.md 3.6.6 rule 27 (fixed-size arrays in memory, Decision 32): a fixed-size
+// var local (its home slot) with element reads and writes (rules 18, 19 on a fixed-size base:
+// static extents, no copy on write), and a fixed-size result written through the hidden result
+// address, which the caller's bind passes as its local's slot

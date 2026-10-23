@@ -1,6 +1,7 @@
 9595 REM ---- ck_expr: the expression subtree E, bottom-up: nodes M(E,0)..E are its post-order, so
 9600 REM every child is typed before its parent (no recursion over expressions). M(J,3) = the
-9605 REM number of errors before node J (for the printf rule of DESIGN 2.6.2).
+9605 REM number of errors before node J (for the printf rule of DESIGN 2.6.2); M(J,4) and M(J,5) of
+9607 REM every node but a literal (its C row) are cleared (the 4e marks, sc2util).
 9610 SUB "ck_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 9615 FOR J = M(E, 0) TO E
 9620 LET M(J, 3) = X(9)
@@ -8,8 +9,11 @@
 9630 LET M(J, 7) = 0
 9635 LET M(J, 8) = 0
 9640 LET K = N(J, 0)
-9645 IF K < 25 THEN 9905
-9650 ON K - 24 GOTO 9655, 9665, 9675, 9740, 9740, 9750, 9830, 9760, 9760, 9770, 9780, 9790, 9800, 9810, 9820, 9905, 9890, 9860, 9840, 9860, 9905, 9870, 9880, 9905, 9900
+9642 LET M(J, 4) = 0
+9643 IF K < 25 THEN 9905
+9644 IF K < 27 THEN 9650
+9645 LET M(J, 5) = 0
+9650 ON K - 24 GOTO 9655, 9665, 9675, 9740, 9740, 9750, 9830, 9760, 9760, 9770, 9780, 9790, 9800, 9810, 9820, 9865, 9890, 9860, 9840, 9850, 9905, 9870, 9880, 9905, 9900
 9655 LET M(J, 1) = -1
 9660 GOTO 9905
 9665 LET M(J, 1) = 4
@@ -47,12 +51,15 @@
 9825 GOTO 9905
 9830 CALL "ck_dol": N(), M(), X(), J
 9835 GOTO 9905
-9840 REM a view (.T .flat .col .row, LANGUAGE 5.6) is from 4e; any other field access from 4g
-9845 LET Q$ = S$(N(J, 6))
-9850 IF LEN(Q$) > 4 THEN 9870
-9855 IF POS("|T|flat|col|row|", "|" & Q$ & "|") = 0 THEN 9870
-9860 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "arrays", "", "", 1
-9865 GOTO 9905
+9840 CALL "ck_dot": N(), M(), T(), C(), S$(), X(), X$(), J
+9845 GOTO 9905
+9850 CALL "ck_arr": N(), M(), Y(), T(), C(), X(), X$(), J
+9855 GOTO 9905
+9860 REM a range used as a value: its i64[] (LANGUAGE 5.1); : as an index has the type void
+9862 LET M(J, 1) = M(N(J, 7), 1)
+9863 GOTO 9905
+9865 LET M(J, 1) = 1
+9867 GOTO 9905
 9870 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "structs", "", "", 1
 9875 GOTO 9905
 9880 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "records", "", "", 1
@@ -102,22 +109,20 @@
 10100 CALL "er": N(), X(), X$(), J, "UNDECLARED", S$(Q), "", "", 1
 10105 SUBEND
 10110 REM ---- ck_un: unary - and ! (LANGUAGE 6.4, 6.5); -2^63 is one constant (DESIGN 3.5.5); on an
-10115 REM array (element-wise) from 4e ----------------------------------------------------------
+10115 REM array element by element --------------------------------------------------------------
 10120 SUB "ck_un": N(), M(), T(), C(), X(), X$(), J
 10125 LET A = N(J, 7)
 10130 CALL "vu": N(), M(), T(), X(), X$(), A, D
 10135 IF D = 0 THEN 10300
-10140 REM an array operand: its element type must suit the operator; then from 4e (arrays)
+10140 REM an array operand: element by element on its element type (LANGUAGE 6.2, 6.4), the type kept
 10145 CALL "elt": T(), D, E, K9
 10150 IF K9 = 0 THEN 10195
-10155 IF E < 2 THEN 10195
-10160 IF E > 4 THEN 10195
-10165 IF N(J, 0) = 33 THEN 10180
-10170 IF E = 2 THEN 10195
-10175 GOTO 10185
-10180 IF E <> 2 THEN 10195
-10185 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "arrays", "", "", 1
-10190 GOTO 10300
+10155 IF N(J, 0) = 33 THEN 10180
+10160 IF E = 3 THEN 10260
+10165 IF E = 4 THEN 10260
+10170 GOTO 10215
+10180 IF E = 2 THEN 10260
+10185 GOTO 10290
 10195 IF N(J, 0) = 33 THEN 10270
 10200 IF D = -1 THEN 10230
 10205 IF D = 3 THEN 10260
@@ -187,12 +192,12 @@
 10525 IF G2 = 0 THEN 10985
 10530 REM an array operand: && and || take scalars only, @ is from phase 8 (vector @ vector is no
 10535 REM product); an element-wise operator is checked on the element types (an untyped constant
-10540 REM takes the other element type), then reported as from 4e (arrays), or a vector with a
-10545 REM matrix (LANGUAGE 6.2-6.4)
+10540 REM takes the other element type), then broadcast (bop: a vector with a matrix, static shapes;
+10545 REM LANGUAGE 6.2-6.4)
 10550 CALL "elt": T(), G1, E1, K1
 10555 CALL "elt": T(), G2, E2, K2
 10560 IF K1 + K2 = 0 THEN 10640
-10565 IF O > 15 THEN 10950
+10565 IF O > 15 THEN 11005
 10570 IF O <> 7 THEN 10630
 10575 IF K1 = 0 THEN 10950
 10580 IF K2 = 0 THEN 10950
@@ -221,12 +226,14 @@
 10695 GOTO 10985
 10700 CALL "num2": N(), M(), C(), X(), X$(), A, B, G1, G2, R, Z
 10705 IF Z = 1 THEN 10950
-10710 REM / divides f64 values: both i64 operands are converted (LANGUAGE 6.5)
+10710 REM / divides f64 values: both i64 operands (scalars or elements) are converted (LANGUAGE 6.5)
 10715 LET M(A, 7) = 0
 10720 LET M(B, 7) = 0
-10725 IF M(A, 1) <> 3 THEN 10735
+10725 CALL "elt": T(), M(A, 1), Q, Q1
+10727 IF Q <> 3 THEN 10735
 10730 LET M(A, 7) = 1
-10735 IF M(B, 1) <> 3 THEN 10745
+10735 CALL "elt": T(), M(B, 1), Q, Q1
+10737 IF Q <> 3 THEN 10745
 10740 LET M(B, 7) = 1
 10745 LET M(J, 1) = 4
 10750 GOTO 10985
@@ -278,23 +285,35 @@
 10980 LET M(J, 1) = 0
 10985 IF K1 + K2 = 0 THEN 11025
 10990 IF M(J, 1) = 0 THEN 11025
-10995 LET M(J, 1) = 0
-11000 IF K1 * K2 = 0 THEN 11020
-11005 IF K1 = K2 THEN 11020
-11010 CALL "er": N(), X(), X$(), J, "VEC_MAT", "", "", "", 0
-11015 GOTO 11025
-11020 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "arrays", "", "", 1
+10995 CALL "bop": N(), M(), T(), X(), X$(), J, A, B
+11000 GOTO 11025
+11005 REM && and || take scalar bool operands only: an array operand is a type mismatch (DESIGN 2.6.2)
+11010 LET Q = A
+11012 IF K1 > 0 THEN 11016
+11014 LET Q = B
+11016 CALL "tyn": T(), M(Q, 1), A$
+11018 CALL "er": N(), X(), X$(), Q, "TYPE_MISMATCH", "bool", A$, "", 2
+11020 LET M(J, 1) = 0
 11025 SUBEND
-11030 REM ---- ck_ifx: if expression J (LANGUAGE 6.10, 4.2 (f)) --------------------------------------
+11030 REM ---- ck_ifx: if expression J (LANGUAGE 6.10, 4.2 (f)); arrays of one rank and element type
+11032 REM (iarr), a [] arm (iarm, LANGUAGE 6.9) -------------------------------------------------
 11035 SUB "ck_ifx": N(), M(), T(), C(), X(), X$(), J
 11040 LET E = N(J, 7)
 11045 LET A = N(E, 8)
 11050 LET B = N(A, 8)
 11055 CALL "ck_cond": N(), M(), T(), C(), X(), X$(), E
-11060 CALL "vu": N(), M(), T(), X(), X$(), A, G1
-11065 CALL "vu": N(), M(), T(), X(), X$(), B, G2
-11070 IF G1 = 0 THEN 11170
-11075 IF G2 = 0 THEN 11170
+11057 IF M(A, 4) = 5 THEN 11062
+11058 IF M(B, 4) <> 5 THEN 11070
+11060 CALL "iarm": N(), M(), T(), X(), X$(), B, A
+11061 GOTO 11063
+11062 CALL "iarm": N(), M(), T(), X(), X$(), A, B
+11063 IF M(A, 1) <> M(B, 1) THEN 11170
+11064 LET M(J, 1) = M(A, 1)
+11065 GOTO 11170
+11070 CALL "vu": N(), M(), T(), X(), X$(), A, G1
+11072 CALL "vu": N(), M(), T(), X(), X$(), B, G2
+11075 IF G1 = 0 THEN 11170
+11078 IF G2 = 0 THEN 11170
 11080 IF G1 <> -1 THEN 11110
 11085 LET D = 3
 11090 IF G2 <> 4 THEN 11100
@@ -308,11 +327,14 @@
 11130 CALL "stl": N(), M(), C(), X(), X$(), B, D
 11135 LET G2 = D
 11140 IF G1 = G2 THEN 11165
+11142 CALL "iarr": N(), M(), T(), X(), X$(), A, B, G1, G2, R
+11143 IF R > 0 THEN 11168
 11145 CALL "tyn": T(), G1, A$
 11150 CALL "tyn": T(), G2, B$
 11155 CALL "er": N(), X(), X$(), B, "TYPE_MISMATCH", A$, B$, "", 2
 11160 GOTO 11170
-11165 LET M(J, 1) = G1
+11165 LET R = G1
+11168 LET M(J, 1) = R
 11170 SUBEND
 11175 REM ---- ck_conv: f64(x), i64(x) of bool, i64, f64 (LANGUAGE 10.1; lib nodes, DESIGN 3.5.5) -----
 11180 SUB "ck_conv": N(), M(), T(), C(), X(), X$(), J
@@ -328,12 +350,12 @@
 11230 CALL "stl": N(), M(), C(), X(), X$(), A, 3
 11235 LET D = 3
 11240 REM bool, i64 and f64 (the identity too: f64(2.5), i64(7) in tests/programs/op_cvt); of an
-11245 REM array of these from 4e (arrays, at the conv node)
+11245 REM array of these element by element, the array of its shape
 11250 CALL "elt": T(), D, E, K
 11255 IF E < 2 THEN 11280
 11260 IF E > 4 THEN 11280
 11265 IF K = 0 THEN 11295
-11270 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "arrays", "", "", 1
+11270 CALL "trel": T(), N(), X(), X$(), D, 5 - O, M(J, 1)
 11275 GOTO 11300
 11280 CALL "tyn": T(), D, B$
 11285 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", SEG$("f64i64", 3 * O - 2, 3 * O), B$, "", 2
@@ -354,7 +376,7 @@
 11360 CALL "er": N(), X(), X$(), A, "TYPE_MISMATCH", "i64", B$, "", 2
 11365 LET A = N(A, 8)
 11370 GOTO 11320
-11375 CALL "tarr": T(), N(), X(), X$(), 1, 3, R
+11375 CALL "tarr": T(), N(), X(), X$(), 1, 3, 0, 0, R
 11380 LET M(J, 1) = R
 11385 SUBEND
 11390 REM ---- rsv: R = what rname J denotes (DESIGN 3.4.1): a local of the current function X(14) (its
@@ -378,23 +400,25 @@
 11480 SUBEND
 11485 REM ---- ck_idx: index J, base[i] or base[i, j] (LANGUAGE 5.2): the base must be an array (else
 11490 REM '%s cannot be indexed', at the index), one index per dimension (a whole-matrix mask aside);
-11495 REM each index a scalar i64 (an untyped constant is i64), else 'index must be i64' at the
-11500 REM index; a range, ':', an index vector or a mask is a selection, from 4e (arrays, at the
-11505 REM index's node). The type of an index by scalars is the element type -----------------------
+11495 REM each index a scalar i64 (an untyped constant is i64), a range, ':', an i64 vector or a bool
+11500 REM vector, else 'index must be i64' at the index. An index by scalars has the element type; a
+11505 REM selection the dynamic vector (one kept dimension, a whole-matrix mask) or matrix. A fixed
+11507 REM mask on a fixed base of another extent is 217 at the mask (DESIGN 3.5.5) -------------------
 11510 SUB "ck_idx": N(), M(), T(), C(), X(), X$(), J
 11515 LET B = N(J, 7)
 11520 LET H = N(J, 1)
 11525 CALL "vu": N(), M(), T(), X(), X$(), B, G
 11530 IF G = 0 THEN 11730
 11535 CALL "fin": N(), M(), C(), X(), X$(), B
-11540 CALL "elt": T(), M(B, 1), E, K
+11540 CALL "shp": T(), M(B, 1), E, K, F, A0, B0
 11545 IF K > 0 THEN 11565
 11550 CALL "tyn": T(), M(B, 1), A$
 11555 CALL "er": N(), X(), X$(), J, "NOT_INDEXABLE", A$, "", "", 1
 11560 GOTO 11730
 11565 LET Z = 0
 11570 LET A = N(B, 8)
-11575 LET V1 = 0
+11575 LET C1 = 0
+11577 LET W = 0
 11580 FOR I = 1 TO H
 11585 IF N(A, 0) = 40 THEN 11655
 11590 IF N(A, 0) = 41 THEN 11655
@@ -402,29 +426,45 @@
 11600 IF V = 0 THEN 11660
 11605 CALL "fin": N(), M(), C(), X(), X$(), A
 11610 LET V = M(A, 1)
-11615 LET V1 = V
 11620 IF V = 3 THEN 11665
-11625 CALL "elt": T(), V, E1, K1
-11630 IF K1 = 0 THEN 11645
-11635 IF E1 = 2 THEN 11655
-11640 IF E1 = 3 THEN 11655
-11645 CALL "er": N(), X(), X$(), A, "INDEX_I64", "", "", "", 0
-11650 GOTO 11660
-11655 CALL "er": N(), X(), X$(), A, "NOT_SUPPORTED", "arrays", "", "", 1
+11625 CALL "shp": T(), V, E1, K1, F1, A1, B1
+11630 IF K1 * 10 + E1 = 13 THEN 11655
+11631 IF K1 * 10 + E1 = 12 THEN 11641
+11632 IF K1 * 10 + E1 <> 22 THEN 11650
+11633 IF H + 2 * K <> 5 THEN 11650
+11634 REM the mask of a whole matrix; a fixed one on a fixed base of another shape is 217
+11635 LET W = 1
+11636 IF F * F1 = 0 THEN 11655
+11637 IF A1 * 1E9 + B1 = A0 * 1E9 + B0 THEN 11655
+11638 CALL "sht": 2, A0, B0, A$
+11639 CALL "sht": 2, A1, B1, B$
+11640 GOTO 11653
+11641 REM the mask of dimension I: the extent there (as a vector shape) against its length
+11642 IF F * F1 = 0 THEN 11655
+11643 LET Q = A0
+11644 IF K * I < 4 THEN 11646
+11645 LET Q = B0
+11646 IF A1 = Q THEN 11655
+11647 CALL "sht": 1, Q, 0, A$
+11648 CALL "sht": 1, A1, 0, B$
+11649 GOTO 11653
+11650 CALL "er": N(), X(), X$(), A, "INDEX_I64", "", "", "", 0
+11651 GOTO 11660
+11653 CALL "er": N(), X(), X$(), A, "SHAPE_MISMATCH_C", A$, B$, "", 2
+11654 GOTO 11660
+11655 LET C1 = C1 + 1
+11657 GOTO 11665
 11660 LET Z = 1
 11665 LET A = N(A, 8)
 11670 NEXT I
 11675 IF H = K THEN 11720
-11680 REM A[M] with M of type bool[,] is the mask of the whole matrix
-11685 IF K <> 2 THEN 11710
-11690 IF H <> 1 THEN 11710
-11695 IF V1 < 10 THEN 11710
-11700 IF T(V1, 0) <> 2 THEN 11710
-11705 IF T(V1, 1) = 2 THEN 11720
+11680 IF W = 1 THEN 11720
 11710 CALL "er": N(), X(), X$(), J, "INDEX_COUNT", STR$(K), STR$(H), "", 2
 11715 GOTO 11730
 11720 IF Z = 1 THEN 11730
-11725 LET M(J, 1) = E
+11722 LET M(J, 1) = E
+11724 IF C1 = 0 THEN 11730
+11726 CALL "tarr": T(), N(), X(), X$(), 1 + INT(C1 / 2) * (1 - W), E, 0, 0, M(J, 1)
 11730 SUBEND
 11735 REM ---- ck_dol: $ at node J: the extent of the dimension it indexes in the innermost enclosing
 11740 REM index (LANGUAGE 5.3; pass 1 has reported a $ outside every index): i64, M(J,5) = its dim

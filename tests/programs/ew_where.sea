@@ -1,0 +1,55 @@
+// ew_where -- where on arrays (LANGUAGE.md 10.4, 6.3): array and scalar arms, i64 with f64, bool
+// arms, matrix broadcasting, the arguments evaluated in full left to right
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pc() -> bool[] {
+    printf("c\n")
+    return [true, false]
+}
+fn pa() -> f64[] {
+    printf("a\n")
+    return [1.0, 2.0]
+}
+fn pb() -> f64[] {
+    printf("b\n")
+    return [3.0, 4.0]
+}
+let v = [1.0, 5.0, 3.0, 7.0]
+pf(where(v > 4.0, v, 0.0))
+pf(where(v > 4.0, 1.0, -1.0))
+pvi(where([true, false, true], 1, [7, 8, 9]))
+pf(where([true, false], [1, 2], [0.5, 0.25]))
+let c = [true, false].col
+pmf(where(c, [1.0, 2.0, 3.0].row, 0.0))
+pmf(where(c, 1.0, [10.0, 20.0].row))
+pvb(where(v > 2.0, v < 6.0, false))
+pf(where(pc(), pa(), pb()))

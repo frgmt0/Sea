@@ -1,5 +1,5 @@
 12360 REM ---- sn_emit: the body of sea.res (DESIGN 3.4.1, 3.4.2): the rerr of the first error, the type
-12365 REM table in id order (rtup rtvec rtmat), then every node of sea.ast in file order (= node order),
+12365 REM table in id order (rtup rtvec rtmat rtfvec rtfmat), then every node of sea.ast in file order (= node order),
 12370 REM copied as read (D$) or replaced (rfn rst rcn* rpname rfor rint rname rpowk rtype), and
 12375 REM prog. A replacement keeps the record's fields and adds its own (rpowk drops pow). -------
 12380 SUB "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$
@@ -18,8 +18,9 @@
 12455 LET R = 10
 12460 IF R > X(4) THEN 12510
 12461 IF T(R, 0) = 7 THEN 12465
-12462 LET L$ = SEG$("rtvecrtmat", 5 * T(R, 0) - 4, 5 * T(R, 0)) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
-12463 GOTO 12485
+12462 IF T(R, 0) > 2 THEN 12500
+12463 LET L$ = SEG$("rtvecrtmat", 5 * T(R, 0) - 4, 5 * T(R, 0)) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
+12464 GOTO 12485
 12465 LET L$ = "rtup " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
 12470 FOR J = 1 TO T(R, 1)
 12475 LET L$ = L$ & " " & STR$(T(R + 1 + INT((J - 1) / 9), J - 1 - 9 * INT((J - 1) / 9)))
@@ -27,6 +28,11 @@
 12485 PRINT #2, L$
 12490 CALL "tnext": T(), R
 12495 GOTO 12460
+12500 REM a fixed-size type (4e): rtfvec id elt n, rtfmat id elt r c
+12501 LET L$ = SEG$("rtfvecrtfmat", 6 * T(R, 0) - 17, 6 * T(R, 0) - 12) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1)) & " " & STR$(T(R, 2))
+12502 IF T(R, 0) = 3 THEN 12485
+12503 LET L$ = L$ & " " & STR$(T(R, 3))
+12504 GOTO 12485
 12510 FOR I = 1 TO X(1)
 12515 CALL "sn_rec": N(), M(), Y(), T(), C(), S$(), D$(), X(), I, L$
 12520 PRINT #2, L$

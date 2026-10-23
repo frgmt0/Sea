@@ -36,7 +36,7 @@
 8780 SUBEND
 8785 REM ---- tyres: the type of type node I, looked up by tylk (DESIGN 3.4.2 "Resolving a type
 8790 REM node"): the base, then the dims left to right, then the shape, then the phase rule (2.6.2,
-8795 REM step 4d: fixed-size arrays, struct types, handle types); the first error is the node's
+8795 REM step 4e: struct types, handle types, fixed-size str arrays); the first error is the node's
 8800 REM and its type is then 0. M(I,1) = the type (a predefined id or a T row), M(I,9) = 1 (done).
 8805 REM A new array type is created here (tarr; the types limit at node X(19), set by the caller).
 8810 REM Locals: B base (-1 a struct), H shape (1 s 2 v 3 m 4 fv 5 fm), V(k,0) the node of dim k,
@@ -111,36 +111,47 @@
 9140 IF H = 1 THEN 9155
 9145 CALL "er": N(), X(), X$(), I, "ELEMENT_TYPE", S$(N(I, 6)), "", "", 1
 9150 GOTO 9200
-9155 REM the phase rule (DESIGN 2.6.2, step 4d), after every error above
-9160 LET A$ = "arrays"
-9165 IF H >= 4 THEN 9195
-9170 LET A$ = "structs"
-9175 IF B = -1 THEN 9195
-9180 LET A$ = "handle types"
-9185 IF B >= 6 THEN 9195
-9186 REM a str type in a signature (X(44) 1) has type 0: the signature reports it (DESIGN 2.6.2)
-9187 IF B <> 5 THEN 9190
-9188 IF X(44) = 1 THEN 9200
+9155 REM the phase rule (DESIGN 2.6.2, step 4e), after every error above: a struct type, a handle
+9160 REM type, and a fixed-size type of str elements (strings, at the node)
+9165 LET A$ = "structs"
+9170 IF B = -1 THEN 9198
+9175 LET A$ = "handle types"
+9180 IF B >= 6 THEN 9198
+9182 REM a str type in a signature (X(44) 1) has type 0: the signature reports it (DESIGN 2.6.2)
+9184 IF B <> 5 THEN 9190
+9186 IF X(44) = 1 THEN 9200
+9187 LET A$ = "strings"
+9188 IF H >= 4 THEN 9198
 9190 LET R = B
 9191 IF H = 1 THEN 9200
-9192 CALL "tarr": T(), N(), X(), X$(), H - 1, B, R
-9193 GOTO 9200
-9195 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", A$, "", "", 1
+9192 REM an array type: the extents of a fixed one (each below 2^63, exact while below 2^53)
+9193 LET E1 = INT(H / 4) * (((V(1, 1) * 65536 + V(1, 2)) * 65536 + V(1, 3)) * 65536 + V(1, 4))
+9194 LET E2 = INT(H / 5) * (((V(2, 1) * 65536 + V(2, 2)) * 65536 + V(2, 3)) * 65536 + V(2, 4))
+9196 CALL "tarr": T(), N(), X(), X$(), H - 1, B, E1, E2, R
+9197 GOTO 9200
+9198 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", A$, "", "", 1
 9200 LET M(I, 1) = R
 9205 SUBEND
-9210 REM ---- tarr: R = the T row of the dynamic array type K (1 T[], 2 T[,]) of element id E; a new
-9215 REM one takes the next id (DESIGN 3.4.2 "The type table": structurally equal types are one) --
-9220 SUB "tarr": T(), N(), X(), X$(), K, E, R
+9210 REM ---- tarr: R = the T row of the array type K (1 T[], 2 T[,], 3 T[n], 4 T[r,c]) of element id
+9215 REM E, extents A (n or r) and B (c); a new one takes the next id (DESIGN 3.4.2 "The type table":
+9218 REM structurally equal types are one) --------------------------------------------------------
+9220 SUB "tarr": T(), N(), X(), X$(), K, E, A, B, R
 9225 LET R = 10
 9230 IF R > X(4) THEN 9255
 9235 IF T(R, 0) <> K THEN 9245
-9240 IF T(R, 1) = E THEN 9280
+9238 IF T(R, 1) <> E THEN 9245
+9240 IF K < 3 THEN 9280
+9242 IF T(R, 2) <> A THEN 9245
+9243 IF K = 3 THEN 9280
+9244 IF T(R, 3) = B THEN 9280
 9245 CALL "tnext": T(), R
 9250 GOTO 9230
 9255 CALL "tnew": T(), N(), X(), X$(), 1, R
 9260 IF R = 0 THEN 9280
 9265 LET T(R, 0) = K
 9270 LET T(R, 1) = E
+9272 LET T(R, 2) = A
+9274 LET T(R, 3) = B
 9275 LET T(R, 9) = 9 + X(38)
 9280 SUBEND
 9335 REM ---- dec: R$ = the decimal text of the i64 of limbs A3..A0 (two's complement), exact for

@@ -1,0 +1,45 @@
+#sea 1
+#target arm64-macos
+#file arr_rule22.sea
+tvec 10 4
+fn 1 .main main 1 0 0 0:1:1
+ci 0:9:27 3 3
+lib 0:9:22 10 ones 1
+call 0:9:16 4 2 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %0A
+fmt 0:9:8 1 2
+lib 0:9:1 1 printf 1
+eval 0:9:1
+ci 0:10:28 3 2
+lib 0:10:22 10 zeros 1
+call 0:10:16 4 2 1
+fconv 0:10:8 1 - - - g
+ftext 0:10:8 1 %0A
+fmt 0:10:8 1 2
+lib 0:10:1 1 printf 1
+eval 0:10:1
+block 0:1:1 2
+end
+fn 2 twice fn 4 1 3 0:1:1
+par x 10 val
+loc z 10 let 0:2:9
+loc s 4 var 0:3:9
+loc e 4 for 0:4:9
+lv 0:2:13 10 1
+cf 0:2:17 4 #4000000000000000
+bin 0:2:13 10 mul
+bind 0:2:5 2
+cf 0:3:13 4 #0000000000000000
+bind 0:3:5 3
+lv 0:4:14 10 2
+lv 0:5:9 4 3
+lv 0:5:14 4 4
+asg 0:5:9 add
+block 0:4:16 1
+fore 0:4:5 4
+lv 0:7:12 4 3
+ret 0:7:5 1
+block 0:1:27 4
+end
+#end

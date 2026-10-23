@@ -1,0 +1,4 @@
+// err_rt_range_size_sat -- -2^63..=2^63-1 has 2^64 positions, beyond i64: the saturated text
+// invalid array size 9223372036854775807 (LANGUAGE.md 5.1)
+let r = (-9223372036854775808..=9223372036854775807)
+printf("%d\n", len(r))

@@ -1,0 +1,1 @@
+err_rt_cvt_nan_elem.sea:2: error: conversion to i64: NaN is not an integer

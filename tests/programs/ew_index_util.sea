@@ -1,0 +1,25 @@
+// ew_index_util -- ind2sub with a scalar r and a vector k, sub2ind on vectors with broadcasting, their round
+// trip, an empty k, a tuple assignment to array variables (LANGUAGE.md 10.7, 6.6; Decision 33)
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let k = [0, 4, 7, -1, 8]
+let (i, j) = ind2sub(3, k)
+pvi(i)
+pvi(j)
+pvi(sub2ind(3, i, j))
+pvi(sub2ind(4, [0, 3], 2))
+let (ei, ej) = ind2sub(3, (0..0))
+printf("%d %d\n", len(ei), len(ej))
+let kd: i64[] = k
+var i2 = filled(0, 0)
+var j2 = filled(0, 0)
+(i2, j2) = ind2sub(2, kd)
+pvi(i2)
+pvi(j2)
+let (si, sj) = ind2sub(3, 5)
+printf("%d %d\n", si, sj)

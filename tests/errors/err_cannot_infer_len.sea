@@ -1,0 +1,2 @@
+// err_cannot_infer_len -- len([]): a library argument gives no type (LANGUAGE.md 6.9; Decision 36)
+printf("%d\n", len([]))

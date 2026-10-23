@@ -1,0 +1,4 @@
+// err_rt_sel_mask_store_count -- v[m] = [1.0, 2.0] with nnz(m) = 3: shape mismatch: 3 vs 2 (LANGUAGE.md 5.5)
+var v = zeros(4)
+let m = [true, false, true, true]
+v[m] = [1.0, 2.0]

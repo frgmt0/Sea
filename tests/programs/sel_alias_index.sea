@@ -1,0 +1,22 @@
+// sel_alias_index -- an index vector that is the target itself (Decision 34; LANGUAGE.md 5.5): v[v] = 5
+// stores at 2 0 1; w[w] += 10 reads 2 0 1 and stores w[1] = 12, w[2] = 10, w[0] = 11; the
+// same on fixed-size i64[3] locals
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+var v: i64[] = [2, 0, 1]
+v[v] = 5
+pvi(v)
+var w: i64[] = [1, 2, 0]
+w[w] += 10
+pvi(w)
+var f = [2, 0, 1]
+f[f] = 5
+pvi(f)
+var g = [1, 2, 0]
+g[g] += 10
+pvi(g)

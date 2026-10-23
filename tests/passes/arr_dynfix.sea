@@ -1,0 +1,7 @@
+let f = [1.5, 2.5]
+let d: f64[] = f
+let g: f64[2] = d
+printf("%g %g %d\n", d[1], g[0], len(d))
+// arr_dynfix -- DESIGN.md 3.5.9 L10 (rule 27 (i), (j)): the implicit dyn of a fixed-size value
+// bound to a dynamic local (line 2) and the implicit fix of a dynamic value bound to a
+// fixed-size local (line 3, with its SHAPE_EXPECTED check)

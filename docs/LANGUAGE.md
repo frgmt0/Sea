@@ -530,6 +530,10 @@ every workload result bit-identical to the MATLAB arithmetic (§6.8).
   in an `f64` context is the `f64` sum, 2⁵³, without an error). An untyped `-0` in an `f64`
   context is −0.0 (unary `-` of 0.0). So `let n = 5` is an `i64`, `if c { 0.5 } else { 2 }` is `f64` (the 2 is 2.0), `var Fbs = 0.0` is an `f64`,
   `4 * (Kf * Ma) ^ 2` multiplies by the `f64` 4, and `2 ^ 10` is the `f64` 1024.
+  The elements of an array literal with no `f64` element are `i64` by (c) (an operator outside the
+  literal does not reach them), so `[9007199254740993, 1] * 1.0` is an `i64[]` converted element by
+  element at run time (the first element rounds to 2⁵³), while `[9007199254740993, 1.0]` is the
+  compile error `integer constant not exact in f64`.
 * **A `var` initialised by an untyped constant** takes its type from all its uses in the
   function: if any assignment to it (`=`, `op=`, or as a `ref` argument to an `f64`
   parameter) stores an `f64`, the variable is `f64`; otherwise `i64`. So `var dMax = 0`
@@ -1029,7 +1033,8 @@ using FMA-free elementary functions gives up some speed on compute-bound scalar 
   "target"]` is a `str[]`); matrices (and scalars, as 1 × 1) join into a matrix whose row counts
   must agree (`[T[1..ny-1, 1..2], T[1..ny-1, :], T[1..ny-1, $-2..$-1]]`). Rows are then stacked
   vertically; a vector row counts as a `1 × n` matrix row. A row that mixes vectors and matrices
-  is a compile error (`use .row or .col`). The result is dynamic unless all parts are fixed.
+  is a compile error (`use .row or .col`). The result is fixed-size when every part is fixed-size
+  and it has at most 256 elements; otherwise it is dynamic.
 * The element type is the common type of the elements (`i64` and `f64` → `f64`; struct
   elements must all be the same struct; `str` with `str`); elements with no common type
   (`[true, 1]`) are `type mismatch` at the first element that does not combine with those before
@@ -1150,10 +1155,16 @@ after the call: `f(x) = 3` is `unexpected token '='`.
 * Targets: a `var` name; an element or selection `x[…]` (§5.5); a field `s.f`, `s.f[…]` of a
   `var` struct; `A.flat[…]` (§5.6); a `ref` parameter and its elements and fields.
 * `x op= e` is `x = x op e` with `x`'s address computed once.
-* `(t1, t2, …) = f(…)` assigns the results of a multiple-result call to existing targets, in
-  order, after the call; `_` discards. (`(T, d1) = …` is the MATLAB `[T, d1] = …`.) There is
-  one target or `_` per result. Each target may be any assignment target
-  (`(nfCurve[m, :], nyCurve[m, :], _, _, _) = shaft_safety(dSweep, M1, T1, p)`).
+* `(t1, t2, …) = f(…)` assigns the results of a multiple-result call to existing targets: the
+  call first, then each target in order, each stored exactly as `ti = ri` would store result i;
+  `_` discards. (`(T, d1) = …` is the MATLAB `[T, d1] = …`.) There is one target or `_` per
+  result. Each target may be any assignment target
+  (`(nfCurve[m, :], nyCurve[m, :], _, _, _) = shaft_safety(dSweep, M1, T1, p)`), and the
+  conversions of assignment apply to each: `i64` → `f64` (§4.2, element by element for arrays),
+  fixed-size → dynamic and dynamic → fixed-size with its run-time shape check (§4.5). A selection
+  target takes any array of its rank, checked against the selection at run time, or a scalar,
+  stored into every selected element (§5.5). A
+  run-time error in a later target leaves the earlier targets stored.
 * Assigning a whole array to a `var` replaces its value (and shape); assigning a selection keeps
   the shape (§5.5).
 

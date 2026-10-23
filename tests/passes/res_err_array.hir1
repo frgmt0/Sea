@@ -1,0 +1,15 @@
+#sea 1
+#target arm64-macos
+#file res_err_array.sea
+tfvec 10 4 3
+fn 1 .main main 1 0 0 0:1:1
+block 0:1:1 0
+end
+fn 2 f fn 3 2 0 0:3:1
+par v 10 val
+par k 3 val
+lv 0:4:12 3 2
+ret 0:4:5 1
+block 0:3:32 1
+end
+#end

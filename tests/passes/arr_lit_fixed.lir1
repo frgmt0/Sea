@@ -1,0 +1,77 @@
+#sea 1
+#target arm64-macos
+#file arr_lit_fixed.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+slot s4 8 8
+slot s5 32 8
+slot s6 32 8
+slot s7 32 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF8000000000000
+stf f3 p2 - 0 0
+lf f4 #4004000000000000
+stf f4 p2 - 0 8
+lf f5 #4010000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 0
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new 0:2 1 p11 4 i8 i9 i7 i10
+sa p12 s3
+sa p13 s4
+li i14 0
+mcopy p12 p13 i14
+sa p15 s5
+sa p16 s6
+li i17 1
+sti i17 p16 - 0 0
+li i18 2
+sti i18 p16 - 0 16
+li i19 3
+sti i19 p16 - 0 8
+li i20 4
+sti i20 p16 - 0 24
+li i21 32
+mcopy p15 p16 i21
+li i22 1
+li i23 3
+chkb i22 i23 0 0:5
+ldf f24 p1 i22 8 0
+ldi i25 p11 - 0 16
+li i26 0
+li i27 1
+li i28 0
+li i29 2
+chkb i27 i29 0 0:5
+li i30 2
+chkb i28 i30 1 0:5
+imul i31 i28 i29
+iadd i32 i27 i31
+ldi i33 p15 i32 8 0
+sa p34 s7
+stf f24 p34 - 0 0
+sti i25 p34 - 0 8
+sti i26 p34 - 0 16
+sti i33 p34 - 0 24
+la p35 d1
+rcall sea_printf 0:5 0 2 p35 p34
+release p11
+ret 0
+endfunc
+fmt d1 8
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

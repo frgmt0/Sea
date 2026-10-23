@@ -1,0 +1,63 @@
+#sea 1
+#target arm64-macos
+#file arr_fixed.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+slot s3 16 8
+sa p1 s1
+lf f2 #3FF8000000000000
+call mk 0 2 p1 f2
+sa p3 s2
+lf f4 #3FE0000000000000
+call mk 0 2 p3 f4
+li i5 1
+li i6 2
+chkb i5 i6 0 0:10
+ldf f7 p1 i5 8 0
+li i8 0
+li i9 2
+chkb i8 i9 0 0:10
+ldf f10 p3 i8 8 0
+sa p11 s3
+stf f7 p11 - 0 0
+stf f10 p11 - 0 8
+la p12 d1
+rcall sea_printf 0:10 0 2 p12 p11
+ret 0
+endfunc
+func mk fn 0:1:1 2 p1 f2 0
+slot s1 16 8
+slot s2 16 8
+sa p3 s1
+sa p4 s2
+stf f2 p4 - 0 0
+stf f2 p4 - 0 8
+li i5 16
+mcopy p3 p4 i5
+li i6 0
+li i7 2
+li i8 1
+rcount i9 i10 i6 i7 i8 0 0:3
+if 1 i10
+loop 2 i11 i6 i9 i8
+li i12 2
+chkb i11 i12 0 0:4
+ldf f13 p3 i11 8 0
+lf f14 #3FF0000000000000
+fadd f15 f13 f14
+li i16 2
+chkb i11 i16 0 0:4
+stf f15 p3 i11 8 0
+endloop 2
+endif 1
+li i17 16
+mcopy p1 p3 i17
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

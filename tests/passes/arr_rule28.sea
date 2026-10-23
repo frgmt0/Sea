@@ -1,0 +1,15 @@
+fn flat_at(A: f64[,], k: i64) -> f64 {
+    // arr_rule28 -- DESIGN.md 3.6.6 rule 28 (views): its example verbatim on line 3
+    let e = A.flat[k]
+    var s = e
+    for i in 0..k {
+        s += 1.0
+    }
+    return s
+}
+var M = zeros(2, 3)
+M[0, 2] = 7.5
+printf("%g\n", flat_at(M, 4))
+printf("%g\n", flat_at(M, 1))
+// A.flat[k] is a folded view (3.5.9 L5 with a view base and a scalar index): the extent of
+// .flat is rows * cols, the element is read at the linear position k (M[0, 2] is position 4)

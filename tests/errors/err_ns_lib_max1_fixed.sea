@@ -1,0 +1,3 @@
+// err_ns_lib_max1_fixed -- max of one fixed vector is still the name max until 4f, at the call (DESIGN.md
+// 2.6.2 step 4e)
+printf("%g\n", max([1.0, 2.0]))

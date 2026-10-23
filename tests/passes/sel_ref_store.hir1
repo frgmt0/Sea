@@ -1,0 +1,64 @@
+#sea 1
+#target arm64-macos
+#file sel_ref_store.sea
+tvec 10 4
+tvec 11 3
+fn 1 .main main 1 0 1 0:1:1
+loc a 10 var 0:6:5
+ci 0:6:15 3 4
+lib 0:6:9 10 zeros 1
+bind 0:6:1 1
+lv 0:7:11 10 1
+rarg 0:7:7 10
+ci 0:7:14 3 2
+call 0:7:1 1 2 2
+eval 0:7:1
+lv 0:8:11 10 1
+rarg 0:8:7 10
+ci 0:8:14 3 0
+call 0:8:1 1 2 2
+eval 0:8:1
+lv 0:9:25 10 1
+ci 0:9:27 3 0
+idx 0:9:25 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:31 10 1
+ci 0:9:33 3 1
+idx 0:9:31 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:37 10 1
+ci 0:9:39 3 2
+idx 0:9:37 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:43 10 1
+ci 0:9:45 3 3
+idx 0:9:43 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %0A
+fmt 0:9:8 1 8
+lib 0:9:1 1 printf 1
+eval 0:9:1
+block 0:1:1 4
+end
+fn 2 setto fn 1 2 1 0:1:1
+par v 10 ref
+par k 3 val
+loc i 3 for 0:2:9
+ci 0:2:14 3 0
+lv 0:2:17 3 2
+rng 0:2:14 11 0 0
+lv 0:3:9 10 1
+lv 0:3:11 3 3
+ci 0:3:14 3 3
+rng 0:3:11 11 0 0
+idx 0:3:9 10 1
+cf 0:3:19 4 #401C000000000000
+asg 0:3:9 set
+block 0:2:19 1
+forr 0:2:5 3
+block 0:1:32 1
+end
+#end

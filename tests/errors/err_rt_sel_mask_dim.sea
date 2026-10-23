@@ -1,0 +1,5 @@
+// err_rt_sel_mask_dim -- A[m, :]: the dimension's extent as a vector shape, then len(m) (LANGUAGE.md 5.2)
+let A = zeros(3, 4)
+let m = filled(false, 2)
+let B = A[m, :]
+printf("%d\n", rows(B))

@@ -1,0 +1,4 @@
+// err_rt_sel_range_negstep -- v[4..=-2 step -3]: positions 4 1 -2, the last -2 (LANGUAGE.md 5.1, 5.4)
+var v = zeros(5)
+let w = v[4..=-2 step -3]
+printf("%d\n", len(w))

@@ -1,0 +1,4 @@
+// err_shape_static_mask_mat -- a fixed 3x2 whole-matrix mask on a fixed 2x3 matrix (LANGUAGE.md 5.2)
+let A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let M = [true, false; true, false; true, true]
+let s = A[M]

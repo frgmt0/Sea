@@ -1,0 +1,3 @@
+// err_cannot_infer_add -- [] + v with v an f64[]: an operand gives no type (LANGUAGE.md 6.9; Decision 36)
+let v = zeros(2)
+let w = [] + v

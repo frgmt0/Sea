@@ -1,0 +1,12 @@
+var A = zeros(2, 3)
+A[0, 2] = 5.0
+A[1, 2] = 6.0
+let c = A[:, 2]
+let w = filled(1, 2)
+let r = c[w]
+let M = A > 5.5
+let s = A[M]
+printf("%g %g %g %d %g\n", c[0], c[1], r[0], len(r), s[0])
+// sel_reads -- DESIGN.md 3.5.9 L5 (rule 20): a matrix selection with : and a scalar (line 4),
+// an index vector with a repeat (line 6) and a whole-matrix mask (line 8, the mask computed by
+// the element-wise comparison of line 7, 3.5.9 L7 of a matrix with a scalar)

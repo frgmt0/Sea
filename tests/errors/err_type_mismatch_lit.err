@@ -1,0 +1,1 @@
+err_type_mismatch_lit.sea:3:16: error: type mismatch: expected bool, found i64

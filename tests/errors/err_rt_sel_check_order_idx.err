@@ -1,0 +1,1 @@
+err_rt_sel_check_order_idx.sea:5: error: index 9 out of bounds for dimension 0 of extent 3

@@ -1,0 +1,5 @@
+// err_rt_ew_idiv_zero -- element-wise idiv with a zero divisor: integer division by zero (LANGUAGE.md 6.6)
+let a = [5, 6]
+let z = 0
+let c = idiv(a, z)
+printf("%d\n", c[0])

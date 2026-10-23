@@ -1,0 +1,2 @@
+// err_ragged -- rows of 2 and 1 scalars: at the first row whose length differs (LANGUAGE.md 6.9)
+let A = [1, 2; 3]

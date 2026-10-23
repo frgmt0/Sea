@@ -1,0 +1,67 @@
+// sel_mat_read -- matrix selections in reads: row, column, block, :, steps, negative steps, empty
+// ranges, index vectors, masks of one dimension and of the whole matrix (LANGUAGE.md 5.2)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let A = [1.0, 2.0, 3.0, 4.0; 5.0, 6.0, 7.0, 8.0; 9.0, 10.0, 11.0, 12.0]
+var D = zeros(3, 4)
+for i in 0..3 {
+    for j in 0..4 {
+        D[i, j] = f64(4 * i + j + 1)
+    }
+}
+pf(A[1, :])
+pf(A[:, 2])
+pmf(A[0..2, 1..3])
+pmf(A[0..1, :])
+pmf(A[:, :])
+pmf(A[0..3 step 2, 0..4 step 3])
+pf(A[2..=0 step -1, 1])
+pmf(A[2..=0 step -2, 3..1 step -1])
+pmf(A[1..1, :])
+pmf(A[:, 2..2])
+pmf(A[[2, 0], [1, 1, 3]])
+pmf(A[[true, false, true], :])
+pf(A[1, [false, true, true, false]])
+pf(A[A > 6.5])
+pf(D[D > 6.5])
+pmf(D[$ - 1..$, $ - 2..$])
+pf(D[0, 1..$])
+pf(D[D > 100.0])
+pmf(D[(0..3), [3]])
+let B = [1, 2; 3, 4]
+pmi(B[:, [1, 0]])
+let C = [true, false; false, true]
+pvb(C[C])
+pvb(C[1, :])

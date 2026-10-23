@@ -1,0 +1,10 @@
+var a = ones(2)
+a[1] = 3.0
+let v = [a, 5.0, a]
+var M = ones(2, 1)
+M[1, 0] = 2.0
+let W = [M, M]
+printf("%g %g %d %g %d\n", v[2], v[4], len(v), W[1, 1], cols(W))
+// arr_lit_cat -- DESIGN.md 3.5.9 L9 (rule 26 (c)): a vector concatenation of vectors and a
+// scalar (line 3, the lengths summed, no check) and a row of two matrices (line 6, the rows
+// checked against the first part's, the columns summed); each part copied at its offsets

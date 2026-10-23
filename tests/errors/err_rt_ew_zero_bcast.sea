@@ -1,0 +1,5 @@
+// err_rt_ew_zero_bcast -- 0x3 with 2x3: 0 and 2 differ and neither is 1 (LANGUAGE.md 6.3)
+let a = zeros(0, 3)
+let b = zeros(2, 3)
+let c = a - b
+printf("%d\n", rows(c))

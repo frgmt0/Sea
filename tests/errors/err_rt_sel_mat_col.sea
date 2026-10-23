@@ -1,0 +1,4 @@
+// err_rt_sel_mat_col -- A[0..2, 1..5] on a 2 x 3 matrix: dimension 1, last position 4 (LANGUAGE.md 5.4)
+let A = zeros(2, 3)
+let B = A[0..2, 1..5]
+printf("%d\n", rows(B))

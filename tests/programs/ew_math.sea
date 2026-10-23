@@ -1,0 +1,46 @@
+// ew_math -- the elemental library functions on arrays (LANGUAGE.md 10.4, 6.7, 10.1): abs sign floor ceil
+// trunc round isnan sqrt min max log exp sin cos pow hypot, NaN and -0; array and scalar forms
+// give identical bits
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let x = [-1.5, -0.0, 0.5, 2.5, nan]
+pf(abs(x))
+pf(sign(x))
+pf(floor(x))
+pf(ceil(x))
+pf(trunc(x))
+pf(round(x))
+pvb(isnan(x))
+pf(sqrt([4.0, 2.25, 0.0, -0.0]))
+pf(sqrt([4, 9]))
+pf(min(x, 0.0))
+pf(max(x, 1.0))
+pf(max([1.0, nan], [nan, 2.0]))
+pf(exp(zeros(2)))
+pf(log([1.0, 0.0]))
+pf(sin([0.0, -0.0]))
+pf(cos(zeros(2)))
+pf(pow([2.0, 3.0], [10.0, 2.0]))
+pf(hypot([3.0, 5.0], [4.0, 12.0]))
+let s = sin([0.5, 1.0, 2.0])
+let l = log([0.5, 3.0])
+let e = exp([0.5, -3.0])
+let c = cos([0.5, 3.0])
+let p = pow([1.5, 2.5], 0.3)
+let h = hypot([1.5, 2.0], 2.5)
+printf("%d %d %d\n", s[0] == sin(0.5), s[1] == sin(1.0), s[2] == sin(2.0))
+printf("%d %d %d %d\n", l[0] == log(0.5), l[1] == log(3.0), e[0] == exp(0.5), e[1] == exp(-3.0))
+printf("%d %d %d %d\n", c[0] == cos(0.5), c[1] == cos(3.0), p[0] == pow(1.5, 0.3), p[1] == pow(2.5, 0.3))
+printf("%d %d\n", h[0] == hypot(1.5, 2.5), h[1] == hypot(2.0, 2.5))

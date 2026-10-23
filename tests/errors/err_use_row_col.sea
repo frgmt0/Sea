@@ -1,0 +1,4 @@
+// err_use_row_col -- a row joining a vector and a matrix, at the row (its first element; LANGUAGE.md 6.9)
+let v = [1.0, 2.0]
+let A = [1.0, 2.0; 3.0, 4.0]
+let B = [v, A]

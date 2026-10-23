@@ -1,0 +1,4 @@
+// err_rt_ew_i64_overflow -- element-wise i64 + overflows: integer overflow (LANGUAGE.md 6.5)
+let a = filled(9223372036854775807, 2)
+let b = a + 1
+printf("%d\n", b[0])

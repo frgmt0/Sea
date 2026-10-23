@@ -1,3 +1,0 @@
-// err_ns_arr_fixed_local -- 4d: a fixed-size array type of a let annotation is still arrays, at its
-// type node (DESIGN.md 2.6.2 step 4d, 3.4.2)
-let v: f64[2] = zeros(2)

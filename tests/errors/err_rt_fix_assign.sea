@@ -1,0 +1,4 @@
+// err_rt_fix_assign -- assignment from a dynamic array to a fixed-size variable (LANGUAGE.md 4.5)
+var f = [1.0, 2.0, 3.0, 4.0]
+f = zeros(5)
+printf("%g\n", f[0])

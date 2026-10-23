@@ -1,0 +1,4 @@
+// err_rt_range_step_zero -- a range value with step 0: range step is zero (LANGUAGE.md 5.1)
+let s = 0
+let r = (0..5 step s) * 2
+printf("%d\n", len(r))

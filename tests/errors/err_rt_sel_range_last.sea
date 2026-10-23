@@ -1,0 +1,4 @@
+// err_rt_sel_range_last -- v[2..10] on a 5-element vector reports the last position 9 (LANGUAGE.md 5.4)
+var v = zeros(5)
+let w = v[2..10]
+printf("%d\n", len(w))

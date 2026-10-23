@@ -1,0 +1,6 @@
+// err_shape_static_where_dyn -- where(a3, c, b4) with a dynamic c: the combined extent 3 stays known, then
+// b4 (DESIGN.md 3.5.5, its example): 3 vs 4
+let a3 = [true, false, true]
+let c = zeros(3)
+let b4 = [1.0, 2.0, 3.0, 4.0]
+let w = where(a3, c, b4)

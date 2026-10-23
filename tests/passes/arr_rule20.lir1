@@ -1,0 +1,124 @@
+#sea 1
+#target arm64-macos
+#file arr_rule20.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 5
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 0:1 1 p5 4 i2 i3 i1 i4
+lf f6 #4000000000000000
+li i7 2
+ldi i8 p5 - 0 16
+chkb i7 i8 0 0:2
+ldi i9 p5 - 0 0
+li i10 1
+icmp ne i11 i9 i10
+if 1 i11
+rcall sea_arr_unique 0:2 1 p12 1 p5
+mov p5 p12
+endif 1
+ldp p13 p5 - 0 40
+stf f6 p13 i7 8 0
+lf f14 #4008000000000000
+li i15 3
+ldi i16 p5 - 0 16
+chkb i15 i16 0 0:3
+ldi i17 p5 - 0 0
+li i18 1
+icmp ne i19 i17 i18
+if 2 i19
+rcall sea_arr_unique 0:3 1 p20 1 p5
+mov p5 p20
+endif 2
+ldp p21 p5 - 0 40
+stf f14 p21 i15 8 0
+call pick 1 f22 1 p5
+sa p23 s1
+stf f22 p23 - 0 0
+la p24 d1
+rcall sea_printf 0:4 0 2 p24 p23
+li i25 5
+li i26 1
+li i27 1
+li i28 1
+rcall sea_arr_new_u 0:5 1 p29 4 i26 i27 i25 i28
+lf f30 #3FF0000000000000
+ldp p31 p29 - 0 40
+li i32 0
+icmp gt i33 i25 i32
+if 3 i33
+li i34 1
+isub i35 i25 i34
+loop 4 i36 i32 i35 i34
+stf f30 p31 i36 8 0
+endloop 4
+endif 3
+call pick 1 f37 1 p29
+release p29
+sa p38 s2
+stf f37 p38 - 0 0
+la p39 d2
+rcall sea_printf 0:5 0 2 p39 p38
+release p5
+ret 0
+endfunc
+func pick fn 0:29:1 1 p1 1 f
+li i2 0
+ldi i3 p1 - 0 16
+li i4 2
+rcount i5 i6 i2 i3 i4 0 0:30
+ldi i7 p1 - 0 16
+if 1 i6
+chkb i2 i7 0 0:30
+imul i8 i5 i4
+iadd i9 i2 i8
+chkb i9 i7 0 0:30
+endif 1
+li i10 1
+iadd i11 i5 i10
+li i12 0
+isel i13 i6 i11 i12
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new_u 0:30 1 p17 4 i14 i15 i13 i16
+ldp p18 p17 - 0 40
+ldp p19 p1 - 0 40
+li i20 0
+li i21 1
+if 2 i6
+loop 3 i22 i2 i5 i4
+ldf f23 p19 i22 8 0
+stf f23 p18 i20 8 0
+iadd i20 i20 i21
+endloop 3
+endif 2
+lf f24 #0000000000000000
+mov p25 p17
+retain p25
+ldi i26 p25 - 0 16
+li i27 0
+icmp gt i28 i26 i27
+if 4 i28
+ldp p29 p25 - 0 40
+li i30 1
+isub i31 i26 i30
+loop 5 i32 i27 i31 i30
+ldf f33 p29 i32 8 0
+fadd f24 f24 f33
+endloop 5
+endif 4
+release p25
+release p17
+ret 1 f24
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

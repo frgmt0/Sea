@@ -1,0 +1,5 @@
+// err_shape_static_ew -- fixed operands of 3 and 2 elements: the compile-time shape mismatch at the
+// operator node, its left operand's start (LANGUAGE.md 4.10, 6.3; DESIGN.md 3.5.5)
+let a = [1.0, 2.0, 3.0]
+let b = [1.0, 2.0]
+let c = a + b

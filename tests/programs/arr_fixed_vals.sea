@@ -1,0 +1,93 @@
+// arr_fixed_vals -- fixed-size arrays (LANGUAGE.md 4.5; Decision 32): locals, value semantics, parameters,
+// results, tuple components, ref parameters, matrices, for, $, len rows cols numel
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn sum3(v: f64[3]) -> f64 {
+    return v[0] + v[1] + v[2]
+}
+fn scale2(v: f64[2], k: f64) -> f64[2] {
+    return v * k
+}
+fn split(v: i64[4]) -> (i64[2], i64[2]) {
+    return ([v[0], v[1]], [v[2], v[3]])
+}
+fn bump(ref v: f64[3]) {
+    v[0] += 1.0
+    v = v * 2.0
+}
+fn eye2() -> f64[2,2] {
+    return [1.0, 0.0; 0.0, 1.0]
+}
+fn mid(M: f64[2,2]) -> f64 {
+    return M[0, 1] + M[1, 0]
+}
+let a: f64[3] = [1.0, 2.0, 3.0]
+printf("%g\n", sum3(a))
+var b = a
+b[0] = 9.0
+printf("%g %g\n", a[0], b[0])
+let s = scale2([1.5, 2.0], 2.0)
+printf("%g %g %d\n", s[0], s[1], len(s))
+let (lo, hi) = split([1, 2, 3, 4])
+printf("%d %d %d %d\n", lo[0], lo[1], hi[0], hi[1])
+var p = [0, 0]
+var q = [0, 0]
+(p, q) = split([5, 6, 7, 8])
+printf("%d %d %d %d\n", p[0], p[1], q[0], q[1])
+let (_, h2) = split([1, 1, 2, 9])
+printf("%d\n", h2[1])
+var c = [1.0, 2.0, 3.0]
+bump(ref c)
+pf(c)
+var M = eye2()
+M[0, 1] = 5.0
+pmf(M)
+printf("%d %d %d %g\n", rows(M), cols(M), numel(M), mid(M))
+var t = 0.0
+for x in a {
+    t += x
+}
+printf("%g %g\n", t, a[$ - 1])
+var f: i64[3] = [0, 0, 0]
+for i in 0..3 {
+    f[i] = i * i
+}
+pvi(f)
+var g = [true, false]
+g[1] = true
+pvb(g)
+let fm: f64[2,3] = [1, 2, 3; 4, 5, 6]
+printf("%g\n", fm[1, 2])
+var e = [1.0, 2.0]
+let e2 = e
+e[0] = 0.0
+printf("%g %g\n", e[0], e2[0])

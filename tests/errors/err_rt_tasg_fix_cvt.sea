@@ -1,0 +1,10 @@
+// err_rt_tasg_fix_cvt -- a dynamic i64[] result of 4 elements into a fixed f64[3] target of a tuple
+// assignment: the run-time shape check of 4.5 at the statement's line (the
+// conversion of 4.2 (c) cannot fail; LANGUAGE.md 7.3 as amended by Decision 37)
+fn d4() -> (i64[], i64) {
+    return ((0..4), 1)
+}
+var f = [0.0, 0.0, 0.0]
+var k = 0
+(f, k) = d4()
+printf("%g\n", f[0])

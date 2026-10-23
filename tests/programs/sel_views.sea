@@ -1,0 +1,67 @@
+// sel_views -- views read (.T, .flat, .col, .row; folded into an index and materialized), nested
+// views, .flat written by element, range, mask and compound stores (LANGUAGE.md 5.6, 7.3)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+pmf(A.T)
+pf(A.flat)
+let v = [1.0, 2.0, 3.0]
+pmf(v.col)
+pmf(v.row)
+printf("%g %g %g %g %g\n", A.T[2, 1], A.flat[3], A.T.flat[3], v.row[0, 2], v.col[1, 0])
+pf(A.T[1, :])
+let D = A.T
+printf("%d %d %g\n", rows(D), cols(D), D[0, 1])
+var M = zeros(2, 3)
+M.flat[0..6] = A.flat
+pmf(M)
+M.flat[4] = 9.0
+M.flat[M.flat > 4.5] = 0.0
+pmf(M)
+M.flat[[5, 0]] += [1.0, 2.0]
+pmf(M)
+pmf(M.T)
+pf(M.T.flat)
+pmf(M.T.T)
+pmf(v.row.T)
+pmf(zeros(4).row)
+let E = zeros(0, 3)
+pmf(E.T)
+pf(E.flat)
+pmi([1, 2; 3, 4].T)
+pvb([true, false; false, false].flat)
+pf(zeros(3).col.flat)
+M.flat[1..3] = 7.0
+pmf(M)

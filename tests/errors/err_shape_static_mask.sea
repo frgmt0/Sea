@@ -1,0 +1,5 @@
+// err_shape_static_mask -- a fixed mask of 2 on a fixed vector of 3: at the mask index, what it selects
+// from first (LANGUAGE.md 5.2; DESIGN.md 3.5.5)
+let v = [1.0, 2.0, 3.0]
+let m = [true, false]
+let w = v[m]

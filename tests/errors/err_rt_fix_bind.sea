@@ -1,0 +1,3 @@
+// err_rt_fix_bind -- a dynamic array of 5 bound to f64[4]: shape mismatch: expected 4, got 5 (LANGUAGE.md 4.5)
+let f: f64[4] = zeros(5)
+printf("%g\n", f[0])

@@ -1,0 +1,1 @@
+err_shape_static_lit256.sea:3:17: error: shape mismatch: 4 vs 256

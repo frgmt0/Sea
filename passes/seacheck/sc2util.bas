@@ -27,9 +27,13 @@
 2765 REM local row. Rows: 1 .main, 2..X(30) the entered fns by fid, then the constants by cid
 2770 REM (X(31) the row before the first), the structs by sid, X(33) the last item row; a local of
 2775 REM function S with lid l is row Y(S,9) - 1 + l (DESIGN 3.4.1: lids come from sea.res).
-2780 REM T(t,0) 1 tvec 2 tmat 7 ttuple 0 continuation; T(t,1) element or count; tuple components in the
-2785 REM next rows, 9 per row (columns 0-8); T(t,9) the written id (DESIGN 3.5.1).
-2790 REM W(1..) the tree stack of sc_read, then the stack of ck_cord; W(100001..149999) the names
+2780 REM T(t,0) 1 tvec 2 tmat 3 tfvec 4 tfmat 7 ttuple 0 continuation; T(t,1) element or count, T(t,2..3)
+2785 REM the extents n or r c of a fixed one; tuple components in the next rows, 9 per row (columns
+2787 REM 0-8); T(t,9) the written id (DESIGN 3.5.1). From 4e also: M(i,4) of an array literal 2 (its
+2788 REM elements were untyped integer constants: i64 until an f64 context retypes it, sc9arr rtf), of
+2789 REM a node of such an element 3, of [] 5 (its type comes from its context, LANGUAGE 6.9); M(i,5) of
+2790 REM an array-valued node the dyn/fix target (a T row), M(i,7) >= 10 an element-wise cvt (its type).
+2791 REM W(1..) the tree stack of sc_read, then the stack of ck_cord; W(100001..149999) the names
 2795 REM of the entered items (nmh); W(150000+id) the T row of rtup id; W(180001..) written types in id order (emission). X(1) nodes X(2) strings X(3) last
 2800 REM symbol row X(4) last T row X(5) C rows X(6) key of the first error (0 none) X(7) its node
 2805 REM (0: rerr, at X(36) X(37)) X(8) its argument count X(9) errors recorded X(10) capacity
@@ -37,7 +41,7 @@
 2815 REM file X(19) current node X(20)-X(25) LIM SYMBOLS TYPES CONSTS NODES STRINGS POWK X(27)
 2820 REM emission mode X(28) types written X(29) top-level statements X(30) last fn row X(31) row
 2825 REM before the constants X(26) a bad record (BAD_RECORD) X(32) last id of the type table of sea.res X(33) last item row X(34) FILE_VERSION X(35)
-2830 REM LIM_DEC_FIELD X(36) X(37) the position of the rerr error X(38) types; C(r,0) 3 i64 4 f64,
+2830 REM LIM_DEC_FIELD X(36) X(37) the position of the rerr error X(38) types X(39) LIM_FIXED_ELEMS; C(r,0) 3 i64 4 f64,
 2835 REM C(r,1..4) limbs; X$(1) error name, X$(2)-X$(4) its arguments, X$(10) predeclared names,
 2840 REM X$(11) the target (header).
 2845 REM ---- er: record error Q$ at node I (K arguments); the first in source order is kept ------
@@ -133,6 +137,7 @@
 3295 IF Q < 10 THEN 3385
 3300 IF T(Q, 0) = 1 THEN 3355
 3305 IF T(Q, 0) = 2 THEN 3370
+3307 IF T(Q, 0) < 5 THEN 3381
 3310 LET R$ = "("
 3315 FOR J = 1 TO T(Q, 1)
 3320 CALL "tyn": T(), T(Q + 1 + INT((J - 1) / 9), J - 1 - 9 * INT((J - 1) / 9)), A$
@@ -148,6 +153,10 @@
 3370 CALL "tyn": T(), T(Q, 1), A$
 3375 LET R$ = A$ & "[,]"
 3380 GOTO 3440
+3381 REM a fixed-size array: T[n], T[r,c] (no spaces inside the brackets, DESIGN 2.6.2)
+3382 CALL "tyn": T(), T(Q, 1), A$
+3383 LET R$ = A$ & "[" & STR$(T(Q, 2)) & SEG$("," & STR$(T(Q, 3)), 1, 99 * (T(Q, 0) - 3)) & "]"
+3384 GOTO 3440
 3385 LET A$ = "?|void|bool|i64|f64|str|Figure|Axes|Lu|Chol|"
 3390 LET S = 1
 3395 LET Q1 = Q
@@ -177,27 +186,35 @@
 3515 NEXT H
 3520 NEXT J
 3525 SUBEND
-3530 REM ---- tarr: R = the type E[] (K = 1) or E[,] (K = 2), one id per structure (DESIGN 3.5.1) -----
-3535 SUB "tarr": T(), N(), X(), X$(), K, E, R
+3530 REM ---- tarr: R = the array type K (1 E[], 2 E[,], 3 E[A], 4 E[A,B]) of element E, one id per
+3532 REM structure (DESIGN 3.5.1); a dynamic type ignores A and B --------------------------------
+3535 SUB "tarr": T(), N(), X(), X$(), K, E, A, B, R
 3540 LET R = 10
 3545 IF R > X(4) THEN 3570
 3550 IF T(R, 0) <> K THEN 3560
-3555 IF T(R, 1) = E THEN 3590
+3552 IF T(R, 1) <> E THEN 3560
+3554 IF K < 3 THEN 3590
+3556 IF T(R, 2) <> A THEN 3560
+3557 IF K = 3 THEN 3590
+3558 IF T(R, 3) = B THEN 3590
 3560 CALL "tnext": T(), R
 3565 GOTO 3545
 3570 CALL "tnew": T(), N(), X(), X$(), 1, R
 3575 IF R = 0 THEN 3590
 3580 LET T(R, 0) = K
 3585 LET T(R, 1) = E
+3586 IF K < 3 THEN 3590
+3587 LET T(R, 2) = A
+3588 LET T(R, 3) = B
 3590 SUBEND
-3595 REM ---- elt: E = the element type of an array type Q and K its rank (1, 2); a type that is no
-3600 REM array is its own E, with K = 0 -------------------------------------------------------
+3595 REM ---- elt: E = the element type of an array type Q and K its rank (1, 2; fixed-size too); a
+3600 REM type that is no array is its own E, with K = 0 ------------------------------------------
 3605 SUB "elt": T(), Q, E, K
 3610 LET E = Q
 3615 LET K = 0
 3620 IF Q < 10 THEN 3640
-3625 IF T(Q, 0) > 2 THEN 3640
-3630 LET K = T(Q, 0)
+3625 IF T(Q, 0) > 4 THEN 3640
+3630 LET K = T(Q, 0) - 2 * INT((T(Q, 0) - 1) / 2)
 3635 LET E = T(Q, 1)
 3640 SUBEND
 3645 REM ---- ttup: R = the tuple of the K types U(1..K) ---------------------------------------------
@@ -248,30 +265,43 @@
 3870 CALL "er": N(), X(), X$(), I, "RESULT_COUNT", "0", "1", "", 2
 3875 LET R = 0
 3880 SUBEND
-3885 REM ---- cv: the value I stored into type D (initialisation, assignment, argument, return):
-3890 REM untyped constants take D, i64 -> f64 is a cvt, i64[] -> f64[] is from 4e (arrays), anything
-3895 REM else a type mismatch --------------------------------------------------------------------
+3885 REM ---- cv: the value I stored into type D (initialisation, assignment, argument, return;
+3890 REM LANGUAGE 4.2, 4.5, 6.9): a [] takes D (eset); untyped constants take D's element type (an
+3892 REM untyped literal becomes f64 under an f64 element type, rtf); i64 -> f64 is a cvt, element by
+3894 REM element for arrays; then a fixed-size array stored as the dynamic type is a dyn, the reverse a
+3896 REM fix, two fixed shapes that differ are 217 (afit); anything else a type mismatch ----------
 3900 SUB "cv": N(), M(), T(), C(), X(), X$(), I, D
+3902 IF M(I, 4) <> 5 THEN 3905
+3903 CALL "eset": N(), M(), T(), X(), X$(), I, D
+3904 GOTO 4025
 3905 CALL "vu": N(), M(), T(), X(), X$(), I, T1
 3910 IF T1 = 0 THEN 4025
 3915 IF D = 0 THEN 4025
 3920 CALL "elt": T(), D, E, K
-3925 IF T1 <> -1 THEN 3945
+3925 IF T1 <> -1 THEN 3940
 3930 REM an untyped constant where f64 or an f64 array is expected is f64 (LANGUAGE 4.2 (b))
 3935 CALL "stl": N(), M(), C(), X(), X$(), I, E
-3940 LET T1 = M(I, 1)
+3937 LET T1 = M(I, 1)
+3940 IF M(I, 4) <> 2 THEN 3945
+3941 IF E <> 4 THEN 3945
+3942 CALL "rtf": N(), M(), T(), X(), X$(), I
+3943 LET T1 = M(I, 1)
 3945 IF T1 = D THEN 4025
 3950 IF T1 <> 3 THEN 3970
 3955 IF D <> 4 THEN 4010
 3960 LET M(I, 7) = 1
 3965 GOTO 4025
-3970 REM i64[] where f64[] is expected: the element-wise cvt of LANGUAGE 4.2 (c), from 4e
+3970 REM arrays of one rank: equal elements, or i64 to f64 by an element-wise cvt (LANGUAGE 4.2 (c))
 3975 IF K = 0 THEN 4010
 3980 CALL "elt": T(), T1, E1, K1
 3985 IF K1 <> K THEN 4010
-3990 IF E1 <> 3 THEN 4010
-3995 IF E <> 4 THEN 4010
-4000 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "arrays", "", "", 1
+3990 IF E1 = E THEN 4000
+3992 IF E1 <> 3 THEN 4010
+3994 IF E <> 4 THEN 4010
+3996 CALL "trel": T(), N(), X(), X$(), T1, 4, Q
+3998 LET M(I, 7) = Q
+3999 LET T1 = Q
+4000 CALL "afit": N(), M(), T(), X(), X$(), I, T1, D
 4005 GOTO 4025
 4010 CALL "tyn": T(), D, A$
 4015 CALL "tyn": T(), T1, B$

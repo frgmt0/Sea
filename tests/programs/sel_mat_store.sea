@@ -1,0 +1,64 @@
+// sel_mat_store -- matrix selection stores: row, column, block, index vectors with repeats (stores in
+// the selection's column-major order), masks, negative steps, : (LANGUAGE.md 5.5)
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmb(A: bool[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+var A = zeros(3, 4)
+A[1, :] = 1.0
+A[:, 2] = [7.0, 8.0, 9.0]
+pmf(A)
+A[0..2, 0..2] = [1.0, 2.0; 3.0, 4.0]
+pmf(A)
+A[2, 1..4] = [5.0, 6.0, 7.0]
+pmf(A)
+A[[0, 2], [3, 3]] = [10.0, 11.0; 12.0, 13.0]
+pmf(A)
+A[A > 10.0] = 0.0
+pmf(A)
+A[A == 0.0] = [-1.0, -2.0, -3.0]
+pmf(A)
+A[[true, false, true], :] = 0.5
+pmf(A)
+A[1..=0 step -1, 0] = [5.0, 6.0]
+pmf(A)
+A[1..1, :] = 3.0
+A[:, :] = 2.0
+pmf(A)
+var B = filled(0, 2, 3)
+B[:, 1] = (4..6)
+B[0, [true, false, true]] = 7
+pmi(B)
+var F = [1.0, 2.0; 3.0, 4.0]
+F[:, 0] = [9.0, 8.0]
+F[1, :] = 0.0
+pmf(F)
+var C = filled(false, 2, 2)
+C[[1], :] = [true, true].row
+pmb(C)

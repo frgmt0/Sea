@@ -1,0 +1,173 @@
+#sea 1
+#target arm64-macos
+#file arr_rule22.sea
+tvec 10 4
+tptr 11 4
+fn 1 .main main 1 0 8 0:1:1
+loc .l1 3 let 0:9:22
+loc .l2 10 let 0:9:22
+loc .l3 4 let 0:9:22
+loc .l4 11 let 0:9:22
+loc .l5 3 let 0:9:22
+loc .l6 3 let 0:9:22
+loc .l7 3 let 0:9:22
+loc .l8 3 for 0:9:22
+ci 0:9:27 3 3
+tmp 0:9:22 1
+lv 0:9:22 3 1
+anew 0:9:22 10 0 1
+tmp 0:9:22 2
+cf 0:9:22 4 #3FF0000000000000
+tmp 0:9:22 3
+lv 0:9:22 10 2
+adat 0:9:22 11
+tmp 0:9:22 4
+ci 0:9:22 3 0
+tmp 0:9:22 5
+lv 0:9:22 3 1
+lv 0:9:22 3 5
+bin 0:9:22 2 gt
+ci 0:9:22 3 1
+tmp 0:9:22 6
+lv 0:9:22 3 1
+lv 0:9:22 3 6
+wbin 0:9:22 3 sub
+tmp 0:9:22 7
+lv 0:9:22 3 5
+lv 0:9:22 3 7
+lv 0:9:22 3 6
+lv 0:9:22 4 3
+lv 0:9:22 11 4
+lv 0:9:22 3 8
+est 0:9:22 8 0
+block 0:9:22 1
+hloop 0:9:22 8
+block 0:9:22 3
+if 0:9:22 0
+lv 0:9:22 10 2
+xblk 0:9:22 10 6
+call 0:9:16 4 2 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %0A
+fmt 0:9:8 1 2
+lib 0:9:1 1 printf 1
+eval 0:9:1
+ci 0:10:28 3 2
+anew 0:10:22 10 1 1
+call 0:10:16 4 2 1
+fconv 0:10:8 1 - - - g
+ftext 0:10:8 1 %0A
+fmt 0:10:8 1 2
+lib 0:10:1 1 printf 1
+eval 0:10:1
+block 0:1:1 2
+end
+fn 2 twice fn 4 1 20 0:1:1
+par x 10 val
+loc z 10 let 0:2:9
+loc s 4 var 0:3:9
+loc e 4 for 0:4:9
+loc .l1 10 let 0:2:13
+loc .l2 4 let 0:2:13
+loc .l3 3 let 0:2:13
+loc .l4 10 let 0:2:13
+loc .l5 11 let 0:2:13
+loc .l6 11 let 0:2:13
+loc .l7 3 let 0:2:13
+loc .l8 3 let 0:2:13
+loc .l9 3 let 0:2:13
+loc .l10 3 for 0:2:13
+loc .l11 10 let 0:4:5
+loc .l12 3 let 0:4:5
+loc .l13 3 let 0:4:5
+loc .l14 11 let 0:4:5
+loc .l15 3 let 0:4:5
+loc .l16 3 let 0:4:5
+loc .l17 3 for 0:4:5
+lv 0:2:13 10 1
+tmp 0:2:13 5
+cf 0:2:17 4 #4000000000000000
+tmp 0:2:13 6
+lv 0:2:13 10 5
+ext 0:2:13 3 0
+tmp 0:2:13 7
+lv 0:2:13 3 7
+anew 0:2:13 10 0 1
+tmp 0:2:13 8
+lv 0:2:13 10 8
+adat 0:2:13 11
+tmp 0:2:13 9
+lv 0:2:13 10 5
+adat 0:2:13 11
+tmp 0:2:13 10
+ci 0:2:13 3 0
+tmp 0:2:13 11
+lv 0:2:13 3 7
+lv 0:2:13 3 11
+bin 0:2:13 2 gt
+ci 0:2:13 3 1
+tmp 0:2:13 12
+lv 0:2:13 3 7
+lv 0:2:13 3 12
+wbin 0:2:13 3 sub
+tmp 0:2:13 13
+lv 0:2:13 3 11
+lv 0:2:13 3 13
+lv 0:2:13 3 12
+lv 0:2:13 11 10
+lv 0:2:13 3 14
+eld 0:2:13 4 8 0
+lv 0:2:13 4 6
+bin 0:2:13 4 mul
+lv 0:2:13 11 9
+lv 0:2:13 3 14
+est 0:2:13 8 0
+block 0:2:13 1
+hloop 0:2:13 14
+block 0:2:13 3
+if 0:2:13 0
+lv 0:2:13 10 8
+xblk 0:2:13 10 8
+bind 0:2:5 2
+cf 0:3:13 4 #0000000000000000
+bind 0:3:5 3
+lv 0:4:14 10 2
+bind 0:4:5 15
+lv 0:4:5 10 15
+ext 0:4:5 3 0
+tmp 0:4:5 16
+ci 0:4:5 3 0
+tmp 0:4:5 17
+lv 0:4:5 3 16
+lv 0:4:5 3 17
+bin 0:4:5 2 gt
+lv 0:4:5 10 15
+adat 0:4:5 11
+tmp 0:4:5 18
+ci 0:4:5 3 1
+tmp 0:4:5 19
+lv 0:4:5 3 16
+lv 0:4:5 3 19
+wbin 0:4:5 3 sub
+tmp 0:4:5 20
+lv 0:4:5 3 17
+lv 0:4:5 3 20
+lv 0:4:5 3 19
+lv 0:4:5 11 18
+lv 0:4:5 3 21
+eld 0:4:5 4 8 0
+tmp 0:4:5 4
+lv 0:5:9 4 3
+lv 0:5:14 4 4
+asg 0:5:9 add
+block 0:4:16 1
+block 0:4:5 2
+hloop 0:4:5 21
+block 0:4:5 4
+if 0:4:5 0
+block 0:4:5 4
+lv 0:7:12 4 3
+ret 0:7:5 1
+block 0:1:27 4
+end
+#end

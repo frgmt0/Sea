@@ -1,0 +1,8 @@
+// err_tasg_shape_static -- a fixed f64[3] result into a fixed f64[2] target: 217 at the target, the target's
+// shape first (DESIGN.md 3.5.5, Decision 37)
+fn fx() -> (f64[3], i64) {
+    return ([1.0, 2.0, 3.0], 1)
+}
+var f = [0.0, 0.0]
+var k = 0
+(f, k) = fx()

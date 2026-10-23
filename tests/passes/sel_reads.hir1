@@ -1,0 +1,81 @@
+#sea 1
+#target arm64-macos
+#file sel_reads.sea
+tmat 10 4
+tvec 11 4
+tvec 12 3
+tmat 13 2
+fn 1 .main main 1 0 6 0:1:1
+loc A 10 var 0:1:5
+loc c 11 let 0:4:5
+loc w 12 let 0:5:5
+loc r 11 let 0:6:5
+loc M 13 let 0:7:5
+loc s 11 let 0:8:5
+ci 0:1:15 3 2
+ci 0:1:18 3 3
+lib 0:1:9 10 zeros 2
+bind 0:1:1 1
+lv 0:2:1 10 1
+ci 0:2:3 3 0
+ci 0:2:6 3 2
+idx 0:2:1 4 2
+cf 0:2:11 4 #4014000000000000
+asg 0:2:1 set
+lv 0:3:1 10 1
+ci 0:3:3 3 1
+ci 0:3:6 3 2
+idx 0:3:1 4 2
+cf 0:3:11 4 #4018000000000000
+asg 0:3:1 set
+lv 0:4:9 10 1
+all 0:4:11 1
+ci 0:4:14 3 2
+idx 0:4:9 11 2
+bind 0:4:1 2
+ci 0:5:16 3 1
+ci 0:5:19 3 2
+lib 0:5:9 12 filled 2
+bind 0:5:1 3
+lv 0:6:9 11 2
+lv 0:6:11 12 3
+idx 0:6:9 11 1
+bind 0:6:1 4
+lv 0:7:9 10 1
+cf 0:7:13 4 #4016000000000000
+bin 0:7:9 13 gt
+bind 0:7:1 5
+lv 0:8:9 10 1
+lv 0:8:11 13 5
+idx 0:8:9 11 1
+bind 0:8:1 6
+lv 0:9:28 11 2
+ci 0:9:30 3 0
+idx 0:9:28 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:34 11 2
+ci 0:9:36 3 1
+idx 0:9:34 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:40 11 4
+ci 0:9:42 3 0
+idx 0:9:40 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %20
+lv 0:9:50 11 4
+lib 0:9:46 3 len 1
+fconv 0:9:8 1 - - - d
+ftext 0:9:8 1 %20
+lv 0:9:54 11 6
+ci 0:9:56 3 0
+idx 0:9:54 4 1
+fconv 0:9:8 1 - - - g
+ftext 0:9:8 1 %0A
+fmt 0:9:8 1 10
+lib 0:9:1 1 printf 1
+eval 0:9:1
+block 0:1:1 9
+end
+#end

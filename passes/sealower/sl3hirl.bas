@@ -45,7 +45,7 @@
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their
 30199 REM fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
-30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530
+30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320
 30204 REM ---- xblk ty n: ty is its last child's type ------------------------------------------
 30210 LET H(H1, 4) = I(2)
 30212 LET H(H1, 6) = I(3)
@@ -65,6 +65,7 @@
 30252 LET A(E1 + I(2), 0) = H1
 30254 IF E3 <= 9 THEN 1285
 30256 IF T(E3, 1) <> 4 THEN 1285
+30257 IF H(E2, 1) = 58 THEN 1285
 30258 IF H(E2, 1) <> 47 THEN 2360
 30260 GOTO 1285
 30280 REM ---- hloop lid: a local of type 3 and mut for; start, last, step of type 3; a block ------
@@ -133,6 +134,7 @@
 30488 LET E3 = I(2)
 30490 GOSUB 30900
 30492 IF E4 = 0 THEN 2360
+30493 IF T(E3, 1) > 4 THEN 40344
 30494 IF E4 <> I(4) THEN 2360
 30496 LET E2 = H(H1, 7)
 30498 IF E2 = 0 THEN 1285
@@ -148,16 +150,13 @@
 30540 IF W2 = 0 THEN 2360
 30542 LET H(H1, 5) = W2
 30544 LET E2 = H(H1, 7)
-30546 IF H(E2, 4) <> 3 THEN 2360
-30548 IF H(H(E2, 8), 4) <> 3 THEN 2360
+30546 IF ABS(H(E2, 4) - 2.5) <> .5 THEN 2360
+30548 IF ABS(H(H(E2, 8), 4) - 2.5) <> .5 THEN 2360
 30550 GOTO 1285
-30890 REM ---- 30900: E4 = the rank of the type E3 when it is an array (tvec 1, tmat 2), else 0 ----
+30890 REM ---- 30900: E4 = the rank of the type E3 when it is an array (tvec tfvec 1, tmat tfmat 2), else 0
 30900 LET E4 = 0
 30902 IF E3 <= 9 THEN 30910
-30904 IF T(E3, 1) = 1 THEN 30908
-30905 IF T(E3, 1) <> 3 THEN 30910
-30906 LET E4 = 1
-30908 LET E4 = E4 + 1
+30904 LET E4 = VAL(SEG$("102012", T(E3, 1), T(E3, 1)))
 30910 RETURN
 30915 REM ---- 30920: E5 = 1 if the type E3 is the tptr of the element type E6, else 0 ---------------
 30920 LET E5 = 0
@@ -171,14 +170,7 @@
 30992 REM local of an hloop or forr); a tptr local only a tmp's; the bind of a .l local only the
 30993 REM first statement of an L4 block (a block of 4), which is marked H(bind,6) = 1
 31000 LET E1 = G(G0, 0)
-31002 FOR E2 = H2 TO H0
-31004 IF H(E2, 1) <> 32 THEN 31016
-31006 IF H(E2, 6) <> 4 THEN 31016
-31008 LET E3 = H(E2, 7)
-31010 IF H(E3, 1) <> 20 THEN 31016
-31012 IF A(E1 + H(E3, 5), 4) - 2 * INT(A(E1 + H(E3, 5), 4) / 2) = 0 THEN 31016
-31014 LET H(E3, 6) = 1
-31016 NEXT E2
+31002 GOSUB 40400
 31020 FOR E2 = H2 TO H0
 31022 LET E3 = H(E2, 1)
 31024 IF E3 = 5 THEN 31060
@@ -205,21 +197,23 @@
 31080 LET E4 = H(E2, 5)
 31082 IF A(E1 + E4, 0) <> 0 THEN 2360
 31084 IF A(E1 + E4, 4) - 2 * INT(A(E1 + E4, 4) / 2) = 0 THEN 31040
-31086 IF H(E2, 6) <> 1 THEN 2360
+31086 GOSUB 40490
 31088 GOTO 31040
 31089 REM the local of an hloop or forr is not a tmp local
 31090 IF A(E1 + H(E2, 5), 0) <> 0 THEN 2360
 31092 GOTO 31040
-31098 REM a tbind: none of its locals a tmp local
+31098 REM a tbind: none of its locals a tmp local; one of .l locals only first in a block (41792)
 31100 FOR E4 = 1 TO H(E2, 6)
 31102 LET E5 = M(H(E2, 0) + E4 - 1)
 31104 IF E5 = 0 THEN 31108
 31106 IF A(E1 + E5, 0) <> 0 THEN 2360
 31108 NEXT E4
+31109 GOSUB 41792
 31110 GOTO 31040
 31118 REM an asg or a rarg: the root local of its target (first child)
 31120 LET E4 = H(E2, 7)
 31122 GOSUB 31150
+31123 IF E3 = 23 THEN 40550
 31124 GOTO 31040
 31128 REM a tasg: the root local of each of its n targets
 31130 LET E4 = H(E2, 7)
@@ -239,8 +233,8 @@
 31160 IF A(E1 + H(O1, 5), 0) <> 0 THEN 2360
 31162 RETURN
 31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
-32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 32400, 32400, 32400, 32400, 32400
-32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210
+32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 32400, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532
+32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056
 32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its
 32091 REM destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a
 32092 REM rule-12 copy), an ifx, && or || is lowered with no destination and L names its register
@@ -250,7 +244,9 @@
 32106 LET D1 = A(E1, 3)
 32108 IF D1 > 0 THEN 32124
 32110 LET D1 = 0
+32111 GOSUB 41330
 32112 LET W(W0 + 3) = 1
+32113 IF F5 = 1 THEN 32124
 32114 IF H(E2, 1) = 17 THEN 32124
 32116 IF H(E2, 1) <> 8 THEN 32119
 32117 IF H(E2, 5) = 16 THEN 32124
@@ -265,7 +261,8 @@
 32128 GOTO 7380
 32130 IF W(W0 + 3) = 0 THEN 32134
 32132 LET A(G(F0, 0) + H(X, 5), 3) = R9
-32134 LET R9 = 0
+32134 GOSUB 41640
+32135 LET R9 = 0
 32136 GOTO 3090
 32190 REM ---- xblk: with a destination D and the value lv L of one of its own tmps, L's register is
 32191 REM D (T3); its statements in order, then its value with the destination D; then the
@@ -277,6 +274,7 @@
 32208 LET E4 = A(G(F0, 0) + H(E2, 5), 0)
 32209 IF E4 < E3 THEN 32214
 32210 IF E4 >= X THEN 32214
+32211 IF H(E4, 1) <> 44 THEN 32214
 32212 LET A(G(F0, 0) + H(E2, 5), 3) = D
 32214 LET E2 = W(W0 + 4)
 32216 LET X1 = E2
@@ -330,8 +328,9 @@
 32400 LET W(W0 + 3) = U0
 32402 LET W(W0 + 4) = H(X, 7)
 32404 IF W(W0 + 4) = 0 THEN 32430
-32406 IF H(X, 1) <> 45 THEN 32410
+32406 IF H(X, 1) <> 45 THEN 32409
 32408 IF H(W(W0 + 4), 8) = 0 THEN 32430
+32409 IF H(W(W0 + 4), 8) = 0 THEN 41592
 32410 LET S = 63
 32412 LET X1 = W(W0 + 4)
 32414 LET D1 = 0
@@ -342,7 +341,7 @@
 32426 LET W(W0 + 4) = H(W(W0 + 4), 8)
 32428 GOTO 32404
 32430 LET E1 = W(W0 + 3)
-32432 ON H(X, 1) - 44 GOTO 32500, 32600, 32700, 32800, 32900, 33000, 33100
+32432 ON H(X, 1) - 44 GOTO 32500, 32600, 32700, 32800, 32900, 41302, 33100, 2365, 41400, 41412, 41452, 2365, 41438
 32490 REM ---- hloop K: loop B K start last step (B the next block, 3.6.4), its block, endloop B; a
 32491 REM loop for break, cont and rule 16 (b) (J: 7985 with x1 = B)
 32500 LET E2 = U(E1 + 1, 1)
@@ -381,7 +380,9 @@
 32602 LET U0 = E1
 32604 LET C1 = 1
 32606 GOSUB 7470
+32607 GOSUB 41270
 32608 LET Z3 = H9
+32609 IF F5 = 1 THEN 41280
 32610 IF H(H(X, 7), 4) = 5 THEN 32614
 32612 LET Z3 = G2 + H(X, 5) * (G3 - G2)
 32614 LET V2 = D2
@@ -394,7 +395,9 @@
 32628 GOTO 3090
 32690 REM ---- adat: data(A) of rule 17 (ldp D A - 0 40) into the destination -------------------
 32700 LET E2 = U(E1 + 1, 1)
+32701 GOSUB 41270
 32702 LET U0 = E1
+32703 IF F5 = 1 THEN 41296
 32704 LET C1 = 3
 32706 GOSUB 7470
 32708 LET V2 = D2
@@ -449,7 +452,8 @@
 32956 LET V1 = V3
 32958 GOSUB 7500
 32960 LET L1$ = L1$ & " " & Z$
-32962 LET V1 = V4
+32962 IF V4 = 0 THEN 41600
+32963 LET V1 = V4
 32964 GOSUB 7500
 32966 LET L1$ = L1$ & " " & Z$ & " " & STR$(H(X, 5)) & " " & S$(H(X, 0))
 32968 GOSUB 7695

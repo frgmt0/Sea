@@ -1,0 +1,4 @@
+// err_rt_sel_store_shape_mat -- A[0..2, :] = zeros(3, 3) on a 2 x 3 matrix: shape mismatch: 2x3 vs 3x3
+// (LANGUAGE.md 5.5)
+var A = zeros(2, 3)
+A[0..2, :] = zeros(3, 3)

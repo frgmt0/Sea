@@ -1,0 +1,49 @@
+// ew_arith_f64 -- element-wise f64 arithmetic: + - * / ^ and unary -, scalar with array both ways,
+// i64 operands converted, pinned powers and pow, IEEE Inf/NaN/-0 (LANGUAGE.md 6.2, 6.3, 6.5)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let a = [1.0, 2.0, 4.0]
+let b = [0.5, -1.0, 8.0]
+pf(a + b)
+pf(a - b)
+pf(a * b)
+pf(a / b)
+pf(a ^ 2)
+pf(a ^ 4)
+pf(a ^ -1)
+pf(b ^ 3)
+pf(b ^ 0)
+pf(-a)
+pf(2.0 * a)
+pf(a - 1)
+pf(1.0 / a)
+pf(a ^ 0.5)
+pf(2.0 ^ a)
+pf(a ^ a)
+let n = [1, 2, 3]
+pf(a + n)
+pf(n / 2)
+pf(n * 0.5)
+let z = zeros(3)
+pf(-z)
+pf(a / z)
+pf(z / z)
+pf(a + z)
+let big = (0..300) * 1.5
+printf("%d %g %g\n", len(big), big[0], big[299])
+pmf([1.0, 2.0; 3.0, 4.0] * [2.0, 0.5; -1.0, 0.25])

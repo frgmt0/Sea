@@ -1,0 +1,12 @@
+fn setto(ref v: f64[], k: i64) {
+    for i in 0..k {
+        v[i..3] = 7.0
+    }
+}
+var a = zeros(4)
+setto(ref a, 2)
+setto(ref a, 0)
+printf("%g %g %g %g\n", a[0], a[1], a[2], a[3])
+// sel_ref_store -- DESIGN.md 3.5.9 L6 (rule 21): a selection store of a scalar into a ref
+// parameter, whose array is loaded afresh for its extent, its copy on write (the memory form of
+// rule 19) and its data; a range index whose lo is the loop variable

@@ -1,0 +1,100 @@
+#sea 1
+#target arm64-macos
+#file sel_ref_store.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 32 8
+li i1 4
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 0:6 1 p5 4 i2 i3 i1 i4
+sa p6 s1
+stp p5 p6 - 0 0
+li i7 2
+call setto 0 2 p6 i7
+ldp p5 p6 - 0 0
+sa p8 s2
+stp p5 p8 - 0 0
+li i9 0
+call setto 0 2 p8 i9
+ldp p5 p8 - 0 0
+li i10 0
+ldi i11 p5 - 0 16
+chkb i10 i11 0 0:9
+ldp p12 p5 - 0 40
+ldf f13 p12 i10 8 0
+li i14 1
+ldi i15 p5 - 0 16
+chkb i14 i15 0 0:9
+ldp p16 p5 - 0 40
+ldf f17 p16 i14 8 0
+li i18 2
+ldi i19 p5 - 0 16
+chkb i18 i19 0 0:9
+ldp p20 p5 - 0 40
+ldf f21 p20 i18 8 0
+li i22 3
+ldi i23 p5 - 0 16
+chkb i22 i23 0 0:9
+ldp p24 p5 - 0 40
+ldf f25 p24 i22 8 0
+sa p26 s3
+stf f13 p26 - 0 0
+stf f17 p26 - 0 8
+stf f21 p26 - 0 16
+stf f25 p26 - 0 24
+la p27 d1
+rcall sea_printf 0:9 0 2 p27 p26
+release p5
+ret 0
+endfunc
+func setto fn 0:1:1 2 p1 i2 0
+li i3 0
+li i4 1
+rcount i5 i6 i3 i2 i4 0 0:2
+if 1 i6
+loop 2 i7 i3 i5 i4
+lf f8 #401C000000000000
+li i9 3
+li i10 1
+rcount i11 i12 i7 i9 i10 0 0:3
+ldp p13 p1 - 0 0
+ldi i14 p13 - 0 16
+if 3 i12
+chkb i7 i14 0 0:3
+imul i15 i11 i10
+iadd i16 i7 i15
+chkb i16 i14 0 0:3
+endif 3
+ldp p17 p1 - 0 0
+ldi i18 p17 - 0 0
+li i19 1
+icmp ne i20 i18 i19
+if 4 i20
+rcall sea_arr_unique 0:3 1 p21 1 p17
+stp p21 p1 - 0 0
+mov p17 p21
+endif 4
+ldp p22 p1 - 0 0
+ldp p23 p22 - 0 40
+if 5 i12
+loop 6 i24 i7 i11 i10
+stf f8 p23 i24 8 0
+endloop 6
+endif 5
+endloop 2
+endif 1
+ret 0
+endfunc
+fmt d1 8
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

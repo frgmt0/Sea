@@ -1,4 +1,0 @@
-// err_ns_arr_elem_arg -- 4d: an array argument of an elemental library function is still arrays, at the
-// call (DESIGN.md 2.6.2 step 4d)
-let v = ones(3)
-let w = sqrt(v)

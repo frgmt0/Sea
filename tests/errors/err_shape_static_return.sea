@@ -1,0 +1,5 @@
+// err_shape_static_return -- a fixed value of 3 returned as f64[2] (DESIGN.md 3.5.5)
+fn g() -> f64[2] {
+    return [1.0, 2.0, 3.0]
+}
+let y = g()

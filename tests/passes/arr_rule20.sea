@@ -1,0 +1,36 @@
+var a = zeros(5)
+a[2] = 2.0
+a[3] = 3.0
+printf("%g\n", pick(a))
+printf("%g\n", pick(ones(5)))
+// arr_rule20 -- DESIGN.md 3.6.6 rule 20 (selections, reads): its example verbatim on line 30,
+// the first statement of pick, whose parameter u is the register p1 of the example.
+//
+// The selection u[0..$ step 2] is rewritten by sealoop as 3.5.9 L5: the base u is named by a
+// tmp (an alias of p1), the range index is evaluated by IX 1 (lo, hi, step, then rcnt, which
+// counts the range into the bool E and the last offset L; the $ in the range is the ext of
+// the base at the $'s position), checked by IX 2 (the extent loaded once, then the first and
+// the last position of a non-empty range against it), counted by IX 3 (where(E, L + 1, 0)),
+// allocated (anew), and copied by IX 4 (rloop over the range, one est per element into the
+// counter O of the result).
+//
+// The selection's value is moved into u1 (T3), which the element loop of line 32 then holds
+// in a hidden local (L4) while it sums the selected elements; u1 is released by the return.
+//
+// pick is called from two sites and holds a loop, so LANGUAGE.md 8.6 requires no inlining
+// (3.6.6 "Inlining is deferred"). In .main the vector a = [0, 0, 2, 3, 0] (two element stores,
+// rule 19) gives the elements 0, 2 and 4: 0 + 2 + 0 = 2; ones(5) gives three ones: 3.
+//
+// Each statement holds at most one array operation (3.6.6 "Phase-4 dump tests").
+//
+// The comment fills the lines up to the function, so that the example's line is 30.
+//
+//
+fn pick(u: f64[]) -> f64 {
+    let u1 = u[0..$ step 2]
+    var s = 0.0
+    for x in u1 {
+        s += x
+    }
+    return s
+}

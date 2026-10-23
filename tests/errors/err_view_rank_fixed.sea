@@ -1,0 +1,3 @@
+// err_view_rank_fixed -- .row of a fixed matrix: the type written as in Sea source (DESIGN.md 2.6.2)
+let A = [1, 2; 3, 4]
+let r = A.row

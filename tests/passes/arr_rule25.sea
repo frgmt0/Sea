@@ -1,0 +1,13 @@
+fn hist(nBin: i64) -> i64 {
+    // arr_rule25 -- DESIGN.md 3.6.6 rule 25 (range values): its example verbatim on line 4,
+    // (0..=nBin) as a value with nBin in i1 (3.5.9 L8: rcnt, the length, the size check)
+    let edges = (0..=nBin)
+    var t = 0
+    for e in edges {
+        t += e
+    }
+    return t
+}
+printf("%d\n", hist(3))
+printf("%d\n", hist(0))
+// hist(3) sums 0, 1, 2, 3; hist(0) sums the one element 0

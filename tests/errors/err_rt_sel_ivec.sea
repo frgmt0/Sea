@@ -1,0 +1,4 @@
+// err_rt_sel_ivec -- an index vector reports its first element out of range, in order: 7 (LANGUAGE.md 5.4)
+var v = zeros(5)
+let w = v[[0, 7, -1]]
+printf("%d\n", len(w))

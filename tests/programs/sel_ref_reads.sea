@@ -1,0 +1,39 @@
+// sel_ref_reads -- ref calls inside selection stores (LANGUAGE.md 5.5, 8.3; DESIGN.md 3.6.6 rule 12 across
+// an L6 block): v[0..g(ref k)] = k stores the old k; B[i, g(ref i)..3] = 0.0 uses the
+// old i as the row; A.flat[m] += g(ref m) updates element old m
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn g(ref k: i64) -> i64 {
+    k += 1
+    return k
+}
+var v = zeros(4)
+var k = 2
+v[0..g(ref k)] = k
+pf(v)
+printf("%d\n", k)
+var B = ones(2, 3)
+var i = 0
+B[i, g(ref i)..3] = 0.0
+pmf(B)
+printf("%d\n", i)
+var A = zeros(2, 2)
+var m = 1
+A.flat[m] += g(ref m)
+pmf(A)
+printf("%d\n", m)

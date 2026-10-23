@@ -136,8 +136,8 @@
 12530 REM vector or matrix); any other is 'not supported yet: <name>' at the call, and so is min or max
 12535 REM with one argument (the reduction, 4f; DESIGN 2.6.2). Untyped constants are f64 where f64 is
 12540 REM taken (classes 3-5), the other's type in min, max and where, else i64 (LANGUAGE 4.2); an
-12545 REM i64 for an f64 is converted. The overload is judged on the element types; an array argument
-12550 REM of an elemental function (2-10) is then from 4e (arrays, or a vector with a matrix) ------
+12545 REM i64 for an f64 is converted. The overload is judged on the element types; array arguments of
+12550 REM an elemental function (2-10) are then broadcast (lbc, LANGUAGE 6.3, 10.4, 10.7) ---------
 12555 SUB "ck_lib": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 12560 DIM U(9), V(9), K(9)
 12565 LET L$ = S$(N(N(J, 7), 6))
@@ -166,7 +166,13 @@
 12680 LET E = 1
 12685 GOTO 12765
 12690 CALL "vu": N(), M(), T(), X(), X$(), A, Q
-12695 IF Q = 0 THEN 12760
+12691 IF Q = 0 THEN 12760
+12692 REM an untyped literal passed where f64 is taken (classes 3-5) is f64 (LANGUAGE 4.2 (b))
+12693 IF M(A, 4) <> 2 THEN 12700
+12694 IF Z < 3 THEN 12700
+12696 IF Z > 5 THEN 12700
+12697 CALL "rtf": N(), M(), T(), X(), X$(), A
+12698 LET Q = M(A, 1)
 12700 IF Q <> -1 THEN 12765
 12705 IF Z < 3 THEN 12745
 12710 IF Z > 5 THEN 12725
@@ -215,7 +221,7 @@
 12925 IF Z <> 11 THEN 13605
 12930 IF H < 1 THEN 13605
 12935 IF H > 2 THEN 13605
-12940 CALL "tarr": T(), N(), X(), X$(), H, 4, D
+12940 CALL "tarr": T(), N(), X(), X$(), H, 4, 0, 0, D
 12945 GOTO 13605
 12950 LET U(1) = 3
 12955 LET U(2) = 3
@@ -229,11 +235,7 @@
 12995 IF V(1) <> 3 THEN 13545
 13000 IF V(2) <> 3 THEN 13545
 13005 LET D = 3
-13010 IF Z = 2 THEN 13460
-13015 LET U(1) = 3
-13020 LET U(2) = 3
-13025 CALL "ttup": T(), N(), X(), X$(), U(), 2, D
-13030 GOTO 13460
+13010 GOTO 13460
 13035 IF H <> 1 THEN 13545
 13040 CALL "num": V(1), Q
 13045 IF Q = 0 THEN 13545
@@ -282,7 +284,7 @@
 13260 FOR I = 1 TO H
 13265 IF U(I) <> 3 THEN 13545
 13270 NEXT I
-13275 CALL "tarr": T(), N(), X(), X$(), H, 4, D
+13275 CALL "tarr": T(), N(), X(), X$(), H, 4, 0, 0, D
 13280 GOTO 13605
 13285 IF H < 2 THEN 13545
 13290 IF H > 3 THEN 13545
@@ -293,7 +295,7 @@
 13315 IF U(1) > 5 THEN 13545
 13320 REM a str value is a strings construct, reported where the str comes from (4g)
 13325 IF U(1) = 5 THEN 13605
-13330 CALL "tarr": T(), N(), X(), X$(), H - 1, U(1), D
+13330 CALL "tarr": T(), N(), X(), X$(), H - 1, U(1), 0, 0, D
 13335 GOTO 13605
 13340 IF H <> 1 THEN 13545
 13345 IF U(1) = 5 THEN 13385
@@ -308,33 +310,21 @@
 13390 GOTO 13605
 13395 LET D = 4
 13400 GOTO 13605
-13405 REM a scalar i64 where the function takes f64 (classes 3-5, min and max, where) is converted
+13405 REM an i64 (or i64 elements) where the function takes f64 (classes 3-5, min and max, where) is
+13407 REM converted, element by element for an array (acv)
 13410 LET A = N(N(J, 7), 8)
 13415 FOR I = 1 TO H
-13420 IF U(I) <> 3 THEN 13450
+13420 IF V(I) <> 3 THEN 13450
 13425 IF Z < 7 THEN 13445
 13430 IF D <> 4 THEN 13450
 13435 IF Z = 7 THEN 13445
 13440 IF I = 1 THEN 13450
-13445 LET M(A, 7) = 1
+13445 CALL "acv": N(), M(), T(), X(), X$(), A
 13450 LET A = N(A, 8)
 13455 NEXT I
-13460 REM an elemental function with an array argument: from 4e (arrays), a vector with a matrix
-13465 LET Q = 0
-13470 LET Q1 = 0
-13475 FOR I = 1 TO H
-13480 IF K(I) = 0 THEN 13505
-13485 IF Q = 0 THEN 13500
-13490 IF K(I) = Q THEN 13505
-13495 LET Q1 = 1
-13500 LET Q = K(I)
-13505 NEXT I
-13510 IF Q = 0 THEN 13605
-13515 LET D = 0
-13520 IF Q1 = 1 THEN 13535
-13525 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "arrays", "", "", 1
-13530 GOTO 13605
-13535 CALL "er": N(), X(), X$(), J, "VEC_MAT", "", "", "", 0
+13460 REM an elemental function with array arguments: their broadcast (lbc; ind2sub of an array r is
+13462 REM the phase-rule word ind2sub)
+13465 CALL "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), K(), H
 13540 GOTO 13605
 13545 REM no overload: the argument types as written
 13550 LET B$ = ""

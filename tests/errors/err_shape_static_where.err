@@ -1,0 +1,1 @@
+err_shape_static_where.sea:6:9: error: shape mismatch: 3x4 vs 2x4

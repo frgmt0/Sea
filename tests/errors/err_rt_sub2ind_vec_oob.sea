@@ -1,0 +1,4 @@
+// err_rt_sub2ind_vec_oob -- sub2ind(3, i, j) with i = 0 3 5: the first bad element 3, dimension 0, extent 3
+// (LANGUAGE.md 10.7; DESIGN.md 2.6.2)
+let w = sub2ind(3, [0, 3, 5], [0, 0, 0])
+printf("%d\n", len(w))

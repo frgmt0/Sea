@@ -1,0 +1,5 @@
+// err_rt_sel_mask_mat -- A[M] with A 3 x 4 and M 4 x 3: shape mismatch: 3x4 vs 4x3 (LANGUAGE.md 5.2)
+let A = zeros(3, 4)
+let M = filled(true, 4, 3)
+let w = A[M]
+printf("%d\n", len(w))

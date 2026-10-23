@@ -1,0 +1,19 @@
+var (v, m) = two()
+// arr_rule21 -- DESIGN.md 3.6.6 rule 21 (selection stores): its example verbatim on line 5,
+// v[m] = 0.0 with v a var f64[] in p1 and m a bool[] in p2 (the two results of the call on
+// line 1, written straight into the registers of v and m by the tbind, rule 2)
+v[m] = 0.0
+printf("%g %g %g\n", v[0], v[1], v[2])
+let (w, _) = two()
+printf("%g\n", w[3])
+fn two() -> (f64[], bool[]) {
+    var v = ones(4)
+    var m = filled(true, 4)
+    for k in 0..2 {
+        m[2 * k + 1] = false
+    }
+    return (v, m)
+}
+// The store is 3.5.9 L6: the scalar value, the mask (a tmp naming m), the mask's shape check
+// (vchk), the copy on write of v, the data of v and of m, and the masked loop of IX 4. The
+// mask is T F T F, so v becomes 0 1 0 1; the _ component of line 7 is released after the tbind.

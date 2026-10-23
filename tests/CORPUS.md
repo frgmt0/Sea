@@ -27,9 +27,12 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | phase-3 elementary functions (`lib_math_*`, `passes/math_lower.lir1`, `passes/const_pow.hir1`, `err_const_log`, `err_const_sin`, `lib_const_sqrt`, `err_no_overload_hypot`) | `vectors/math_progs.py`: each result is the bits of the reference model `vectors/math_model.py` (DESIGN.md §4.10.6) for the argument bits of `float_oracle.py` (i64/untyped arguments converted exactly, §4.2), printed by `progfmt.py`; const results are the same model bits (FEPOW = the model, DESIGN.md §4.10.5) |
 | wave-2 tests (`fold_*`, `stmt_else_if_2000`, `const_reverse_1000`, `fmt_prec_zeros`, `stmt_tasg_cvt`, `lib_conv_identity`, `stmt_for_blanks` and their `err_*`) | `vectors/wave2_gen.py`: each expected value derived in its comments; folded values with the exact oracles of `f64emu.py`/`float_oracle.py` |
 | `vectors/f64emu.txt` NaN results | DESIGN.md §2.8 "NaN bits": a NaN operand propagates quieted (bit 51 set, sign and payload kept), the first NaN operand (A, then B) wins, an invalid operation gives `#7FF8000000000000`; no `grd` vectors (U1 removed the folding guards) |
-| sub-phase 4d `programs/arr_*`, `programs/heap_*`, `errors/err_rt_arr_*`, `errors/err_ns_arr_*` | `vectors/arr4d_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §7.3, §7.5, §7.7, §8.3, §9.2, §10.2, §10.4, §10.7, §11.1, the derivation in a comment beside each case; error lines and columns computed from a marker in the source text |
+| sub-phase 4d `programs/arr_*`, `programs/heap_*`, `errors/err_rt_arr_*`, `errors/err_ns_arr_str_elem`, `errors/err_ns_lib_{max1,min1}` | `vectors/arr4d_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §7.3, §7.5, §7.7, §8.3, §9.2, §10.2, §10.4, §10.7, §11.1, the derivation in a comment beside each case; error lines and columns computed from a marker in the source text |
 | sub-phase 4d dump tests `passes/arr_rule{16,17,18,19,30,31,36}` | `vectors/dump4d_cases.py`: `.ast`, `.hir1` (= `.hir`), `.lir1` and `.out` written record by record from DESIGN.md §3.4, §3.5, §3.6 and §3.6.6 rules 1–19, 30, 31, 36 (each rule's example appears verbatim, with its registers and lines); `.res` from `res_gen.py`, which also checks the lids against the `.hir1` |
 | sub-phase 4e-0 `.hirl` goldens (the 17 dump tests with a `.sea` and a `.lir1`) and the `passes/loop_*` tests | `vectors/hirl4e0_cases.py`: the 11 tests without a rewritten construct have `.hirl` = `.hir` byte for byte (§3.5.9 "Unchanged functions", asserted by the script); the 6 tests that use `zeros`, `ones`, `len` or a `for` over a vector (`arr_rule{16,17,18,19,30,31}`) have every record written by hand from §3.5.9 (L1–L4, types, locals, positions), never printed by a pass; the `loop_*` tests are written there in full (`.hirl` by hand from §3.5.9, `.lir1` by hand from §3.6.6 rules 1–17, 30 and "Lowering of the `sea.hirl` records", `.out` from LANGUAGE.md), each `.hirl` read back and checked against `passes.txt` (sets `H HF HL`) |
+| sub-phase 4e dump tests `passes/arr_rule{20,21,22,25,28}`, `sel_{reads,ref_store,compound}`, `ew_{colrow,ind2sub}`, `arr_{lit_fixed,lit_dyn,lit_cat,lit_cat_fixed,views,dynfix,fixed,tasg_l12}` and `res_err_array` | `vectors/dump4e_cases.py`: `.ast` as pass 1 writes it (unchanged in 4e), checked against the source text; `.res` from `res_gen.py` with the phase-rule step 4e; `.hir1` (= `.hir`) by hand from §3.5.1–§3.5.5; `.hirl` from §3.5.9 (L5–L11, R1–R11) statement by statement; `.lir1` by hand from §3.6.6 (rules 1–28, "Lowering of the `sea.hirl` records"), the agreed examples of rules 20, 21, 22, 25 and 28 verbatim; `.out` from LANGUAGE.md; every file read back and checked against `passes.txt` (sets `H HF HL`, `L`) by the script's self-check, never printed by a pass |
+| sub-phase 4e `programs/{sel,ew,arr,heap}_*` (the tests listed under programs/ from `sel_vec_read` on) and the 4e `errors/` tests (from `err_rt_sel_range_last` on) | `vectors/arr4e_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §6.3–§6.9, §7.3, §7.5, §8.3, §9.2, §10.1–§10.7, §11.1, and, where DESIGN.md defines the message order or position, from §2.6.2 (the error table, `at`), §3.3, §3.5.5 (static shapes, implicit `dyn`/`fix`) and §3.6.6 rules 20–28 (the order of the run-time checks); the derivation in a comment beside each case; arrays printed by small helper functions (`pf pvi pvb pmf pmi pmb`: `n:` and the elements, `RxC` and ` \|` per row), since `print` is phase 6 and the reductions 4f; error lines and columns computed from a marker in the source text |
+| `programs/w4_sor_arrays` (4e, DESIGN.md §6.2) | `vectors/arr4e_cases.py`: `accept/w4_sor.sea` with the scalar set-up region replaced by §6.2's whole-array lines (the replaced region asserted line by line, everything else copied); expected output the line 4d's W4 program prints, `{"it_sor": 832, "T_max": 160.76267159277148}` (the `accept/w4_sor` row below: the IEEE mirror and `workloads/reference/w4_heat_plate.json`), because every set-up element is the same IEEE operations in the same order (LANGUAGE.md §6.8) |
 | `accept/w4_sor` (4d acceptance, DESIGN.md §6.3) | ported by hand from `workloads/w4_heat_plate.m` (inputs, scalar SOR); checked by `compare.py --candidate --keys it_sor,T_max` against `workloads/reference/w4_heat_plate.json`; a line-by-line IEEE mirror of the port in Python (scratch, not committed) prints `{"it_sor": 832, "T_max": 160.76267159277148}`, the reference values exactly |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
@@ -89,6 +92,41 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `heap_ifx` | rules 3, 15 (b): `if` expressions of an array type with fresh and borrowed arms |
 | `arr_eval_order_ref` | §5.5, §7.3; DESIGN.md §3.5.5 G1, §3.6.6 rule 12: `v[bump(ref x)] = x` stores x as it was before the index's `ref` call (the value first); tuple targets after the call (`(a, w[bump(ref k)]) = h2(k)`, `(y, u[i]) = hr(ref i)`) |
 | `heap_rule12_stale` | rules 12 (a), 15, 16 (c): `return (b, g(ref b))` returns the old array b held by its retained copy; the replacement is released, nothing leaks |
+| `sel_vec_read` | LANGUAGE.md §5.1–§5.4 (4e): vector selections read from a fixed and a dynamic vector: `a..b`, `a..=b`, steps, negative steps, empty ranges (also past the extent: never checked), `:`, `$` in a range and in a literal inside an index, index vectors with repeats (fixed, dynamic, a range value, empty), masks (fixed, of a comparison, all false), nested selections |
+| `sel_mat_read` | §5.2: matrix selections: row, column, block, `0..1` (a 1 × cols matrix), steps and negative steps in both dimensions, empty rows and columns (`0x4`, `3x0`), index vectors in both dimensions with repeats, a mask of the rows and of the columns, whole-matrix masks in column-major order, `$` per dimension, `i64` and `bool` matrices |
+| `sel_vec_store` | §5.5: `=` to vector selections with a scalar and with an array: ranges, negative steps, empty selections (also `= []`), `:`, index vectors with repeats (the last store wins), masks with a scalar and with an `nnz`-element vector, `i64[]` and `bool[]` targets, a fixed-size target |
+| `sel_mat_store` | §5.5: rows, columns, blocks, an index-vector selection with repeated positions (stored in the selection's column-major order), masks of the matrix and of the rows, negative steps, `:`, an `i64[,]`, a fixed `f64[2,2]` and a `bool[,]` target |
+| `sel_compound_ops` | §5.5, §6.3: `+= -= *= /=` on ranges, `:`, masks and index vectors with repeats (gather, operate, scatter), on vectors and matrices, `.flat` with an index vector, a selection with a broadcast column and row, W2's `K[idx, idx] += ke` with a repeated index |
+| `ew_compound` | §7.3, §6.3; DESIGN.md §3.6.6 rule 15 (i): `a += b` of whole arrays (`f64[]`, a fixed `f64[2]`, `i64[]`), a dynamic 1 × 3 matrix that becomes 2 × 3 by broadcasting (a whole assignment replaces the shape) |
+| `sel_alias` | §5.5 "Aliasing": shifts right and left, an in-place reversal, a swap by index vectors, a value reading the target, a matrix row shift, `.flat` shift, `A = A.T`, a fixed-size target and a fixed-size value that is the target itself |
+| `sel_alias_index` | §5.5; Decision 34 (DESIGN.md §6.2's case verbatim): `v[v] = 5` prints `5 5 5`, `w[w] += 10` prints `11 12 10`, on dynamic `i64[]` and on fixed `i64[3]` locals |
+| `sel_ref_reads` | §5.5, §8.3; DESIGN.md §3.6.6 rule 12 across an L6 block (§6.2's cases): `v[0..g(ref k)] = k` stores the old `k`, `B[i, g(ref i)..3] = 0.0` uses the old row, `A.flat[m] += g(ref m)` updates the old element |
+| `sel_mask_scalar` | §5.2, §5.5 (§6.2's case): `T[T > 100.0] = 100.0` on a dynamic and on a fixed matrix |
+| `sel_order` | §5.5, §6.8 rule 5: `v[0..2] += grow(ref v)` (the read sees the old `v`, the store the new one); the value before the range bounds and the column index for `=`, the indices before the read and the value for `+=`; index-vector elements after the value |
+| `sel_views` | §5.6, §7.3: `.T .flat .col .row` read, folded into an index and materialized, of fixed, dynamic and temporary operands, nested views (`A.T.flat[3]`, `M.T.T`, `v.row.T`), empty matrices; `.flat` written by an element, a range, a mask and a compound index-vector store |
+| `sel_ref_param` | §8.3, §5.5, §4.5: selection stores through `ref` parameters (a range, a compound row, a mask); the caller's other variable sharing the array is unchanged |
+| `ew_arith_f64` | §6.2, §6.3, §6.5: `+ - * / ^` and unary `-` element-wise, scalar with array both ways, pinned powers (2, 4, −1, 3, 0) and `pow`, `i64` elements converted, `i64 / i64`, −0, `Inf`, `NaN`, a 300-element range value, a matrix product element by element |
+| `ew_arith_i64` | §6.3, §6.5, §6.6, §10.4: `+ - * %` (floored), unary `-`, `idiv`, `abs sign min max` on `i64` arrays, range values multiplied, `/` giving `f64`, `i64` matrices |
+| `ew_cmp_logic` | §6.3, §6.4: the six comparisons with NaN and −0, mixed `i64`/`f64`, `bool` `==`/`!=`, `& \| !` on `bool` arrays and with scalars, `isnan`, matrix comparisons, broadcasting `.col < .row` |
+| `ew_broadcast` | §6.3: column with row, matrix with row and with column, a 1 × 1 matrix, scalars, `0x3` with `1x3` (and both orders), `0x1` with `1x0`, dynamic with fixed, the outer product `u.col * u.row`, `i64` with `f64` |
+| `ew_where` | §10.4, §6.3: `where` with array and scalar arms, `i64` with `f64` arms, `bool` arms, matrix broadcasting, all three arguments evaluated in order |
+| `ew_math` | §10.4, §6.7, §10.1: the elemental functions on arrays with NaN, ±0 and ties (`round` away from zero, `sign(-0)`, `min(-0, 0)` the first), `sqrt` of `i64` elements, `log exp sin cos pow hypot` with exact results, array and scalar forms bit-identical |
+| `ew_cvt` | §4.2, §10.1: `f64(a)`, `i64(a)` of `i64`, `f64` (−0, 1e15) and `bool` arrays, the identities, implicit `i64[]` → `f64[]` for a parameter and a binding, an empty conversion |
+| `ew_index_util` | §10.7, §6.6; Decision 33: `ind2sub(3, k)` of a vector (floored, negative k), `sub2ind` on vectors with a broadcast scalar, the round trip, an empty `k`, a tuple assignment to `i64[]` variables, the scalar form |
+| `arr_literals` | §6.9, §4.5: fixed literals of each scalar kind, untyped elements, trailing separators, newlines, 256 elements (fixed: an `i64[256]` binding) and 257 (dynamic), concatenation of scalars, vectors, range values and matrices (rows joined, vector rows stacked, a scalar as 1 × 1, empty parts), `[]` under a declared vector, matrix and fixed type, an assignment target, a selection, a parameter, a `return` and an `if` arm |
+| `arr_ranges` | §5.1, §6.1: range values with steps, negative steps, empty, exact lengths at the `i64` limits (±2⁶³ bounds, a 2⁶² step), arithmetic on them, `for x in (range)` and over a range expression |
+| `arr_fixed_vals` | §4.5; Decision 32: fixed-size locals, value semantics, parameters, results, tuple components (`let`, tuple assignment, `_`), a `ref` parameter, `f64[2,2]` results and parameters, `for`, `$`, `len rows cols numel`, `i64[3]` and `bool[2]` |
+| `arr_fixdyn_conv` | §4.5; DESIGN.md §3.5.5 (implicit `dyn`/`fix`): at bindings, assignments, arguments and returns, from a selection, `if` expressions with arms of different fixed shapes, a dynamic arm and one fixed shape, matrices |
+| `heap_sel_temps` | DESIGN.md §3.6.6 rules 15, 20, 28: selections of call results (ranges, temporary index vectors and masks, nested), views of temporaries, a selection held per iteration, a discarded one |
+| `heap_sel_store` | rules 15, 19, 21: selection stores with temporary values, index vectors and masks, copy on write of a shared target, a compound store in a loop, matrix stores of views of temporaries |
+| `heap_ew_temps` | rules 15, 22, 26: element-wise operations, broadcasting, conversions, concatenations, `where`, `sqrt` and `ind2sub` on temporaries; reassignment and whole-array compound assignment in a loop |
+| `heap_early_exit` | rule 16: `return` from an element loop over a held selection, `break`/`continue` in a loop over a range-value expression, returns of a selection and of an element-wise result, `break` out of a `while` holding a temporary |
+| `heap_fixed` | rule 27 (i), (j), (k): `fix` at a return from a selection, `dyn` at a return and a binding, `if` expressions with a dynamic arm, then `fix` |
+| `w4_sor_arrays` | DESIGN.md §6.2 (4e), §6.3; LANGUAGE.md §6.8: `accept/w4_sor.sea` with its set-up as whole-array code (range values, `.row`/`.col` broadcasting, comparisons and `&`, a mask store, row stores, `fixed` sharing `hole`'s buffer); prints 4d's W4 line `{"it_sor": 832, "T_max": 160.76267159277148}` |
+| `sel_tasg` | LANGUAGE.md §7.3 as amended by Decision 37, §4.2, §4.5, §5.5, §10.7 (DESIGN.md §3.5.9 L12): tuple assignment to a range selection, a `.flat` element, a matrix row from a fixed `f64[2]` result, fixed into dynamic, dynamic into fixed, an `i64[]` result into an `f64[]` target, `ind2sub` into dynamic targets, into a selection target not last and into two matrix rows, `(u[0..2], u[1]) = lw()` (the last store wins), `(u2[g(ref j)..3], w[j]) = lw()` (the second target reads the new `j`) |
+| `heap_tasg` | §7.3; DESIGN.md §3.5.9 L12, §3.6.6 rules 15 (h), (j), 16: `_` components with a dynamic result, converted and selection targets in a loop, `let (_, y)` |
+| `sel_ref_range` | §5.5, §8.3; DESIGN.md §3.6.6 rule 12 (§6.2's regressions): `v[k..k+2] += f64(g(ref k))` on a dynamic and a fixed vector (`2 2 0 0`), `A[k, 0..2] += f64(g(ref k))` (`2 2 \| 0 0`), `A[k..1, g(ref k)..3] = 9.0` (row 0, columns 1–2) |
+| `sel_tasg_cvt` | §7.3 as amended by Decision 37, §4.2 (b), (c), §4.5, §5.5: a fixed `i64[3]` result into an `f64[]` target (element-by-element conversion and `dyn`), a dynamic `i64[]` result into an `f64[3]` target (conversion and the run-time shape check), scalar `f64` and `i64` results into range-selection targets (stored into every element, the `i64` converted) |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
@@ -187,6 +225,24 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `loop_fore_exits` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L4 (a `for` over a vector made explicit by `sealoop`): `return`, `continue` and `break` inside element loops, nested element loops, a `for` over an owned vector (`ones(3)`), over a `ref` parameter of array type and over an `if` expression of two vectors; `.lir1` from the unchanged rules 17 and 30 |
 | `loop_fill` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L1/L2 (`zeros`, `ones`, `filled` made explicit): `filled` of `f64`, `i64` and `bool` vectors and matrices, `ones` and `zeros` of a matrix, a count that is a `ref` parameter, `filled(k, grow(ref k))` (rule 12 copies `k`), `ones(if c {2} else {3})` and `filled(p && q, m)` (T1's `ifx`/`and` child) |
 | `loop_ext` | ast res hir1 hir hirl lir1 (+ `.out`) | §3.5.9 L3 (`len rows cols numel` made explicit): of locals, of `ref` and value parameters and of temporaries (`ones`, `zeros`, an `if` expression of two matrices) |
+| `arr_rule20` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, §3.6.6 rule 20 (selection read): the agreed example `let u1 = u[0..$ step 2]` as a whole program, its `.lir1` the rule's text exactly; `.hirl` from §3.5.9 L5 |
+| `arr_rule21` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, rule 21 (selection store): the agreed example `v[m] = 0.0` (a `bool` mask of an `f64[]`), its `.lir1` the rule's text exactly; `.hirl` from L6 |
+| `arr_rule22` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, rule 22 (element-wise): the agreed example `let z = x * 2.0`, its `.lir1` the rule's text exactly; `.hirl` from L7 |
+| `arr_rule25` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, rule 25 (range value): the agreed example `(0..=nBin)` as a value, its `.lir1` the rule's text exactly (the two large `li` immediates in the `#` encoding of §3.1); `.hirl` from L8 |
+| `arr_rule28` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, rule 28 (views): the agreed example `A.flat[k]` folded into the addressing, its `.lir1` the rule's text exactly |
+| `sel_reads` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, §3.5.9 L5, rule 20: a matrix selection with `:` and a scalar, an index vector, a whole-matrix mask read |
+| `sel_ref_store` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L6, rule 21: a selection store into a `ref` parameter (read afresh for each extent, the cow and the data) |
+| `sel_compound` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L6, rules 21, 22: a compound `x[sel] += e` (gather into a temporary, the operation, the store) |
+| `ew_colrow` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L7, rule 22: matrix broadcasting of `.col` with `.row` (strides, the shape checks) |
+| `arr_lit_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rules 26 (a), (d), 27: fixed vector and matrix literals, `[]` dynamic and fixed |
+| `arr_lit_dyn` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rule 26 (b): a dynamic constant literal (257 elements, `cdat`) and a dynamic non-constant literal |
+| `arr_lit_cat` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rule 26 (c): vector and matrix concatenation (joined lengths, the row and stack checks) |
+| `arr_views` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L10, rule 28: `.T` and `.flat` materialized |
+| `arr_dynfix` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L10, rule 27 (i), (j): `dyn` and `fix` (the `SHAPE_EXPECTED` check) |
+| `arr_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, rule 27 (a)–(d), (h), (l): a fixed-size local with element read and write, a fixed-size result through the hidden address |
+| `ew_ind2sub` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L11, rule 22 (Decision 33): `ind2sub` of a vector as two element-wise loops over held arguments |
+| `arr_tasg_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, §3.5.9 L12 (Decision 37): a tuple assignment with a selection target (an L6 store of a fixed-size result through a `.l` local) and a fixed → dynamic component (`cv` 2, the `dyn` of L10); one `tbind` of fixed-size `.l` locals passing their slots as hidden result addresses; two fixed-size results returned by copy |
+| `arr_lit_cat_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rule 26 (c) with every part fixed-size: a vector join `[a, 4.0, a]` and a matrix row `[m, m]` with home slots, the length and column sums kept, no row check, static extents and offsets |
 | `res_err_predeclared` | ast res | §3.4.1: `rerr 212`; the item is entered (`rfn`) and `sqrt` resolves to it (`rname fn`) |
 | `res_err_redef_item` | ast res | §3.4.1: `rerr 235` at the later `const`; it is copied with its names unresolved |
 | `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
@@ -195,7 +251,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_err_default` | ast res | §3.4.1: `rerr 259 default arguments`; the default `K` is copied as `name` |
 | `res_err_str_param` | ast res | §3.4.1: `rerr 259 strings` at the `param`; its `rfn` type 0 |
 | `res_err_str_result` | ast res | §3.4.1: `rerr 259 strings` at the result `type`; `rty` 0, no `rtup` |
-| `res_err_array` | ast res | §3.4.2, §2.6.2 step 4d: `rerr 259 arrays` at the `type` node of a fixed-size parameter type (still reported in 4d), its type 0 |
+| `res_err_array` | ast res hir1 | §3.4.2, §2.6.2 step 4e: `fn f(v: f64[3], k: i64)`; in 4d the fixed-size type was `rerr 259 arrays`; from 4e `seaname` resolves it (`rtfvec`), so the `.res` holds no `rerr` and the test gains a `.hir1` (§6.2: a `.res` without `.hir1` is a program whose `sea.res` holds an `rerr`); rewritten by `vectors/dump4e_cases.py` |
 | `res_err_handle` | ast res | §3.4.1: `rerr 259 handle types` at the `type` node |
 | `res_err_unknown_struct` | ast res | §3.4.1: `rerr 229` at the `type` node of an undeclared type name |
 | `res_err_first_pos` | ast res | §3.4.1: two `seaname` errors: the signature error at 3:6, found after the item error at 6:1, is first in source order and is the `rerr` |
@@ -222,6 +278,15 @@ construct word, capacity code 400 (`parameters`, `nesting` per the depth definit
 and the phase-1 run-time errors (codes 4, 5, 6, 7, 15, 17). Pass-2 errors of all kinds are
 reported in plain source order (§2.6.2). The column of each compile error is
 the `at` position of DESIGN.md §2.6.2.
+From sub-phase 4e (DESIGN.md §2.6.2 step 4e) the `arrays` word is gone: the ten 4d goldens that
+expected it (`err_ns_arr_{all_index,cvt,elem_arg,ew,fixed_local,max2,range_index,view}`,
+`err_ns_array_literal`, `err_ns_array_type`) are replaced by the 4e tests of the same constructs
+(`programs/`) and of their v1 errors: run-time selection, shape, conversion, range and
+concatenation errors, the static `shape mismatch` (217) of DESIGN.md §3.5.5, 201, 202, 218, 219,
+220, 239, 252 and 257 at array constructs, and the words that remain (`strings` for a `str` literal
+and a fixed-size `str` type, `max` of one argument, `ind2sub` with an array first argument). A
+fixed-size type or literal of struct elements cannot be tested on its own before 4g: its `struct`
+item is reported first (`structs` at the item, by `seaname`).
 
 | Test | Message | What |
 |------|---------|------|
@@ -323,8 +388,6 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_not_exact_printf_f` | `integer constant not exact in f64` | an untyped literal argument of %f is f64 and must be exact (LANGUAGE.md 4.2 (e)) |
 | `err_not_function` | `'a' is not a function` | calling a local (DESIGN.md 2.6.2; at the call) |
 | `err_not_function_const` | `'C' is not a function` | calling a constant (DESIGN.md 2.6.2; at the call) |
-| `err_ns_array_literal` | `not supported yet: arrays` | phase 1: an array literal (at the array node) |
-| `err_ns_array_type` | `not supported yet: arrays` | 4d: a fixed-size array type (at the type node) is still reported (DESIGN.md 2.6.2 step 4d) |
 | `err_ns_default_arg` | `not supported yet: default arguments` | phase 1: a parameter default, reported at the param node (DESIGN.md 2.6.2) |
 | `err_ns_elemental` | `not supported yet: elemental functions` | phase 1: an elemental fn (at the item, its elemental keyword) |
 | `err_ns_f64_mod` | `not supported yet: f64 %` | phase 1: % with an f64 operand (at the bin node) |
@@ -336,16 +399,8 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_ns_string_let` | `not supported yet: strings` | phase 1: a string literal that is not a printf %s argument |
 | `err_ns_string_type` | `not supported yet: strings` | phase 1: the str type (at the type node) |
 | `err_ns_struct` | `not supported yet: structs` | phase 1: a struct item (at the item) |
-| `err_ns_arr_range_index` | `not supported yet: arrays` | 4d: a range index, at the range node (DESIGN.md 2.6.2 step 4d) |
-| `err_ns_arr_all_index` | `not supported yet: arrays` | 4d: a `:` index, at the `all` node |
-| `err_ns_arr_view` | `not supported yet: arrays` | 4d: a view `A.T`, at the `dot` node, whose position is the operand's start (§3.3) |
-| `err_ns_arr_ew` | `not supported yet: arrays` | 4d: an element-wise operator with an array operand, at the operator node (its left operand's start) |
-| `err_ns_arr_elem_arg` | `not supported yet: arrays` | 4d: an array argument of an elemental library function (`sqrt(v)`), at the call |
-| `err_ns_arr_max2` | `not supported yet: arrays` | 4d: `max(v, 0.5)` with an array argument, at the call |
 | `err_ns_lib_max1` | `not supported yet: max` | 4d: `max(v)` of one vector (the 4f reduction), at the call |
 | `err_ns_lib_min1` | `not supported yet: min` | 4d: `min(v)` of one vector, at the call |
-| `err_ns_arr_cvt` | `not supported yet: arrays` | 4d: an array conversion `f64(a)`, at the conv node |
-| `err_ns_arr_fixed_local` | `not supported yet: arrays` | 4d: a fixed-size `let` annotation, at its type node (`seaname`, §3.4.2) |
 | `err_ns_arr_str_elem` | `not supported yet: strings` | 4d: a `str[]` parameter, at the param node |
 | `err_rt_arr_size_neg` | `invalid array size -1` | LANGUAGE.md 10.2, 9.2: a negative extent of `zeros`, after the output before it |
 | `err_rt_arr_size_big` | `invalid array size 2147483648` | 4.5, 10.2: an extent of 2³¹ (`ones`) |
@@ -367,6 +422,95 @@ the `at` position of DESIGN.md §2.6.2.
 | `err_rt_arr_sub2ind_oob` | `index 3 … dimension 0 of extent 3` | 10.7: sub2ind checks i against r |
 | `err_rt_arr_ind2sub_zero` | `integer division by zero` | 10.7, 6.6: ind2sub(0, k) |
 | `err_rt_arr_ref_in_target_shrink` | `index 1 … dimension 0 of extent 1` | 5.5 C4: a `ref` call in the target's index shrinks the array; the check uses the new extent |
+| `err_rt_sel_range_last` | `index 9 out of bounds for dimension 0 of extent 5` | 4e: v[2..10] on a 5-element vector reports the last position 9 (LANGUAGE.md 5.4) |
+| `err_rt_sel_range_first` | `index 7 out of bounds for dimension 0 of extent 5` | 4e: v[7..9] reports its first position 7 (LANGUAGE.md 5.4) |
+| `err_rt_sel_range_step` | `index 5 out of bounds for dimension 0 of extent 5` | 4e: v[1..=5 step 2]: positions 1 3 5, the last is out of range (LANGUAGE.md 5.4) |
+| `err_rt_sel_range_negstep` | `index -2 out of bounds for dimension 0 of extent 5` | 4e: v[4..=-2 step -3]: positions 4 1 -2, the last -2 (LANGUAGE.md 5.1, 5.4) |
+| `err_rt_sel_dollar` | `index 5 out of bounds for dimension 0 of extent 5` | 4e: v[$ - 2..$ + 1] is 3..6: the last position 5 (LANGUAGE.md 5.3, 5.4) |
+| `err_rt_sel_ivec` | `index 7 out of bounds for dimension 0 of extent 5` | 4e: an index vector reports its first element out of range, in order: 7 (LANGUAGE.md 5.4) |
+| `err_rt_sel_ivec_dyn` | `index 5 out of bounds for dimension 0 of extent 5` | 4e: a dynamic index vector 3 4 5 6 7: the first bad element 5 (LANGUAGE.md 5.4) |
+| `err_rt_sel_mat_col` | `index 4 out of bounds for dimension 1 of extent 3` | 4e: A[0..2, 1..5] on a 2 x 3 matrix: dimension 1, last position 4 (LANGUAGE.md 5.4) |
+| `err_rt_sel_mat_order` | `index 4 out of bounds for dimension 0 of extent 2` | 4e: A[0..5, 0..9]: dimension 0 is checked before dimension 1 (LANGUAGE.md 5.4) |
+| `err_rt_sel_check_order_mask` | `shape mismatch: 3 vs 2` | 4e: A[m, 9] with a mask of the wrong extent: the mask is dimension 0's check, made before dimension 1 (LANGUAGE.md 5.2, 5.4): 3 vs 2 |
+| `err_rt_sel_check_order_idx` | `index 9 out of bounds for dimension 0 of extent 3` | 4e: A[9, m]: the scalar index of dimension 0 is checked before the mask (LANGUAGE.md 5.4) |
+| `err_rt_sel_mask_vec` | `shape mismatch: 5 vs 4` | 4e: v[m] with a 5-element v and a 4-element m: shape mismatch: 5 vs 4 (LANGUAGE.md 5.2) |
+| `err_rt_sel_mask_mat` | `shape mismatch: 3x4 vs 4x3` | 4e: A[M] with A 3 x 4 and M 4 x 3: shape mismatch: 3x4 vs 4x3 (LANGUAGE.md 5.2) |
+| `err_rt_sel_mask_dim` | `shape mismatch: 3 vs 2` | 4e: A[m, :]: the dimension's extent as a vector shape, then len(m) (LANGUAGE.md 5.2) |
+| `err_rt_sel_store_idx_first` | `index 8 out of bounds for dimension 0 of extent 5` | 4e: v[0..9] = val(): the value is evaluated first, then the index check fails before the shape check (LANGUAGE.md 5.5): index 8 |
+| `err_rt_sel_store_shape` | `shape mismatch: 3 vs 2` | 4e: v[0..3] = [1.0, 2.0]: shape mismatch: 3 vs 2, the selection first (LANGUAGE.md 5.5) |
+| `err_rt_sel_store_shape_fixed` | `shape mismatch: 3 vs 2` | 4e: a fixed-size v with a constant range: the selection's shape is a run-time value, so the check is made at run time (LANGUAGE.md 5.5) |
+| `err_rt_sel_store_shape_mat` | `shape mismatch: 2x3 vs 3x3` | 4e: A[0..2, :] = zeros(3, 3) on a 2 x 3 matrix: shape mismatch: 2x3 vs 3x3 (LANGUAGE.md 5.5) |
+| `err_rt_sel_mask_store_count` | `shape mismatch: 3 vs 2` | 4e: v[m] = [1.0, 2.0] with nnz(m) = 3: shape mismatch: 3 vs 2 (LANGUAGE.md 5.5) |
+| `err_rt_sel_compound_order` | `index 8 out of bounds for dimension 0 of extent 5` | 4e: v[0..9] += val(): the read and its checks come before e, so val is never called (LANGUAGE.md 5.5) |
+| `err_rt_sel_compound_shape` | `shape mismatch: 3 vs 2` | 4e: v[0..3] += [1.0, 2.0]: the operation's check, the selection as the left operand (LANGUAGE.md 5.5, 6.3): 3 vs 2 |
+| `err_rt_sel_compound_bcast` | `shape mismatch: 1x3 vs 2x3` | 4e: A[0..1, :] += [1.0; 2.0]: 1x3 plus 2x1 broadcasts to 2x3, then the store's check, the selection first: 1x3 vs 2x3 (LANGUAGE.md 5.5, 6.3) |
+| `err_rt_sel_step_zero` | `range step is zero` | 4e: a range index with step 0: range step is zero (LANGUAGE.md 5.1) |
+| `err_rt_flat_oob` | `index 6 out of bounds for dimension 0 of extent 6` | 4e: A.flat[6] on a 2 x 3 matrix: the view's extent 6, dimension 0 (LANGUAGE.md 5.6, 5.4) |
+| `err_rt_flat_store_oob` | `index 9 out of bounds for dimension 0 of extent 6` | 4e: A.flat[[0, 9]] = 1.0: the index vector's first bad element 9 (LANGUAGE.md 5.6) |
+| `err_rt_ew_vec` | `shape mismatch: 3 vs 4` | 4e: vectors of 3 and 4 elements: shape mismatch: 3 vs 4 (LANGUAGE.md 6.3) |
+| `err_rt_ew_mat` | `shape mismatch: 2x3 vs 3x2` | 4e: 2x3 with 3x2: neither extent is 1 in either dimension (LANGUAGE.md 6.3) |
+| `err_rt_ew_zero_bcast` | `shape mismatch: 0x3 vs 2x3` | 4e: 0x3 with 2x3: 0 and 2 differ and neither is 1 (LANGUAGE.md 6.3) |
+| `err_rt_ew_where_vec` | `shape mismatch: 3 vs 2` | 4e: where(c, a, b) with c and a of 3 and b of 2: the shape combined so far, then b's (LANGUAGE.md 6.3): 3 vs 2 |
+| `err_rt_ew_where_mat` | `shape mismatch: 3x4 vs 2x4` | 4e: where(c, a, b) with c 1x4, a 3x1, b 2x4: c with a combine to 3x4, then b (LANGUAGE.md 6.3): 3x4 vs 2x4 |
+| `err_rt_ew_elem_call` | `shape mismatch: 3 vs 2` | 4e: an elemental call with arrays of 3 and 2 elements (LANGUAGE.md 6.3, 10.4) |
+| `err_rt_ew_i64_overflow` | `integer overflow` | 4e: element-wise i64 + overflows: integer overflow (LANGUAGE.md 6.5) |
+| `err_rt_ew_i64_neg` | `integer overflow` | 4e: element-wise unary - of -2^63: integer overflow (LANGUAGE.md 6.5) |
+| `err_rt_ew_i64_mod_zero` | `integer division by zero` | 4e: element-wise i64 % with a zero element: integer division by zero (LANGUAGE.md 6.6) |
+| `err_rt_ew_idiv_zero` | `integer division by zero` | 4e: element-wise idiv with a zero divisor: integer division by zero (LANGUAGE.md 6.6) |
+| `err_rt_cvt_first_bad` | `conversion to i64: 2.5 is not an integer` | 4e: i64 of 1.0 2.5 3.5: the first element that is not an integer, 2.5 (LANGUAGE.md 10.1, 9.2; %g spelling) |
+| `err_rt_cvt_nan_elem` | `conversion to i64: NaN is not an integer` | 4e: i64 of 4.0 NaN: NaN is not an integer (LANGUAGE.md 10.1, 11.1 spelling) |
+| `err_rt_fix_bind` | `shape mismatch: expected 4, got 5` | 4e: a dynamic array of 5 bound to f64[4]: shape mismatch: expected 4, got 5 (LANGUAGE.md 4.5) |
+| `err_rt_fix_assign` | `shape mismatch: expected 4, got 5` | 4e: assignment from a dynamic array to a fixed-size variable (LANGUAGE.md 4.5) |
+| `err_rt_fix_arg` | `shape mismatch: expected 4, got 3` | 4e: a dynamic argument for an f64[4] parameter (LANGUAGE.md 4.5) |
+| `err_rt_fix_return` | `shape mismatch: expected 2, got 3` | 4e: a dynamic array returned as f64[2] (LANGUAGE.md 4.5) |
+| `err_rt_fix_mat` | `shape mismatch: expected 2x2, got 3x2` | 4e: a 3 x 2 dynamic matrix bound to f64[2,2]: expected 2x2, got 3x2 (LANGUAGE.md 4.5) |
+| `err_rt_fix_ew` | `shape mismatch: expected 2, got 3` | 4e: a fixed f64[3] times a dynamic vector is dynamic (DESIGN.md 3.5.5), so binding it to f64[2] is the run-time check (LANGUAGE.md 4.5) |
+| `err_rt_fix_lit257` | `shape mismatch: expected 4, got 257` | 4e: a literal of 257 scalars is dynamic (LANGUAGE.md 4.5, 6.9): binding it to i64[4] is the run-time check, expected 4, got 257 |
+| `err_rt_cat_rows` | `shape mismatch: 2x2 vs 3x1` | 4e: joining a 2x2 and a 3x1 dynamic matrix: the joined shape so far first (LANGUAGE.md 6.9; DESIGN.md 3.6.6 rule 26 (c)): 2x2 vs 3x1 |
+| `err_rt_cat_stack` | `shape mismatch: 1x2 vs 1x3` | 4e: stacking vector rows of 2 and 3 elements: 1x2 vs 1x3 (LANGUAGE.md 6.9; DESIGN.md 3.6.6 rule 26 (c)) |
+| `err_rt_range_size` | `invalid array size 3000000000` | 4e: a range value of 3000000000 positions: invalid array size 3000000000 (LANGUAGE.md 5.1) |
+| `err_rt_range_size_sat` | `invalid array size 9223372036854775807` | 4e: -2^63..=2^63-1 has 2^64 positions, beyond i64: the saturated text invalid array size 9223372036854775807 (LANGUAGE.md 5.1) |
+| `err_rt_range_size_sat2` | `invalid array size 9223372036854775807` | 4e: 0..=2^63-1 has 2^63 positions, beyond i64: the saturated text (LANGUAGE.md 5.1) |
+| `err_rt_range_step_zero` | `range step is zero` | 4e: a range value with step 0: range step is zero (LANGUAGE.md 5.1) |
+| `err_rt_ind2sub_zero_vec` | `integer division by zero` | 4e: ind2sub(0, k) with a vector k: integer division by zero at the call's line (LANGUAGE.md 10.7, 6.6; Decision 33) |
+| `err_rt_sub2ind_vec_oob` | `index 3 out of bounds for dimension 0 of extent 3` | 4e: sub2ind(3, i, j) with i = 0 3 5: the first bad element 3, dimension 0, extent 3 (LANGUAGE.md 10.7; DESIGN.md 2.6.2) |
+| `err_shape_static_ew` | `shape mismatch: 3 vs 2` | 4e: fixed operands of 3 and 2 elements: the compile-time shape mismatch at the operator node, its left operand's start (LANGUAGE.md 4.10, 6.3; DESIGN.md 3.5.5) |
+| `err_shape_static_ew_mat` | `shape mismatch: 2x2 vs 3x2` | 4e: fixed 2x2 and 3x2 operands (DESIGN.md 3.5.5) |
+| `err_shape_static_where` | `shape mismatch: 3x4 vs 2x4` | 4e: where(a, b, c) with fixed a 1x4, b 3x1, c 2x4: 3x4 vs 2x4 at the call (DESIGN.md 3.5.5, its example) |
+| `err_shape_static_where_dyn` | `shape mismatch: 3 vs 4` | 4e: where(a3, c, b4) with a dynamic c: the combined extent 3 stays known, then b4 (DESIGN.md 3.5.5, its example): 3 vs 4 |
+| `err_shape_static_ew_result` | `shape mismatch: 2 vs 3` | 4e: an element-wise result of fixed operands is fixed (f64[3]), so binding it to f64[2] is 217 at the value, the target first (DESIGN.md 3.5.5, 2.6.2) |
+| `err_shape_static_mask` | `shape mismatch: 3 vs 2` | 4e: a fixed mask of 2 on a fixed vector of 3: at the mask index, what it selects from first (LANGUAGE.md 5.2; DESIGN.md 3.5.5) |
+| `err_shape_static_mask_mat` | `shape mismatch: 2x3 vs 3x2` | 4e: a fixed 3x2 whole-matrix mask on a fixed 2x3 matrix (LANGUAGE.md 5.2) |
+| `err_shape_static_mask_dim` | `shape mismatch: 2 vs 3` | 4e: a fixed mask of 3 for the 2 rows of a fixed matrix: the dimension's extent as a vector shape, then len(m) (LANGUAGE.md 5.2) |
+| `err_shape_static_cat` | `shape mismatch: 2x2 vs 3x1` | 4e: joining fixed 2x2 and 3x1 matrices: at the part, the joined shape so far first (LANGUAGE.md 6.9; DESIGN.md 3.5.5) |
+| `err_shape_static_bind` | `shape mismatch: 4 vs 3` | 4e: let a: f64[4] = [1.0, 2.0, 3.0]: at the value, the target's shape first (DESIGN.md 2.6.2 `expr`) |
+| `err_shape_static_assign` | `shape mismatch: 2 vs 3` | 4e: a fixed value of 3 assigned to a fixed variable of 2 (DESIGN.md 3.5.5) |
+| `err_shape_static_arg` | `shape mismatch: 2 vs 3` | 4e: a fixed argument of 3 for an f64[2] parameter (DESIGN.md 3.5.5) |
+| `err_shape_static_return` | `shape mismatch: 2 vs 3` | 4e: a fixed value of 3 returned as f64[2] (DESIGN.md 3.5.5) |
+| `err_shape_static_mat_bind` | `shape mismatch: 2x2 vs 2x3` | 4e: a fixed 2x3 literal bound to f64[2,2] (DESIGN.md 3.5.5) |
+| `err_shape_static_empty` | `shape mismatch: 2 vs 0` | 4e: [] under a fixed-size type with elements: shape mismatch, the target's shape first, [] the vector of length 0 (LANGUAGE.md 6.9) |
+| `err_shape_static_lit256` | `shape mismatch: 4 vs 256` | 4e: a literal of 256 scalars is fixed (i64[256], LANGUAGE.md 4.5): binding it to i64[4] is the compile error (compare err_rt_fix_lit257) |
+| `err_type_mismatch_lit` | `type mismatch: expected bool, found i64` | 4e: [true, 1]: no common element type, at the first element that does not combine (LANGUAGE.md 6.9; DESIGN.md 3.5.5) |
+| `err_vec_mat` | `cannot combine a vector with a matrix: use .col or .row` | 4e: a vector with a matrix operand (LANGUAGE.md 6.3): at the operator node |
+| `err_cannot_infer_let` | `type cannot be inferred: add a type annotation` | 4e: let x = []: no type from the context, 252 at the [ (LANGUAGE.md 6.9; Decision 36) |
+| `err_cannot_infer_len` | `type cannot be inferred: add a type annotation` | 4e: len([]): a library argument gives no type (LANGUAGE.md 6.9; Decision 36) |
+| `err_cannot_infer_add` | `type cannot be inferred: add a type annotation` | 4e: [] + v with v an f64[]: an operand gives no type (LANGUAGE.md 6.9; Decision 36) |
+| `err_no_transpose` | `vector has no transpose: use .row or .col` | 4e: .T of a vector, at the dot node (the operand's start; LANGUAGE.md 5.6) |
+| `err_ragged` | `ragged matrix literal` | 4e: rows of 2 and 1 scalars: at the first row whose length differs (LANGUAGE.md 6.9) |
+| `err_use_row_col` | `use .row or .col` | 4e: a row joining a vector and a matrix, at the row (its first element; LANGUAGE.md 6.9) |
+| `err_bad_target_view_t` | `invalid assignment target` | 4e: an element of A.T as an assignment target (LANGUAGE.md 5.6, 7.3: only .flat is a target), at the target |
+| `err_bad_target_view_row` | `invalid assignment target` | 4e: v.row as an assignment target (LANGUAGE.md 5.6, 7.3), at the target |
+| `err_view_rank_col` | `view .col is not defined for f64[,]` | 4e: .col of a matrix (LANGUAGE.md 5.6), at the dot node |
+| `err_view_rank_flat` | `view .flat is not defined for f64[]` | 4e: .flat of a vector (LANGUAGE.md 5.6), at the dot node |
+| `err_view_rank_fixed` | `view .row is not defined for i64[2,2]` | 4e: .row of a fixed matrix: the type written as in Sea source (DESIGN.md 2.6.2) |
+| `err_ns_ind2sub_array` | `not supported yet: ind2sub` | 4e: ind2sub with an array first argument stays the word ind2sub until phase 6, at the call (DESIGN.md 2.6.2 step 4e; Decision 33) |
+| `err_ns_str_literal` | `not supported yet: strings` | 4e: a literal of str elements is strings, at the array node (DESIGN.md 2.6.2 step 4e) |
+| `err_ns_str_fixed_type` | `not supported yet: strings` | 4e: a fixed-size type of str elements is strings, at its type node (DESIGN.md 2.6.2 step 4e) |
+| `err_ns_lib_max1_fixed` | `not supported yet: max` | 4e: max of one fixed vector is still the name max until 4f, at the call (DESIGN.md 2.6.2 step 4e) |
+| `err_rt_tasg_fix` | `shape mismatch: expected 2, got 3` | 4e (Decision 37): a dynamic result of 3 into a fixed `f64[2]` target of a tuple assignment, the run-time check of §4.5 at the statement's line (LANGUAGE.md §7.3) |
+| `err_tasg_shape_static` | `shape mismatch: 2 vs 3` | 4e (Decision 37): a fixed `f64[3]` result into a fixed `f64[2]` target, 217 at the target, the target's shape first (DESIGN.md §3.5.5) |
+| `err_tasg_type` | `type mismatch: expected f64[], found bool[]` | 4e (Decision 37): a `bool[]` result into an `f64[]` target, 201 at the target (DESIGN.md §3.5.5) |
+| `err_rt_tasg_fix_cvt` | `shape mismatch: expected 3, got 4` | 4e (Decision 37): a dynamic `i64[]` result of 4 into a fixed `f64[3]` target, the run-time shape check at the statement's line (the conversion cannot fail) |
 | `err_predeclared_const` | `redefinition of predeclared name` | a constant may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_predeclared_fn` | `redefinition of predeclared name` | a top-level function may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_redefinition_const` | `redefinition of 'C'` | two constants of one name (DESIGN.md 2.6.2) |
@@ -458,7 +602,9 @@ the `at` position of DESIGN.md §2.6.2.
 | `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`); from 4d with `rtype` and the array types of §3.4.2 |
 | `lir4_gen.py` | the 4c pass-4 tests `passes/lir4_{retain_release,release_leaf,mcopy,slay,entries}.{lir,out}` |
 | `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
-| `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_*`, `errors/err_ns_lib_{max1,min1}` |
+| `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_str_elem`, `errors/err_ns_lib_{max1,min1}` (its eight `arrays` cases were retired by 4e) |
+| `arr4e_cases.py` | the 4e `programs/{sel,ew,arr,heap}_*` from `sel_vec_read` on, `programs/w4_sor_arrays` (from `accept/w4_sor.sea`), the 4e `errors/` tests from `err_rt_sel_range_last` on; it deletes the ten retired 4d goldens |
 | `dump4d_cases.py` | `passes/arr_rule{16,17,18,19,30,31,36}.{sea,ast,hir1,hir,lir1,out}` (and their `.res` through `res_gen.py`) |
 | `hirl4e0_cases.py` | `passes/NAME.hirl` for the 17 dump tests with a `.sea` and a `.lir1`, and the `passes/loop_*.{sea,ast,res,hir1,hir,hirl,lir1,out}` tests (`.res` through `res_gen.py`) |
+| `dump4e_cases.py` | the 4e dump tests `passes/arr_rule{20,21,22,25,28}`, `passes/sel_{reads,ref_store,compound}`, `passes/ew_{colrow,ind2sub}`, `passes/arr_{lit_fixed,lit_dyn,lit_cat,lit_cat_fixed,views,dynfix,fixed,tasg_l12}` (`.sea .ast .res .hir1 .hir .hirl .lir1 .out`), and the rewritten `passes/res_err_array.res` (+ its new `.hir1`) |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |

@@ -1,0 +1,1 @@
+err_rt_sel_store_idx_first.sea:8: error: index 8 out of bounds for dimension 0 of extent 5

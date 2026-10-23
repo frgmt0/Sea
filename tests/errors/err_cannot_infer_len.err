@@ -1,0 +1,1 @@
+err_cannot_infer_len.sea:2:20: error: type cannot be inferred: add a type annotation

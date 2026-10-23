@@ -1,0 +1,60 @@
+// sel_compound_ops -- compound selection assignment on vectors and matrices: ranges, :, masks, index
+// vectors with repeats (gather, operate, scatter: the last store wins), broadcasting
+// (LANGUAGE.md 5.5, 6.3)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+var v: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0]
+v[1..4] += 10.0
+pf(v)
+v[0..2] -= [1.0, 2.0]
+pf(v)
+v[[4, 4]] += [1.0, 2.0]
+pf(v)
+v[v > 12.0] *= 2.0
+pf(v)
+v[:] /= 2.0
+pf(v)
+var w = filled(1, 4)
+w[(0..4 step 2)] += 5
+w[[3, 1]] *= [2, 3]
+pvi(w)
+var A = ones(2, 3)
+A[0, :] += [1.0, 2.0, 3.0]
+A[:, 1] *= 10.0
+A[0..2, 1..3] -= [1.0, 1.0; 2.0, 2.0]
+pmf(A)
+A[A < 2.0] += 100.0
+pmf(A)
+A.flat[[0, 5]] /= 4.0
+pmf(A)
+A[:, 0..2] *= [2.0; 3.0]
+pmf(A)
+A[0..1, :] += [1.0, 2.0, 3.0].row
+pmf(A)
+var K = zeros(3, 3)
+let ke = [1.0, 2.0; 3.0, 4.0]
+K[[0, 2], [0, 2]] += ke
+K[[1, 1], [1, 1]] += ke
+pmf(K)

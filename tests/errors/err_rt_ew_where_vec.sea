@@ -1,0 +1,7 @@
+// err_rt_ew_where_vec -- where(c, a, b) with c and a of 3 and b of 2: the shape combined so far, then
+// b's (LANGUAGE.md 6.3): 3 vs 2
+let c = filled(true, 3)
+let a = zeros(3)
+let b = zeros(2)
+let w = where(c, a, b)
+printf("%d\n", len(w))

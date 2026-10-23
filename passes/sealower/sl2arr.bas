@@ -70,6 +70,8 @@
 9650 RETURN
 9660 REM ---- reading: the records idx dol (nodes) and tmat, tptr (types; sea.hirl nodes: 981) ------
 9670 IF K = 42 THEN 1310
+9672 IF K = 41 THEN 40030
+9673 IF K = 59 THEN 40030
 9675 IF K = 52 THEN 30100
 9680 IF K > 38 THEN 850
 9690 GOTO 1300
@@ -80,9 +82,7 @@
 9720 ON S - 38 GOTO 12860, 12960, 13620, 13740, 13870, 14270, 17180, 17310, 2365, 2365, 19500, 14900, 24210, 24350
 9730 REM ---- class of an array or tptr type (7395 for T1 > 5): p ----------------------------------
 9740 IF T1 <= 9 THEN 2360
-9750 IF T(T1, 1) = 1 THEN 9770
-9755 IF T(T1, 1) = 4 THEN 9770
-9760 IF T(T1, 1) <> 3 THEN 2360
+9750 IF T(T1, 1) = 2 THEN 2360
 9770 LET C1 = 3
 9780 RETURN
 9790 REM ==== small helpers ====================================================================
@@ -145,9 +145,11 @@
 10340 LET J9 = J9 + 1
 10350 LET J(J9, 2) = V1
 10360 LET J(J9, 4) = 0
+10365 LET J(J9, 0) = 0
 10370 RETURN
 10380 REM ---- 10390: release the scope stack entries J9 down to U4 + 1 (it stays as it is) --------
 10390 FOR K6 = J9 TO U4 + 1 STEP -1
+10395 IF J(K6, 0) = 2 THEN 10420
 10400 LET V1 = J(K6, 2)
 10410 GOSUB 10140
 10420 NEXT K6
@@ -176,13 +178,15 @@
 10650 GOSUB 7695
 10660 RETURN
 10670 REM ---- 10680: N2 = ext(V3, Z3) (rule 17) / 10740: N2 = data(V3) ---------------------------
-10680 LET C1 = 1
+10680 IF F6 = 1 THEN 41242
+10685 LET C1 = 1
 10690 GOSUB 7420
 10700 LET V2 = N2
 10710 LET Z3 = G2 + Z3 * (G3 - G2)
 10720 GOSUB 7640
 10730 RETURN
-10740 LET C1 = 3
+10740 IF F6 = 1 THEN 41250
+10745 LET C1 = 3
 10750 GOSUB 7420
 10760 LET V2 = N2
 10770 LET Z3 = G4
@@ -277,7 +281,8 @@
 11660 RETURN
 11670 REM ---- 11690: copy on write (rule 19) of the local array C8 (C7 = 0) or of the array in the
 11680 REM memory of the ref parameter C7; C8 = the array afterwards
-11690 IF C7 = 0 THEN 11770
+11690 IF F6 = 1 THEN 41252
+11692 IF C7 = 0 THEN 11770
 11700 LET C1 = 3
 11710 GOSUB 7420
 11720 LET C8 = N2
@@ -358,6 +363,8 @@
 13000 LET Z6 = W(W0 + 3)
 13010 IF U0 - Z6 <> H(X, 6) + 1 THEN 2365
 13020 LET R6 = U(Z6 + 1, 1)
+13025 LET O5 = H(X, 7)
+13026 GOSUB 41230
 13030 LET R1 = U(Z6 + 2, 1)
 13040 LET R2 = 0
 13050 IF H(X, 6) = 1 THEN 13080
@@ -396,6 +403,9 @@
 13380 IF H(X, 5) > H(P3, 6) - 1 THEN 2365
 13390 LET C1 = 1
 13400 GOSUB 7470
+13405 LET O5 = H(P3, 7)
+13406 GOSUB 41230
+13407 IF F5 = 1 THEN 41280
 13410 LET V2 = D2
 13420 LET V3 = H(P3, 0)
 13430 LET Z3 = G2 + H(X, 5) * (G3 - G2)
@@ -510,6 +520,7 @@
 14470 IF H(H(X, 7), 6) = 1 THEN 14490
 14480 LET R2 = U(Z6 + 2, 1)
 14490 LET A1 = H(H(H(X, 7), 7), 5)
+14495 IF V(A1, 0) = 1 THEN 14580
 14500 IF A(G(F0, 0) + A1, 2) = 0 THEN 14580
 14510 LET C1 = 3
 14520 GOSUB 7420
@@ -523,7 +534,9 @@
 14600 GOTO 3090
 14610 REM ---- 14630: (3)-(5) of rule 19: the checks of array R6, cow, data, the linear index and
 14620 REM the store of T4 (the base is the lv of a local or of a ref parameter)
-14630 LET A1 = H(H(Y6, 7), 5)
+14630 LET O5 = H(Y6, 7)
+14632 GOSUB 41230
+14634 LET A1 = H(H(Y6, 7), 5)
 14640 LET C7 = 0
 14650 LET C8 = A1
 14660 IF A(G(F0, 0) + A1, 2) = 0 THEN 14680
@@ -610,6 +623,7 @@
 15470 FOR I = W(W0 + 3) + 1 TO U0
 15480 LET V1 = U(I, 1)
 15490 IF V(V1, 1) <> 3 THEN 15520
+15495 IF V(V1, 0) = 1 THEN 15520
 15500 IF V1 <= N7 THEN 15520
 15510 GOSUB 10140
 15520 NEXT I
@@ -617,6 +631,7 @@
 15540 FOR I = W(W0 + 3) + 1 TO U0
 15550 LET V1 = U(I, 1)
 15560 IF V(V1, 1) <> 3 THEN 15590
+15565 IF V(V1, 0) = 1 THEN 15590
 15570 IF V1 > N7 THEN 15590
 15580 GOSUB 10320
 15590 NEXT I
@@ -646,6 +661,7 @@
 15830 FOR I = W(W0 + 3) + 1 TO U0
 15840 IF U(I, 2) <> 0 THEN 15890
 15850 IF U(I, 1) <= N7 THEN 15890
+15855 IF V(U(I, 1), 0) = 1 THEN 15890
 15860 IF V(U(I, 1), 1) <> 3 THEN 15890
 15870 LET V1 = U(I, 1)
 15880 GOSUB 10140
@@ -672,6 +688,9 @@
 16090 IF K7 = 0 THEN 16190
 16100 FOR I = 1 TO T(Z6, 2)
 16110 LET T1 = M(T(Z6, 3) + I - 1)
+16112 LET T5 = T1
+16114 GOSUB 40600
+16116 IF F5 = 1 THEN 41084
 16120 GOSUB 7395
 16130 GOSUB 7420
 16140 GOSUB 7970
@@ -690,17 +709,20 @@
 16270 GOTO 3090
 16280 FOR I = W(W0 + 3) + 1 TO U0
 16290 IF V(U(I, 1), 1) <> 3 THEN 16320
+16295 IF V(U(I, 1), 0) = 1 THEN 16320
 16300 LET V1 = U(I, 1)
 16310 GOSUB 10140
 16320 NEXT I
 16330 LET U0 = W(W0 + 3)
 16340 GOTO 3090
 16350 REM ==== ifx arms of a reference type are owned in the destination (rule 15 (b)) =============
-16360 LET X0 = H(H(X, 7), 8)
+16360 IF W(W0 + 5) > 0 THEN 40784
+16362 LET X0 = H(H(X, 7), 8)
 16370 LET R9 = W(W0 + 3)
 16380 GOSUB 10230
 16390 GOTO 4100
-16400 LET X0 = H(H(H(X, 7), 8), 8)
+16400 IF W(W0 + 5) > 0 THEN 40784
+16402 LET X0 = H(H(H(X, 7), 8), 8)
 16410 LET R9 = W(W0 + 3)
 16420 GOSUB 10230
 16430 GOTO 4130
@@ -721,16 +743,9 @@
 16580 GOSUB 10390
 16590 GOSUB 7170
 16600 RETURN
-16610 REM ==== block end (rule 16 (a)): its bound locals released in reverse order =================
-16612 REM (the entries just above U4 that wait for this block, J(.,4) = W0, are the .t locals of an L4
-16614 REM bind's seq: E3 is below them, and 3090 releases them after the others, rule 16 (e))
+16610 REM ==== block end (rule 16 (a), R11): its owned tmps, then its bound locals in reverse (41690)
 16620 LET U4 = W(W0 + 3)
 16630 IF J9 = U4 THEN 3090
-16632 LET E3 = U4
-16634 IF E3 >= J9 THEN 16640
-16636 IF J(E3 + 1, 4) <> W0 THEN 16640
-16638 LET E3 = E3 + 1
-16639 GOTO 16634
 16640 IF X <> G(F0, 8) THEN 16660
 16650 IF G(F0, 3) <> 1 THEN 16730
 16660 LET P3 = H(X, 7)
@@ -739,8 +754,7 @@
 16690 GOTO 16670
 16700 IF H(P3, 1) = 30 THEN 16730
 16710 IF H(P3, 1) = 31 THEN 16730
-16715 LET U4 = E3
-16720 GOSUB 10390
+16720 GOSUB 41690
 16730 LET J9 = U4
 16740 GOTO 3090
 16750 REM ==== ref arguments (rules 12, 31) ==========================================================
@@ -817,6 +831,8 @@
 17460 GOSUB 16780
 17470 LET H(X2, 0) = Z0
 17480 LET X = X3
+17485 LET O5 = H(X3, 7)
+17487 GOSUB 41230
 17490 GOSUB 10920
 17500 LET R9 = 0
 17510 IF H(X2, 0) = 1 THEN 17540
@@ -830,7 +846,9 @@
 17590 GOTO 4630
 17600 REM ---- 17620: R9 = the address of the element R1 (R2) of the idx X3 after the checks (rows
 17610 REM R3): cow of the base, data, the linear index, li S esize, imul T X S, padd A D T
-17620 LET A1 = H(H(X3, 7), 5)
+17620 LET O5 = H(X3, 7)
+17622 GOSUB 41230
+17624 LET A1 = H(H(X3, 7), 5)
 17630 LET C7 = 0
 17640 LET C8 = A1
 17650 IF A(G(F0, 0) + A1, 2) = 0 THEN 17670
@@ -879,7 +897,10 @@
 18080 LET R1 = H(X2, 5)
 18090 LET R2 = H(X2, 6)
 18100 LET A1 = H(H(X3, 7), 5)
+18105 LET O5 = H(X3, 7)
+18106 GOSUB 41230
 18110 LET R6 = A1
+18115 IF F6 = 1 THEN 18200
 18120 IF A(G(F0, 0) + A1, 2) = 0 THEN 18200
 18130 LET C1 = 3
 18140 GOSUB 7420
@@ -1205,7 +1226,7 @@
 23470 GOTO 2665
 23480 REM ---- 23490: a ref parameter root: only a reference value needs a snapshot (rule 12 (b)) --
 23490 LET T3 = A(G(F0, 0) + L5, 1)
-23500 GOSUB 9810
+23500 GOSUB 41350
 23510 IF U3 = 0 THEN 2715
 23520 GOTO 2675
 23530 REM ---- 23550: the read J5 of the root L5 before the rarg K5: scalars always, a reference value
@@ -1230,7 +1251,7 @@
 23696 IF H(N4, 1) <> 23 THEN 23700
 23698 IF H(N4, 7) = P4 THEN 2710
 23700 LET T3 = H(J5, 4)
-23710 GOSUB 9810
+23710 GOSUB 41350
 23720 IF U3 = 0 THEN 2705
 23730 LET U5 = P4
 23740 GOSUB 23360
@@ -1327,8 +1348,11 @@
 24740 RETURN
 24800 REM ---- 24820: R6 = the base of the element target Y6 loaded again (ldp) when it is a ref
 24810 REM parameter that a ref argument in the indices passes: the checks see the variable (5.5)
-24820 LET P3 = H(Y6, 7)
+24820 LET O5 = H(Y6, 7)
+24822 GOSUB 41230
+24824 LET P3 = H(Y6, 7)
 24830 LET A1 = H(P3, 5)
+24835 IF F6 = 1 THEN 24930
 24840 IF A(G(F0, 0) + A1, 2) = 0 THEN 24930
 24850 FOR P9 = H(Y6, 7) + 1 TO Y6 - 1
 24860 IF H(P9, 1) <> 11 THEN 24900

@@ -1,0 +1,46 @@
+// ew_cmp_logic -- element-wise comparisons and logic: NaN and -0 cases, mixed i64/f64, bool ==, !=, & | !
+// on bool arrays, matrices, broadcasting (LANGUAGE.md 6.3, 6.4)
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmb(A: bool[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let a = [1.0, nan, 3.0, -0.0]
+let b = [1.0, 2.0, nan, 0.0]
+pvb(a == b)
+pvb(a != b)
+pvb(a < b)
+pvb(a <= b)
+pvb(a > 2.0)
+pvb(a >= 1)
+let n = [1, 5, 3]
+pvb(n == 3)
+pvb(n < [2.0, 5.0, 2.5])
+let p = [true, true, false, false]
+let q = [true, false, true, false]
+pvb(p & q)
+pvb(p | q)
+pvb(!p)
+pvb(p == q)
+pvb(p != q)
+pvb(p & true)
+pvb(false | q)
+pvb(isnan(a))
+let M = [1.0, 2.0; 3.0, 4.0] > 2.5
+pmb(M)
+pmb(!M | [true, false; false, false])
+let g = zeros(3) >= 0.0
+pvb(g & [true, false, true])
+pmb([1, 2].col < [1.5, 2.5].row)

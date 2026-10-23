@@ -1,0 +1,2 @@
+// err_cannot_infer_let -- let x = []: no type from the context, 252 at the [ (LANGUAGE.md 6.9; Decision 36)
+let x = []

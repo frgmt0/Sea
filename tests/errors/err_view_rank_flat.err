@@ -1,0 +1,1 @@
+err_view_rank_flat.sea:3:9: error: view .flat is not defined for f64[]

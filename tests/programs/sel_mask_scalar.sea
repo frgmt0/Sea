@@ -1,0 +1,18 @@
+// sel_mask_scalar -- a whole-matrix mask store of a scalar (T[T > 100.0] = 100.0; LANGUAGE.md 5.2, 5.5),
+// on a dynamic and on a fixed-size matrix
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+var T: f64[,] = [50.0, 150.0, 99.0; 101.0, 100.0, 300.0]
+T[T > 100.0] = 100.0
+pmf(T)
+var F = [120.0, 80.0; 100.5, 100.0]
+F[F > 100.0] = 100.0
+pmf(F)

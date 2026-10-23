@@ -5,10 +5,10 @@
 25 REM integer constants and the var rule (LANGUAGE 4.2), cvt, operators (6.1-6.8), the const items
 30 REM and the value of each by Decision 25 (DESIGN 3.4.1 "Constants"), powk where sea.res has an
 35 REM rpowk, if/while/for/break/continue, functions, ref, multiple results, printf formats
-40 REM (LANGUAGE 11.1), now f64 i64 idiv log exp sin cos pow hypot; from 4d the dynamic arrays
-45 REM T[] T[,] of f64 i64 bool, indexing by scalars (read, = and op=), $, for over a vector, zeros
-50 REM ones filled len rows cols numel abs sign sqrt floor ceil trunc round isnan min max where
-55 REM ind2sub sub2ind (DESIGN 2.6.2 step 4d); everything else 'not supported yet'. It takes every
+40 REM (LANGUAGE 11.1), now f64 i64 idiv log exp sin cos pow hypot; from 4d the dynamic arrays of
+45 REM f64 i64 bool, scalar indexing, $, for over a vector, zeros ones filled len rows cols numel
+50 REM and the elemental functions on scalars; from 4e (sc9arr) fixed-size arrays, selections, views,
+55 REM literals, dyn/fix, broadcasting (DESIGN 2.6.2 step 4e); the rest 'not supported yet'. It takes every
 60 REM lid, fid, cid, sid and every declared type (the type table, rtype) from sea.res and validates
 65 REM sea.res first (3.4.1, 3.4.2 "What seacheck validates": BAD_RECORD).
 70 REM Errors: every error is recorded with its position; the first in source order (file, line,
@@ -67,16 +67,20 @@
 335 LET Q$(6) = "LIM_STRINGS"
 340 LET Q$(7) = "LIM_POWK"
 345 LET Q$(8) = "LIM_DEC_FIELD"
-350 FOR I = 1 TO 8
+347 LET Q$(9) = "LIM_FIXED_ELEMS"
+350 FOR I = 1 TO 9
 355 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
 360 IF T = 0 THEN 370
 365 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
 370 IF I = 1 THEN 400
+372 IF I = 9 THEN 397
 375 IF I = 8 THEN 390
 380 LET X(18 + I) = V
 385 GOTO 405
 390 LET X(35) = V
 395 GOTO 405
+397 LET X(39) = V
+398 GOTO 405
 400 LET X(34) = V
 405 NEXT I
 410 IF X(20) > 49999 THEN 445

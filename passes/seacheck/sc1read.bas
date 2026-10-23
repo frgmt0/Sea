@@ -89,12 +89,12 @@
 990 IF P1 = 0 THEN 2400
 995 LET K0 = (P1 - 1) / 10 + 1
 1000 LET R0 = G(K0)
-1005 REM the place of a record: rerr first (at most one), then the type table (rtup rtvec rtmat,
-1010 REM DESIGN 3.4.2), then the tree. The records of 4e and 4g (rtfvec rtfmat rtst rtfd rslit rcns)
-1015 REM are not written in 4d.
+1005 REM the place of a record: rerr first (at most one), then the type table (rtup rtvec rtmat
+1010 REM rtfvec rtfmat, DESIGN 3.4.2), then the tree. The records of 4g (rtst rtfd rslit rcns) are
+1015 REM not written before 4g.
 1020 IF K0 < 50 THEN 1085
 1025 IF K0 > 69 THEN 1080
-1030 IF K0 > 65 THEN 2400
+1030 IF K0 > 67 THEN 2400
 1035 IF K0 > 63 THEN 1065
 1040 IF K0 > 51 THEN 1085
 1045 IF K0 = 51 THEN 1065
@@ -263,7 +263,7 @@
 1860 NEXT J
 1865 IF F9 <> G0 THEN 2400
 1870 IF K0 < 50 THEN 2200
-1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 2400, 2400, 2400, 2400, 2015
+1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 1965, 1965, 2400, 2400, 2015
 1880 CALL "sc_rerr": P$, E(), E$(), E0, X(), X$(), V()
 1885 GOTO 2375
 1890 REM rtup id n t1..tn: ids dense from 10, n >= 2; one T row and ceil(n/9) more (the ids of the
@@ -281,13 +281,18 @@
 1950 LET X(32) = V(1)
 1955 LET W(150000 + V(1)) = H
 1960 GOTO 2375
-1965 REM rtvec, rtmat id elt: T(t,0) 1 or 2, the element id in T(t,1)
+1965 REM rtvec, rtmat, rtfvec, rtfmat id elt [n | r c]: T(t,0) 1-4, the element id in T(t,1), the
+1967 REM extents of a fixed-size one in T(t,2..3)
 1970 IF V(1) <> X(32) + 1 THEN 2400
 1975 LET X(19) = 0
 1980 CALL "tnew": T(), N(), X(), X$(), 1, H
 1985 IF H = 0 THEN 2375
 1990 LET T(H, 0) = K0 - 63
 1995 LET T(H, 1) = V(2)
+1996 IF K0 < 66 THEN 2000
+1997 LET T(H, 2) = V(3)
+1998 IF K0 = 66 THEN 2000
+1999 LET T(H, 3) = V(4)
 2000 LET X(32) = V(1)
 2005 LET W(150000 + V(1)) = H
 2010 GOTO 2375

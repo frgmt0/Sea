@@ -1,0 +1,5 @@
+// err_rt_ew_mat -- 2x3 with 3x2: neither extent is 1 in either dimension (LANGUAGE.md 6.3)
+let a = zeros(2, 3)
+let b = ones(3, 2)
+let c = a * b
+printf("%d\n", rows(c))

@@ -1,0 +1,5 @@
+// err_rt_sel_step_zero -- a range index with step 0: range step is zero (LANGUAGE.md 5.1)
+var v = zeros(5)
+let s = 0
+let w = v[0..5 step s]
+printf("%d\n", len(w))

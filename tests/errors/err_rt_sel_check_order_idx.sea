@@ -1,0 +1,6 @@
+// err_rt_sel_check_order_idx -- A[9, m]: the scalar index of dimension 0 is checked before the mask
+// (LANGUAGE.md 5.4)
+let A = zeros(3, 4)
+let m = filled(true, 2)
+let c = A[9, m]
+printf("%d\n", len(c))

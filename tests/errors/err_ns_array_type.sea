@@ -1,4 +1,0 @@
-// err_ns_array_type -- 4d: a fixed-size array type is still not supported (at its type node)
-fn f(v: f64[3]) {
-    printf("x\n")
-}

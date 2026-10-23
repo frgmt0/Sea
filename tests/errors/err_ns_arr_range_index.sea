@@ -1,4 +1,0 @@
-// err_ns_arr_range_index -- 4d: an index that is a range is still arrays, at the index's node
-// (DESIGN.md 2.6.2 step 4d)
-let v = zeros(4)
-let w = v[1..3]

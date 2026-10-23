@@ -1,0 +1,48 @@
+// arr_ranges -- range values (LANGUAGE.md 5.1, 6.1): steps, negative steps, empty ranges, exact lengths
+// at the i64 limits, arithmetic on them, for over (range) and over an expression of one
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+pvi((0..5))
+let r = (2..=6 step 2)
+pvi(r)
+pvi((5..0 step -2))
+pvi((9..=0 step -3))
+pvi((3..3))
+pvi((4..1))
+pvi((0..7 step 3))
+pvi((0..-3 step -1))
+pf((0..=4) * 0.5)
+pvi((9223372036854775806..=9223372036854775807))
+pvi((-9223372036854775808..-9223372036854775806))
+pvi((0..9223372036854775807 step 4611686018427387904))
+for x in (0..3) {
+    printf("%d ", x)
+}
+printf("\n")
+for x in (10..0 step -4) {
+    printf("%d ", x)
+}
+printf("\n")
+var s = 0
+let n = 4
+for x in (0..n) * 2 {
+    s += x
+}
+printf("%d\n", s)
+var t = 0
+for x in (5..5) {
+    t += 1
+}
+printf("%d\n", t)

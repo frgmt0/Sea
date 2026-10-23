@@ -1,0 +1,7 @@
+// err_rt_ew_where_mat -- where(c, a, b) with c 1x4, a 3x1, b 2x4: c with a combine to 3x4, then b
+// (LANGUAGE.md 6.3): 3x4 vs 2x4
+let c = filled(true, 1, 4)
+let a = zeros(3, 1)
+let b = zeros(2, 4)
+let w = where(c, a, b)
+printf("%d\n", rows(w))

@@ -1,0 +1,1 @@
+err_view_rank_col.sea:3:9: error: view .col is not defined for f64[,]

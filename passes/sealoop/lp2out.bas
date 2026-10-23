@@ -1,10 +1,10 @@
 10000 REM ====================================================================================
 10005 REM sealoop part 2 (lines 10000-14999): (C) numbering and writing sea.hirl (DESIGN 3.5.9).
 10010 REM The new locals of a function F get the lids after its np + nl in the order of their
-10015 REM declaring records (tmp, bind, hloop) in the output, named .l1 .l2 ...; U(.,5) lists them
-10020 REM in that order, G(F,5) its first entry. The tptr types get the ids after the last of
-10025 REM sea.hir's table in order of first reference in the file: the loc record of a tmp of an
-10030 REM adat comes before every other reference (its function's loc records precede its body).
+10015 REM declaring records (tmp, bind, hloop; rcnt its l then its e) in the output, named .l1 .l2
+10020 REM ...; U(.,5) lists them in that order, G(F,5) its first entry. The tptr types get the ids
+10025 REM after the last of sea.hir's table in order of first reference in the file: a function's
+10030 REM new locals (their loc records follow its own), then the ^e fields of its records.
 10035 REM Then the header, the records in list order (the tptr records before the first fn; a fn
 10040 REM record with nl + its new locals, their loc records after its own), and #end.
 10045 REM ====================================================================================
@@ -17,36 +17,56 @@
 10080 LET F0 = P(O(J, 1), 1)
 10085 LET G(F0, 5) = U5 + 1
 10090 GOTO 10155
-10095 REM a generated record: tmp, bind or hloop of @p declares the new local p
+10095 REM a generated record: tmp, bind, tbind, hloop or rcnt declares each new local @p it names
 10100 LET Z1$ = O$(J)
 10105 LET J3 = POS(Z1$, " ")
-10110 IF POS("|tmp|bind|hloop|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
-10115 LET J3 = LEN(Z1$)
-10120 IF SEG$(Z1$, J3, J3) = " " THEN 10135
-10125 LET J3 = J3 - 1
-10130 GOTO 10120
-10135 IF SEG$(Z1$, J3 + 1, J3 + 1) <> "@" THEN 10155
-10140 LET V1 = VAL(SEG$(Z1$, J3 + 2, LEN(Z1$)))
+10110 IF POS("|tmp|bind|tbind|hloop|rcnt|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
+10115 LET J3 = POS(Z1$, "@")
+10120 IF J3 = 0 THEN 10155
+10125 LET J4 = POS(Z1$, " ", J3)
+10130 IF J4 > 0 THEN 10140
+10135 LET J4 = LEN(Z1$) + 1
+10140 LET V1 = VAL(SEG$(Z1$, J3 + 1, J4 - 1))
 10145 LET U5 = U5 + 1
 10147 LET U(U5, 5) = V1
 10150 LET U(V1, 4) = G(F0, 2) + G(F0, 3) + U5 - G(F0, 5) + 1
+10152 LET J3 = POS(Z1$, "@", J4)
+10153 GOTO 10120
 10155 LET J = O(J, 0)
 10160 GOTO 10065
 10165 IF U5 = U0 THEN 10175
 10170 CALL "dg_bug": P$, "a new local has no declaring record"
-10175 REM the tptr ids, in the order of the new locals (file order)
+10175 REM the tptr ids in order of first reference
 10180 LET Y8 = Y9
-10185 FOR K5 = 1 TO U5
-10190 LET V1 = U(K5, 5)
-10195 IF U(V1, 1) >= 0 THEN 10215
-10200 IF Y(-U(V1, 1)) <> 1 THEN 10215
-10205 LET Y9 = Y9 + 1
-10210 LET Y(-U(V1, 1)) = Y9
-10215 NEXT K5
+10182 LET J = O(0, 0)
+10184 IF J = 0 THEN 10220
+10186 IF O(J, 1) = 0 THEN 10204
+10188 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10216
+10190 LET F0 = P(O(J, 1), 1)
+10192 FOR K5 = G(F0, 5) TO G(F0, 5) + G(F0, 4) - 1
+10194 LET E3 = -U(U(K5, 5), 1)
+10196 GOSUB 10234
+10198 NEXT K5
+10200 GOTO 10216
+10204 LET J3 = POS(O$(J), "^")
+10206 IF J3 = 0 THEN 10216
+10208 LET E3 = VAL(SEG$(O$(J), J3 + 1, J3 + 1))
+10210 GOSUB 10234
+10212 LET J3 = POS(O$(J), "^", J3 + 1)
+10214 GOTO 10206
+10216 LET J = O(J, 0)
+10218 GOTO 10184
 10220 FOR E3 = 2 TO 4
-10225 IF Y(E3) <> 1 THEN 10235
-10230 CALL "dg_bug": P$, "a tptr type is the type of no local"
-10235 NEXT E3
+10225 IF Y(E3) <> 1 THEN 10231
+10230 CALL "dg_bug": P$, "a tptr type is referred to by no record"
+10231 NEXT E3
+10232 GOTO 10245
+10233 REM ---- 10234: the tptr of element type E3 (2-4; else nothing) is numbered at its first reference
+10234 IF E3 < 2 THEN 10239
+10235 IF Y(E3) <> 1 THEN 10239
+10237 LET Y9 = Y9 + 1
+10238 LET Y(E3) = Y9
+10239 RETURN
 10240 REM ---- writing --------------------------------------------------------------------------------
 10245 SCRATCH #2
 10250 CALL "io_hdr_put": 2, V8, T$, H$(), N1

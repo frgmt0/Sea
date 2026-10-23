@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file arr_rule28.sea
+tmat 10 4
+tvec 11 4
+tvec 12 3
+fn 1 .main main 1 0 1 0:1:1
+loc M 10 var 0:10:5
+ci 0:10:15 3 2
+ci 0:10:18 3 3
+lib 0:10:9 10 zeros 2
+bind 0:10:1 1
+lv 0:11:1 10 1
+ci 0:11:3 3 0
+ci 0:11:6 3 2
+idx 0:11:1 4 2
+cf 0:11:11 4 #401E000000000000
+asg 0:11:1 set
+lv 0:12:24 10 1
+ci 0:12:27 3 4
+call 0:12:16 4 2 2
+fconv 0:12:8 1 - - - g
+ftext 0:12:8 1 %0A
+fmt 0:12:8 1 2
+lib 0:12:1 1 printf 1
+eval 0:12:1
+lv 0:13:24 10 1
+ci 0:13:27 3 1
+call 0:13:16 4 2 2
+fconv 0:13:8 1 - - - g
+ftext 0:13:8 1 %0A
+fmt 0:13:8 1 2
+lib 0:13:1 1 printf 1
+eval 0:13:1
+block 0:1:1 4
+end
+fn 2 flat_at fn 4 2 3 0:1:1
+par A 10 val
+par k 3 val
+loc e 4 let 0:3:9
+loc s 4 var 0:4:9
+loc i 3 for 0:5:9
+lv 0:3:13 10 1
+view 0:3:13 11 flat
+lv 0:3:20 3 2
+idx 0:3:13 4 1
+bind 0:3:5 3
+lv 0:4:13 4 3
+bind 0:4:5 4
+ci 0:5:14 3 0
+lv 0:5:17 3 2
+rng 0:5:14 12 0 0
+lv 0:6:9 4 4
+cf 0:6:14 4 #3FF0000000000000
+asg 0:6:9 add
+block 0:5:19 1
+forr 0:5:5 5
+lv 0:8:12 4 4
+ret 0:8:5 1
+block 0:1:38 4
+end
+#end

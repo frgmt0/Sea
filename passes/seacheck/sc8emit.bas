@@ -10,7 +10,12 @@
 14565 LET Q = W(180000 + J)
 14570 IF T(Q, 0) = 7 THEN 14590
 14575 CALL "tyr": T(), W(), X(), T(Q, 1), A$
+14577 IF T(Q, 0) > 2 THEN 14582
 14580 CALL "wr": X(), SEG$("tvectmat", 4 * T(Q, 0) - 3, 4 * T(Q, 0)) & " " & STR$(9 + J) & " " & A$
+14581 GOTO 14620
+14582 REM a fixed-size array: its extents (n; r c)
+14583 LET L$ = SEG$("tfvectfmat", 5 * T(Q, 0) - 14, 5 * T(Q, 0) - 10) & " " & STR$(9 + J) & " " & A$
+14584 CALL "wr": X(), L$ & " " & STR$(T(Q, 2)) & SEG$(" " & STR$(T(Q, 3)), 1, 99 * (T(Q, 0) - 3))
 14585 GOTO 14620
 14590 LET L$ = "ttuple " & STR$(9 + J) & " " & STR$(T(Q, 1))
 14595 FOR K = 1 TO T(Q, 1)
@@ -167,7 +172,7 @@
 15350 GOTO 15705
 15355 LET L$ = ""
 15360 FOR J = 1 TO N(I, 1)
-15365 REM the cv flag of each target: 1 converts an i64 result to an f64 target (DESIGN 3.5.5)
+15365 REM the cv of each target: 1 i64 to f64, 2 dyn, 4 fix, their sum (DESIGN 3.5.5, Decision 37)
 15370 LET L1 = 0
 15375 IF N(G, 0) = 11 THEN 15385
 15380 LET L1 = M(G, 4)
@@ -255,14 +260,14 @@
 15790 LET J = J + 1
 15795 GOTO 15735
 15800 SUBEND
-15805 REM ---- em_node: the record of expression node J, then its cvt if any (DESIGN 3.5.5) ---------
+15805 REM ---- em_node: the record of expression node J, then its cvt, dyn or fix (DESIGN 3.5.5) ------
 15810 SUB "em_node": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 15815 CALL "pos": N(), J, P$
 15820 CALL "tyr": T(), W(), X(), M(J, 1), A$
 15825 LET Q$ = " " & P$ & " " & A$
 15830 LET K = N(J, 0)
 15835 IF K < 25 THEN 16220
-15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16175, 16195, 16220, 16185, 16220, 16220, 16220, 16220, 16220, 16220, 16220, 16215
+15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16175, 16195, 16211, 16185, 16220, 16213, 16217, 16217, 16220, 16220, 16220, 16215
 15845 LET H = M(J, 5)
 15850 IF M(J, 1) = 4 THEN 15870
 15855 CALL "lfmt": C(H, 1), C(H, 2), C(H, 3), C(H, 4), B$
@@ -337,10 +342,27 @@
 16200 GOTO 16220
 16205 CALL "wr": X(), "dol" & Q$ & " " & STR$(M(J, 5))
 16210 GOTO 16220
+16211 CALL "wr": X(), "all" & Q$
+16212 GOTO 16220
+16213 CALL "wr": X(), "view" & Q$ & " " & S$(N(J, 6))
+16214 GOTO 16220
 16215 CALL "wr": X(), "ifx" & Q$
-16220 IF M(J, 7) <> 1 THEN 16230
-16225 CALL "wr": X(), "cvt " & P$ & " 4"
-16230 SUBEND
+16216 GOTO 16220
+16217 CALL "wr": X(), SEG$("arr row", 4 * K - 175, 4 * K - 173) & Q$ & " " & STR$(N(J, 1))
+16220 REM the conversions after the node (rangev writes none of its own): cvt, of a scalar (M(J,7) 1)
+16221 REM or element by element to the type M(J,7); then a dyn or fix to the type M(J,5)
+16222 IF M(J, 7) = 0 THEN 16227
+16223 LET A$ = "4"
+16224 IF M(J, 7) = 1 THEN 16226
+16225 CALL "tyr": T(), W(), X(), M(J, 7), A$
+16226 CALL "wr": X(), "cvt " & P$ & " " & A$
+16227 IF K < 27 THEN 16234
+16228 IF K = 31 THEN 16234
+16229 IF M(J, 5) < 10 THEN 16234
+16230 CALL "tyr": T(), W(), X(), M(J, 5), A$
+16231 LET Q = 3 * INT((T(M(J, 5), 0) - 1) / 2)
+16232 CALL "wr": X(), SEG$("dynfix", Q + 1, Q + 3) & " " & P$ & " " & A$
+16234 SUBEND
 16235 REM ---- em_printf: printf call G: its format as fmt/ftext/fconv pieces at the position of the
 16240 REM format literal, each conversion over its argument, then lib printf (DESIGN 3.5.5) --------
 16245 SUB "em_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G

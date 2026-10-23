@@ -1,0 +1,8 @@
+// err_tasg_type -- a bool[] result into an f64[] target: 201 at the target, expected the target's type
+// (DESIGN.md 3.5.5, Decision 37)
+fn bv() -> (bool[], i64) {
+    return (filled(true, 2), 1)
+}
+var d = zeros(2)
+var k = 0
+(d, k) = bv()

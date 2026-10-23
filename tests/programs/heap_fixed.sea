@@ -1,0 +1,39 @@
+// heap_fixed -- fixed-size arrays made from and turned into dynamic ones (fix at a return from a
+// selection, dyn at a return and a binding, if expressions with a dynamic arm; DESIGN.md
+// 3.6.6 rule 27 (i), (j), (k))
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn mk(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i)
+    }
+    return v
+}
+fn mki(n: i64) -> i64[] {
+    return (0..n) * 2
+}
+fn mkm() -> f64[,] {
+    return [1.0, 2.0; 3.0, 4.0]
+}
+fn tofix(v: f64[]) -> f64[2] {
+    return v[0..2]
+}
+fn todyn(v: f64[2]) -> f64[] {
+    return v
+}
+var f = tofix(mk(4))
+pf(todyn(f))
+var d = todyn([5.0, 6.0])
+d = d * 2.0
+pf(d)
+let c = len(d) > 1
+let e = if c { d } else { [1.0, 2.0] }
+pf(e)
+let g: f64[2] = if c { [3.0, 4.0] } else { d[0..2] }
+pf(g)

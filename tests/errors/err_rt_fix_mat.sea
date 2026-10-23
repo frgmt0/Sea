@@ -1,0 +1,3 @@
+// err_rt_fix_mat -- a 3 x 2 dynamic matrix bound to f64[2,2]: expected 2x2, got 3x2 (LANGUAGE.md 4.5)
+let M: f64[2,2] = zeros(3, 2)
+printf("%g\n", M[0, 0])

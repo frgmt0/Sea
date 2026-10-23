@@ -1,0 +1,3 @@
+// err_shape_static_bind -- let a: f64[4] = [1.0, 2.0, 3.0]: at the value, the target's shape first
+// (DESIGN.md 2.6.2 `expr`)
+let a: f64[4] = [1.0, 2.0, 3.0]

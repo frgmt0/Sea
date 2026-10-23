@@ -1,0 +1,5 @@
+// err_rt_sel_ivec_dyn -- a dynamic index vector 3 4 5 6 7: the first bad element 5 (LANGUAGE.md 5.4)
+var v = zeros(5)
+let k = (3..8)
+let w = v[k]
+printf("%d\n", len(w))

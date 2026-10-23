@@ -1,0 +1,49 @@
+// ew_cvt -- array conversions f64(a), i64(a) of i64, f64 and bool arrays, the identities, implicit
+// i64[] -> f64[] conversion of arguments and bindings (LANGUAGE.md 4.2, 10.1)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn tot(v: f64[]) -> f64 {
+    var s = 0.0
+    for e in v {
+        s += e
+    }
+    return s
+}
+let n = [1, -2, 3]
+pf(f64(n))
+let x = [2.0, -0.0, 1e15]
+pvi(i64(x))
+let b = [true, false, true]
+pf(f64(b))
+pvi(i64(b))
+pvi(i64(n))
+pf(f64(x))
+printf("%g\n", tot(n))
+pmf(f64([1, 2; 3, 4]))
+let d: f64[] = (0..3)
+pf(d)
+let m: f64[,] = [1, 2; 3, 4]
+pmf(m)
+pvi(i64(zeros(0)))

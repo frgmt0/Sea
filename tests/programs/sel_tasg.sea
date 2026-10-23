@@ -1,0 +1,111 @@
+// sel_tasg -- tuple assignment to selection, .flat and converting targets (LANGUAGE.md 7.3 as amended by
+// Decision 37, 4.2, 4.5, 5.5, 10.7): selection and .flat targets, fixed <-> dynamic, i64[] ->
+// f64[], ind2sub into dynamic and selection targets, the last store wins, a ref call in a target
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn two() -> (f64[], f64) {
+    return ([7.0, 8.0, 9.0], 5.0)
+}
+fn sc() -> (f64, f64) {
+    return (4.0, 6.0)
+}
+fn fx() -> (f64[2], f64) {
+    return ([1.0, 2.0], 3.0)
+}
+fn fk() -> (f64[2], i64) {
+    return ([1.5, 2.5], 7)
+}
+fn dk() -> (f64[], i64) {
+    return (ones(2), 3)
+}
+fn ik() -> (i64[], i64) {
+    return ((0..3), 4)
+}
+fn lw() -> (f64[], f64) {
+    return ([1.0, 2.0], 9.0)
+}
+fn g(ref k: i64) -> i64 {
+    k += 1
+    return k
+}
+var v = zeros(5)
+var x = 0.0
+(v[1..4], x) = two()
+pf(v)
+printf("%g\n", x)
+var A = zeros(2, 3)
+(A.flat[3], x) = sc()
+pmf(A)
+printf("%g\n", x)
+var B = zeros(2, 2)
+(B[0, :], x) = fx()
+pmf(B)
+printf("%g\n", x)
+var d = zeros(5)
+var k = 0
+(d, k) = fk()
+pf(d)
+printf("%d\n", k)
+var f = [0.0, 0.0]
+(f, k) = dk()
+pf(f)
+printf("%d\n", k)
+(d, k) = ik()
+pf(d)
+printf("%d\n", k)
+var I = filled(0, 0)
+var J = filled(0, 0)
+(I, J) = ind2sub(3, [4, 5, 7])
+pvi(I)
+pvi(J)
+var P = filled(0, 5)
+var Q = filled(0, 0)
+let kk = (3..6)
+(P[1..4], Q) = ind2sub(2, kk)
+pvi(P)
+pvi(Q)
+var M = filled(0, 2, 2)
+(M[0, :], M[1, :]) = ind2sub(3, [4, 5])
+pmi(M)
+var u = zeros(3)
+(u[0..2], u[1]) = lw()
+pf(u)
+var w = zeros(3)
+var j = 0
+var u2 = zeros(3)
+(u2[g(ref j)..3], w[j]) = lw()
+pf(u2)
+pf(w)
+printf("%d\n", j)

@@ -1,0 +1,8 @@
+// err_rt_cvt_first_bad -- i64 of 1.0 2.5 3.5: the first element that is not an integer, 2.5 (LANGUAGE.md
+// 10.1, 9.2; %g spelling)
+var v = zeros(3)
+v[0] = 1.0
+v[1] = 2.5
+v[2] = 3.5
+let n = i64(v)
+printf("%d\n", n[0])

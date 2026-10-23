@@ -1,0 +1,5 @@
+// err_shape_static_arg -- a fixed argument of 3 for an f64[2] parameter (DESIGN.md 3.5.5)
+fn f(v: f64[2]) -> f64 {
+    return v[0]
+}
+let x = f([1.0, 2.0, 3.0])

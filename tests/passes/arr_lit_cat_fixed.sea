@@ -1,0 +1,8 @@
+let a = [1.5, 2.5]
+let v = [a, 4.0, a]
+let m = [1.0, 2.0; 3.0, 4.0]
+let W = [m, m]
+printf("%g %g %d %g %d\n", v[2], v[4], len(v), W[1, 3], cols(W))
+// arr_lit_cat_fixed -- DESIGN.md 3.5.9 L9 (c) with every part fixed-size: a home slot for the
+// result, the length and column sums still written (no check: the row check of line 4 dropped),
+// every offset a constant, the parts' extents their static values

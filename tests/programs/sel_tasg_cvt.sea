@@ -1,0 +1,38 @@
+// sel_tasg_cvt -- converting tuple-assignment components (LANGUAGE.md 7.3 as amended by Decision 37,
+// 4.2, 4.5, 5.5): a fixed i64[3] result into an f64[] target, a dynamic i64[] result into
+// an f64[3] target, scalar f64 and i64 results into selection targets
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn fi() -> (i64[3], i64) {
+    return ([1, 2, 3], 4)
+}
+fn di() -> (i64[], i64) {
+    return ((5..8), 1)
+}
+fn sf() -> (f64, i64) {
+    return (2.5, 6)
+}
+fn si() -> (i64, i64) {
+    return (7, 8)
+}
+var d = zeros(1)
+var k = 0
+(d, k) = fi()
+pf(d)
+printf("%d\n", k)
+var f = [0.0, 0.0, 0.0]
+(f, k) = di()
+pf(f)
+printf("%d\n", k)
+var v = zeros(4)
+(v[0..2], k) = sf()
+pf(v)
+printf("%d\n", k)
+(v[2..4], k) = si()
+pf(v)
+printf("%d\n", k)

@@ -1,0 +1,6 @@
+// err_rt_sel_check_order_mask -- A[m, 9] with a mask of the wrong extent: the mask is dimension 0's check,
+// made before dimension 1 (LANGUAGE.md 5.2, 5.4): 3 vs 2
+let A = zeros(3, 4)
+let m = filled(true, 2)
+let c = A[m, 9]
+printf("%d\n", len(c))

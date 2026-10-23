@@ -1,0 +1,69 @@
+// heap_ew_temps -- element-wise operations, broadcasting, conversions, concatenations, where and ind2sub
+// on temporaries; reassignment and whole-array compound assignment in a loop
+// (DESIGN.md 3.6.6 rules 15, 22, 26)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn mk(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i)
+    }
+    return v
+}
+fn mki(n: i64) -> i64[] {
+    return (0..n) * 2
+}
+fn mkm() -> f64[,] {
+    return [1.0, 2.0; 3.0, 4.0]
+}
+pf(mk(3) + mk(3) * 2.0)
+pmf(mk(2).col * mk(3).row)
+pf(f64(mki(3)) + 0.5)
+pf([mk(2), mk(3)])
+pmf([mkm(), mkm()])
+pvb(mk(3) > 1.0 | mk(3) < 0.5)
+pf(where(mk(3) > 0.5, mk(3), -1.0))
+pf(sqrt(mk(3) * mk(3)))
+var s = mk(2)
+for i in 0..3 {
+    s = s + mk(2)
+}
+pf(s)
+var t = mk(3)
+t += mk(3)
+t *= 2.0
+pf(t)
+let d: f64[] = [1.0, 2.0] + mk(2)
+pf(d)
+let (i, j) = ind2sub(2, mki(3))
+pvi(i)
+pvi(j)

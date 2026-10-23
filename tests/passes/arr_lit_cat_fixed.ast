@@ -1,0 +1,53 @@
+#sea 1
+#target arm64-macos
+#file arr_lit_cat_fixed.sea
+pname 0:1:5 a
+float 0:1:10 #3FF8000000000000
+float 0:1:15 #4004000000000000
+row 0:1:10 2
+array 0:1:9 1
+let 0:1:1 0
+pname 0:2:5 v
+name 0:2:10 a
+float 0:2:13 #4010000000000000
+name 0:2:18 a
+row 0:2:10 3
+array 0:2:9 1
+let 0:2:1 0
+pname 0:3:5 m
+float 0:3:10 #3FF0000000000000
+float 0:3:15 #4000000000000000
+row 0:3:10 2
+float 0:3:20 #4008000000000000
+float 0:3:25 #4010000000000000
+row 0:3:20 2
+array 0:3:9 2
+let 0:3:1 0
+pname 0:4:5 W
+name 0:4:10 m
+name 0:4:13 m
+row 0:4:10 2
+array 0:4:9 1
+let 0:4:1 0
+name 0:5:1 printf
+str 0:5:8 %25g%20%25g%20%25d%20%25g%20%25d%0A
+name 0:5:28 v
+int 0:5:30 2
+index 0:5:28 1
+name 0:5:34 v
+int 0:5:36 4
+index 0:5:34 1
+name 0:5:40 len
+name 0:5:44 v
+call 0:5:40 1
+name 0:5:48 W
+int 0:5:50 1
+int 0:5:53 3
+index 0:5:48 2
+name 0:5:57 cols
+name 0:5:62 W
+call 0:5:57 1
+call 0:5:1 6
+cstmt 0:5:1
+prog 5
+#end

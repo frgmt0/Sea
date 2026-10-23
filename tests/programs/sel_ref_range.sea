@@ -1,0 +1,42 @@
+// sel_ref_range -- ref calls beside range indices (LANGUAGE.md 5.5, 8.3; DESIGN.md 3.6.6 rule 12, 6.2):
+// v[k..k+2] += f64(g(ref k)) selects from the old k, on a dynamic and a fixed vector;
+// A[k, 0..2] += f64(g(ref k)); A[k..1, g(ref k)..3] = 9.0 takes its rows from the old k
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn g(ref k: i64) -> i64 {
+    k += 1
+    return k
+}
+var v: f64[] = [1.0, 1.0, 0.0, 0.0]
+var k = 0
+v[k..k+2] += f64(g(ref k))
+pf(v)
+printf("%d\n", k)
+var f = [1.0, 1.0, 0.0, 0.0]
+k = 0
+f[k..k+2] += f64(g(ref k))
+pf(f)
+var A: f64[,] = [1.0, 1.0; 0.0, 0.0]
+k = 0
+A[k, 0..2] += f64(g(ref k))
+pmf(A)
+var C = zeros(3, 3)
+k = 0
+C[k..1, g(ref k)..3] = 9.0
+pmf(C)
+printf("%d\n", k)

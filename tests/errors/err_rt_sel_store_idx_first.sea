@@ -1,0 +1,8 @@
+// err_rt_sel_store_idx_first -- v[0..9] = val(): the value is evaluated first, then the index check fails
+// before the shape check (LANGUAGE.md 5.5): index 8
+fn val() -> f64[] {
+    printf("val\n")
+    return [1.0, 2.0]
+}
+var v = zeros(5)
+v[0..9] = val()

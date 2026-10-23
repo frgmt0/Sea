@@ -1,0 +1,148 @@
+#sea 1
+#target arm64-macos
+#file arr_tasg_l12.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+slot s3 16 8
+slot s4 16 8
+slot s5 40 8
+li i1 4
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 0:1 1 p5 4 i2 i3 i1 i4
+li i6 1
+li i7 1
+li i8 1
+li i9 1
+rcall sea_arr_new 0:2 1 p10 4 i7 i8 i6 i9
+sa p11 s1
+sa p12 s2
+lf f13 #3FF8000000000000
+call two 0 3 p11 p12 f13
+li i14 1
+li i15 3
+li i16 1
+rcount i17 i18 i14 i15 i16 0 0:3
+ldi i19 p5 - 0 16
+if 1 i18
+chkb i14 i19 0 0:3
+imul i20 i17 i16
+iadd i21 i14 i20
+chkb i21 i19 0 0:3
+endif 1
+li i22 1
+iadd i23 i17 i22
+li i24 0
+isel i25 i18 i23 i24
+li i26 2
+icmp ne i27 i25 i26
+li i28 -1
+chk i27 SHAPE_MISMATCH 0:3 4 i25 i28 i26 i28
+ldi i29 p5 - 0 0
+li i30 1
+icmp ne i31 i29 i30
+if 2 i31
+rcall sea_arr_unique 0:3 1 p32 1 p5
+mov p5 p32
+endif 2
+ldp p33 p5 - 0 40
+li i34 0
+li i35 1
+if 3 i18
+loop 4 i36 i14 i17 i16
+ldf f37 p11 i34 8 0
+stf f37 p33 i36 8 0
+iadd i34 i34 i35
+endloop 4
+endif 3
+li i38 2
+li i39 1
+li i40 1
+li i41 1
+rcall sea_arr_new_u 0:3 1 p42 4 i39 i40 i38 i41
+ldp p43 p42 - 0 40
+li i44 16
+mcopy p43 p12 i44
+release p10
+mov p10 p42
+sa p45 s3
+sa p46 s4
+lf f47 #3FE0000000000000
+call two 0 3 p45 p46 f47
+li i48 1
+ldi i49 p5 - 0 16
+chkb i48 i49 0 0:5
+ldp p50 p5 - 0 40
+ldf f51 p50 i48 8 0
+li i52 3
+ldi i53 p5 - 0 16
+chkb i52 i53 0 0:5
+ldp p54 p5 - 0 40
+ldf f55 p54 i52 8 0
+li i56 1
+ldi i57 p10 - 0 16
+chkb i56 i57 0 0:5
+ldp p58 p10 - 0 40
+ldf f59 p58 i56 8 0
+ldi i60 p10 - 0 16
+li i61 0
+li i62 2
+chkb i61 i62 0 0:5
+ldf f63 p46 i61 8 0
+sa p64 s5
+stf f51 p64 - 0 0
+stf f55 p64 - 0 8
+stf f59 p64 - 0 16
+sti i60 p64 - 0 24
+stf f63 p64 - 0 32
+la p65 d1
+rcall sea_printf 0:5 0 2 p65 p64
+release p10
+release p5
+ret 0
+endfunc
+func two fn 0:9:1 3 p1 p2 f3 0
+slot s1 16 8
+slot s2 16 8
+sa p4 s1
+sa p5 s2
+stf f3 p5 - 0 0
+stf f3 p5 - 0 8
+li i6 16
+mcopy p4 p5 i6
+li i7 0
+li i8 2
+li i9 1
+rcount i10 i11 i7 i8 i9 0 0:11
+if 1 i11
+loop 2 i12 i7 i10 i9
+li i13 2
+chkb i12 i13 0 0:12
+ldf f14 p4 i12 8 0
+lf f15 #3FF0000000000000
+fadd f16 f14 f15
+li i17 2
+chkb i12 i17 0 0:12
+stf f16 p4 i12 8 0
+endloop 2
+endif 1
+li i18 16
+mcopy p1 p4 i18
+li i19 16
+mcopy p2 p4 i19
+ret 0
+endfunc
+fmt d1 10
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

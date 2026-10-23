@@ -1,0 +1,47 @@
+// ew_arith_i64 -- element-wise i64 arithmetic: + - * % unary -, idiv, / gives f64, abs sign min max on
+// i64 arrays, range values in arithmetic (LANGUAGE.md 6.3, 6.5, 6.6, 10.4)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let a = [7, -7, 3]
+let b = [2, 2, -2]
+pvi(a + b)
+pvi(a - b)
+pvi(a * b)
+pvi(a % b)
+pvi(-a)
+pvi(a % 3)
+pvi(idiv(a, b))
+pvi(a * 2)
+pvi(abs(a))
+pvi(sign(a))
+pvi(min(a, b))
+pvi(max(a, 0))
+let r = (0..5)
+pvi(r * r)
+pvi((1..=4) * 10)
+pf(a / b)
+let m = [1, 2; 3, 4]
+pmi(m * m)
+pmi(m - [1, 1; 1, 1])

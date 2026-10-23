@@ -1,0 +1,4 @@
+// err_rt_ew_i64_neg -- element-wise unary - of -2^63: integer overflow (LANGUAGE.md 6.5)
+let a = filled(-9223372036854775808, 2)
+let b = -a
+printf("%d\n", b[0])

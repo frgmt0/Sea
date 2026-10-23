@@ -1,0 +1,4 @@
+// err_rt_sel_dollar -- v[$ - 2..$ + 1] is 3..6: the last position 5 (LANGUAGE.md 5.3, 5.4)
+var v = zeros(5)
+let w = v[$ - 2..$ + 1]
+printf("%d\n", len(w))

@@ -1,0 +1,5 @@
+// err_ns_ind2sub_array -- ind2sub with an array first argument stays the word ind2sub until phase 6, at the
+// call (DESIGN.md 2.6.2 step 4e; Decision 33)
+let rs = filled(3, 2)
+let k = filled(4, 2)
+let (i, j) = ind2sub(rs, k)

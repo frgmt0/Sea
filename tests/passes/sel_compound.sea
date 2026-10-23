@@ -1,0 +1,6 @@
+var v = ones(4)
+v[1..3] += 2.0
+printf("%g %g %g %g\n", v[0], v[1], v[2], v[3])
+// sel_compound -- DESIGN.md 3.5.9 L6, compound form (rule 21): the indices, the selection read
+// into a temporary G (L5), the operation (L7), then the checks, the shape check, the copy on
+// write and the store of G's elements; G is released at the end of the block

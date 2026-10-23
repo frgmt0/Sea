@@ -1,0 +1,15 @@
+var v = zeros(4)
+var d = zeros(1)
+(v[1..3], d) = two(1.5)
+let (p, q) = two(0.5)
+printf("%g %g %g %d %g\n", v[1], v[3], d[1], len(d), q[0])
+// arr_tasg_l12 -- DESIGN.md 3.5.9 L12 (Decision 37): a tuple assignment with a selection target
+// (an L6 store of the fixed-size first result) and a converting component (the fixed-size second
+// result stored into the dynamic d through a dyn, L10), both results first bound by one tbind
+fn two(a: f64) -> (f64[2], f64[2]) {
+    var r = [a, a]
+    for k in 0..2 {
+        r[k] = r[k] + 1.0
+    }
+    return (r, r)
+}

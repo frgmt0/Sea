@@ -1,0 +1,2 @@
+// err_ns_str_literal -- a literal of str elements is strings, at the array node (DESIGN.md 2.6.2 step 4e)
+let names = ["a", "b"]

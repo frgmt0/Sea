@@ -1,12 +1,14 @@
 """Sub-phase 4d corpus: programs/ and errors/ tests of the dynamic arrays core (DESIGN.md 6.2 "4d").
 
 Run with `timeout 120 uv run --no-project python tests/vectors/arr4d_cases.py`. It writes the
-programs/arr_*, programs/heap_* and errors/err_rt_arr_*, errors/err_ns_arr_* tests below. Every
-expected output is written out by hand in this file from LANGUAGE.md (4.5, 5, 7.3, 7.5, 7.7, 8.3,
-9.2, 10.2, 10.4, 10.7, 11.1); the comment beside each case gives the derivation. Nothing here runs
-the compiler. The run-time error line of an errors/ test is the line of the source that holds the
-marker text given with it, and a compile error's column is that of its marker inside that line
-(both computed from the source text, so they cannot drift from it).
+programs/arr_*, programs/heap_*, errors/err_rt_arr_*, errors/err_ns_arr_str_elem and
+errors/err_ns_lib_{max1,min1} tests below. Every expected output is written out by hand in this
+file from LANGUAGE.md (4.5, 5, 7.3, 7.5, 7.7, 8.3, 9.2, 10.2, 10.4, 10.7, 11.1); the comment
+beside each case gives the derivation. Nothing here runs the compiler. The run-time error line of
+an errors/ test is the line of the source that holds the marker text given with it, and a compile
+error's column is that of its marker inside that line (both computed from the source text, so
+they cannot drift from it). The eight `arrays` phase-rule cases of 4d were retired by step 4e
+(see the end of the file).
 """
 
 import os
@@ -1116,36 +1118,16 @@ printf("%d %d %g\\n", len(r), c, r[0])
 ''')
 
 # ================================================================ phase-rule errors of step 4d (2.6.2)
+# (the eight `arrays` cases of 4d, err_ns_arr_{range_index,all_index,view,ew,elem_arg,max2,cvt,
+# fixed_local}, were retired by step 4e: their programs compile from 4e, DESIGN.md 6.2 "4e";
+# arr4e_cases.py deletes their goldens and tests the constructs instead)
 NS = 'not supported yet: %s'
-err_c('err_ns_arr_range_index', ['4d: an index that is a range is still arrays, at the index\'s node',
-                                 '(DESIGN.md 2.6.2 step 4d)'],
-      'let v = zeros(4)\nlet w = v[1..3]\n', 'let w', '1..3', NS % 'arrays')
-err_c('err_ns_arr_all_index', ['4d: a : index is still arrays, at the index\'s node (DESIGN.md 2.6.2 step 4d)'],
-      'let A = zeros(2, 2)\nlet c = A[:, 0]\n', 'let c', ':', NS % 'arrays')
-err_c('err_ns_arr_view', ['4d: a view is still arrays, at its field node, whose position is the start of the',
-                          'operand (DESIGN.md 2.6.2 step 4d, 3.3)'],
-      'let A = zeros(2, 3)\nlet B = A.T\n', 'let B', 'A.T', NS % 'arrays')
-err_c('err_ns_arr_ew', ['4d: an element-wise operator with an array operand is still arrays, at the operator',
-                        'node (DESIGN.md 2.6.2 step 4d, 3.3)'],
-      'let v = zeros(3)\nlet w = 2.0 * v\n', 'let w', '2.0', NS % 'arrays')
-err_c('err_ns_arr_elem_arg', ['4d: an array argument of an elemental library function is still arrays, at the',
-                              'call (DESIGN.md 2.6.2 step 4d)'],
-      'let v = ones(3)\nlet w = sqrt(v)\n', 'let w', 'sqrt', NS % 'arrays')
-err_c('err_ns_arr_max2', ['4d: max(v, x) with an array argument is arrays, at the call (DESIGN.md 2.6.2',
-                          'step 4d)'],
-      'let v = ones(3)\nlet w = max(v, 0.5)\n', 'let w', 'max', NS % 'arrays')
 err_c('err_ns_lib_max1', ['4d: max(v) of one vector (a reduction, 4f) is still the name max, at the call',
                           '(DESIGN.md 2.6.2 step 4d)'],
       'let v = ones(3)\nprintf("%g\\n", max(v))\n', 'printf', 'max', NS % 'max')
 err_c('err_ns_lib_min1', ['4d: min(v) of one vector is still the name min, at the call (DESIGN.md 2.6.2',
                           'step 4d)'],
       'let v = ones(3)\nlet m = min(v)\n', 'let m', 'min', NS % 'min')
-err_c('err_ns_arr_cvt', ['4d: an array conversion f64(a) is still arrays, at the conv node (DESIGN.md 2.6.2',
-                         'step 4d)'],
-      'let a = filled(1, 3)\nlet b = f64(a)\n', 'let b', 'f64(a)', NS % 'arrays')
-err_c('err_ns_arr_fixed_local', ['4d: a fixed-size array type of a let annotation is still arrays, at its',
-                                 'type node (DESIGN.md 2.6.2 step 4d, 3.4.2)'],
-      'let v: f64[2] = zeros(2)\n', 'let v', 'f64[2]', NS % 'arrays')
 err_c('err_ns_arr_str_elem', ['4d: str[] is still strings, at the parameter (DESIGN.md 2.6.2 step 4d)'],
       'fn f(s: str[]) -> i64 {\n    return 1\n}\n', 'fn f', 's: str[]', NS % 'strings')
 

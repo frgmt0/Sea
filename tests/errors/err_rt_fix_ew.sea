@@ -1,0 +1,4 @@
+// err_rt_fix_ew -- a fixed f64[3] times a dynamic vector is dynamic (DESIGN.md 3.5.5), so binding it to
+// f64[2] is the run-time check (LANGUAGE.md 4.5)
+let s: f64[2] = [1.0, 2.0, 3.0] * zeros(3)
+printf("%g\n", s[0])

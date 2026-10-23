@@ -1,0 +1,1 @@
+err_view_rank_fixed.sea:3:9: error: view .row is not defined for i64[2,2]

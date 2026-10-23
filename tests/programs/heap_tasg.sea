@@ -1,0 +1,26 @@
+// heap_tasg -- tuple assignments that discard or replace dynamic results (LANGUAGE.md 7.3; DESIGN.md
+// 3.5.9 L12, 3.6.6 rules 15 (h), (j), 16): `_` with a dynamic result, converted and selection
+// targets in a loop
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn two() -> (f64[], f64) {
+    return ([7.0, 8.0, 9.0], 5.0)
+}
+var x = 0.0
+var d = zeros(1)
+var v = zeros(4)
+for i in 0..3 {
+    (_, x) = two()
+    (d, _) = two()
+    (v[1..4], x) = two()
+}
+printf("%g\n", x)
+pf(d)
+pf(v)
+let (_, y) = two()
+printf("%g\n", y)

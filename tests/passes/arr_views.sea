@@ -1,0 +1,7 @@
+var A = zeros(2, 3)
+A[1, 0] = 4.0
+let B = A.T
+let f = A.flat
+printf("%g %d %g %d\n", B[0, 1], rows(B), f[1], len(f))
+// arr_views -- DESIGN.md 3.5.9 L10 (rule 28 materialized): .T copies by the loop nest (operand
+// element (J, I) to result element (I, J)), .flat copies the bytes (mcpy)

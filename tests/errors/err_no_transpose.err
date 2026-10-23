@@ -1,0 +1,1 @@
+err_no_transpose.sea:3:9: error: vector has no transpose: use .row or .col

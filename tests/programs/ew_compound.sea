@@ -1,0 +1,41 @@
+// ew_compound -- compound assignment of whole arrays (a += b; LANGUAGE.md 7.3, 6.3; DESIGN.md 3.6.6
+// rule 15 (i)), a dynamic matrix whose shape changes by broadcasting, fixed and i64 operands
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+var a = zeros(3)
+a += ones(3)
+a *= 2.0
+a -= [0.5, 1.0, 1.5]
+pf(a)
+var m = zeros(1, 3)
+m += ones(2, 1)
+pmf(m)
+var f = [1.0, 2.0]
+f += [10.0, 20.0]
+f /= 2.0
+pf(f)
+var n = filled(3, 2)
+n *= n
+pvi(n)

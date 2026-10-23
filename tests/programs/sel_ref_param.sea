@@ -1,0 +1,39 @@
+// sel_ref_param -- selection stores into ref parameters (LANGUAGE.md 8.3, 5.5, 4.5): the caller's other
+// variable sharing the array is unchanged (copy on write); a compound row store; a mask store
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn clear(ref v: f64[], k: i64) {
+    v[0..k] = 0.0
+}
+fn addrow(ref A: f64[,], r: i64, x: f64[]) {
+    A[r, :] += x
+}
+fn clip(ref v: f64[]) {
+    v[v < 0.0] = 0.0
+}
+var a = ones(4)
+let b = a
+clear(ref a, 2)
+pf(a)
+pf(b)
+var A = zeros(2, 3)
+addrow(ref A, 1, [1.0, 2.0, 3.0])
+pmf(A)
+var c: f64[] = [-1.0, 2.0, -3.0]
+clip(ref c)
+pf(c)

@@ -36,6 +36,7 @@
 3305 REM ---- lv: no instruction (rule 1), mov into a dest (rule 2), a load for a ref parameter -----
 3306 REM (the register of a local is its own, or the one it names, A(.,3): sea.hirl T1, T3, 30 (1))
 3310 LET A1 = H(X, 5)
+3312 IF V(A1, 0) = 1 THEN 40700
 3315 IF A(G(F0, 0) + A1, 2) = 1 THEN 3385
 3320 LET R9 = A(G(F0, 0) + A1, 3)
 3321 IF R9 > 0 THEN 3325
@@ -185,6 +186,7 @@
 4015 RETURN
 4020 REM ---- ifx: c; if B c; R = then; else B; R = else; endif B (rule 3) ---------------------------
 4025 LET S = 7
+4027 GOSUB 40770
 4030 GOTO 7370
 4035 GOSUB 7885
 4040 LET W(W0 + 4) = B7
@@ -193,17 +195,23 @@
 4055 GOSUB 7500
 4060 LET L1$ = L1$ & Z$
 4065 GOSUB 7695
+4068 LET D2 = W(W0 + 5)
+4069 IF D2 > 0 THEN 4075
 4070 GOSUB 3985
 4075 LET W(W0 + 3) = D2
 4080 LET S = 8
 4085 LET X1 = H(H(X, 7), 8)
 4090 LET D1 = D2
+4092 IF W(W0 + 5) = 0 THEN 4095
+4093 LET D1 = 0
 4095 GOTO 7380
 4100 LET L1$ = "else " & STR$(W(W0 + 4))
 4105 GOSUB 7695
 4110 LET S = 9
 4115 LET X1 = H(H(H(X, 7), 8), 8)
 4120 LET D1 = W(W0 + 3)
+4122 IF W(W0 + 5) = 0 THEN 4125
+4123 LET D1 = 0
 4125 GOTO 7380
 4130 LET L1$ = "endif " & STR$(W(W0 + 4))
 4135 GOSUB 7695
@@ -270,6 +278,7 @@
 4440 REM ---- call: the arguments left to right (rarg by rule 12), call, the reloads (rules 2, 5) ---
 4445 REM frame: x1 = U0 at entry (the arguments are U(x1+1 ..)), x2 = the next argument
 4450 IF H(X, 5) > G0 THEN 2360
+4452 GOSUB 40850
 4455 LET W(W0 + 3) = U0
 4460 LET W(W0 + 4) = H(X, 7)
 4465 LET X2 = W(W0 + 4)
@@ -289,6 +298,7 @@
 4530 LET R9 = A1
 4535 LET Q5 = 0
 4540 IF A(G(F0, 0) + A1, 2) = 1 THEN 4630
+4542 IF V(A1, 0) = 1 THEN 4630
 4545 LET Z1 = E7
 4550 IF V(A1, 1) = 1 THEN 4560
 4555 LET Z1 = E8
@@ -320,7 +330,8 @@
 4675 LET Q6 = Z5
 4680 LET R9 = 0
 4685 IF D = -1 THEN 4745
-4690 IF D = -2 THEN 4750
+4690 IF D = -2 THEN 4748
+4691 IF D < -2 THEN 4748
 4695 IF Q6 = 0 THEN 4745
 4700 IF Q6 <> 1 THEN 2360
 4705 LET C1 = POS("ifp", SEG$(Z5$, 2, 2))
@@ -332,6 +343,7 @@
 4735 LET A2 = U0
 4740 GOTO 4760
 4745 LET Q6 = 0
+4748 GOSUB 40900
 4750 LET A2 = A1
 4755 REM the results are U(A2-Q6+1 .. A2), the arguments U(W(W0+3)+1 .. W(W0+3)+n)
 4760 FOR I = A2 - Q6 + 1 TO A2
@@ -345,18 +357,7 @@
 4800 LET U(I, 2) = A3
 4805 NEXT X6
 4810 NEXT I
-4815 LET L1$ = "call " & S$(G(H(X, 5), 1)) & " " & STR$(Q6)
-4820 FOR I = A2 - Q6 + 1 TO A2
-4825 LET V1 = U(I, 1)
-4830 GOSUB 7500
-4835 LET L1$ = L1$ & " " & Z$
-4840 NEXT I
-4845 LET L1$ = L1$ & " " & STR$(H(X, 6))
-4850 FOR I = W(W0 + 3) + 1 TO W(W0 + 3) + H(X, 6)
-4855 LET V1 = U(I, 1)
-4860 GOSUB 7500
-4865 LET L1$ = L1$ & " " & Z$
-4870 NEXT I
+4815 GOSUB 40930
 4875 GOSUB 7695
 4880 REM rule 12: reload each slot argument's local, in argument order
 4885 FOR I = W(W0 + 3) + 1 TO W(W0 + 3) + H(X, 6)
@@ -378,6 +379,9 @@
 4965 NEXT I
 4967 GOSUB 18260
 4970 LET U0 = W(W0 + 3)
+4972 IF D > -3 THEN 4975
+4973 LET R9 = U(U0, 1)
+4974 LET U0 = U0 - Q6
 4975 GOTO 3090
 4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14)-------------------------
 4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  "
@@ -528,6 +532,7 @@
 5705 REM ---- bind: the value with the local as dest (rule 2) ---------------------------------------
 5710 LET S = 18
 5712 IF H(X, 6) = 1 THEN 33200
+5713 IF V(H(X, 5), 0) = 1 THEN 41000
 5715 LET X1 = H(X, 7)
 5720 LET D1 = H(X, 5)
 5725 GOTO 7380
@@ -542,6 +547,9 @@
 5770 GOSUB 7970
 5775 LET U(U0, 2) = 0
 5780 LET U(U0, 1) = M(H(X, 0) + I - 1)
+5781 LET T5 = M(T(Z6, 3) + I - 1)
+5782 GOSUB 40600
+5783 IF F5 = 1 THEN 41070
 5785 IF U(U0, 1) > 0 THEN 5810
 5790 LET T1 = M(T(Z6, 3) + I - 1)
 5795 GOSUB 7395
@@ -565,6 +573,7 @@
 6080 LET A1 = H(X2, 5)
 6085 LET X1 = H(X2, 8)
 6090 LET D1 = 0
+6092 IF V(A1, 0) = 1 THEN 41050
 6095 IF A(G(F0, 0) + A1, 2) = 1 THEN 6205
 6097 IF V(A1, 1) = 3 THEN 14830
 6100 IF H(X, 5) > 1 THEN 6120
@@ -776,7 +785,9 @@
 7120 LET X1 = W(W0 + 4)
 7125 LET D1 = 0
 7130 GOTO 7380
-7135 GOSUB 7970
+7135 GOSUB 41120
+7136 IF F5 = 1 THEN 7145
+7137 GOSUB 7970
 7140 LET U(U0, 1) = R9
 7142 GOSUB 16530
 7145 LET W(W0 + 4) = H(W(W0 + 4), 8)
@@ -784,12 +795,16 @@
 7155 GOSUB 16560
 7160 GOTO 3090
 7165 REM 7170: ret of the registers U(W(W0+3)+1 .. U0); U0 back to W(W0+3)
-7170 LET L1$ = "ret " & STR$(U0 - W(W0 + 3))
+7170 LET L1$ = ""
+7172 LET Z4 = 0
 7175 FOR I = W(W0 + 3) + 1 TO U0
+7177 IF V(U(I, 1), 0) = 1 THEN 7195
 7180 LET V1 = U(I, 1)
 7185 GOSUB 7500
 7190 LET L1$ = L1$ & " " & Z$
+7192 LET Z4 = Z4 + 1
 7195 NEXT I
+7197 LET L1$ = "ret " & STR$(Z4) & L1$
 7200 GOSUB 7695
 7205 LET U0 = W(W0 + 3)
 7210 RETURN
@@ -801,6 +816,9 @@
 7240 IF T(Z6, 1) <> 2 THEN 2360
 7245 FOR I = 1 TO T(Z6, 2)
 7250 LET T1 = M(T(Z6, 3) + I - 1)
+7252 LET T5 = T1
+7253 GOSUB 40600
+7254 IF F5 = 1 THEN 41102
 7255 GOSUB 7395
 7260 GOSUB 7420
 7265 GOSUB 7970
@@ -841,6 +859,7 @@
 7435 LET N2 = V0
 7440 LET V(N2, 1) = C1
 7445 LET V(N2, 2) = 0
+7446 LET V(N2, 0) = 0
 7450 IF V0 <= V9 THEN 7460
 7455 LET V9 = V0
 7460 RETURN
@@ -953,15 +972,19 @@
 7990 LET J(J0, 1) = W(W0 + 3)
 7992 LET J(J0, 3) = J9
 7995 RETURN
-8100 REM ---- reading tasg: n, then one cv flag (0 or 1) per target, kept in M from H(H1, 0) ------
+8100 REM ---- reading tasg: n, then one cv flag per target (0, or 1 of a scalar result, R10), in M
 8105 LET H(H1, 6) = I(2)
 8110 LET H(H1, 0) = M1 + 1
 8115 LET Q2$ = "nodes"
 8120 IF M1 + I(2) > 199999 THEN 2375
+8122 GOSUB 41772
 8125 FOR I = 1 TO I(2)
 8130 LET M1 = M1 + 1
 8135 LET M(M1) = VAL(G$(3 + I))
 8140 IF M(M1) > 1 THEN 2360
+8141 IF M(M1) = 0 THEN 8145
+8142 IF E9 = 0 THEN 8145
+8143 IF M(T(E9, 3) + I - 1) > 9 THEN 2360
 8145 NEXT I
 8150 GOTO 1285
 8195 REM ---- tasg (t1 .. tn) = call (rule 2): Ri on U; U(.,2) = -(L + 100000 cv + 200000 if L is a
@@ -1009,6 +1032,9 @@
 8367 GOTO 8357
 8370 LET U(U0, 2) = -A2
 8375 LET T1 = M(T(Z6, 3) + I - 1)
+8376 LET T5 = T1
+8377 GOSUB 40600
+8378 IF F5 = 1 THEN 41080
 8380 GOSUB 7395
 8382 GOSUB 7420
 8385 LET U(U0, 1) = N2
@@ -1032,6 +1058,7 @@
 8430 LET A3 = 1
 8435 LET A2 = A2 - 200000
 8440 LET V2 = U(I, 1)
+8441 IF V(V2, 0) = 1 THEN 41092
 8445 IF A2 < 100000 THEN 8465
 8450 LET A2 = A2 - 100000
 8452 LET C1 = 2

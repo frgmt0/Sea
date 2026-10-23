@@ -1,0 +1,52 @@
+// sel_alias -- aliasing: selection stores whose value reads the target (shifts, reversal, swap,
+// a fixed-size value that is the target itself; LANGUAGE.md 5.5 "Aliasing")
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmf(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+var v: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0]
+let n = len(v)
+v[1..n] = v[0..n-1]
+pf(v)
+v[0..n-1] = v[1..n]
+pf(v)
+v[:] = v[$ - 1..=0 step -1]
+pf(v)
+v[[2, 3]] = v[[3, 2]]
+pf(v)
+v[1..4] = v[0..3] * 2.0 + v[2..5]
+pf(v)
+var A: f64[,] = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0]
+A[1..3, :] = A[0..2, :]
+pmf(A)
+A[:, 0] = A[:, 1] + A[:, 0]
+pmf(A)
+A.flat[1..6] = A.flat[0..5]
+pmf(A)
+A = A.T
+pmf(A)
+var F = [1, 2, 3, 4]
+F[1..4] = F[0..3]
+pvi(F)
+F[[3, 2, 1, 0]] = F
+pvi(F)

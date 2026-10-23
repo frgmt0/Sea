@@ -1,0 +1,10 @@
+// err_rt_tasg_fix -- a dynamic result of 3 elements into a fixed f64[2] target of a tuple assignment: the
+// run-time check of 4.5 at the statement's line (LANGUAGE.md 7.3 as amended by Decision
+// 37; the earlier target k is stored first)
+fn dy() -> (i64, f64[]) {
+    return (1, zeros(3))
+}
+var k = 0
+var f = [0.0, 0.0]
+(k, f) = dy()
+printf("%d\n", k)

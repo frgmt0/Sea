@@ -1,0 +1,33 @@
+#sea 1
+#target arm64-macos
+#file sel_compound.sea
+pname 0:1:5 v
+name 0:1:9 ones
+int 0:1:14 4
+call 0:1:9 1
+var 0:1:1 0
+name 0:2:1 v
+int 0:2:3 1
+int 0:2:6 3
+range 0:2:3 0 0
+index 0:2:1 1
+float 0:2:12 #4000000000000000
+asg 0:2:1 add
+name 0:3:1 printf
+str 0:3:8 %25g%20%25g%20%25g%20%25g%0A
+name 0:3:25 v
+int 0:3:27 0
+index 0:3:25 1
+name 0:3:31 v
+int 0:3:33 1
+index 0:3:31 1
+name 0:3:37 v
+int 0:3:39 2
+index 0:3:37 1
+name 0:3:43 v
+int 0:3:45 3
+index 0:3:43 1
+call 0:3:1 5
+cstmt 0:3:1
+prog 3
+#end

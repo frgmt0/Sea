@@ -1,0 +1,6 @@
+// err_rt_fix_return -- a dynamic array returned as f64[2] (LANGUAGE.md 4.5)
+fn mk() -> f64[2] {
+    return zeros(3)
+}
+let a = mk()
+printf("%g\n", a[0])

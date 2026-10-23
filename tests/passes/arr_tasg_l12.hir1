@@ -1,0 +1,88 @@
+#sea 1
+#target arm64-macos
+#file arr_tasg_l12.sea
+tvec 10 4
+tfvec 11 4 2
+tvec 12 3
+ttuple 13 2 11 11
+fn 1 .main main 1 0 4 0:1:1
+loc v 10 var 0:1:5
+loc d 10 var 0:2:5
+loc p 11 let 0:4:6
+loc q 11 let 0:4:9
+ci 0:1:15 3 4
+lib 0:1:9 10 zeros 1
+bind 0:1:1 1
+ci 0:2:15 3 1
+lib 0:2:9 10 zeros 1
+bind 0:2:1 2
+lv 0:3:2 10 1
+ci 0:3:4 3 1
+ci 0:3:7 3 3
+rng 0:3:4 12 0 0
+idx 0:3:2 10 1
+lv 0:3:11 10 2
+cf 0:3:20 4 #3FF8000000000000
+call 0:3:16 13 2 1
+tasg 0:3:1 2 0 2
+cf 0:4:18 4 #3FE0000000000000
+call 0:4:14 13 2 1
+tbind 0:4:1 2 3 4
+lv 0:5:28 10 1
+ci 0:5:30 3 1
+idx 0:5:28 4 1
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %20
+lv 0:5:34 10 1
+ci 0:5:36 3 3
+idx 0:5:34 4 1
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %20
+lv 0:5:40 10 2
+ci 0:5:42 3 1
+idx 0:5:40 4 1
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %20
+lv 0:5:50 10 2
+lib 0:5:46 3 len 1
+fconv 0:5:8 1 - - - d
+ftext 0:5:8 1 %20
+lv 0:5:54 11 4
+ci 0:5:56 3 0
+idx 0:5:54 4 1
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %0A
+fmt 0:5:8 1 10
+lib 0:5:1 1 printf 1
+eval 0:5:1
+block 0:1:1 5
+end
+fn 2 two fn 13 1 2 0:9:1
+par a 4 val
+loc r 11 var 0:10:9
+loc k 3 for 0:11:9
+lv 0:10:14 4 1
+lv 0:10:17 4 1
+row 0:10:14 11 2
+arr 0:10:13 11 1
+bind 0:10:5 2
+ci 0:11:14 3 0
+ci 0:11:17 3 2
+rng 0:11:14 12 0 0
+lv 0:12:9 11 2
+lv 0:12:11 3 3
+idx 0:12:9 4 1
+lv 0:12:16 11 2
+lv 0:12:18 3 3
+idx 0:12:16 4 1
+cf 0:12:23 4 #3FF0000000000000
+bin 0:12:16 4 add
+asg 0:12:9 set
+block 0:11:19 1
+forr 0:11:5 3
+lv 0:14:13 11 2
+lv 0:14:16 11 2
+ret 0:14:5 2
+block 0:9:36 3
+end
+#end

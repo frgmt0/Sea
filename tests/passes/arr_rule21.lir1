@@ -1,0 +1,145 @@
+#sea 1
+#target arm64-macos
+#file arr_rule21.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 8 8
+call two 2 p1 p2 0
+lf f3 #0000000000000000
+ldi i4 p1 - 0 16
+ldi i5 p2 - 0 16
+icmp ne i6 i4 i5
+li i7 -1
+chk i6 SHAPE_MISMATCH 0:5 4 i4 i7 i5 i7
+ldi i8 p1 - 0 0
+li i9 1
+icmp ne i10 i8 i9
+if 1 i10
+rcall sea_arr_unique 0:5 1 p11 1 p1
+mov p1 p11
+endif 1
+ldp p12 p1 - 0 40
+ldp p13 p2 - 0 40
+li i14 0
+icmp gt i15 i4 i14
+if 2 i15
+li i16 1
+isub i17 i4 i16
+loop 3 i18 i14 i17 i16
+ldb i19 p13 i18 1 0
+if 4 i19
+stf f3 p12 i18 8 0
+endif 4
+endloop 3
+endif 2
+li i20 0
+ldi i21 p1 - 0 16
+chkb i20 i21 0 0:6
+ldp p22 p1 - 0 40
+ldf f23 p22 i20 8 0
+li i24 1
+ldi i25 p1 - 0 16
+chkb i24 i25 0 0:6
+ldp p26 p1 - 0 40
+ldf f27 p26 i24 8 0
+li i28 2
+ldi i29 p1 - 0 16
+chkb i28 i29 0 0:6
+ldp p30 p1 - 0 40
+ldf f31 p30 i28 8 0
+sa p32 s1
+stf f23 p32 - 0 0
+stf f27 p32 - 0 8
+stf f31 p32 - 0 16
+la p33 d1
+rcall sea_printf 0:6 0 2 p33 p32
+call two 2 p34 p35 0
+release p35
+li i36 3
+ldi i37 p34 - 0 16
+chkb i36 i37 0 0:8
+ldp p38 p34 - 0 40
+ldf f39 p38 i36 8 0
+sa p40 s2
+stf f39 p40 - 0 0
+la p41 d2
+rcall sea_printf 0:8 0 2 p41 p40
+release p34
+release p2
+release p1
+ret 0
+endfunc
+func two fn 0:9:1 0 2 p p
+li i1 4
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new_u 0:10 1 p5 4 i2 i3 i1 i4
+lf f6 #3FF0000000000000
+ldp p7 p5 - 0 40
+li i8 0
+icmp gt i9 i1 i8
+if 1 i9
+li i10 1
+isub i11 i1 i10
+loop 2 i12 i8 i11 i10
+stf f6 p7 i12 8 0
+endloop 2
+endif 1
+li i13 1
+li i14 4
+li i15 3
+li i16 1
+li i17 1
+rcall sea_arr_new_u 0:11 1 p18 4 i15 i16 i14 i17
+ldp p19 p18 - 0 40
+li i20 0
+icmp gt i21 i14 i20
+if 3 i21
+li i22 1
+isub i23 i14 i22
+loop 4 i24 i20 i23 i22
+stb i13 p19 i24 1 0
+endloop 4
+endif 3
+li i25 0
+li i26 2
+li i27 1
+rcount i28 i29 i25 i26 i27 0 0:12
+if 5 i29
+loop 6 i30 i25 i28 i27
+li i31 0
+li i32 2
+imulc i33 i32 i30 0:13
+li i34 1
+iaddc i35 i33 i34 0:13
+ldi i36 p18 - 0 16
+chkb i35 i36 0 0:13
+ldi i37 p18 - 0 0
+li i38 1
+icmp ne i39 i37 i38
+if 7 i39
+rcall sea_arr_unique 0:13 1 p40 1 p18
+mov p18 p40
+endif 7
+ldp p41 p18 - 0 40
+stb i31 p41 i35 1 0
+endloop 6
+endif 5
+retain p5
+retain p18
+release p18
+release p5
+ret 2 p5 p18
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

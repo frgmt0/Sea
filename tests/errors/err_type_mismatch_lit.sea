@@ -1,0 +1,3 @@
+// err_type_mismatch_lit -- [true, 1]: no common element type, at the first element that does not combine
+// (LANGUAGE.md 6.9; DESIGN.md 3.5.5)
+let x = [true, 1]

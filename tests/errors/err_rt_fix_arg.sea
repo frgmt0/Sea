@@ -1,0 +1,5 @@
+// err_rt_fix_arg -- a dynamic argument for an f64[4] parameter (LANGUAGE.md 4.5)
+fn s4(v: f64[4]) -> f64 {
+    return v[0]
+}
+printf("%g\n", s4(zeros(3)))

@@ -1,0 +1,1 @@
+err_shape_static_assign.sea:3:5: error: shape mismatch: 2 vs 3

@@ -25,18 +25,22 @@
 7700 IF D = 0 THEN 7710
 7705 CALL "er": N(), X(), X$(), I, "COND_BOOL", "", "", "", 0
 7710 SUBEND
-7715 REM ---- ck_tgt: R = the local assigned by target G (a var or a ref parameter, or one element of
-7720 REM such a local, LANGUAGE 7.3, 5.5), or 0 after an error: immutable locals, constants,
-7725 REM functions and other expressions ------------------------------------------------------
+7715 REM ---- ck_tgt: R = the local assigned by target G (a var or a ref parameter, one element or a
+7720 REM selection of such a local, or of its .flat view; LANGUAGE 7.3, 5.5, 5.6), or 0 after an
+7725 REM error: immutable locals, constants, functions, .T .col .row and other expressions ---------
 7730 SUB "ck_tgt": N(), M(), Y(), S$(), X(), X$(), G, R
 7735 LET R = 0
 7740 LET B = G
 7745 IF N(G, 0) = 30 THEN 7775
 7750 IF M(G, 1) = 0 THEN 7830
 7755 IF N(G, 0) <> 39 THEN 7825
-7760 REM an element: the base is the local assigned
+7760 REM an element or a selection: the base is the local assigned, or its .flat view
 7765 LET B = N(G, 7)
-7770 IF N(B, 0) <> 30 THEN 7825
+7770 IF N(B, 0) = 30 THEN 7775
+7771 IF N(B, 0) <> 43 THEN 7825
+7772 IF S$(N(B, 6)) <> "flat" THEN 7825
+7773 LET B = N(B, 7)
+7774 IF N(B, 0) <> 30 THEN 7825
 7775 LET S = M(B, 2)
 7780 IF S = 0 THEN 7830
 7785 IF S < 0 THEN 7825
@@ -233,13 +237,21 @@
 8740 LET D = M(G, 1)
 8745 IF R = 0 THEN 9035
 8750 IF D = 0 THEN 9035
-8755 IF O > 1 THEN 8830
+8752 CALL "elt": T(), D, D1, K1
+8753 REM S8 = 1: a selection target (an index whose type is an array, LANGUAGE 5.5)
+8754 LET S8 = 0
+8756 IF N(G, 0) <> 39 THEN 8758
+8757 LET S8 = INT((K1 + 1) / 2)
+8758 IF O > 1 THEN 8830
 8760 REM =: a multiple-result call to one target is a result count error (LANGUAGE 8.4)
 8765 LET V = M(E, 1)
-8770 IF V < 10 THEN 8790
-8775 IF T(V, 0) <> 7 THEN 8790
+8770 IF V < 10 THEN 8786
+8775 IF T(V, 0) <> 7 THEN 8786
 8780 CALL "er": N(), X(), X$(), E, "RESULT_COUNT", STR$(T(V, 1)), "1", "", 2
 8785 GOTO 9040
+8786 IF S8 = 0 THEN 8790
+8787 CALL "csel": N(), M(), T(), C(), X(), X$(), E, D
+8788 GOTO 9040
 8790 REM a candidate var stores an f64 (Decision 8), else the value converts to the target
 8795 IF Y(R, 6) = 0 THEN 8820
 8800 IF D <> 3 THEN 8820
@@ -250,7 +262,7 @@
 8825 GOTO 9040
 8830 CALL "vu": N(), M(), T(), X(), X$(), E, V
 8835 IF V = 0 THEN 9040
-8840 REM an array target or value: the element types must suit the operator; then from 4e (arrays)
+8840 REM the element types must suit the operator; an array target or value is broadcast (aop)
 8845 CALL "elt": T(), D, D1, K1
 8850 CALL "elt": T(), V, V1, K2
 8855 IF D1 = 2 THEN 9005
@@ -258,10 +270,8 @@
 8865 IF V1 > 4 THEN 9005
 8870 IF D1 > 4 THEN 9005
 8875 IF K1 + K2 = 0 THEN 8900
-8880 IF V <> -1 THEN 8890
-8885 CALL "stl": N(), M(), C(), X(), X$(), E, D1
-8890 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "arrays", "", "", 1
-8895 GOTO 9040
+8880 CALL "aop": N(), M(), T(), C(), X(), X$(), I, E, D, V, O
+8885 GOTO 9040
 8900 IF V <> -1 THEN 8915
 8905 CALL "stl": N(), M(), C(), X(), X$(), E, D
 8910 LET V = M(E, 1)
@@ -319,7 +329,7 @@
 9170 LET V = 0
 9175 LET G = N(I, 7)
 9180 FOR J = 1 TO H
-9185 REM M(target,4) = 1: the i64 result is converted to the f64 target (the cv flag of tasg)
+9185 REM M(target,4): the cv of tasg (1 i64 to f64, 2 dyn, 4 fix; tcv for arrays, Decision 37)
 9190 LET M(G, 4) = 0
 9195 IF N(G, 0) = 11 THEN 9295
 9200 CALL "ck_tgt": N(), M(), Y(), S$(), X(), X$(), G, R
@@ -329,6 +339,8 @@
 9220 LET D0 = M(G, 1)
 9225 IF D = D0 THEN 9295
 9230 IF D0 = 0 THEN 9295
+9231 CALL "tcv": N(), M(), T(), X(), X$(), G, D, D0, Z
+9232 IF Z = 1 THEN 9295
 9235 IF D <> 3 THEN 9255
 9240 IF D0 <> 4 THEN 9255
 9245 LET M(G, 4) = 1

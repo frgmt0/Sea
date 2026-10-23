@@ -1,0 +1,5 @@
+// err_rt_ew_vec -- vectors of 3 and 4 elements: shape mismatch: 3 vs 4 (LANGUAGE.md 6.3)
+let a = zeros(3)
+let b = zeros(4)
+let c = a + b
+printf("%d\n", len(c))

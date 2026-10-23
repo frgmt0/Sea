@@ -1,0 +1,4 @@
+// err_rt_sel_mat_order -- A[0..5, 0..9]: dimension 0 is checked before dimension 1 (LANGUAGE.md 5.4)
+let A = zeros(2, 3)
+let B = A[0..5, 0..9]
+printf("%d\n", rows(B))

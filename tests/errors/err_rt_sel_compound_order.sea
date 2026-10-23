@@ -1,0 +1,8 @@
+// err_rt_sel_compound_order -- v[0..9] += val(): the read and its checks come before e, so val is never
+// called (LANGUAGE.md 5.5)
+fn val() -> f64 {
+    printf("val\n")
+    return 1.0
+}
+var v = zeros(5)
+v[0..9] += val()

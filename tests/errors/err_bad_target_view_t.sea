@@ -1,0 +1,4 @@
+// err_bad_target_view_t -- an element of A.T as an assignment target (LANGUAGE.md 5.6, 7.3: only .flat is a
+// target), at the target
+var A = zeros(2, 2)
+A.T[0, 1] = 5.0

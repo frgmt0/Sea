@@ -1,0 +1,6 @@
+// err_rt_ind2sub_zero_vec -- ind2sub(0, k) with a vector k: integer division by zero at the call's line
+// (LANGUAGE.md 10.7, 6.6; Decision 33)
+let r = 0
+let k = (0..3)
+let (i, j) = ind2sub(r, k)
+printf("%d\n", len(i))

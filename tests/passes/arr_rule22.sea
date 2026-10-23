@@ -1,0 +1,12 @@
+fn twice(x: f64[]) -> f64 {
+    let z = x * 2.0
+    var s = 0.0
+    for e in z {
+        s += e
+    }
+    return s
+}
+printf("%g\n", twice(ones(3)))
+printf("%g\n", twice(zeros(2)))
+// arr_rule22 -- DESIGN.md 3.6.6 rule 22 (element-wise operations): its example verbatim on line
+// 2, the first statement of twice (x is p1); 3.5.9 L7 with one array operand (no shape check)

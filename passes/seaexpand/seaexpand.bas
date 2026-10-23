@@ -27,6 +27,8 @@
 122 REM idx (n = rank of the base, or 1 for a bool-matrix mask; index kinds of LANGUAGE 5.2), dol (claimed by the idx it
 123 REM sits in, dim < n; none left at a function end), fore (vector iterable, loop variable of the element type) are
 124 REM validated (BAD_RECORD) and copied; array records otherwise pass through the generic path (4500-4966).
+126 REM Phase 4e (G12): view (the operand's rank), arr (row children), row (n >= 1), dyn and fix (the corresponding
+127 REM fixed and dynamic types), the target of an asg (an lv, idx or view flat tree of an lv) are validated (5000-5158).
 125 REM
 130 REM TABLES  (arrays one letter; DIM below)
 135 REM  E E$ errors  N N$ W$ enums  R R$ records  F F$ fields  Z counts  C C$ constants
@@ -43,7 +45,8 @@
 190 REM  F5 a function was seen  X8 fd records owed  S3 start of the node being made  K1 kind
 195 REM  A3-A0 B3-B0 R3-R0 limbs of operands and result  T$ text  Z8$ last position
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
-205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk
+205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk,
+207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg
 210 REM ====================================================================================
 215 FILES "sea.hir1"; "sea.hir"
 220 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
@@ -75,6 +78,7 @@
 334 REM special code and ty field index of each record row of the HIR files (sets H and H1)
 335 LET K1$ = "|tvec=01|tmat=02|tfvec=03|tfmat=04|tstruct=05|trec=06|ttuple=07|fd=08|cn=09|fn=11|par=12|loc=13|end=14|"
 340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|dol=24|fore=25|idx=26|"
+342 LET K2$ = K2$ & "view=27|arr=28|row=29|dyn=30|fix=31|asg=32|"
 341 GOSUB 4400
 345 LET N2 = 0
 350 LET R5 = 0
@@ -173,6 +177,7 @@
 828 IF Y0 = 25 THEN 4650
 829 IF Y0 = 26 THEN 4700
 830 IF Y0 = 9 THEN 1115
+831 IF Y0 > 26 THEN 5000
 835 IF Y0 = 11 THEN 1260
 840 IF Y0 = 14 THEN 1375
 845 REM par (12) and loc (13): declarations of the open function, no node
@@ -786,9 +791,10 @@
 3680 CALL "io_u": Z$, W2, W3
 3685 IF W3 <> 0 THEN 2915
 3690 LET U(J1) = W2
+3691 REM a tasg cv is a sum of 1 (i64 to f64), 2 (dyn) or 4 (fix), never both 2 and 4 (Decision 37)
 3692 IF W1 <> 1 THEN 3845
 3694 IF F$(B0) <> "cv" THEN 3845
-3696 IF W2 > 1 THEN 2915
+3696 IF W2 > 5 THEN 2915
 3698 GOTO 3845
 3700 CALL "io_pos": Z$, W4, W5, W6, W3
 3705 IF W3 <> 0 THEN 2915
@@ -914,13 +920,15 @@
 4686 GOSUB 3070
 4688 GOSUB 3150
 4690 GOTO 1920
-4695 REM ---- 4700: idx, n = the rank of the base (or 1 for a mask of a matrix), indices of the kinds of LANGUAGE 5.2; claims the dols ----
+4695 REM ---- 4700: idx, n = the rank of the base (or 1 for a mask of a matrix), indices of the kinds of LANGUAGE 5.2; claims the dols;
+4697 REM M(.,1) of the idx = the root of its base (for the asg target check, 5100) ----
 4700 GOSUB 2980
 4702 LET Q1 = U(3)
 4704 LET M$ = "idx with n not 1 or 2"
 4706 IF Q1 < 1 THEN 2915
 4708 IF Q1 > 2 THEN 2915
 4710 LET Q4 = S(S0 + 2) - 1
+4711 LET Q0 = Q4
 4712 GOSUB 4900
 4714 GOSUB 4950
 4716 LET M$ = "idx of something that is not a vector or a matrix"
@@ -969,6 +977,7 @@
 4808 LET K1 = 0
 4810 LET T$ = L$
 4812 GOSUB 3070
+4813 LET M(O0, 1) = Q0
 4814 GOSUB 3150
 4816 GOTO 1920
 4895 REM ---- 4900: Q5 = the type id of the out node Q4 (the field its record's ty names) ----
@@ -990,3 +999,67 @@
 4962 IF Q6 > 4 THEN 4966
 4964 LET Q7 = P(T(Q5, 2))
 4966 RETURN
+4995 REM ---- 5000: phase 4e (G12, DESIGN 3.5.7): view, arr, row, dyn, fix, the target tree of an asg; Q4 the last child's root ----
+5000 GOSUB 2980
+5002 LET Q4 = O0
+5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100
+5010 REM view: .T and .flat of a matrix, .col and .row of a vector (fixed-size or dynamic, LANGUAGE 5.6)
+5012 GOSUB 4900
+5014 GOSUB 4950
+5016 LET M$ = "a view of an operand that does not have the rank its kind requires"
+5018 LET Q8 = 2
+5020 IF G$(4) = "T" THEN 5026
+5022 IF G$(4) = "flat" THEN 5026
+5024 LET Q8 = 1
+5026 IF Q6 = Q8 THEN 5150
+5028 IF Q6 = Q8 + 2 THEN 5150
+5030 GOTO 2915
+5040 REM arr: r >= 0 children, each a row (child k's root: the record before child k + 1 starts)
+5042 LET M$ = "an arr child that is not a row"
+5044 FOR Q2 = 1 TO U(3)
+5046 LET Q4 = O0
+5048 IF Q2 >= U(3) THEN 5052
+5050 LET Q4 = S(S0 + 1 + Q2) - 1
+5052 IF SEG$(O$(Q4), 1, 4) <> "row " THEN 2915
+5054 NEXT Q2
+5056 GOTO 5150
+5060 REM row: n >= 1 elements
+5062 LET M$ = "a row without elements"
+5064 IF U(3) < 1 THEN 2915
+5066 GOTO 5150
+5070 REM dyn: a fixed-size array to the dynamic type of its rank and element type; fix: the reverse
+5072 GOSUB 4900
+5074 GOSUB 4950
+5076 LET Q1 = Q6
+5078 LET Q2 = Q7
+5080 LET Q5 = U(2)
+5082 GOSUB 4950
+5084 LET M$ = "a dyn or fix whose operand and result types do not correspond"
+5086 IF Q2 <> Q7 THEN 2915
+5088 IF Q1 * Q6 = 0 THEN 2915
+5090 IF Y0 = 30 THEN 5096
+5092 IF Q6 = Q1 + 2 THEN 5150
+5094 GOTO 2915
+5096 IF Q1 = Q6 + 2 THEN 5150
+5098 GOTO 2915
+5100 REM asg: its target is an lv, an idx of a target, a view flat of a target (a fld path is 4g's), down to an lv
+5102 LET Q4 = S(S0 + 2) - 1
+5104 LET M$ = "an asg target that is not an lv, idx or view flat tree of an lv"
+5106 LET T$ = O$(Q4)
+5108 IF SEG$(T$, 1, 3) = "lv " THEN 5150
+5110 IF SEG$(T$, 1, 4) = "idx " THEN 5124
+5112 IF SEG$(T$, 1, 4) = "fld " THEN 5128
+5114 IF SEG$(T$, 1, 5) <> "view " THEN 2915
+5116 LET T1 = 4
+5118 GOSUB 3345
+5120 IF Z$ <> "flat" THEN 2915
+5122 GOTO 5128
+5124 LET Q4 = M(Q4, 1)
+5126 GOTO 5106
+5128 LET Q4 = Q4 - 1
+5130 GOTO 5106
+5150 LET K1 = 0
+5152 LET T$ = L$
+5154 GOSUB 3070
+5156 GOSUB 3150
+5158 GOTO 1920

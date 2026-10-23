@@ -1,0 +1,1 @@
+err_rt_flat_store_oob.sea:3: error: index 9 out of bounds for dimension 0 of extent 6

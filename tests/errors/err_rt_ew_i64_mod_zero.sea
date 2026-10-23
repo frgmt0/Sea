@@ -1,0 +1,5 @@
+// err_rt_ew_i64_mod_zero -- element-wise i64 % with a zero element: integer division by zero (LANGUAGE.md 6.6)
+let a = [5, 6]
+let b = filled(0, 2)
+let c = a % b
+printf("%d\n", c[0])

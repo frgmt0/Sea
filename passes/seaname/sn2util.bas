@@ -18,8 +18,8 @@
 1550 REM const: outcome (0 not yet 1 i64 2 f64 3 bool 5 none 6 failed); Y(s,8) local: function,
 1555 REM const: value limbs 3,2 as L3*65536+L2 (bool: 0 or 1); Y(s,9) const: limbs 1,0, or rcne's node.
 1560 REM Row 1 is .main, items follow (rows 2..X(33)), then the locals of each function.
-1565 REM T(t,0) 1 T[] 2 T[,] 7 ttuple 0 continuation; T(t,1) element id, or count with components (ids)
-1570 REM in the next rows, 9 per row (columns 0-8); T(t,9) the id (DESIGN 3.4.1, 3.4.2).
+1565 REM T(t,0) 1 T[] 2 T[,] 3 T[n] 4 T[r,c] 7 ttuple 0 continuation; T(t,1) element id (T(t,2..3) n or r c),
+1570 REM or count with components (ids) in the next rows, 9 per row (columns 0-8); T(t,9) the id (3.4.2).
 1575 REM W(1..) the constant order's stack, then the value stack of evx; W(..199999) scope stack,
 1580 REM pairs (name, symbol), marker -1. X(1) nodes X(2) strings X(3) symbols X(4) last T row
 1585 REM X(5) C rows X(6) key of the first error (0 none) X(7) its node X(8) its argument count
