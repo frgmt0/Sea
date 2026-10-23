@@ -1,0 +1,8 @@
+// red_former_ns -- the calls of the four retired goldens err_ns_lib_sum, err_ns_lib_max1, err_ns_lib_max1_fixed
+// and err_ns_lib_min1 (DESIGN.md 6.2 "4f": they compile from 4f; LANGUAGE.md 10.5)
+printf("%g\n", sum(zeros(3)))
+let v = ones(3)
+printf("%g\n", max(v))
+printf("%g\n", max([1.0, 2.0]))
+let m = min(v)
+printf("%g\n", m)

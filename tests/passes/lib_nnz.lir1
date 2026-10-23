@@ -1,0 +1,71 @@
+#sea 1
+#target arm64-macos
+#file lib_nnz.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 24 8
+sa p1 s1
+sa p2 s2
+li i3 1
+stb i3 p2 - 0 0
+li i4 0
+stb i4 p2 - 0 1
+li i5 1
+stb i5 p2 - 0 2
+li i6 1
+stb i6 p2 - 0 3
+li i7 4
+mcopy p1 p2 i7
+li i8 0
+li i9 4
+li i10 0
+icmp gt i11 i9 i10
+if 1 i11
+li i12 1
+isub i13 i9 i12
+loop 2 i14 i10 i13 i12
+ldb i15 p1 i14 1 0
+iadd i8 i8 i15
+endloop 2
+endif 1
+li i16 0
+li i17 4
+li i18 0
+icmp gt i19 i17 i18
+if 3 i19
+li i20 1
+isub i21 i17 i20
+loop 4 i22 i18 i21 i20
+ldb i23 p1 i22 1 0
+ior i16 i16 i23
+endloop 4
+endif 3
+li i24 1
+li i25 4
+li i26 0
+icmp gt i27 i25 i26
+if 5 i27
+li i28 1
+isub i29 i25 i28
+loop 6 i30 i26 i29 i28
+ldb i31 p1 i30 1 0
+iand i24 i24 i31
+endloop 6
+endif 5
+sa p32 s3
+sti i8 p32 - 0 0
+sti i16 p32 - 0 8
+sti i24 p32 - 0 16
+la p33 d1
+rcall sea_printf 0:5 0 2 p33 p32
+ret 0
+endfunc
+fmt d1 6
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

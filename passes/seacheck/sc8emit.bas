@@ -243,12 +243,16 @@
 15705 SUBEND
 15710 REM ---- em_expr: expression E in post-order (= node order); M(J,8) < 0 marks a node where the
 15715 REM writing jumps past node -M(J,8): a powk exponent, the literal 2^63 under neg, or the callee
-15720 REM of printf (whose arguments are written between the format pieces, em_printf) ----------
+15720 REM of printf (whose arguments are written between the format pieces, em_printf), or the value of a
+15722 REM dim: option (narg -M(J,8), written as one ci of the value M(narg,5); DESIGN 3.5.5) --------
 15725 SUB "em_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 15730 LET J = M(E, 0)
 15735 IF J > E THEN 15800
 15740 IF M(J, 8) >= 0 THEN 15770
 15745 LET G = -M(J, 8)
+15747 IF N(G, 0) <> 36 THEN 15750
+15748 CALL "pos": N(), N(G, 7), P$
+15749 CALL "wr": X(), "ci " & P$ & " 3 " & STR$(M(G, 5))
 15750 IF N(G, 0) <> 35 THEN 15760
 15755 CALL "em_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 15760 LET J = G + 1
@@ -330,7 +334,12 @@
 16140 CALL "wr": X(), "call" & Q$ & " " & STR$(Y(S, 5)) & " " & STR$(N(J, 1))
 16145 GOTO 16220
 16150 CALL "io_esc": S$(N(N(J, 7), 6)), 0, B$
-16155 CALL "wr": X(), "lib" & Q$ & " " & B$ & " " & STR$(N(J, 1))
+16151 REM a dim: form is name.dim; sort and argsort without desc: take the inserted cb 0 (sc9red lred)
+16152 IF M(J, 9) <> 1 THEN 16154
+16153 LET B$ = B$ & ".dim"
+16154 IF M(J, 9) <> 2 THEN 16156
+16155 CALL "wr": X(), "cb " & P$ & " 2 0"
+16156 CALL "wr": X(), "lib" & Q$ & " " & B$ & " " & STR$(N(J, 1) + INT(M(J, 9) / 2))
 16160 GOTO 16220
 16165 CALL "wr": X(), "rarg" & Q$
 16170 GOTO 16220
@@ -361,7 +370,8 @@
 16229 IF M(J, 5) < 10 THEN 16234
 16230 CALL "tyr": T(), W(), X(), M(J, 5), A$
 16231 LET Q = 3 * INT((T(M(J, 5), 0) - 1) / 2)
-16232 CALL "wr": X(), SEG$("dynfix", Q + 1, Q + 3) & " " & P$ & " " & A$
+16232 CALL "lpos": N(), M(), J, P$
+16233 CALL "wr": X(), SEG$("dynfix", Q + 1, Q + 3) & " " & P$ & " " & A$
 16234 SUBEND
 16235 REM ---- em_printf: printf call G: its format as fmt/ftext/fconv pieces at the position of the
 16240 REM format literal, each conversion over its argument, then lib printf (DESIGN 3.5.5) --------

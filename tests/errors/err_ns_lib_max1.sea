@@ -1,4 +1,0 @@
-// err_ns_lib_max1 -- 4d: max(v) of one vector (a reduction, 4f) is still the name max, at the call
-// (DESIGN.md 2.6.2 step 4d)
-let v = ones(3)
-printf("%g\n", max(v))

@@ -1,0 +1,5 @@
+// err_red_dim_value_before_call -- sum(v, dim: 2) of a vector: the arguments are checked before the call, so
+// the value's 262 comes before the call's 243 (DESIGN.md 2.6.2)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sum(v, dim: 2)

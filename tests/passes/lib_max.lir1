@@ -1,0 +1,99 @@
+#sea 1
+#target arm64-macos
+#file lib_max.sea
+func .main main 0:1:1 0 0
+slot s1 40 8
+slot s2 40 8
+slot s3 32 8
+slot s4 32 8
+slot s5 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #4004000000000000
+stf f3 p2 - 0 0
+lf f4 #7FF8000000000000
+stf f4 p2 - 0 8
+lf f5 #401C000000000000
+stf f5 p2 - 0 16
+lf f6 #3FE0000000000000
+stf f6 p2 - 0 24
+lf f7 #401C000000000000
+stf f7 p2 - 0 32
+li i8 40
+mcopy p1 p2 i8
+sa p9 s3
+sa p10 s4
+li i11 4
+sti i11 p10 - 0 0
+li i12 1
+sti i12 p10 - 0 8
+li i13 9
+sti i13 p10 - 0 16
+li i14 1
+sti i14 p10 - 0 24
+li i15 32
+mcopy p9 p10 i15
+li i16 5
+li i17 0
+icmp eq i18 i16 i17
+la p19 d1
+chk i18 EMPTY_REDUCE 0:3 1 p19
+lf f20 #7FF8000000000000
+li i21 0
+li i22 0
+li i23 0
+icmp gt i24 i16 i23
+if 1 i24
+li i25 1
+isub i26 i16 i25
+loop 2 i27 i23 i26 i25
+ldf f28 p1 i27 8 0
+fnan i29 f28
+bnot i30 i29
+fcmp gt i31 f28 f20
+bnot i32 i21
+ior i33 i32 i31
+iand i34 i30 i33
+fsel f20 i34 f28 f20
+isel i22 i34 i27 i22
+ior i21 i21 i34
+endloop 2
+endif 1
+li i35 4
+li i36 0
+icmp eq i37 i35 i36
+la p38 d2
+chk i37 EMPTY_REDUCE 0:4 1 p38
+li i39 0
+li i40 0
+li i41 0
+li i42 0
+icmp gt i43 i35 i42
+if 3 i43
+li i44 1
+isub i45 i35 i44
+loop 4 i46 i42 i45 i44
+ldi i47 p9 i46 8 0
+icmp lt i48 i47 i39
+bnot i49 i40
+ior i50 i49 i48
+isel i39 i50 i47 i39
+isel i41 i50 i46 i41
+ior i40 i40 i50
+endloop 4
+endif 3
+sa p51 s5
+stf f20 p51 - 0 0
+sti i41 p51 - 0 8
+la p52 d3
+rcall sea_printf 0:5 0 2 p52 p51
+ret 0
+endfunc
+str d1 max
+str d2 argmin
+fmt d3 4
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

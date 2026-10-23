@@ -166,10 +166,13 @@
 3915 LET L1$ = "endif " & STR$(W(W0 + 4))
 3920 GOSUB 7695
 3925 GOTO 3935
-3930 REM the value R of an ifx / && / ||: a new register, or the given one; a local gets mov L R
+3930 REM the value R of an ifx / && / ||: a new register, or the given one; a local gets mov L R,
+3931 REM except the R of an xblk's ifx value (R12 (a), 33550)
 3935 LET R9 = W(W0 + 3)
 3940 IF D < 1 THEN 3090
 3945 IF D > N7 THEN 3090
+3946 GOSUB 33550
+3947 IF F3 = 1 THEN 3090
 3950 LET O$ = "mov"
 3955 LET V2 = D
 3960 LET V3 = R9
@@ -179,6 +182,8 @@
 3980 REM 3985: D2 = R, a new register of the node's class unless D is a given new register
 3985 LET D2 = D
 3990 IF D > N7 THEN 4015
+3992 GOSUB 33550
+3993 IF F3 = 1 THEN 4015
 3995 LET T1 = H(X, 4)
 4000 GOSUB 7395
 4005 GOSUB 7420
@@ -529,12 +534,14 @@
 5690 GOTO 7380
 5695 LET W(W0 + 4) = H(W(W0 + 4), 8)
 5700 GOTO 5650
-5705 REM ---- bind: the value with the local as dest (rule 2) ---------------------------------------
+5705 REM ---- bind: the value with the local as dest (rule 2; an accumulator's register, R12 (b)) ------
 5710 LET S = 18
 5712 IF H(X, 6) = 1 THEN 33200
 5713 IF V(H(X, 5), 0) = 1 THEN 41000
 5715 LET X1 = H(X, 7)
-5720 LET D1 = H(X, 5)
+5720 LET D1 = A(G(F0, 0) + H(X, 5), 3)
+5721 IF D1 > 0 THEN 5725
+5722 LET D1 = H(X, 5)
 5725 GOTO 7380
 5730 REM ---- tbind: the result registers on U (locals, or new for -), then the call (rule 2) -------
 5735 LET X2 = H(X, 7)
@@ -578,7 +585,9 @@
 6097 IF V(A1, 1) = 3 THEN 14830
 6100 IF H(X, 5) > 1 THEN 6120
 6105 LET S = 22
-6110 LET D1 = A1
+6110 LET D1 = A(G(F0, 0) + A1, 3)
+6111 IF D1 > 0 THEN 6115
+6112 LET D1 = A1
 6115 GOTO 7380
 6120 LET W(W0 + 3) = A1
 6125 IF H(X2, 6) = 0 THEN 6170

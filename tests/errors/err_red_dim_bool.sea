@@ -1,0 +1,4 @@
+// err_red_dim_bool -- dim: true: 201, expected i64, found bool
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = nnz(A > 1.0, dim: true)

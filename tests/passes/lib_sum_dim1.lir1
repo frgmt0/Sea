@@ -1,0 +1,112 @@
+#sea 1
+#target arm64-macos
+#file lib_sum_dim1.sea
+func .main main 0:1:1 0 0
+slot s1 48 8
+slot s2 48 8
+slot s3 8 8
+slot s4 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 16
+lf f5 #4008000000000000
+stf f5 p2 - 0 32
+lf f6 #4010000000000000
+stf f6 p2 - 0 8
+lf f7 #4014000000000000
+stf f7 p2 - 0 24
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+li i9 48
+mcopy p1 p2 i9
+li i10 0
+call rowsum 1 f11 2 p1 i10
+sa p12 s3
+stf f11 p12 - 0 0
+la p13 d1
+rcall sea_printf 0:6 0 2 p13 p12
+li i14 1
+call rowsum 1 f15 2 p1 i14
+sa p16 s4
+stf f15 p16 - 0 0
+la p17 d2
+rcall sea_printf 0:7 0 2 p17 p16
+ret 0
+endfunc
+func rowsum fn 0:1:1 2 p1 i2 1 f
+slot s1 16 8
+slot s2 16 8
+slot s3 64 8
+sa p3 s1
+li i4 2
+li i5 3
+sa p6 s2
+li i7 0
+icmp gt i8 i4 i7
+if 1 i8
+li i9 1
+isub i10 i4 i9
+loop 2 i11 i7 i10 i9
+li i12 0
+icmp gt i13 i5 i12
+if 3 i13
+sa p14 s3
+lf f15 #8000000000000000
+stf f15 p14 - 0 0
+stf f15 p14 - 0 8
+stf f15 p14 - 0 16
+stf f15 p14 - 0 24
+stf f15 p14 - 0 32
+stf f15 p14 - 0 40
+stf f15 p14 - 0 48
+stf f15 p14 - 0 56
+li i16 7
+li i17 1
+isub i18 i5 i17
+loop 4 i19 i12 i18 i17
+iand i20 i19 i16
+ldf f21 p14 i20 8 0
+imul i22 i19 i4
+iadd i23 i11 i22
+ldf f24 p1 i23 8 0
+fadd f21 f21 f24
+stf f21 p14 i20 8 0
+endloop 4
+ldf f25 p14 - 0 0
+ldf f26 p14 - 0 8
+ldf f27 p14 - 0 16
+ldf f28 p14 - 0 24
+ldf f29 p14 - 0 32
+ldf f30 p14 - 0 40
+ldf f31 p14 - 0 48
+ldf f32 p14 - 0 56
+fadd f33 f25 f26
+fadd f34 f27 f28
+fadd f35 f33 f34
+fadd f36 f29 f30
+fadd f37 f31 f32
+fadd f38 f36 f37
+fadd f39 f35 f38
+else 3
+lf f39 #0000000000000000
+endif 3
+stf f39 p6 i11 8 0
+endloop 2
+endif 1
+li i40 16
+mcopy p3 p6 i40
+li i41 2
+chkb i2 i41 0 0:3
+ldf f42 p3 i2 8 0
+ret 1 f42
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

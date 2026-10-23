@@ -1,0 +1,8 @@
+let f = [3.0, 0.5, 2.0]
+let s = sort(f)
+let d = s[0] < 1.0
+let r = argsort(f, desc: d)
+printf("%g %d\n", s[2], r[0])
+// lib_sort_fixed -- DESIGN.md 3.5.9 L14, R16, Decision 39: sort and argsort of a fixed-size
+// vector (the dyn pass 2a writes at the call's position, rewritten by L10, released right after
+// the rcall), desc: inserted as false and given as a run-time bool

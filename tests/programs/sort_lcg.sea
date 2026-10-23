@@ -1,0 +1,56 @@
+// sort_lcg -- sort and argsort of 1000-element f64 and i64 vectors from an LCG (LANGUAGE.md 10.6;
+// DESIGN.md 4.8 radix path): many ties and -0, and wide values; checksums of each permutation
+// and sorted vector, ascending and descending, derived from the stable model
+fn ck(idx: i64[]) -> i64 {
+    var s = 0
+    for k in 0..len(idx) {
+        s += (k + 1) * idx[k]
+    }
+    return s
+}
+fn cf(v: f64[], scale: f64) -> i64 {
+    var s = 0
+    for k in 0..len(v) {
+        s += (k + 1) * i64(v[k] * scale)
+    }
+    return s
+}
+fn ci(v: i64[]) -> i64 {
+    var s = 0
+    for k in 0..len(v) {
+        s += (k + 1) * v[k]
+    }
+    return s
+}
+var fa = zeros(1000)
+var ia = filled(0, 1000)
+var fw = zeros(1000)
+var iw = filled(0, 1000)
+var x = 12345
+for k in 0..1000 {
+    x = (1103515245 * x + 12345) % 2147483648
+    let u = idiv(x, 65536)
+    fa[k] = f64(u % 41 - 20)
+    if u % 41 - 20 == 0 && u % 2 == 1 {
+        fa[k] = -0.0
+    }
+    ia[k] = u % 11 - 5
+    fw[k] = f64(x - 1073741824) / 1024.0
+    iw[k] = x - 1073741824
+}
+printf("%d %d\n", ck(argsort(fa)), cf(sort(fa), 1.0))
+printf("%.17g %.17g\n", sort(fa)[0], sort(fa)[999])
+printf("%d %d\n", ck(argsort(fa, desc: true)), cf(sort(fa, desc: true), 1.0))
+printf("%.17g %.17g\n", sort(fa, desc: true)[0], sort(fa, desc: true)[999])
+printf("%d %d\n", ck(argsort(ia)), ci(sort(ia)))
+printf("%d %d\n", sort(ia)[0], sort(ia)[999])
+printf("%d %d\n", ck(argsort(ia, desc: true)), ci(sort(ia, desc: true)))
+printf("%d %d\n", sort(ia, desc: true)[0], sort(ia, desc: true)[999])
+printf("%d %d\n", ck(argsort(fw)), cf(sort(fw), 1024.0))
+printf("%.17g %.17g\n", sort(fw)[0], sort(fw)[999])
+printf("%d %d\n", ck(argsort(fw, desc: true)), cf(sort(fw, desc: true), 1024.0))
+printf("%.17g %.17g\n", sort(fw, desc: true)[0], sort(fw, desc: true)[999])
+printf("%d %d\n", ck(argsort(iw)), ci(sort(iw)))
+printf("%d %d\n", sort(iw)[0], sort(iw)[999])
+printf("%d %d\n", ck(argsort(iw, desc: true)), ci(sort(iw, desc: true)))
+printf("%d %d\n", sort(iw, desc: true)[0], sort(iw, desc: true)[999])

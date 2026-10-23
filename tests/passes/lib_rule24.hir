@@ -1,0 +1,38 @@
+#sea 1
+#target arm64-macos
+#file lib_rule24.sea
+tvec 10 4
+tvec 11 3
+fn 1 .main main 1 0 0 0:1:1
+ci 0:11:25 3 3
+lib 0:11:20 10 ones 1
+call 0:11:16 3 2 1
+fconv 0:11:8 1 - - - d
+ftext 0:11:8 1 %0A
+fmt 0:11:8 1 2
+lib 0:11:1 1 printf 1
+eval 0:11:1
+ci 0:12:26 3 2
+lib 0:12:20 10 zeros 1
+call 0:12:16 3 2 1
+fconv 0:12:8 1 - - - d
+ftext 0:12:8 1 %0A
+fmt 0:12:8 1 2
+lib 0:12:1 1 printf 1
+eval 0:12:1
+block 0:1:1 2
+end
+fn 2 top fn 3 1 1 0:1:1
+par c 10 val
+loc r 11 let 0:8:9
+lv 0:8:21 10 1
+cb 0:8:30 2 1
+lib 0:8:13 11 argsort 2
+bind 0:8:5 2
+lv 0:9:12 11 2
+ci 0:9:14 3 0
+idx 0:9:12 3 1
+ret 0:9:5 1
+block 0:1:25 2
+end
+#end

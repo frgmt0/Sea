@@ -926,15 +926,16 @@
 18340 GOTO 18280
 18350 RETURN
 19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled
-19345 REM len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3). W2 counts from 8
+19345 REM len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3); sort argsort (R16,
+19346 REM rule 24) at 33600. W2 counts from 8
 19350 REM frame: x1 = U0 at entry (the arguments above it), x2 = the next argument, x3 = the function
-19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind "
+19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort "
 19370 LET W2$ = S$(H(X, 0))
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
 19390 IF W2 = 0 THEN 2360
 19395 LET W2 = W2 + 7
-19400 IF H(X, 6) < VAL(SEG$("11211111111111122323", W2, W2)) THEN 2360
-19410 IF H(X, 6) > VAL(SEG$("22311111111111122323", W2, W2)) THEN 2360
+19400 IF H(X, 6) < VAL(SEG$("1121111111111112232322", W2, W2)) THEN 2360
+19410 IF H(X, 6) > VAL(SEG$("2231111111111112232322", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
 19430 LET W(W0 + 3) = U0
 19440 LET W(W0 + 4) = H(X, 7)
@@ -950,7 +951,7 @@
 19540 GOTO 19450
 19550 LET Z6 = W(W0 + 3)
 19560 LET W2 = W(W0 + 5)
-19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980
+19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600
 19580 LET U0 = W(W0 + 3)
 19590 GOTO 3090
 20860 REM ---- the exact math functions on scalars (rule 36) ------------------------------------

@@ -37,9 +37,9 @@ the user's agreement. Phase 0 (§8) did:
 3. implementation follows the milestones of §8: phases 0, 1, 2 and 3 are complete (the MATLAB
    rerun of Decision 7 is done: sea commit c1736f7); phase 4, arrays and structs, is built in
    the sub-phases 4a–4h of §8: 4a–4d and 4e-0 (the split of pass 3a into `sealoop` and
-   `sealower`, which the size gate after 4d made run, §2.7) and 4e (array expressions, Decisions
-   31–37) are done, and 4f (reductions, sorting, searching, library options) is specified
-   (Decisions 38–41) and next to be implemented.
+   `sealower`, which the size gate after 4d made run, §2.7), 4e (array expressions, Decisions 31–37)
+   and 4f (reductions, sorting, searching, library options, Decisions 38–43; the size gate after 4f
+   passed with no split, §2.7) are done, and 4g (strings, structs, records, `match`) is next.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -756,11 +756,11 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `at` | Position reported |
 |------|-------------------|
 | `byte` | the offending byte; for `invalid escape` the `\` that starts the escape |
-| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `positional argument after a named argument` (115, from 4f) the first token of the first positional argument that follows a named one in the call (its `ref` for a `ref` argument); for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
+| `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `positional argument after a named argument` (115, from 4f) the first token of the first positional argument that follows a named one in the call (its `ref` for a `ref` argument), where an argument is positional when its first token can start an expression or a `ref` argument and it is not `IDENT ":"`: an `IDENT` not followed by `:`, an integer, float or string literal, or one of `-` `!` `true` `false` ` `(` `[` `{` `if` `f64` `i64` `str` `ref` (the start set of Appendix A's `unary` and `primary`, plus `ref`); any other token there is the ordinary syntax error of that place; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
 | `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
-| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `dim must be 0 or 1` (262), `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for a named option `dim:` or `desc:` its value expression, not the name; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`); for `type cannot be inferred: add a type annotation` (252, from 4e) the `[]` itself (its `arr` node), also in a binding without a type annotation (`let x = []` reports at the `[`) |
+| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `dim must be 0 or 1` (262), `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for a named option `dim:` or `desc:` its value expression, not the name; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant or, from 4f, in a `dim:` value (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`); for `type cannot be inferred: add a type annotation` (252, from 4e) the `[]` itself (its `arr` node), also in a binding without a type annotation (`let x = []` reports at the `[`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
 | `binding` | the node declaring the name: `pname`, `param`, the `for` node (for a loop variable every error is reported at the `for` node; the AST `npos` field is used only for the `loc` record's position, §3.4, §3.5.4), a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
@@ -1006,7 +1006,8 @@ the named options:
   `argmin`): one matrix of those element types; the result is a vector of the same result element
   type, dynamic for a dynamic matrix, and for a fixed-size `T[r,c]` the fixed-size vector of c
   elements (`dim: 0`) or r elements (`dim: 1`) (Decision 39); the HIR is `lib name.dim` (§3.5.5).
-* `sort(v)`, `argsort(v)`: an `f64` or `i64` vector (`str` from 4g); the result is the dynamic vector
+* `sort(v)`, `argsort(v)`: an `f64` or `i64` vector (a `str` vector: the call has the type 0 and adds
+  no error of its own, the `str[]` being reported as `strings` where it comes from, until 4g); the result is the dynamic vector
   of v's element type (`argsort`: `i64[]`), also for a fixed-size v (Decision 39). `find(m)`: a `bool`
   vector, result `i64[]`; `find_first`, `find_last`: a `bool` vector, result `i64`.
 * `max` and `min` with two positional arguments are the elemental functions of LANGUAGE.md §10.4.
@@ -1020,12 +1021,18 @@ the named options:
   arguments` at the `narg`, as before. A name that a call gives twice is `parameter given twice`
   (225) at the second `narg` (a repeated name that the function does not take is reported by the
   phase rule, at its first `narg`). The arguments are checked in source order (each value, then its
-  `narg`), then the call. `argmax` and `argmin` take no `dim:`: a `dim:` of theirs is a name
+  `narg`), then the call. A `narg` is checked only after its value, and only a value without an
+  error reaches the duplicate check: a value with an error (one of its own, such as `undeclared
+  name`, or 201, 237, 262, 260 or 261 of the option) leaves the `narg` and the call the type 0, so the
+  call reports neither 225 nor 243 (`sum(A, dim: 0, dim: qq)` is `undeclared name 'qq'` at `qq`, not
+  225 at the second `dim`; test `err_red_dim_twice_value_first`). `argmax` and `argmin` take no `dim:`: a `dim:` of theirs is a name
   the function does not take, so `not supported yet: named arguments` at its `narg` (in v1 `unknown
   parameter`, 224), never 243. A `dim:` value must have type `i64` (else 201, `type mismatch: expected
   i64, found T`, at the value), be a constant expression (else `not a constant expression`, 237, at
   the value), and have the value 0 or 1 (else `dim must be 0 or 1`, 262, at the value), checked in
-  that order. A `desc:` value is any `bool` expression (else 201, `expected bool`, at the value).
+  that order. The value is evaluated exactly, as a constant is (§3.5.2): an `i64` overflow or division
+  by zero in it is 260 or 261 at the operator node of the value whose evaluation fails first (the
+  `expr` rule of 260 and 261), in place of 262. A `desc:` value is any `bool` expression (else 201, `expected bool`, at the value).
   Pass 2a writes the options as §3.5.5 says: `name.dim` with the `ci` 0 or 1, `sort`/`argsort` with
   the value of `desc:` or the inserted `cb 0`.
 * A positional argument after a named one never reaches pass 2: pass 1 reports it (115, Decision 41).
@@ -1755,6 +1762,40 @@ recorded here; a split is specified and agreed like 4e-0 before it is made. The 
 already put `sealoop`'s projected v1 size at up to 9 950 lines, above the gate's 9 000: if its
 measured 4f size keeps it there, the gate after 4f splits it then (the expression-tree seam);
 otherwise the gate after phase 6 decides again.
+
+**Measured at the size gate after 4f** (2026-10-23, the 4f build; `sh tools/passlines.sh limits` =
+`make check-limits`, and the `DIM`s of each main program counted as at the gate after 4d: a letter is
+used when a numeric array of the main program has it, `DIM`s inside a `SUB` are local and not
+counted):
+
+| Pass | Built lines | `FOR`s | String bytes | Longest line |
+|------|------------:|-------:|-------------:|-------------:|
+| `seaparse` | 3 937 | 74 | 2 581 | 166 |
+| `seaname` | 5 063 | 115 | 2 803 | 202 |
+| `seacheck` | 5 830 | 157 | 5 234 | 194 |
+| `seaexpand` | 4 070 | 96 | 4 652 | 141 |
+| `sealoop` | 4 400 | 71 | 10 603 | 208 |
+| `sealower` | 6 087 | 111 | 3 866 | 211 |
+| `seaopt` | 2 442 | 55 | 4 319 | 178 |
+| `seagen_a64` | 3 500 | 93 | 3 205 | 196 |
+| `seagen_x64` | 3 515 | 88 | 3 431 | 134 |
+
+Every pass is below Baysick's limits (10 000 lines, 1000 `FOR`s, 65 536 string bytes, 255-byte
+lines). The gate (projected v1 = built size + the upper ends of "Remaining to v1" in "Projected for
+4f"):
+
+| Program | After 4e | After 4f | 4f increment (estimate) | Remaining to v1 (upper ends) | Projected v1 (≤ 9 000) | Free letters (≥ 2) | Built ≤ 7 000 | Outcome |
+|---------|---------:|---------:|------------------------:|-----------------------------:|-----------------------:|-------------------|:-------------:|:-------:|
+| `sealoop` | 4 129 | 4 400 | 271 (700–1 100) | 450 + 500 + 1 100 + 1 500 = 3 550 (4g, 4h, phases 6, 7) | 7 950 | 4 (`B C J X`) | yes | pass |
+| `sealower` | 5 971 | 6 087 | 116 (120–250) | 800 + 1 100 = 1 900 (4g and 4h, v1) | 7 987 | 4 (`C O S X`) | yes | pass |
+| `seacheck` | 5 495 | 5 830 | 335 (300–550) | 950 (4g and 4h) | 6 780 | 14 (`A B D F G I L P Q R S U V Z`) | yes | pass |
+
+All three pass, so **no split is made before 4g**. `sealoop`'s increment came in far below its
+estimate (the rewrites are written as scripts of the existing generator, `lp7red.bas`, and needed no
+new table), so its projected v1 size, 7 950, is 1 050 lines under the gate and the 9 950 upper end
+noted above is not reached; the gate after phase 6 decides again on phase 7's fusion (above). No
+program used a new array letter in 4f (`sealoop` 4, `sealower` 4, `seacheck` 14 free, as after 4e).
+`seaparse` grew by 12 lines (error 115).
 
 ### 2.8 Numbers inside the compiler
 
@@ -3537,7 +3578,7 @@ new record or field; the enumeration `wop` gains `and`):
 
 | # | Refinement |
 |---|------------|
-| R12 | **Destinations of sealoop's values.** An `xblk` with a destination D (T3) hands D to its value also when (a) the value is an `ifx` (only the `xblk`s L13 writes have one: sum8's and `variance`'s values; `sealoop` writes no other `xblk` with an `ifx` value, so `sealower` applies (a) without checking its precondition): D is the `ifx`'s R of rule 3 even when it is a local's register, with no new register and no `mov` (rule 2's exception does not apply: every operand of the rewrite, the vector and its extent, is a `tmp` evaluated before D is first written, and the arms read only the rewrite's own locals), and (b) the value is `lv L` of a scalar `.l` local that a `bind` among the `xblk`'s own statements (or in the blocks they hold) declares, an accumulator: L's register is D, as T3 makes it for a `tmp` (no `mov`). Without a destination both are lowered as before (a new register) |
+| R12 | **Destinations of sealoop's values.** An `xblk` with a destination D (T3) hands D to its value also when (a) the value is an `ifx` (`sealower` applies (a) to every `ifx` whose parent is an `xblk`, without checking the precondition below; only the `xblk`s L13 writes, sum8's and `variance`'s values, have such a value, so the precondition holds by construction): D is the `ifx`'s R of rule 3 even when it is a local's register, with no new register and no `mov` (rule 2's exception does not apply: every operand of the rewrite, the vector and its extent, is a `tmp` evaluated before D is first written, and the arms read only the rewrite's own locals), and (b) the value is `lv L` of a scalar `.l` local that a `bind` among the `xblk`'s own statements (or in the blocks they hold) declares, an accumulator: L's register is D, as T3 makes it for a `tmp` (no `mov`). Without a destination both are lowered as before (a new register) |
 | R13 | `wbin and` is the bitwise and of two `i64` operands (type 3, never a `bool`), lowered `iand d a b`; L13 writes it only for the lane `K & 7` (the `iand W K Q` of rule 23) |
 | R14 | the type F8, `tfvec` of `f64` with n 8, may be appended to the type table ("Types" above); `anew P F8 0 0` is the 64-byte accumulator home of sum8 (R1: `sa P sK` of a new `slot sK 64 8`) |
 | R15 | R8 is widened: an `asg set` to a scalar `.l` local declared by a `bind` may also have a scalar `lib where` value (rule 2: its `fsel`/`isel` writes the local's register: `fsel R c x R`, `isel X c K X`) |
@@ -3666,7 +3707,8 @@ an `rcnt` of type 3 and its `e` of type 2, each written only by that `rcnt` (fro
 `.l` local only where R8 allows it (one of an array type only directly in a `block`), a `tbind` of `.l` locals only as the first
 statement of a `block` (L12, R8), every `idx` with as many indices as its base's rank (a `view`
 base, `.flat` with its one linear index included, never survives `sealoop`, R10), and an `asg` to a `.l` local only with op `set` and only to a scalar
-local declared by a `bind` (from 4f its value may also be a scalar `lib where`, R15); a `tmp` of a `tptr` type only of an `adat` or `cdat`; an `hloop`'s
+local declared by a `bind` (`sealower` marks a `.l` local when a `bind` declares it and checks that
+mark, not merely that the local's `loc` record is a scalar `let` `.l` local) (from 4f its value may also be a scalar `lib where`, R15); a `tmp` of a `tptr` type only of an `adat` or `cdat`; an `hloop`'s
 local of mut `for` and type 3, its first three children of type 3, its last a `block`; `ext` of an
 array or a `str`, dim < the array's rank (0 for a `str`); `adat` of an array, `ty` the `tptr` of its
 element type; `eld` with an address of a `tptr` type whose `elt` is `ty`, an index of type 3; `est`
@@ -3675,14 +3717,17 @@ rank r and children of type 3, or a fixed-size array type with r = 0 and z = 0; 
 or `mul` of two operands of type 2 or 3, `wbin and` (from 4f) of two operands of type 3; from 4f a
 `lib sort` or `lib argsort` with exactly two children, a dynamic vector of `f64`, `i64` or `str`
 elements and a type-2 `desc`, and its result type that vector's type (`sort`) or `i64[]`
-(`argsort`), R16; at most one appended `tfvec`, of `f64` with n 8, and only when `sea.hir`'s table
-has none (R14); `chkb` of two type-3 children; `chk` with a type-2 condition and `err` a
+(`argsort`), R16; an appended `tfvec` only of `f64` with n 8, and rejected as a duplicate when an earlier type
+of the table is already `f64[8]` (a program that declares `f64[8]` itself has that type reused by
+`sealoop`, so its file appends none; R14); `chkb` of two type-3 children; `chk` with a type-2 condition and `err` a
 run-time error of `errors.inc` whose arguments take n slots; `rcnt` of three type-3 children;
 `cow` of an `lv` of a local or `ref` parameter of a dynamic array type; `mcpy` of two addresses of a
 `tptr` type and a type-3 count; `cdat` with `ty` a `tptr` whose `elt` is the type of each of its n ≥ 1
 children, every child a `ci`, `cf` or `cb`; an `xblk`'s `ty` equal to its last
 child's. Any violation is `BAD_RECORD` (`BAD_TREE` for the tree). `tools/seaval.bas` validates the
-format `hirl` (sets `H HF HL`) with its generic checks (§2.10).
+format `hirl` (sets `H HF HL`) with its generic checks (§2.10); it needed no change for 4f, since it
+reads the enumeration `wop` (with `and`) and the types (with F8) from `passes.txt` and the file
+itself.
 
 **Capacity.** `sealoop` counts `sea.hirl` as a whole: all its nodes against `SEA_LIM_NODES`
 (`program too large: nodes`), all its locals, the new `.l` locals included, against
@@ -5178,7 +5223,8 @@ rule 17's introduction.
   `tmp` local takes that register); then, right after the value, `release` of each of its owned
   temporaries other than the value's, in the order of their `tmp` records (T2; rule 15 (k)). From 4f
   (R12) the destination also reaches a value that is an `ifx` (it is the `ifx`'s R of rule 3, a local's
-  register included, with no `mov`; only the `xblk`s of L13 have such a value) and a value `lv L` of a scalar `.l` accumulator bound by a `bind`
+  register included, with no `mov`; applied to every `ifx` whose parent is an `xblk`, which only L13
+  writes) and a value `lv L` of a scalar `.l` accumulator bound by a `bind`
   inside the `xblk` (L's register is the destination).
 * `hloop K start last step`: start, last and step (rule 1, in that order; an `lv` emits nothing),
   then `loop B K s l st` (B the next block number, §3.6.4), the block, `endloop B`. It is a loop
@@ -5754,7 +5800,8 @@ algorithm gives the same bytes, so neither target can differ from the other):
   1), also for n = 0 and n = 1.
 * **Stack.** Each entry uses at most 256 bytes of stack below the incoming `sp` (x86_64: below the
   return address) for its own frame (the frame record, the callee-saved registers it uses and a few
-  words), as the elementary functions do (§4.10.1); everything that grows with n or with the radix
+  words), as the elementary functions do (§4.10.1; as built: at most 208 bytes on arm64, the shared
+  body's 96-byte frame and the merge sort's 112, and 216 on x86_64); everything that grows with n or with the radix
   (keys, indices, the histograms, the insertion sort's pairs) is in the scratch block. The runtime
   functions it calls (`sea_arr_new`, `_sea_alloc`, `_sea_free_block`, `_sea_retain`, the comparison
   of `STR_CMP`, `_sea_err`) are those of `rt_arr.s`, `rt_mem.s`, `rt_str.s` and `rt_err.s`, whose
@@ -5773,15 +5820,18 @@ algorithm gives the same bytes, so neither target can differ from the other):
   payloads and signs are kept); `argsort` writes the indices as `i64`. `str` (both entries): a stable
   bottom-up merge sort of 32-bit indices with `STR_CMP`'s order, ping-ponged between two index
   buffers; `sort` stores the gathered string pointers and retains each (`_sea_retain`).
-* **Scratch.** One block from `_sea_alloc` for n ≥ 2 (none for n ≤ 1): for `f64` and `i64` the two key
-  buffers, the two index buffers and the histograms, 24·n + 16 384 bytes (8 · 256 counts of 8
-  bytes; for n ≤ 32 the same block holds the 12·n bytes of pairs instead, rounded up to 8); for `str`
-  the two index buffers, 8·n bytes. It is freed with `_sea_free_block` before the entry returns, so
+* **Scratch.** One block from `_sea_alloc` for n ≥ 2 (none for n ≤ 1), laid out as `rt_sort.s` on
+  both targets lays it out: `f64` and `i64` with n ≤ 32, a key array of 8·n bytes followed by a
+  32-bit index array of 4·n bytes, 12·n bytes rounded up to a multiple of 8; `f64` and `i64` with n >
+  32, the 8 histograms (8 · 256 counts of 8 bytes, 16 384 bytes), then the key buffers A and B (8·n
+  each), then the index buffers A and B (4·n each), 24·n + 16 384 bytes; `str`, the index buffers A
+  and B (4·n each), 8·n bytes. It is freed with `_sea_free_block` before the entry returns, so
   the live-object count (§4.1, `SEA_HEAP_CHECK`) changes only by the result. The result is allocated
   first; a failed allocation of either is `_sea_err(SEA_E_OUT_OF_MEMORY, site)` through
   `_sea_alloc`'s own path (the process ends).
-* **Tests** (§6.2): `tests/rt/<target>/rt_sort_*` (the ABI and ownership, the `str` paths with their
-  counts, empty and one-element inputs) and the `sort_*` programs of both targets. The
+* **Tests** (§6.2): `tests/rt/<target>/rt_sort_f64`, `rt_sort_i64`, `rt_sort_radix`, `rt_sort_scratch`,
+  `rt_sort_sizes` and `rt_sort_str` (the ABI and ownership, the key order, both sizes of algorithm,
+  the scratch block freed, the `str` paths with their counts, empty and one-element inputs) and the `sort_*` programs of both targets. The
   out-of-memory path is not tested here: a test cannot make the scratch allocation fail reliably
   (it follows the successful allocation of the result, and the vector it would need is larger than a
   test can build), and the failure is reported by `_sea_alloc`'s own path, which `tests/rt` already
@@ -7726,7 +7776,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4d | **Dynamic arrays core** (`f64`/`i64`/`bool`): array types (§3.4.2's `rtvec`/`rtmat`, `rtype`; element loops no longer skipped regions), `zeros ones filled len rows cols numel`, scalar indexing read and write with bounds checks, `$`, arrays as locals, parameters, results and `ref` parameters, copy on write, reference counts on every exit, `for` over vectors, the scalar exact math functions, `where` on scalars, `ind2sub`, `sub2ind` (Decision 23); §3.6.6 rules 12 (its phase-4 part) and 15 for arrays, 16–19, 30, 31 (with deferred `ref` arguments), 36 and the phase-rule step 4d of §2.6.2; `compare.py --keys` in `sea/workloads/reference_py/compare.py` (a plain directory of the sea repository, changed in 4d's own commit), and `tests/accept4.sh` with `tests/accept/w4_sor.*` (§6.3); then the **size gate** of §2.7 (`make lines`, the free array letters of `sealower` and `seacheck`), whose result decides whether sub-phase 4e-0 runs | W4's scalar SOR prints `it_sor` 832 ± 1 and `T_max` within 1e-6 (`compare.py --keys` on the Mac, `make test-accept`) and the same bytes on the Linux host; the 4d tests of §6.2 pass on both targets with no leak under the heap check; `make test` and `make cross` pass |
 | 4e-0 | **Split of pass 3a; no change of behaviour** (the size gate after 4d decided it, §2.7: projected 9 665 > 8 000; Decisions 26–30). The specification (this step, agreed by the user 2026-10-22): `sealoop` (`sea.hir` → `sea.hirl`) and `sealower` (`sea.hirl` → `sea.lir1`) as §2.1, §2.7, §3.5.9 and §3.6.6 ("Two programs", "Lowering of the `sea.hirl` records") say; set `HL` of `passes.txt` (codes 72–87, enumeration `wop`); `--emit hirl` (§2.2). Then the build, in work packages with disjoint files: **(1)** `passes/sealoop/` (new; `build.list`: `lib io diag tables`, `data errors exits consts records`): reading and validating `sea.hir`, the rewrites L1–L4, writing `sea.hirl`, the capacity checks; **(2)** `passes/sealower/`: reading and validating `sea.hirl`, the lowering of the node records 73–81 (`tptr` 72 is a type, not lowered), the records 82–87 rejected as `BAD_RECORD` (they are implemented with 4e), the `tmp` alias and the `xblk` ownership (rule 15 (k)), the code of `zeros ones filled len rows cols numel` and `fore` removed (those records are now `BAD_RECORD`); **(3)** `tools/seaval.bas` (the format `hirl`: sets `H HF HL`), `driver/sea` (pass sequence, `--emit hirl`, usage line), `Makefile` and `tools/passlines.sh` (the pass list), `tests/stage.sh` (the pairs of §6.2), `tests/run.sh` (dump kind `hirl`), `tests/protocol.sh`, `tests/driver_check.sh`, `tests/lib_check.sh`, the `--emit` list, pass list and `seaval` formats in `CLAUDE.md`, `tests/CORPUS.md`; **(4)** only `tests/passes/*` and the generator script(s) of `tests/vectors/`: the goldens and dump tests of §6.2 ("Tests of the pass-3a split"), hand-derived from §3.5.9; (3)'s `lib_check.sh` step uses (4)'s `arr_rule30.hirl`, so it follows (4). The set number of `HL` (7, after `LF`) in `passes/lib/tables.bas` (`tb_records`), `tools/seaval.bas`, `seagen_a64`/`seagen_x64` (which skip the HIR sets) and `passes/lib/API.md` landed with this specification, in the same commit as the `HL` records of `passes.txt`: every pass loads the `records` table and stops on a set it does not know. Not changed: LANGUAGE.md, every other intermediate format, `sea.lir1` byte for byte, every message, position and exit status (except a capacity error of `sealoop` for a program near a limit, §3.5.9), `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2a, 2b, 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`, the W4 acceptance, the heap check); the 17 `.hirl` goldens and the new tests of §6.2 pass in `run.sh` and in both stage pairs; `protocol.sh` and `driver_check.sh` cover `sealoop`; `seaval` validates `hirl`; `make check-contracts` passes with set `HL`; `make check-limits` reports `sealoop` and `sealower` below 9 000 lines and their measured sizes and free array letters replace the estimates of §2.7; `make test` and `make cross` pass |
 | 4e | **Array expressions** (specified 2026-10-22, Decisions 31–35: `sealoop`'s rewrites L5–L11 of §3.5.9 with the refinements R1–R11, §3.6.6's LIR unchanged): ranges, `:`, steps, index vectors and masks (read, assignment, compound assignment), views, range values (also as a `for`'s vector), array literals and concatenation (Decision 20), fixed-size arrays (`rtfvec`/`rtfmat`; rule 27 for `f64`, `i64` and `bool` elements completely, Decision 32), `dyn`/`fix`, element-wise operators and comparisons with broadcasting, array `cvt`, `where` and the elemental library functions on arrays (`ind2sub` as two loops, Decision 33); rules 20–22, 25, 26 (numeric literals), 27 (fixed-size numeric part), 28, rule 21's clause of Decision 34, the records 82–87 in `sealower`, the 4e entries of §3.5.7, the static shape errors of §3.5.5, and the phase-rule step 4e. Work packages, each owning its files (written in parallel against the hand-written goldens through stage.sh): **T1** spec-derived `programs/` and `errors/` (`tests/programs/{sel_,ew_,arr_,heap_}*`, `tests/errors/*`, their `tests/vectors/` scripts, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4e_cases.py` and its goldens in `tests/passes/` (T1 alone edits `tests/CORPUS.md`; T2 reports its rows to T1); **front end** `passes/seaname/sn6type.bas`, `passes/seacheck/*.bas` and `passes/seacheck/build.list` (and the `build.list` of any front-end pass that gains a file), `passes/seaexpand/seaexpand.bas` (typing, implicit `dyn`/`fix`, static shapes, HIR records, G12; the type of `[]` from the contexts of LANGUAGE.md §6.9 (a binding's declared type, an assignment target, a user function's parameter, a `return`'s result type, the other arm of an `if` expression with an array type; a struct field in 4g), elsewhere 252 at the `[]`, Decision 36); **sealoop** `passes/sealoop/*` (L5–L11); **sealower** `passes/sealower/*` (82–87, R1–R11, rule 27's homes, no new array letter); then `tests/programs/w4_sor_arrays.*` with T1, and the sizes of §2.7 measured | the 4e tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4e dumps holds (`sealoop` writes each hand-written `.hirl` from its `.hir`, `sealower` lowers it to its `.lir1`), the agreed examples of rules 20, 21, 22, 25 and 28 byte for byte; `w4_sor_arrays` prints the same bytes as 4d's W4 program (`programs/`); every earlier test passes unchanged; `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
-| 4f | **Reductions, sorting, searching, library options** (specified 2026-10-22, Decisions 38–41: `sealoop`'s rewrites L13 and L14 of §3.5.9 with the refinements R12–R16, §3.6.6's LIR unchanged): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, errors 225, 237, 262, 243 with named arguments), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets, `f64`, `i64` and `str`, Decision 40), `find find_first find_last`, the named options of library calls (Decision 21), result types on fixed-size arguments (Decision 39), error 115 (Decision 41); rules 23, 24 and the phase-rule step 4f (§2.6.2, "Readings fixed by 4f"); `passes.txt`'s `wop` word `and`, error 115 and the `rt.inc` entries 21–22 (`SEA_ENT_COUNT` 22, §4.8: before any 4f code, so that R16 and the rule-24 dump can name them; a runtime without `rt_sort.s` fails only at link time) enter with this specification. Work packages, each owning its files: **T1** spec-derived `programs/` and `errors/` (`tests/programs/{red_,sort_,find_,heap_red_}*`, `tests/programs/w4_sor_reduce.*`, `tests/errors/*` new and the four `err_ns_lib_*` goldens of §6.2, their `tests/vectors/` script, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4f_cases.py` and its goldens in `tests/passes/` (T2 reports its rows to T1); **front end** `passes/seaparse/seaparse.bas` (115) and `passes/seacheck/*` with its `build.list` (overloads, named options, Decision 39's types and `dyn`, the phase-rule step); **sealoop** `passes/sealoop/*` (L13, L14, R14; a new file in its own line range); **sealower** `passes/sealower/*` and `tools/seaval.bas` (R12, R13, R15, R16 and their validation); **runtimes** `runtime/arm64_macos/rt_sort.s`, `runtime/x86_64_linux/rt_sort.s`, the runtime object lists of `Makefile` and `Makefile.linux`, `tests/rt/arm64_macos/rt_sort_*` and `tests/rt/x86_64_linux/rt_sort_*`; then the size gate of §2.7 (Decision 35) | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs), with no leak under the heap check; every stage pair of the 4f dumps holds, the agreed examples of rules 23 and 24 byte for byte; `w4_sor_reduce` prints the bytes of `w4_sor_arrays.out`; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_sort_*`; every earlier test passes unchanged; `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and a program that fails it is split (specified and agreed first) before 4g |
+| 4f | **Reductions, sorting, searching, library options** (specified 2026-10-22, Decisions 38–41: `sealoop`'s rewrites L13 and L14 of §3.5.9 with the refinements R12–R16, §3.6.6's LIR unchanged): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, errors 225, 237, 262, 243 with named arguments), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets, `f64`, `i64` and `str`, Decision 40), `find find_first find_last`, the named options of library calls (Decision 21), result types on fixed-size arguments (Decision 39), error 115 (Decision 41); rules 23, 24 and the phase-rule step 4f (§2.6.2, "Readings fixed by 4f"); `passes.txt`'s `wop` word `and`, error 115 and the `rt.inc` entries 21–22 (`SEA_ENT_COUNT` 22, §4.8: before any 4f code, so that R16 and the rule-24 dump can name them; a runtime without `rt_sort.s` fails only at link time) enter with this specification. Work packages, each owning its files: **T1** spec-derived `programs/` and `errors/` (`tests/programs/{red_,sort_,find_,heap_red_}*`, `tests/programs/w4_sor_reduce.*`, `tests/errors/*` new and the four `err_ns_lib_*` goldens of §6.2, their `tests/vectors/` script, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4f_cases.py` and its goldens in `tests/passes/` (T2 reports its rows to T1); **front end** `passes/seaparse/seaparse.bas` (115) and `passes/seacheck/*` with its `build.list` (overloads, named options, Decision 39's types and `dyn`, the phase-rule step); **sealoop** `passes/sealoop/*` (L13, L14, R14; a new file in its own line range); **sealower** `passes/sealower/*` and `tools/seaval.bas` (R12, R13, R15, R16 and their validation; `seaval` needed no change, §3.5.9); **runtimes** `runtime/arm64_macos/rt_sort.s`, `runtime/x86_64_linux/rt_sort.s`, the runtime object lists of `Makefile` and `Makefile.linux`, `tests/rt/arm64_macos/rt_sort_*` and `tests/rt/x86_64_linux/rt_sort_*`; then the size gate of §2.7 (Decision 35) | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs), with no leak under the heap check; every stage pair of the 4f dumps holds, the agreed examples of rules 23 and 24 byte for byte; `w4_sor_reduce` prints the bytes of `w4_sor_arrays.out`; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_sort_*`; every earlier test passes unchanged; `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and a program that fails it is split (specified and agreed first) before 4g |
 | 4g | **Strings, structs, records, `match`, `error`, `args`** (the first step specifies the `sea.hirl` records and rewrites 4g needs, Decision 29): §3.4.2's `rtst`/`rtfd`, `rslit`, `rcns` and struct declaration checks (`match` no longer a skipped region), rules 15 (f)–(j) and the rest of 15 for `str` and structs, 18 (struct elements), 26 (`str` and struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29, 30 (`str` and struct elements), 32–35, 38 and the phase-rule step 4g; `sort` and `argsort` of `str` vectors in programs (the runtime path is 4f's, Decision 40; the `sort_str` test of §6.2) | the 4g tests of §6.2 pass on both targets; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error; `make test` and `make cross` pass |
 | 4h | **Prelude and W5; close-out** (the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 |
 

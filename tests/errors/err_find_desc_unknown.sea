@@ -1,0 +1,3 @@
+// err_find_desc_unknown -- find(m, desc: true): find takes no named argument
+let m: bool[] = [true]
+let r = find(m, desc: true)

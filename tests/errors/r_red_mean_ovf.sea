@@ -1,0 +1,4 @@
+// r_red_mean_ovf -- mean of the same i64 vector: its sum is checked the same way (LANGUAGE.md 10.5)
+let v: i64[] = [4611686018427387904, 4611686018427387904, -4611686018427387904]
+let m = mean(v)
+printf("%g\n", m)

@@ -1,0 +1,7 @@
+let m = [true, false, true, true]
+let n = nnz(m)
+let y = any(m)
+let z = all(m)
+printf("%d %d %d\n", n, y, z)
+// lib_nnz -- DESIGN.md 3.5.9 L13: nnz (wbin add of a bool, R7), any and all of a fixed-size
+// bool vector, each accumulator taking the register of its local (R12 (b))

@@ -1,4 +1,0 @@
-// err_ns_lib_min1 -- 4d: min(v) of one vector is still the name min, at the call (DESIGN.md 2.6.2
-// step 4d)
-let v = ones(3)
-let m = min(v)

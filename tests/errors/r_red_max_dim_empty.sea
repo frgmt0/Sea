@@ -1,0 +1,5 @@
+// r_red_max_dim_empty -- max(Z, dim: 0) of a 0 x 3 matrix: each column has 0 elements, the vector rule's
+// error (LANGUAGE.md 10.5)
+let Z = zeros(0, 3)
+let r = max(Z, dim: 0)
+printf("%d\n", len(r))

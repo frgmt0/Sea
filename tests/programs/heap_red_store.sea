@@ -1,0 +1,28 @@
+// heap_red_store -- an owned index vector of a selection store (DESIGN.md 3.6.6 rule 21): v[argsort(w, desc:
+// true)] = 0.0 released at the end of its block, a selection of it, in a loop, on a fixed
+// target; the heap check finds no live object
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+var v: f64[] = [10.0, 20.0, 30.0, 40.0, 50.0]
+let w: f64[] = [0.5, 2.5, 1.5]
+v[argsort(w, desc: true)] = 0.0
+pf(v)
+var u: f64[] = [1.0, 2.0, 3.0]
+u[argsort(w, desc: true)[0..2]] = -1.0
+pf(u)
+for k in 0..3 {
+    v[argsort(w)] = f64(k)
+}
+pf(v)
+var f = [1.0, 2.0, 3.0, 4.0]
+f[find(w > 1.0)] = 9.0
+pf(f)
+let g = v
+v[argsort(w)[1..3]] += 1.0
+pf(v)
+pf(g)

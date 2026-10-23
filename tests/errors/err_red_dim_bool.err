@@ -1,0 +1,1 @@
+err_red_dim_bool.sea:4:27: error: type mismatch: expected i64, found bool

@@ -1,0 +1,4 @@
+// err_sort_positional_option -- sort(v, true): options are given only by name (LANGUAGE.md 8.1, Decision 43)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sort(v, true)

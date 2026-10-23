@@ -1,0 +1,24 @@
+// red_sum_f64 -- f64 sum (LANGUAGE.md 10.5): the pinned 8-lane order on 7, 8, 9 and 17 elements (each
+// differs from left-to-right summation), fixed and dynamic operands, 0 and 1 elements,
+// zero signs, NaN, infinities and overflow
+let v7 = [1.0, 1.0, 1e16, 1.0, -1e16, 1.0, 1.0]
+let d7: f64[] = v7
+printf("%.17g %d %.17g\n", sum(v7), sum(v7) == 2.0, sum(d7))
+let v8 = [1e16, 1.0, -1e16, 1.0, 3.0, 1.0, 1.0, 1.0]
+let d8: f64[] = v8
+printf("%.17g %d %.17g\n", sum(v8), sum(v8) == 6.0, sum(d8))
+let v9 = [1e16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1e16]
+let d9: f64[] = v9
+printf("%.17g %d %.17g\n", sum(v9), sum(v9) == 7.0, sum(d9))
+let v17 = [1e16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1e16]
+let d17: f64[] = v17
+printf("%.17g %d %.17g\n", sum(v17), sum(v17) == 14.0, sum(d17))
+let e: f64[] = []
+printf("%g %g\n", sum(e), sum([-0.0]))
+printf("%.17g %d\n", sum([0.1]), sum([0.1]) == 0.1)
+printf("%g %g %g\n", sum([-0.0, -0.0, -0.0]), sum([-0.0, 0.0]), sum([0.0, -0.0]))
+let z9 = [-0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0]
+printf("%g\n", sum(z9))
+printf("%g %g %g %g\n", sum([1.0, nan, 2.0]), sum([inf, 1.0]), sum([inf, -inf]), sum([-inf, -1.0]))
+printf("%g\n", sum([1e308, 1e308, -1e308, -1e308]))
+printf("%g\n", sum([1.7976931348623157e308, 1.7976931348623157e308]))

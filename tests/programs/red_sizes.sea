@@ -1,0 +1,57 @@
+// red_sizes -- every vector reduction on 0, 1, 7, 8, 9 and 17 elements (LANGUAGE.md 10.5): f64 sum, mean,
+// variance, std in the pinned 8-lane order (the f64 vectors of 7 or more elements are chosen
+// so it differs from left to right), max, min, argmax, argmin (not on the empty vector:
+// errors/r_red_*), the same for i64, and nnz, any, all of bool vectors (empty: 0, false, true)
+fn stf(v: f64[]) {
+    printf("%d %.17g %.17g %.17g %.17g", len(v), sum(v), mean(v), variance(v), std(v))
+    if len(v) > 0 {
+        printf(" %g %g %d %d", max(v), min(v), argmax(v), argmin(v))
+    }
+    printf("\n")
+}
+fn sti(v: i64[]) {
+    printf("%d %d %.17g %.17g %.17g", len(v), sum(v), mean(v), variance(v), std(v))
+    if len(v) > 0 {
+        printf(" %d %d %d %d", max(v), min(v), argmax(v), argmin(v))
+    }
+    printf("\n")
+}
+fn stb(v: bool[]) {
+    printf("%d %d %d %d\n", len(v), nnz(v), any(v), all(v))
+}
+let f0: f64[] = []
+stf(f0)
+let f1: f64[] = [-2.5]
+stf(f1)
+let f7: f64[] = [1.0, 1.0, 1e16, 1.0, -1e16, 1.0, 1.0]
+stf(f7)
+let f8: f64[] = [1e16, 1.0, -1e16, 1.0, 3.0, 1.0, 1.0, 1.0]
+stf(f8)
+let f9: f64[] = [0.5, 1e16, -0.25, 3.0, 1.0, 1.0, 1.0, -7.5, -1e16]
+stf(f9)
+let f17: f64[] = [1e16, 2.0, -3.5, 0.125, 4.0, -1.0, 6.0, 0.75, -1e16, 2.0, -3.5, 0.125, 4.0, -1.0, 6.0, 0.75, 9.0]
+stf(f17)
+let i0: i64[] = []
+sti(i0)
+let i1: i64[] = [-9]
+sti(i1)
+let i7: i64[] = [3, -1, 4, -1, 5, -9, 2]
+sti(i7)
+let i8: i64[] = [6, 5, -3, 5, 8, -9, 7, 9]
+sti(i8)
+let i9: i64[] = [2, 7, -1, 8, -2, 8, 1, -8, 2]
+sti(i9)
+let i17: i64[] = [5, -3, 9, 9, 0, -7, 4, -7, 1, 2, 9, 3, -5, 0, 8, -7, 6]
+sti(i17)
+let b0: bool[] = []
+stb(b0)
+let b1: bool[] = [true]
+stb(b1)
+let b7: bool[] = [false, false, false, false, false, false, false]
+stb(b7)
+let b8: bool[] = [true, true, true, true, true, true, true, true]
+stb(b8)
+let b9: bool[] = [true, false, true, true, false, false, true, false, true]
+stb(b9)
+let b17: bool[] = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]
+stb(b17)

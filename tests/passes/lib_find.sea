@@ -1,0 +1,5 @@
+let m = [false, true, true, false, true]
+let f = find(m)
+printf("%d %d\n", len(f), f[2])
+// lib_find -- DESIGN.md 3.5.9 L14: find of a fixed-size bool vector (the count, the new i64[]
+// of that length, the indices stored in order); the result is dynamic (Decision 39)

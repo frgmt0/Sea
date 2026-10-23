@@ -8,7 +8,8 @@
 40 REM (LANGUAGE 11.1), now f64 i64 idiv log exp sin cos pow hypot; from 4d the dynamic arrays of
 45 REM f64 i64 bool, scalar indexing, $, for over a vector, zeros ones filled len rows cols numel
 50 REM and the elemental functions on scalars; from 4e (sc9arr) fixed-size arrays, selections, views,
-55 REM literals, dyn/fix, broadcasting (DESIGN 2.6.2 step 4e); the rest 'not supported yet'. It takes every
+55 REM literals, dyn/fix, broadcasting (DESIGN 2.6.2 step 4e); from 4f (sc9red) the reductions, sort,
+57 REM argsort, find*, the options dim: and desc: (step 4f); the rest 'not supported yet'. It takes every
 60 REM lid, fid, cid, sid and every declared type (the type table, rtype) from sea.res and validates
 65 REM sea.res first (3.4.1, 3.4.2 "What seacheck validates": BAD_RECORD).
 70 REM Errors: every error is recorded with its position; the first in source order (file, line,

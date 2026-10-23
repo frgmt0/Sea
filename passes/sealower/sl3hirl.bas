@@ -9,11 +9,13 @@
 30016 REM xblk H6 n; tmp, hloop H5 lid; ext H5 dim; eld, est H5 sc, H0 off (text); anew H5 z, H6 r;
 30018 REM wbin H5 op (1 add 2 sub 3 mul). Resume codes 60-65 (32010).
 30020 REM ====================================================================================
-30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9) --------------
+30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14
+30041 REM take an array operand: R10, 40116); sort and argsort do (R16) ---------------------------
 30050 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
 30052 LET W2$ = G$(4)
 30054 GOSUB 1875
 30056 IF W2 > 0 THEN 2360
+30057 IF POS("|sort|argsort|", "|" & W2$ & "|") > 0 THEN 30130
 30058 GOTO 1285
 30059 REM ---- 30060: H3 = the flags of a loc record: 1 a .l local (3.5.9), + 2 mut for ---------
 30060 LET H3 = 0
@@ -42,6 +44,24 @@
 30118 LET T(Y9, 1) = 4
 30120 LET T(Y9, 2) = I(2)
 30122 GOTO 1285
+30126 REM ---- lib sort / argsort (R16): two children, a dynamic vector of f64, i64 or str elements and
+30127 REM a bool desc; the result that vector's type (sort) or an i64 vector (argsort)
+30130 IF H(H1, 6) <> 2 THEN 2360
+30132 LET E2 = H(H1, 7)
+30134 LET E3 = H(E2, 4)
+30136 IF E3 <= 9 THEN 2360
+30138 IF T(E3, 1) <> 1 THEN 2360
+30140 IF T(E3, 2) < 3 THEN 2360
+30142 IF T(E3, 2) > 5 THEN 2360
+30144 IF H(H(E2, 8), 4) <> 2 THEN 2360
+30146 LET E4 = H(H1, 4)
+30148 IF W2$ = "sort" THEN 30158
+30150 IF E4 <= 9 THEN 2360
+30152 IF T(E4, 1) <> 1 THEN 2360
+30154 IF T(E4, 2) = 3 THEN 1285
+30156 GOTO 2360
+30158 IF E4 <> E3 THEN 2360
+30160 GOTO 1285
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their
 30199 REM fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
@@ -141,10 +161,10 @@
 30500 IF H(E2, 4) <> 3 THEN 2360
 30502 LET E2 = H(E2, 8)
 30504 GOTO 30498
-30520 REM ---- wbin ty op: ty 3, two operands of type 3; op 1 add 2 sub 3 mul ---------------------
+30520 REM ---- wbin ty op: ty 3, operands of type 2 or 3 (R7); op 1 add 2 sub 3 mul, 4 and (R13: both 3)
 30530 LET H(H1, 4) = I(2)
 30532 IF I(2) <> 3 THEN 2360
-30534 LET K3$ = "|add    |sub    |mul    "
+30534 LET K3$ = "|add    |sub    |mul    |and    "
 30536 LET W2$ = G$(4)
 30538 GOSUB 1875
 30540 IF W2 = 0 THEN 2360
@@ -152,7 +172,9 @@
 30544 LET E2 = H(H1, 7)
 30546 IF ABS(H(E2, 4) - 2.5) <> .5 THEN 2360
 30548 IF ABS(H(H(E2, 8), 4) - 2.5) <> .5 THEN 2360
-30550 GOTO 1285
+30549 IF W2 < 4 THEN 1285
+30550 IF H(E2, 4) + H(H(E2, 8), 4) <> 6 THEN 2360
+30552 GOTO 1285
 30890 REM ---- 30900: E4 = the rank of the type E3 when it is an array (tvec tfvec 1, tmat tfmat 2), else 0
 30900 LET E4 = 0
 30902 IF E3 <= 9 THEN 30910
@@ -264,14 +286,16 @@
 32134 GOSUB 41640
 32135 LET R9 = 0
 32136 GOTO 3090
-32190 REM ---- xblk: with a destination D and the value lv L of one of its own tmps, L's register is
-32191 REM D (T3); its statements in order, then its value with the destination D; then the
-32192 REM releases of its owned temporaries (T2); x1 = the value's register, x2 = the next child
+32190 REM ---- xblk: with a destination D and the value lv L of one of its own tmps (T3) or of a scalar
+32191 REM .l accumulator bound by a bind inside it (R12 (b), 33520), L's register is D; its statements
+32192 REM in order, then its value with the destination D; then the releases of its owned temporaries
+32193 REM (T2); x1 = the value's register, x2 = the next child
 32200 LET W(W0 + 4) = H(X, 7)
 32202 IF D < 1 THEN 32214
 32204 GOSUB 33500
 32206 IF H(E2, 1) <> 5 THEN 32214
-32208 LET E4 = A(G(F0, 0) + H(E2, 5), 0)
+32207 LET E4 = A(G(F0, 0) + H(E2, 5), 0)
+32208 IF E4 = 0 THEN 33520
 32209 IF E4 < E3 THEN 32214
 32210 IF E4 >= X THEN 32214
 32211 IF H(E4, 1) <> 44 THEN 32214
@@ -506,13 +530,13 @@
 33082 GOSUB 7695
 33084 LET R9 = D2
 33086 GOTO 3090
-33090 REM ---- wbin op: iadd, isub or imul d a b into the destination (wrapping) -----------------
+33090 REM ---- wbin op: iadd, isub, imul (wrapping) or iand (R13) d a b into the destination ----------
 33100 LET E2 = U(E1 + 1, 1)
 33102 LET E3 = U(E1 + 2, 1)
 33104 LET U0 = E1
 33106 LET C1 = 1
 33108 GOSUB 7470
-33110 LET O$ = SEG$("iaddisubimul", 4 * H(X, 5) - 3, 4 * H(X, 5))
+33110 LET O$ = SEG$("iaddisubimuliand", 4 * H(X, 5) - 3, 4 * H(X, 5))
 33112 LET V2 = D2
 33114 LET V3 = E2
 33116 LET V4 = E3
@@ -588,3 +612,54 @@
 33512 LET E3 = H(E3, 7)
 33514 GOTO 33510
 33516 RETURN
+33518 REM ---- (from 32208) R12 (b): the value lv L of a scalar .l local that a bind in the subtree of
+33519 REM the xblk X (E3 .. X - 1) declares, an accumulator: L's register is the destination D
+33520 LET E5 = H(E2, 5)
+33522 IF A(G(F0, 0) + E5, 4) - 2 * INT(A(G(F0, 0) + E5, 4) / 2) = 0 THEN 32214
+33524 IF A(G(F0, 0) + E5, 1) > 4 THEN 32214
+33526 FOR E4 = E3 TO X - 1
+33528 IF H(E4, 1) <> 20 THEN 33534
+33530 IF H(E4, 5) <> E5 THEN 33534
+33532 LET A(G(F0, 0) + E5, 3) = D
+33534 NEXT E4
+33536 GOTO 32214
+33548 REM ---- 33550 (rule 3 for the node X): F3 = 1 if X is an ifx with a destination D that is the
+33549 REM value of an xblk (R12 (a)): D is its R even when it is a local's register, with no mov
+33550 LET F3 = 0
+33552 IF D < 1 THEN 33560
+33554 IF H(X, 1) <> 17 THEN 33560
+33556 IF H(W(W0 - 6), 1) <> 43 THEN 33560
+33558 LET F3 = 1
+33560 RETURN
+33590 REM ---- lib sort / argsort (R16, rule 24; from 19570, W2 21 or 22, its arguments U(Z6+1 ..)):
+33591 REM rcall sea_sort or sea_argsort site 1 R 2 V Dsc into the destination (owned), then the
+33592 REM release of an owned vector right after it (rule 15 (b))
+33600 LET Q1$ = "SORT"
+33602 IF W2 = 21 THEN 33606
+33604 LET Q1$ = "ARGSORT"
+33606 LET Q9 = 0
+33608 FOR I = 1 TO Y0
+33610 IF Y$(I, 1) <> Q1$ THEN 33614
+33612 LET Q9 = I
+33614 NEXT I
+33616 IF Q9 = 0 THEN 33622
+33618 IF Y$(Q9, 4) <> "pi" THEN 33622
+33620 IF Y$(Q9, 5) = "p" THEN 33626
+33622 CALL "dg_bug": P$, "entry " & Q1$ & " (pi, p) is not in the entries table"
+33626 LET C1 = 3
+33628 GOSUB 7470
+33630 GOSUB 5590
+33632 LET V1 = D2
+33634 GOSUB 7500
+33636 LET L1$ = L1$ & " " & Z$ & " 2"
+33638 FOR I = Z6 + 1 TO Z6 + 2
+33640 LET V1 = U(I, 1)
+33642 GOSUB 7500
+33644 LET L1$ = L1$ & " " & Z$
+33646 NEXT I
+33648 GOSUB 7695
+33650 LET X0 = H(X, 7)
+33652 LET R0 = U(Z6 + 1, 1)
+33654 GOSUB 10080
+33656 LET R9 = D2
+33658 GOTO 19580

@@ -1,0 +1,37 @@
+#sea 1
+#target arm64-macos
+#file lib_variance.sea
+type 0:1:14 f64 v 0
+param 0:1:11 x 0 0
+pname 0:2:9 v
+name 0:2:13 variance
+name 0:2:22 x
+call 0:2:13 1
+let 0:2:5 0
+pname 0:3:9 d
+name 0:3:13 std
+name 0:3:17 x
+call 0:3:13 1
+let 0:3:5 0
+name 0:4:5 printf
+str 0:4:12 %25g%20%25g%0A
+name 0:4:23 v
+name 0:4:26 d
+call 0:4:5 3
+cstmt 0:4:5
+block 0:1:21 3
+fn 0:1:1 spread 0 1 0
+name 0:6:1 spread
+name 0:6:8 ones
+int 0:6:13 3
+call 0:6:8 1
+call 0:6:1 1
+cstmt 0:6:1
+name 0:7:1 spread
+name 0:7:8 zeros
+int 0:7:14 0
+call 0:7:8 1
+call 0:7:1 1
+cstmt 0:7:1
+prog 3
+#end

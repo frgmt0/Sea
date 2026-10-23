@@ -1,0 +1,6 @@
+// err_red_dim_twice_value_first -- the arguments are checked in source order, each value before its narg:
+// the second dim:'s value qq is undeclared (200) before that narg's 225
+// (DESIGN.md 2.6.2)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sum(A, dim: 0, dim: qq)

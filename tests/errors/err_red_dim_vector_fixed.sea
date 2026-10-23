@@ -1,0 +1,2 @@
+// err_red_dim_vector_fixed -- max of a fixed f64[3] with dim: 1: the fixed type spelled f64[3]
+let s = max([1.0, 2.0, 3.0], dim: 1)

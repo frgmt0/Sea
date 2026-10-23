@@ -1,0 +1,11 @@
+// red_sum_i64 -- i64 sum (LANGUAGE.md 10.5, Decision 42): partial sums in index order that all fit, with totals
+// at 2^63 - 1 and -2^63, the empty sum 0, one element, 17 elements
+printf("%d\n", sum([9223372036854775807, -1, 1]))
+printf("%d\n", sum([-4611686018427387904, -4611686018427387904]))
+printf("%d\n", sum([-9223372036854775808, 9223372036854775807]))
+printf("%d\n", sum([9223372036854775807, -9223372036854775808, 9223372036854775807]))
+let ie: i64[] = []
+printf("%d\n", sum(ie))
+printf("%d\n", sum([-7]))
+let i17: i64[] = (1..=17)
+printf("%d\n", sum(i17))

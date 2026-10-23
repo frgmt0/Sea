@@ -1,0 +1,78 @@
+// w4_sor_reduce -- programs/w4_sor_arrays.sea (W4's SOR with a whole-array set-up) with the scalar
+// loop for the hot spot replaced by a reduction (DESIGN.md 6.2 "4f"): the Dirichlet nodes set to -inf
+// in a copy of T, then the first maximum of its column-major flat view (LANGUAGE.md 10.5), the same
+// value as the loop's, so the program prints the bytes of w4_sor_arrays.out.
+
+// inputs
+let W = 0.30            // plate width [m]
+let H = 0.20            // plate height [m]
+let h = 0.00125         // grid spacing [m]
+let kCond = 167.0       // thermal conductivity [W/(m K)]
+let Tbot0 = 40.0        // bottom edge temperature at x = 0 [degC]
+let Tbot1 = 65.0        // bottom edge temperature at x = W [degC]
+let Ttop = 20.0         // top edge temperature [degC]
+let Thole = 12.0        // coolant channel temperature [degC]
+let holeCx = 0.215      // coolant channel center [m]
+let holeCy = 0.105
+let holeR = 0.018       // coolant channel radius [m]
+let srcX0 = 0.06        // heat source box x0 x1 y0 y1 [m]
+let srcX1 = 0.11
+let srcY0 = 0.07
+let srcY1 = 0.12
+let qSrc = 2.5e7        // volumetric heat generation [W/m^3]
+let tol = 1e-8          // convergence: max temperature change per sweep [K]
+let maxIt = 20000       // iteration cap
+
+let nx = i64(round(W / h)) + 1
+let ny = i64(round(H / h)) + 1
+let x = (0..nx) * h
+let y = (0..ny) * h
+
+// the coolant channel, the heat source term and the Dirichlet nodes
+let holeR2 = holeR ^ 2
+let srcVal = h ^ 2 * qSrc / kCond
+let hole = (x.row - holeCx) ^ 2 + (y.col - holeCy) ^ 2 <= holeR2
+let inSrc = x.row >= srcX0 & x.row <= srcX1 & y.col >= srcY0 & y.col <= srcY1
+var src = zeros(ny, nx)
+src[inSrc] = srcVal
+var fixed = hole
+fixed[0, :] = true
+fixed[ny - 1, :] = true
+
+// the initial temperatures
+var T = filled(Ttop, ny, nx)
+T[0, :] = Tbot0 + (Tbot1 - Tbot0) * x / W
+T[ny - 1, :] = Ttop
+T[hole] = Thole
+
+// relaxation factor from the Jacobi spectral radius of the rectangle (insulated sides)
+let rhoJ = (1.0 + cos(pi / f64(ny - 1))) / 2.0
+let omega = 2.0 / (1.0 + sqrt(1.0 - rhoJ ^ 2))
+
+// solver 1: scalar SOR in lexicographic order
+var itSor = 0
+var dMax = inf
+while dMax > tol && itSor < maxIt {
+    itSor += 1
+    dMax = 0.0
+    for i in 0..nx {
+        for j in 1..ny-1 {
+            if fixed[j, i] { continue }
+            let tw = if i == 0 { T[j, 1] } else { T[j, i-1] }
+            let te = if i == nx - 1 { T[j, nx-2] } else { T[j, i+1] }
+            let tgs = (tw + te + T[j-1, i] + T[j+1, i] + src[j, i]) / 4.0
+            let tn = T[j, i] + omega * (tgs - T[j, i])
+            let d = abs(tn - T[j, i])
+            if d > dMax { dMax = d }
+            T[j, i] = tn
+        }
+    }
+}
+
+// the hot spot over the solved (non-Dirichlet) nodes: the fixed nodes at -inf, then the first
+// maximum in column-major order
+var Thot = T
+Thot[fixed] = -inf
+let Tmax = max(Thot.flat)
+
+printf("{\"it_sor\": %d, \"T_max\": %.17g}\n", itSor, Tmax)

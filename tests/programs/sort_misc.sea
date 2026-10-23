@@ -1,0 +1,81 @@
+// sort_misc -- sort and argsort (LANGUAGE.md 10.6, Decision 39): a fixed-size operand gives a dynamic result,
+// desc: as a run-time bool expression, f64 and i64 vectors of 31, 32 and 33 elements with
+// many ties and -0 (both sides of the insertion-sort limit of DESIGN.md 4.8)
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn want(k: i64) -> bool {
+    return k > 2
+}
+fn mkf(n: i64) -> f64[] {
+    var v = zeros(n)
+    for k in 0..n {
+        v[k] = f64((k * 13) % 7) - 3.0
+        if (k * 13) % 7 == 3 && k % 2 == 1 {
+            v[k] = -0.0
+        }
+    }
+    return v
+}
+fn mki(n: i64) -> i64[] {
+    var w = filled(0, n)
+    for k in 0..n {
+        w[k] = (k * 5) % 4 - 1
+    }
+    return w
+}
+let fx = [3.0, 1.0, 2.0]
+var r = sort(fx)
+pf(r)
+r = zeros(5)
+printf("%d\n", len(r))
+var p = argsort(fx, desc: true)
+pvi(p)
+p = filled(7, 4)
+pvi(p)
+let d: f64[] = fx
+pf(sort(d, desc: want(3)))
+pf(sort(d, desc: want(1)))
+pvi(argsort(d, desc: len(d) < 0))
+pvi(argsort(d, desc: !(len(d) < 0)))
+let v31 = mkf(31)
+pf(sort(v31))
+pvi(argsort(v31))
+pf(sort(v31, desc: true))
+pvi(argsort(v31, desc: true))
+let w31 = mki(31)
+pvi(sort(w31))
+pvi(argsort(w31))
+pvi(sort(w31, desc: true))
+pvi(argsort(w31, desc: true))
+let v32 = mkf(32)
+pf(sort(v32))
+pvi(argsort(v32))
+pf(sort(v32, desc: true))
+pvi(argsort(v32, desc: true))
+let w32 = mki(32)
+pvi(sort(w32))
+pvi(argsort(w32))
+pvi(sort(w32, desc: true))
+pvi(argsort(w32, desc: true))
+let v33 = mkf(33)
+pf(sort(v33))
+pvi(argsort(v33))
+pf(sort(v33, desc: true))
+pvi(argsort(v33, desc: true))
+let w33 = mki(33)
+pvi(sort(w33))
+pvi(argsort(w33))
+pvi(sort(w33, desc: true))
+pvi(argsort(w33, desc: true))

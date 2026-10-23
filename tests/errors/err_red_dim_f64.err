@@ -1,0 +1,1 @@
+err_red_dim_f64.sea:4:21: error: type mismatch: expected i64, found f64

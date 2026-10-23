@@ -1,0 +1,4 @@
+// err_sort_desc_twice -- a repeated desc: is 225 at the second narg
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sort(v, desc: true, desc: false)

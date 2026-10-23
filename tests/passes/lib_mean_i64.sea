@@ -1,0 +1,7 @@
+let w = [3, 5, 9]
+let t = sum(w)
+let m = mean(w)
+printf("%d %g\n", t, m)
+// lib_mean_i64 -- DESIGN.md 3.5.9 L13 on a fixed-size i64 vector: isum (the extent loaded after
+// the data, iaddc with the call's line), sum's accumulator taking the register of t (R12 (b)),
+// and mean converting the sum before n (rule 23)

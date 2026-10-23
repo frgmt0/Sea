@@ -71,9 +71,10 @@
 5302 LET F9 = 4
 5304 GOSUB 8440
 5306 LET W2 = POS(K3$, "|" & F9$ & " ")
-5308 IF W2 = 0 THEN 5314
+5308 IF W2 = 0 THEN 5313
 5310 LET W2 = (W2 - 1) / 8 + 1
 5312 GOTO 6005
+5313 IF POS(K5$, "|" & F9$ & " ") + POS(F9$, ".dim") > 0 THEN 35000
 5314 IF F9$ <> "ind2sub" THEN 5324
 5316 LET X5 = X
 5318 GOSUB 5750
@@ -585,9 +586,9 @@
 8994 REM digits %0 ... %9 numbers); its value is a row of U or -lid (a local of sea.hir). Commands:
 8995 REM L x lv;  = x tmp, B x bind (x a new let local of the last type L8);  C v ci;  X x d ext;
 8996 REM D x adat;  K x x a new hloop local, its block opened;  ( N K loop(N; K);  [ E A L S K
-8997 REM rloop(E, A, L, S; K);  ? an if's block;  ) closes a loop or an if;  { a block or xblk;
-8998 REM } closes it as a block, ] as an xblk;  R i l e rcnt;  else a record, where P Q are the
-8999 REM positions, @x a local, ^x the tptr of x's element (^d of element d), %x a number.
+8997 REM rloop(E, A, L, S; K); ? an if's block; ) closes a loop or an if, > a loop in no if; {
+8998 REM a block or xblk, } closes it as a block, ] as an xblk; R i l e rcnt; else a record (P Q the
+8999 REM positions, @x a local, ^x the tptr of x's element (^d of element d), %x a number).
 9000 LET S1 = 1
 9002 LET S2 = POS(S$, ",", S1)
 9004 IF S2 > 0 THEN 9008
@@ -600,12 +601,12 @@
 9018 REM ---- 9020: one record S3$ (its command, the variable S5$ it names)
 9020 LET S4$ = SEG$(S3$, 1, 1)
 9022 LET S5$ = SEG$(S3$, 3, 3)
-9024 LET S3 = POS("L=BCXDK(?)[{}]R", S4$)
+9024 LET S3 = POS("L=BCXDK(?)[{}]R>", S4$)
 9026 IF S3 = 0 THEN 9200
 9028 IF S3 > 7 THEN 9034
 9030 IF S3 = 4 THEN 9034
 9032 GOSUB 9300
-9034 ON S3 GOTO 9040, 9050, 9050, 9070, 9075, 9080, 9060, 9090, 9110, 9120, 9100, 9115, 9140, 9150, 9160
+9034 ON S3 GOTO 9040, 9050, 9050, 9070, 9075, 9080, 9060, 9090, 9110, 9120, 9100, 9115, 9140, 9150, 9160, 9187
 9038 REM L x: lv of x (L8 = its type)
 9040 GOSUB 9325
 9042 LET Z$ = "lv " & P9$ & " " & S9$ & " " & S8$
@@ -708,6 +709,11 @@
 9183 GOSUB 9040
 9184 LET P9$ = S7$
 9185 RETURN
+9186 REM >: a loop closed that stands in no if (sum8, L13): block, hloop
+9187 LET S6 = M(Z0, 2)
+9188 GOSUB 9135
+9189 LET Z$ = "hloop " & P9$ & " @" & STR$(S6)
+9190 GOTO 8050
 9195 REM ---- 9200: a record, its fields substituted (L8 = the third field when it is a type)
 9200 LET Z$ = ""
 9201 LET Q6 = 1
@@ -775,10 +781,12 @@
 9337 IF S4 > 0 THEN 9339
 9338 LET S9$ = "^" & STR$(-S4)
 9339 RETURN
-9340 REM ---- 9340: E3 = the element type of type S4 (of a tptr, a scalar itself, of an array)
+9340 REM ---- 9340: E3 = the element type of type S4 (of a tptr, a scalar itself, of an array; F8 ^1: 4)
 9341 LET E3 = S4
 9342 IF S4 > 0 THEN 9344
 9343 LET E3 = -S4
 9344 IF E3 <= 9 THEN 9346
 9345 LET E3 = T(E3, 2)
-9346 RETURN
+9346 IF E3 <> 1 THEN 9348
+9347 LET E3 = 4
+9348 RETURN

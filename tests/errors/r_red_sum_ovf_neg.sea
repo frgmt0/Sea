@@ -1,0 +1,5 @@
+// r_red_sum_ovf_neg -- -2^62, -2^62, -1, 1: the partial sum -2^63 fits, the third -2^63 - 1 overflows
+// (LANGUAGE.md 10.5)
+let v = [-4611686018427387904, -4611686018427387904, -1, 1]
+let s = sum(v)
+printf("%d\n", s)

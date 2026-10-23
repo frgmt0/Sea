@@ -1,0 +1,4 @@
+// err_red_dim_order_201_262 -- dim: 2.0: of the wrong type and value: 201 first
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = std(A, dim: 2.0)

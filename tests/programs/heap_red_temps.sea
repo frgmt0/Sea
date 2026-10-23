@@ -1,0 +1,46 @@
+// heap_red_temps -- reductions, sort and find of owned operands (DESIGN.md 3.6.6 rules 15, 23, 24): element-wise
+// results, selections, views, call results, a fixed operand copied for argsort, in a loop;
+// the heap check finds no live object
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn mk(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i)
+    }
+    return v
+}
+let d: f64[] = [4.0, 1.0, 3.0, 2.0]
+printf("%g\n", sum(d * 2.0))
+pf(sort(d[0..3]))
+let A: f64[,] = [1.0, 5.0; 3.0, 2.0]
+printf("%g\n", max(A.flat))
+pvi(argsort([3.0, 1.0, 2.0]))
+printf("%g\n", mean(d[d > 1.5]))
+printf("%d\n", nnz(d > 2.0))
+pvi(find(d < 3.0))
+printf("%d %d\n", find_first(d > 2.5), find_last(d > 2.5))
+pf(sum(A * 2.0, dim: 0))
+pf(max(A.T, dim: 1))
+printf("%g %g\n", sum(mk(5)), variance(mk(3)))
+printf("%d\n", argmax(mk(4) * -1.0))
+pvi(argsort(mk(3), desc: true))
+pf(sort(mk(3) - 1.0, desc: true))
+var s = 0.0
+for i in 0..3 {
+    s += sum(d * f64(i)) + f64(len(sort(d))) + f64(nnz(d > f64(i)))
+}
+printf("%g\n", s)
+let _ = sort(d)

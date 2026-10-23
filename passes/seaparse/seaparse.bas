@@ -2,7 +2,7 @@
 20 REM seaparse -- pass 1 of the Sea compiler (docs/DESIGN.md 2.1, 2.2): reads the driver's
 30 REM |-tagged stream on standard input, lexes (LANGUAGE.md 3), parses the whole grammar of
 40 REM LANGUAGE.md Appendix A and writes sea.ast (DESIGN 3.4) in post-order. Compile errors C1
-50 REM (codes 101-114) and the pass-1 capacity limits (DESIGN 2.7) via dg_compile.
+50 REM (codes 101-115) and the pass-1 capacity limits (DESIGN 2.7) via dg_compile.
 60 REM Built with the modules io diag tables limb fltlit and the DATA errors exits consts records.
 70 REM Design: the lexer runs on demand (SUB lx) into a 16-token ring, so lexical errors become
 80 REM ERR tokens reported when the parser reaches them (source order). The parser is recursive
@@ -1235,9 +1235,10 @@
 12350 LET H = Z(16)
 12360 LET Z(16) = 0
 12370 LET N = 0
+12375 LET G = 0
 12380 CALL "pt": Z(), X$(), L(), E(), E$(), F$(), 1, K, T$, B
 12390 IF T$ = ")" THEN 12470
-12400 CALL "p_arg": Z(), X$(), L(), E(), E$(), F$()
+12400 CALL "p_arg": Z(), X$(), L(), E(), E$(), F$(), G
 12410 LET N = N + 1
 12420 CALL "pt": Z(), X$(), L(), E(), E$(), F$(), 1, K, T$, B
 12430 IF T$ = ")" THEN 12470
@@ -1258,9 +1259,18 @@
 12580 GOTO 12220
 12590 LET Z(21) = T
 12600 SUBEND
-12610 REM ---- p_arg: arg = [ IDENT : ] expr | ref target -------------------------------------
-12620 SUB "p_arg": Z(), X$(), L(), E(), E$(), F$()
+12610 REM ---- p_arg: arg = [ IDENT : ] expr | ref target; G = 1 once the call has a named arg
+12615 REM (in and out): then an argument that starts a positional one is 115 at its first token
+12620 SUB "p_arg": Z(), X$(), L(), E(), E$(), F$(), G
 12630 CALL "pt": Z(), X$(), L(), E(), E$(), F$(), 1, K, T$, B
+12631 IF G = 0 THEN 12640
+12632 IF K = 5 THEN 12637
+12633 IF K > 4 THEN 12640
+12634 IF K <> 1 THEN 12638
+12635 CALL "pt": Z(), X$(), L(), E(), E$(), F$(), 2, K2, T2$, B2
+12636 IF T2$ <> ":" THEN 12638
+12637 IF POS(" - ! true false $ ( [ { if f64 i64 str ref ", " " & T$ & " ") = 0 THEN 12640
+12638 CALL "pc": Z(), X$(), L(), E(), E$(), F$(), "POSITIONAL_AFTER_NAMED", X$(B + 3), ""
 12640 IF T$ <> "ref" THEN 12700
 12650 LET P$ = X$(B + 3)
 12660 LET Z(1) = Z(1) + 1
@@ -1274,6 +1284,7 @@
 12740 LET Z(1) = Z(1) + 1
 12750 CALL "p_expr": Z(), X$(), L(), E(), E$(), F$(), 1, 0, 0
 12760 CALL "pw": Z(), X$(), L(), E(), E$(), F$(), "narg", P$, V$, ""
+12765 LET G = 1
 12770 GOTO 12790
 12780 CALL "p_expr": Z(), X$(), L(), E(), E$(), F$(), 1, 0, 0
 12790 SUBEND

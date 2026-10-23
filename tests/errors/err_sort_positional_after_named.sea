@@ -1,0 +1,5 @@
+// err_sort_positional_after_named -- sort(desc: true, v): a positional argument after a named one, 115 of
+// pass 1 at that argument (LANGUAGE.md 8.1, Decision 41)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sort(desc: true, v)

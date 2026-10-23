@@ -1,0 +1,21 @@
+str asc sort: [] [B] [a] [a] [ab] [ab] [abc] [b] [ÿ]
+str asc argsort: 3 6 1 5 2 8 7 0 4
+str asc: results ok
+str desc sort: [ÿ] [b] [abc] [ab] [ab] [a] [a] [B] []
+str desc argsort: 4 0 7 2 8 1 5 6 3
+str desc: results ok
+counts with a sorted copy: 2 2 2 2 2 2 2 2 2
+counts after its release: 1 1 1 1 1 1 1 1 1
+counts with an argsort result: 1 1 1 1 1 1 1 1 1
+str static sort: [a] [b]
+str static argsort: 1 0
+str static: results ok
+static counts with a sorted copy: 0 0
+str n0 sort:
+str n0 argsort:
+str n0: results ok
+str n1 sort: [abc]
+str n1 argsort: 0
+str n1: results ok
+n1 count with a sorted copy: 2
+input unchanged

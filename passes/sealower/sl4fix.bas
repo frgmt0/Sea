@@ -12,7 +12,7 @@
 40022 REM ====================================================================================
 40028 REM ---- reading tfvec id elt n / tfmat id elt r c (types, ids in order, 3.5.1) -------------
 40030 IF G0 > 0 THEN 2360
-40032 IF Y7 = 1 THEN 2360
+40032 IF Y7 = 1 THEN 40062
 40034 IF I(1) <> Y9 + 1 THEN 2360
 40036 LET Y9 = I(1)
 40038 IF Y9 <= T9 THEN 40044
@@ -27,6 +27,16 @@
 40056 IF K = 41 THEN 1285
 40058 LET T(Y9, 0) = I(4)
 40060 GOTO 1285
+40061 REM after a tptr (R14): only the type F8, tfvec of f64 with n 8, when the table has none yet
+40062 IF K <> 41 THEN 2360
+40064 IF I(2) <> 4 THEN 2360
+40066 IF I(3) <> 8 THEN 2360
+40068 FOR E6 = 10 TO Y9
+40070 IF T(E6, 1) <> 5 THEN 40076
+40072 IF T(E6, 2) <> 4 THEN 40076
+40074 IF T(E6, 3) = 8 THEN 2360
+40076 NEXT E6
+40078 GOTO 40034
 40090 REM ---- 40100 (R10, every node H1 of kind K just read): a rng only as a forr's range; no
 40091 REM array operand of cvt un bin powk lib; no array index of an idx; no asg op to an array;
 40092 REM an idx of an array base has as many indices as the base has dimensions (else bad tree)
@@ -38,7 +48,7 @@
 40110 GOSUB 30900
 40112 IF E4 = 0 THEN 40124
 40114 IF K = 39 THEN 40122
-40116 IF K = 12 THEN 2360
+40116 IF K = 12 THEN 40162
 40118 IF K < 6 THEN 40124
 40120 IF K < 10 THEN 2360
 40121 GOTO 40124
@@ -64,6 +74,9 @@
 40156 GOTO 40150
 40158 IF E3 <> E4 THEN 2365
 40160 GOTO 40136
+40161 REM a lib with an array operand: only sort and argsort (R16)
+40162 IF POS("|sort|argsort|", "|" & G$(4) & "|") = 0 THEN 2360
+40164 GOTO 40124
 40190 REM ---- reading chkb dim: dim 0 or 1, index and extent of type 3 ----------------------------
 40200 LET H(H1, 5) = I(2)
 40202 IF I(2) > 1 THEN 2360
@@ -189,11 +202,13 @@
 40468 GOTO 40446
 40470 NEXT E2
 40472 RETURN
-40480 REM ---- 40490 (a bind of a .l local E2, R8): a scalar anywhere; a dynamic array only directly
-40481 REM in a block (rule 30 (1): H(E2,6) = 1); a fixed-size one only in L4 (first of a block of 4)
+40480 REM ---- 40490 (a bind of a .l local E2, R8): a scalar anywhere (A(.,4) = 5: declared by a bind);
+40481 REM a dynamic array only directly in a block (rule 30 (1): H(E2,6) = 1); a fixed-size one only
+40482 REM in L4 (first of a block of 4)
 40490 LET E3 = A(E1 + E4, 1)
 40492 GOSUB 30900
-40494 IF E3 <= 9 THEN 40514
+40494 IF E3 <= 4 THEN 40515
+40495 IF E3 <= 9 THEN 40514
 40496 IF T(E3, 1) = 4 THEN 2360
 40498 IF E4 = 0 THEN 40514
 40500 GOSUB 40520
@@ -204,6 +219,9 @@
 40510 IF H(O2, 6) <> 4 THEN 2360
 40512 IF H(O2, 7) <> E2 THEN 2360
 40514 RETURN
+40515 IF A(E1 + H(E2, 5), 4) <> 1 THEN 40514
+40516 LET A(E1 + H(E2, 5), 4) = 5
+40517 RETURN
 40518 REM ---- 40520: O2 = the parent of node E2 (0: none) --------------------------------------
 40520 FOR O2 = E2 + 1 TO H0
 40522 LET O3 = H(O2, 7)
@@ -214,15 +232,25 @@
 40530 NEXT O2
 40532 LET O2 = 0
 40538 RETURN
-40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar let local (R8) -------
+40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar
+40541 REM local declared by a bind (R8)
 40550 LET O1 = H(E2, 7)
 40552 IF H(O1, 1) <> 5 THEN 40564
 40554 LET O1 = H(O1, 5)
 40556 IF A(E1 + O1, 4) - 2 * INT(A(E1 + O1, 4) / 2) = 0 THEN 40564
-40558 IF A(E1 + O1, 4) <> 1 THEN 2360
+40558 IF A(E1 + O1, 4) <> 5 THEN 2360
 40560 IF H(E2, 5) <> 1 THEN 2360
 40562 IF A(E1 + O1, 1) > 4 THEN 2360
+40563 GOTO 40566
 40564 GOTO 31040
+40565 REM its value a wbin, bin or un (R8) or a scalar lib where (R15)
+40566 LET O1 = H(H(E2, 7), 8)
+40568 IF H(O1, 1) = 7 THEN 40564
+40570 IF H(O1, 1) = 8 THEN 40564
+40572 IF H(O1, 1) = 51 THEN 40564
+40574 IF H(O1, 1) <> 12 THEN 2360
+40576 IF S$(H(O1, 0)) <> "where" THEN 2360
+40578 GOTO 40564
 40590 REM ==== fixed-size values (rule 27) ===============================================================
 40591 REM ---- 40600: F5 = 1 if the type T5 is fixed-size; then F8 = its size in bytes (4.8) -------
 40600 LET F5 = 0

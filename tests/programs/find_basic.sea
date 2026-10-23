@@ -1,0 +1,30 @@
+// find_basic -- find, find_first, find_last (LANGUAGE.md 10.6): none true (-1), all true, mixed, empty,
+// a comparison result, find(M.flat) in column-major order; find is always dynamic
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+pvi(find([false, false, false]))
+printf("%d %d\n", find_first([false, false, false]), find_last([false, false, false]))
+pvi(find([true, true, true]))
+printf("%d %d\n", find_first([true, true, true]), find_last([true, true, true]))
+let m: bool[] = [false, true, false, true, true, false]
+pvi(find(m))
+printf("%d %d\n", find_first(m), find_last(m))
+let e: bool[] = []
+pvi(find(e))
+printf("%d %d\n", find_first(e), find_last(e))
+let v: f64[] = [0.5, 3.0, nan, 2.5, 7.0]
+pvi(find(v > 2.0))
+printf("%d %d\n", find_first(v > 2.0), find_last(v < 1.0))
+let M = [true, false, true; false, true, true]
+pvi(find(M.flat))
+printf("%d %d\n", find_first(M.flat), find_last(M.flat))
+printf("%d\n", find_first([false, true]))
+var q = find([true, false, true])
+pvi(q)
+q = filled(1, 5)
+pvi(q)

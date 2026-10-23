@@ -1,0 +1,4 @@
+// err_red_dim_fixed_shape -- sum(F, dim: 0) of a fixed f64[3,4] is an f64[4]: bound to f64[3] it is the
+// static shape mismatch 3 vs 4 at the value (Decision 39, DESIGN.md 3.5.5)
+let F = [1.0, 2.0, 3.0, 4.0; 5.0, 6.0, 7.0, 8.0; 9.0, 10.0, 11.0, 12.0]
+let s: f64[3] = sum(F, dim: 0)

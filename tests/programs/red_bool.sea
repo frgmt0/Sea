@@ -1,0 +1,10 @@
+// red_bool -- nnz, any, all of bool vectors (LANGUAGE.md 10.5): empty (0, false, true), all true, all false,
+// mixed, a comparison result, fixed and dynamic operands
+let e: bool[] = []
+printf("%d %d %d\n", nnz(e), any(e), all(e))
+printf("%d %d %d\n", nnz([true, true, true]), any([true, true, true]), all([true, true, true]))
+printf("%d %d %d\n", nnz([false, false]), any([false, false]), all([false, false]))
+let m: bool[] = [false, true, false, true, true]
+printf("%d %d %d\n", nnz(m), any(m), all(m))
+let v: f64[] = [1.0, -2.0, 3.0, nan]
+printf("%d %d %d %d\n", nnz(v > 0.0), any(v < -1.0), all(v == v), all(v > -5.0 | v != v))

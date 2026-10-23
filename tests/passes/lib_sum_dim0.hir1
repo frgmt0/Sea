@@ -1,0 +1,40 @@
+#sea 1
+#target arm64-macos
+#file lib_sum_dim0.sea
+tmat 10 4
+tvec 11 4
+fn 1 .main main 1 0 0 0:1:1
+ci 0:5:28 3 2
+ci 0:5:31 3 3
+lib 0:5:23 10 ones 2
+call 0:5:16 4 2 1
+fconv 0:5:8 1 - - - g
+ftext 0:5:8 1 %0A
+fmt 0:5:8 1 2
+lib 0:5:1 1 printf 1
+eval 0:5:1
+ci 0:6:29 3 3
+ci 0:6:32 3 1
+lib 0:6:23 10 zeros 2
+call 0:6:16 4 2 1
+fconv 0:6:8 1 - - - g
+ftext 0:6:8 1 %0A
+fmt 0:6:8 1 2
+lib 0:6:1 1 printf 1
+eval 0:6:1
+block 0:1:1 2
+end
+fn 2 colsum fn 4 1 1 0:1:1
+par A 10 val
+loc s 11 let 0:2:9
+lv 0:2:17 10 1
+ci 0:2:25 3 0
+lib 0:2:13 11 sum.dim 2
+bind 0:2:5 2
+lv 0:3:12 11 2
+ci 0:3:14 3 0
+idx 0:3:12 4 1
+ret 0:3:5 1
+block 0:1:29 2
+end
+#end

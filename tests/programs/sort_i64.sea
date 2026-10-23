@@ -1,0 +1,28 @@
+// sort_i64 -- sort and argsort of i64 vectors (LANGUAGE.md 10.6): -2^63 and 2^63 - 1, ties in both
+// directions (stable, desc not a reversed ascending), empty, one element
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let x = [9223372036854775807, -9223372036854775808, 0, -1, 1, 0]
+pvi(sort(x))
+pvi(argsort(x))
+pvi(sort(x, desc: true))
+pvi(argsort(x, desc: true))
+let t: i64[] = [2, 2, 1, 2, 1]
+pvi(sort(t))
+pvi(argsort(t))
+pvi(sort(t, desc: true))
+pvi(argsort(t, desc: true))
+let e: i64[] = []
+pvi(sort(e))
+pvi(argsort(e))
+pvi(sort(e, desc: true))
+pvi(argsort(e, desc: true))
+pvi(sort([-4]))
+pvi(argsort([-4]))
+pvi(sort([-4], desc: true))
+pvi(argsort([-4], desc: true))

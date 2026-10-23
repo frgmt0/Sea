@@ -133,14 +133,15 @@
 12515 REM 5 pow hypot (f64, f64) 6 abs sign (i64 | f64) 7 min max (n, n) 8 where(bool, x, x) 9
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
 12525 REM filled(v, n) | (v, r, c) 13 len (a vector or str) 14 rows cols (a matrix) 15 numel (a
-12530 REM vector or matrix); any other is 'not supported yet: <name>' at the call, and so is min or max
-12535 REM with one argument (the reduction, 4f; DESIGN 2.6.2). Untyped constants are f64 where f64 is
-12540 REM taken (classes 3-5), the other's type in min, max and where, else i64 (LANGUAGE 4.2); an
-12545 REM i64 for an f64 is converted. The overload is judged on the element types; array arguments of
-12550 REM an elemental function (2-10) are then broadcast (lbc, LANGUAGE 6.3, 10.4, 10.7) ---------
+12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find* (min, max
+12535 REM of other than two positional arguments: 16); any other is not supported yet. Untyped
+12540 REM constants are f64 where f64 is taken (classes 3-5), the other's type in min, max and where,
+12545 REM else i64 (LANGUAGE 4.2); an i64 for an f64 is converted. The overload is judged on the element
+12550 REM types; array arguments of an elemental function (2-10) are then broadcast (lbc, LANGUAGE 6.3)
 12555 SUB "ck_lib": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 12560 DIM U(9), V(9), K(9)
 12565 LET L$ = S$(N(N(J, 7), 6))
+12566 LET M(J, 9) = 0
 12570 LET H = N(J, 1)
 12575 IF LEN(L$) <> 6 THEN 12595
 12580 IF L$ <> "printf" THEN 12595
@@ -149,11 +150,16 @@
 12595 LET Q$ = "|now 01|idiv 02|log 03|exp 03|sin 03|cos 03|sqrt 03|floor 03|ceil 03|trunc 03|round 03"
 12600 LET Q$ = Q$ & "|isnan 04|pow 05|hypot 05|abs 06|sign 06|min 07|max 07|where 08|ind2sub 09"
 12605 LET Q$ = Q$ & "|sub2ind 10|zeros 11|ones 11|filled 12|len 13|rows 14|cols 14|numel 15|"
+12606 LET Q$ = Q$ & "sum 16|mean 17|variance 17|std 17|argmax 18|argmin 18|nnz 19|any 20|all 20|sort 21|"
+12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|"
 12610 LET P = POS(Q$, "|" & L$ & " ")
 12615 IF P = 0 THEN 12635
 12620 LET Z = VAL(SEG$(Q$, P + LEN(L$) + 2, P + LEN(L$) + 3))
+12622 CALL "lopt": N(), S$(), J, G9, D9
 12625 IF Z <> 7 THEN 12645
-12630 IF H <> 1 THEN 12645
+12630 IF G9 + ABS(H - 2) = 0 THEN 12645
+12632 LET Z = 16
+12634 GOTO 12645
 12635 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", L$, "", "", 1
 12640 GOTO 13610
 12645 REM the arguments: no ref, one value each; U(i) the type, V(i) the element type, K(i) the rank
@@ -216,6 +222,9 @@
 12900 LET D = 0
 12905 IF E = 0 THEN 12970
 12910 REM an argument with an error: the result type when it does not depend on the arguments
+12911 IF Z < 16 THEN 12915
+12912 CALL "lerr": T(), N(), X(), X$(), Z, D9, D
+12913 GOTO 13605
 12915 LET D = VAL(SEG$("040304020400000000030000030303", 2 * Z - 1, 2 * Z))
 12920 IF Z = 9 THEN 12950
 12925 IF Z <> 11 THEN 13605
@@ -228,6 +237,10 @@
 12960 CALL "ttup": T(), N(), X(), X$(), U(), 2, D
 12965 GOTO 13605
 12970 REM the overload, by class, on the element types: D the result type (0: no overload)
+12971 IF Z < 16 THEN 12975
+12972 CALL "lred": N(), M(), T(), X(), X$(), J, Z, H - G9, G9, D9, D, Z9
+12973 IF Z9 = 1 THEN 13545
+12974 GOTO 13605
 12975 ON Z GOTO 12980, 12990, 13035, 13035, 13070, 13100, 13125, 13165, 12990, 13220, 13250, 13285, 13340, 13360, 13375
 12980 IF H = 0 THEN 13395
 12985 GOTO 13545
@@ -326,18 +339,20 @@
 13462 REM the phase-rule word ind2sub)
 13465 CALL "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), K(), H
 13540 GOTO 13605
-13545 REM no overload: the argument types as written
+13545 REM no overload: the argument types as written (a named one name: T)
 13550 LET B$ = ""
 13555 LET A = N(N(J, 7), 8)
 13560 FOR I = 1 TO H
 13565 CALL "tyn": T(), M(A, 1), A$
+13566 IF N(A, 0) <> 36 THEN 13570
+13567 LET A$ = S$(N(A, 6)) & ": " & A$
 13570 IF I = 1 THEN 13580
 13575 LET B$ = B$ & ", "
 13580 LET B$ = B$ & A$
 13585 LET A = N(A, 8)
 13590 NEXT I
 13595 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", L$, B$, "", 2
-13600 GOTO 12915
+13600 GOTO 12911
 13605 LET M(J, 1) = D
 13610 SUBEND
 13615 REM ---- num: Q = 1 when type V is i64 or f64, else 0 ------------------------------------------

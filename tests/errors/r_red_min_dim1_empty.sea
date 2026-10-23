@@ -1,0 +1,4 @@
+// r_red_min_dim1_empty -- min(Z, dim: 1) of a 3 x 0 matrix: each row has 0 elements (LANGUAGE.md 10.5)
+let Z = filled(0, 3, 0)
+let r = min(Z, dim: 1)
+printf("%d\n", len(r))

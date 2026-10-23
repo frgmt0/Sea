@@ -33,6 +33,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | sub-phase 4e dump tests `passes/arr_rule{20,21,22,25,28}`, `sel_{reads,ref_store,compound}`, `ew_{colrow,ind2sub}`, `arr_{lit_fixed,lit_dyn,lit_cat,lit_cat_fixed,views,dynfix,fixed,tasg_l12}` and `res_err_array` | `vectors/dump4e_cases.py`: `.ast` as pass 1 writes it (unchanged in 4e), checked against the source text; `.res` from `res_gen.py` with the phase-rule step 4e; `.hir1` (= `.hir`) by hand from §3.5.1–§3.5.5; `.hirl` from §3.5.9 (L5–L11, R1–R11) statement by statement; `.lir1` by hand from §3.6.6 (rules 1–28, "Lowering of the `sea.hirl` records"), the agreed examples of rules 20, 21, 22, 25 and 28 verbatim; `.out` from LANGUAGE.md; every file read back and checked against `passes.txt` (sets `H HF HL`, `L`) by the script's self-check, never printed by a pass |
 | sub-phase 4e `programs/{sel,ew,arr,heap}_*` (the tests listed under programs/ from `sel_vec_read` on) and the 4e `errors/` tests (from `err_rt_sel_range_last` on) | `vectors/arr4e_cases.py`: every expected output written out by hand from LANGUAGE.md §4.5, §5, §6.3–§6.9, §7.3, §7.5, §8.3, §9.2, §10.1–§10.7, §11.1, and, where DESIGN.md defines the message order or position, from §2.6.2 (the error table, `at`), §3.3, §3.5.5 (static shapes, implicit `dyn`/`fix`) and §3.6.6 rules 20–28 (the order of the run-time checks); the derivation in a comment beside each case; arrays printed by small helper functions (`pf pvi pvb pmf pmi pmb`: `n:` and the elements, `RxC` and ` \|` per row), since `print` is phase 6 and the reductions 4f; error lines and columns computed from a marker in the source text |
 | `programs/w4_sor_arrays` (4e, DESIGN.md §6.2) | `vectors/arr4e_cases.py`: `accept/w4_sor.sea` with the scalar set-up region replaced by §6.2's whole-array lines (the replaced region asserted line by line, everything else copied); expected output the line 4d's W4 program prints, `{"it_sor": 832, "T_max": 160.76267159277148}` (the `accept/w4_sor` row below: the IEEE mirror and `workloads/reference/w4_heat_plate.json`), because every set-up element is the same IEEE operations in the same order (LANGUAGE.md §6.8) |
+| sub-phase 4f `programs/{red,sort,find,heap_red}_*`, `programs/w4_sor_reduce` and the 4f `errors/` tests (`r_red_*`, `err_red_*`, `err_sort_*`, `err_find_*`) | `vectors/arr4f_cases.py`: every expected output derived from LANGUAGE.md §8.1, §9.2, §10.5, §10.6, §11.1 and, for messages, positions and orders, DESIGN.md §2.6.2 ("Readings fixed by 4f", the error table, `at`), §3.3 and §3.6.6 rules 23, 24; floating results from a line-by-line model of §10.5 (the pinned 8-lane order with its −0.0 start and the empty +0, mean, the two-pass variance, std, the first extreme ignoring NaN) evaluated with IEEE binary64 operations in the specified order (Python floats as a calculator, never a run of the compiler); each `f64` sum vector of 4 or more elements chosen and asserted so the 8-lane result differs from left-to-right summation; `i64` sums checked in index order (Decision 42); sorting by a stable model of §10.6 (−0 == +0, NaN after every number ascending and before every number descending); the derivation in a comment beside each case; error lines and columns computed from a marker in the source text; `w4_sor_reduce` from `programs/w4_sor_arrays.sea` with its hot-spot loop replaced (the replaced region asserted), its `.out` copied byte for byte |
 | `accept/w4_sor` (4d acceptance, DESIGN.md §6.3) | ported by hand from `workloads/w4_heat_plate.m` (inputs, scalar SOR); checked by `compare.py --candidate --keys it_sor,T_max` against `workloads/reference/w4_heat_plate.json`; a line-by-line IEEE mirror of the port in Python (scratch, not committed) prints `{"it_sor": 832, "T_max": 160.76267159277148}`, the reference values exactly |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
@@ -127,6 +128,22 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `heap_tasg` | §7.3; DESIGN.md §3.5.9 L12, §3.6.6 rules 15 (h), (j), 16: `_` components with a dynamic result, converted and selection targets in a loop, `let (_, y)` |
 | `sel_ref_range` | §5.5, §8.3; DESIGN.md §3.6.6 rule 12 (§6.2's regressions): `v[k..k+2] += f64(g(ref k))` on a dynamic and a fixed vector (`2 2 0 0`), `A[k, 0..2] += f64(g(ref k))` (`2 2 \| 0 0`), `A[k..1, g(ref k)..3] = 9.0` (row 0, columns 1–2) |
 | `sel_tasg_cvt` | §7.3 as amended by Decision 37, §4.2 (b), (c), §4.5, §5.5: a fixed `i64[3]` result into an `f64[]` target (element-by-element conversion and `dyn`), a dynamic `i64[]` result into an `f64[3]` target (conversion and the run-time shape check), scalar `f64` and `i64` results into range-selection targets (stored into every element, the `i64` converted) |
+| `red_sum_f64` | §10.5 (4f): `f64` `sum` in the pinned 8-lane order on 7, 8, 9 and 17 elements (each differs from left to right: 2, 6, 7, 14), fixed and dynamic operands, compared with `==` to exact literals; 0 and 1 elements (`0`, `sum([-0.0])` = `-0`), zero signs, NaN, ±Inf, `Inf + -Inf` from four 1e308 terms, overflow to Inf |
+| `red_sum_i64` | §10.5, Decision 42: `i64` `sum` with every partial sum fitting, totals at 2⁶³ − 1 and −2⁶³, empty 0, one element, 17 elements |
+| `red_mean_var` | §10.5: `mean`, `variance` (two-pass, N − 1), `std` of `f64` and `i64` vectors; a case where the one-pass formula fails (1e8 + 1, + 2, + 3: variance exactly 1); empty NaN; one element 0 (also `variance([nan])`); an `i64` mean near 2⁶³ |
+| `red_sizes` | §10.5: every vector reduction on 0, 1, 7, 8, 9, 17 elements: `f64` (lane-sensitive data) and `i64` `sum mean variance std max min argmax argmin`, `bool` `nnz any all` |
+| `red_maxmin` | §10.5: `max min argmax argmin`: ties (first index), NaN first, middle, last and everywhere (NaN, index 0), −0/+0 in both orders (signs printed), infinities, `i64` at the limits, a dynamic 9-element operand; the two-argument `max`/`min` stay elemental (§10.4) |
+| `red_bool` | §10.5: `nnz any all` of empty (0, false, true), all-true, all-false, mixed and comparison operands |
+| `red_dim` | §10.5, Decision 39: `dim: 0` and `dim: 1` for the nine functions on 3 × 4 matrices (`f64` fixed and dynamic, `i64`, `bool`), a row of 4 and a column of 9 where the lane order matters, fixed-size results (`f64[4]`, `f64[3]`, `mean` of `i64` as `f64[4]`), NaN columns, a `.T` operand, the extents 0 × 3 and 3 × 0 (three +0 / NaN / 0 / false / true, or empty results) |
+| `red_former_ns` | §10.5 (DESIGN.md §6.2 "4f"): the calls of the retired goldens `err_ns_lib_sum`, `err_ns_lib_max1`, `err_ns_lib_max1_fixed`, `err_ns_lib_min1`, which compile from 4f |
+| `sort_f64` | §10.6: `sort`/`argsort` of `f64` ascending and descending: −0/+0 interleaved (input order kept, signs printed), ties (descending is not a reversed ascending order), `nan`, `-nan` and a run-time 0/0 (after every number ascending, before every number descending, in input order), ±Inf, a fixed-size operand, empty, one element |
+| `sort_i64` | §10.6: `sort`/`argsort` of `i64`: −2⁶³ and 2⁶³ − 1, ties in both directions, empty, one element |
+| `sort_misc` | §10.6, Decision 39: a fixed-size operand gives a dynamic result (reassigned with another length), `desc:` as run-time `bool` expressions, `f64` (with −0) and `i64` vectors of 31, 32 and 33 elements with many ties (both sides of the insertion-sort limit, DESIGN.md §4.8) |
+| `sort_lcg` | §10.6; DESIGN.md §4.8: 1000-element vectors from an LCG (many ties and −0; wide `f64` and `i64` values for the radix path), checksums of every permutation and sorted vector in both directions and the first and last values, from the stable model |
+| `find_basic` | §10.6, Decision 39: `find`, `find_first`, `find_last` with none true (−1), all true, mixed, empty, a comparison with NaN, `find(M.flat)` (column-major: `0 3 4 5`); `find` of a fixed vector is dynamic |
+| `heap_red_temps` | DESIGN.md §3.6.6 rules 15, 23, 24: reductions, `sort`, `argsort` and `find` of owned operands (element-wise results, selections, masks, `.flat`, `.T`, call results, a fixed operand of `argsort`), in a loop and discarded; heap check 0 |
+| `heap_red_store` | rule 21: `v[argsort(w, desc: true)] = 0.0` (an owned index vector released at the end of its block), a selection of it, in a loop, `f[find(…)]` on a fixed target, a compound store with copy on write of a shared target; heap check 0 |
+| `w4_sor_reduce` | DESIGN.md §6.2 (4f); LANGUAGE.md §10.5: `programs/w4_sor_arrays.sea` with the hot-spot loop replaced by `var Thot = T`, `Thot[fixed] = -inf`, `let Tmax = max(Thot.flat)`; prints the bytes of `w4_sor_arrays.out` |
 | `lib_now` | §13 (difference ≥ 0; the value is never printed) |
 | `lib_consts` | §10.1, §7.2; DESIGN.md §3.5.5 (bits of `pi inf nan eps`) |
 | `lib_math_log`, `lib_math_exp`, `lib_math_sin`, `lib_math_cos`, `lib_math_hypot` | §10.4, §4.2 (ordinary, i64 and untyped arguments, ±0, ±Inf, NaN, subnormals, overflow/underflow, huge sin/cos arguments); DESIGN.md §4.10 |
@@ -243,6 +260,17 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `ew_ind2sub` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L11, rule 22 (Decision 33): `ind2sub` of a vector as two element-wise loops over held arguments |
 | `arr_tasg_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, §3.5.9 L12 (Decision 37): a tuple assignment with a selection target (an L6 store of a fixed-size result through a `.l` local) and a fixed → dynamic component (`cv` 2, the `dyn` of L10); one `tbind` of fixed-size `.l` locals passing their slots as hidden result addresses; two fixed-size results returned by copy |
 | `arr_lit_cat_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rule 26 (c) with every part fixed-size: a vector join `[a, 4.0, a]` and a matrix row `[m, m]` with home slots, the length and column sums kept, no row check, static extents and offsets |
+| `lib_rule23` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, §3.6.6 rule 23 (reductions): the agreed example `let s = sum(x)` (`x` an `f64[]` in `p1`) as a whole program, its `.lir1` the rule's text exactly; `.hirl` from §3.5.9 L13 (sum8 with the accumulator home of the appended type `f64[8]`, R14; the lane `K & 7` by `wbin and`, R13; the `ifx` taking the register of `s`, R12 (a)) |
+| `lib_rule24` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, rule 24 (sorting and searching): the agreed example `let r = argsort(c, desc: true)` on line 8, its `.lir1` the rule's text exactly (`rcall sea_argsort` with the vector and the `desc` value); `.hirl` = `.hir` for that function (L14, R16: the `lib argsort` stays); `r[0]` read by rule 18, `r` released before the `ret` |
+| `lib_mean_i64` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 on a fixed-size `i64` vector: `sum` (isum, the extent loaded after the data, `iaddc` with the call's line, the accumulator taking the register of `t`, R12 (b)) and `mean` (the sum converted before n, rule 23) |
+| `lib_variance` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13: `variance` (n = 0 NaN, n = 1 zero, else the two-pass mean and deviations, each sum8 with its own home slot; the outer `ifx` taking the register of `v`, R12 (a)) and `std` (the variance `xblk`, then `fsqrt`) |
+| `lib_max` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 on fixed-size vectors: `max` of `f64` (`EMPTY_REDUCE` with the function's name, NaN ignored, the first maximum; R15's `where` values) and `argmin` of `i64` |
+| `lib_nnz` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13: `nnz` (`wbin add` of a `bool`, R7), `any` and `all` of a fixed-size `bool` vector, each accumulator taking the register of its local (R12 (b)) |
+| `lib_sum_dim0` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 0)` of a dynamic matrix (extents and data loaded once before the outer loop over the columns, one sum8 home slot for every column, the element at `I + J * rows`) |
+| `lib_sum_dim1` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 1)` of a fixed-size `f64[2,3]`, its result the fixed-size `f64[2]` (Decision 39: a home slot copied into the home of `s`), the lane `wbin and` of J |
+| `lib_find` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14: `find` of a fixed-size `bool` vector (the count, the new `i64[]` of that length, the indices stored in order); the result is dynamic (Decision 39) |
+| `lib_find_first` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14: `find_first` (the first `true`: `where` of a counter, R15) and `find_last` of a fixed-size `bool` vector |
+| `lib_sort_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14, R16, Decision 39: `sort` and `argsort` of a fixed-size vector (the `dyn` pass 2a writes at the call's position, rewritten by L10, released right after the `rcall`), `desc:` inserted as false and given as a run-time `bool` |
 | `res_err_predeclared` | ast res | §3.4.1: `rerr 212`; the item is entered (`rfn`) and `sqrt` resolves to it (`rname fn`) |
 | `res_err_redef_item` | ast res | §3.4.1: `rerr 235` at the later `const`; it is copied with its names unresolved |
 | `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
@@ -287,6 +315,7 @@ concatenation errors, the static `shape mismatch` (217) of DESIGN.md §3.5.5, 20
 and a fixed-size `str` type, `max` of one argument, `ind2sub` with an array first argument). A
 fixed-size type or literal of struct elements cannot be tested on its own before 4g: its `struct`
 item is reported first (`structs` at the item, by `seaname`).
+From sub-phase 4f (DESIGN.md §2.6.2 step 4f, "Readings fixed by 4f") the reductions, `sort`, `argsort`, `find`, `find_first`, `find_last` and the options `dim:` and `desc:` are implemented: the goldens `err_ns_lib_sum`, `err_ns_lib_max1`, `err_ns_lib_max1_fixed` and `err_ns_lib_min1` are retired (their calls are `programs/red_former_ns`), and the 4f tests below cover the run-time errors `integer overflow` of a checked `i64` sum (also inside `mean`, `variance` and a `dim:` form) and `%s of an empty array`, error 115 of pass 1 (also before an earlier pass-2 error), 225 at the second `narg`, a `dim:` value's 201, 237 and 262 in that order and before the call's 243, the `name: T` spelling of 243, the phase-rule word `named arguments` for a name the function does not take (`argmax(A, dim: 0)`; a repeated one at its first `narg`), and 217/201 for the fixed-size results of Decision 39. `err_ns_named_arg` (a named argument of a user function) stays.
 
 | Test | Message | What |
 |------|---------|------|
@@ -392,15 +421,12 @@ item is reported first (`structs` at the item, by `seaname`).
 | `err_ns_elemental` | `not supported yet: elemental functions` | phase 1: an elemental fn (at the item, its elemental keyword) |
 | `err_ns_f64_mod` | `not supported yet: f64 %` | phase 1: % with an f64 operand (at the bin node) |
 | `err_ns_handle` | `not supported yet: handle types` | phase 1: a handle type (at the type node) |
-| `err_ns_lib_sum` | `not supported yet: sum` | 4d: `sum` (a 4f reduction) is still a library function not yet supported, at the call (DESIGN.md 2.6.2 step 4d) |
 | `err_ns_match` | `not supported yet: match` | phase 1: a match statement (at the match node) |
 | `err_ns_named_arg` | `not supported yet: named arguments` | phase 1: a named argument (at the narg) |
 | `err_ns_record` | `not supported yet: records` | phase 1: a record literal (at the rlit) |
 | `err_ns_string_let` | `not supported yet: strings` | phase 1: a string literal that is not a printf %s argument |
 | `err_ns_string_type` | `not supported yet: strings` | phase 1: the str type (at the type node) |
 | `err_ns_struct` | `not supported yet: structs` | phase 1: a struct item (at the item) |
-| `err_ns_lib_max1` | `not supported yet: max` | 4d: `max(v)` of one vector (the 4f reduction), at the call |
-| `err_ns_lib_min1` | `not supported yet: min` | 4d: `min(v)` of one vector, at the call |
 | `err_ns_arr_str_elem` | `not supported yet: strings` | 4d: a `str[]` parameter, at the param node |
 | `err_rt_arr_size_neg` | `invalid array size -1` | LANGUAGE.md 10.2, 9.2: a negative extent of `zeros`, after the output before it |
 | `err_rt_arr_size_big` | `invalid array size 2147483648` | 4.5, 10.2: an extent of 2³¹ (`ones`) |
@@ -506,11 +532,55 @@ item is reported first (`structs` at the item, by `seaname`).
 | `err_ns_ind2sub_array` | `not supported yet: ind2sub` | 4e: ind2sub with an array first argument stays the word ind2sub until phase 6, at the call (DESIGN.md 2.6.2 step 4e; Decision 33) |
 | `err_ns_str_literal` | `not supported yet: strings` | 4e: a literal of str elements is strings, at the array node (DESIGN.md 2.6.2 step 4e) |
 | `err_ns_str_fixed_type` | `not supported yet: strings` | 4e: a fixed-size type of str elements is strings, at its type node (DESIGN.md 2.6.2 step 4e) |
-| `err_ns_lib_max1_fixed` | `not supported yet: max` | 4e: max of one fixed vector is still the name max until 4f, at the call (DESIGN.md 2.6.2 step 4e) |
 | `err_rt_tasg_fix` | `shape mismatch: expected 2, got 3` | 4e (Decision 37): a dynamic result of 3 into a fixed `f64[2]` target of a tuple assignment, the run-time check of §4.5 at the statement's line (LANGUAGE.md §7.3) |
 | `err_tasg_shape_static` | `shape mismatch: 2 vs 3` | 4e (Decision 37): a fixed `f64[3]` result into a fixed `f64[2]` target, 217 at the target, the target's shape first (DESIGN.md §3.5.5) |
 | `err_tasg_type` | `type mismatch: expected f64[], found bool[]` | 4e (Decision 37): a `bool[]` result into an `f64[]` target, 201 at the target (DESIGN.md §3.5.5) |
 | `err_rt_tasg_fix_cvt` | `shape mismatch: expected 3, got 4` | 4e (Decision 37): a dynamic `i64[]` result of 4 into a fixed `f64[3]` target, the run-time shape check at the statement's line (the conversion cannot fail) |
+| `err_find_desc_unknown` | `not supported yet: named arguments` | 4f: find(m, desc: true): find takes no named argument |
+| `err_find_f64` | `no overload of 'find_last' accepts (f64[])` | 4f: find of an f64 vector (bool vectors only, LANGUAGE.md 10.6) |
+| `err_red_argmax_dim` | `not supported yet: named arguments` | 4f: argmax(A, dim: 0): argmax takes no dim:, so the phase rule's word at the narg, never 243 (LANGUAGE.md 10.5, DESIGN.md 2.6.2) |
+| `err_red_desc_twice_unknown` | `not supported yet: named arguments` | 4f: a repeated name the function does not take is the phase rule's word at its first narg (DESIGN.md 2.6.2) |
+| `err_red_desc_unknown` | `not supported yet: named arguments` | 4f: sum(v, desc: true): desc is not a name of sum: not supported yet: named arguments at the narg (DESIGN.md 2.6.2 step 4f) |
+| `err_red_dim_bool` | `type mismatch: expected i64, found bool` | 4f: dim: true: 201, expected i64, found bool |
+| `err_red_dim_f64` | `type mismatch: expected i64, found f64` | 4f: dim: 0.0: type mismatch, expected i64 (201) at the value (LANGUAGE.md 10.5) |
+| `err_red_dim_fixed_shape` | `shape mismatch: 3 vs 4` | 4f: sum(F, dim: 0) of a fixed f64[3,4] is an f64[4]: bound to f64[3] it is the static shape mismatch 3 vs 4 at the value (Decision 39, DESIGN.md 3.5.5) |
+| `err_red_dim_fixed_type` | `type mismatch: expected i64[2], found f64[2]` | 4f: mean(I, dim: 1) of a fixed i64[2,3] is an f64[2]: bound to i64[2] it is 201 (Decision 39: the function's result element type) |
+| `err_red_dim_not_const` | `not a constant expression` | 4f: dim: k with a local k (= 0): not a constant expression (237) at the value |
+| `err_red_dim_order_201_237` | `type mismatch: expected i64, found f64` | 4f: dim: x with an f64 local x: not constant and not i64; the type (201) is checked first (LANGUAGE.md 10.5, DESIGN.md 2.6.2) |
+| `err_red_dim_order_201_262` | `type mismatch: expected i64, found f64` | 4f: dim: 2.0: of the wrong type and value: 201 first |
+| `err_red_dim_order_237_262` | `not a constant expression` | 4f: dim: k with a local k = 5: not constant and not 0 or 1: 237 before 262 |
+| `err_red_dim_twice` | `parameter given twice` | 4f: a repeated dim: is parameter given twice (225) at the second narg (DESIGN.md 2.6.2) |
+| `err_red_dim_twice_value_first` | `undeclared name 'qq'` | 4f: the arguments are checked in source order, each value before its narg: the second dim:'s value qq is undeclared (200) before that narg's 225 (DESIGN.md 2.6.2) |
+| `err_red_dim_value` | `dim must be 0 or 1` | 4f: dim: 2 is dim must be 0 or 1 (262) at the value (LANGUAGE.md 10.5) |
+| `err_red_dim_value_before_call` | `dim must be 0 or 1` | 4f: sum(v, dim: 2) of a vector: the arguments are checked before the call, so the value's 262 comes before the call's 243 (DESIGN.md 2.6.2) |
+| `err_red_dim_value_const` | `dim must be 0 or 1` | 4f: dim: D with const D = -1: a constant expression of the wrong value, 262 |
+| `err_red_dim_value_expr` | `dim must be 0 or 1` | 4f: dim: 1 + 1 is the constant 2: 262 at the value, the + node at its first token (DESIGN.md 3.3) |
+| `err_red_dim_vector` | `no overload of 'sum' accepts (f64[], dim: i64)` | 4f: sum(v, dim: 0) of a vector: dim: goes with a matrix only (LANGUAGE.md 10.5) |
+| `err_red_dim_vector_fixed` | `no overload of 'max' accepts (f64[3], dim: i64)` | 4f: max of a fixed f64[3] with dim: 1: the fixed type spelled f64[3] |
+| `err_red_matrix_nodim` | `no overload of 'sum' accepts (f64[,])` | 4f: sum of a matrix without dim: (reduce it with dim: or through A.flat) |
+| `err_red_nnz_f64` | `no overload of 'nnz' accepts (f64[])` | 4f: nnz of an f64 vector (bool vectors only) |
+| `err_red_no_arg` | `no overload of 'any' accepts ()` | 4f: any(): no argument |
+| `err_red_sum_bool` | `no overload of 'sum' accepts (bool[])` | 4f: sum of a bool vector (LANGUAGE.md 10.5: f64 and i64 vectors only) |
+| `err_red_two_positional` | `no overload of 'mean' accepts (f64[], f64[])` | 4f: mean(v, v): a second positional argument |
+| `err_sort_bool` | `no overload of 'argsort' accepts (bool[], desc: bool)` | 4f: argsort of a bool vector (f64, i64 and str vectors only, LANGUAGE.md 10.6) |
+| `err_sort_desc_twice` | `parameter given twice` | 4f: a repeated desc: is 225 at the second narg |
+| `err_sort_desc_type` | `type mismatch: expected bool, found i64` | 4f: desc: 1 is not a bool: 201 at the value (LANGUAGE.md 10.6, DESIGN.md 2.6.2) |
+| `err_sort_dim_unknown` | `not supported yet: named arguments` | 4f: sort(v, dim: 0): dim is not a name of sort |
+| `err_sort_matrix` | `no overload of 'sort' accepts (f64[,])` | 4f: sort of a matrix (vectors only, LANGUAGE.md 10.6) |
+| `err_sort_positional_after_named` | `positional argument after a named argument` | 4f: sort(desc: true, v): a positional argument after a named one, 115 of pass 1 at that argument (LANGUAGE.md 8.1, Decision 41) |
+| `err_sort_positional_first` | `positional argument after a named argument` | 4f: 115 is pass 1's: reported before a pass-2 error earlier in the source (an undeclared name on line 3; LANGUAGE.md 9.1, DESIGN.md 2.6.2) |
+| `err_sort_positional_option` | `no overload of 'sort' accepts (f64[], bool)` | 4f: sort(v, true): options are given only by name (LANGUAGE.md 8.1, Decision 43) |
+| `r_red_argmax_empty` | `argmax of an empty array` | 4f: argmax of an empty vector made at run time (a selection of nothing) |
+| `r_red_argmin_empty` | `argmin of an empty array` | 4f: argmin of an empty vector: the function's name in the message (DESIGN.md 2.6.2) |
+| `r_red_max_dim_empty` | `max of an empty array` | 4f: max(Z, dim: 0) of a 0 x 3 matrix: each column has 0 elements, the vector rule's error (LANGUAGE.md 10.5) |
+| `r_red_max_empty` | `max of an empty array` | 4f: max of an empty vector (LANGUAGE.md 10.5, 9.2): `max of an empty array` |
+| `r_red_mean_ovf` | `integer overflow` | 4f: mean of the same i64 vector: its sum is checked the same way (LANGUAGE.md 10.5) |
+| `r_red_min_dim1_empty` | `min of an empty array` | 4f: min(Z, dim: 1) of a 3 x 0 matrix: each row has 0 elements (LANGUAGE.md 10.5) |
+| `r_red_min_empty` | `min of an empty array` | 4f: min of an empty i64 vector (LANGUAGE.md 10.5) |
+| `r_red_sum_dim_ovf` | `integer overflow` | 4f: sum(I, dim: 1): row 0 fits (1), row 1 overflows at its second element; every element of a dim: result follows the vector rule (LANGUAGE.md 10.5) |
+| `r_red_sum_ovf` | `integer overflow` | 4f: i64 sum of 2^62, 2^62, -2^62: the total 2^62 fits, but the second partial sum 2^63 overflows (LANGUAGE.md 10.5, Decision 42): integer overflow at the call's line, the line printed before it flushed |
+| `r_red_sum_ovf_neg` | `integer overflow` | 4f: -2^62, -2^62, -1, 1: the partial sum -2^63 fits, the third -2^63 - 1 overflows (LANGUAGE.md 10.5) |
+| `r_red_var_ovf` | `integer overflow` | 4f: variance of an i64 vector uses the i64 mean, whose checked sum overflows (LANGUAGE.md 10.5) |
 | `err_predeclared_const` | `redefinition of predeclared name` | a constant may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_predeclared_fn` | `redefinition of predeclared name` | a top-level function may not take a predeclared name (LANGUAGE.md 3.3) |
 | `err_redefinition_const` | `redefinition of 'C'` | two constants of one name (DESIGN.md 2.6.2) |
@@ -602,8 +672,9 @@ item is reported first (`structs` at the item, by `seaname`).
 | `res_gen.py` | `passes/NAME.res` for every `passes/NAME.hir1`, `rs` and the `res_*` tests (run `res_gen.py [NAME...]`); from 4d with `rtype` and the array types of §3.4.2 |
 | `lir4_gen.py` | the 4c pass-4 tests `passes/lir4_{retain_release,release_leaf,mcopy,slay,entries}.{lir,out}` |
 | `res_cases.py` | `passes/res_*.{sea,ast}` (then their `.res` through `res_gen.py`) and `errors/err_merge_*`, `errors/err_const_noval_{calltype,shortcircuit,userpow}` |
-| `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_str_elem`, `errors/err_ns_lib_{max1,min1}` (its eight `arrays` cases were retired by 4e) |
-| `arr4e_cases.py` | the 4e `programs/{sel,ew,arr,heap}_*` from `sel_vec_read` on, `programs/w4_sor_arrays` (from `accept/w4_sor.sea`), the 4e `errors/` tests from `err_rt_sel_range_last` on; it deletes the ten retired 4d goldens |
+| `arr4d_cases.py` | the 4d `programs/arr_*`, `programs/heap_*` (except `heap_env_*`), `errors/err_rt_arr_*`, `errors/err_ns_arr_str_elem`, `errors/err_ns_lib_{max1,min1}` (its eight `arrays` cases were retired by 4e; the two `err_ns_lib_*` goldens by 4f, deleted by `arr4f_cases.py`) |
+| `arr4e_cases.py` | the 4e `programs/{sel,ew,arr,heap}_*` from `sel_vec_read` on, `programs/w4_sor_arrays` (from `accept/w4_sor.sea`), the 4e `errors/` tests from `err_rt_sel_range_last` on; it deletes the ten retired 4d goldens (`err_ns_lib_max1_fixed` is retired by 4f, deleted by `arr4f_cases.py`) |
+| `arr4f_cases.py` | the 4f `programs/{red,sort,find,heap_red}_*`, `programs/w4_sor_reduce` (from `programs/w4_sor_arrays.sea`), the 4f `errors/` tests `r_red_*`, `err_red_*`, `err_sort_*`, `err_find_*`; it deletes the four retired `err_ns_lib_*` goldens |
 | `dump4d_cases.py` | `passes/arr_rule{16,17,18,19,30,31,36}.{sea,ast,hir1,hir,lir1,out}` (and their `.res` through `res_gen.py`) |
 | `hirl4e0_cases.py` | `passes/NAME.hirl` for the 17 dump tests with a `.sea` and a `.lir1`, and the `passes/loop_*.{sea,ast,res,hir1,hir,hirl,lir1,out}` tests (`.res` through `res_gen.py`) |
 | `dump4e_cases.py` | the 4e dump tests `passes/arr_rule{20,21,22,25,28}`, `passes/sel_{reads,ref_store,compound}`, `passes/ew_{colrow,ind2sub}`, `passes/arr_{lit_fixed,lit_dyn,lit_cat,lit_cat_fixed,views,dynfix,fixed,tasg_l12}` (`.sea .ast .res .hir1 .hir .hirl .lir1 .out`), and the rewritten `passes/res_err_array.res` (+ its new `.hir1`) |

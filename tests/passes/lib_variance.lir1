@@ -1,0 +1,259 @@
+#sea 1
+#target arm64-macos
+#file lib_variance.sea
+func .main main 0:1:1 0 0
+li i1 3
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new_u 0:6 1 p5 4 i2 i3 i1 i4
+lf f6 #3FF0000000000000
+ldp p7 p5 - 0 40
+li i8 0
+icmp gt i9 i1 i8
+if 1 i9
+li i10 1
+isub i11 i1 i10
+loop 2 i12 i8 i11 i10
+stf f6 p7 i12 8 0
+endloop 2
+endif 1
+call spread 0 1 p5
+release p5
+li i13 0
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new 0:7 1 p17 4 i14 i15 i13 i16
+call spread 0 1 p17
+release p17
+ret 0
+endfunc
+func spread fn 0:1:1 1 p1 0
+slot s1 64 8
+slot s2 64 8
+slot s3 64 8
+slot s4 64 8
+slot s5 16 8
+ldi i2 p1 - 0 16
+li i3 0
+icmp eq i4 i2 i3
+if 1 i4
+lf f5 #7FF8000000000000
+else 1
+li i6 1
+icmp eq i7 i2 i6
+if 2 i7
+lf f5 #0000000000000000
+else 2
+li i8 0
+icmp gt i9 i2 i8
+if 3 i9
+sa p10 s1
+lf f11 #8000000000000000
+stf f11 p10 - 0 0
+stf f11 p10 - 0 8
+stf f11 p10 - 0 16
+stf f11 p10 - 0 24
+stf f11 p10 - 0 32
+stf f11 p10 - 0 40
+stf f11 p10 - 0 48
+stf f11 p10 - 0 56
+ldp p12 p1 - 0 40
+li i13 7
+li i14 1
+isub i15 i2 i14
+loop 4 i16 i8 i15 i14
+iand i17 i16 i13
+ldf f18 p10 i17 8 0
+ldf f19 p12 i16 8 0
+fadd f18 f18 f19
+stf f18 p10 i17 8 0
+endloop 4
+ldf f20 p10 - 0 0
+ldf f21 p10 - 0 8
+ldf f22 p10 - 0 16
+ldf f23 p10 - 0 24
+ldf f24 p10 - 0 32
+ldf f25 p10 - 0 40
+ldf f26 p10 - 0 48
+ldf f27 p10 - 0 56
+fadd f28 f20 f21
+fadd f29 f22 f23
+fadd f30 f28 f29
+fadd f31 f24 f25
+fadd f32 f26 f27
+fadd f33 f31 f32
+fadd f34 f30 f33
+else 3
+lf f34 #0000000000000000
+endif 3
+itof f35 i2
+fdiv f36 f34 f35
+li i37 0
+icmp gt i38 i2 i37
+if 5 i38
+sa p39 s2
+lf f40 #8000000000000000
+stf f40 p39 - 0 0
+stf f40 p39 - 0 8
+stf f40 p39 - 0 16
+stf f40 p39 - 0 24
+stf f40 p39 - 0 32
+stf f40 p39 - 0 40
+stf f40 p39 - 0 48
+stf f40 p39 - 0 56
+ldp p41 p1 - 0 40
+li i42 7
+li i43 1
+isub i44 i2 i43
+loop 6 i45 i37 i44 i43
+iand i46 i45 i42
+ldf f47 p39 i46 8 0
+ldf f48 p41 i45 8 0
+fsub f49 f48 f36
+fmul f50 f49 f49
+fadd f47 f47 f50
+stf f47 p39 i46 8 0
+endloop 6
+ldf f51 p39 - 0 0
+ldf f52 p39 - 0 8
+ldf f53 p39 - 0 16
+ldf f54 p39 - 0 24
+ldf f55 p39 - 0 32
+ldf f56 p39 - 0 40
+ldf f57 p39 - 0 48
+ldf f58 p39 - 0 56
+fadd f59 f51 f52
+fadd f60 f53 f54
+fadd f61 f59 f60
+fadd f62 f55 f56
+fadd f63 f57 f58
+fadd f64 f62 f63
+fadd f65 f61 f64
+else 5
+lf f65 #0000000000000000
+endif 5
+isub i66 i2 i6
+itof f67 i66
+fdiv f5 f65 f67
+endif 2
+endif 1
+ldi i68 p1 - 0 16
+li i69 0
+icmp eq i70 i68 i69
+if 7 i70
+lf f71 #7FF8000000000000
+else 7
+li i72 1
+icmp eq i73 i68 i72
+if 8 i73
+lf f71 #0000000000000000
+else 8
+li i74 0
+icmp gt i75 i68 i74
+if 9 i75
+sa p76 s3
+lf f77 #8000000000000000
+stf f77 p76 - 0 0
+stf f77 p76 - 0 8
+stf f77 p76 - 0 16
+stf f77 p76 - 0 24
+stf f77 p76 - 0 32
+stf f77 p76 - 0 40
+stf f77 p76 - 0 48
+stf f77 p76 - 0 56
+ldp p78 p1 - 0 40
+li i79 7
+li i80 1
+isub i81 i68 i80
+loop 10 i82 i74 i81 i80
+iand i83 i82 i79
+ldf f84 p76 i83 8 0
+ldf f85 p78 i82 8 0
+fadd f84 f84 f85
+stf f84 p76 i83 8 0
+endloop 10
+ldf f86 p76 - 0 0
+ldf f87 p76 - 0 8
+ldf f88 p76 - 0 16
+ldf f89 p76 - 0 24
+ldf f90 p76 - 0 32
+ldf f91 p76 - 0 40
+ldf f92 p76 - 0 48
+ldf f93 p76 - 0 56
+fadd f94 f86 f87
+fadd f95 f88 f89
+fadd f96 f94 f95
+fadd f97 f90 f91
+fadd f98 f92 f93
+fadd f99 f97 f98
+fadd f100 f96 f99
+else 9
+lf f100 #0000000000000000
+endif 9
+itof f101 i68
+fdiv f102 f100 f101
+li i103 0
+icmp gt i104 i68 i103
+if 11 i104
+sa p105 s4
+lf f106 #8000000000000000
+stf f106 p105 - 0 0
+stf f106 p105 - 0 8
+stf f106 p105 - 0 16
+stf f106 p105 - 0 24
+stf f106 p105 - 0 32
+stf f106 p105 - 0 40
+stf f106 p105 - 0 48
+stf f106 p105 - 0 56
+ldp p107 p1 - 0 40
+li i108 7
+li i109 1
+isub i110 i68 i109
+loop 12 i111 i103 i110 i109
+iand i112 i111 i108
+ldf f113 p105 i112 8 0
+ldf f114 p107 i111 8 0
+fsub f115 f114 f102
+fmul f116 f115 f115
+fadd f113 f113 f116
+stf f113 p105 i112 8 0
+endloop 12
+ldf f117 p105 - 0 0
+ldf f118 p105 - 0 8
+ldf f119 p105 - 0 16
+ldf f120 p105 - 0 24
+ldf f121 p105 - 0 32
+ldf f122 p105 - 0 40
+ldf f123 p105 - 0 48
+ldf f124 p105 - 0 56
+fadd f125 f117 f118
+fadd f126 f119 f120
+fadd f127 f125 f126
+fadd f128 f121 f122
+fadd f129 f123 f124
+fadd f130 f128 f129
+fadd f131 f127 f130
+else 11
+lf f131 #0000000000000000
+endif 11
+isub i132 i68 i72
+itof f133 i132
+fdiv f71 f131 f133
+endif 8
+endif 7
+fsqrt f134 f71
+sa p135 s5
+stf f5 p135 - 0 0
+stf f134 p135 - 0 8
+la p136 d1
+rcall sea_printf 0:4 0 2 p136 p135
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

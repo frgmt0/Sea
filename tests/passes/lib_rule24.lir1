@@ -1,0 +1,59 @@
+#sea 1
+#target arm64-macos
+#file lib_rule24.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 3
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new_u 0:11 1 p5 4 i2 i3 i1 i4
+lf f6 #3FF0000000000000
+ldp p7 p5 - 0 40
+li i8 0
+icmp gt i9 i1 i8
+if 1 i9
+li i10 1
+isub i11 i1 i10
+loop 2 i12 i8 i11 i10
+stf f6 p7 i12 8 0
+endloop 2
+endif 1
+call top 1 i13 1 p5
+release p5
+sa p14 s1
+sti i13 p14 - 0 0
+la p15 d1
+rcall sea_printf 0:11 0 2 p15 p14
+li i16 2
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new 0:12 1 p20 4 i17 i18 i16 i19
+call top 1 i21 1 p20
+release p20
+sa p22 s2
+sti i21 p22 - 0 0
+la p23 d2
+rcall sea_printf 0:12 0 2 p23 p22
+ret 0
+endfunc
+func top fn 0:1:1 1 p1 1 i
+li i2 1
+rcall sea_argsort 0:8 1 p3 2 p1 i2
+li i4 0
+ldi i5 p3 - 0 16
+chkb i4 i5 0 0:9
+ldp p6 p3 - 0 40
+ldi i7 p6 i4 8 0
+release p3
+ret 1 i7
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+fmt d2 2
+fconv - - - d i
+ftext %0A
+#end

@@ -1,0 +1,1 @@
+err_red_sum_bool.sea:3:9: error: no overload of 'sum' accepts (bool[])

@@ -1,0 +1,4 @@
+// r_red_argmax_empty -- argmax of an empty vector made at run time (a selection of nothing)
+let v: f64[] = [1.0, 2.0]
+let k = argmax(v[v > 5.0])
+printf("%d\n", k)

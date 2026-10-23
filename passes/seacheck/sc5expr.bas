@@ -41,7 +41,7 @@
 9775 GOTO 9905
 9780 CALL "ck_call": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 9785 GOTO 9905
-9790 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "named arguments", "", "", 1
+9790 CALL "ck_narg": N(), M(), Y(), T(), C(), S$(), X(), X$(), J
 9795 GOTO 9905
 9800 LET M(J, 1) = M(N(J, 7), 1)
 9805 GOTO 9905

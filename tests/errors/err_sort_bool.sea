@@ -1,0 +1,3 @@
+// err_sort_bool -- argsort of a bool vector (f64, i64 and str vectors only, LANGUAGE.md 10.6)
+let b: bool[] = [true, false]
+let s = argsort(b, desc: true)

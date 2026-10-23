@@ -1,0 +1,73 @@
+#sea 1
+#target arm64-macos
+#file lib_find.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+li i3 0
+stb i3 p2 - 0 0
+li i4 1
+stb i4 p2 - 0 1
+li i5 1
+stb i5 p2 - 0 2
+li i6 0
+stb i6 p2 - 0 3
+li i7 1
+stb i7 p2 - 0 4
+li i8 5
+mcopy p1 p2 i8
+li i9 5
+li i10 0
+li i11 0
+icmp gt i12 i9 i11
+if 1 i12
+li i13 1
+isub i14 i9 i13
+loop 2 i15 i11 i14 i13
+ldb i16 p1 i15 1 0
+iadd i10 i10 i16
+endloop 2
+endif 1
+li i17 2
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:2 1 p20 4 i17 i18 i10 i19
+ldp p21 p20 - 0 40
+li i22 0
+li i23 1
+li i24 0
+icmp gt i25 i9 i24
+if 3 i25
+li i26 1
+isub i27 i9 i26
+loop 4 i28 i24 i27 i26
+ldb i29 p1 i28 1 0
+if 5 i29
+sti i28 p21 i22 8 0
+iadd i22 i22 i23
+endif 5
+endloop 4
+endif 3
+ldi i30 p20 - 0 16
+li i31 2
+ldi i32 p20 - 0 16
+chkb i31 i32 0 0:3
+ldp p33 p20 - 0 40
+ldi i34 p33 i31 8 0
+sa p35 s3
+sti i30 p35 - 0 0
+sti i34 p35 - 0 8
+la p36 d1
+rcall sea_printf 0:3 0 2 p36 p35
+release p20
+ret 0
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

@@ -1,0 +1,5 @@
+// r_red_sum_dim_ovf -- sum(I, dim: 1): row 0 fits (1), row 1 overflows at its second element; every
+// element of a dim: result follows the vector rule (LANGUAGE.md 10.5)
+let I: i64[,] = [1, 0; 9223372036854775807, 1]
+let r = sum(I, dim: 1)
+printf("%d\n", r[0])

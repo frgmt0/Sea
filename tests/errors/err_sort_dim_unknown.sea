@@ -1,0 +1,4 @@
+// err_sort_dim_unknown -- sort(v, dim: 0): dim is not a name of sort
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sort(v, dim: 0)

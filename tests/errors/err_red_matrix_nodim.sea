@@ -1,0 +1,4 @@
+// err_red_matrix_nodim -- sum of a matrix without dim: (reduce it with dim: or through A.flat)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sum(A)

@@ -1,0 +1,7 @@
+let v = [2.5, nan, 7.0, 0.5, 7.0]
+let w = [4, 1, 9, 1]
+let a = max(v)
+let b = argmin(w)
+printf("%g %d\n", a, b)
+// lib_max -- DESIGN.md 3.5.9 L13 on fixed-size vectors: max of f64 (EMPTY_REDUCE with the
+// function's name, NaN ignored, the first maximum; R15's where values) and argmin of i64

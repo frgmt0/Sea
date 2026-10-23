@@ -1,0 +1,4 @@
+// err_red_nnz_f64 -- nnz of an f64 vector (bool vectors only)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = nnz(v)

@@ -1,0 +1,5 @@
+// err_sort_positional_first -- 115 is pass 1's: reported before a pass-2 error earlier in the source (an
+// undeclared name on line 3; LANGUAGE.md 9.1, DESIGN.md 2.6.2)
+let a = undeclaredName
+let v: f64[] = [1.0]
+let s = argsort(desc: false, v + 1.0)

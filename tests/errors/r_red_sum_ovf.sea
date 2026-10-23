@@ -1,0 +1,6 @@
+// r_red_sum_ovf -- i64 sum of 2^62, 2^62, -2^62: the total 2^62 fits, but the second partial sum 2^63
+// overflows (LANGUAGE.md 10.5, Decision 42): integer overflow at the call's line, the
+// line printed before it flushed
+printf("start\n")
+let v = [4611686018427387904, 4611686018427387904, -4611686018427387904]
+printf("%d\n", sum(v))

@@ -1,0 +1,59 @@
+#sea 1
+#target arm64-macos
+#file lib_find_first.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+li i3 0
+stb i3 p2 - 0 0
+li i4 1
+stb i4 p2 - 0 1
+li i5 1
+stb i5 p2 - 0 2
+li i6 0
+stb i6 p2 - 0 3
+li i7 4
+mcopy p1 p2 i7
+li i8 4
+li i9 -1
+li i10 -1
+li i11 0
+icmp gt i12 i8 i11
+if 1 i12
+li i13 1
+isub i14 i8 i13
+loop 2 i15 i11 i14 i13
+ldb i16 p1 i15 1 0
+icmp eq i17 i9 i10
+iand i18 i16 i17
+isel i9 i18 i15 i9
+endloop 2
+endif 1
+li i19 4
+li i20 -1
+li i21 0
+icmp gt i22 i19 i21
+if 3 i22
+li i23 1
+isub i24 i19 i23
+loop 4 i25 i21 i24 i23
+ldb i26 p1 i25 1 0
+isel i20 i26 i25 i20
+endloop 4
+endif 3
+sa p27 s3
+sti i9 p27 - 0 0
+sti i20 p27 - 0 8
+la p28 d1
+rcall sea_printf 0:4 0 2 p28 p27
+ret 0
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

@@ -1,0 +1,4 @@
+// r_red_argmin_empty -- argmin of an empty vector: the function's name in the message (DESIGN.md 2.6.2)
+let e: f64[] = []
+let k = argmin(e)
+printf("%d\n", k)

@@ -1,0 +1,5 @@
+// err_red_dim_not_const -- dim: k with a local k (= 0): not a constant expression (237) at the value
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let k = 0
+let s = sum(A, dim: k)

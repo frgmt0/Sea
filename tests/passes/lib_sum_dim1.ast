@@ -1,0 +1,52 @@
+#sea 1
+#target arm64-macos
+#file lib_sum_dim1.sea
+int 0:1:18 2
+int 0:1:20 3
+type 0:1:14 f64 fm 2
+param 0:1:11 A 0 0
+type 0:1:27 i64 s 0
+param 0:1:24 k 0 0
+type 0:1:35 f64 s 0
+pname 0:2:9 s
+name 0:2:13 sum
+name 0:2:17 A
+int 0:2:25 1
+narg 0:2:20 dim
+call 0:2:13 2
+let 0:2:5 0
+name 0:3:12 s
+name 0:3:14 k
+index 0:3:12 1
+return 0:3:5 1
+block 0:1:39 2
+fn 0:1:1 rowsum 0 2 1
+pname 0:5:5 M
+float 0:5:10 #3FF0000000000000
+float 0:5:15 #4000000000000000
+float 0:5:20 #4008000000000000
+row 0:5:10 3
+float 0:5:25 #4010000000000000
+float 0:5:30 #4014000000000000
+float 0:5:35 #4018000000000000
+row 0:5:25 3
+array 0:5:9 2
+let 0:5:1 0
+name 0:6:1 printf
+str 0:6:8 %25g%0A
+name 0:6:16 rowsum
+name 0:6:23 M
+int 0:6:26 0
+call 0:6:16 2
+call 0:6:1 2
+cstmt 0:6:1
+name 0:7:1 printf
+str 0:7:8 %25g%0A
+name 0:7:16 rowsum
+name 0:7:23 M
+int 0:7:26 1
+call 0:7:16 2
+call 0:7:1 2
+cstmt 0:7:1
+prog 4
+#end

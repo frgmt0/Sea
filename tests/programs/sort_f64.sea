@@ -1,0 +1,47 @@
+// sort_f64 -- sort and argsort of f64 vectors (LANGUAGE.md 10.6): stable in both directions, -0 == +0
+// (signs printed, input order kept), NaN after every number ascending and before every number
+// descending (nan, -nan and a run-time 0/0, in input order), ties, infinities, a fixed-size
+// operand, empty, one element
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+let z: f64[] = [-0.0, 1.0, 0.0, -1.0, -0.0]
+pf(sort(z))
+pvi(argsort(z))
+pf(sort(z, desc: true))
+pvi(argsort(z, desc: true))
+let w = [3.0, 1.0, 3.0, 2.0, 1.0]
+pf(sort(w))
+pvi(argsort(w))
+pf(sort(w, desc: true))
+pvi(argsort(w, desc: true))
+var zz = 0.0
+let q: f64[] = [nan, 1.0, -nan, -inf, 2.0, zz / zz]
+pf(sort(q))
+pvi(argsort(q))
+pf(sort(q, desc: true))
+pvi(argsort(q, desc: true))
+pf(sort([inf, -inf, 0.0, -2.5]))
+pvi(argsort([inf, -inf, 0.0, -2.5]))
+pf(sort([inf, -inf, 0.0, -2.5], desc: true))
+pvi(argsort([inf, -inf, 0.0, -2.5], desc: true))
+let e: f64[] = []
+pf(sort(e))
+pvi(argsort(e))
+pf(sort(e, desc: true))
+pvi(argsort(e, desc: true))
+pf(sort([5.0]))
+pvi(argsort([5.0]))
+pf(sort([5.0], desc: true))
+pvi(argsort([5.0], desc: true))

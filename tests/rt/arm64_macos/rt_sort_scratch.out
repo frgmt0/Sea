@@ -1,0 +1,12 @@
+f64 n4 sort: one new object
+f64 n4 sort: scratch block given back
+f64 n4 argsort: one new object
+f64 n4 argsort: scratch block given back
+i64 n40 sort: one new object
+i64 n40 sort: scratch block given back
+i64 n40 argsort: one new object
+i64 n40 argsort: scratch block given back
+str n4 sort: one new object
+str n4 sort: scratch block given back
+str n4 argsort: one new object
+str n4 argsort: scratch block given back

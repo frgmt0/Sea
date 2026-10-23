@@ -1,0 +1,5 @@
+// err_red_desc_unknown -- sum(v, desc: true): desc is not a name of sum: not supported yet: named arguments
+// at the narg (DESIGN.md 2.6.2 step 4f)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sum(v, desc: true)

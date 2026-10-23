@@ -1,0 +1,32 @@
+// red_maxmin -- max, min, argmax, argmin (LANGUAGE.md 10.5): the first extreme in index order, NaN ignored,
+// all NaN -> NaN and index 0, -0/+0 in both orders (signs printed), infinities, i64 at the
+// limits, a dynamic operand; max/min of two arguments stay elemental (10.4)
+let c0 = [3.0, 7.0, 7.0, 1.0, 1.0]  // ties: the first maximum (index 1) and the first minimum (index 3)
+printf("%g %g %d %d\n", max(c0), min(c0), argmax(c0), argmin(c0))
+let c1 = [nan, 2.0, 5.0, 5.0]  // NaN first: ignored
+printf("%g %g %d %d\n", max(c1), min(c1), argmax(c1), argmin(c1))
+let c2 = [2.0, nan, 1.0]  // NaN in the middle
+printf("%g %g %d %d\n", max(c2), min(c2), argmax(c2), argmin(c2))
+let c3 = [2.0, 3.0, nan]  // NaN last
+printf("%g %g %d %d\n", max(c3), min(c3), argmax(c3), argmin(c3))
+let c4 = [nan, nan, nan]  // all NaN: NaN, index 0
+printf("%g %g %d %d\n", max(c4), min(c4), argmax(c4), argmin(c4))
+let c5 = [-0.0, 0.0]  // -0 then +0: equal, so the first (-0) for both
+printf("%g %g %d %d\n", max(c5), min(c5), argmax(c5), argmin(c5))
+let c6 = [0.0, -0.0]  // +0 then -0: the first (+0) for both
+printf("%g %g %d %d\n", max(c6), min(c6), argmax(c6), argmin(c6))
+let c7 = [-inf, -inf, 1.0, inf, inf]  // infinities, ties
+printf("%g %g %d %d\n", max(c7), min(c7), argmax(c7), argmin(c7))
+let c8 = [-inf, nan]  // one number and a NaN
+printf("%g %g %d %d\n", max(c8), min(c8), argmax(c8), argmin(c8))
+let c9 = [4.0]  // one element
+printf("%g %g %d %d\n", max(c9), min(c9), argmax(c9), argmin(c9))
+let j0 = [5, -3, 9, 9, -3]
+printf("%d %d %d %d\n", max(j0), min(j0), argmax(j0), argmin(j0))
+let j1 = [9223372036854775807, -9223372036854775808, 9223372036854775807, -9223372036854775808]
+printf("%d %d %d %d\n", max(j1), min(j1), argmax(j1), argmin(j1))
+let j2 = [-9223372036854775808]
+printf("%d %d %d %d\n", max(j2), min(j2), argmax(j2), argmin(j2))
+let d: f64[] = [nan, 1.5, -2.0, 6.0, 0.0, 6.0, -2.0, 3.0, nan]
+printf("%g %g %d %d\n", max(d), min(d), argmax(d), argmin(d))
+printf("%g %g\n", max(1.0, 2.0), min(1.0, 2.0))

@@ -1,0 +1,70 @@
+#sea 1
+#target arm64-macos
+#file lib_sort_fixed.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #4008000000000000
+stf f3 p2 - 0 0
+lf f4 #3FE0000000000000
+stf f4 p2 - 0 8
+lf f5 #4000000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new_u 0:2 1 p11 4 i8 i9 i7 i10
+ldp p12 p11 - 0 40
+li i13 24
+mcopy p12 p1 i13
+li i14 0
+rcall sea_sort 0:2 1 p15 2 p11 i14
+release p11
+li i16 0
+ldi i17 p15 - 0 16
+chkb i16 i17 0 0:3
+ldp p18 p15 - 0 40
+ldf f19 p18 i16 8 0
+lf f20 #3FF0000000000000
+fcmp lt i21 f19 f20
+li i22 3
+li i23 1
+li i24 1
+li i25 1
+rcall sea_arr_new_u 0:4 1 p26 4 i23 i24 i22 i25
+ldp p27 p26 - 0 40
+li i28 24
+mcopy p27 p1 i28
+rcall sea_argsort 0:4 1 p29 2 p26 i21
+release p26
+li i30 2
+ldi i31 p15 - 0 16
+chkb i30 i31 0 0:5
+ldp p32 p15 - 0 40
+ldf f33 p32 i30 8 0
+li i34 0
+ldi i35 p29 - 0 16
+chkb i34 i35 0 0:5
+ldp p36 p29 - 0 40
+ldi i37 p36 i34 8 0
+sa p38 s3
+stf f33 p38 - 0 0
+sti i37 p38 - 0 8
+la p39 d1
+rcall sea_printf 0:5 0 2 p39 p38
+release p29
+release p15
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

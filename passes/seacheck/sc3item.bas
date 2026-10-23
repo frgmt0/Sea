@@ -309,35 +309,11 @@
 6300 LET G = E
 6305 LET E = N(E, 8)
 6310 CALL "ck_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
-6315 REM a constant expression: literals, constants, operators, pi inf nan eps, sqrt, pow
-6320 FOR J = M(E, 0) TO E
-6325 LET K = N(J, 0)
-6330 IF K = 25 THEN 6455
-6335 IF K = 26 THEN 6455
-6340 IF K = 28 THEN 6455
-6345 IF K = 29 THEN 6455
-6350 IF K = 32 THEN 6455
-6355 IF K = 33 THEN 6455
-6360 IF K = 34 THEN 6455
-6365 IF K = 30 THEN 6405
-6370 IF K <> 35 THEN 6440
-6375 REM a call of sqrt or pow (LANGUAGE 7.2)
-6380 LET H = N(J, 7)
-6385 IF N(H, 0) <> 30 THEN 6440
-6390 IF S$(N(H, 6)) = "pow" THEN 6455
-6395 IF S$(N(H, 6)) <> "sqrt" THEN 6440
-6400 GOTO 6455
-6405 IF M(J, 2) = 0 THEN 6455
-6410 IF N(N(J, 9), 0) <> 35 THEN 6420
-6415 IF N(N(J, 9), 7) = J THEN 6455
-6420 IF M(J, 2) < 0 THEN 6435
-6425 IF Y(M(J, 2), 0) = 2 THEN 6455
-6430 GOTO 6440
-6435 IF M(J, 2) >= -4 THEN 6455
+6315 REM a constant expression: literals, constants, operators, pi inf nan eps, sqrt, pow (cex)
+6320 CALL "cex": N(), M(), Y(), S$(), E, Z
+6325 IF Z = 1 THEN 6460
 6440 IF M(E, 1) = 0 THEN 6460
 6445 CALL "er": N(), X(), X$(), E, "NOT_CONSTANT", "", "", "", 0
-6450 GOTO 6460
-6455 NEXT J
 6460 IF N(F, 1) = 0 THEN 6500
 6465 CALL "tyof": N(), G, D
 6470 IF D <> 5 THEN 6485

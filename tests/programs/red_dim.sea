@@ -1,0 +1,104 @@
+// red_dim -- dim: 0 and dim: 1 reductions (LANGUAGE.md 10.5): the nine functions on 3 x 4 matrices (f64
+// fixed and dynamic, i64, bool), each element in the vector rule's order (a row of 4 and a
+// column of 9 where the 8-lane order differs from left to right), fixed-size results
+// (Decision 39), NaN, a view operand, and the empty extents 0 x 3 and 3 x 0
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pf17(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A = [1e16, 1.0, -1e16, 1.0; 2.0, 4.0, 8.0, -0.5; -3.0, 0.25, 1.5, 6.0]
+let D: f64[,] = A
+pf(sum(A, dim: 0))
+pf(sum(D, dim: 1))
+pf(mean(A, dim: 0))
+pf(mean(D, dim: 1))
+pf(variance(A, dim: 0))
+pf(variance(D, dim: 1))
+pf(std(A, dim: 0))
+pf(std(D, dim: 1))
+pf(max(A, dim: 0))
+pf(max(D, dim: 1))
+pf(min(A, dim: 0))
+pf(min(D, dim: 1))
+pf17(sum(A, dim: 1))
+pf17(sum(D, dim: 0))
+pf17(variance(D, dim: 1))
+pf17(std(A, dim: 0))
+let r4: f64[4] = sum(A, dim: 0)
+let r3: f64[3] = mean(A, dim: 1)
+printf("%g %g\n", r4[3], r3[1])
+let I = [5, -2, 7, 0; 1, 1, -9, 4; 3, 8, 2, 2]
+let J: i64[,] = I
+pvi(sum(I, dim: 0))
+pvi(sum(J, dim: 1))
+pvi(max(J, dim: 0))
+pvi(min(I, dim: 1))
+pf17(mean(I, dim: 0))
+pf17(mean(J, dim: 1))
+pf17(variance(J, dim: 0))
+pf17(std(I, dim: 1))
+let m4: f64[4] = mean(I, dim: 0)
+printf("%g\n", m4[0])
+let M = [true, false, true, false; true, false, false, false; true, false, true, true]
+let N: bool[,] = M
+pvi(nnz(M, dim: 0))
+pvi(nnz(N, dim: 1))
+pvb(any(N, dim: 0))
+pvb(any(M, dim: 1))
+pvb(all(M, dim: 0))
+pvb(all(N, dim: 1))
+let C: f64[,] = [1e16, 0.5; 1.0, -0.25; 1.0, 2.0; 1.0, 0.125; 1.0, 3.0; 1.0, -1.0; 1.0, 4.0; 1.0, 1.0; -1e16, 8.0]
+pf17(sum(C, dim: 0))
+pf17(sum(C.T, dim: 1))
+pf17(mean(C, dim: 0))
+pf17(variance(C.T, dim: 1))
+let Q: f64[,] = [nan, nan; 1.0, nan; -2.0, nan]
+pf(max(Q, dim: 0))
+pf(min(Q, dim: 0))
+pf(sum(Q, dim: 0))
+pf(max(Q, dim: 1))
+let Z03 = zeros(0, 3)
+let Z30 = zeros(3, 0)
+pf(sum(Z03, dim: 0))
+pf(mean(Z03, dim: 0))
+pf(variance(Z03, dim: 0))
+pf(std(Z03, dim: 0))
+pf(sum(Z30, dim: 0))
+pf(max(Z30, dim: 0))
+pf(min(Z30, dim: 0))
+pf(sum(Z30, dim: 1))
+pf(mean(Z30, dim: 1))
+pf(max(Z03, dim: 1))
+pf(sum(Z03, dim: 1))
+let IZ = filled(0, 0, 3)
+pvi(sum(IZ, dim: 0))
+pvi(max(IZ, dim: 1))
+let BZ = filled(false, 0, 3)
+pvi(nnz(BZ, dim: 0))
+pvb(any(BZ, dim: 0))
+pvb(all(BZ, dim: 0))
+pvb(all(BZ, dim: 1))

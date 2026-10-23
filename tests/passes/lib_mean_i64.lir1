@@ -1,0 +1,57 @@
+#sea 1
+#target arm64-macos
+#file lib_mean_i64.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+li i3 3
+sti i3 p2 - 0 0
+li i4 5
+sti i4 p2 - 0 8
+li i5 9
+sti i5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 0
+li i8 3
+li i9 0
+icmp gt i10 i8 i9
+if 1 i10
+li i11 1
+isub i12 i8 i11
+loop 2 i13 i9 i12 i11
+ldi i14 p1 i13 8 0
+iaddc i7 i7 i14 0:2
+endloop 2
+endif 1
+li i15 0
+li i16 3
+li i17 0
+icmp gt i18 i16 i17
+if 3 i18
+li i19 1
+isub i20 i16 i19
+loop 4 i21 i17 i20 i19
+ldi i22 p1 i21 8 0
+iaddc i15 i15 i22 0:3
+endloop 4
+endif 3
+itof f23 i15
+itof f24 i16
+fdiv f25 f23 f24
+sa p26 s3
+sti i7 p26 - 0 0
+stf f25 p26 - 0 8
+la p27 d1
+rcall sea_printf 0:4 0 2 p27 p26
+ret 0
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

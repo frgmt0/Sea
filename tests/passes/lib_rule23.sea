@@ -1,0 +1,9 @@
+fn total(x: f64[]) -> f64 {
+    // lib_rule23 -- DESIGN.md 3.6.6 rule 23 (reductions): its example verbatim on line 3 (x is p1)
+    let s = sum(x)
+    return s
+}
+printf("%g\n", total(ones(9)))
+printf("%g\n", total(zeros(2)))
+// 3.5.9 L13: sum of an f64 vector is sum8 (the accumulator home of the appended type f64[8], R14;
+// the lane K & 7 by wbin and, R13), its ifx taking the register of s by R12 (a)

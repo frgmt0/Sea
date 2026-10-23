@@ -1,0 +1,12 @@
+fn top(c: f64[]) -> i64 {
+    // lib_rule24 -- DESIGN.md 3.6.6 rule 24 (sorting and searching): its example verbatim on
+    // line 8, argsort with desc: true of c in p1. 3.5.9 L14 and R16: the lib argsort stays in
+    // sea.hirl (this function is sea.hir unchanged) and is lowered to rcall sea_argsort with
+    // the vector and the desc value as its two arguments; r[0], the index of the largest
+    // element (the first of equal ones: the sort is stable), is read by rule 18 and returned
+    // (r is released before the ret, rule 16 (c))
+    let r = argsort(c, desc: true)
+    return r[0]
+}
+printf("%d\n", top(ones(3)))
+printf("%d\n", top(zeros(2)))

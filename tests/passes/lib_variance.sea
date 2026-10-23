@@ -1,0 +1,10 @@
+fn spread(x: f64[]) {
+    let v = variance(x)
+    let d = std(x)
+    printf("%g %g\n", v, d)
+}
+spread(ones(3))
+spread(zeros(0))
+// lib_variance -- DESIGN.md 3.5.9 L13: variance (n = 0 NaN, n = 1 zero, else the two-pass
+// mean and the deviations, each sum8 with its own home slot; the outer ifx takes the register of
+// v by R12 (a), the inner one is its arm) and std (the variance xblk, then fsqrt)

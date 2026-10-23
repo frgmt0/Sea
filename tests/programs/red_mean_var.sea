@@ -1,0 +1,19 @@
+// red_mean_var -- mean, variance (two-pass, N - 1), std of f64 and i64 vectors (LANGUAGE.md 10.5): a case
+// where the two-pass result differs from the one-pass formula, empty (NaN), one element
+// (variance 0, also of NaN), NaN propagation, an i64 mean near 2^63
+let a = [1.0, 2.0, 4.0]
+printf("%.17g %.17g %.17g\n", mean(a), variance(a), std(a))
+let ai = [1, 2, 4]
+printf("%.17g %.17g %.17g\n", mean(ai), variance(ai), std(ai))
+let b: f64[] = [100000001.0, 100000002.0, 100000003.0]
+printf("%.17g %.17g %.17g\n", mean(b), variance(b), std(b))
+let bi: i64[] = [100000001, 100000002, 100000003]
+printf("%.17g %.17g %.17g\n", mean(bi), variance(bi), std(bi))
+let e: f64[] = []
+let ie: i64[] = []
+printf("%g %g %g %g %g %g\n", mean(e), variance(e), std(e), mean(ie), variance(ie), std(ie))
+printf("%g %g %g\n", mean([2.5]), variance([2.5]), std([2.5]))
+printf("%g %g %g\n", mean([nan]), variance([nan]), variance([inf]))
+printf("%g %g %g\n", mean([-3]), variance([-3]), std([-3]))
+printf("%g %g %g\n", mean([-0.0]), mean([1.0, nan]), variance([1.0, nan, 2.0]))
+printf("%.17g\n", mean([9223372036854775807, -1, 1]))

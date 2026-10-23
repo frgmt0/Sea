@@ -1,0 +1,4 @@
+// r_red_min_empty -- min of an empty i64 vector (LANGUAGE.md 10.5)
+let e: i64[] = []
+let k = min(e)
+printf("%d\n", k)

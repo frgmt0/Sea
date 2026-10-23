@@ -1,0 +1,10 @@
+fn rowsum(A: f64[2,3], k: i64) -> f64 {
+    let s = sum(A, dim: 1)
+    return s[k]
+}
+let M = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+printf("%g\n", rowsum(M, 0))
+printf("%g\n", rowsum(M, 1))
+// lib_sum_dim1 -- DESIGN.md 3.5.9 L13, the dim: forms: sum.dim with dim 1 of a fixed-size
+// f64[2,3], whose result is the fixed-size f64[2] (Decision 39: a home slot, copied into the
+// home of s), the lane wbin and of J

@@ -1,0 +1,5 @@
+// err_red_dim_value_expr -- dim: 1 + 1 is the constant 2: 262 at the value, the + node at its first token
+// (DESIGN.md 3.3)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = mean(A, dim: 1 + 1)

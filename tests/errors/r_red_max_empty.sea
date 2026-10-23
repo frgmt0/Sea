@@ -1,0 +1,4 @@
+// r_red_max_empty -- max of an empty vector (LANGUAGE.md 10.5, 9.2): `max of an empty array`
+printf("before\n")
+let e: f64[] = []
+printf("%g\n", max(e))

@@ -1,0 +1,4 @@
+// err_red_two_positional -- mean(v, v): a second positional argument
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = mean(v, v)

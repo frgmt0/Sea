@@ -1,0 +1,6 @@
+// err_red_dim_order_201_237 -- dim: x with an f64 local x: not constant and not i64; the type (201) is
+// checked first (LANGUAGE.md 10.5, DESIGN.md 2.6.2)
+let v: f64[] = [1.0, 2.0]
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+var x = 2.5
+let s = variance(A, dim: x)

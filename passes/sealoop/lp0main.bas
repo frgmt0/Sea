@@ -3,10 +3,10 @@
 110 REM Rewrites the array constructs into explicit scalar HIR: 4e-0's L1-L4 (zeros ones filled
 115 REM len rows cols numel, fore) and 4e's L5-L11 (selection reads and folded views, selection
 120 REM stores and compound stores, element-wise operations, range values, numeric literals and
-125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k). Every other record
-130 REM is copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main lp1walk lp2out lp3sel lp4ew lp5lit, the modules
-140 REM io diag tables, the DATA blocks errors exits consts records, and 99999 END. Exit status:
+125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k), 4f's L13-L14. Others
+130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
+135 REM as DESIGN 2.6.3 says: the files lp0main lp1walk lp2out lp3sel lp4ew lp5lit lp6tup lp7red,
+140 REM the modules io diag tables, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
 155 REM (A) lp0main reads and validates all of sea.hir; (B) lp1walk visits the records in file
@@ -93,10 +93,11 @@
 495 IF P1 = 0 THEN 505
 500 LET R(I, 0) = VAL(SEG$(K1$, P1 + LEN(R$(I)) + 2, P1 + LEN(R$(I)) + 3))
 505 NEXT I
-510 REM the library functions of L1-L3, in the order of their codes (lp1walk), and the elemental ones
+510 REM the library functions of L1-L3 in the order of their codes (lp1walk), the elemental ones, L13-L14 (lp7red)
 515 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
 517 LET K4$ = "|f64|i64|isnan|abs|sign|sqrt|floor|ceil|trunc|round|min|max|log|exp|sin|cos|pow|hypot|"
 518 LET K4$ = K4$ & "idiv|where|sub2ind|"
+519 LET K5$ = "|sum        |mean       |variance   |std        |max        |min        |argmax     |argmin     |nnz        |any        |all        |find       |find_first |find_last  |sort       |argsort    "
 520 REM ==== (A) reading sea.hir =================================================================
 525 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), V8, T$, H$(), 100, N1, L$
 530 LET L9 = N1 + 3

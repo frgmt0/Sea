@@ -1,0 +1,6 @@
+let m = [false, true, true, false]
+let a = find_first(m)
+let b = find_last(m)
+printf("%d %d\n", a, b)
+// lib_find_first -- DESIGN.md 3.5.9 L14: find_first (the first true: where of a counter, R15)
+// and find_last of a fixed-size bool vector
