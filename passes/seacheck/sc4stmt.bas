@@ -122,7 +122,7 @@
 8165 CALL "ck_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(E, 8)
 8170 LET X(15) = X(15) - 1
 8175 GOTO 8235
-8180 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "match", "", "", 1
+8180 CALL "ck_match": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 8185 GOTO 8235
 8190 IF X(15) > 0 THEN 8235
 8195 CALL "er": N(), X(), X$(), I, "BREAK_OUTSIDE", "", "", "", 0
@@ -262,9 +262,13 @@
 8825 GOTO 9040
 8830 CALL "vu": N(), M(), T(), X(), X$(), E, V
 8835 IF V = 0 THEN 9040
-8840 REM the element types must suit the operator; an array target or value is broadcast (aop)
+8840 REM the element types must suit the operator (+= of str and str: Decision 45); an array target or value is broadcast (aop)
 8845 CALL "elt": T(), D, D1, K1
 8850 CALL "elt": T(), V, V1, K2
+8851 IF D1 * V1 <> 25 THEN 8855
+8852 IF O <> 2 THEN 9005
+8853 IF K1 + K2 > 0 THEN 8880
+8854 GOTO 9040
 8855 IF D1 = 2 THEN 9005
 8860 IF V1 = 2 THEN 9005
 8865 IF V1 > 4 THEN 9005

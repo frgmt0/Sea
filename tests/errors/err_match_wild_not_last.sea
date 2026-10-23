@@ -1,0 +1,7 @@
+// err_match_wild_not_last -- _ followed by a string arm: 207 at the match, which comes before the arm's 208
+// (LANGUAGE.md 7.6; L-a)
+let s = "a"
+match s {
+    _ => { printf("x\n") }
+    "a" => { printf("a\n") }
+}

@@ -1,0 +1,81 @@
+// str_arrays -- str[] and str[,]: literals, element reads and replacing stores (=, +=), selections read and
+// stored (a scalar, an array, a mask), [v, "x"], filled, for over a str[] and a .flat,
+// .T, .flat, .col, .row, len, [] under a str[] annotation, copy on write, (v[i], k) = two()
+// (LANGUAGE.md 4.5, 4.8, 5.2, 5.5, 5.6, 6.9, 7.3, 7.5, 10.2)
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pms(A: str[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" [%s]", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn two() -> (str, i64) {
+    return ("two", 2)
+}
+let names = ["ann", "bob", "cy"]
+ps(names)
+printf("%s %d %d\n", names[1], len(names), len(names[0]))
+var v = names
+v[0] = "zed"
+v[2] += "x"
+ps(v)
+ps(names)
+let i = 1
+v[i] = v[i] + v[0]
+ps(v)
+ps(v[1..3])
+ps(v[[2, 0, 2]])
+ps(names[names != "bob"])
+var w = ["a", "b", "c", "d"]
+w[1..3] = "S"
+ps(w)
+w[[0, 3]] = ["p", "q"]
+ps(w)
+w[w == "S"] = "m"
+ps(w)
+let c = [names, "x"]
+ps(c)
+ps(["<", names, names[0], w[1..2]])
+ps(filled("", 2))
+pms(filled("ab", 2, 3))
+ps(filled("z", 0))
+let M = ["a", "b", "c"; "d", "e", "f"]
+pms(M)
+pms(M.T)
+ps(M.flat)
+pms(names.col)
+pms(names.row)
+printf("%s %s %d %d\n", M[1, 0], M.T[2, 1], rows(M), cols(M))
+for s in names {
+    printf("<%s>", s)
+}
+printf("\n")
+for s in M.flat {
+    printf("%s", s)
+}
+printf("\n")
+var lv = ["1", "2"]
+for s in lv {
+    lv = [lv, s + "!"]
+}
+ps(lv)
+let em: str[] = []
+ps(em)
+var t = em
+t = [t, "only"]
+printf("%d %d\n", len(em), len(t))
+ps(t)
+var kk = 0
+(v[1], kk) = two()
+ps(v)
+printf("%d\n", kk)

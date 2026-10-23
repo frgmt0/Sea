@@ -76,9 +76,9 @@
 8975 LET Q = Y(S, 7)
 8980 IF Q = 1 THEN 9010
 8985 IF Q < 2 THEN 9200
-8990 IF Q > 3 THEN 9200
-8995 REM an f64 or bool constant: the extent must be i64 (rcne and rcn: no value, no error here)
-9000 CALL "er": N(), X(), X$(), J, "TYPE_MISMATCH", "i64", SEG$("f64 bool", 4 * Q - 7, 5 * Q - 7), "", 2
+8990 IF Q > 4 THEN 9200
+8995 REM an f64, bool or str constant: the extent must be i64 (rcne and rcn: no value, no error here)
+9000 CALL "er": N(), X(), X$(), J, "TYPE_MISMATCH", "i64", SEG$("f64 boolstr", 4 * Q - 7, 5 * Q - 7), "", 2
 9005 GOTO 9200
 9010 LET V(K, 1) = INT(Y(S, 8) / 65536)
 9015 LET V(K, 2) = Y(S, 8) - 65536 * V(K, 1)
@@ -117,9 +117,8 @@
 9170 IF B = -1 THEN 9198
 9175 LET A$ = "handle types"
 9180 IF B >= 6 THEN 9198
-9182 REM a str type in a signature (X(44) 1) has type 0: the signature reports it (DESIGN 2.6.2)
+9182 REM a fixed-size type of str elements is strings until 4g-2 (DESIGN 2.6.2, 3.4.2)
 9184 IF B <> 5 THEN 9190
-9186 IF X(44) = 1 THEN 9200
 9187 LET A$ = "strings"
 9188 IF H >= 4 THEN 9198
 9190 LET R = B

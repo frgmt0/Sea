@@ -1,0 +1,11 @@
+// res_str_consts -- DESIGN.md 3.4.2: rcns of + (A), naming another (B), annotated (T); rcnb of
+// str comparisons (L-g: a proper prefix is the smaller; bytes compare unsigned, 0xC3 > z)
+const A = "ab" + "c"
+const B = A + "%"
+const T: str = "x"
+const L = A < B
+const U = "\xC3\xA9" > "z"
+printf("%s %s %s\n", A, B, T)
+if L && U {
+    printf("lt\n")
+}

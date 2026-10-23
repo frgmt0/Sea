@@ -1,0 +1,23 @@
+fn tag(k: i64) -> str {
+    return str(k)
+}
+fn scan(n: i64) {
+    var i = 0
+    while i < n {
+        match tag(i) {
+            "2" | "9" => { break }
+            "0" => { printf("zero\n") }
+            _ => { printf("%d\n", i) }
+        }
+        i += 1
+    }
+    match tag(n) {
+        _ => { printf("end\n") }
+    }
+}
+scan(5)
+scan(1)
+// match_l16 -- DESIGN.md 3.5.9 L16: a two-pattern arm, a one-pattern arm and `_` (line 7), and a
+// match with only `_` (line 14); each scrutinee is a call (owned), so it is a temporary of L16's
+// block, released after the last endif (R11) and, by the break of line 8, before the exit (R22,
+// rule 16 (b), (f))

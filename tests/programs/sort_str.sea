@@ -1,0 +1,41 @@
+// sort_str -- sort and argsort of a dynamic str vector (Decision 40): ascending and descending, byte-wise
+// with prefixes, upper case before lower, bytes >= 0x80 last, ties in input order in both
+// directions, empty strings, one element, an empty vector, owned operands (LANGUAGE.md 10.6)
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn lower_all(v: str[]) -> str[] {
+    var r = v
+    for i in 0..len(v) {
+        r[i] = lower(v[i])
+    }
+    return r
+}
+let v = ["pear", "apple", "", "app", "Zeta", "\x80x", "apple", "b", "", "\x7F", "App"]
+ps(sort(v))
+ps(sort(v, desc: true))
+pvi(argsort(v))
+pvi(argsort(v, desc: true))
+let w = ["b", "a", "b", "a", "b"]
+pvi(argsort(w))
+pvi(argsort(w, desc: true))
+let up = false
+ps(sort(w, desc: !up))
+ps(sort(["only"]))
+let e: str[] = []
+ps(sort(e))
+pvi(argsort(e, desc: true))
+ps(sort(v[0..4] + "!"))
+pvi(argsort(lower_all(v[3..5])))
+ps(v)

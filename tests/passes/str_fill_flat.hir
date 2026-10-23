@@ -1,0 +1,44 @@
+#sea 1
+#target arm64-macos
+#file str_fill_flat.sea
+tmat 10 5
+tvec 11 5
+fn 1 .main main 1 0 0 0:1:1
+cs 0:6:6 5 ab
+ci 0:6:12 3 2
+call 0:6:1 1 2 2
+eval 0:6:1
+cs 0:7:6 5 c
+ci 0:7:11 3 1
+call 0:7:1 1 2 2
+eval 0:7:1
+block 0:1:1 2
+end
+fn 2 tile fn 1 2 2 0:1:1
+par s 5 val
+par r 3 val
+loc m 10 let 0:2:9
+loc f 11 let 0:3:9
+lv 0:2:20 5 1
+lv 0:2:23 3 2
+ci 0:2:26 3 2
+lib 0:2:13 10 filled 3
+bind 0:2:5 3
+lv 0:3:13 10 3
+view 0:3:13 11 flat
+bind 0:3:5 4
+lv 0:4:27 11 4
+lib 0:4:23 3 len 1
+fconv 0:4:12 1 - - - d
+ftext 0:4:12 1 %20
+lv 0:4:31 11 4
+ci 0:4:33 3 1
+idx 0:4:31 5 1
+fconv 0:4:12 1 - - - s
+ftext 0:4:12 1 %0A
+fmt 0:4:12 1 4
+lib 0:4:5 1 printf 1
+eval 0:4:5
+block 0:1:25 3
+end
+#end

@@ -1,13 +1,13 @@
 #sea 1
 #target arm64-macos
 #file res_err_first_pos.sea
-type 0:3:9 str s 0
+type 0:3:9 Q s 0
 param 0:3:6 s 0 0
 name 0:4:5 printf
 str 0:4:12 x%0A
 call 0:4:5 1
 cstmt 0:4:5
-block 0:3:14 1
+block 0:3:12 1
 fn 0:3:1 f 0 1 0
 name 0:7:5 printf
 str 0:7:12 y%0A

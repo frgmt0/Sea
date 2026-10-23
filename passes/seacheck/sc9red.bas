@@ -64,14 +64,14 @@
 19657 LET M(J, 1) = 4 - Z
 19658 SUBEND
 19660 REM ---- cex: Z = 1 when expression E is a constant expression (LANGUAGE 7.2: literals,
-19665 REM constants, operators, pi inf nan eps, the calls sqrt and pow); an undeclared name counts as
+19665 REM str literals, constants, operators, pi inf nan eps, the calls sqrt and pow); an undeclared name counts as
 19670 REM one (it is reported where it stands) -----------------------------------------------------
 19675 SUB "cex": N(), M(), Y(), S$(), E, Z
 19680 LET Z = 0
 19685 FOR J = M(E, 0) TO E
 19690 LET K = N(J, 0)
 19695 IF K = 30 THEN 19730
-19700 IF POS("|25|26|28|29|32|33|34|", "|" & STR$(K) & "|") > 0 THEN 19765
+19700 IF POS("|25|26|27|28|29|32|33|34|", "|" & STR$(K) & "|") > 0 THEN 19765
 19705 IF K <> 35 THEN 19770
 19710 LET H = N(J, 7)
 19715 IF N(H, 0) <> 30 THEN 19770
@@ -272,7 +272,7 @@
 20355 SUBEND
 20360 REM ---- lred: the overloads of the 4f library call J of class Z (ck_lib: 16 sum max min, 17 mean
 20365 REM variance std, 18 argmax argmin, 19 nnz, 20 any all, 21 sort, 22 argsort, 23 find, 24
-20370 REM find_first find_last) with H1 positional arguments, G9 named ones and the dim narg D9: one
+20370 REM find_first find_last; 25 lower and 26 args: lstr) with H1 positional arguments, G9 named ones and the dim narg D9: one
 20375 REM vector (with dim: one matrix) of f64 or i64 (19, 20, 23, 24: bool). D the result type, Z9 = 1
 20380 REM for no overload. A dim: form is lib name.dim (M(J,9) 1) with a vector result, fixed-size of
 20385 REM c (dim 0) or r (dim 1) elements for a fixed T[r,c]; sort and argsort of a fixed vector take
@@ -280,6 +280,9 @@
 20395 SUB "lred": N(), M(), T(), X(), X$(), J, Z, H1, G9, D9, D, Z9
 20400 LET Z9 = 1
 20405 LET D = 0
+20407 IF Z < 25 THEN 20410
+20408 CALL "lstr": N(), M(), T(), X(), X$(), J, Z, H1, D, Z9
+20409 GOTO 20520
 20410 IF H1 <> 1 THEN 20520
 20415 LET A = N(N(J, 7), 8)
 20420 CALL "shp": T(), M(A, 1), E, K, F, A0, B0
@@ -289,8 +292,8 @@
 20440 IF E <> 2 THEN 20520
 20445 GOTO 20470
 20450 IF E <> 5 THEN 20465
-20455 REM sort and argsort of a str vector: strings, reported where the str[] comes from (4g)
-20460 IF Z > 20 THEN 20515
+20455 REM sort and argsort of a dynamic str vector (Decision 40, 4g-1); a str[] for any other is no overload
+20460 IF Z > 20 THEN 20470
 20465 IF E < 3 THEN 20520
 20467 IF E > 4 THEN 20520
 20470 IF S > 0 THEN 20480
@@ -312,14 +315,17 @@
 20520 SUBEND
 20525 REM ---- lerr: D = the result type of the 4f library call of class Z with an argument error or no
 20530 REM overload, D9 its dim narg: i64, bool, f64 or i64[] where it does not depend on the
-20535 REM arguments, else (sum max min sort and every dim: form) 0 (DESIGN 2.6.2) ----------------------
+20535 REM arguments, else (sum max min sort and every dim: form) 0 (DESIGN 2.6.2); lower str, args str[] --
 20540 SUB "lerr": T(), N(), X(), X$(), Z, D9, D
-20545 LET D = VAL(SEG$("000403030200000003", 2 * Z - 31, 2 * Z - 30))
+20545 LET D = VAL(SEG$("0004030302000000030500", 2 * Z - 31, 2 * Z - 30))
 20550 IF Z > 20 THEN 20565
 20555 IF Z = 18 THEN 20565
 20560 LET D = D * (1 - SGN(D9))
-20565 IF ABS(Z - 22.5) > 1 THEN 20575
+20565 IF ABS(Z - 22.5) > 1 THEN 20572
 20570 CALL "tarr": T(), N(), X(), X$(), 1, 3, 0, 0, D
+20571 GOTO 20575
+20572 IF Z <> 26 THEN 20575
+20573 CALL "tarr": T(), N(), X(), X$(), 1, 5, 0, 0, D
 20575 SUBEND
 20580 REM ---- lpos: P$ = the position of the library call whose argument J takes a dyn (the fixed-size
 20585 REM vector of sort and argsort: the dyn is at the call, DESIGN 3.5.5), else P$ unchanged --------

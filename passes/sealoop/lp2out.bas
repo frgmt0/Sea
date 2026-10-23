@@ -56,12 +56,12 @@
 10214 GOTO 10206
 10216 LET J = O(J, 0)
 10218 GOTO 10184
-10220 FOR E3 = 1 TO 4
+10220 FOR E3 = 1 TO 5
 10225 IF Y(E3) <> 1 THEN 10231
 10230 CALL "dg_bug": P$, "a tptr type is referred to by no record"
 10231 NEXT E3
 10232 GOTO 10245
-10233 REM ---- 10234: the tptr of element type E3 (2-4; 1 the F8 type of R14; else nothing) is numbered at its first reference
+10233 REM ---- 10234: the tptr of element type E3 (2-5; 1 the F8 type of R14; else nothing) is numbered at its first reference
 10234 IF E3 < 1 THEN 10239
 10235 IF Y(E3) <> 1 THEN 10239
 10237 LET Y9 = Y9 + 1
@@ -123,7 +123,7 @@
 10560 RETURN
 10595 REM ---- 10600: the tptr records (and R14's F8, tfvec of f64 with n 8: Y(1)), in id order --
 10600 FOR K5 = Y8 + 1 TO Y9
-10605 FOR E3 = 1 TO 4
+10605 FOR E3 = 1 TO 5
 10610 IF Y(E3) <> K5 THEN 10620
 10612 IF E3 > 1 THEN 10615
 10613 CALL "io_put": 2, "tfvec " & STR$(K5) & " 4 8"

@@ -1,0 +1,58 @@
+// heap_str_misc -- discarded str results (a call statement, let _ =), a _ component of a str result, filled of
+// an owned str, (v[i], x) = two() with str results, f(v[0], g(ref v)) with a borrowed str
+// element, str locals on break and continue; heap check 0 (DESIGN.md 3.6.6 rules 15, 31;
+// L12, R25)
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn mk(n: i64) -> str {
+    return "v" + str(n)
+}
+fn two(a: str) -> (str, i64) {
+    return (a + "!", len(a))
+}
+fn g(ref v: str[]) -> str {
+    v[0] = "changed" + v[1]
+    return "g"
+}
+fn f(a: str, b: str) {
+    printf("%s %s\n", a, b)
+}
+mk(1)
+for i in 0..3 {
+    mk(i)
+    two(mk(i))
+}
+let _ = mk(5)
+let (_, k) = two("abc")
+printf("%d\n", k)
+let fl = filled("a" + mk(7), 3)
+ps(fl)
+var v = ["p", "q", "r"]
+var x = 0
+(v[1], x) = two("w")
+ps(v)
+printf("%d\n", x)
+for i in 0..3 {
+    (v[i], x) = two(v[i])
+}
+ps(v)
+printf("%d\n", x)
+f(v[0], g(ref v))
+ps(v)
+var acc = ""
+for i in 0..6 {
+    let piece = mk(i)
+    if i == 4 {
+        break
+    }
+    if i == 1 {
+        continue
+    }
+    acc = acc + piece + ","
+}
+printf("%s\n", acc)

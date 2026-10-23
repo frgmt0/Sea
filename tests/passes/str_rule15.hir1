@@ -1,0 +1,53 @@
+#sea 1
+#target arm64-macos
+#file str_rule15.sea
+fn 1 .main main 1 0 2 0:1:1
+loc x 5 let 0:9:5
+loc y 5 let 0:10:5
+ci 0:9:13 3 12
+lib 0:9:9 5 str 1
+bind 0:9:1 1
+ci 0:10:13 3 7
+lib 0:10:9 5 str 1
+bind 0:10:1 2
+lv 0:11:6 5 1
+lv 0:11:9 5 2
+call 0:11:1 1 2 2
+eval 0:11:1
+lv 0:12:6 5 2
+lv 0:12:9 5 1
+call 0:12:1 1 2 2
+eval 0:12:1
+block 0:1:1 4
+end
+fn 2 show fn 1 2 2 0:3:1
+par a 5 val
+par b 5 val
+loc s 5 let 0:4:9
+loc t 5 let 0:5:9
+lv 0:4:13 5 1
+lv 0:4:17 5 2
+bin 0:4:13 5 cat
+bind 0:4:5 3
+lv 0:5:13 5 3
+bind 0:5:5 4
+lv 0:6:20 5 1
+lv 0:6:24 5 2
+bin 0:6:20 5 cat
+fconv 0:6:12 1 - - - s
+ftext 0:6:12 1 %0A
+fmt 0:6:12 1 2
+lib 0:6:5 1 printf 1
+eval 0:6:5
+lv 0:7:23 5 3
+fconv 0:7:12 1 - - - s
+ftext 0:7:12 1 %20
+lv 0:7:26 5 4
+fconv 0:7:12 1 - - - s
+ftext 0:7:12 1 %0A
+fmt 0:7:12 1 4
+lib 0:7:5 1 printf 1
+eval 0:7:5
+block 0:3:25 4
+end
+#end

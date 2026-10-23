@@ -1,0 +1,3 @@
+// err_str_array -- str(v) of an f64[]: str takes scalars only (243 at the conversion node; Decision 46)
+let v = zeros(2)
+let s = str(v)

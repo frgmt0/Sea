@@ -1,0 +1,19 @@
+// str_conv -- str(x) of i64 (0, -2^63, 2^63 - 1), f64 (%.17g: 0.1, -0.0, 100.0, 1e300, 5e-324; nan of
+// both signs, inf, -inf), bool and str (unchanged); lower (only A-Z, bytes >= 0x80 kept, the
+// empty string) (LANGUAGE.md 10.9, Decision 46)
+printf("%s|%s|%s\n", str(0), str(-9223372036854775808), str(9223372036854775807))
+let k = -42
+printf("%s %d\n", str(k), len(str(k)))
+printf("%s|%s|%s|%s|%s\n", str(0.1), str(-0.0), str(100.0), str(1e300), str(5e-324))
+printf("%s|%s|%s|%s\n", str(nan), str(-nan), str(inf), str(-inf))
+let z = 0.0
+printf("%s|%s|%s|%s\n", str(1.0 / z), str(-1.0 / z), str(z / z), str(-(z / z)))
+let x = 2.5
+printf("%s %s %s\n", str(x), str(x * 3.0), str(f64(k)))
+printf("%s|%s|%s\n", str(true), str(1 < 0), str(k < 0))
+let s = "Keep"
+printf("%s|%s|%s\n", str(s), str("lit"), str(s + "!"))
+printf("[%s][%s][%s]\n", lower("Hello, WORLD [@Z`az]"), lower(""), lower("\xC3\x89\x80\xFFAZ"))
+let u = "MiXeD 09"
+printf("%s %s %d\n", lower(u), u, lower(u) == "mixed 09")
+printf("%s\n", lower(str(true) + "TRUE"))

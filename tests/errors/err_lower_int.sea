@@ -1,0 +1,2 @@
+// err_lower_int -- lower(1): lower takes one str (243; Decision 46)
+let t = lower(1)

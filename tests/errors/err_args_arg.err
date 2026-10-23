@@ -1,0 +1,1 @@
+err_args_arg.sea:2:9: error: no overload of 'args' accepts (i64)

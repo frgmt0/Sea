@@ -1,0 +1,6 @@
+// r_error_match_arm -- error in a _ arm, with a \" in its format (LANGUAGE.md 7.6, 9.3)
+let finish = lower("Polished")
+match finish {
+    "ground" => { printf("g\n") }
+    _ => { error("unknown surface finish \"%s\"", finish) }
+}

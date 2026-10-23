@@ -1,6 +1,6 @@
 // res_err_first_pos -- two seaname errors: the item error (6:1) is found first, the signature
-// error (3:6) comes first in source order and is the rerr (3.4.1)
-fn f(s: str) {
+// error (3:9, the unknown struct type Q) comes first in source order and is the rerr (3.4.1)
+fn f(s: Q) {
     printf("x\n")
 }
 fn f() {

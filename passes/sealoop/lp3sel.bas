@@ -9,12 +9,13 @@
 15016 REM variable, read afresh at each use), V0 its folded view (0 none 1 .T 2 .flat 3 .col 4 .row).
 15018 REM ====================================================================================
 15020 REM ---- 15030: C7 = what becomes of idx Y5: 0 copied (rule 18), 1 L5 (a selection or a view
-15022 REM base), 2 the target of an L6 store (of an asg, or of an L11 tasg: not written itself)
+15022 REM base), 2 the target of an L6 store (of an asg, or of an L11 tasg: not written itself), 3
+15023 REM the target of an L17 store (a str element by scalar indices of an asg or a tasg; 4g-1)
 15030 LET C7 = 0
 15031 LET X5 = H(Y5, 3)
 15032 IF H(X5, 1) = 45 THEN 15040
 15033 LET X5 = H(X5, 4)
-15034 IF X5 = 0 THEN 15049
+15034 IF X5 = 0 THEN 15080
 15035 IF H(X5, 1) = 16 THEN 15040
 15036 IF H(X5, 1) = 46 THEN 15040
 15037 IF H(X5, 2) <= 9 THEN 15033
@@ -53,9 +54,19 @@
 15073 RETURN
 15074 LET B6 = H(B6, 3)
 15076 RETURN
+15078 REM every index a scalar: L17's when the element type is str and Y5 is a target
+15080 IF T(H(H(Y5, 3), 2), 2) <> 5 THEN 15049
+15081 LET X5 = W(Y5)
+15082 IF H(X5, 1) <> 23 THEN 15086
+15083 IF H(X5, 3) <> Y5 THEN 15049
+15084 LET C7 = 3
+15085 RETURN
+15086 IF H(X5, 1) <> 24 THEN 15049
+15087 IF H(Y5, 4) > 0 THEN 15084
+15088 RETURN
 15095 REM ---- 15100: the global B of idx Y5 (C7 as 15030 gave it): L5 its base's tmp (made at the
 15096 REM first need, its loc pos the idx's), V0, B6; a store's target -lid of its root, V0 0 or 2
-15100 IF C7 = 2 THEN 15120
+15100 IF C7 > 1 THEN 15120
 15102 GOSUB 15060
 15104 IF H(Y5, 5) > 0 THEN 15114
 15106 LET Q3 = R7
@@ -370,8 +381,10 @@
 16110 GOSUB 8700
 16112 LET F8 = F5
 16114 LET E8 = E5
+16115 LET O7$ = O6$
 16116 LET V(54) = E5
 16118 LET V(58) = S(E5)
+16119 IF E5 = 5 THEN 16420
 16120 GOSUB 15300
 16122 LET B7 = O(P6, 0)
 16124 LET G7 = O(H(X3, 8), 0)
@@ -460,6 +473,7 @@
 16300 GOSUB 15500
 16302 LET C9 = O9
 16304 IF N2 > 0 THEN 16330
+16305 IF E8 = 5 THEN 16400
 16306 GOSUB 15600
 16308 LET K8 = 11
 16310 LET S$ = "D B,L I,eld P %1 %5 0,= y"
@@ -482,7 +496,7 @@
 16343 GOSUB 9000
 16344 LET N4 = 2
 16345 LET T6 = H(X3, 2)
-16346 LET Z6$ = "bin " & P9$ & " " & STR$(E8) & " " & O6$
+16346 LET Z6$ = "bin " & P9$ & " " & STR$(E8) & " " & O7$
 16347 LET V(473) = V(2)
 16348 GOSUB 20150
 16349 LET V(2) = V(473)
@@ -501,3 +515,19 @@
 16388 LET K8 = 0
 16390 LET S$ = "= v"
 16392 GOTO 9000
+16395 REM ---- 16400: a compound .flat store of a str element with a scalar index (4g-1, L6's str
+16396 REM extension): tmp v = xblk { the folded read y (checks included), tmp v = the value, value
+16397 REM bin cat (lv y) (lv v) }, so an owned value is released right after the operation; then
+16398 REM the store of 16200
+16400 GOSUB 9115
+16402 GOSUB 15600
+16404 LET K8 = 11
+16406 LET S$ = "D B,L I,eld P %1 %5 0,= y"
+16408 GOSUB 9000
+16410 GOSUB 16380
+16412 LET S$ = "L y,L v,bin P %1 " & O7$ & ",],= v"
+16414 GOSUB 9000
+16416 GOTO 16320
+16418 REM ---- 16420: the operation of a compound store of str elements is cat (rule 32)
+16420 LET O7$ = "cat"
+16422 GOTO 16120

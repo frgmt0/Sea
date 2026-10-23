@@ -1,0 +1,1 @@
+err_lower_array.sea:3:9: error: no overload of 'lower' accepts (str[])

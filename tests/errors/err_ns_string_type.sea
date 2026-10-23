@@ -1,4 +1,0 @@
-// err_ns_string_type -- phase 1: the str type (at the type node)
-fn f(s: str) {
-    printf("x\n")
-}

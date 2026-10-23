@@ -1,0 +1,3 @@
+// err_str_noarg -- str(): the grammar's conv_type "(" expr ")" needs an expression, so pass 1 reports
+// unexpected token ')' at the ) (LANGUAGE.md Appendix A; DESIGN.md 3.4 conv pops 1)
+let s = str()

@@ -1,0 +1,44 @@
+#sea 1
+#target arm64-macos
+#file str_rule26.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 2
+li i2 4
+li i3 1
+li i4 1
+rcall sea_arr_new 0:1 1 p5 4 i2 i3 i1 i4
+ldp p6 p5 - 0 40
+la p7 d1
+retain p7
+stp p7 p6 - 0 0
+la p8 d2
+retain p8
+stp p8 p6 - 0 8
+mov p9 p5
+retain p9
+ldi i10 p9 - 0 16
+li i11 0
+icmp gt i12 i10 i11
+if 1 i12
+ldp p13 p9 - 0 40
+li i14 1
+isub i15 i10 i14
+loop 2 i16 i11 i15 i14
+ldp p17 p13 i16 8 0
+sa p18 s1
+stp p17 p18 - 0 0
+la p19 d3
+rcall sea_printf 0:3 0 2 p19 p18
+endloop 2
+endif 1
+release p9
+release p5
+ret 0
+endfunc
+str d1 a
+str d2 bc
+fmt d3 2
+fconv - - - s p
+ftext %0A
+#end

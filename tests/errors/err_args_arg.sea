@@ -1,0 +1,2 @@
+// err_args_arg -- args(1): args takes no argument (243, as now(1); L-d)
+let a = args(1)

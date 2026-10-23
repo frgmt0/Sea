@@ -1,0 +1,3 @@
+// err_lower_array -- lower of a str[]: scalars only, an array is 243 (Decision 46)
+let names = ["A"]
+let t = lower(names)

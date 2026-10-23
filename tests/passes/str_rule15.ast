@@ -1,0 +1,50 @@
+#sea 1
+#target arm64-macos
+#file str_rule15.sea
+type 0:3:12 str s 0
+param 0:3:9 a 0 0
+type 0:3:20 str s 0
+param 0:3:17 b 0 0
+pname 0:4:9 s
+name 0:4:13 a
+name 0:4:17 b
+bin 0:4:13 add
+let 0:4:5 0
+pname 0:5:9 t
+name 0:5:13 s
+let 0:5:5 0
+name 0:6:5 printf
+str 0:6:12 %25s%0A
+name 0:6:20 a
+name 0:6:24 b
+bin 0:6:20 add
+call 0:6:5 2
+cstmt 0:6:5
+name 0:7:5 printf
+str 0:7:12 %25s%20%25s%0A
+name 0:7:23 s
+name 0:7:26 t
+call 0:7:5 3
+cstmt 0:7:5
+block 0:3:25 4
+fn 0:3:1 show 0 2 0
+pname 0:9:5 x
+int 0:9:13 12
+conv 0:9:9 str
+let 0:9:1 0
+pname 0:10:5 y
+int 0:10:13 7
+conv 0:10:9 str
+let 0:10:1 0
+name 0:11:1 show
+name 0:11:6 x
+name 0:11:9 y
+call 0:11:1 2
+cstmt 0:11:1
+name 0:12:1 show
+name 0:12:6 y
+name 0:12:9 x
+call 0:12:1 2
+cstmt 0:12:1
+prog 5
+#end

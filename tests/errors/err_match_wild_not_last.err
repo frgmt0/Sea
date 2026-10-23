@@ -1,0 +1,1 @@
+err_match_wild_not_last.sea:4:1: error: match is not exhaustive

@@ -1,0 +1,75 @@
+#sea 1
+#target arm64-macos
+#file match_l16.sea
+func .main main 0:1:1 0 0
+li i1 5
+call scan 0 1 i1
+li i2 1
+call scan 0 1 i2
+ret 0
+endfunc
+func tag fn 0:1:1 1 i1 1 p
+rcall sea_str_i64 0:2 1 p2 1 i1
+ret 1 p2
+endfunc
+func scan fn 0:4:1 1 i1 0
+slot s1 8 8
+slot s2 8 8
+slot s3 8 8
+li i2 0
+do 1
+icmp lt i3 i2 i1
+ifz 2 i3
+exit 1
+endif 2
+call tag 1 p4 1 i2
+la p5 d1
+rcall sea_str_cmp - 1 i6 2 p4 p5
+li i7 0
+icmp eq i8 i6 i7
+la p9 d2
+rcall sea_str_cmp - 1 i10 2 p4 p9
+li i11 0
+icmp eq i12 i10 i11
+ior i13 i8 i12
+if 3 i13
+release p4
+exit 1
+else 3
+la p14 d3
+rcall sea_str_cmp - 1 i15 2 p4 p14
+li i16 0
+icmp eq i17 i15 i16
+if 4 i17
+sa p18 s1
+la p19 d4
+rcall sea_printf 0:9 0 2 p19 p18
+else 4
+sa p20 s2
+sti i2 p20 - 0 0
+la p21 d5
+rcall sea_printf 0:10 0 2 p21 p20
+endif 4
+endif 3
+release p4
+li i22 1
+iaddc i2 i2 i22 0:12
+enddo 1
+call tag 1 p23 1 i1
+sa p24 s3
+la p25 d6
+rcall sea_printf 0:15 0 2 p25 p24
+release p23
+ret 0
+endfunc
+str d1 2
+str d2 9
+str d3 0
+fmt d4 1
+ftext zero%0A
+fmt d5 2
+fconv - - - d i
+ftext %0A
+fmt d6 1
+ftext end%0A
+#end

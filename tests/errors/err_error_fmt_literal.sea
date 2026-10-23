@@ -1,0 +1,4 @@
+// err_error_fmt_literal -- error with a str local as its format: format must be a string literal (233) at the
+// argument (LANGUAGE.md 11.1; DESIGN.md 2.6.2 L-d)
+let f = "x %d"
+error(f, 1)

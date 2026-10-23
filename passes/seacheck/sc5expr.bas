@@ -18,19 +18,9 @@
 9660 GOTO 9905
 9665 LET M(J, 1) = 4
 9670 GOTO 9905
-9675 REM a string literal is only allowed as an argument of printf (phase 1, DESIGN 2.6.2)
-9680 LET P = N(J, 9)
-9685 IF N(P, 0) <> 35 THEN 9720
-9690 LET G = N(P, 7)
-9695 IF N(G, 0) <> 30 THEN 9720
-9700 IF S$(N(G, 6)) <> "printf" THEN 9720
-9705 IF LEN(S$(N(G, 6))) <> 6 THEN 9720
-9710 LET M(J, 1) = 5
-9715 GOTO 9905
-9720 REM reported here; the str type stays, so a str local is reported at its name too
-9725 LET M(J, 1) = 5
-9730 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "strings", "", "", 1
-9735 GOTO 9905
+9675 REM a string literal is a str (from 4g-1 everywhere, DESIGN 2.6.2)
+9680 LET M(J, 1) = 5
+9682 GOTO 9905
 9740 LET M(J, 1) = 2
 9745 GOTO 9905
 9750 CALL "ck_name": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
@@ -212,9 +202,9 @@
 10625 GOTO 10985
 10630 LET G1 = E1
 10635 LET G2 = E2
-10640 REM + and comparisons on str are phase 2 (DESIGN 2.6.2)
+10640 REM + and the comparisons of two str or str elements (Decision 45) give str and bool
 10645 IF G1 = 5 THEN 10940
-10650 IF G2 = 5 THEN 10940
+10650 IF G2 = 5 THEN 10950
 10655 ON O GOTO 10660, 10660, 10660, 10700, 10755, 10785, 10950, 10880, 10880, 10900, 10900, 10900, 10900, 10920, 10920, 10920, 10920
 10660 IF G1 <> -1 THEN 10680
 10665 IF G2 <> -1 THEN 10680
@@ -274,8 +264,12 @@
 10925 IF G2 <> 2 THEN 10950
 10930 LET M(J, 1) = 2
 10935 GOTO 10985
-10940 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "strings", "", "", 1
-10945 GOTO 10985
+10940 IF G2 <> 5 THEN 10950
+10941 LET M(J, 1) = 5
+10942 IF O = 1 THEN 10985
+10943 LET M(J, 1) = 2
+10944 IF ABS(O - 10.5) < 3 THEN 10985
+10945 GOTO 10950
 10950 CALL "fin": N(), M(), C(), X(), X$(), A
 10955 CALL "fin": N(), M(), C(), X(), X$(), B
 10960 CALL "opn": O, A$
@@ -336,13 +330,13 @@
 11165 LET R = G1
 11168 LET M(J, 1) = R
 11170 SUBEND
-11175 REM ---- ck_conv: f64(x), i64(x) of bool, i64, f64 (LANGUAGE 10.1; lib nodes, DESIGN 3.5.5) -----
+11175 REM ---- ck_conv: f64(x), i64(x) of bool, i64, f64 (LANGUAGE 10.1); str(x) of a scalar bool, i64, f64 or
+11177 REM str, its type str also after an error (LANGUAGE 10.9, Decision 46; lib nodes, DESIGN 3.5.5) ------
 11180 SUB "ck_conv": N(), M(), T(), C(), X(), X$(), J
 11185 LET A = N(J, 7)
 11190 LET O = N(J, 1)
-11195 IF O < 3 THEN 11210
-11200 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "strings", "", "", 1
-11205 GOTO 11300
+11195 LET M(J, 1) = 5 * INT(O / 3)
+11200 REM O 1 f64, 2 i64, 3 str
 11210 CALL "vu": N(), M(), T(), X(), X$(), A, D
 11215 IF D = 0 THEN 11300
 11220 IF D <> -1 THEN 11240
@@ -353,14 +347,15 @@
 11245 REM array of these element by element, the array of its shape
 11250 CALL "elt": T(), D, E, K
 11255 IF E < 2 THEN 11280
-11260 IF E > 4 THEN 11280
+11260 IF E > 4 + INT(O / 3) THEN 11280
 11265 IF K = 0 THEN 11295
+11267 IF O = 3 THEN 11280
 11270 CALL "trel": T(), N(), X(), X$(), D, 5 - O, M(J, 1)
 11275 GOTO 11300
 11280 CALL "tyn": T(), D, B$
-11285 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", SEG$("f64i64", 3 * O - 2, 3 * O), B$, "", 2
+11285 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", SEG$("f64i64str", 3 * O - 2, 3 * O), B$, "", 2
 11290 GOTO 11300
-11295 LET M(J, 1) = 5 - O
+11295 LET M(J, 1) = 5 - O + 3 * INT(O / 3)
 11300 SUBEND
 11305 REM ---- ck_rng: a range J (a for's, an index, a value): i64 bounds and step; type i64[] --------
 11310 SUB "ck_rng": N(), M(), T(), C(), X(), X$(), J

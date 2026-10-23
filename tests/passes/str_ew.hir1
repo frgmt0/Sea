@@ -1,0 +1,55 @@
+#sea 1
+#target arm64-macos
+#file str_ew.sea
+tvec 10 5
+tvec 11 2
+fn 1 .main main 1 0 0 0:1:1
+cs 0:6:5 5 a
+cs 0:6:10 5 b
+row 0:6:5 10 2
+arr 0:6:4 10 1
+call 0:6:1 1 2 1
+eval 0:6:1
+cs 0:7:5 5 b
+cs 0:7:10 5 c
+cs 0:7:15 5 d
+row 0:7:5 10 3
+arr 0:7:4 10 1
+call 0:7:1 1 2 1
+eval 0:7:1
+block 0:1:1 2
+end
+fn 2 ew fn 1 1 2 0:1:1
+par v 10 val
+loc c 10 let 0:2:9
+loc e 11 let 0:3:9
+lv 0:2:13 10 1
+cs 0:2:17 5 !
+bin 0:2:13 10 cat
+bind 0:2:5 2
+lv 0:3:13 10 1
+cs 0:3:18 5 b
+bin 0:3:13 11 eq
+bind 0:3:5 3
+lv 0:4:26 10 2
+ci 0:4:28 3 0
+idx 0:4:26 5 1
+fconv 0:4:12 1 - - - s
+ftext 0:4:12 1 %20
+lv 0:4:32 10 2
+ci 0:4:34 3 1
+idx 0:4:32 5 1
+fconv 0:4:12 1 - - - s
+ftext 0:4:12 1 %20
+lv 0:4:42 11 3
+ci 0:4:44 3 1
+idx 0:4:42 2 1
+lib 0:4:38 5 str 1
+fconv 0:4:12 1 - - - s
+ftext 0:4:12 1 %0A
+fmt 0:4:12 1 6
+lib 0:4:5 1 printf 1
+eval 0:4:5
+block 0:1:17 3
+end
+#end

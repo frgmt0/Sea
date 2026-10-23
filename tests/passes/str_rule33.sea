@@ -1,0 +1,18 @@
+fn pick(a: str) {
+    var n = 0
+    match a {
+        "x" | "y" => { n = 1 }
+        _ => { n = 2 }
+    }
+    printf("%d\n", n)
+}
+fn drive() {
+    pick("x")
+    pick("y")
+    pick("z")
+}
+drive()
+drive()
+// str_rule33 -- DESIGN.md 3.6.6 rule 33 (match): its example (the match of lines 3-6, a in p1, n
+// a var in i2; the example's instructions carry no site), 3.5.9 L16 with a two-pattern arm; drive
+// comes after pick so that the patterns are the labels d1 and d2

@@ -1,0 +1,76 @@
+// str_basic -- str locals, parameters (borrowed), results (owned), ref parameters and tuple components;
+// + and +=; the six comparisons (byte-wise unsigned, a proper prefix the smaller, empty
+// strings, "a" != "a "); len; printf %s of dynamic strings with width, precision and -;
+// str constants (LANGUAGE.md 4.4, 6.4, 7.2, 8.3, 8.4, 11.1; lead decisions L-f, L-g)
+fn greet(name: str) -> str {
+    return "hello, " + name
+}
+fn app(ref s: str, t: str) {
+    s += t
+}
+fn split2(s: str) -> (str, i64) {
+    return (s + s, len(s))
+}
+fn cmp6(a: str, b: str) {
+    printf("%d%d%d%d%d%d\n", a == b, a != b, a < b, a <= b, a > b, a >= b)
+}
+const S = "a" + "b"
+const S2 = S + "c" + S
+const T: str = S + "!"
+const B = "a" < "b"
+const P = "ab" < "abc"
+const E = S == "ab"
+const H = "\x80" > "z"
+const N = "a" != "a "
+const F0 = "b" <= "a"
+let a = "abc"
+let e = ""
+printf("[%s] [%s] %d %d %d\n", a, e, len(a), len(e), len("\u{E9}"))
+let g = greet(a)
+printf("%s %d\n", g, len(g))
+var s = "x"
+s += "y"
+s = s + "z"
+app(ref s, "!")
+printf("%s\n", s)
+let (dd, n) = split2("ab")
+printf("%s %d\n", dd, n)
+var d2 = ""
+var n2 = 0
+(d2, n2) = split2(s)
+printf("%s %d\n", d2, n2)
+let s3: str = "q" + e
+let k = -1
+let word = if k < 0 { "neg" } else { "pos" }
+var dots = s3
+while len(dots) < 4 {
+    dots += "."
+}
+printf("%s %s %s\n", s3, word, dots)
+{
+    let a = a + "!"
+    printf("%s\n", a)
+}
+printf("%s\n", a)
+cmp6("abc", "abd")
+cmp6("ab", "abc")
+cmp6("abc", "ab")
+cmp6("", "a")
+cmp6("", "")
+cmp6("a", "a ")
+cmp6("\x80", "\x7F")
+cmp6("\xFF", "a")
+cmp6("abc", "abc")
+cmp6("B", "a")
+cmp6("a\x00", "a")
+if a < "abd" && a >= "ab" && e < a {
+    printf("ordered\n")
+}
+let w = "ab"
+let w3 = "xyz"
+let pc = "100%"
+printf("[%5s][%-5s][%.1s][%5.2s][%-4.3s][%s][%.0s][%s]\n", w, w, w3, w3, w3 + w, e, w, pc)
+printf("[%3s][%-1s]\n", g, "\u{E9}" + w)
+printf("%s %s %s %d %d %d %d %d %d\n", S, S2, T, B, P, E, H, N, F0)
+let sc = S2 + a
+printf("%s %d\n", sc, sc == "abcababc")

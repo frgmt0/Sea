@@ -1,0 +1,6 @@
+// err_error_missing_return -- error does not end a path (LANGUAGE.md 8.1): fn f() -> i64 { error("x") } is missing
+// return (223) at the fn (DESIGN.md 0, the information item of 4g)
+fn f() -> i64 {
+    error("x")
+}
+printf("%d\n", f())

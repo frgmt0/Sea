@@ -1,0 +1,10 @@
+fn ew(v: str[]) {
+    let c = v + "!"
+    let e = v == "b"
+    printf("%s %s %s\n", c[0], c[1], str(e[1]))
+}
+ew(["a", "b"])
+ew(["b", "c", "d"])
+// str_ew -- DESIGN.md 3.5.9 L7 with str operands (Decision 45): the element-wise cat of line 2
+// (each element read borrowed by eld, the owned cat moved by the initializing est) and the
+// element-wise comparison of line 3 (a bool[] by sea_str_cmp); the arguments are L9 (b) literals

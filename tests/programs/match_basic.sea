@@ -1,0 +1,91 @@
+// match_basic -- match (LANGUAGE.md 7.6): several patterns per arm, empty arm bodies, a match with only _,
+// scrutinee a local, a ref parameter, a call's result (owned), args()[0] (match_basic.args),
+// an element; break, continue and return inside arms with an owned scrutinee; nesting
+fn classify(s: str) -> i64 {
+    var r = -1
+    match s {
+        "ground" => { r = 1 }
+        "machined" | "cut" => { r = 2 }
+        "hot-rolled" | "rolled" | "hr" => { r = 3 }
+        "skip" => {}
+        "a" => { r = 4 }, "a " => { r = 5 }
+        "tab\there" => { r = 6 }
+        _ => { r = 0 }
+    }
+    return r
+}
+fn bump(ref s: str) {
+    match s {
+        "a" => { s = "b" }
+        _ => { s += "?" }
+    }
+}
+fn first_long(v: str[]) -> str {
+    for w in v {
+        match lower(w) {
+            "" => { continue }
+            "end" => { return "(end)" }
+            _ => {
+                if len(w) > 2 {
+                    return w
+                }
+            }
+        }
+    }
+    return "-"
+}
+let words = ["ground", "cut", "machined", "rolled", "hr", "hot-rolled", "skip", "a", "a ", "tab\there", "Ground", "", "groundx"]
+for w in words {
+    printf(" %d", classify(w))
+}
+printf("\n")
+let lone = "anything"
+match lone {
+    _ => { printf("only _\n") }
+}
+var s = "a"
+bump(ref s)
+bump(ref s)
+printf("%s\n", s)
+match lower("HR") {
+    "hr" => { printf("hr\n") }
+    _ => { printf("other\n") }
+}
+match words[2] {
+    "cut" => { printf("c\n") }
+    "machined" => { printf("m\n") }
+    _ => { printf("?\n") }
+}
+match args()[0] {
+    "machined" => { printf("lower\n") }
+    "Machined" => { printf("upper\n") }
+    _ => { printf("none\n") }
+}
+match lower(args()[0]) {
+    "machined" => { printf("%d\n", classify(lower(args()[0]))) }
+    _ => { printf("none\n") }
+}
+var n = 0
+for w in ["one", "SKIP", "two", "Stop", "three"] {
+    match lower(w) {
+        "stop" => { break }
+        "skip" => { continue }
+        _ => { n += 1 }
+    }
+    printf("[%s]", w)
+}
+printf(" %d\n", n)
+let e: str[] = []
+printf("%s %s %s %s\n", first_long(["", "ab", "abcd"]), first_long(["", "END", "abcd"]), first_long(["x", "y"]), first_long(e))
+for w in ["a", "b", "c"] {
+    match w {
+        "a" | "b" => {
+            match w {
+                "b" => { printf("B") }
+                _ => { printf("A") }
+            }
+        }
+        _ => { printf("C") }
+    }
+}
+printf("\n")

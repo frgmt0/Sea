@@ -1,0 +1,28 @@
+#sea 1
+#target arm64-macos
+#file res_str_consts.sea
+fn 1 .main main 1 0 0 0:1:1
+cs 0:8:22 5 abc
+fconv 0:8:8 1 - - - s
+ftext 0:8:8 1 %20
+cs 0:8:25 5 abc%25
+fconv 0:8:8 1 - - - s
+ftext 0:8:8 1 %20
+cs 0:8:28 5 x
+fconv 0:8:8 1 - - - s
+ftext 0:8:8 1 %0A
+fmt 0:8:8 1 6
+lib 0:8:1 1 printf 1
+eval 0:8:1
+cb 0:9:4 2 1
+cb 0:9:9 2 1
+bin 0:9:4 2 and
+ftext 0:10:12 1 lt%0A
+fmt 0:10:12 1 1
+lib 0:10:5 1 printf 1
+eval 0:10:5
+block 0:9:11 1
+if 0:9:1 0
+block 0:1:1 2
+end
+#end

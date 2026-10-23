@@ -3,9 +3,10 @@
 110 REM Rewrites the array constructs into explicit scalar HIR: 4e-0's L1-L4 (zeros ones filled
 115 REM len rows cols numel, fore) and 4e's L5-L11 (selection reads and folded views, selection
 120 REM stores and compound stores, element-wise operations, range values, numeric literals and
-125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k), 4f's L13-L14. Others
+125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k), 4f's L13-L14, 4g-1's
+127 REM L16 match, L17 stores of str elements and the str cases of L2-L14 (lp8str). Others
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main lp1walk lp2out lp3sel lp4ew lp5lit lp6tup lp7red,
+135 REM as DESIGN 2.6.3 says: the files lp0main lp1walk lp2out lp3sel lp4ew lp5lit lp6tup lp7red lp8str,
 140 REM the modules io diag tables, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
@@ -23,16 +24,17 @@
 210 REM   second)); O output rows (0 the next row, row 0 the head; 1 the record r copied, or 0:
 215 REM   generated, text in O$); U new locals (1 type, -e the tptr of e, 2 mut 0 let 1 for, 3 the
 220 REM   record whose pos is its loc pos, 4 lid, 5 the locals in declaring order); Y(e) the tptr
-222 REM   of element type e (2 bool 3 i64 4 f64): 0 none, 1 used, else its id; S(e) the element
+222 REM   of element type e (2 bool 3 i64 4 f64 5 str): 0 none, 1 used, else its id; S(e) the element
 224 REM   size; V the script variables (lp1walk 9000), M the open blocks of a script (1 count, 2
 226 REM   the loop local or 0). Kinds (R(i,0) per records row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7
 228 REM   un 8 bin 9 powk 10 call 11 rarg 12 lib 13 fmt 14 ftext 15 fconv 16 rng 17 ifx 18 skip
 230 REM   19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont
 232 REM   30 ret 31 tret 32 block 39 idx 40 dol 41 fore 43 dyn 44 fix 45 view 46 all 47 arr 48
-234 REM   row (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple 42 tmat 49 tfvec 50 tfmat.
+234 REM   row 51 match 52 arm (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple 42 tmat 49 tfvec
+236 REM   50 tfmat.
 240 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
-250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), Y(4), S(4)
+250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), Y(5), S(5)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 260 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
 265 DIM O(449999,1), O$(449999), U(49999,5), V(499), M(99,2), D(64,1)
@@ -64,6 +66,9 @@
 395 LET Q1$ = "ESIZE_I64"
 400 GOSUB 1850
 405 LET S(3) = Q1
+406 LET Q1$ = "ESIZE_PTR"
+407 GOSUB 1850
+408 LET S(5) = Q1
 410 LET Q1$ = "ESIZE_F64"
 415 GOSUB 1850
 420 LET S(4) = Q1
@@ -85,6 +90,7 @@
 460 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
 465 LET K1$ = K1$ & K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
 467 LET K1$ = K1$ & "|dyn=43|fix=44|view=45|all=46|arr=47|row=48|tfvec=49|tfmat=50|"
+468 LET K1$ = K1$ & "|match=51|arm=52|"
 470 FOR I = 1 TO Z(7)
 475 LET R(I, 0) = 0
 480 IF R(I, 1) = 2 THEN 490
@@ -136,6 +142,7 @@
 680 LET P(D0, 1) = 0
 685 IF K < 33 THEN 700
 690 IF K = 42 THEN 1310
+691 IF K > 50 THEN 700
 692 IF K > 48 THEN 1310
 695 IF K < 39 THEN 1300
 700 REM ---- a node: inside a function whose par and loc records are complete ------------------
@@ -152,6 +159,7 @@
 755 IF K < 20 THEN 770
 760 IF K < 39 THEN 775
 765 IF K = 41 THEN 775
+767 IF K > 50 THEN 775
 770 LET H(H0, 2) = I(2)
 775 FOR I = 3 TO 8
 780 LET H(H0, I) = 0

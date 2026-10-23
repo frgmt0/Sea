@@ -1,0 +1,12 @@
+// str_rule15 -- DESIGN.md 3.6.6 rule 15 (owned and borrowed reference values): its example on
+// lines 4-6, a and b the parameters p1 and p2 of show (line 3)
+fn show(a: str, b: str) {
+    let s = a + b
+    let t = s
+    printf("%s\n", a + b)
+    printf("%s %s\n", s, t)
+}
+let x = str(12)
+let y = str(7)
+show(x, y)
+show(y, x)

@@ -14,6 +14,8 @@
 70 DIM E(299), E$(299,5), J(20), J$(20), K(299,4), K$(299), F$(100), A$(3)
 75 DIM N(99999,9), M(99999,9), Y(49999,9), T(51209,9), W(199999), C(19999,4)
 80 DIM S$(199999), X(60), X$(20), H(39989), O(399989), Q(2688), D$(99999)
+82 REM G$: the str values of the constants by cid, from 50001 the str values on evx's stack (sn9str)
+83 DIM G$(99999)
 85 FILES "sea.ast"; "sea.res"
 90 LET P$ = "seaname"
 95 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -34,7 +36,7 @@
 150 CALL "FEMTI": Q(), E9
 155 IF E9 = 0 THEN 170
 160 CALL "tb_fail": P$, E(), E$(), E0
-170 CALL "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
+170 CALL "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q(), G$()
 175 IF X(10) = 0 THEN 250
 180 REM a capacity limit of seaname: reported by seaname itself, status 10 (DESIGN 3.4.1 "Errors")
 185 LET I = X(7)
@@ -52,12 +54,12 @@
 245 CALL "dg_compile": P$, F$(), N1, F, L, Q1, X$(1), A$(), X(8), E(), E$(), E0
 250 SCRATCH #2
 255 CALL "io_hdr_put": 2, X(34), T$, F$(), N1
-260 CALL "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$
+260 CALL "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$, G$()
 265 CALL "io_fin": 2
 270 GOTO 99999
 275 REM ---- sc_lim: the limits of limits.inc this pass needs, checked against the table sizes ----
 280 SUB "sc_lim": P$, K(), K$(), K0, X()
-285 DIM Q$(9)
+285 DIM Q$(10)
 290 LET Q$(1) = "FILE_VERSION"
 295 LET Q$(2) = "LIM_SYMBOLS"
 300 LET Q$(3) = "LIM_TYPES"
@@ -67,11 +69,13 @@
 320 LET Q$(7) = "LIM_POWK"
 325 LET Q$(8) = "LIM_DEC_FIELD"
 327 LET Q$(9) = "LIM_FIXED_ELEMS"
-330 FOR I = 1 TO 9
+328 LET Q$(10) = "LIM_LINE_BYTES"
+330 FOR I = 1 TO 10
 335 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
 340 IF T = 0 THEN 350
 345 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
 350 IF I = 1 THEN 380
+351 IF I = 10 THEN 382
 352 IF I = 9 THEN 377
 355 IF I = 8 THEN 370
 360 LET X(18 + I) = V
@@ -81,6 +85,8 @@
 377 LET X(43) = V
 378 GOTO 385
 380 LET X(34) = V
+381 GOTO 385
+382 LET X(45) = V
 385 NEXT I
 390 IF X(20) > 49999 THEN 425
 395 IF 9 + 2 * X(21) + INT(X(23) / 9) + 1 > 51209 THEN 425

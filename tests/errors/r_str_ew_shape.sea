@@ -1,0 +1,7 @@
+// r_str_ew_shape -- two str[] of lengths 3 and 2 joined by +: shape mismatch: 3 vs 2 at the operator's line
+// (LANGUAGE.md 6.3, 9.2; Decision 45)
+let a = ["x", "y", "z"]
+let b = ["p", "q"]
+printf("before\n")
+let c = a + b
+printf("%d\n", len(c))

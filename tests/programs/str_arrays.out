@@ -1,0 +1,30 @@
+3: [ann] [bob] [cy]
+bob 3 3
+3: [zed] [bob] [cyx]
+3: [ann] [bob] [cy]
+3: [zed] [bobzed] [cyx]
+2: [bobzed] [cyx]
+3: [cyx] [zed] [cyx]
+2: [ann] [cy]
+4: [a] [S] [S] [d]
+4: [p] [S] [S] [q]
+4: [p] [m] [m] [q]
+4: [ann] [bob] [cy] [x]
+6: [<] [ann] [bob] [cy] [ann] [m]
+2: [] []
+2x3 | [ab] [ab] [ab] | [ab] [ab] [ab]
+0:
+2x3 | [a] [b] [c] | [d] [e] [f]
+3x2 | [a] [d] | [b] [e] | [c] [f]
+6: [a] [d] [b] [e] [c] [f]
+3x1 | [ann] | [bob] | [cy]
+1x3 | [ann] [bob] [cy]
+d f 2 3
+<ann><bob><cy>
+adbecf
+4: [1] [2] [1!] [2!]
+0:
+0 1
+1: [only]
+3: [zed] [two] [cyx]
+2

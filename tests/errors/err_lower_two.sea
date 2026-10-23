@@ -1,0 +1,2 @@
+// err_lower_two -- lower("a", "b"): two arguments are 243 (L-d)
+let t = lower("a", "b")

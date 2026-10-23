@@ -88,6 +88,7 @@
 30329 GOTO 30332
 30330 LET W6 = U(W3, 1)
 30332 IF C7 = 2 THEN 30340
+30333 IF C7 = 3 THEN 40540
 30334 LET S$ = S$ & ",asg P set"
 30336 GOTO 9000
 30340 GOSUB 9000
@@ -140,7 +141,8 @@
 30894 RETURN
 30895 REM ---- 30900: Y8 = 1 if L12 rewrites the tasg O5: a target an L6 store target (an idx with a
 30896 REM range, :, index vector or mask index, or a view base), a cv with bit 2 or 4, or bit 1 of an
-30897 REM array target (variables O1-O4; R2 kept)
+30897 REM array target, or (4g-1) a str element by scalar indices: an L17 target (variables O1-O4;
+30898 REM R2 kept)
 30900 LET Y8 = 0
 30902 LET O4 = R2
 30904 LET R2 = H(O5, 6)
@@ -157,7 +159,7 @@
 30926 LET O3 = H(O1, 3)
 30928 IF H(O3, 1) = 45 THEN 30938
 30930 LET O3 = H(O3, 4)
-30931 IF O3 = 0 THEN 30936
+30931 IF O3 = 0 THEN 30970
 30932 IF H(O3, 1) = 16 THEN 30938
 30933 IF H(O3, 1) = 46 THEN 30938
 30934 IF H(O3, 2) <= 9 THEN 30930
@@ -181,3 +183,6 @@
 30965 GOSUB 8440
 30966 LET U1 = VAL(F9$)
 30968 RETURN
+30969 REM a target by scalar indices: L17's (4g-1) when its element type is str
+30970 IF T(H(H(O1, 3), 2), 2) = 5 THEN 30938
+30971 GOTO 30936

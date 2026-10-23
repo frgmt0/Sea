@@ -1,0 +1,2 @@
+// err_str_let_int -- let s: str = 1: type mismatch at the value (201; LANGUAGE.md 4.10)
+let s: str = 1

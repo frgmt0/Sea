@@ -631,20 +631,20 @@ fn 0:3:1 f 0 1 0
 prog 1''')
 
 case('res_err_first_pos', ('two seaname errors: the item error (6:1) is found first, the signature',
-                           'error (3:6) comes first in source order and is the rerr (3.4.1)'),
-     '''fn f(s: str) {
+                           'error (3:9, the unknown struct type Q) comes first in source order and is the rerr (3.4.1)'),
+     '''fn f(s: Q) {
     printf("x\\n")
 }
 fn f() {
     printf("y\\n")
 }
-''', '''type 0:3:9 str s 0
+''', '''type 0:3:9 Q s 0
 param 0:3:6 s 0 0
 name 0:4:5 printf
 str 0:4:12 x%0A
 call 0:4:5 1
 cstmt 0:4:5
-block 0:3:14 1
+block 0:3:12 1
 fn 0:3:1 f 0 1 0
 name 0:7:5 printf
 str 0:7:12 y%0A
@@ -673,23 +673,25 @@ def tail_case(name, comment, body, recs):
     R.append(name)
 
 
-NOVAL_CALLTYPE = 'const A: f64 = f()\nfn f() -> str { return 1 }\n'
+# from 4g-1 (DESIGN.md 6.2, lead decision L-i) the faulty signature has an undeclared struct type
+# Q in place of str: unknown struct type (229) at the type node, found by seaname in the signature
+NOVAL_CALLTYPE = 'const A: f64 = f()\nfn f() -> Q { return 1 }\n'
 NOVAL_SHORT = ('const D = B || 9223372036854775807 + 1 > 0\n'
-               'const B: bool = false && f() == 1.0\nfn f() -> str { return 1 }\n')
+               'const B: bool = false && f() == 1.0\nfn f() -> Q { return 1 }\n')
 NOVAL_USERPOW = 'const C = pow(2.0, 3.0)\nfn pow(x: f64, y: f64) -> f64 { return x }\n'
-tail_case('res_noval_calltype', 'A calls a faulty f: rcn; rerr 259 strings at the result type '
-          '(DESIGN.md 3.4.1, Decision 25 refined)', NOVAL_CALLTYPE, """type 0:1:10 f64 s 0
+tail_case('res_noval_calltype', 'A calls a faulty f: rcn; rerr 229 unknown struct type at the result '
+          'type Q (DESIGN.md 3.4.1, Decision 25 refined; 6.2 L-i)', NOVAL_CALLTYPE, """type 0:1:10 f64 s 0
 name 0:1:16 f
 call 0:1:16 0
 const 0:1:1 A 1
-type 0:2:11 str s 0
-int 0:2:24 1
-return 0:2:17 1
-block 0:2:15 1
+type 0:2:11 Q s 0
+int 0:2:22 1
+return 0:2:15 1
+block 0:2:13 1
 fn 0:2:1 f 0 0 1
 prog 2""")
 tail_case('res_noval_shortcircuit', 'B holds a call of a faulty f behind false &&: rcn; D names B: '
-          'rcn; rerr 259 strings (3.4.1, Decision 25 refined)', NOVAL_SHORT, """name 0:1:11 B
+          'rcn; rerr 229 unknown struct type (3.4.1, Decision 25 refined; 6.2 L-i)', NOVAL_SHORT, """name 0:1:11 B
 int 0:1:16 #7FFFFFFFFFFFFFFF
 int 0:1:38 1
 bin 0:1:16 add
@@ -705,10 +707,10 @@ float 0:2:33 #3FF0000000000000
 bin 0:2:26 eq
 bin 0:2:17 and
 const 0:2:1 B 1
-type 0:3:11 str s 0
-int 0:3:24 1
-return 0:3:17 1
-block 0:3:15 1
+type 0:3:11 Q s 0
+int 0:3:22 1
+return 0:3:15 1
+block 0:3:13 1
 fn 0:3:1 f 0 0 1
 prog 3""")
 tail_case('res_noval_userpow', 'C calls the entered fn pow (rname fn), not the predeclared pow: '
@@ -738,12 +740,14 @@ def tail_err(name, comment, body, line, col, msg):
         f.write('1\n')
 
 
-tail_err('err_const_noval_calltype', 'A: f64 = f() with a faulty f: the str result is the error, A '
-         'is not evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)', NOVAL_CALLTYPE,
-         2, 11, 'not supported yet: strings')
+tail_err('err_const_noval_calltype', 'A: f64 = f() with a faulty f: the undeclared struct type Q of '
+         'its result is the error (229, seaname, in the signature), A is not evaluated (LANGUAGE.md '
+         '7.2; DESIGN.md 6.2, Decision 25 refined, lead decision L-i)', NOVAL_CALLTYPE,
+         2, 11, 'unknown struct type')
 tail_err('err_const_noval_shortcircuit', 'B holds a faulty call behind false && and has no value, '
-         'so D (first) is not evaluated and its overflow is not reported (LANGUAGE.md 7.2; '
-         'DESIGN.md 6.2, Decision 25 refined)', NOVAL_SHORT, 3, 11, 'not supported yet: strings')
+         'so D (first) is not evaluated and its overflow is not reported; the error is f\'s undeclared '
+         'result type Q (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined, lead decision L-i)',
+         NOVAL_SHORT, 3, 11, 'unknown struct type')
 tail_err('err_const_noval_userpow', 'C calls the program\'s fn pow, itself an error: C is not '
          'evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)', NOVAL_USERPOW, 2, 1,
          'redefinition of predeclared name')

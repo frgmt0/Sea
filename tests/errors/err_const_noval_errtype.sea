@@ -1,4 +1,4 @@
 const B = A + 1 % 0
 const A = f()
-fn f() -> str { return 1 }
-// err_const_noval_errtype -- A has the error type and no value, so B is not evaluated and its 1 % 0 reports nothing; the str result is the first error (LANGUAGE.md 7.2; DESIGN.md 3.5.2, 2.6.2 phase rule, Decision 25)
+fn f() -> Q { return 1 }
+// err_const_noval_errtype -- A has the error type and no value, so B is not evaluated and its 1 % 0 reports nothing; the undeclared struct type Q of f's result is the first error (LANGUAGE.md 7.2; DESIGN.md 3.5.2, Decision 25, lead decision L-i)

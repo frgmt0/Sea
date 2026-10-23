@@ -1,0 +1,57 @@
+// heap_str_temps -- owned str temporaries (concatenations, str(), lower) in loops and conditions, str locals
+// on return, element-wise str results discarded, element stores of owned values; heap
+// check 0 (DESIGN.md 3.6.6 rules 15, 16, 32)
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn mk(n: i64) -> str {
+    return "v" + str(n)
+}
+fn find_tag(v: str[], t: str) -> i64 {
+    var i = 0
+    for s in v {
+        let u = lower(s)
+        if u == t {
+            return i
+        }
+        i += 1
+    }
+    return -1
+}
+var acc = ""
+for i in 0..5 {
+    acc = acc + str(i)
+    acc += ","
+}
+printf("%s\n", acc)
+var cnt = 0
+for i in 0..4 {
+    if lower(mk(i)) == "v2" {
+        cnt += 1
+    }
+    if str(i) + "x" < "2" {
+        cnt += 10
+    }
+}
+printf("%d\n", cnt)
+let names = ["Alpha", "beta", "GAMMA"]
+printf("%d %d %d\n", find_tag(names, "gamma"), find_tag(names, "beta"), find_tag(names, "x"))
+var hits = 0
+for i in 0..3 {
+    let m = (names + str(i)) == "beta1"
+    hits += nnz(m)
+    let z = "<" + names + ">"
+    hits += len(z) - 3
+}
+printf("%d\n", hits)
+var tbl = filled("", 3)
+for i in 0..3 {
+    tbl[i] = mk(i) + tbl[i]
+    tbl = tbl + ""
+}
+ps(tbl)
+ps(sort(names + "") + lower(names[0]))

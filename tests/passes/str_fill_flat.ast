@@ -1,0 +1,42 @@
+#sea 1
+#target arm64-macos
+#file str_fill_flat.sea
+type 0:1:12 str s 0
+param 0:1:9 s 0 0
+type 0:1:20 i64 s 0
+param 0:1:17 r 0 0
+pname 0:2:9 m
+name 0:2:13 filled
+name 0:2:20 s
+name 0:2:23 r
+int 0:2:26 2
+call 0:2:13 3
+let 0:2:5 0
+pname 0:3:9 f
+name 0:3:13 m
+dot 0:3:13 flat
+let 0:3:5 0
+name 0:4:5 printf
+str 0:4:12 %25d%20%25s%0A
+name 0:4:23 len
+name 0:4:27 f
+call 0:4:23 1
+name 0:4:31 f
+int 0:4:33 1
+index 0:4:31 1
+call 0:4:5 3
+cstmt 0:4:5
+block 0:1:25 3
+fn 0:1:1 tile 0 2 0
+name 0:6:1 tile
+str 0:6:6 ab
+int 0:6:12 2
+call 0:6:1 2
+cstmt 0:6:1
+name 0:7:1 tile
+str 0:7:6 c
+int 0:7:11 1
+call 0:7:1 2
+cstmt 0:7:1
+prog 3
+#end

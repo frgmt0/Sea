@@ -27,9 +27,10 @@
 122 REM idx (n = rank of the base, or 1 for a bool-matrix mask; index kinds of LANGUAGE 5.2), dol (claimed by the idx it
 123 REM sits in, dim < n; none left at a function end), fore (vector iterable, loop variable of the element type) are
 124 REM validated (BAD_RECORD) and copied; array records otherwise pass through the generic path (4500-4966).
+125 REM
 126 REM Phase 4e (G12): view (the operand's rank), arr (row children), row (n >= 1), dyn and fix (the corresponding
 127 REM fixed and dynamic types), the target of an asg (an lv, idx or view flat tree of an lv) are validated (5000-5158).
-125 REM
+128 REM Phase 4g-1 (G12): match (a str scrutinee, arm children, the last arm _) and arm (k cs patterns) (5160-5185).
 130 REM TABLES  (arrays one letter; DIM below)
 135 REM  E E$ errors  N N$ W$ enums  R R$ records  F F$ fields  Z counts  C C$ constants
 140 REM  V special code of a record row, A its ty field index, B the rows of sea.hir1 (sets H H1)
@@ -46,7 +47,7 @@
 195 REM  A3-A0 B3-B0 R3-R0 limbs of operands and result  T$ text  Z8$ last position
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
 205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk,
-207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg
+207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg, 33 match, 34 arm
 210 REM ====================================================================================
 215 FILES "sea.hir1"; "sea.hir"
 220 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
@@ -80,6 +81,7 @@
 340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|dol=24|fore=25|idx=26|"
 342 LET K2$ = K2$ & "view=27|arr=28|row=29|dyn=30|fix=31|asg=32|"
 341 GOSUB 4400
+343 LET K2$ = K2$ & "match=33|arm=34|"
 345 LET N2 = 0
 350 LET R5 = 0
 355 LET R6 = 0
@@ -1002,7 +1004,7 @@
 4995 REM ---- 5000: phase 4e (G12, DESIGN 3.5.7): view, arr, row, dyn, fix, the target tree of an asg; Q4 the last child's root ----
 5000 GOSUB 2980
 5002 LET Q4 = O0
-5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100
+5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100, 5160, 5180
 5010 REM view: .T and .flat of a matrix, .col and .row of a vector (fixed-size or dynamic, LANGUAGE 5.6)
 5012 GOSUB 4900
 5014 GOSUB 4950
@@ -1063,3 +1065,26 @@
 5154 GOSUB 3070
 5156 GOSUB 3150
 5158 GOTO 1920
+5160 REM match (4g-1, G12): a str scrutinee, n >= 1 children that are arms, the last one _ (k = 0)
+5161 LET M$ = "a match whose scrutinee is not a str, a child that is not an arm, or no final _ arm"
+5162 LET Q4 = S(S0 + 2) - 1
+5163 GOSUB 4900
+5164 IF Q5 <> 5 THEN 2915
+5165 IF U(2) < 1 THEN 2915
+5166 FOR Q2 = 2 TO U(2) + 1
+5167 LET Q4 = O0
+5168 IF Q2 > U(2) THEN 5170
+5169 LET Q4 = S(S0 + 1 + Q2) - 1
+5170 IF SEG$(O$(Q4), 1, 4) <> "arm " THEN 2915
+5171 NEXT Q2
+5172 LET T$ = O$(O0)
+5173 LET T1 = 3
+5174 GOSUB 3345
+5175 IF Z$ <> "0" THEN 2915
+5176 GOTO 5150
+5180 REM arm (4g-1, G12): its k patterns are cs leaves, then its block
+5181 LET M$ = "an arm pattern that is not a cs"
+5182 FOR Q2 = 1 TO U(2)
+5183 IF SEG$(O$(S(S0 + 1 + Q2) - 1), 1, 3) <> "cs " THEN 2915
+5184 NEXT Q2
+5185 GOTO 5150

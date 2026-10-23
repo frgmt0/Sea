@@ -1,0 +1,7 @@
+// r_error_plain -- error with no conversion argument, in a loop after output (LANGUAGE.md 9.3)
+for i in 0..5 {
+    printf("%d\n", i)
+    if i == 2 {
+        error("plain")
+    }
+}

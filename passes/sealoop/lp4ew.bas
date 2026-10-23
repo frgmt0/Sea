@@ -175,6 +175,7 @@
 20310 LET T6 = H(X4, 2)
 20312 LET Y7 = T6
 20314 GOSUB 8700
+20315 IF E5 = 5 THEN 20360
 20316 LET Z6$ = "bin " & P9$ & " " & STR$(E5) & " " & F9$
 20318 LET R2 = H(X4, 6)
 20320 LET F9 = 4
@@ -197,6 +198,9 @@
 20354 GOSUB 9000
 20356 LET N7 = N7 - 1
 20358 GOTO 5180
+20359 REM str elements (4g-1): the operation of the compound store is cat (rule 32)
+20360 LET F9$ = "cat"
+20361 GOTO 20316
 20495 REM ==== L10 (rule 27 (i), (j)): dyn and fix of the operand X1 ===================================
 20500 LET R2 = H(X, 6)
 20502 GOSUB 8400
@@ -265,15 +269,18 @@
 20644 IF F5 = 1 THEN 20664
 20646 LET C8$ = "R"
 20648 LET S$ = "X A 0,= R,L R,C 1,anew P %0 0 2"
-20650 IF V0 = 3 THEN 20660
+20650 IF V0 = 3 THEN 20659
 20652 LET S$ = "X A 0,= R,C 1,L R,anew P %0 0 2"
-20654 IF V0 = 4 THEN 20660
+20654 IF V0 = 4 THEN 20659
 20656 LET C8$ = "K"
 20658 LET S$ = "X A 0,= R,X A 1,= C,L R,L C,wbin P 3 mul,= K,L K,anew P %0 0 1"
+20659 IF V(54) = 5 THEN 20667
 20660 LET S$ = S$ & ",= V,D V,= D,D A,= S,L " & C8$ & ",ci P 3 %5,wbin P 3 mul,= B,L D,L S,L B,mcpy P,L V,]"
 20662 GOTO 20690
 20664 LET S$ = "anew P %0 0 0,= V,D V,= D,D A,= S,C " & STR$(B5) & ",= B,L D,L S,L B,mcpy P,L V,]"
 20666 GOTO 20690
+20667 LET S$ = S$ & ",= V,D V,= D,D A,= S,L D,L S,L " & C8$ & ",mcpy P,L V,]"
+20668 GOTO 20690
 20670 IF R5 <> 2 THEN 2900
 20672 LET S$ = "X A 1,= R,X A 0,= C,L R,L C,anew P %0 0 2"
 20674 IF F4 = 0 THEN 20678

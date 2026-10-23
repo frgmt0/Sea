@@ -1,0 +1,8 @@
+// err_match_dup_across -- a pattern of an earlier arm repeated in a later arm: 208 at the later arm (LANGUAGE.md
+// 7.6)
+let s = "a"
+match s {
+    "a" | "b" => { printf("ab\n") }
+    "c" | "b" => { printf("cb\n") }
+    _ => { printf("_\n") }
+}

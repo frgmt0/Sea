@@ -1,0 +1,13 @@
+// args_basic -- args() with several arguments (args_basic.args): an empty argument, one with inner, leading
+// and trailing blanks; for a in args(), len(args()), indexing (LANGUAGE.md 10.10)
+let a = args()
+printf("%d %d\n", len(a), len(args()))
+for s in args() {
+    printf("[%s] %d\n", s, len(s))
+}
+var i = 0
+while i < len(a) {
+    printf("%s|", a[i])
+    i += 1
+}
+printf("\n")

@@ -133,7 +133,7 @@
 12515 REM 5 pow hypot (f64, f64) 6 abs sign (i64 | f64) 7 min max (n, n) 8 where(bool, x, x) 9
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
 12525 REM filled(v, n) | (v, r, c) 13 len (a vector or str) 14 rows cols (a matrix) 15 numel (a
-12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find* (min, max
+12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find*, from 4g-1 25 lower, 26 args (min, max
 12535 REM of other than two positional arguments: 16); any other is not supported yet. Untyped
 12540 REM constants are f64 where f64 is taken (classes 3-5), the other's type in min, max and where,
 12545 REM else i64 (LANGUAGE 4.2); an i64 for an f64 is converted. The overload is judged on the element
@@ -143,15 +143,19 @@
 12565 LET L$ = S$(N(N(J, 7), 6))
 12566 LET M(J, 9) = 0
 12570 LET H = N(J, 1)
-12575 IF LEN(L$) <> 6 THEN 12595
+12575 IF LEN(L$) = 5 THEN 12592
+12576 IF LEN(L$) <> 6 THEN 12595
 12580 IF L$ <> "printf" THEN 12595
 12585 CALL "ck_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 12590 GOTO 13610
+12591 REM error(fmt, ...) is checked as a formatting call, as printf (DESIGN 2.6.2, lead decision L-d)
+12592 IF L$ = "error" THEN 12585
+12593 GOTO 12595
 12595 LET Q$ = "|now 01|idiv 02|log 03|exp 03|sin 03|cos 03|sqrt 03|floor 03|ceil 03|trunc 03|round 03"
 12600 LET Q$ = Q$ & "|isnan 04|pow 05|hypot 05|abs 06|sign 06|min 07|max 07|where 08|ind2sub 09"
 12605 LET Q$ = Q$ & "|sub2ind 10|zeros 11|ones 11|filled 12|len 13|rows 14|cols 14|numel 15|"
 12606 LET Q$ = Q$ & "sum 16|mean 17|variance 17|std 17|argmax 18|argmin 18|nnz 19|any 20|all 20|sort 21|"
-12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|"
+12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|lower 25|args 26|"
 12610 LET P = POS(Q$, "|" & L$ & " ")
 12615 IF P = 0 THEN 12635
 12620 LET Z = VAL(SEG$(Q$, P + LEN(L$) + 2, P + LEN(L$) + 3))
@@ -306,8 +310,6 @@
 13305 NEXT I
 13310 IF U(1) < 2 THEN 13545
 13315 IF U(1) > 5 THEN 13545
-13320 REM a str value is a strings construct, reported where the str comes from (4g)
-13325 IF U(1) = 5 THEN 13605
 13330 CALL "tarr": T(), N(), X(), X$(), H - 1, U(1), 0, 0, D
 13335 GOTO 13605
 13340 IF H <> 1 THEN 13545
@@ -362,7 +364,7 @@
 13635 IF V > 4 THEN 13645
 13640 LET Q = 1
 13645 SUBEND
-13650 REM ---- ck_printf: printf(format, args...) (LANGUAGE 11.1; DESIGN 2.6.2 "Within one formatting
+13650 REM ---- ck_printf: printf or error (format, args...) (LANGUAGE 11.1, 9.3; DESIGN 2.6.2 "Within one formatting
 13655 REM call"): an argument's own errors first, then the format literal, its conversions, the
 13660 REM argument count, and each argument against its conversion ------------------------------
 13665 SUB "ck_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
@@ -370,9 +372,10 @@
 13675 LET M(J, 1) = 1
 13680 LET H = N(J, 1)
 13685 LET G = N(J, 7)
+13687 LET L$ = S$(N(G, 6))
 13690 LET M(G, 8) = -J
 13695 IF H > 0 THEN 13710
-13700 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", "printf", "", "", 2
+13700 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", L$, "", "", 2
 13705 GOTO 13995
 13710 LET F = N(G, 8)
 13715 LET Z = 0
@@ -383,7 +386,7 @@
 13740 LET A = N(F, 8)
 13745 FOR I = 1 TO H - 1
 13750 IF N(A, 0) <> 37 THEN 13765
-13755 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", "printf", "", "", 1
+13755 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", L$, "", "", 1
 13760 GOTO 13820
 13765 CALL "vu": N(), M(), T(), X(), X$(), A, V
 13770 IF V <> -1 THEN 13820

@@ -4,8 +4,12 @@
 10485 SUB "powk": N(), M(), Y(), C(), W(), X(), X$(), B, K0, Z
 10490 LET Z = 0
 10495 LET K0 = 0
-10500 REM W() stands in for the mtab words Q() of evx: with F = 0 evx never reads them
-10510 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), W(), B, 0, K, A3, A2, A1, A0
+10500 REM W() and X$() stand in for Q(), S$(), G$() of evx: with F = 0 evx never reads them
+10510 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), W(), X$(), X$(), B, 0, K
+10511 LET A3 = W(X(11) + 2)
+10512 LET A2 = W(X(11) + 3)
+10513 LET A1 = W(X(11) + 4)
+10514 LET A0 = W(X(11) + 5)
 10515 IF K = 0 THEN 10635
 10520 IF K < 4 THEN 10545
 10525 REM a poisoned exponent (a failed constant) is settled: Z = 2, no pow and no error from it
@@ -32,7 +36,7 @@
 10630 LET Z = 1
 10635 SUBEND
 10640 REM ---- evx: the exact value of constant expression E with the semantics of LANGUAGE 6 (7.2,
-10645 REM DESIGN 2.8, 3.5.2, 3.5.5): K 1 i64, 2 f64 (limbs A3..A0), 3 bool (A0 0 or 1), 4 an error:
+10645 REM DESIGN 2.8, 3.5.2, 3.5.5): K 1 i64, 2 f64 (limbs A3..A0 in W(X(11)+2..5)), 3 bool (A0 0 or 1), 4 an error:
 10650 REM the i64 operation at node A0 overflowed (A1 = 1) or divided by zero (A1 = 2), the first in
 10655 REM evaluation order that the program would evaluate (&& and || skip their right operand as at
 10660 REM run time; A1 = 3: a poisoned value from a constant without a value, A0 = 0);
@@ -41,7 +45,8 @@
 10675 REM constant's value was computed before (ck_cord, cval). F = 1 (a const item, cval): pow(x, y),
 10680 REM sqrt(x) and a ^ that is not a powk are evaluated (FEPOW with the mtab words Q(), DESIGN 4.10.5;
 10685 REM FESQR); F = 0 (powk; Q() unused): a call or such a ^ is no constant value. ------------------
-10690 SUB "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, F, K, A3, A2, A1, A0
+10687 REM K = 5: a str (F = 1 only; its bytes in G$(50000 + its stack slot), evs in sn9str). ----------
+10690 SUB "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), S$(), G$(), E, F, K
 10695 LET B9 = X(11)
 10700 LET P = B9
 10705 FOR J = M(E, 0) TO E
@@ -59,9 +64,10 @@
 10765 IF K1 = 30 THEN 10920
 10770 IF K1 = 32 THEN 11090
 10775 IF K1 = 33 THEN 11225
-10780 IF K1 = 34 THEN 11385
+10780 IF K1 = 34 THEN 11383
 10785 IF K1 = 35 THEN 11290
-10790 GOTO 11390
+10790 IF K1 = 27 THEN 11381
+10791 GOTO 11390
 10795 LET H = M(J, 5)
 10800 LET R3 = C(H, 1)
 10805 LET R2 = C(H, 2)
@@ -95,6 +101,7 @@
 10945 REM 3 bool (Y(S,8) itself); 6 failed: a poisoned value, kind 4 with A1 = 3; 5 none
 10950 IF Y(S, 7) = 6 THEN 11030
 10955 IF Y(S, 7) = 0 THEN 11390
+10957 IF Y(S, 7) = 4 THEN 11381
 10960 IF Y(S, 7) > 3 THEN 11390
 10965 LET V = Y(S, 7)
 10970 LET H = Y(S, 8)
@@ -188,6 +195,9 @@
 11370 LET R1 = W(P0 + Q9 + 4)
 11375 LET R0 = W(P0 + Q9 + 5)
 11380 GOTO 11390
+11381 CALL "evs": N(), M(), Y(), W(), X(), X$(), S$(), G$(), J, P0, B9, F, V, R0
+11382 GOTO 11390
+11383 IF W(P0 + 1) + W(P0 + 6) = 10 THEN 11381
 11385 CALL "evbin": N(), M(), W(), Q(), J, P0, F, V, R3, R2, R1, R0
 11390 IF M(J, 7) <> 1 THEN 11410
 11395 IF V <> 1 THEN 11410
@@ -206,10 +216,6 @@
 11460 LET P = P + 5
 11465 NEXT J
 11470 LET K = W(B9 + 1)
-11475 LET A3 = W(B9 + 2)
-11480 LET A2 = W(B9 + 3)
-11485 LET A1 = W(B9 + 4)
-11490 LET A0 = W(B9 + 5)
 11495 IF V <> 0 THEN 11505
 11500 LET K = 0
 11505 SUBEND
@@ -349,22 +355,31 @@
 12175 LET V = 2
 12180 SUBEND
 12185 REM ---- cval: the value of const item S (LANGUAGE 7.2, DESIGN 3.4.1): Y(S,7) 1 i64, 2 f64, 3
-12190 REM bool (limbs packed in Y(S,8), Y(S,9); bool: Y(S,8) 0 or 1), 5 none, 6 failed; an i64
+12190 REM bool (limbs packed in Y(S,8), Y(S,9); bool: Y(S,8) 0 or 1), 4 str (G$(cid)), 5 none, 6 failed; an i64
 12195 REM overflow or zero divisor (rcne) is Y(S,4) 1 or 2 at the operator node Y(S,9) ------------
-12200 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S
+12200 SUB "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S$(), G$(), S
 12205 LET Y(S, 7) = 6
 12210 CALL "cexp": N(), Y(), S, E
-12235 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), E, 1, K, A3, A2, A1, A0
+12235 CALL "evx": N(), M(), Y(), C(), W(), X(), X$(), Q(), S$(), G$(), E, 1, K
+12236 LET A3 = W(X(11) + 2)
+12237 LET A2 = W(X(11) + 3)
+12238 LET A1 = W(X(11) + 4)
+12239 LET A0 = W(X(11) + 5)
 12240 IF K > 0 THEN 12260
 12245 REM not a constant value
 12250 LET Y(S, 7) = 5
 12255 GOTO 12355
 12260 IF K < 4 THEN 12300
+12262 IF K = 5 THEN 12290
 12265 REM a poisoned operand (A1 = 3) gives no value; an overflow or zero divisor is rcne
 12270 IF A1 = 3 THEN 12355
 12275 LET Y(S, 4) = A1
 12280 LET Y(S, 9) = A0
 12285 GOTO 12355
+12288 REM a str value (evs): its bytes in G$(cid), the constant rcns (DESIGN 3.4.2)
+12290 LET Y(S, 7) = 4
+12292 LET G$(Y(S, 5)) = G$(50001)
+12294 GOTO 12355
 12300 LET Y(S, 7) = K
 12305 LET Y(S, 8) = A0
 12310 IF K = 3 THEN 12355

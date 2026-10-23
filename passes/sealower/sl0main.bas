@@ -356,6 +356,7 @@
 1745 FOR I = 1 TO D0
 1750 LET X = D(I, 2)
 1752 IF D(I, 1) = 3 THEN 41562
+1753 IF D(I, 1) > 3 THEN 42480
 1755 IF D(I, 1) = 2 THEN 1770
 1760 CALL "io_put": 2, "str d" & STR$(I) & " " & S$(H(X, 0))
 1765 GOTO 1825

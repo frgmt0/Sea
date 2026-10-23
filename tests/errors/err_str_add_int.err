@@ -1,0 +1,1 @@
+err_str_add_int.sea:2:9: error: operator '+' cannot be applied to str and i64

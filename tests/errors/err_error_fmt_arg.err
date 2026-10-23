@@ -1,0 +1,1 @@
+err_error_fmt_arg.sea:3:17: error: format "%d" expects an integer or f64, found str

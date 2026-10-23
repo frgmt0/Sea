@@ -1,0 +1,75 @@
+#sea 1
+#target arm64-macos
+#file str_fill_flat.sea
+func .main main 0:1:1 0 0
+la p1 d1
+li i2 2
+call tile 0 2 p1 i2
+la p3 d2
+li i4 1
+call tile 0 2 p3 i4
+ret 0
+endfunc
+func tile fn 0:1:1 2 p1 i2 0
+slot s1 16 8
+li i3 2
+li i4 4
+li i5 2
+rcall sea_arr_new 0:2 1 p6 4 i4 i5 i2 i3
+imul i7 i2 i3
+ldp p8 p6 - 0 40
+li i9 0
+icmp gt i10 i7 i9
+if 1 i10
+li i11 1
+isub i12 i7 i11
+loop 2 i13 i9 i12 i11
+retain p1
+stp p1 p8 i13 8 0
+endloop 2
+endif 1
+ldi i14 p6 - 0 16
+ldi i15 p6 - 0 24
+imul i16 i14 i15
+li i17 4
+li i18 1
+li i19 1
+rcall sea_arr_new 0:3 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+ldp p22 p6 - 0 40
+li i23 8
+imul i24 i16 i23
+mcopy p21 p22 i24
+li i25 0
+icmp gt i26 i16 i25
+if 3 i26
+li i27 1
+isub i28 i16 i27
+loop 4 i29 i25 i28 i27
+ldp p30 p21 i29 8 0
+retain p30
+endloop 4
+endif 3
+ldi i31 p20 - 0 16
+li i32 1
+ldi i33 p20 - 0 16
+chkb i32 i33 0 0:4
+ldp p34 p20 - 0 40
+ldp p35 p34 i32 8 0
+sa p36 s1
+sti i31 p36 - 0 0
+stp p35 p36 - 0 8
+la p37 d3
+rcall sea_printf 0:4 0 2 p37 p36
+release p20
+release p6
+ret 0
+endfunc
+str d1 ab
+str d2 c
+fmt d3 4
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %0A
+#end

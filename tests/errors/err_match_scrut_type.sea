@@ -1,0 +1,6 @@
+// err_match_scrut_type -- a match scrutinee that is not a str: 201 at the scrutinee (DESIGN.md 2.6.2 "Readings fixed
+// by 4g", L-a)
+let n = 3
+match n {
+    _ => { printf("x\n") }
+}

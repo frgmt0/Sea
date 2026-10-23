@@ -1,0 +1,14 @@
+fn less(a: str, b: str) {
+    if a < b {
+        printf("lt\n")
+    } else {
+        printf("ge\n")
+    }
+    printf("%s %d %s\n", lower(a), len(a), str(a < b))
+}
+less("ab", "b")
+less("b", "ab")
+less("Ab", "a")
+// str_rule32 -- DESIGN.md 3.6.6 rule 32 (strings): its example `if a < b {` on line 2, a and b the
+// parameters p1 and p2; lower (an owned temporary), len (3.5.9 L3 of a str) and str of a bool
+// (la of true and false, psel: borrowed) on line 7

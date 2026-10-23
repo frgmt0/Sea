@@ -1,0 +1,50 @@
+#sea 1
+#target arm64-macos
+#file str_rule33.sea
+fn 1 .main main 1 0 0 0:1:1
+call 0:14:1 1 3 0
+eval 0:14:1
+call 0:15:1 1 3 0
+eval 0:15:1
+block 0:1:1 2
+end
+fn 2 pick fn 1 1 1 0:1:1
+par a 5 val
+loc n 3 var 0:2:9
+ci 0:2:13 3 0
+bind 0:2:5 2
+lv 0:3:11 5 1
+cs 0:4:9 5 x
+cs 0:4:15 5 y
+lv 0:4:24 3 2
+ci 0:4:28 3 1
+asg 0:4:24 set
+block 0:4:22 1
+arm 0:4:9 2
+lv 0:5:16 3 2
+ci 0:5:20 3 2
+asg 0:5:16 set
+block 0:5:14 1
+arm 0:5:9 0
+match 0:3:5 2
+lv 0:7:20 3 2
+fconv 0:7:12 1 - - - d
+ftext 0:7:12 1 %0A
+fmt 0:7:12 1 2
+lib 0:7:5 1 printf 1
+eval 0:7:5
+block 0:1:17 3
+end
+fn 3 drive fn 1 0 0 0:9:1
+cs 0:10:10 5 x
+call 0:10:5 1 2 1
+eval 0:10:5
+cs 0:11:10 5 y
+call 0:11:5 1 2 1
+eval 0:11:5
+cs 0:12:10 5 z
+call 0:12:5 1 2 1
+eval 0:12:5
+block 0:9:12 3
+end
+#end

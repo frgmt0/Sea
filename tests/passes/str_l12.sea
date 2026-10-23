@@ -1,0 +1,17 @@
+fn two(n: i64) -> (str, i64) {
+    return (str(n), n + 1)
+}
+fn upd(i: i64) {
+    var names = ["x", "y"]
+    var k = 0
+    (names[i], k) = two(i + 5)
+    printf("%s %s %d\n", names[0], names[1], k)
+}
+let (a, b) = two(1)
+printf("%s %d\n", a, b)
+upd(0)
+upd(1)
+// str_l12 -- DESIGN.md 3.5.9 L12 with a target that L17 rewrites (line 7, `names[i]`, a str
+// element): L17's block directly in the L12 block, with no `tmp Vv` and its est storing `lv L1`
+// itself, which R25 moves (no retain; L1 dropped from rule 16's releases at the block's end); the
+// scalar target k stays an asg

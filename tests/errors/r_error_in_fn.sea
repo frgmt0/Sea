@@ -1,0 +1,10 @@
+// r_error_in_fn -- error inside a function: the line of the error call (LANGUAGE.md 9.3)
+fn check(x: i64) -> i64 {
+    if x < 0 {
+        error("negative: %d", x)
+    }
+    return x * 2
+}
+printf("%d\n", check(4))
+printf("%d\n", check(-3))
+printf("never\n")

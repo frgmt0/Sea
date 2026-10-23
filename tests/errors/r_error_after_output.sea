@@ -1,0 +1,6 @@
+// r_error_after_output -- error after printed output: standard output flushed first (with no extra newline),
+// then the message; status 1 (LANGUAGE.md 9.2, 9.3)
+printf("before\n")
+printf("partial")
+error("stopped at %d", 3)
+printf("never\n")

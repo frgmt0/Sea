@@ -1,0 +1,1 @@
+err_str_ew_cmp_f64.sea:4:9: error: operator '==' cannot be applied to str[] and f64

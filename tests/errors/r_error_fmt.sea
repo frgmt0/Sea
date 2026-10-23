@@ -1,0 +1,6 @@
+// r_error_fmt -- error formats like format: %s of dynamic strings with width and -, numeric conversions, NaN
+// and %% (LANGUAGE.md 9.3, 11.1)
+let s = "abc" + "def"
+let x = 2.5
+let z = 0.0
+error("bad %s [%5s|%-4s] %d %.3f %g %e %%", s, lower("AB"), "x", -7, x, z / z, 1500.0)

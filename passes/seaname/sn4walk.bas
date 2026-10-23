@@ -59,14 +59,14 @@
 5415 LET X(12) = X(12) + 2
 5420 SUBEND
 5425 REM ---- rs_st: statement I (LANGUAGE 7.1-7.6): its expressions are resolved and typed
-5430 REM (rs_expr), its type annotations looked up (tylk), its names declared (nloc); a match is a
-5435 REM skipped region: never walked, it keeps its sea.ast records (DESIGN 3.4.1, 3.4.2) ---------
+5430 REM (rs_expr), its type annotations looked up (tylk), its names declared (nloc); a match (rs_mt)
+5435 REM is a resolved region from 4g-1 (DESIGN 3.4.2) ------------------------------------------
 5440 SUB "rs_st": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 5445 LET X(19) = I
 5450 LET K = N(I, 0)
 5455 IF K < 8 THEN 5760
 5460 IF K > 24 THEN 5760
-5465 ON K - 7 GOTO 5470, 5470, 5760, 5760, 5760, 5560, 5575, 5610, 5620, 5680, 5695, 5760, 5760, 5760, 5760, 5740, 5755
+5465 ON K - 7 GOTO 5470, 5470, 5760, 5760, 5760, 5560, 5575, 5610, 5620, 5680, 5695, 5757, 5760, 5760, 5760, 5740, 5755
 5470 REM let/var: the value first (a name is visible from the statement after it, LANGUAGE 7.2),
 5475 REM then the annotation (its names where the statement stands), then the names of the pattern
 5477 REM from left to right
@@ -142,4 +142,6 @@
 5748 NEXT J
 5750 GOTO 5760
 5755 CALL "rs_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
+5756 GOTO 5760
+5757 CALL "rs_mt": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 5760 SUBEND

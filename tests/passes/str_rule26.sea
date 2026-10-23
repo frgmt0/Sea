@@ -1,0 +1,7 @@
+let names = ["a", "bc"]
+for n in names {
+    printf("%s\n", n)
+}
+// str_rule26 -- DESIGN.md 3.6.6 rule 26 (array literals): its example `let names = ["a", "bc"]`
+// on line 1 (3.5.9 L9 (b) with str elements, R21's sea_arr_new); an element loop over it (L4 with
+// X = eld str, rule 30: names borrowed, so held by mov and retain)

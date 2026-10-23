@@ -1,0 +1,56 @@
+#sea 1
+#target arm64-macos
+#file str_l17.sea
+tvec 10 5
+fn 1 .main main 1 0 0 0:1:1
+ci 0:7:5 3 0
+cs 0:7:8 5 a
+call 0:7:1 1 2 2
+eval 0:7:1
+ci 0:8:5 3 2
+cs 0:8:8 5 b
+call 0:8:1 1 2 2
+eval 0:8:1
+block 0:1:1 2
+end
+fn 2 put fn 1 2 1 0:1:1
+par i 3 val
+par s 5 val
+loc names 10 var 0:2:9
+cs 0:2:18 5 p
+cs 0:2:23 5 q
+cs 0:2:28 5 r
+row 0:2:18 10 3
+arr 0:2:17 10 1
+bind 0:2:5 3
+lv 0:3:5 10 3
+lv 0:3:11 3 1
+idx 0:3:5 5 1
+lv 0:3:16 5 2
+asg 0:3:5 set
+lv 0:4:5 10 3
+lv 0:4:11 3 1
+idx 0:4:5 5 1
+cs 0:4:17 5 !
+asg 0:4:5 add
+lv 0:5:26 10 3
+ci 0:5:32 3 0
+idx 0:5:26 5 1
+fconv 0:5:12 1 - - - s
+ftext 0:5:12 1 %20
+lv 0:5:36 10 3
+ci 0:5:42 3 1
+idx 0:5:36 5 1
+fconv 0:5:12 1 - - - s
+ftext 0:5:12 1 %20
+lv 0:5:46 10 3
+ci 0:5:52 3 2
+idx 0:5:46 5 1
+fconv 0:5:12 1 - - - s
+ftext 0:5:12 1 %0A
+fmt 0:5:12 1 6
+lib 0:5:5 1 printf 1
+eval 0:5:5
+block 0:1:24 4
+end
+#end

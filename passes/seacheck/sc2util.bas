@@ -7,8 +7,8 @@
 2665 REM sibling; N(i,9) parent. A replacement record of sea.res (DESIGN 3.4.1; rpl) keeps the node
 2670 REM kind of the record it replaces and puts its new fields in slots that record leaves free:
 2675 REM rfn M(i,1) rty (a T row), M(i,2) fid, its parameter types in M(param,1); rst N(i,2) sid;
-2680 REM rcn* N(i,1) t, N(i,2) cid, N(i,3) outcome 1 rcni 2 rcnf 3 rcnb 4 rcne 5 rcn, M(i,1..2) the
-2685 REM value's limbs as two 32-bit halves (rcnb: M(i,1) the bool; rcne: M(i,1..2) epos, M(i,4)
+2680 REM rcn* N(i,1) t, N(i,2) cid, N(i,3) outcome 1 rcni 2 rcnf 3 rcnb 4 rcne 5 rcn 6 rcns, M(i,1..2) the
+2685 REM value's limbs as two 32-bit halves (rcnb: M(i,1) the bool; rcns: its S$ index; rcne: M(i,1..2) epos, M(i,4)
 2690 REM 1 ovf 2 div0); rpname N(i,1) lid; rfor N(i,3) lid; rint N(i,1..2) fv as two halves, N(i,3)
 2695 REM 1 if fv is not -; rname N(i,1) k (1 loc 2 cst 3 fn 4 st 5 pd 6 none), N(i,2) ref; rpowk
 2700 REM N(i,1) 6 (pow), N(i,2) k, N(i,3) 1.
@@ -22,8 +22,8 @@
 2740 REM Y(s,0) 1 fn 2 const 3 struct 4 local; Y(s,1) name; Y(s,2) type (fn: result); Y(s,3) node;
 2745 REM Y(s,4) local: 1 let 2 var 3 for 4 par 5 ref par, fn: elemental, const: 0 1 2 (checked);
 2750 REM Y(s,5) lid / fid / cid / sid; Y(s,6) local: pname of a var-rule candidate, fn: np, const:
-2755 REM ck_cord state; Y(s,7) fn: nr, const: value 0 not decided, 1 i64, 2 f64, 3 bool, 6 none;
-2760 REM Y(s,8) fn: last local row, const: C row of the value (bool: the value); Y(s,9) fn: first
+2755 REM ck_cord state; Y(s,7) fn: nr, const: value 0 not decided, 1 i64, 2 f64, 3 bool, 5 str, 6 none;
+2760 REM Y(s,8) fn: last local row, const: C row of the value (bool: the value; str: its S$ index); Y(s,9) fn: first
 2765 REM local row. Rows: 1 .main, 2..X(30) the entered fns by fid, then the constants by cid
 2770 REM (X(31) the row before the first), the structs by sid, X(33) the last item row; a local of
 2775 REM function S with lid l is row Y(S,9) - 1 + l (DESIGN 3.4.1: lids come from sea.res).
@@ -112,7 +112,7 @@
 3170 SUBEND
 3175 REM ---- nloc: R = the local with lid L of the current function X(14) (its row, DESIGN 3.4.1),
 3180 REM named Q, type D, mut U, declared by node I; Z = 1 checks the binding (shadowing a
-3185 REM predeclared name, a str local or str[]: DESIGN 2.6.2) -------------------------------------------
+3185 REM predeclared name, LANGUAGE 3.3) --------------------------------------------------------
 3190 SUB "nloc": N(), Y(), T(), X(), X$(), S$(), Q, D, U, I, Z, L, R
 3195 LET R = Y(X(14), 9) - 1 + L
 3200 FOR J = 0 TO 9
@@ -126,11 +126,8 @@
 3240 LET Y(R, 5) = L
 3245 IF Z = 0 THEN 3280
 3250 CALL "pdx": X$(), S$(Q), P
-3255 IF P = 0 THEN 3265
+3255 IF P = 0 THEN 3280
 3260 CALL "er": N(), X(), X$(), I, "SHADOWS_PREDECLARED", "", "", "", 0
-3265 CALL "elt": T(), D, E, K
-3270 IF E <> 5 THEN 3280
-3275 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "strings", "", "", 1
 3280 SUBEND
 3285 REM ---- tyn: R$ = type Q written as in Sea source (DESIGN 2.6.2) -----------------------------
 3290 SUB "tyn": T(), Q, R$

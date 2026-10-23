@@ -12,6 +12,7 @@
 7200 LET K = N(J, 0)
 7205 IF K = 25 THEN 7255
 7210 IF K = 26 THEN 7265
+7212 IF K = 27 THEN 7271
 7215 IF K = 28 THEN 7275
 7220 IF K = 29 THEN 7275
 7225 IF K = 30 THEN 7285
@@ -25,6 +26,8 @@
 7260 GOTO 7320
 7265 LET M(J, 1) = 4
 7270 GOTO 7320
+7271 LET M(J, 1) = 5
+7272 GOTO 7320
 7275 LET M(J, 1) = 2
 7280 GOTO 7320
 7285 CALL "rs_name": N(), M(), Y(), W(), S$(), X(), X$(), J
@@ -38,7 +41,7 @@
 7325 SUBEND
 7425 REM ---- rs_name: name J (rname, DESIGN 3.4.1 "Names"): the locals in scope innermost first,
 7430 REM then the entered items, then the predeclared names (lk). On the typed path a constant with
-7435 REM a value has its type, pi inf nan eps are f64, the callee of a call is left to the call;
+7435 REM a value has its type (rcns: str), pi inf nan eps are f64, the callee of a call is left to the call;
 7440 REM any other name (a constant waiting or without a value: Decision 25) fails it ------------
 7445 SUB "rs_name": N(), M(), Y(), W(), S$(), X(), X$(), J
 7450 CALL "lk": Y(), W(), X(), X$(), S$(), N(J, 6), R
@@ -53,8 +56,8 @@
 7495 IF Y(R, 6) <> 2 THEN 7530
 7500 LET V = Y(R, 7)
 7505 IF V < 1 THEN 7530
-7510 IF V > 3 THEN 7530
-7515 LET M(J, 1) = VAL(SEG$("342", V, V))
+7510 IF V > 4 THEN 7530
+7515 LET M(J, 1) = VAL(SEG$("3425", V, V))
 7517 GOTO 7535
 7520 IF R < -4 THEN 7530
 7525 LET M(J, 1) = 4
@@ -132,9 +135,12 @@
 7953 CALL "pwx": N(), M(), Y(), C(), W(), X(), X$(), J, B, G2
 7955 IF G1 = 0 THEN 8315
 7960 IF G2 = 0 THEN 8315
-7965 REM + and comparisons on str are not on the typed path
-7970 IF G1 = 5 THEN 8270
+7965 REM + and the comparisons of two str (LANGUAGE 7.2, lead decision L-g: sbin)
+7970 IF G1 = 5 THEN 7976
 7975 IF G2 = 5 THEN 8270
+7976 IF G1 <> 5 THEN 7980
+7977 CALL "sbin": M(), X(), J, O, G2
+7978 GOTO 8315
 7980 ON O GOTO 7985, 7985, 7985, 8025, 8080, 8110, 8280, 8210, 8210, 8230, 8230, 8230, 8230, 8250, 8250, 8250, 8250
 7985 IF G1 <> -1 THEN 8005
 7990 IF G2 <> -1 THEN 8005

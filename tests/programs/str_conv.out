@@ -1,0 +1,11 @@
+0|-9223372036854775808|9223372036854775807
+-42 3
+0.10000000000000001|-0|100|1.0000000000000001e+300|4.9406564584124654e-324
+nan|nan|inf|-inf
+inf|-inf|nan|nan
+2.5 7.5 -42
+true|false|true
+Keep|lit|Keep!
+[hello, world [@z`az]][][Ã‰€ÿaz]
+mixed 09 MiXeD 09 1
+truetrue

@@ -1,0 +1,31 @@
+#sea 1
+#target arm64-macos
+#file str_rule30.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+rcall sea_args 0:3 1 p1 0
+ldi i2 p1 - 0 16
+li i3 0
+icmp gt i4 i2 i3
+if 1 i4
+ldp p5 p1 - 0 40
+li i6 1
+isub i7 i2 i6
+loop 2 i8 i3 i7 i6
+ldp p9 p5 i8 8 0
+endloop 2
+endif 1
+release p1
+rcall sea_args 0:4 1 p10 0
+ldi i11 p10 - 0 16
+release p10
+sa p12 s1
+sti i11 p12 - 0 0
+la p13 d1
+rcall sea_printf 0:5 0 2 p13 p12
+ret 0
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+#end

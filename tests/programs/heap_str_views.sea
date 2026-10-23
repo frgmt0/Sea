@@ -1,0 +1,70 @@
+// heap_str_views -- use-after-free probes of 4g-1: elements of views of owned temporaries ((v + "3").col[1, 0],
+// (M + "1").T[0, 1], a match scrutinee, a comparison); compound stores v[0] += g(ref v),
+// M[i, j] += and M.flat[k] += whose value replaces the root by ref; view element reads
+// (.col, .row, .T, .flat, .T.T) passed before a ref call, also through a ref parameter;
+// heap check 0 (LANGUAGE.md 4.5, 5.5, 5.6, 6.8, 7.3, 8.2, 8.3)
+fn g(ref v: str[]) -> str {
+    v = ["F" + str(len(v)), "G" + ""]
+    let k1 = "Z" + "Z"
+    let k2 = "Y" + "Y"
+    let k3 = "X" + "X"
+    printf("%s%s%s ", k1, k2, k3)
+    return "g"
+}
+fn gm(ref M: str[,]) -> str {
+    M = ["n" + "", "o" + ""; "p" + "", "q" + ""]
+    let k1 = "W" + "W"
+    let k2 = "V" + "V"
+    printf("%s%s ", k1, k2)
+    return "gm"
+}
+fn f2(a: str, b: str) {
+    printf("%s %s\n", a, b)
+}
+fn inner(ref v: str[], k: i64) {
+    f2(v.col[1, 0], g(ref v))
+    f2(v.row[0, k], g(ref v))
+}
+fn innerm(ref M: str[,]) {
+    f2(M.T[0, 1], gm(ref M))
+    f2(M.flat[2], gm(ref M))
+    f2(M.T.T[1, 1], gm(ref M))
+}
+let v = ["p" + "", "q" + ""]
+let e = (v + "3").col[1, 0]
+let z = ["W" + "W", "V" + "V"]
+printf("%s %s\n", e, z[0])
+let M = ["a" + "", "b" + ""; "c" + "", "d" + ""]
+let x = (M + "1").T[0, 1]
+let y = ["Q" + "Q", "R" + "R", "S" + "S", "T" + "T"]
+printf("%s %s %s\n", x, (M + "2").flat[3], y[3])
+match (v + "x").col[1, 0] {
+    "qx" => { printf("ok\n") }
+    _ => { printf("no\n") }
+}
+printf("%d\n", (M + "1").T[0, 1] == "c1")
+var w = ["a" + "a", "b" + "b"]
+w[0] += g(ref w)
+printf("%s %s\n", w[0], w[1])
+var N = ["a" + "a", "b" + "b"; "c" + "", "d" + ""]
+N[1, 0] += gm(ref N)
+printf("%s %s %s %s\n", N[0, 0], N[1, 0], N[0, 1], N[1, 1])
+N = ["a" + "a", "b" + "b"; "c" + "", "d" + ""]
+N.flat[2] += gm(ref N)
+printf("%s %s %s %s\n", N[0, 0], N[1, 0], N[0, 1], N[1, 1])
+var u = ["u" + "0", "u" + "1"]
+f2(u.col[1, 0], g(ref u))
+u = ["u" + "0", "u" + "1"]
+let k = 1
+f2(u.row[0, k], g(ref u))
+var P = ["a" + "b", "c" + ""; "d" + "e", "f" + ""]
+f2(P.T[0, 1], gm(ref P))
+P = ["a" + "b", "c" + ""; "d" + "e", "f" + ""]
+f2(P.flat[2], gm(ref P))
+P = ["a" + "b", "c" + ""; "d" + "e", "f" + ""]
+f2(P.T.T[1, 1], gm(ref P))
+u = ["u" + "0", "u" + "1"]
+inner(ref u, 1)
+P = ["a" + "b", "c" + ""; "d" + "e", "f" + ""]
+innerm(ref P)
+printf("%s %s\n", u[0], P[1, 1])

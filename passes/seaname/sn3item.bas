@@ -2,7 +2,7 @@
 3430 REM LANGUAGE 7.2: visible everywhere), every entered const in the constant order (typed path,
 3435 REM value), the struct fields and signatures, the resolution walk of the body of every entered fn
 3440 REM in fid order and of .main (the symbols limit counts in this order), the other type nodes.
-3445 SUB "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
+3445 SUB "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q(), G$()
 3450 LET X(3) = 1
 3455 LET X(4) = 9
 3460 LET X(11) = 0
@@ -31,7 +31,7 @@
 3577 REM the type nodes in the order of DESIGN 3.4.2: scalar const annotations, the constants,
 3578 REM the struct fields, the signatures, then (after the walks) every other one in file order
 3580 CALL "tyconst": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
-3585 CALL "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
+3585 CALL "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q(), G$()
 3590 CALL "tyfld": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 3595 FOR S = 2 TO X(33)
 3600 IF Y(S, 0) <> 1 THEN 3610
@@ -86,13 +86,11 @@
 3815 SUBEND
 3820 REM ---- tyof: R = the type of type node I of a signature (DESIGN 3.4.2): looked up with no local
 3825 REM in scope (tylk) and resolved (tyres, which reports its errors); 0 after an error and for a
-3827 REM str type (X(44): the signature reports it, DESIGN 2.6.2) --------------------------------
+3827 REM str type of a fixed shape, which is the phase rule's strings at the node (DESIGN 3.4.2) ----
 3830 SUB "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, R
 3835 LET X(12) = 200000
 3840 CALL "tylk": N(), M(), Y(), W(), S$(), X(), X$(), I
-3842 LET X(44) = 1
 3845 CALL "tyres": N(), M(), Y(), T(), C(), S$(), X(), X$(), I
-3847 LET X(44) = 0
 3850 LET R = M(I, 1)
 3855 SUBEND
 3960 REM ---- ck_sig: the signature of fn S: parameter types in M(param,1), result types in
@@ -117,12 +115,8 @@
 4055 CALL "pdx": X$(), S$(Q), P
 4060 IF P = 0 THEN 4070
 4065 CALL "er": N(), X(), X$(), I, "SHADOWS_PREDECLARED", "", "", "", 0
-4070 IF N(I, 2) = 0 THEN 4080
+4070 IF N(I, 2) = 0 THEN 4095
 4075 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "default arguments", "", "", 1
-4080 REM a str parameter (any shape) is 'strings' at its param node; its type is 0 (tyres)
-4085 CALL "tyb": S$(N(N(I, 7), 6)), B
-4087 IF B <> 5 THEN 4095
-4090 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "strings", "", "", 1
 4095 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(I, 7), D
 4100 LET M(I, 1) = D
 4105 LET I = N(I, 8)
@@ -130,9 +124,6 @@
 4115 REM the result types follow the parameters
 4120 LET Z = 0
 4125 FOR J = 1 TO R0
-4130 CALL "tyb": S$(N(I, 6)), B
-4135 IF B <> 5 THEN 4145
-4140 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "strings", "", "", 1
 4145 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, D
 4150 IF J > 1 THEN 4155
 4152 LET V0 = D
@@ -156,7 +147,7 @@
 4230 REM type its expression (rs_expr), then its annotation (f64 i64 bool) or the i64 of an untyped
 4235 REM constant (LANGUAGE 7.2); evaluated (cval) only when nothing failed (X(40), fl), its type is
 4240 REM not the error type, and it names no constant without a value (Decision 25); else Y(S,7) 6.
-4245 SUB "sn_const": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), Q(), S
+4245 SUB "sn_const": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), Q(), G$(), S
 4250 LET F = Y(S, 3)
 4255 LET X(19) = F
 4260 CALL "cexp": N(), Y(), S, E
@@ -177,22 +168,22 @@
 4335 LET Y(S, 7) = 6
 4340 IF X(40) > X0 THEN 4355
 4345 IF D = 0 THEN 4355
-4350 CALL "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S
+4350 CALL "cval": N(), M(), Y(), C(), W(), X(), X$(), Q(), S$(), G$(), S
 4355 SUBEND
 4360 REM ---- cty: D = the type of the annotation G of a const, resolved before the constants (tyconst),
-4365 REM if seaname can use it (a scalar f64, i64 or bool: 4, 3, 2), else 0 -------------------------
+4365 REM if seaname can use it (a scalar f64, i64, bool or str: 4, 3, 2, 5), else 0 -----------------
 4370 SUB "cty": N(), M(), G, D
 4375 LET D = 0
 4380 IF N(G, 1) <> 1 THEN 4415
 4385 IF M(G, 1) < 2 THEN 4415
-4390 IF M(G, 1) > 4 THEN 4415
+4390 IF M(G, 1) > 5 THEN 4415
 4395 LET D = M(G, 1)
 4415 SUBEND
 4820 REM ---- ck_cord: every const item, each after the constants its expression names (a depth-first
 4825 REM order with an explicit stack in W(1..): pairs (const, next node to scan), so chains of any
 4830 REM length need no Baysick recursion); each is typed and evaluated when its scan ends (sn_const).
 4835 REM Y(S,6) 1 waiting (on the stack), 2 done; a name of a waiting const has no value (rs_name).
-4845 SUB "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q()
+4845 SUB "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q(), G$()
 4850 FOR S0 = 2 TO X(33)
 4855 IF Y(S0, 0) <> 2 THEN 5105
 4860 IF Y(S0, 6) <> 0 THEN 5105
@@ -223,7 +214,7 @@
 4985 GOTO 4910
 4990 LET P = P - 2
 4995 LET X(11) = P
-5005 CALL "sn_const": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), Q(), S
+5005 CALL "sn_const": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), Q(), G$(), S
 5090 LET X(11) = 0
 5095 LET Y(S, 6) = 2
 5100 GOTO 4890

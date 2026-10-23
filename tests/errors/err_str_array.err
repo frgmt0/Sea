@@ -1,0 +1,1 @@
+err_str_array.sea:3:9: error: no overload of 'str' accepts (f64[])

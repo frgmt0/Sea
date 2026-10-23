@@ -1,0 +1,8 @@
+// err_match_dup_in_arm -- a pattern repeated within one arm: unreachable pattern (208) at the arm, its first
+// pattern (LANGUAGE.md 7.6)
+let s = "a"
+match s {
+    "x" => { printf("x\n") }
+    "a" | "b" | "a" => { printf("a\n") }
+    _ => { printf("_\n") }
+}

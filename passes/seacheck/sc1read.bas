@@ -90,8 +90,8 @@
 995 LET K0 = (P1 - 1) / 10 + 1
 1000 LET R0 = G(K0)
 1005 REM the place of a record: rerr first (at most one), then the type table (rtup rtvec rtmat
-1010 REM rtfvec rtfmat, DESIGN 3.4.2), then the tree. The records of 4g (rtst rtfd rslit rcns) are
-1015 REM not written before 4g.
+1010 REM rtfvec rtfmat, DESIGN 3.4.2), then the tree. The records of 4g-2 (rtst rtfd rslit) are
+1015 REM not written before 4g-2; rcns (4g-1) replaces a const.
 1020 IF K0 < 50 THEN 1085
 1025 IF K0 > 69 THEN 1080
 1030 IF K0 > 67 THEN 2400
@@ -104,7 +104,7 @@
 1065 IF D8 > 2 THEN 2400
 1070 LET D8 = 2
 1075 GOTO 1210
-1080 IF K0 > 70 THEN 2400
+1080 IF K0 = 71 THEN 2400
 1085 IF D8 = 3 THEN 1110
 1090 REM the first record of the tree: the type table is complete, its ty fields become T rows
 1095 CALL "sc_tfix": T(), W(), X(), Z
@@ -216,14 +216,19 @@
 1625 IF H8 > 3 THEN 2400
 1630 LET X$(H8 + 1) = S0$
 1635 GOTO 1855
-1640 IF N9 > 0 THEN 2400
-1645 LET N9 = 1
+1640 IF N9 = 0 THEN 1645
+1641 REM the value of an rcns, its second string: interned, its S$ index in M(i,1)
+1642 IF K0 <> 72 THEN 2400
+1645 LET N9 = N9 + 1
 1650 CALL "intern": S$(), X(), O(), S0$, H
 1655 IF H > 0 THEN 1675
 1660 LET A$(1) = "strings"
 1665 LET F1 = INT(N(I, 4) / 1E9)
 1670 CALL "dg_compile": P$, F$(), N1, F1, N(I, 4) - F1 * 1E9, N(I, 5), "TOO_LARGE", A$(), 1, E(), E$(), E0
-1675 LET N(I, 6) = H
+1675 IF N9 = 2 THEN 1678
+1676 LET N(I, 6) = H
+1677 GOTO 1855
+1678 LET M(I, 1) = H
 1680 GOTO 1855
 1685 CALL "io_pos": F0$, F1, L1, C1, T
 1690 IF T <> 0 THEN 2400
@@ -263,7 +268,7 @@
 1860 NEXT J
 1865 IF F9 <> G0 THEN 2400
 1870 IF K0 < 50 THEN 2200
-1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 1965, 1965, 2400, 2400, 2015
+1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 1965, 1965, 2400, 2400, 2015, 2400, 2141
 1880 CALL "sc_rerr": P$, E(), E$(), E0, X(), X$(), V()
 1885 GOTO 2375
 1890 REM rtup id n t1..tn: ids dense from 10, n >= 2; one T row and ceil(n/9) more (the ids of the
@@ -311,7 +316,7 @@
 2075 LET N(I, 1) = V(1)
 2080 LET N(I, 2) = V(2)
 2085 GOTO 2200
-2090 REM rcni rcnf rcnb rcne rcn: t (as const), cid, N(i,3) the outcome 1-5; rcnb v, rcne e
+2090 REM rcni rcnf rcnb rcne rcn: t (as const), cid, N(i,3) the outcome 1-5; rcnb v, rcne e; rcns (2141) 6
 2095 LET N(I, 1) = V(1)
 2100 LET N(I, 2) = V(2)
 2105 LET N(I, 3) = K0 - 53
@@ -322,6 +327,10 @@
 2130 IF V(3) > 1 THEN 2400
 2135 LET M(I, 1) = V(3)
 2140 GOTO 2200
+2141 LET N(I, 1) = V(1)
+2142 LET N(I, 2) = V(2)
+2143 LET N(I, 3) = 6
+2144 GOTO 2200
 2145 IF K0 = 60 THEN 2160
 2150 LET N(I, 1) = V(1)
 2155 GOTO 2200

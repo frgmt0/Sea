@@ -1,0 +1,5 @@
+// str_rule30 -- DESIGN.md 3.6.6 rule 30 (element loops): its first example `for a in args() {`
+// on line 3 (body empty), the held vector the owned result of rule 35's rcall sea_args
+for a in args() { }
+let k = len(args())
+printf("%d\n", k)

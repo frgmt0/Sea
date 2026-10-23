@@ -1,0 +1,10 @@
+fn tile(s: str, r: i64) {
+    let m = filled(s, r, 2)
+    let f = m.flat
+    printf("%d %s\n", len(f), f[1])
+}
+tile("ab", 2)
+tile("c", 1)
+// str_fill_flat -- DESIGN.md 3.5.9 L2 of `filled` with a str value (line 2: the borrowed s
+// retained before each store) and L10 of a dynamic `.flat` of a str[,] (line 3: R20's mcpy with
+// the element count and the retain loop over the copied elements)

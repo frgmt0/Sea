@@ -1,4 +1,0 @@
-// err_ns_match -- phase 1: a match statement (at the match node)
-match "a" {
-    _ => { printf("x\n") }
-}

@@ -1,0 +1,40 @@
+#sea 1
+#target arm64-macos
+#file res_str_consts.sea
+str 0:3:11 ab
+str 0:3:18 c
+bin 0:3:11 add
+const 0:3:1 A 0
+name 0:4:11 A
+str 0:4:15 %25
+bin 0:4:11 add
+const 0:4:1 B 0
+type 0:5:10 str s 0
+str 0:5:16 x
+const 0:5:1 T 1
+name 0:6:11 A
+name 0:6:15 B
+bin 0:6:11 lt
+const 0:6:1 L 0
+str 0:7:11 %C3%A9
+str 0:7:24 z
+bin 0:7:11 gt
+const 0:7:1 U 0
+name 0:8:1 printf
+str 0:8:8 %25s%20%25s%20%25s%0A
+name 0:8:22 A
+name 0:8:25 B
+name 0:8:28 T
+call 0:8:1 4
+cstmt 0:8:1
+name 0:9:4 L
+name 0:9:9 U
+bin 0:9:4 and
+name 0:10:5 printf
+str 0:10:12 lt%0A
+call 0:10:5 1
+cstmt 0:10:5
+block 0:9:11 1
+if 0:9:1 0
+prog 7
+#end

@@ -1,0 +1,5 @@
+// r_args_oob -- args()[0] without arguments: index 0 out of bounds for dimension 0 of extent 0 at its line
+// (LANGUAGE.md 5.4, 9.2, 10.10)
+printf("start\n")
+let first = args()[0]
+printf("%s\n", first)

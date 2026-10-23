@@ -222,7 +222,7 @@
 17520 LET Z = 1
 17525 SUBEND
 17530 REM ---- ck_arr: array literal J (LANGUAGE 6.9, 4.5, Decision 20): the common element type of its
-17535 REM elements (201 at the first that does not combine), str elements 'strings' at the literal;
+17535 REM elements (201 at the first that does not combine), str elements always dynamic (S9);
 17540 REM rows of scalars: T[n] / T[r,c] up to LIM_FIXED_ELEMS elements, else T[] / T[,] (219 for a
 17545 REM ragged one); with an array element a concatenation (220, and 217 when every part is fixed);
 17550 REM each row has the type of its horizontal join; elements of another element type are converted.
@@ -282,9 +282,8 @@
 17765 NEXT H
 17770 LET W = N(W, 8)
 17775 NEXT R
-17780 IF S9 = 0 THEN 17795
-17785 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "strings", "", "", 1
-17790 GOTO 18395
+17780 REM str elements: a dynamic literal whatever its size (LANGUAGE 6.9, Decision 20)
+17785 LET F9 = F9 * (1 - S9)
 17795 IF M9 = 0 THEN 17810
 17800 CALL "er": N(), X(), X$(), M9, "TYPE_MISMATCH", A$, B$, "", 2
 17805 GOTO 18395
@@ -328,7 +327,7 @@
 17990 GOTO 18395
 17995 LET W = N(W, 8)
 18000 NEXT R
-18005 CALL "fxk": X(), 1, 1, C0, K
+18005 CALL "fxk": X(), 1, 1 - S9, C0, K
 18010 CALL "tarr": T(), N(), X(), X$(), K, G, C0, 0, Q
 18015 LET W = N(J, 7)
 18020 FOR R = 1 TO R0
@@ -336,7 +335,7 @@
 18030 LET W = N(W, 8)
 18035 NEXT R
 18040 IF R0 = 1 THEN 18385
-18042 CALL "fxk": X(), 2, 1, R0 * C0, K
+18042 CALL "fxk": X(), 2, 1 - S9, R0 * C0, K
 18045 CALL "tarr": T(), N(), X(), X$(), K, G, R0, C0, Q
 18047 GOTO 18385
 18050 REM a concatenation: each row's horizontal join, then the rows stacked (Rs x Cs so far); a
@@ -505,8 +504,8 @@
 18790 GOTO 18850
 18792 CALL "er": N(), X(), X$(), I, "SHAPE_MISMATCH_C", A$, B$, "", 2
 18795 GOTO 18850
-18800 REM the result's element type: f64 for / and beside an f64, else i64 (LANGUAGE 6.5)
-18805 LET Z0 = 3
+18800 REM the result's element type: f64 for / and beside an f64, str for += of str, else i64 (LANGUAGE 6.5)
+18805 LET Z0 = 3 + 2 * INT(D1 / 5)
 18810 IF O = 5 THEN 18820
 18812 IF D1 = 4 THEN 18820
 18815 IF V1 <> 4 THEN 18825

@@ -1,1 +1,1 @@
-err_const_noval_shortcircuit.sea:3:11: error: not supported yet: strings
+err_const_noval_shortcircuit.sea:3:11: error: unknown struct type

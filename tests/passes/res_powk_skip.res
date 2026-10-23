@@ -50,18 +50,18 @@ block 0:14:17 1
 rfor 0:14:1 e 0:14:5 1
 str 0:17:7 a
 str 0:18:5 a
-pname 0:18:18 m
+rpname 0:18:18 m 3
 rint 0:18:22 1 #3FF0000000000000
 let 0:18:14 0
 block 0:18:12 1
 arm 0:18:5 1
-pname 0:19:16 m
+rpname 0:19:16 m 4
 rint 0:19:20 2 #4000000000000000
 let 0:19:12 0
 block 0:19:10 1
 arm 0:19:5 0
 match 0:17:1 2
-rpname 0:21:5 t 3
+rpname 0:21:5 t 5
 rname 0:21:9 g fn 2
 float 0:21:11 #4000000000000000
 call 0:21:9 1

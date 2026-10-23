@@ -35,6 +35,7 @@
 14665 CALL "tyr": T(), W(), X(), Y(S, 2), A$
 14670 LET R = Y(S, 8)
 14675 IF Y(S, 7) = 3 THEN 14715
+14677 IF Y(S, 7) = 5 THEN 14717
 14680 IF Y(S, 7) = 2 THEN 14700
 14685 CALL "lfmt": C(R, 1), C(R, 2), C(R, 3), C(R, 4), B$
 14690 CALL "wr": X(), "ci " & P$ & " " & A$ & " " & B$
@@ -43,6 +44,9 @@
 14705 CALL "wr": X(), "cf " & P$ & " " & A$ & " " & B$
 14710 GOTO 14720
 14715 CALL "wr": X(), "cb " & P$ & " " & A$ & " " & STR$(R)
+14716 GOTO 14720
+14717 CALL "io_esc": S$(R), 0, B$
+14718 CALL "wr": X(), "cs " & P$ & " " & A$ & " " & B$
 14720 CALL "tyr": T(), W(), X(), Y(S, 2), A$
 14725 CALL "io_esc": S$(Y(S, 1)), 0, B$
 14730 CALL "pos": N(), F, P$
@@ -141,7 +145,7 @@
 15195 LET G = N(I, 7)
 15200 IF K < 8 THEN 15705
 15205 IF K > 24 THEN 15705
-15210 ON K - 7 GOTO 15215, 15215, 15705, 15705, 15705, 15325, 15355, 15445, 15465, 15550, 15575, 15705, 15705, 15620, 15635, 15650, 15700
+15210 ON K - 7 GOTO 15215, 15215, 15705, 15705, 15705, 15325, 15355, 15445, 15465, 15550, 15575, 15702, 15705, 15620, 15635, 15650, 15700
 15215 LET E = N(G, 8)
 15220 IF N(I, 1) = 0 THEN 15230
 15225 LET E = N(E, 8)
@@ -240,6 +244,8 @@
 15690 CALL "wr": X(), "tret " & P$
 15695 GOTO 15705
 15700 CALL "em_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
+15701 GOTO 15705
+15702 CALL "em_mt": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 15705 SUBEND
 15710 REM ---- em_expr: expression E in post-order (= node order); M(J,8) < 0 marks a node where the
 15715 REM writing jumps past node -M(J,8): a powk exponent, the literal 2^63 under neg, or the callee
@@ -271,7 +277,7 @@
 15825 LET Q$ = " " & P$ & " " & A$
 15830 LET K = N(J, 0)
 15835 IF K < 25 THEN 16220
-15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16175, 16195, 16211, 16185, 16220, 16213, 16217, 16217, 16220, 16220, 16220, 16215
+15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16172, 16195, 16211, 16185, 16220, 16213, 16217, 16217, 16220, 16220, 16220, 16215
 15845 LET H = M(J, 5)
 15850 IF M(J, 1) = 4 THEN 15870
 15855 CALL "lfmt": C(H, 1), C(H, 2), C(H, 3), C(H, 4), B$
@@ -325,6 +331,10 @@
 16095 LET H = POS(B$, " ")
 16100 IF H = 0 THEN 16110
 16105 LET B$ = SEG$(B$, 1, H - 1)
+16106 REM + of str operands (or str elements) is cat (DESIGN 3.5.5)
+16107 CALL "elt": T(), M(J, 1), E, H
+16108 IF E * 10 + O <> 51 THEN 16110
+16109 LET B$ = "cat"
 16110 CALL "wr": X(), "bin" & Q$ & " " & B$
 16115 GOTO 16220
 16120 CALL "wr": X(), "powk" & Q$ & " " & STR$(M(J, 8) - 10)
@@ -343,7 +353,10 @@
 16160 GOTO 16220
 16165 CALL "wr": X(), "rarg" & Q$
 16170 GOTO 16220
-16175 CALL "wr": X(), "lib" & Q$ & " " & SEG$("f64i64", 3 * N(J, 1) - 2, 3 * N(J, 1)) & " 1"
+16171 REM str(s) of a str is s itself (Decision 46, DESIGN 3.5.5): no record of its own
+16172 IF N(J, 1) <> 3 THEN 16175
+16173 IF M(N(J, 7), 1) = 5 THEN 16234
+16175 CALL "wr": X(), "lib" & Q$ & " " & SEG$("f64i64str", 3 * N(J, 1) - 2, 3 * N(J, 1)) & " 1"
 16180 GOTO 16220
 16185 CALL "wr": X(), "rng" & Q$ & " " & STR$(N(J, 1)) & " " & STR$(N(J, 2))
 16190 GOTO 16220
@@ -373,8 +386,8 @@
 16232 CALL "lpos": N(), M(), J, P$
 16233 CALL "wr": X(), SEG$("dynfix", Q + 1, Q + 3) & " " & P$ & " " & A$
 16234 SUBEND
-16235 REM ---- em_printf: printf call G: its format as fmt/ftext/fconv pieces at the position of the
-16240 REM format literal, each conversion over its argument, then lib printf (DESIGN 3.5.5) --------
+16235 REM ---- em_printf: printf or error call G: its format as fmt/ftext/fconv pieces at the position of the
+16240 REM format literal, each conversion over its argument, then lib printf or lib error (DESIGN 3.5.5) --------
 16245 SUB "em_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 16250 DIM P(4100, 6)
 16255 LET F = N(N(G, 7), 8)
@@ -418,5 +431,6 @@
 16445 NEXT K
 16450 CALL "wr": X(), "fmt " & P$ & " 1 " & STR$(P(0, 0))
 16455 CALL "pos": N(), G, P$
-16460 CALL "wr": X(), "lib " & P$ & " 1 printf 1"
+16457 CALL "io_esc": S$(N(N(G, 7), 6)), 0, B$
+16460 CALL "wr": X(), "lib " & P$ & " 1 " & B$ & " 1"
 16465 SUBEND

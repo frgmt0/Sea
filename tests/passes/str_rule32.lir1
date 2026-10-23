@@ -1,0 +1,68 @@
+#sea 1
+#target arm64-macos
+#file str_rule32.sea
+func .main main 0:1:1 0 0
+la p1 d1
+la p2 d2
+call less 0 2 p1 p2
+la p3 d3
+la p4 d4
+call less 0 2 p3 p4
+la p5 d5
+la p6 d6
+call less 0 2 p5 p6
+ret 0
+endfunc
+func less fn 0:1:1 2 p1 p2 0
+slot s1 8 8
+slot s2 8 8
+slot s3 24 8
+rcall sea_str_cmp - 1 i3 2 p1 p2
+li i4 0
+icmp lt i5 i3 i4
+if 1 i5
+sa p6 s1
+la p7 d7
+rcall sea_printf 0:3 0 2 p7 p6
+else 1
+sa p8 s2
+la p9 d8
+rcall sea_printf 0:5 0 2 p9 p8
+endif 1
+rcall sea_str_lower 0:7 1 p10 1 p1
+ldi i11 p1 - 0 16
+rcall sea_str_cmp - 1 i12 2 p1 p2
+li i13 0
+icmp lt i14 i12 i13
+la p15 d9
+la p16 d10
+psel p17 i14 p15 p16
+sa p18 s3
+stp p10 p18 - 0 0
+sti i11 p18 - 0 8
+stp p17 p18 - 0 16
+la p19 d11
+rcall sea_printf 0:7 0 2 p19 p18
+release p10
+ret 0
+endfunc
+str d1 ab
+str d2 b
+str d3 b
+str d4 ab
+str d5 Ab
+str d6 a
+fmt d7 1
+ftext lt%0A
+fmt d8 1
+ftext ge%0A
+str d9 true
+str d10 false
+fmt d11 6
+fconv - - - s p
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %0A
+#end

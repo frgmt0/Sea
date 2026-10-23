@@ -1,0 +1,11 @@
+fn put(i: i64, s: str) {
+    var names = ["p", "q", "r"]
+    names[i] = s
+    names[i] += "!"
+    printf("%s %s %s\n", names[0], names[1], names[2])
+}
+put(0, "a")
+put(2, "b")
+// str_l17 -- DESIGN.md 3.5.9 L17 of a str element by a scalar index: `=` (line 3: R17 (a), the
+// borrowed parameter s retained at the replacing store) and `+=` (line 4: the read, the cat and
+// R17 (b)'s moved store); the reads of line 5 are rule 18's ldp (borrowed)

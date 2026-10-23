@@ -1,0 +1,2 @@
+// err_str_add_int -- "a" + 1: + of a str with a non-str operand is 240 (DESIGN.md 2.6.2 "Readings fixed by 4g")
+let t = "a" + 1

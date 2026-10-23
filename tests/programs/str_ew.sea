@@ -1,0 +1,71 @@
+// str_ew -- element-wise str operators (Decision 45): the six comparisons and + of a str[] with a str and
+// with another str[], a str[,] broadcast against a .col and a .row, += of a str[] local, empty
+// operands (LANGUAGE.md 6.2-6.4)
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pms(A: str[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" [%s]", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmb(A: bool[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let names = ["x", "y", "x", "xx"]
+pvb(names == "x")
+pvb("x" < names)
+let a = ["a", "b", "c"]
+let b = ["b", "b", "a"]
+pvb(a < b)
+pvb(a >= b)
+pvb(a != b)
+pvb(a <= b)
+pvb(a > b)
+pvb(a == b)
+pvb(["\x80", "a", "b"] > "a")
+ps(names + "!")
+ps("<" + names)
+ps(a + b)
+ps(a + b + a)
+let M = ["a", "b", "c"; "d", "e", "f"]
+let r = ["1", "2"]
+let q = ["X", "Y", "Z"]
+pms(M + r.col)
+pms(q.row + M)
+pms(r.col + q.row)
+pmb(M < "c")
+pmb(M == q.row + "")
+pmb(r.col != M.T.T)
+var acc = ["p", "q"]
+acc += "!"
+acc += ["1", "2"]
+ps(acc)
+acc += acc
+ps(acc)
+let e: str[] = []
+ps(e + "x")
+pvb(e == e)

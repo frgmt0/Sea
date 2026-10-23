@@ -1,3 +1,3 @@
 const A: f64 = f()
-fn f() -> str { return 1 }
-// err_const_noval_calltype -- A: f64 = f() with a faulty f: the str result is the error, A is not evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)
+fn f() -> Q { return 1 }
+// err_const_noval_calltype -- A: f64 = f() with a faulty f: the undeclared struct type Q of its result is the error (229, seaname, in the signature), A is not evaluated (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined, lead decision L-i)

@@ -2,7 +2,7 @@
 12365 REM table in id order (rtup rtvec rtmat rtfvec rtfmat), then every node of sea.ast in file order (= node order),
 12370 REM copied as read (D$) or replaced (rfn rst rcn* rpname rfor rint rname rpowk rtype), and
 12375 REM prog. A replacement keeps the record's fields and adds its own (rpowk drops pow). -------
-12380 SUB "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$
+12380 SUB "sn_emit": N(), M(), Y(), T(), C(), S$(), D$(), X(), X$(), E(), E$(), E0, P$, G$()
 12385 IF X(6) = 0 THEN 12450
 12390 CALL "dg_find": X$(1), E$(), E0, R
 12395 IF R > 0 THEN 12405
@@ -34,13 +34,13 @@
 12503 LET L$ = L$ & " " & STR$(T(R, 3))
 12504 GOTO 12485
 12510 FOR I = 1 TO X(1)
-12515 CALL "sn_rec": N(), M(), Y(), T(), C(), S$(), D$(), X(), I, L$
+12515 CALL "sn_rec": N(), M(), Y(), T(), C(), S$(), D$(), X(), I, L$, G$()
 12520 PRINT #2, L$
 12525 NEXT I
 12530 PRINT #2, D$(0)
 12535 SUBEND
 12540 REM ---- sn_rec: L$ = the sea.res record of node I --------------------------------------------
-12545 SUB "sn_rec": N(), M(), Y(), T(), C(), S$(), D$(), X(), I, L$
+12545 SUB "sn_rec": N(), M(), Y(), T(), C(), S$(), D$(), X(), I, L$, G$()
 12550 LET L$ = D$(I)
 12555 LET K = N(I, 0)
 12560 IF K = 25 THEN 12605
@@ -89,12 +89,13 @@
 12735 CALL "pos": N(), I, B$
 12740 LET L$ = "rpowk " & B$ & " " & STR$(M(I, 8) - 10)
 12745 GOTO 12935
-12750 REM an entered const: its outcome (cval): rcni rcnf rcnb a value, rcne a failure, rcn none
+12750 REM an entered const: its outcome (cval): rcni rcnf rcnb rcns a value, rcne a failure, rcn none
 12755 LET S = M(I, 2)
 12760 IF S = 0 THEN 12935
 12765 LET L$ = SEG$(L$, 6, LEN(L$)) & " " & STR$(Y(S, 5))
 12770 LET V = Y(S, 7)
 12775 IF V = 3 THEN 12825
+12777 IF V = 4 THEN 12831
 12780 IF V > 3 THEN 12800
 12785 LET H = Y(S, 8)
 12787 LET G = Y(S, 9)
@@ -113,6 +114,9 @@
 12822 GOTO 12935
 12825 LET L$ = "rcnb" & L$ & " " & STR$(Y(S, 8))
 12830 GOTO 12935
+12831 CALL "io_esc": G$(Y(S, 5)), 0, A$
+12832 LET L$ = "rcns" & L$ & " " & A$
+12833 GOTO 12935
 12835 LET L$ = "rcn" & L$
 12837 GOTO 12935
 12840 REM an entered struct: its sid

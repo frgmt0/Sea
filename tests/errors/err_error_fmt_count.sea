@@ -1,0 +1,2 @@
+// err_error_fmt_count -- error with one argument for two conversions: 211 at the call (DESIGN.md 2.6.2)
+error("%s and %s", "a")

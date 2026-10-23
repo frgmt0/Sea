@@ -1,0 +1,1 @@
+err_error_fmt_count.sea:2:1: error: format "%s and %s" expects 2 arguments, found 1

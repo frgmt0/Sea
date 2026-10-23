@@ -1,0 +1,23 @@
+// heap_str_args -- owned str values from args() (heap_str_args.args): printf("%s\n", args()[0]), let s =
+// args()[0], match args()[1] (rule 15 (f)), lower(args()[k]) in a loop; heap check 0
+// (DESIGN.md 3.6.6 rules 15, 33, 35)
+printf("%s\n", args()[0])
+let s = args()[0]
+printf("%s %d\n", s, len(s))
+match args()[1] {
+    "Beta" => { printf("B\n") }
+    _ => { printf("?\n") }
+}
+for i in 0..3 {
+    match lower(args()[i % 2]) {
+        "beta" => { printf("b") }
+        _ => { printf("-") }
+    }
+}
+printf("\n")
+for i in 0..4 {
+    let t = args()[i % 2] + str(i)
+    if t == "Beta3" {
+        printf("%s\n", t)
+    }
+}

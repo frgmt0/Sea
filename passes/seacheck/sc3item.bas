@@ -118,8 +118,8 @@
 5345 SUBEND
 5350 REM ---- sc_val: what seacheck validates of the tree of sea.res (DESIGN 3.4.1, 3.4.2; the records,
 5355 REM rerr and the type table were checked while reading). M(i,3) marks the resolved regions (1 a
-5360 REM function body or a top-level statement, 2 a const expression) without the skipped ones
-5365 REM (from 4d only match), and 3 the type nodes of the entered items (parameter and result
+5360 REM function body or a top-level statement, 2 a const expression; from 4g-1 no region is
+5365 REM skipped, DESIGN 3.4.2), and 3 the type nodes of the entered items (parameter and result
 5370 REM types, struct field types, const annotations); the replacement records stand exactly there (every type node
 5375 REM there an rtype, none elsewhere); then the lids of each function (vwalk), whose count is
 5380 REM left in Y(S,8). A violation sets X(26). --------------------------------------------------
@@ -151,14 +151,6 @@
 5510 LET M(J, 3) = 2
 5515 NEXT J
 5520 NEXT S
-5525 REM the skipped regions (a match): their whole subtree
-5530 FOR I = 1 TO X(1)
-5535 IF M(I, 3) = 0 THEN 5560
-5540 IF N(I, 0) <> 19 THEN 5560
-5545 FOR J = M(I, 0) TO I
-5550 LET M(J, 3) = 0
-5555 NEXT J
-5560 NEXT I
 5565 REM the type nodes of the entered items: each parameter's first child, the result types
 5570 FOR S = 2 TO X(30)
 5575 LET H = N(Y(S, 3), 7)
@@ -316,9 +308,6 @@
 6445 CALL "er": N(), X(), X$(), E, "NOT_CONSTANT", "", "", "", 0
 6460 IF N(F, 1) = 0 THEN 6500
 6465 CALL "tyof": N(), G, D
-6470 IF D <> 5 THEN 6485
-6475 CALL "er": N(), X(), X$(), G, "NOT_SUPPORTED", "strings", "", "", 1
-6480 LET D = 0
 6485 CALL "cv": N(), M(), T(), C(), X(), X$(), E, D
 6490 LET Y(S, 2) = D
 6495 GOTO 6525
@@ -448,7 +437,7 @@
 7115 NEXT S0
 7120 SUBEND
 7125 REM ---- cdec: the value of const S from its outcome (DESIGN 3.4.1 step 3): rcni for i64, rcnf for
-7130 REM f64, rcnb for bool, a value (C row, or the bool itself; the constants limit at the item); or
+7130 REM f64, rcnb for bool, rcns for str, a value (C row, the bool, the S$ index; the constants limit at the item); or
 7135 REM rcne: integer overflow (ovf at add sub mul neg) or division by zero (div0 at mod) at the node
 7140 REM of its expression at epos, now. Anything else sets X(26) (BAD_RECORD). -------------------
 7145 SUB "cdec": N(), M(), Y(), C(), X(), X$(), H(), S
@@ -457,6 +446,7 @@
 7160 LET D = Y(S, 2)
 7165 IF O = 4 THEN 7250
 7170 IF O = 3 THEN 7230
+7172 IF O = 6 THEN 7246
 7175 IF O > 2 THEN 7340
 7180 IF D <> O + 2 THEN 7340
 7185 LET A3 = INT(M(F, 1) / 65536)
@@ -472,6 +462,10 @@
 7235 LET Y(S, 8) = M(F, 1)
 7240 LET Y(S, 7) = 3
 7245 GOTO 7345
+7246 IF D <> 5 THEN 7340
+7247 LET Y(S, 8) = M(F, 1)
+7248 LET Y(S, 7) = 5
+7249 GOTO 7345
 7250 CALL "cexp": N(), Y(), S, E
 7255 FOR J = M(E, 0) TO E
 7260 IF N(J, 4) <> M(F, 1) THEN 7335

@@ -22,6 +22,17 @@ tuple after its components, then every other rtype in file order); a type with a
 and creates nothing; the phase rule of step 4d reports fixed-size array types (`arrays`), struct
 types (`structs`) and handle types at the type node, a `str` parameter at its param node (type
 0), a `str` result at its type node; a `for` over a vector is a resolved region.
+
+Sub-phase 4g-1 (3.4.2 "`str` constants", lead decisions L-f and L-g): a constant whose value is a
+`str` (a string literal, a constant naming one, `+` of such) is `rcns` with its bytes; a
+comparison of two `str` constant expressions is a `bool` constant expression, byte-wise and
+unsigned with a proper prefix the smaller (Python's bytes order is exactly that), so its constant
+is `rcnb`; every `str` value computed while a constant is evaluated (a literal, a named constant,
+each `+`) has at most SEA_LIM_LINE_BYTES bytes, a longer one being `program too large: strings`
+at the constant's item, reported by seaname at once (status 10: the Capacity exception, no
+sea.res is written). These evaluation rules hold in every step (no earlier golden has a `str`
+constant); the phase-rule step 4g-1 itself (a `match` resolved, `str` in signatures) is applied
+by the callers that patch this oracle (dump4g_cases.res_gen4g1), as step 4e is by dump4e_cases.
 """
 
 import os
@@ -55,6 +66,7 @@ y_ticks ylabel ylim zeros'''.split())
 SCALAR_TY = {'bool': 2, 'i64': 3, 'f64': 4}
 HANDLE_TY = {'Figure': 6, 'Axes': 7, 'Lu': 8, 'Chol': 9}
 LIM_FIXED_ELEMS = 256             # SEA_LIM_FIXED_ELEMS (include/limits.inc)
+LIM_LINE_BYTES = 4096             # SEA_LIM_LINE_BYTES (include/limits.inc): L-f's bound
 F_CONST = {'pi': 0x400921FB54442D18, 'inf': 0x7FF0000000000000, 'nan': 0x7FF8000000000000,
            'eps': 0x3CB0000000000000}
 
@@ -78,10 +90,39 @@ def enc_f(b):
 
 
 def esc(s):
+    return esc_b(s.encode())
+
+
+def esc_b(b):
+    """3.1 string escaping of a byte string: 0x21-0x7E except `%` as themselves, every other byte
+    `%XX`; the empty string is the field `%` alone."""
     out = []
-    for ch in s.encode():
+    for ch in b:
         out.append(chr(ch) if 0x21 <= ch <= 0x7E and ch != 0x25 else '%%%02X' % ch)
     return ''.join(out) if out else '%'
+
+
+def unesc(t):
+    """The bytes of an escaped string field (3.1): `%` alone is empty, `%XX` one byte."""
+    if t == '%':
+        return b''
+    out, k = bytearray(), 0
+    while k < len(t):
+        if t[k] == '%':
+            out.append(int(t[k + 1:k + 3], 16))
+            k += 3
+        else:
+            out.append(ord(t[k]))
+            k += 1
+    return bytes(out)
+
+
+class Capacity(Exception):
+    """A capacity limit seaname reports at once (status 10, DESIGN.md 2.6.2 `here`): no sea.res."""
+
+    def __init__(self, pos, word):
+        Exception.__init__(self, 'program too large: %s at %s' % (word, pos))
+        self.pos, self.word = pos, word
 
 
 # ---------------------------------------------------------------- the tree of sea.ast (3.4)
@@ -185,18 +226,22 @@ class Ctx:
     """Per-file state for the evaluation of constants and exponents."""
 
     def __init__(self):
-        self.cvals = {}       # cid -> ('i'|'f'|'b', value) for constants that have a value
+        self.cvals = {}       # cid -> ('i'|'f'|'b'|'s', value) for constants that have a value
+        self.item_pos = None  # the constant being evaluated (L-f reports at its item)
 
 
 def static_kind(n, ctx):
-    """'u' (an untyped integer constant expression), 'i', 'f', 'b', or None when seaname cannot
-    type it (3.4.1 'Constants': only literals, true/false, neg, not, bin, names of constants
-    or of pi inf nan eps, calls of pow and sqrt with positional arguments)."""
+    """'u' (an untyped integer constant expression), 'i', 'f', 'b', 's' (a `str`, 4g-1), or None
+    when seaname cannot type it (3.4.1 'Constants': only literals, true/false, neg, not, bin,
+    names of constants or of pi inf nan eps, calls of pow and sqrt with positional arguments;
+    3.4.2: `+` of two `str` is a `str`, a comparison of two `str` a `bool`, L-g)."""
     op = n.op
     if op == 'int':
         return 'u'
     if op == 'float':
         return 'f'
+    if op == 'str':
+        return 's'
     if op in ('true', 'false'):
         return 'b'
     if op == 'name':
@@ -218,6 +263,15 @@ def static_kind(n, ctx):
         if a is None or b is None:
             return None
         num = ('u', 'i', 'f')
+        if a == 's' or b == 's':
+            # LANGUAGE.md 4.4, 6.4: `+` and the six comparisons of two str (L-g); every other
+            # operator, and a str with a non-str operand, is not typable here (240 in seacheck)
+            if a == b == 's':
+                if o == 'add':
+                    return 's'
+                if o in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
+                    return 'b'
+            return None
         if o in ('add', 'sub', 'mul'):
             if a in num and b in num:
                 if 'f' in (a, b):
@@ -274,11 +328,16 @@ def ev(n, ctx, fctx):
         return ('i', v)                      # range checked by the consumer (neg allows 2^63)
     if op == 'float':
         return ('f', dec_i(n.f[1]) & M64)
+    if op == 'str':
+        return ('s', str_val(unesc(n.f[1]), ctx))
     if op in ('true', 'false'):
         return ('b', 1 if op == 'true' else 0)
     if op == 'name':
         if n.rf[2] == 'cst':
-            return ctx.cvals[int(n.rf[3])]
+            v = ctx.cvals[int(n.rf[3])]
+            if v[0] == 's':
+                str_val(v[1], ctx)               # L-f: the value of a named constant
+            return v
         return ('f', F_CONST[n.f[1]])
     if op == 'neg':
         k, v = ev(n.kids[0], ctx, fctx)
@@ -320,6 +379,15 @@ def ev(n, ctx, fctx):
     if o in ('eq', 'ne', 'lt', 'le', 'gt', 'ge') and ka == kb == 'b':
         a, b = ev(n.kids[0], ctx, fctx)[1], ev(n.kids[1], ctx, fctx)[1]
         return ('b', int((a == b) == (o == 'eq')))
+    if ka == kb == 's':
+        # 3.4.2: `+` concatenates (L-f on the result); a comparison is byte-wise, unsigned, a
+        # proper prefix the smaller (L-g, the order of rule 32's sea_str_cmp, LANGUAGE.md 4.4):
+        # exactly the order of Python bytes
+        a, b = ev(n.kids[0], ctx, fctx)[1], ev(n.kids[1], ctx, fctx)[1]
+        if o == 'add':
+            return ('s', str_val(a + b, ctx))
+        r = {'eq': a == b, 'ne': a != b, 'lt': a < b, 'le': a <= b, 'gt': a > b, 'ge': a >= b}[o]
+        return ('b', int(r))
     # an untyped operand is f64 only next to an f64 operand, or when this node is itself an
     # untyped + - * expression in an f64 context; otherwise it is i64 (LANGUAGE.md 4.2), so
     # the operands of an untyped `6 % 4` are i64 even inside an exponent
@@ -354,6 +422,14 @@ def ev(n, ctx, fctx):
     if r < I64_MIN or r > I64_MAX:
         raise Fail('ovf', n.pos)
     return ('i', r)
+
+
+def str_val(b, ctx):
+    """L-f (3.4.2): a str value computed while evaluating a constant has at most
+    SEA_LIM_LINE_BYTES bytes, else `program too large: strings` at the constant's item."""
+    if len(b) > LIM_LINE_BYTES:
+        raise Capacity(ctx.item_pos, 'strings')
+    return b
 
 
 def powk_mul(xb, k):
@@ -410,11 +486,17 @@ def eval_const(cn, ctx):
     t = int(cn.f[2])
     expr = cn.kids[-1]
     ann = cn.kids[0].f[1] if t else None
-    if t and (cn.kids[0].f[2] != 's' or ann not in SCALAR_TY):
+    if t and (cn.kids[0].f[2] != 's' or (ann not in SCALAR_TY and ann != 'str')):
         return None
     sk = static_kind(expr, ctx)
     if sk is None:
         return None
+    ctx.item_pos = cn.pos                    # L-f reports at the constant's item
+    if ann == 'str' or sk == 's':
+        # 4g-1: a str constant (an annotation `str` takes only a str value, LANGUAGE.md 7.2)
+        if ann not in (None, 'str') or sk != 's':
+            return None
+        return ev(expr, ctx, False)
     try:
         if sk == 'u' and ann == 'f64':
             # each literal must be exact in f64 (LANGUAGE.md 4.2), then f64 arithmetic
@@ -621,7 +703,7 @@ def seaname(prog):
             else:
                 out = eval_const(cur, ctx)
             outcome[cur.f[1]] = out
-            if out is not None and out[0] in ('i', 'f', 'b'):
+            if out is not None and out[0] in ('i', 'f', 'b', 's'):
                 ctx.cvals[cid[cur.f[1]]] = out
             state[cur.f[1]] = 'done'
 
@@ -639,6 +721,8 @@ def seaname(prog):
             c.rop, c.rf = 'rcni', base + [enc_i(out[1])]
         elif out[0] == 'f':
             c.rop, c.rf = 'rcnf', base + [enc_f(out[1])]
+        elif out[0] == 's':
+            c.rop, c.rf = 'rcns', base + [esc_b(out[1])]
         else:
             c.rop, c.rf = 'rcnb', base + [str(out[1])]
 
@@ -677,8 +761,8 @@ def seaname(prog):
                 if out is not None and out[0] == 'i':
                     vals.append(out[1])
                     continue
-                if out is not None and out[0] in ('f', 'b'):
-                    err(d.pos, 201, ['i64', {'f': 'f64', 'b': 'bool'}[out[0]]])
+                if out is not None and out[0] in ('f', 'b', 's'):
+                    err(d.pos, 201, ['i64', {'f': 'f64', 'b': 'bool', 's': 'str'}[out[0]]])
                 return None                   # rcne/rcn: type 0, the constant's own error
             if k == 'none':
                 err(d.pos, 200, [d.f[1]])
@@ -824,10 +908,12 @@ def cross_check(name, res):
         prev = r
     for ln in res:
         r = ln.split(' ')
-        if r[0] in ('rcni', 'rcnf', 'rcnb'):
+        if r[0] in ('rcni', 'rcnf', 'rcnb', 'rcns'):
             leaf = hc[r[2]]
             if r[0] == 'rcni':
                 assert leaf[0] == 'ci' and dec_i(leaf[3]) == dec_i(r[5]), (name, r, leaf)
+            elif r[0] == 'rcns':
+                assert leaf[0] == 'cs' and leaf[3] == r[5], (name, r, leaf)
             elif r[0] == 'rcnf':
                 assert leaf[0] == 'cf' and leaf[3] == r[5], (name, r, leaf)
             else:

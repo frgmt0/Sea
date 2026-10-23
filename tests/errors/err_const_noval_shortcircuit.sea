@@ -1,4 +1,4 @@
 const D = B || 9223372036854775807 + 1 > 0
 const B: bool = false && f() == 1.0
-fn f() -> str { return 1 }
-// err_const_noval_shortcircuit -- B holds a faulty call behind false && and has no value, so D (first) is not evaluated and its overflow is not reported (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined)
+fn f() -> Q { return 1 }
+// err_const_noval_shortcircuit -- B holds a faulty call behind false && and has no value, so D (first) is not evaluated and its overflow is not reported; the error is f's undeclared result type Q (LANGUAGE.md 7.2; DESIGN.md 6.2, Decision 25 refined, lead decision L-i)

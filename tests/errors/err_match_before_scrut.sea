@@ -1,0 +1,5 @@
+// err_match_before_scrut -- 207 at the match keyword is reported before an error in the scrutinee that follows
+// it (an undeclared name; lead decision L-a)
+match qq {
+    "a" => { printf("a\n") }
+}

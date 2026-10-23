@@ -1,0 +1,4 @@
+// err_str_ew_cmp_f64 -- names == 1.0 of a str[]: a str operand combines only with a str operand (240; LANGUAGE.md
+// 6.3, Decision 45)
+let names = ["a", "b"]
+let m = names == 1.0
