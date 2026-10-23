@@ -27,8 +27,11 @@ sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, 
 behaviour; Decisions 26–30; measured: `sealoop` 2 323 lines with 7 free array letters, `sealower`
 5 164 lines with 4 free, DESIGN.md §2.7); **4e (array expressions) is done** (Decisions 31–37: the `sealoop` rewrites L5–L12 with the
 `sea.hirl` refinements R1–R11, rule 27 for fixed-size numeric arrays, DESIGN.md §3.5.9, §3.6.6, §8;
-measured: `sealoop` 4 129 lines, `sealower` 5 971, DESIGN.md §2.7). **Next: 4f** (reductions,
-sorting, searching, library options), starting with its specification step, followed by the
+measured: `sealoop` 4 129 lines, `sealower` 5 971, DESIGN.md §2.7). **4f** (reductions, sorting,
+searching, library options) **is specified** (Decisions 38–41: the `sealoop` rewrites L13–L14 with
+the `sea.hirl` refinements R12–R16 and the `wop` word `and`, result types on fixed-size arguments,
+`rt_sort.s` with `f64`, `i64` and `str` on both targets, error 115 for a positional argument after a
+named one; DESIGN.md §0, §3.5.9, §4.8, §8) and **next to be implemented**, followed by the
 per-program size gate (Decision 35).
 
 ## Read first

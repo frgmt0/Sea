@@ -173,8 +173,10 @@
     \m 18, ERROR, sea_error, S, pp, -
     \m 19, ARGS, sea_args, S, -, p
     \m 20, ARR_NEW_U, sea_arr_new_u, S, iiii, p
+    \m 21, SORT, sea_sort, S, pi, p
+    \m 22, ARGSORT, sea_argsort, S, pi, p
 .endm
-.equiv SEA_ENT_COUNT,           20  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           22  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm

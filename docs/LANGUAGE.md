@@ -1237,10 +1237,14 @@ elemental fn name(…) -> R { … }          §8.5
   its condition (`while true { return 1 }` as the last statement is `missing return`).
 * **Default values**: a parameter may have a constant default; all parameters after it must
   have one too.
-* **Calls**: positional arguments first, then named ones `name: value` in any order; a name
+* **Calls**: positional arguments first, then named ones `name: value` in any order (a positional
+  argument after a named one is the compile error `positional argument after a named argument`, at
+  that argument: `sort(desc: true, v)`); a name
   must match a parameter not already given (`unknown parameter`, `parameter given twice`); a
   parameter without a default must be given (`missing argument`). The standard library uses
-  named arguments for options (`sort(v, desc: true)`, `plot(ax, x, y, style: "r--")`).
+  named arguments for options (`sort(v, desc: true)`, `plot(ax, x, y, style: "r--")`), and the
+  options of a library function (`dim:`, `desc:`, `style:`) are given only by name: `sort(v, true)` is
+  `no overload of 'sort' accepts (f64[], bool)`.
 * **Effects.** A function **has effects** if it writes output (`printf`, `print`, `write_json`,
   `make_dir`, `save_svg`, the plotting calls), has a `ref` parameter, or calls a function with
   effects. `error` is not an effect in this sense. Elemental functions may not have effects
@@ -1439,6 +1443,9 @@ inclusion is justified in the table where it is not obvious. Everything else tha
 language will eventually want is listed in §10.13 ("Later") and is not part of v1: no partial
 specification of it exists in this document.
 
+**Options** (`dim:`, `desc:`, …) are given only by name (§8.1), as the tables below write them
+(`sort(v, desc: false)` shows the default).
+
 **Where each function lives** (DESIGN.md §2.5): *intrinsic* (expanded by the compiler), *runtime*
 (assembly in `libsea.a`), or *prelude* (Sea source, marked **(P)**).
 
@@ -1517,14 +1524,27 @@ On vectors (`T[]`, `T[n]`); a matrix is reduced with `dim:` or through `A.flat`.
 | `nnz(m)`, `any(m)`, `all(m)` | count of `true` (`i64`), or-, and-reduction of a `bool` vector |
 | `sum(A, dim: 0)`, `max(A, dim: 0)`, … | reduce each column (result: vector of `cols(A)`); `dim: 1` reduces each row (vector of `rows(A)`); each in the vector rule's order. Implemented for `sum mean variance std max min any all nnz` (W2 uses `max(…, [], 1)`) |
 
-On `i64` vectors `sum` is exact with an overflow check (order irrelevant). `mean` of an `i64`
-vector divides that exact sum by `len(v)`, both converted (§6.5's `i64 / i64`); `variance` and
+On `i64` vectors `sum` adds the elements in index order to an accumulator that starts at 0, each
+addition checked: if any partial sum overflows, the result is the run-time error `integer
+overflow`, even when the total would fit (`sum([4611686018427387904, 4611686018427387904,
+-4611686018427387904])` overflows at its second element). `mean` of an `i64`
+vector divides that sum (with the same check) by `len(v)`, both converted (§6.5's `i64 / i64`); `variance` and
 `std` of an `i64` vector use that mean and the converted elements in the `f64` rule above; `max`
 and `min` of an `i64` vector are `i64`. `sum`, `mean`, `variance`, `std`, `max`, `min`, `argmax`
 and `argmin` accept `f64` and `i64` vectors, `nnz`, `any` and `all` `bool` vectors.
 
 The `dim:` option is a constant expression (§7.2) whose value is 0 or 1: anything else is the
 compile error `not a constant expression` or `dim must be 0 or 1`, at the argument.
+Its type must be `i64` (`dim: 0.0` is `type mismatch: expected i64, found f64`), checked before
+the other two. `dim:` goes with a matrix only: `sum(v, dim: 0)` of
+a vector is `no overload of 'sum' accepts (f64[], dim: i64)`; `argmax` and `argmin` take no `dim:`
+(it is an `unknown parameter` of theirs, §8.1). The result of a `dim:` reduction of a
+dynamic matrix is a dynamic vector; of a fixed-size `T[r,c]` it is the fixed-size vector of the
+function's result element type (`f64` for `mean` of an `i64` matrix) with c
+elements (`dim: 0`) or r elements (`dim: 1`). Each element of the result follows the vector rule,
+also over an extent 0: `sum(A, dim: 0)` of a 0 × 3 matrix is three +0 and `max(A, dim: 0)` of it is
+`max of an empty array`, while a 3 × 0 matrix gives an empty vector and no error (no column is
+reduced). `nnz`, `any` and `all` of an empty vector are 0, `false` and `true`.
 
 **The pinned 8-lane order.** For a non-empty `f64` `sum` (and the sums inside `mean`,
 `variance` and the vector @ matrix product, §6.8): eight accumulators `a[0..8]` start at −0.0;
@@ -1550,7 +1570,11 @@ a few ulps times the number of terms, far below 1e-12).
 | `setdiff(a, b)` (P) | sorted unique `i64` values of `a` not in `b` (W2's free DOFs) |
 
 `sort` and `argsort` accept `f64`, `i64` and `str` vectors; `desc:` is any `bool` expression.
-Order for `f64`: ascending numeric order with `-0 == +0` (equal values keep their input order);
+The result of `sort` is a dynamic vector of v's element type and that of `argsort` an `i64[]`, also
+when v is a fixed-size vector (it is copied to the heap first); `find` always returns a dynamic
+`i64[]`.
+Order for `f64`: ascending numeric order with `-0 == +0` (equal values keep their input order;
+for this every NaN equals every NaN, so NaNs keep their input order too);
 NaN after every number ascending, before every number descending (MATLAB). `str`: byte-wise.
 Sorting is exact (class E) whatever the algorithm; the runtime uses an LSD radix sort on the
 order-preserving 64-bit key transform for large `f64`/`i64` vectors (DESIGN.md §4.5).
@@ -1988,6 +2012,9 @@ if_expr      = "if" head_expr "{" nl expr nl "}" "else" ( if_expr | "{" nl expr 
 * In `power`, the right operand is a `unary`, so `a ^ -b` parses and `a ^ b ^ c` is
   `a ^ (b ^ c)`.
 * The keyword `step` ends the upper bound of a range.
+* In `call_args`, every `arg` without `IDENT ":"` must come before the first one with it: a
+  positional argument after a named one is the compile error `positional argument after a named
+  argument` (§8.1), reported by the syntax pass at the argument's first token.
 * `"." IDENT` is a field access, a struct-array projection (§4.7), or one of the view suffixes
   `T flat col row` (§5.6) — the suffixes on any array, since they cannot be field names (§4.6) —
   decided by the operand's type in pass 2.

@@ -81,6 +81,8 @@
     \m 112, UNEXPECTED_TOKEN, C1, token, s, "unexpected token '%s'"
     \m 113, UNEXPECTED_NEWLINE, C1, token, -, "unexpected newline"
     \m 114, UNEXPECTED_EOF, C1, token, -, "unexpected end of file"
+// pass 1, sub-phase 4f: LANGUAGE.md 8.1 (positional arguments come before named ones)
+    \m 115, POSITIONAL_AFTER_NAMED, C1, token, -, "positional argument after a named argument"
 // pass 2: names, types and the other rules of LANGUAGE.md 4-11
     \m 200, UNDECLARED, C2, name, s, "undeclared name '%s'"
     \m 201, TYPE_MISMATCH, C2, expr, ss, "type mismatch: expected %s, found %s"

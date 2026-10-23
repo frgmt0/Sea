@@ -32,7 +32,7 @@ enum cc eq ne lt le gt ge
 enum feat avx2
 enum nkind loc cst fn st pd none
 enum cerr ovf div0
-enum wop add sub mul
+enum wop add sub mul and
 
 ; ---------------------------------------------------------------- header records (3.2)
 head sea ver:u
