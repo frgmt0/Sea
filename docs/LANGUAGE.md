@@ -650,6 +650,8 @@ let m = Material { name: "CS-low", Sut: 470e6, Sy: 380e6, E: 205e9, rho: 7860 }
   always the view of §5.6 and never a projection (§4.7).
 * A **struct literal** names the type and initialises **every** field exactly once, in any
   order (`missing field`, `duplicate field`, `unknown field`).
+* A struct may have no fields (`struct E {}`, whose literal is `E {}`): its values carry no data,
+  and arrays of it (`E[]`) have elements of size 0.
 * Fields are read with `s.f` and, when `s` is a `var` (or a `ref` parameter), assigned with
   `s.f = …`; `s.f[i] = …` assigns an element of an array field.
 * Structs are values (copied on assignment; array fields share by COW).
@@ -663,13 +665,27 @@ passed to `write_json` (§11.4), which is what it is for: MATLAB's `ref.key = va
 structs. Two record literals have the same type when they have the same field names in the
 same order with the same types. Anonymous record types cannot be named in signatures.
 
+A record type is an anonymous struct type, and it is one **wherever no type name is written**:
+everything this document says of struct values holds for record values, except what needs a
+type name (a signature, an annotation, a struct literal). So a record is bound with `let` or
+`var`; its fields are read with `.f`, and assigned (`r.f = …`, `r.f[i] = …`) when it is a `var`;
+a record may be a field of a record (`{ name: "a", lim: { lo: 0.0, hi: 1.0 } }`); records are the
+elements of array literals (`[{ a: 1 }, { a: 2 }]` is an array of that record type, dynamic as
+for structs, §6.9; its elements must all have the same record type) and the value of `filled`;
+both arms of an `if` expression may be records of the same type; a record array projects
+(`rs.a`, §4.7) and is iterated by an element loop (§7.5). In a record literal a name given twice
+is `duplicate field`, and the reserved names above are `field name reserved for views`, at the
+offending initializer (a record literal has no missing or unknown fields).
+
 ### 4.7 Arrays of structs, and struct-of-arrays projection
 
 MATLAB's struct arrays (`dims(d).nom`, `[dims.nom]`, `{dims.name}`) become **arrays of
 structs** (`Dim[]`), indexed like any array: `dims[d].nom`. **Field projection**: when `a` has
 type `S[]` or `S[n]` and `f` is a field of `S` with scalar or `str` type `F`, the expression
 `a.f` is the vector `F[]` of that field of every element, in order (`[dims.nom]` → `dims.nom`,
-`{mats.name}` → `mats.name`). A projection is a value (a copy), so it cannot be assigned to; the
+`{mats.name}` → `mats.name`). Projection is defined on vectors only: `a.f` of a matrix of structs
+(`S[,]`, `S[r,c]`) is the compile error `no field 'f' in …` with the matrix's type (`no field
+'nom' in Dim[,]`); project `a.flat` instead. A projection is a value (a copy), so it cannot be assigned to; the
 compiler fuses it into its consumer when it can (DESIGN.md §5.1). Struct arrays are stored as arrays of
 structs: Sea does not transpose them to a struct of arrays behind the program's back. Hot
 loops in the ports project once before the loop (`let nom = dims.nom`, Appendix D).
@@ -870,7 +886,10 @@ mathematics (MATLAB's left-associative `2^3^2 = 64` is a trap). `@` shares the p
 
 * `+ - * / ^ %` are **element-wise** on arrays, with broadcasting (§6.3). There is no separate
   `.*`: `*` never means the matrix product. This removes MATLAB's most common bug
-  (`*` for `.*`).
+  (`*` for `.*`). On `str` operands `+` is concatenation (§4.4), and on `str` arrays it is
+  element-wise concatenation with the same broadcasting (`names + "!"` appends `!` to every
+  element; `a + b` of two `str[]` of one length joins them element by element); `- * / ^ %` do not
+  apply to `str` or `str` arrays (`operator '-' cannot be applied to …`).
 * `A @ B` is the **matrix product** (part of Decision 11 in DESIGN.md §9): matrix @ matrix → matrix
   (`r×k @ k×c → r×c`), matrix @ vector → vector (`r×k @ k → r`), vector @ matrix → vector
   (`k @ k×c → c`). Inner extents must agree (`shape mismatch`). vector @ vector is a compile
@@ -900,14 +919,17 @@ combined so far, then the operand's (`where(c, a, b)` with `c` and `a` of 16001 
 60 reports `shape mismatch: 16001 vs 60`).
 Mismatched dynamic extents are the run-time error `shape mismatch: 16001x60 vs 60x1`; if both
 extents are compile-time constants it is a compile error. The result element type is the
-scalar operator's result type (§6.5): `bool` for comparisons and logic; `f64` for `/` and `^`
-always, and for `+ - * %` when any operand is `f64`; otherwise `i64`.
+scalar operator's result type (§6.5): `bool` for comparisons and logic; `str` for `+` of `str`
+operands (§6.2); `f64` for `/` and `^` always, and for `+ - * %` when any operand is `f64`;
+otherwise `i64`. A `str` operand combines only with a `str` operand.
 
 ### 6.4 Comparison and logic
 
 * `== != < <= > >=` compare `f64` (IEEE: every comparison with NaN is false except `!=`),
   `i64`, mixed `i64`/`f64` (the `i64` converted, §4.2), `bool` (`==`, `!=` only), and `str`
-  (byte-wise). On arrays they are element-wise and produce `bool` arrays.
+  (byte-wise). On arrays they are element-wise and produce `bool` arrays, with the
+  broadcasting of §6.3; this includes `str` arrays compared with a `str` or with another `str`
+  array (`names == "spacer"` is a `bool[]`).
 * `!` negates `bool` and `bool` arrays. `&` and `|` are element-wise and/or on `bool` and
   `bool` arrays; both operands are always evaluated.
 * `&&` and `||` are short-circuit on scalar `bool` only (an array operand is a compile error).
@@ -1123,7 +1145,12 @@ after the call: `f(x) = 3` is `unexpected token '='`.
   and the calls `sqrt` and `pow`; nothing else: conversions, `if` expressions and other calls,
   `log exp sin cos hypot` included, are not constant expressions).
   (`pow(x, y)` is admitted because `x ^ y` with a non-integer exponent is that same function,
-  §6.5; DESIGN.md §9 Decision 16.) A constant whose expression refers back to itself, directly or through other
+  §6.5; DESIGN.md §9 Decision 16.) A `str` constant is a string literal, a `str` constant, or `+` of
+  `str` constant expressions (`const Tag = "w5" + "-" + Mode`); a comparison of two `str` constant
+  expressions (byte-wise, §4.4) is a `bool` constant expression (`const Before = "a" < "b"`). A
+  `str` value of more than 4096 bytes computed while evaluating a constant (its value or a part
+  of its expression) is the compile error `program too large: strings`, at the `const` (the
+  compiler carries every constant string within one source line's bound, §3.1). A constant whose expression refers back to itself, directly or through other
   constants, is `not a constant expression`, reported at the name that closes the cycle.
   Constants may size fixed arrays (`f64[N]`). A `const` without a type annotation
   whose expression is an untyped integer constant is `i64` (`const N = 4` is the `i64` 4); with an
@@ -1204,9 +1231,12 @@ match finish {
   `i64` is later work, §10.13). Each arm has one or more string-literal patterns separated by
   `|`, or `_`; arms are separated by NL or `,`; each arm body is a block.
 * The first arm with an equal pattern runs (strings compare byte for byte). A pattern that
-  repeats an earlier one is `unreachable pattern`.
-* A match must end with a `_` arm (`match is not exhaustive`). This replaces MATLAB's
-  `switch … otherwise error(…)` with a compile-time guarantee.
+  repeats an earlier one, in the same arm or an earlier arm, is `unreachable pattern`, at its arm.
+* A match must end with a `_` arm (`match is not exhaustive`, at the `match`; also for a `match`
+  with no arm). This replaces MATLAB's `switch … otherwise error(…)` with a compile-time
+  guarantee. Every arm after a `_` arm (a second `_` included) is `unreachable pattern`, at that
+  arm; so `_` followed by string arms is both errors, and the `match` (which comes first in the
+  source) is the one reported.
 * `match` is a statement, not an expression; it does not fall through.
 
 ### 7.7 Blocks and lifetimes
@@ -1623,8 +1653,8 @@ rules in every operation of this table.
 | `a + b`, `==`, `!=`, `<`, … | §4.4 |
 | `len(s)` | bytes |
 | `format(fmt, args…)` | the formatted `str` (§11.1; MATLAB `sprintf`; W1's `DG-%03d` labels, W1/W2's legend strings) |
-| `str(x)` | `i64`: decimal; `f64`: `%.17g` (§11.4) for a finite value, and `nan`, `inf`, `-inf` for the others (C's spelling; `printf` keeps its own, §11.1); `bool`: `true`/`false` |
-| `lower(s)` | ASCII lower case (W1's `switch lower(finish)`) |
+| `str(x)` | `i64`: decimal; `f64`: `%.17g` (§11.4) for a finite value, and `nan`, `inf`, `-inf` for the others (C's spelling; `printf` keeps its own, §11.1); `bool`: `true`/`false`; `str`: x unchanged. Scalars only (not elemental): an array argument is `no overload of 'str' accepts (…)` |
+| `lower(s)` | ASCII lower case (W1's `switch lower(finish)`) of a `str`; any other argument, an array included, is `no overload of 'lower' accepts (…)` |
 
 ### 10.10 Program environment and files
 

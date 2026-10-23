@@ -33,8 +33,15 @@ searching, library options) is done** (Decisions 38–43: the `sealoop` rewrites
 `rt_sort.s` with `f64`, `i64` and `str` on both targets, error 115 for a positional argument after a
 named one; DESIGN.md §0, §3.5.9, §4.8, §8). The size gate after 4f (Decision 35) passed with no
 split: `sealoop` 4 400 built lines (projected v1 7 950, 4 free array letters), `sealower` 6 087
-(7 987, 4 free), `seacheck` 5 830 (6 780, 14 free), DESIGN.md §2.7. **Next: 4g** (strings, structs,
-records, `match`, `error`, `args`), starting with its specification step.
+(7 987, 4 free), `seacheck` 5 830 (6 780, 14 free), DESIGN.md §2.7. **4g** (strings, structs,
+records, `match`, `error`, `args`) **is specified** (Decisions 44–48 and the lead decisions L-a … L-m:
+the `sea.hirl` refinements R17–R25 with no new record kind, the `sealoop` rewrites L15 projection, L16
+`match` and L17 reference, aggregate and field-path stores, element-wise `str` operators, scalar-only
+`str()`/`lower()`, records as anonymous struct types, the shared module `passes/lib/layout.bas`; no
+contract file changes; DESIGN.md §0, §2.6.2, §2.7, §3.5.9, §6.2, §8) and is built in two sub-steps
+(Decision 47): **next is 4g-1** (strings, `match`, `error`, `args`, `str` elements, `sort_str`), then
+the size gate after 4g-1 (DESIGN.md §2.7: a relief agreed first if `sealower` would pass 7 000 lines),
+then 4g-2 (structs, records, projection, fixed-size `str` and struct arrays, `manualD_part1`).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

@@ -39,7 +39,10 @@ the user's agreement. Phase 0 (§8) did:
    the sub-phases 4a–4h of §8: 4a–4d and 4e-0 (the split of pass 3a into `sealoop` and
    `sealower`, which the size gate after 4d made run, §2.7), 4e (array expressions, Decisions 31–37)
    and 4f (reductions, sorting, searching, library options, Decisions 38–43; the size gate after 4f
-   passed with no split, §2.7) are done, and 4g (strings, structs, records, `match`) is next.
+   passed with no split, §2.7) are done; the specification of 4g (strings, structs, records,
+   `match`, Decisions 44–48) is agreed, and 4g is built in two sub-steps, of which 4g-1 (strings,
+   `match`, `error`, `args`) is next, then the size gate after 4g-1 (§2.7) and 4g-2 (structs,
+   records, projection).
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -297,6 +300,51 @@ only from phase 6; the sort entries keep their histograms and insertion-sort pai
 block and use at most 256 bytes of stack; `rt_sort.s` has no out-of-memory test of its own; R12 (a)
 applies to L13's `xblk`s only; T3 names an `asg set` to a scalar local among the destinations; the
 `dyn` pass 2a writes before a fixed-size `sort` operand takes the call's position.
+
+**Decided for sub-phase 4g (2026-10-23).** The specification of 4g (strings, structs, records,
+`match`, `error`, `args`) fixes the `sea.hirl` refinements and the `sealoop` rewrites that 4g needs
+(Decision 29: rules 26 for `str` and struct literals, 29, 30 for `str` and struct elements, and
+the records they need), with §3.6.6's agreed LIR, its examples included, unchanged. The user took
+Decisions 44–48 of §9, each the recommended option: the fixed records are refined once more,
+R17–R25 of §3.5.9 (a replacing store of a reference value, the address of an aggregate element,
+aggregate stores, counted copies, struct and record homes, owned temporaries of a block on its
+exits, field paths in copy on write, fields through an element or home address, moves out of
+L12's locals), with no new record kind and `passes.txt` unchanged, and `sealoop` gains three
+rewrites, L15 (projection), L16 (`match`) and L17 (every store of a reference or aggregate value
+and every store through a field path) (44); comparisons and `+` work element-wise on `str` arrays
+with broadcasting, through L7 (LANGUAGE.md §6.2–§6.4; 45); `str()` and `lower()` take scalars only,
+`str` of a `str` returning it unchanged (LANGUAGE.md §10.9; 46); 4g is built in two sub-steps,
+4g-1 (strings, `match`, `error`, `args`, `str`, `lower`, `str` elements, `sort_str`) and 4g-2
+(structs, records, projection, fixed-size `str` and struct arrays, `manualD_part1`), with a size
+gate after 4g-1 that re-projects `sealower` and, if 4g-2 would take it past 7 000 built lines, a
+relief specified and agreed before 4g-2 (§2.6.2, §2.7, §8; 47); records are anonymous struct types
+wherever no type name is written (LANGUAGE.md §4.6; 48). No contract file changes: `passes.txt`,
+`errors.inc`, `rt.inc` and `limits.inc` stay as they are (every runtime entry 4g calls exists on
+both targets since 4c and 4f; the lead decisions reuse existing codes and limits).
+**Lead decisions of 4g** (within Decisions 44–48; listed in §9): L-a, the `match` errors 207 and
+208 (LANGUAGE.md §7.6; §2.6.2, "Readings fixed by 4g"); L-b, the record-literal checks 205 and
+222 by `seacheck` (LANGUAGE.md §4.6); L-c, `.f` of a matrix of structs is 249 (LANGUAGE.md §4.7);
+L-d, wrong arities of 4g's library calls are 243; L-e, views and selections under a projection
+are materialized first (§3.5.9); L-f, a `str` value of more than 4 096 bytes in a constant is
+`program too large: strings` (LANGUAGE.md §7.2; §3.4.2); L-g, comparisons of `str` constants are
+`bool` constant expressions (§3.4.2); L-h, empty structs are legal, with one runtime test per
+target (LANGUAGE.md §4.6; §6.2); L-i, the tests that used a `str` or a removed phase-rule row as
+their faulty construct are re-derived or retired (§6.2); L-j, `anew` of arrays of `str`, struct
+or record elements always uses the clearing entries (§3.5.9 R21); L-k, struct layouts come from
+one shared module `passes/lib/layout.bas`, built from 4g-2 (§2.6.3); L-l, the positions of the nodes L15–L17
+write (§3.5.9); L-m, `slay` records exist for record element types too (§3.6.6 rule 38).
+*For the user's information:* `error` does not end a path (LANGUAGE.md §8.1 lists `return`, blocks
+and `if`/`else`), so `fn f() -> i64 { error("x") }` is `missing return`; a 4g-1 test pins it
+(§6.2). *Corrections made to the plan while writing this specification* (the planning notes were
+data): a fixed-size `str[n]` and the tests that need one (`sort_str` with a fixed argument, `str[3]`
+by annotation with `fix`) belong to 4g-2, as Decision 47 puts fixed-size `str` arrays there, so the
+`strings` word of a fixed-size `str` type stays until 4g-2 and so does `err_ns_str_fixed_type`;
+L17's store of a `str` element is 4g-1 work (rule 19 for a reference element, which `sealower`
+no longer lowers itself); L17 does not rewrite the assignment of a whole local or `ref` parameter
+(rule 15 (d) and rule 27 (d) stay in `sealower`); an owned value that L17 stores is moved, not
+released by R11; R25 does not apply to a target that L6 rewrites or to a converted component;
+L-f covers every `str` value computed while evaluating a constant, not only its final value;
+`str(s)` of a `str` is written by pass 2a as s itself (§3.5.5).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -759,7 +807,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `token` | the first byte of the offending token: for `unterminated comment` the `/*`, for `unterminated string` the opening `"`, for `comparisons cannot be chained` the second comparison operator, for `'$' outside an index` the `$`; for `positional argument after a named argument` (115, from 4f) the first token of the first positional argument that follows a named one in the call (its `ref` for a `ref` argument), where an argument is positional when its first token can start an expression or a `ref` argument and it is not `IDENT ":"`: an `IDENT` not followed by `:`, an integer, float or string literal, or one of `-` `!` `true` `false` ` `(` `[` `{` `if` `f64` `i64` `str` `ref` (the start set of Appendix A's `unary` and `primary`, plus `ref`); any other token there is the ordinary syntax error of that place; for `unexpected newline` the LF that ends the line, after any comment on it (column = the line's length in bytes after CR removal + 1; for the line break of a block comment that spans lines, the first LF inside the comment); for `unexpected end of file`, the position just after the last byte of the program file's last line (line 1, column 1 for an empty file); a last line without a final LF still ends with an NL token, at the position just after its last byte (so `unexpected newline` there reports that position) |
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
-| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
+| `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for the `strings` limit of a constant (from 4g-1, lead decision L-f: a `str` value of more than `SEA_LIM_LINE_BYTES` bytes computed while `seaname` evaluates a constant, its value or a part of its expression), that constant's item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
 | `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `dim must be 0 or 1` (262), `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for a named option `dim:` or `desc:` its value expression, not the name; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant or, from 4f, in a `dim:` value (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`); for `type cannot be inferred: add a type annotation` (252, from 4e) the `[]` itself (its `arr` node), also in a binding without a type annotation (`let x = []` reports at the `[`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
@@ -977,7 +1025,8 @@ row loses names in every sub-phase:
 | 4d | dynamic array types `T[]`, `T[,]` of `f64`, `i64`, `bool` (locals, parameters, results, `ref` parameters, annotations); indexing by scalar indices (read, `=` and `op=` of one element); `$` in a scalar index; a `for` over a vector; the library functions `zeros`, `ones`, `filled` (with an `f64`, `i64` or `bool` value), `len`, `rows`, `cols`, `numel`, and on scalars `abs`, `sign`, `sqrt`, `floor`, `ceil`, `trunc`, `round`, `isnan`, `min`, `max`, `where`, `ind2sub`, `sub2ind` (Decision 23) | `arrays` for: an array literal, a range used as a value, an index that is a range, `:`, an index vector or a mask (at the index's node), a view (`.T`, `.flat`, `.col`, `.row`, at the `dot` node, whose position is the start of its operand, §3.3), a fixed-size array type (at its `type` node, §3.4.2), an element-wise operator or comparison with an array operand (at the operator node), an array argument of an elemental library function (at the `call`), `dyn`, `fix` and an array conversion `f64(a)`/`i64(a)` (at the `call`/`cvt` node); `strings` for `str[]` and every other `str` use of the phase-1 row; `structs` for a struct element type; the name `max` or `min` for a call of `max` or `min` with one argument (the reduction of LANGUAGE.md §10.5, 4f), at the `call`, while an array argument of the two-argument form is `arrays` |
 | 4e | every remaining `arrays` construct: array literals and concatenation (Decision 20; of `f64`, `i64`, `bool` elements), range values (also as the vector of a `for`), ranges, `:`, steps, index vectors and masks in reads, `=` and `op=`, views, fixed-size arrays of `f64`, `i64` and `bool` (types, locals, parameters, `ref` parameters, results and tuple components: Decision 32), `dyn`, `fix`, element-wise operators, comparisons and logic with broadcasting, array conversions, `where` and the elemental library functions on arrays (`ind2sub` with a scalar first argument and an array second one included: Decision 33) | the `arrays` row is gone; a literal of `str` or struct elements is `strings` or `structs` (at the `arr` node); a fixed-size type of `str` or struct elements is `strings` or `structs` (at its `type` node); `max(v)` and `min(v)` of one argument stay their names until 4f; new row: `ind2sub` for a call of `ind2sub` whose first argument is an array (at the `call`; until phase 6, Decision 33) |
 | 4f | the library functions `sum`, `mean`, `variance`, `std`, `max` and `min` of one vector, `argmax`, `argmin`, `nnz`, `any`, `all` (with `dim:`), `sort`, `argsort` (with `desc:`), `find`, `find_first`, `find_last`; the named arguments `dim:` (of `sum mean variance std max min any all nnz`) and `desc:` (of `sort`, `argsort`) of these calls (Decision 21), with their errors 225, 237, 262 and 243 ("Readings fixed by 4f" below); `sort` and `argsort` of a `str` vector stay `strings` until 4g (the `str[]` type is reported where it comes from) | `named arguments` for every other named argument (of a user `fn`, or a name the library function does not take in v1, which is the compile error `unknown parameter` of LANGUAGE.md §8.1 once named arguments are complete) |
-| 4g | the `structs`, `records`, `match` and `strings` rows: struct items, types, literals, fields, projection, struct arrays and their literals, records, `match`, every `str` construct (`str` locals, parameters, results, elements, `+`, comparisons, string literals anywhere, `str` constants, `filled` with a `str` or struct value); the library functions `str`, `lower`, `error`, `args` | — |
+| 4g-1 | the `match` row and the `strings` row except fixed-size types (Decision 47): `match` (a resolved region, §3.4.2), every `str` construct (`str` in signatures, locals, parameters, `ref` parameters, results and tuple components; the dynamic `str[]` and `str[,]`; string literals anywhere; `+`, `+=` and the six comparisons on `str`, also element-wise on `str` arrays, Decision 45; `str` constants, lead decisions L-f and L-g; `len` of a `str`; `filled` with a `str` value; `printf` `%s` of any `str`; `sort` and `argsort` of a `str` vector, Decision 40); the library functions `str`, `lower` (Decision 46), `error`, `args`; with their errors 207, 208, 240 and 243 ("Readings fixed by 4g" below) | `strings` for a fixed-size type of `str` elements (`str[3]`, at its `type` node, as from 4e); `structs` for a struct item, a struct type, a struct literal, a field access or a projection, and `records` for a record literal or record type, with the positions of the phase-1 rows |
+| 4g-2 | the `structs` and `records` rows and the rest of `strings`: struct items, types, literals, fields (read, written, `ref` paths), projection, struct arrays and their literals, `filled` with a struct value, records (Decision 48), fixed-size arrays of `str`, struct and record elements (types, locals, parameters, `ref` parameters, results, tuple components, `dyn`/`fix`, element-wise `str` operations on them); with their errors 201 (a record type where another type is expected), 204–206, 221, 222, 229 at a literal, 235 (two fields of one name), 238, 239, 240 (`p == q`), 249 and 256 | — |
 | 4h | the library functions `linspace`, `bincount`, `meshgrid`, `setdiff` (the prelude, §2.5) | — |
 
 **Readings fixed by 4d** (`seacheck`). An index of an element access: an `f64`, `str` or `bool` scalar index, or an `f64` or `str`
@@ -1041,6 +1090,64 @@ the named options:
   std` of no `dim:` `f64`, `argsort` and `find` `i64[]`; `sum max min sort` and every `dim:` form
   then have the type 0.
 
+**Readings fixed by 4g** (`seacheck` unless said; LANGUAGE.md §4.6, §4.7, §6.2–§6.4, §7.6, §10.9,
+§10.10; Decisions 45, 46, 48 and the lead decisions of 4g, §0). From 4g-1:
+
+* **`match`** (L-a). The scrutinee must be a `str` (else `type mismatch: expected str, found T`,
+  201, at the scrutinee). `match is not exhaustive` (207) is reported at the `match` exactly when
+  its last arm is not a `_` arm, a `match` with no arm included. `unreachable pattern` (208) is
+  reported at every arm that follows a `_` arm (a second `_` arm included) and at every arm one of
+  whose patterns equals, byte for byte, an earlier pattern of the same `match` (in the same arm or
+  an earlier one); an arm is reported once, whichever reasons it has. These take part in plain
+  source order with every other error: 207 stands at the `match` keyword, before the scrutinee and
+  the arms, so it is reported before any error inside the `match` (`_` followed by a string arm
+  reports 207, not the arm's 208). The patterns are string literals (Appendix A) and add no other
+  error.
+* **`str` operators** (Decision 45). `+` of two `str` is `bin cat` (§3.5.5), type `str`; the six
+  comparisons of two `str` are `bool`. With an array operand they are element-wise, judged by the
+  overload rule of 4d (element types first, then the shapes): a `str` array with a `str` or
+  another `str` array gives, for `+`, the `str` array of the broadcast shape (dynamic; from 4g-2 a
+  fixed-size shape as for numeric operands) and, for a comparison, the `bool` array; a vector with
+  a matrix is 202. Every other operator with a `str` operand (`- * / ^ % @ & |`, unary `-` and `!`),
+  and `+` or a comparison of a `str` operand with a non-`str` one (`"a" + 1`, `names == 1.0`), is 240
+  or 241 at the operator, with the operand types (`operator '-' cannot be applied to str[] and
+  str`). `x += e` of a `str` local, `ref` parameter, element or field is `+` as above (a `str[]`
+  local with a `str` e is element-wise, rule 15 (i)).
+* **`str(x)` and `lower(s)`** (Decision 46). `str` takes one argument of type `i64`, `f64`, `bool`
+  or `str` (an untyped integer literal is `i64`, as for `f64(…)`), result `str`; for a `str`
+  argument pass 2a writes the argument itself and no `lib` node (§3.5.5). `lower` takes one `str`,
+  result `str`. Every other argument list (an array of any element type, another type, no argument,
+  two arguments) is 243 at the `call`. Both keep the result type `str` after an argument error.
+* **`error`, `args`** (L-d). `error(fmt, …)` is checked as a formatting call ("Within one formatting
+  call" below: 233, 234, 211, 210), type `void`. `args()` takes no argument, result `str[]`; any
+  argument is 243 (`args(1)` reports `no overload of 'args' accepts (i64)`, as `now(1)` does), and
+  so is every wrong number of arguments of `str` and `lower`.
+* **Strings elsewhere.** `len` of a `str` is `i64` (L3). `filled(v, …)` with a `str` v is `str[]` or
+  `str[,]` (the 4d reading that gave it the type 0 no longer applies). `sort` and `argsort` accept a
+  dynamic `str` vector, result `str[]` (`argsort`: `i64[]`): the clause of "Readings fixed by 4f"
+  that gave such a call the type 0 no longer applies; a fixed-size `str[n]` argument (from 4g-2)
+  gets pass 2a's `dyn` as a numeric one does (Decision 39).
+
+From 4g-2:
+
+* **Fields, projections and views of structs and records** (Decision 48, L-c). A `dot` on a struct or
+  record value names one of its fields (else `no field '%s' in %s`, 249, at the `dot`, the type
+  written as the field `text` above says: a struct's name, a record as `{name: T, …}`). On a vector of
+  structs or records (`S[]`, `S[n]`) it is a view name of LANGUAGE.md §5.6 or a projection of a field
+  of scalar or `str` type (a field of any other type is `cannot project field '%s' of type %s`, 256;
+  a name that is no field 249). On a matrix of structs or records (`S[,]`, `S[r,c]`) it is a view
+  name or 249 with the matrix's type (`no field 'nom' in Dim[,]`, L-c).
+* **Record literals** (L-b). A name given twice is `duplicate field` (205) at the second `init`, and
+  a name `T`, `flat`, `col` or `row` is `field name reserved for views` (222, at word `fieldname`) at
+  its `init`, both found by `seacheck` in source order with the initializers' own errors (the
+  struct declaration's 222 stays `seaname`'s); 204 and 206 cannot occur in a record literal.
+* **Record types** (Decision 48). A record type is identified structurally (§3.5.1): a record value is
+  accepted wherever the same record type is expected (a `var` record assigned, an `if` arm, an
+  element of an array literal, the value of `filled`, a field of a record) and is 201 wherever
+  another type is (`type mismatch: expected P, found {a: i64}`). Structs and records never compare
+  (`==` of two is 240). A field assigned through a `let` struct or record, or through an element of
+  a `let` array, is 238 at the target; a projection target (`dims.nom = v`) is 239.
+
 **After phase 4** the table is exactly this (positions as above: the node the row names, of
 several the first in source order); 4h removes every other row and the tests of the removed
 words, and phase 6 and later remove these:
@@ -1069,7 +1176,8 @@ sub-phase that removes their row, except 216 (`fixed-size array too large`), whi
 from 4d: `seaname` resolves the extents of every type node before the phase rule (§3.4.2), so
 `f64[300]` is 216 in 4d, and `f64[3]` is `arrays` until 4e; then 217–220, 252 at an untyped `[]` (Decision 36), 257 (`VIEW_RANK`) and 239 (a `.T`, `.col` or
 `.row` assignment target) in 4e, 225 at a repeated `dim:` or `desc:` of a library call in 4f,
-204–206, 221, 222 and 229 at a literal and 207, 208 at a `match` in 4g, and 224, 225 of a user
+207, 208 at a `match` in 4g-1, 204–206, 221, 222 and 229 at a literal (and 249, 256 at a `dot` of a
+struct or record) in 4g-2, and 224, 225 of a user
 function and 236 (named and default arguments of user functions) in phase 6. (*Erratum, 4f
 specification:* this sentence read "207, 208, 224 and 225 (named and default arguments) in phase
 6"; 207 and 208 are the `match` errors of 4g, 236 was missing, and 225 is reachable from 4f.)
@@ -1086,7 +1194,8 @@ single pass-2a program finds before all others:
 * then of the signatures of the entered functions (§3.4.1), in item order, each function's
   parameters in order and then its result types: `redefinition of '%s'` (235) of two parameters,
   `local name shadows a predeclared name` (213) at a parameter, `not supported yet` (259) for a
-  parameter default (`default arguments`), for a `str` parameter or result type (`strings`) and
+  parameter default (`default arguments`), for a `str` parameter or result type (`strings`, until
+  4g-1; from 4g-1 only a fixed-size `str` type, at its `type` node, until 4g-2) and
   for a type of a signature (`arrays`, `structs`, `handle types`), and `unknown struct type`
   (229) in a signature;
 * the capacity limits (400) `symbols` (§3.4.1), `types` for the types it creates, and, while
@@ -1298,11 +1407,12 @@ limit); the generator stops with status 1 and a message naming the record if one
 
 **How a pass is built.** Each pass program `build/gen/<pass>.bas` is the concatenation, in this
 order, of: the pass's own files `passes/<pass>/*.bas` (in name order); the shared modules of
-`passes/lib/` it uses, in the order `io diag tables limb f64emu fltlit`; the generated `DATA`
+`passes/lib/` it uses, in the order `io diag tables limb f64emu fltlit layout` (`layout` from
+sub-step 4g-2, below); the generated `DATA`
 blocks it uses, among `errors`, `errno`, `exits`,
 `consts`, `entries`, `records` and `mtab`, always in this order; and the line `99999 END`. The file
 `passes/<pass>/build.list` names the modules and blocks: lines `lib <module>…` (among `io diag
-tables limb f64emu fltlit`) and `data <block>…` (among `errors errno exits consts entries records
+tables limb f64emu fltlit layout`) and `data <block>…` (among `errors errno exits consts entries records
 mtab`; only `seaname` lists `mtab`, §4.10.5), comment lines starting with `#`; the parts are
 concatenated in the order above whatever the order of the list, and a name outside the two sets
 is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`. The
@@ -1312,6 +1422,19 @@ files): `passes/lib/API.md` documents the `SUB`s of `io`, `diag` and `tables`, a
 `passes/lib/API-arith.md` those of `limb`, `f64emu` and `fltlit` (each module's prerequisites
 included); the `.bas` files carry one summary line per `SUB`.
 
+**The module `layout`** (from sub-step 4g-2, lead decision L-k: built and linked only from 4g-2, since `str` needs no layout; `passes/lib/layout.bas`, documented
+in `passes/lib/API.md`, tested by `tests/lib_check.sh`). The struct layout rule of §4.8 computed
+once for both programs of pass 3a, so that `sealoop`'s addresses (§3.5.9 R18, R19, R24, L15, L17)
+and `sealower`'s (rules 18, 19, 27, 29, 31, the `slay` records of rule 38) cannot disagree: from
+the type table `T` of the pass (the `sea.hir` type records, §3.5.1: `tstruct`, `trec` and their
+`fd` records, `tfvec`, `tfmat` and the predefined types), the size and alignment of a type, the
+offset of a field of a struct or record type (of a nested field, the sum along the path), and the
+ascending list of the byte offsets of the reference values a struct, record or fixed-size array
+type holds (`str`, dynamic arrays and handles, those inside nested structs and fixed-size arrays
+included): rule 15 (g)'s and rule 38's list. An empty struct has size 0 and alignment 1 (lead
+decision L-h; its home is still an 8-byte slot, rule 27 (a)). The module uses only the tables it
+is passed and needs no array letter of its own.
+
 **The build lists** (each `passes/<pass>/build.list`; the parts in the order above):
 
 | Program | `lib` | `data` |
@@ -1320,8 +1443,9 @@ included); the `.bas` files carry one summary line per `SUB`.
 | `seaname` | `io diag tables limb f64emu` | `errors exits consts records mtab` |
 | `seacheck` | `io diag tables` | `errors exits consts records` |
 | `seaexpand` | `io diag tables limb f64emu` | `errors exits consts records` |
-| `sealoop` (from sub-phase 4e-0) | `io diag tables` | `errors exits consts records` |
-| `sealower`, `seaopt`, `seagen_a64`, `seagen_x64` | `io diag tables` | `errors exits consts entries records` |
+| `sealoop` (from sub-phase 4e-0) | `io diag tables`; from 4g-2 `io diag tables layout` | `errors exits consts records` |
+| `sealower` | `io diag tables`; from 4g-2 `io diag tables layout` | `errors exits consts entries records` |
+| `seaopt`, `seagen_a64`, `seagen_x64` | `io diag tables` | `errors exits consts entries records` |
 | `tools/seaval.bas` (`tools/seaval.build.list`) | `io diag tables` | `errors consts records` |
 
 So from phase 4a on the exact arithmetic of constants (`limb`, `f64emu`, `FEPOW` and `mtab`, §2.8,
@@ -1333,7 +1457,8 @@ constants from the `rcn…` records, §3.4.1). The line numbers keep the parts a
 |------|--------------|
 | the pass's own files | 1 – 59 999 |
 | `passes/lib/io.bas`, `diag.bas`, `tables.bas` | 60 000 – 62 999, 63 000 – 65 999, 66 000 – 68 999 |
-| `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | 69 000 – 74 999, 75 000 – 81 999, 82 000 – 88 999 |
+| `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | 69 000 – 74 999, 75 000 – 81 999, 82 000 – 85 999 (82 000 – 88 999 before 4g-2) |
+| `passes/lib/layout.bas` (from 4g-2) | 86 000 – 88 999 |
 | generated `DATA`, numbered consecutively | 89 000 – 99 998 |
 | `END` | 99 999 |
 
@@ -1796,6 +1921,77 @@ new table), so its projected v1 size, 7 950, is 1 050 lines under the gate and t
 noted above is not reached; the gate after phase 6 decides again on phase 7's fusion (above). No
 program used a new array letter in 4f (`sealoop` 4, `sealower` 4, `seacheck` 14 free, as after 4e).
 `seaparse` grew by 12 lines (error 115).
+
+**Projected for 4g** (the 4g specification, Decisions 44–48; estimates, ±30 % on each increment,
+from the sizes measured at the gate after 4f). 4g is built in two sub-steps (Decision 47). Per
+program and sub-step:
+
+* `seaname`: 4g-1 80–150 (`str` in signatures, `rcns` with `+`, the `bool` constants of `str`
+  comparisons and the length rule of L-f and L-g, `match` a resolved region); 4g-2 200–350 (`rtst`
+  and `rtfd` in the type order of §3.4.2, struct type nodes, `rslit`, the declaration checks 235,
+  222 and 221 with the recursion search).
+* `seacheck`: 4g-1 300–500 (`str` typing everywhere, `match` with 201, 207, 208, `error`, `args`,
+  `str`, `lower`, `sort`/`argsort` of `str`, Decision 45, the phase-rule step); 4g-2 350–600 (the
+  `dot` of fields, projections and views, `slit` with 204–206 and 229, record literals with 205
+  and 222, `fld` targets with 238 and 239, 249, 256, `==` 240, type identity in `if` arms and
+  assignments, the implicit `dyn`/`fix` of `str[n]` and `S[n]`, `[]` in a field, Decision 48).
+* `seaexpand`: 4g-1 20–40 (§3.5.7's checks of `match` and `arm`); 4g-2 40–80 (of `fld`, `proj`,
+  `slit`).
+* `sealoop`: 4g-1 150–290 (L16, L17 for `str` elements, the `str` cases of L2, L4, L5, L6, L7, L9,
+  L10 and L12, R20's count, validation); 4g-2 225–420 (L15, L17's field paths and aggregates, L12's
+  routing of field targets, the aggregates of L2, L4, L5, L6, L9 and L10 with R18, R19, R21 and
+  R24, validation), plus the module `layout` (60–90 built lines, §2.6.3).
+* `sealower`: 4g-1 240–410 (rules 32, 34 and 35, rule 15 (f), (h) and (i) and rule 16 for `str`,
+  R17 for `str`, R20, R22, R25, validation); 4g-2 500–860 (rule 27 (b)–(l) for structs and records
+  with reference fields, rule 18's field folding and whole elements, rule 31's field paths, rule
+  38's `slay`, rule 15 (g) and (j), rule 16 for struct locals, R18, R19, R21, R23, R24, the struct
+  types in its type table), plus `layout` (60–90).
+* `seaparse`: none (the whole grammar since phase 1). The runtimes: none (one test, §6.2).
+
+The remaining increments after 4g are the upper ends of the "Remaining to v1" column of "Projected
+for 4f" without its 4g part: `sealoop` 4h 500, phase 6 1 100, phase 7 1 500; `sealower` 1 100 to
+v1; `seacheck` about 100 for 4h (its later phases are `sealib`'s question at the measurement after
+phase 4).
+
+| Program | After 4f (measured) | After 4g-1 | After 4g-2 | Projected v1 (≤ 9 000) | ≤ 7 000 built | Free letters (≥ 2) |
+|---------|--------------------:|-----------:|-----------:|-----------------------:|:-------------:|--------------------|
+| `sealoop` | 4 400 | 4 550–4 690 | 4 835–5 200 | 7 935–8 300 | yes | 4 (`B C J X`); 4g needs 0–1 |
+| `sealower` | 6 087 | 6 327–6 497 | **6 887–7 447** | 7 987–8 547 | **at risk** | 4 (`C O S X`); 4g needs 0–1 (struct types in `T`, the `slay` labels in `D`) |
+| `seacheck` | 5 830 | 6 130–6 330 | 6 480–6 930 | about 7 030 to the end of phase 4 | yes (margin ≥ 70) | 14 |
+| `seaname` | 5 063 | 5 143–5 213 | 5 343–5 563 | — | yes | — |
+| `seaexpand` | 4 070 | 4 090–4 110 | 4 130–4 190 | — | yes | — |
+
+**The risk.** `sealower` crosses 7 000 built lines in the upper half of its 4g range: the 800 lines
+that §2.7's tables allowed it for 4g and 4h together are about what the struct half alone needs
+(560–950, comparable to 4d's array ownership), and its v1 projection keeps as little as 450 lines
+of margin under 9 000. `seacheck` comes close too (6 930 at the upper end). Moving `match` (L16),
+projection (L15) and every reference and aggregate store (L17) into `sealoop` is already counted
+in these numbers; without L16 and L17 `sealower` would gain a further 200–350 lines (Decision 44).
+Hence Decision 47: 4g-1 first, which measures the shared ownership machinery (R17, R20, R22, R25,
+rules 15 and 16 for `str`) before the struct half commits to its design, then a gate.
+
+**The size gate after 4g-1** (Decision 47). After 4g-1, `make lines`, `make check-limits` and the
+free numeric array letters of the main programs of `sealoop`, `sealower` and `seacheck` (counted as
+at the gate after 4d). Let S be `sealower`'s built size after 4g-1 and m its 4g-1 increment (S
+minus 6 087). Its 4g-2 increment is re-projected from the measured one: the upper end of its
+estimate, 950 (860 and 90 for `layout`), scaled by m / 410 (410 being the upper end of the 4g-1
+estimate), so P = S + 950 · m / 410. `sealower` passes when P ≤ 7 000, P + 1 100 ≤ 9 000 and it has
+at least 2 free letters. If it fails, a relief is specified and agreed with the user before any
+4g-2 code, chosen among: (1) further struct work as `sealoop` rewrites (rule 18's field reads of
+elements as `xblk`s of an R24 `eld`, the `slit` of a `bind` written into its home by `sealoop`);
+(2) a compaction of `sealower` with no change of behaviour (its constant and entry loading takes
+about three lines per name for some thirty names; a table-driven loop saves an estimated 60–80
+lines; the dumps prove the neutrality); (3) a split of `sealower`, specified and agreed like 4e-0.
+The same re-projection is applied to `seacheck` (its 4g-2 upper end 600, scaled by its measured
+4g-1 increment over 500, the upper end of its 4g-1 estimate) and `sealoop` (its 4g-2 upper end
+510, 420 plus 90 for `layout`, which is built only from 4g-2, scaled by its measured 4g-1 increment
+over 290), and recorded with `sealower`'s. `sealoop` fails when its projection after 4g-2 passes
+7 000 built lines, that projection plus 3 100 (4h, phases 6 and 7) passes 9 000, or it has fewer
+than 2 free letters; `seacheck` fails when its projection after 4g-2 passes 7 000 built lines or
+it has fewer than 2 free letters (its v1 size is the question of the measurement after phase 4).
+A program that fails is brought to the user with a relief of the same kinds before 4g-2 (`seacheck`'s
+being the `sealib` split of the gate after 4f). The measurements, the projections and the outcome
+are recorded here. After 4g-2 the sizes are measured and recorded again.
 
 ### 2.8 Numbers inside the compiler
 
@@ -2434,12 +2630,12 @@ types (4, 4, 3), as `sea.res` writes them from sub-phase 4d on (§3.4.2); before
 Phase 4 (§8) extends `sea.res` so that `seaname` resolves every type and every struct literal and
 `seacheck` keeps no type resolution of its own (Decision 17's division: names and declarations in
 `seaname`, typing in `seacheck`). Everything of §3.4.1 holds, with these additions (codes 64–72 of
-set `A`, which occur only in `sea.res`). Sub-phase 4d brings the array types, 4g the struct types,
-the struct literals and the `str` constants; until a sub-phase lands, the records it brings are
-not written and §3.4.1 applies unchanged to what they would cover.
+set `A`, which occur only in `sea.res`). Sub-phase 4d brings the array types, 4g-1 the `str`
+constants, 4g-2 the struct types and the struct literals (Decision 47); until a sub-phase lands,
+the records it brings are not written and §3.4.1 applies unchanged to what they would cover.
 
 **Skipped regions.** A `for` whose iterable is not a `range` stops being a skipped region in 4d
-(element loops, LANGUAGE.md §7.5) and a `match` in 4g; both are then resolved regions like any
+(element loops, LANGUAGE.md §7.5) and a `match` in 4g-1; both are then resolved regions like any
 other statement (their loop variable takes its lid in the order of §3.4.1, "Names": a `for` loop
 variable before the locals of its body). After phase 4 there are no skipped regions.
 
@@ -2456,10 +2652,22 @@ struct its name denotes where it stands, looked up as names are (a local of that
 struct), or 0 when the name denotes no entered struct; `seacheck` reports `unknown struct type`
 (229) at an `rslit` with `sid` 0 (§2.6.2, at word `type`). Record literals (`rlit`) are unchanged.
 
-**`str` constants** (4g). A constant whose value is a `str` (LANGUAGE.md §7.2: a string literal, a
+**`str` constants** (4g-1). A constant whose value is a `str` (LANGUAGE.md §7.2: a string literal, a
 constant naming one, or `+` of such) is written `rcns` with its bytes, evaluated by `seaname` on
 the well-typed path as §3.4.1 says; `seacheck`'s step 3 of "Constants" accepts `rcns` exactly for
-the derived type `str`.
+the derived type `str`. Two lead decisions of 4g complete it (§0):
+
+* **L-g.** A comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) of two `str` constant expressions is a
+  `bool` constant expression, evaluated by `seaname` byte-wise and unsigned with a proper prefix
+  the smaller (the order of rule 32's `sea_str_cmp`, LANGUAGE.md §4.4); a constant whose value it is
+  is written `rcnb` like any `bool` constant (`const B = "a" < "b"` is `rcnb` with the value 1).
+* **L-f.** Every `str` value `seaname` computes while evaluating a constant (the value of a
+  literal, of a named constant, of each `+`) has at most `SEA_LIM_LINE_BYTES` (4 096) bytes; a longer
+  one is `program too large: strings` (400) at the constant's item (§2.6.2, `here`), reported by
+  `seaname` at once like its other capacity errors. So every `rcns` value, the `cs` leaf of its `cn` (§3.5.2) and
+  every `cs` that constant substitution puts in place of a `cref` (§3.5.7) stay within §3.1's 12 288-byte string field, as a
+  literal does; no limit is added (`SEA_LIM_LINE_BYTES` is the bound of one source line, which
+  bounds every literal).
 
 **The type table** of `sea.res` holds the `rtup` records of §3.4.1 and the type records below; ids
 are dense from 10 over all of them, given in order of creation, and the table is written in id
@@ -2511,9 +2719,12 @@ then the shape; the first error found is the node's, and the node's type is then
   `fixed-size array too large: use a dynamic array` (216) at the node; an array of a handle type
   is `arrays cannot hold %s` (258) at the node, with the handle type's name;
 * the phase rule (§2.6.2): while a sub-phase of §8 does not implement them, a fixed-size array
-  type (until 4e), a struct type (until 4g) and a handle type (until phases 8 and 9) are `not
-  supported yet` (259: `arrays`, `structs`, `handle types`) at the node, found after every
-  error above. `str` follows the rules of §2.6.2 at the nodes they name, and the type written
+  type (until 4e), a struct type (until 4g-2), a fixed-size type of `str` elements (from 4e until
+  4g-2: `strings`) and a handle type (until phases 8 and 9) are `not
+  supported yet` (259: `arrays`, `structs`, `strings`, `handle types`) at the node, found after every
+  error above. From 4g-1 a type node with the base `str` and a shape `s`, `v` or `m` has its type
+  wherever it stands (in a signature too: `str` is 5, `str[]` and `str[,]` their array types) and
+  no phase-rule error. Before 4g-1 `str` follows the rules of §2.6.2 at the nodes they name, and the type written
   depends on where the node stands: in a signature (a parameter or result type of an entered
   `fn`) a type node with the base `str`, of any shape, has the type 0 and creates no type (its
   `rtype` has `ty` 0, and so has its slot in `rfn`; `seaname` reports `strings` at the `param`
@@ -2529,13 +2740,13 @@ then the struct fields (step 2), the signatures (step 3) and every other type no
 The capacity limit `types` (400) for a type `seaname` creates is reported at the type node being
 resolved, except for a type of a signature, which is reported at the `fn` item.
 
-**Before 4g** no struct type exists: step 1 creates nothing, no `rtst` or `rtfd` record is
+**Before 4g-2** no struct type exists: step 1 creates nothing, no `rtst` or `rtfd` record is
 written, and a type node whose base denotes an entered struct is 259 `structs` with the type 0.
 The field types of an entered struct are nonetheless resolved in step 2 (the struct item itself
 reporting 259 `structs`, §2.6.2): they are `rtype` nodes, their errors are reported, and their
 array types are created (`struct P { v: i64[] }` creates `rtvec 10 3`).
 
-**Struct declarations** (`seaname`, 4g), for each entered struct in stream order: `redefinition of
+**Struct declarations** (`seaname`, 4g-2), for each entered struct in stream order: `redefinition of
 '%s'` (235) at the later of two fields of one name (at word `binding`); `field name reserved for
 views` (222) at a field named `T`, `flat`, `col` or `row`; the errors of each field's type node
 (above); and `recursive struct` (221) at the `struct` node of every struct whose type contains
@@ -2981,7 +3192,10 @@ mismatches between dynamic extents remain run-time checks (LANGUAGE.md §4.10).
   `name.dim` exists for `sum mean variance std max min any all nnz` only (`sum.dim`, …, `nnz.dim`);
   the `ci` takes the position of the `dim:` value; the second child of `sort`/`argsort` is the
   `desc:` value as written (any `bool` expression, evaluated after v) or the inserted `cb 0` at the
-  call's position; no `narg` node survives into `sea.hir1`. `str(x)` is `lib str`; a prelude function
+  call's position; no `narg` node survives into `sea.hir1`. `str(x)` is `lib str` of an `i64`,
+  `f64` or `bool` x; from 4g-1 (Decision 46) `str(s)` of a `str` s is written as s itself, with no
+  node of its own (the identity: s keeps its own position and ownership, so no pass after 2a sees
+  the call); a prelude function
   (`linspace`, `meshgrid`, `setdiff`, `bincount`) is a `call` of its prelude `fn` (§2.5).
 
 #### 3.5.6 `sea.hir1` and `sea.hir` compared
@@ -3186,31 +3400,35 @@ header records, §3.2) and those of set `HL` (`sea.hirl` only, codes 72–87, §
 | `hloop` | `pos:pos lid:lid` | `4` | start, last, step (`i64`), `block`: the counted loop of LIR `loop` (§3.6.4) with induction local `lid`, run for k = 0 … last with `lid` = start + k·step; always inside an `if` (for L13's sum8 the arm of an `ifx`) that excludes the empty range; `break` and `cont` in its block name it |
 | `ext` | `pos:pos ty:ty dim:u` | `1` | an array: the extent of its dimension `dim` (0 or 1); a `str` (dim 0): its length; `ty` is 3 |
 | `adat` | `pos:pos ty:ty` | `1` | an array: the address of its elements (`ty` the `tptr` of its element type; of a fixed-size array its home address, R2) |
-| `eld` | `pos:pos ty:ty sc:u off:i` | `2` | address, index: the element of type `ty` at address + index·sc + off (a reference element borrowed; a `ci` index k: at address + k·sc + off, R3) |
-| `est` | `pos:pos sc:u off:i` | `3` | value, address, index: a store of the value at address + index·sc + off (a `ci` index k: at address + k·sc + off, R3); an `f64`, `i64` or `bool` element of any array the rewrite created or made unique, a reference element only of a fresh array, never read before (an initializing store, R5) |
-| `anew` | `pos:pos ty:ty z:u r:u` | `r` | r extents (`i64`; r the rank of `ty`): a new array of the array type `ty` (owned), its buffer cleared when z is 1, not cleared when z is 0 (every element is then written before any is read, §4.8); for a fixed-size `ty`, r = 0 and z = 0: a new home slot (rule 27 (a), R1) |
+| `eld` | `pos:pos ty:ty sc:u off:i` | `2` | address, index: the element of type `ty` at address + index·sc + off (a reference element borrowed; a `ci` index k: at address + k·sc + off, R3); from 4g an element of a struct, record or fixed-size type is its address (R18), and through the address of structs or records S a field of type `ty` (sc the size of S, off the field's offset, R24) |
+| `est` | `pos:pos sc:u off:i` | `3` | value, address, index: a store of the value at address + index·sc + off (a `ci` index k: at address + k·sc + off, R3); an `f64`, `i64` or `bool` element of any array the rewrite created or made unique, a reference element only of a fresh array, never read before (an initializing store, R5); from 4g also a replacing store of a reference value (R17), a struct, record or fixed-size value (R19) and a field through the address of structs or records (R24) |
+| `anew` | `pos:pos ty:ty z:u r:u` | `r` | r extents (`i64`; r the rank of `ty`): a new array of the array type `ty` (owned), its buffer cleared when z is 1, not cleared when z is 0 (every element is then written before any is read, §4.8); for a fixed-size `ty`, r = 0 and z = 0: a new home slot (rule 27 (a), R1); from 4g also of a struct or record `ty` (R21) |
 | `wbin` | `pos:pos ty:ty op:wop` | `2` | the wrapping `i64` operation `add`, `sub` or `mul` (only where no overflow can occur: positions, counts, induction values), or from 4f the bitwise `and` of two `i64` operands (only the lane `K & 7` of L13, R13); `ty` is 3; an operand of `add`, `sub` or `mul` may be a `bool`, counting 0 or 1 (R7) |
 | `chkb` | `pos:pos dim:u` | `2` | index, extent: the bounds check of dimension `dim` (from 4e) |
 | `chk` | `pos:pos err:s n:u` | `n+1` | condition, n arguments: the run-time error whose code name in `errors.inc` is `err` when the condition is true (from 4e) |
 | `rcnt` | `pos:pos incl:u l:lid e:lid` | `3` | lo, hi, step: the count of the range (incl 0 `..`, 1 `..=`) into the locals `l` (count − 1, `i64`) and `e` (true if not empty, a `bool`, R6), `range step is zero` checked (from 4e) |
-| `cow` | `pos:pos` | `1` | an `lv` of a local array or of a `ref` parameter of array type: copy on write of that variable (from 4e) |
-| `mcpy` | `pos:pos` | `3` | destination address, source address, byte count: copy the bytes (from 4e) |
+| `cow` | `pos:pos` | `1` | an `lv` of a local array or of a `ref` parameter of array type: copy on write of that variable (from 4e); from 4g also a `fld` chain naming an array field: copy on write of that field in memory (R23) |
+| `mcpy` | `pos:pos` | `3` | destination address, source address, byte count: copy the bytes (from 4e); from 4g, into elements that hold counts, the element count, and the copied reference values retained (R20) |
 | `cdat` | `pos:pos ty:ty n:u` | `n` | n constants (`ci`, `cf`, `cb`): the address of a read-only buffer of them in order (`ty` a `tptr`; the constants are its data, not lowered as nodes, R4; from 4e) |
 
 The records marked "from 4e" are fixed now so that the contract between the two programs holds
 for 4e and 4f (Decision 29); they are implemented with 4e (in 4e-0 `sealoop` wrote none of them
 and `sealower` rejected them as `BAD_RECORD`). The meanings above include the refinements R1–R11 of
-4e (Decision 31, "What `sealoop` rewrites in 4e" below) and R12–R16 of 4f (Decision 38, "What
-`sealoop` rewrites in 4f" below); no record or field was added for them, and 4f adds one word, `and`,
-to the enumeration `wop` of `passes.txt` (R13).
-Further records of 4g and 4h (a replacing store of a reference element, address arithmetic,
-struct copies, the inline block of rule 37) are specified at the start of those sub-phases.
+4e (Decision 31, "What `sealoop` rewrites in 4e" below), R12–R16 of 4f (Decision 38, "What
+`sealoop` rewrites in 4f" below) and R17–R25 of 4g (Decision 44, "What `sealoop` rewrites in 4g"
+below); no record or field was added for them, and 4f adds one word, `and`,
+to the enumeration `wop` of `passes.txt` (R13). 4g's needs (a replacing store of a reference
+element, address arithmetic, struct copies), which this paragraph once announced as further
+records, are met by R17–R25 with the record set unchanged (Decision 44); the inline block of
+rule 37 is specified at the start of 4h.
 
 **Types.** The type table of `sea.hirl` is that of `sea.hir`, with the same ids, followed by one
 `tptr` record per element type whose address the file takes (`adat`, `cdat`), numbered on from the
 last id of `sea.hir`'s table in order of first reference (file order, fields left to right). This
 is an exception to the numbering of §3.5.1, made so that the ids of `sea.hir` carry over. A `tptr`
-is the type only of `adat`, `cdat` and the `tmp` locals bound to them. From 4f (R14) the appended
+is the type only of `adat`, `cdat` and the `tmp` locals bound to them. From 4g its `elt` may also
+be a struct or record type: the address of the elements of an array of structs or records, and
+the address of a struct or record home (R21, R24). From 4f (R14) the appended
 records may also hold one `tfvec` record of element type `f64` (id 4) and n 8, the type F8 of the
 accumulator home of L13's sum8, when the file uses F8 and `sea.hir`'s table has no `tfvec` of `f64`
 with n 8 (one that it has is used instead); it is numbered with the `tptr` records, in the same
@@ -3321,7 +3539,7 @@ unchanged; the record table above and the validation below include them):
 
 | # | Refinement |
 |---|------------|
-| R1 | `anew` of a fixed-size type T has r = 0, z = 0 and no children: a new home slot of T (rule 27 (a): `sa P sK` of a new `slot sK size 8`); it holds no counts (`f64`, `i64`, `bool` elements) and is never released |
+| R1 | `anew` of a fixed-size type T has r = 0, z = 0 and no children: a new home slot of T (rule 27 (a): `sa P sK` of a new `slot sK size 8`); it holds no counts (`f64`, `i64`, `bool` elements) and is never released; from 4g-2 a home whose type holds counts (a fixed-size array of `str`, struct or record elements; a struct or record, R21) is released by rule 15 (g) when it is an owned temporary (T2, R11) and by rule 16 when it is a local's |
 | R2 | `adat` of a fixed-size array writes no instruction: its register is its operand's (the home address), as T1's alias |
 | R3 | an `eld` or `est` whose index child is a `ci` k writes no instruction for it: its LIR index is `-` and its offset off + k·sc (rule 26 (a), (b): `stf V P - 0 off`) |
 | R4 | the children of `cdat` are its data (the values of its `dat` record): they write no instruction |
@@ -3330,7 +3548,7 @@ unchanged; the record table above and the validation below include them):
 | R7 | an operand of `wbin` may have type 2: a `bool` counts 0 or 1 (`iadd N N b` of rule 20 (3), `imul SJ t rX` of rule 22 (4)) |
 | R8 | a `bind` of a `.l` local of a scalar type may stand anywhere among the statements `sealoop` writes (lowered by rule 2), and such a local may be the target of `asg set` with a `wbin`, `bin` or `un` value (rule 2: its instruction writes the local's register, `iadd i20 i20 i21`); a `bind` of a `.l` local of a dynamic array type stands only directly in a `block`, never in an `xblk` (the check `sealower` makes; `sealoop` writes it so in L4, L6 and L11, the last also in place of a `tbind`, which stands directly in a block), and is lowered by rule 30 (1) (an owned value moved, a borrowed X `mov H X`, `retain H`); a `.l` local of a fixed-size type is bound by `bind` only in L4 (rule 27 (b), a copy): everywhere else a fixed-size value is named by a `tmp` (R9), which holds no counts and may also stand directly in such a `block` or in place of a `tbind`; a `tbind` of `.l` locals (of any type, with no `cv`) stands only as the first statement of an L12 block and is lowered by rule 2 (the call of (b), each result into its local's register) and rule 27 (l) |
 | R9 | T3 holds for an `xblk` of a reference or scalar type only (above); a `tmp` whose child is an `xblk` of a fixed-size type names that `xblk`'s home (its register is the home's: no instruction, no `mov`), and a home is copied only where a rule copies it (a `bind` or `asg` of a fixed-size local, rule 27 (b), (d); rule 27 (h), (k) and (l); a `dyn`, rule 27 (i)); a `tmp` never copies |
-| R10 | `sea.hirl` holds no array expression: no `view`, `arr`, `row`, `dyn`, `fix`, `all`, no `rng` but a `forr`'s, no `idx` with an index that is not a scalar or with a `view` base, no `bin`, `un`, `cvt`, `powk`, `lib` or `emap` with an array operand, no `asg` with op ≠ `set` whose target is an array (not an element of one), no `tbind`, `tasg` or `tret` of a `lib ind2sub` with an array argument (L11 rewrites them), no `tasg` with an L6 store target or a `cv` other than 0 or 1 of a scalar (L12 rewrites them); from 4f also no `lib` of a reduction, `find`, `find_first` or `find_last` (L13, L14 rewrite them), the one exception being R16 (`sort`, `argsort`) |
+| R10 | `sea.hirl` holds no array expression: no `view`, `arr`, `row`, `dyn`, `fix`, `all`, no `rng` but a `forr`'s, no `idx` with an index that is not a scalar or with a `view` base, no `bin`, `un`, `cvt`, `powk`, `lib` or `emap` with an array operand, no `asg` with op ≠ `set` whose target is an array (not an element of one), no `tbind`, `tasg` or `tret` of a `lib ind2sub` with an array argument (L11 rewrites them), no `tasg` with an L6 store target or a `cv` other than 0 or 1 of a scalar (L12 rewrites them); from 4f also no `lib` of a reduction, `find`, `find_first` or `find_last` (L13, L14 rewrite them), the one exception being R16 (`sort`, `argsort`); from 4g no `proj` or `match` (L15, L16), and no `tasg` with a target that L17 rewrites (L12 rewrites it, each target through its `.l` local) |
 | R11 | an owned `tmp` written directly in a `block` that `sealoop` writes (an index vector or mask of L6, which a `bind` would retain when borrowed and so change rule 21's example) is a temporary of that block: released at the block's end, before its bound locals, the `tmp`s in the order of their records (an extension of T2; a borrowed one is not retained, rule 15 (k)); the counterpart of L4's `seq` rule: when such a `tmp` or `bind` of L6 (in no `xblk`) binds a `seq` (reachable from phase 6, when named arguments given in another order than the parameters' make a `seq`; no call of 4f can: a library call of 4f has one positional argument and at most one option after it, and error 115 rejects the reverse order), the `seq`'s `.t` locals are released at the block's end right after that `tmp` or `bind`'s own release (rule 16 (e)) |
 
 *Notation* (with loop(N; K) of 4e-0). P is the position of the rewritten node; every node a rewrite
@@ -3693,6 +3911,150 @@ before the outer loop, and the vector rule inside does not load it again; the ex
 loop(n; K)"); the `i64` mean converts the sum before n; operands that are views or selections are
 materialized by L5 or L10 before the reduction (no `.flat` folding before phase 7's fusion, §5.1).
 
+**What `sealoop` rewrites in 4g** (Decisions 29, 44, 45, 47, 48). The rewrites L15 (rule 29,
+projection), L16 (rule 33, `match`) and L17 (rules 19, 27 (d), (f) and 15 (i): every store of a
+reference or aggregate value and every store through a field path), and the extensions of L2–L14
+to `str`, struct and record elements below, implement rules 26 (`str` and struct literals), 29, 30
+(`str` and struct elements) and 33 of §3.6.6 and the stores of rules 19 and 27; with "Lowering of
+the `sea.hirl` records" they give exactly the LIR those rules give, except that the `retain` of a borrowed value that L17
+stores comes right before the store rather than right after the value (R17 (a)) (the agreed
+examples of rules 26, 29, 30 (the first) and 33 come out byte for byte through `sealoop` and are dump tests, §6.2; those
+of rules 15, 18 (the second), 27, 32 and 35 are `sealower`'s alone, no rewrite touching them).
+`sealower` keeps rules 15, 16 and 31 for every type, rule 27 (homes, (a)–(l), except (i) and (j) and
+the stores L17 takes), the reads of rule 18 (scalar indices, `fld` folding, whole struct elements),
+rules 32, 34 and 35, and the `lib` calls `str`, `lower`, `error` and `args`, which stay `lib` nodes
+in `sea.hirl` (R10 does not concern them: they have no array operand). The fixed record set cannot
+write the rest as it stands (a replacing store of a reference element, the address of a struct
+element, a struct copied into an element, the retains after a copy of reference elements, struct
+homes, a field loaded through an element's address, an owned `match` scrutinee on an exit, the
+copy on write of an array field, the moves of rule 15 (j) through L12's locals), so 4g refines the
+records once more (Decision 44: no new record kind or field, `passes.txt` unchanged). "Holds counts"
+is rule 16's: a `str`, a dynamic array, a handle, or a struct, record or fixed-size type with such
+a field or element. An address is **fresh** when it is `lv D` of a `tmp D = adat (lv A)` whose `tmp A =
+anew …` lies in the same `xblk` or `block` (the buffer of a new array or home, never read before).
+
+| # | Refinement |
+|---|------------|
+| R17 | **Replacing stores and moved values.** (a) An `est` of a reference value (`str`, dynamic array, handle) into an address that is not fresh is a replacing store: the value V owned by rule 15 (a) (retained first when borrowed), then `ldp O D X sc off`, `stp V D X sc off`, `release O` (rules 19 (5), 27 (f), 15 (i)); the `retain` of a borrowed V is written at the `est`, right before its `ldp O`, so in an L17 block after the indices, the checks and the cows (rule 15 (a)'s "right after its own instructions" is met as "before the store" for these stores; no agreed example shows the difference, and the counts are the same at every point a program can observe); into a fresh address it stays R5's initializing store. A numeric `est` is unchanged. (b) An `est` that stands directly in a `block` (not inside a loop or `if` of it) and whose value is `lv` of an owned `tmp` written directly in the same block moves that value: no `retain`, and R11 does not release that `tmp` (it is not read after the store); only L17 and L6's single `.flat` store write this form. Everywhere else the `lv` of a `tmp` is borrowed (T1): each store retains it, and an owned `tmp` is released once by T2 or R11 (rule 17's `filled`, L6's scalar value stored into every selected element) |
+| R18 | **Aggregate element addresses.** An `eld` whose `ty` is a struct, record or fixed-size array type loads nothing: its value is the element's address, a borrowed home inside the array (rules 18, 30): `li S sc`, `imul T X S`, `padd R D T`; with a `ci` index k (R3): `li O off+k·sc`, `padd R D O` (rule 26 (b)). Its address child is a `tptr` of that type, sc its size by §4.8's layout rule (`layout`, §2.6.3), off 0 |
+| R19 | **Aggregate stores.** An `est` of a struct, record or fixed-size value V. Its fields sc and off are those of every `est`: sc the stride of the containing elements (the size of the array's element type, or of the home's type) and off the offset of the target inside that element (0 for a whole element, the field's offset for a field, R24: `dims[i].lim = Lim { lo: 0.0, hi: 1.0 }` has sc the size of `Dim` and off that of `lim`); the size of V's type is only the copy length N. First the target address E: with an index X, `li S sc`, `imul T X S`, `padd E D T`, followed when off ≠ 0 by `li O off`, `padd E E O` (rule 31's field address); with a `ci` index k, `li O off+k·sc`, `padd E D O` (a field of a home: k = 0). Then, only into a fresh address, a V that is a `slit` (or a `seq` whose value is one, rule 5) has its fields written in place at E (rules 26 (b), 27 (g)); into an address that is not fresh a `slit` is first its own temporary home (L17's `tmp Vv`, rule 27 (d): "never H directly") and is stored by the copy form below, so the old reference fields are released; into a fresh address otherwise copy(E ← V) of rule 27 (c): `li N size`, `mcopy E V N`, then, when V is borrowed, `ldp R E - 0 o` and `retain R` for each reference offset o in ascending order (an owned V is moved: no retains, and its home is not released); into an address that is not fresh rule 27 (d): V's retains when V is borrowed, then E's old reference values released (`ldp O E - 0 o`, `release O`, ascending), then `li N size`, `mcopy E V N` (an owned V moved as in R17 (b)). Rule 17's struct `filled` is this copy in a loop (`li S size`, `imul T K S`, `padd E D T`, `li N size`, `mcopy E V N`, the retains) |
+| R20 | **Counted copies.** An `mcpy` whose destination is a `tptr` of an element type that holds counts has as its third child the *element count* n, not the byte count: a `ci` n (a static count, written by the rewrite as the `ci` child itself, not through a `tmp`), which `sealower` writes as one `li B n·size`, or a type-3 expression, written `li S size`, `imul B N S` (the instructions the byte count of the numeric forms gives); then `mcopy D S B`; then the retains of the copied reference values on the destination: for a `ci` n unrolled, `ldp R D - 0 o` and `retain R` for each reference offset o of the n elements in ascending order (o = k·size + o′); otherwise loop(n; K) { for each reference offset o′ of the element, ascending: `ldp R D K size o′`, `retain R` } (rule 28's "the retains of `str` elements" and rule 27 (c), (i), (j), spelled here). There are no retains when the source is an owned fixed-size, struct or record home named by a `tmp` of the same `xblk`: it is moved, and T2 does not release it (rule 27 (c), (i)). An owned dynamic source (rule 27 (j)'s A, a materialized view's operand) is retained-from and released as before |
+| R21 | **Struct and record homes.** R1, R2, R8 and R9 hold for struct and record types exactly as for fixed-size array types: `anew P S 0 0` is a home slot of the size of S rounded up to a multiple of 8, at least 8 (an empty struct too, lead decision L-h; rule 27 (a)); `adat` of a struct or record value is its home address (no instruction; type the `tptr` of S); a `tmp` of such a value names its home; T3 does not apply to an `xblk` of such a type. A home that holds counts is released by rule 15 (g) when it is an owned temporary (T2, R11) and by rule 16 when it is a local's. `anew` of an array of `str`, struct or record elements is rule 17's arrnew with `sea_arr_new` (ek 4) or `sea_arr_new_s` (`la` of the element type's `slay`, rule 38) whatever z: both clear the buffer (§4.8), so no reference element of a new array is ever left with undefined bits (lead decision L-j) |
+| R22 | **Owned temporaries of a block on its exits.** An owned `tmp` written directly in a `block` that `sealoop` writes (R11) is also released, as a hidden local of rule 16 (f), by every `break`, `cont` and `ret` that leaves that block (rule 16 (b), (c)), innermost first with the other hidden locals: L16's S0 is released when its block is left, after the bound locals of the blocks inside it that the exit leaves (an arm's block) and before those of the blocks outside it. Only L16's scrutinee can meet an exit (L6 and L17 blocks hold no exit, and L4's held vector is a `bind`), so no earlier output changes |
+| R23 | **Field paths in copy on write.** A `cow` whose child is a `fld` chain naming an array field, over the `lv` of a struct or record local, of a `ref` struct or record parameter, or of a `tmp` naming an element address (R18), is the memory form of cow (rule 19) at that field's address H and offset off (`ldp A H - 0 off`, `ldi C A - 0 0`, `li O 1`, `icmp ne S C O`, `if B S`, `rcall sea_arr_unique site 1 N 1 A`, `stp N H - 0 off`, `mov A N`, `endif B`). `ext` and `adat` of such a `fld` read the field afresh (`ldp`), except that an `adat` of the same chain in the statement right after its `cow` uses that cow's A (rule 19 (5): "data of the innermost array as (4) left it"); and an `adat` of the `lv` of a `ref` parameter in the statement right after the `cow` of that `lv` (the address child of an `est`, or L17 step 5's `tmp D′`) uses that cow's A too (only L17 writes it; L6 reads a `ref` parameter afresh, as 4e has it) |
+| R24 | **Fields through an element or home address.** An `eld` or `est` whose address child is a `tptr` of a struct or record type S (the data of an array of S, or `adat` of a home, R21) may load or store a field of type F at sc = the size of S and off = the field's offset in S (a nested field: the sum of the offsets along the path): rule 29's `ld? x DV K s off`, rule 18's one load `ld? R D X size off`, rule 19 (5)'s one store, rule 27 (f)'s `st? V P - 0 off` (with a `ci` index, R3). A field of a reference type is stored by R17, of a struct, record or fixed-size type by R19 (at the field's address) |
+| R25 | **Moves out of L12's locals.** In an L12 block, a store `asg set ti (lv Li)` of a `.l` local Li whose type holds counts, with the value exactly `lv Li` (cv 0) and a target that L6 does not rewrite (a local, a `ref` parameter, an element by scalar indices, a field path: rule 15 (d), R17, R19), moves Li's value (rule 15 (j): "each target stored with that owned value"): no `retain`, and rule 16 does not release Li at the block's end. For a target that L17 rewrites (an element by scalar indices, a field path: `(names[i], k) = two()`), `sealower` sees L17's block in place of that `asg`, directly in the L12 block, with no `tmp Vv` and the block's one `est` storing `lv Li` itself (L17 step 1's exception); that store (R17's `stp`, R19's copy) moves Li: no `retain`, no retains of V's reference fields, no release of a replaced value other than the target's old one, and Li is dropped from rule 16's releases at the L12 block's end. `sealower` recognizes the form by that operand, which no other rewrite writes: an `est` whose value is `lv Li` of a `.l` local of the `tbind` that begins the L12 block (R8), in a `block` that stands directly in that L12 block; L6 always binds its value first (`tmp Vv`, `bind Vv`, step 1) and stores `lv Vv` or an element of DV, so an L6 block (a target with a selection or a `view flat` base, also `(names[0..3], k) = two()` and `(names.flat[i], k) = …`) is never a move. Each Li is moved at most once. A target that L6 rewrites (a selection, `.flat`) and a converted component (`cvt`, `dyn`, `fix` of `lv Li`) keep Li as a held local released at the block's end, as 4e has it. (This also drops one `retain` and one `release` from the 4e-reachable form of a dynamic-array result stored into a local or `ref` parameter target of an L12 block; no golden pins that form, and only reference-count instructions change, never output.) |
+
+R5's "4g adds the replacing store" is R17. No record, field or enumeration word is added, so
+`passes.txt`, `tools/seaval.bas` (generic) and the record tables of every pass are unchanged.
+
+*Notation* (with that of 4e and 4f). P is the position of the rewritten node (the `proj`, the
+`match`, the `asg` or `tasg`); every node L15–L17 write takes P and every site is P's line, while
+the nodes of the program they keep keep their own: L16's `cs` patterns and arm blocks, the operands
+and values (lead decision L-l). s(S) is the size of a struct, record or fixed-size type S and
+off(S, f) the offset of its field f (of a nested field, the sum along the path), both from §4.8's
+layout rule through the module `layout` (§2.6.3); the reference offsets of a type are rule 15 (g)'s
+list, ascending.
+
+* **L15** (rule 29, LANGUAGE.md §4.7) `proj i` of a vector V of structs or records (element S, field
+  f of type F, F's element size sF): `xblk P F[] n` with `tmp V = v`; `tmp N = ext(V, 0)`; `tmp R =
+  anew P F[] 0 1 (lv N)`; `tmp DR = data(R)`; `tmp DV = data(V)`; loop(N; K) { `est P sF 0 (eld P F
+  s(S) off(S, f) (lv DV) (lv K)) (lv DR) (lv K)` } (R24; a `str` field's borrowed `ldp` is retained
+  by the initializing `est`, R5); value `lv R`. Lowered, this is rule 29's example exactly: `ldi i2`
+  (N; `tmp V` is T1's alias of `p1`), arrnew `li i3 1`, `li i4 1`, `li i5 1`, `rcall sea_arr_new_u`
+  (an `f64` field: z = 0 gives the unclearing entry, rule 17), `ldp p7 p6` (DR), `ldp p8 p1` (DV), loop(N; K),
+  `ldf f14 p8 i13 48 8`, `stf f14 p7 i13 8 0`. A fixed-size `S[n]` base: `ext` is its `li`, `adat` its
+  home (R2, R21); the result is always the dynamic `F[]` (LANGUAGE.md §4.7). A `str` field gives a
+  `str[]` (`sea_arr_new`, R21). A base that is a view or a selection (`dims[0..2].nom`,
+  `(A.flat).name`) is materialized first by L5 or L10, then projected (lead decision L-e: no fusion
+  before phase 7, §5.1).
+* **L16** (rule 33, LANGUAGE.md §7.6) `match S a1 … an` (`seacheck` has checked that the last arm is `_`
+  and no arm follows it): `block P 2` { `tmp S0 = S`; C(1) }, where for a pattern arm i with patterns
+  p1 … pk, C(i) is `if P 1` with the condition cond_i, the arm's block, and as its `else` part C(i + 1),
+  or for the `_` arm its block; cond_i is `bin eq P bool (lv S0) (cs p1)` for k = 1, and for k ≥ 2
+  `xblk P bool k` with the statements `tmp Qj = bin eq P bool (lv S0) (cs pj)` for j = 1 … k and the
+  value `bin bor P bool (… (bin bor (lv Q1) (lv Q2)) …) (lv Qk)`. A `match` with only the `_` arm is
+  `block P 2` { `tmp S0 = S`; that arm's block }. Checked by hand against rule 33's example: `tmp S0 =
+  lv a` is T1's alias of `p1`; `la p3 d1`, `rcall sea_str_cmp - 1 i4 2 p1 p3`, `li i5 0`, `icmp eq
+  i6` (Q1's register), the same for `"y"` (`p7`, `i8`, `i9`, `i10`), `ior i11 i6 i10`, `if 1 i11`,
+  `li i2 1`, `else 1`, `li i2 2`, `endif 1`: identical. An owned scrutinee (a call, `args()[0]` by rule
+  15 (f)) is a temporary of the block, released after the last `endif` (R11) and by every exit
+  through the `match` (R22): rule 16 (f)'s hidden local.
+* **L17** (rules 19, 27 (d), (f), 15 (i)) an `asg` (any op) whose target (a) is a field path, that is
+  holds a `fld` (`s.f`, `s.a.b`, `s.v[k]`, `dims[d].nom`, `a[i].v[k]`), or (b) is an element by scalar
+  indices whose element type holds counts or is a struct or record (`names[i]`, `dims[i]`, an element
+  of a `str[n]` or `S[n]`); a target with a selection or a `view flat` base is L6's (with a field root,
+  below), and the assignment of a whole local or `ref` parameter stays an `asg` for `sealower`
+  (rule 15 (d), rule 27 (d), rule 31). It becomes `block P n` with, for op `set`:
+  1. the value: `tmp Vv = value` (a `slit` an owned temporary home, R21); except that in an L12
+     block, a value that is exactly `lv Li` (cv 0) of one of that block's `.l` locals whose type
+     holds counts writes no statement here, and step 6's `est` has the value `lv Li` itself in
+     place of `lv Vv` (the hidden local cannot change before the store; R25 moves it);
+  2. for a root that is a `ref` parameter of a dynamic array type, `tmp B = lv T` (rule 19: `ldp B P - 0 0`
+     after the value, before the indices); a local root needs none (its `lv` is its register);
+  3. the path's scalar indices, left to right in source order (`tmp Ik`);
+  4. the checks, outermost array first, against the arrays as they are: `tmp Xk = ext(Bk, d)` and
+     `chkb d (lv Ik) (lv Xk)` per dimension, the linear position of a matrix as `lin` of rule 18; the
+     next array through a field of an element: `tmp Dk = data(Bk)`, `tmp Ek = eld P S s(S) 0 (lv Dk)
+     (lv Ik)` (R18, the element's address), `tmp Bk+1 = fld (lv Ek) j` (`ldp V E - 0 off`, rule 27
+     (e)); through a field of a struct local or `ref` parameter `tmp Bk+1 = fld (lv s) j`;
+  5. copy on write, outermost first (rule 19 (4)), each array taken as the cow before it left it
+     (R23: the cow's register A, rule 19's "the array is then A", for a `ref` parameter also the
+     array the memory form stored), never step 4's `Dk` or `Bk` (loaded before any cow). For a
+     dynamic root array T (a local or a `ref` parameter): `cow (lv T)`, and, when the path goes on
+     through a field of its element, `tmp D′ = adat (lv T)` right after that cow (A), `tmp E′ = eld P
+     S s(S) 0 (lv D′) (lv I0)`, the first field level's array being `fld (lv E′) j`; for a struct
+     root (a struct local or `ref` parameter s) there is no root array and the first field level's
+     array is `fld (lv s) j`. Then, for each field level outermost first, F its array (as just
+     given, or the previous level's `fld (lv E′) j′`): `cow F` when F is of a dynamic array type,
+     and, when the path goes on through a field of F's element, `tmp D′ = adat F` right after that
+     cow (A), `tmp E′ = eld P S′ s(S′) 0 (lv D′) (lv I)` with I the index of F on the path, the
+     next level's array being `fld (lv E′) j′`. So `s.items[i].v[k] = x` writes `cow (fld (lv s)
+     items)`, `tmp D′ = adat (fld (lv s) items)`, `tmp E′ = eld P S′ s(S′) 0 (lv D′) (lv I0)`, `cow
+     (fld (lv E′) v)`; and `a[0].w[0].v[0] = 9.0` after `let b = a` copies `a`, then the `w` of
+     `a`'s copy, then that `w`'s element's `v`, and `b` keeps every old value. A fixed-size array or
+     a field in a home needs none;
+  6. the store, one `est` right after the last `cow` (or the checks): `est sc off (lv Vv) A X` with
+     A = `adat` of the innermost array (R23's reuse of the cow's register) or of the home (`adat (lv
+     s)`, R21), X its linear position (`lv I`, `lin(I0, I1, X0)`, or `ci 0` for a field of a home),
+     sc and off the element size and offset or, for a field, R24's s(S) and off(S, f): R17 for a
+     reference value, R19 for an aggregate, the plain store for a number (`stf V D X 48 8` for
+     `dims[d].nom = x`, `stf V P - 0 off` for `s.x = v`). Vv is moved by R17 (b) or R19; an `lv Li` value by R25.
+
+  For op ≠ `set` (rule 19's compound form, rule 15 (i)): step 3; `tmp R0 = xblk P T 2` { `tmp T0 = `
+  the read of the target (its own `idx` and `fld` expression with each index replaced by its `lv
+  Ik`), lowered by `sealower`'s rules 18 and 27 (e) with its own base load and checks; `tmp Vv = value`; value `bin op P T (lv T0) (lv Vv)` (rule 1 or
+  rule 32, the `asg`'s line) }, so T2 releases an owned Vv and a retained read right after the
+  operation; then steps 2, 4, 5 and 6 storing `lv R0` (the base loaded again and the checks repeated:
+  the value may have changed the arrays through a `ref` argument). Sites: the `asg`'s line. For rule
+  12 the block is one statement. So no `fld` reaches `sealower` in an assignment target, and
+  `sealower` writes no store of a reference or aggregate element or field of its own (its rule-19
+  code stays the numeric one of 4d).
+
+*The 4e and 4f rewrites over `str`, struct and record elements* (extensions; no new numbers; the
+sub-step of Decision 47 that brings each in brackets):
+
+| Rewrite | 4g extension |
+|---------|--------------|
+| L2 `filled` | [4g-1] E `str`: `est 8 0 (lv V) (lv D) (lv K)`, V the `tmp` of the value: borrowed (T1), so `retain V` before each `stp`; an owned V is released once by T2, after `endif` (rule 17). [4g-2] E a struct or record: `est s(E) 0 (lv V) (lv D) (lv K)` by R19, a copy with retains into each element |
+| L3 `len` | [4g-1] of a `str`: `ext P 3 0` |
+| L4 `fore` | [4g-1] X = `eld P str 8 0` (a borrowed `ldp`, rule 30's first example exactly). [4g-2] X = `eld P S s(S) 0` (R18, the element's address); a fixed-size `str[n]` or `S[n]` vector is bound by copy into H's home with the retains of a borrowed source (rule 27 (b), (c)) and released at the block's end (rule 16): rule 30 (1)–(3) |
+| L5 selections | [4g-1] the result's stores are initializing: a `str` element read borrowed and retained (R5). [4g-2] struct and record elements copied by R19 from the R18 address; the projection of a selection by L15 after L5 (L-e) |
+| L6 selection stores | [4g-1] the stores into a `str` target are replacing (R17); a scalar `str` value is retained at each store and an owned one released at the block's end (R11), an array value read borrowed and retained; the single `.flat` store with a scalar index moves an owned value (R17 (b)), and its compound form computes the operation as L17's `tmp R0 = xblk …` (an owned value released right after the operation, rule 15 (i)). [4g-2] struct elements by R19; step 1's copy of a fixed-size value that is `lv` of the target's root, when its element type holds counts (`a[:] = a` with `a: str[3]`), takes R20's form: `mcpy data(Vv) data(V0) (ci n)` with n the element count, then the retains of the copied reference values (V0, the root, is borrowed), and that new home, an owned temporary of the block, is released by rule 15 (g) at the block's end (R11; R1 as amended). A target whose root path holds a `fld` (`s.v[0..2] = …`, `dims[d].v[:] = …`) interleaves L17's path steps with L6's steps in the order of rule 19 and LANGUAGE.md §5.5: the value (L6 step 1); all indices in source order, L17 step 3's path indices merged with L6 step 2's selection indices (`dims[p()].v[q()..3] = 0.0` evaluates `p()`, then `q()` and the range); all checks, L17 step 4 (the path, outermost first) then L6 step 3 (IX 2 on the field array); L6 step 4's shape check; the cows, L17 step 5 (the root, then each field level, R23) in place of L6 step 5; then L6 step 6, whose `tmp DT = adat (fld …)` stands right after the last cow and uses its register (R23), and the nest. The field array's base for IX is that `fld` read afresh at each use, as a `ref` parameter is |
+| L7 element-wise | [4g-1] (Decision 45) `str` operands read `eld P str 8 0` (borrowed); F is `bin cat` (owned, moved by the initializing `est`) or a comparison (`bool`); a scalar `str` operand is its `tmp`, an owned one released after the nest (T2). [4g-2] fixed-size `str` operands and results (homes that hold counts, R21) |
+| L9 literals | [4g-1] (b) `str` elements `est 8 0 e (lv D) (ci k)`, retained when borrowed (rule 26's agreed example exactly: `li i1 2`, arrnew with `li i2 4`, `rcall sea_arr_new`, `ldp p6`, `la p7 d1`, `retain p7`, `stp p7 p6 - 0 0`, …); (c) concatenation with `str` parts (each copied element retained, the parts released after the copies); (d) `[]` of `str[]` (R21). [4g-2] struct and record elements by R19 (a `slit` written in place at `li O off`, `padd E D O`; another value copied); `[]` of `S[]` |
+| L10 views, `dyn`, `fix` | [4g-1] materialized `.flat`, `.col`, `.row` of a `str` array by R20 (the element count, the retain loop); `.T` element by element (an `est` of a borrowed element: retained). [4g-2] `dyn` and `fix` of `str[n]`, `S[n]` and of `str` and struct matrices by R20; the materialized views of struct and record arrays |
+| L12 tuple assignment | [4g-1] also a `tasg` with a target that L17 rewrites (a `str` element), each target through its `.l` local with R25's moves. [4g-2] field-path and aggregate targets the same |
+| L14 `sort`, `argsort` | [4g-1] a dynamic `str` vector (R16 as written). [4g-2] a fixed-size `str[n]` arrives as the `dyn` of pass 2a, rewritten by L10 with R20 |
+
+So no `proj` or `match` occurs in `sea.hirl`, and no `asg` or `tasg` whose target holds a `fld`.
+
+**Lead decisions of 4g in this section** (within Decisions 44 and 47; §0): views and selections under
+a projection are materialized first (L-e); every array of `str`, struct or record elements is
+allocated by a clearing entry (L-j, R21); the struct layouts come from the module `layout` (L-k);
+every node L15–L17 write takes the rewritten node's position, L16 keeping its patterns' and arms'
+own (L-l); an empty struct's home is an 8-byte slot and its arrays have element size 0 (L-h, R21).
+
 **What the passes validate.** `sealoop` validates its input `sea.hir` as `sealower` did before
 4e-0: every record against `passes.txt` (fields, enumeration words, positions within the file
 list), the record kinds the current sub-phase implements (from 4e also `dyn`, `fix`, `view`, `all`,
@@ -3728,6 +4090,37 @@ child's. Any violation is `BAD_RECORD` (`BAD_TREE` for the tree). `tools/seaval.
 format `hirl` (sets `H HF HL`) with its generic checks (§2.10); it needed no change for 4f, since it
 reads the enumeration `wop` (with `and`) and the types (with F8) from `passes.txt` and the file
 itself.
+
+**What the passes validate in 4g** (in addition to the above; Decision 44). `sealoop` accepts in
+`sea.hir` the kinds of the current sub-step (4g-1: `cs` anywhere, `bin cat`, the comparisons and
+`asg add` of `str` operands and their element-wise forms, `lib str`, `lower`, `error`, `args`,
+`len` of a `str`, `match` and `arm`, the `str` element type in `tvec` and `tmat`, the `str` forms
+of `filled`, `sort` and `argsort`; 4g-2 also `tstruct`, `trec` and their `fd` records, the struct
+and record element types, `tfvec`/`tfmat` of `str`, struct and record elements, `slit`, `fld`,
+`proj`, field targets), each against `passes.txt`, the readings of §2.6.2 ("Readings fixed by 4g")
+and §3.5.7's checks; anything else of 4g stays `BAD_RECORD` until its sub-step. `sealower`
+checks in addition: no `proj`, `match` or `arm`; no `fld` in the target of an `asg` or `tasg`, and
+no `asg` whose target L17 rewrites (an element by scalar indices whose element type holds counts
+or is a struct or record), and no `tasg` with such a target (L12 routes it, R10); an `est` of a reference value into a fresh address or, by R17, into any
+other address of a `tptr` type, a moved value only in the form of R17 (b) (directly in a `block`,
+`lv` of an owned `tmp` of that block that is read nowhere after the store); an `eld` or `est` of a
+struct, record or fixed-size `ty` with off 0 only with an address of the `tptr` of that type (a
+whole element, R18, R19), and with any other address or off only as R24's field clause below; a
+`slit` value of an `est` only into a fresh address (R19); an
+`eld` or `est` through the address of a struct or record S (R24) only with sc the size of S and off
+the offset of a field, nested ones included, whose type is `ty` (the value's type for an `est`), as
+`layout` computes them; an `mcpy` into a `tptr` whose `elt` holds counts with a type-3 element
+count (R20); a `cow` of an `lv` (4e) or of a `fld` chain over R23's roots naming a field of a
+dynamic array type; `adat` of an array, of a struct or record home (R21) or of such a `fld` chain;
+`anew` also of a struct or record type with r = 0 and z = 0 (R21); a `tmp` directly in a `block`
+only where R11 and R22 allow it; R25's moves only for an L12 block's stores of its own `.l` locals
+with the value exactly `lv Li` and a target that L6 did not rewrite: an `asg set ti (lv Li)`
+directly in the L12 block, or one `est` whose value is `lv Li` in a block directly in it (L17 step
+1's exception: an `est` whose value is `lv Li` of a local declared by an L12 block's `tbind` is
+valid only as that block's L17 store, in a block directly in it, each Li at most once; `est`s of
+other `.l` locals are unchanged, and an L6 block, which stores `lv Vv`, is never a move); appended types only `tptr`
+(also of struct and record types) and F8, as before. Any violation is `BAD_RECORD`. `tools/seaval.bas`
+needs no change for 4g (no record, field or word is added).
 
 **Capacity.** `sealoop` counts `sea.hirl` as a whole: all its nodes against `SEA_LIM_NODES`
 (`program too large: nodes`), all its locals, the new `.l` locals included, against
@@ -4042,7 +4435,9 @@ for a construct, whichever program of pass 3a does the work. From 4e-0 `sealoop`
 constructs into the records of §3.5.9 and `sealower` lowers them by "Lowering of the `sea.hirl`
 records" (after rule 38); a rule whose construct `sealoop` rewrites (17 and 30 from 4e-0; 20–22, 25,
 26 for numeric literals, 27 (i), (j) and 28 from 4e, §3.5.9 L5–L11; 23 and 24 from 4f, §3.5.9 L13
-and L14; 26 for `str` and struct literals, 29 and 30 for `str` and struct elements with 4g) is met by that rewrite and that lowering together, with
+and L14; from 4g 26 for `str` and struct literals (L9), 29 (L15), 30 for `str` and struct elements
+(L4), 33 (L16), and the stores of reference and aggregate values and through field paths of rules
+19, 27 (d), (f) and 15 (i) (L17), §3.5.9 "What `sealoop` rewrites in 4g") is met by that rewrite and that lowering together, with
 the instructions, registers, blocks, slots, labels and sites the rule gives, unchanged. Rules 12,
 15, 16 and 31 are applied by `sealower` to `sea.hirl` (Decision 27), and so is rule 27 (homes),
 except its (i) and (j). Where a rule leaves an order or a register open, the rewrite of §3.5.9
@@ -4279,7 +4674,15 @@ hoists, §5.2), so a dump shows every load.
     temporary of its `xblk`, released right after the `xblk`'s value, unless that value names it
     (moved out); `eld` of a reference element is borrowed; an `est` of a reference value is an
     initializing store, the value owned by (a); `ext`, `adat`, `eld` and `wbin` consume their
-    operands like any node (an owned operand is released right after them).
+    operands like any node (an owned operand is released right after them). From 4g (§3.5.9
+    R17–R25): an `est` of a reference value into an address that is not fresh is a replacing
+    store (`ldp O`, `stp V`, `release O`, R17); an `est` directly in a `block` of the `lv` of an
+    owned `tmp` of that block moves it, and that `tmp` is not released (R17 (b)); an `eld` of a
+    struct, record or fixed-size element is its address, borrowed (R18); a struct or record
+    `anew` is a home, released by (g) when it is an owned temporary (R21); an owned `tmp` written
+    directly in a `block` is released also by the exits that leave the block, as a hidden local
+    of rule 16 (f) (R22); an L12 store of `lv Li` with cv 0 into a target that L6 does not rewrite
+    moves Li's value (R25).
     Example (`a`, `b` are `str` locals in `p1`, `p2`; line 4 `let s = a + b`, line 5 `let t = s`,
     line 6 `printf("%s\n", a + b)`):
 
@@ -4495,6 +4898,15 @@ hoists, §5.2), so a dump shows every load.
     iadd i13 i2 i12
     stf f4 p11 i13 8 0
     ```
+
+    From 4g the stores this rule gives for a reference element (`ldp O`, `stp V`, `release O`), a
+    struct element (rule 27's assignment), a field of an element and a path through several arrays
+    are `sealoop`'s L17 (§3.5.9: its steps are (1)–(5) above in this order, the inner arrays read
+    again after each outer cow, the data of the innermost array as (4) left it by R23), lowered by
+    R17, R19, R23 and R24, with one difference in order: (1) computes the value, and the `retain`
+    that makes a borrowed value owned comes at the store in (5), after the checks and cows (R17
+    (a)); `sealower` lowers (1)–(5) itself only for a numeric element by scalar
+    indices of an array local or `ref` parameter, as in 4d.
 
 20. **Selections (reads).** An `idx` with a range, `:`, an index vector or a mask among its
     indices. (1) The base, then the indices left to right; a range index is its operands then
@@ -4878,7 +5290,11 @@ hoists, §5.2), so a dump shows every load.
     (`names` is `p5`; the data records are `str d1 a` and `str d2 bc`. A literal of 300 `f64`
     constants is `li` 300, arrnew, data, `la` of `dat d1 f64 300`, `li` 2400, `mcopy`.)
 
-    From 4e a literal of `f64`, `i64` or `bool` elements reaches `sealower` as §3.5.9 L9 (its `str`
+    From 4g (4g-1 for `str`, 4g-2 for structs and records) every literal reaches `sealower` as L9:
+    the example above is L9 (b)'s `xblk` (`tmp R = ci 2`, the `anew` of a `str[]`, which is
+    `sea_arr_new` by R21, `tmp D`, and per element `est 8 0 (cs …) (lv D) (ci k)`, the borrowed `la`
+    retained by the initializing store); a struct element is written in place or copied by R19 at
+    the element's address. From 4e a literal of `f64`, `i64` or `bool` elements reaches `sealower` as §3.5.9 L9 (its `str`
     and struct literals at 4g): the home slot of (a) and a fixed-size result of (c) are the `anew` of a
     fixed-size type (R1), the stores at `- 0 off` are `est`s with a constant index (R3), the `dat` is a
     `cdat` (R4); in (c) the joined lengths, extents and the offsets (r0, c0) are chains of new
@@ -4951,7 +5367,11 @@ hoists, §5.2), so a dump shows every load.
     L10); a fixed-size temporary home is the `anew` of R1 and is copied, not aliased, into a local
     (R9). Such homes hold no counts, so (g) and every release of them are empty. 4g adds structs,
     records, fields (e), (f), (g) and the fixed-size arrays of `str` and struct elements on the same
-    homes, slots and hidden results.
+    homes, slots and hidden results (4g-2, Decision 47). From 4g the stores of (d) into an element
+    or a field and of (f) are `sealoop`'s L17 (§3.5.9: R17 for a reference field, R19 for an
+    aggregate, R24 for a field through an address), (i) and (j) of counted elements use R20, and a
+    struct or record home is R21's `anew`; `sealower` keeps (a)–(c), (d) for a whole local or `ref`
+    parameter, (e), (g), (h), (k) and (l).
 
 28. **Views.** A `view` that is the base of an `idx` (a read, a selection or an assignment target)
     is folded into the addressing: the `idx` works on the view's operand with positions mapped
@@ -4980,6 +5400,15 @@ hoists, §5.2), so a dump shows every load.
     element (J, I) at `J + I·C` and stores at `I + J·R`, both in the innermost body; a materialized
     view's site is the `view`'s line, a folded one's the `idx`'s (an assignment's, the `asg`'s).
 
+    From 4g-1 "the retains of `str` elements" after a materialized `.flat`, `.col` or `.row` copy are
+    spelled by §3.5.9 R20: after `mcopy D S B`, for a dynamic copy of n elements (n the register of
+    the count), loop(n; K) { `ldp R D K 8 0`, `retain R` } (a loop of rule 17's form, its block
+    numbers the next ones), and for a fixed-size copy (4g-2) `ldp R D - 0 o`, `retain R` for each
+    reference offset o in ascending order; the same retains follow the copies of rule 27 (i) and
+    (j) (structs: for each element, each reference offset of the element in ascending order). An
+    owned operand A is released after the retains (rule 15 (b)). `.T` of a `str` matrix stores each
+    borrowed element with its `retain` (an initializing store, rule 15 (a)).
+
 29. **Projections.** `proj i` of a vector V of structs (size s, field i at off): n, arrnew of the
     field's element kind with n, data of the result and of V, loop(n; K) with `ld? x DV K s off`
     and the store at K (a `str` retained). Example (line 2 `let nom = dims.nom`, `dims` a `Dim[]`
@@ -5004,6 +5433,12 @@ hoists, §5.2), so a dump shows every load.
     endloop 2
     endif 1
     ```
+
+    From 4g-2 this rule is met by `sealoop`'s L15 and `sealower`'s lowering (§3.5.9, R24): the
+    example is L15's `xblk` (`tmp V` the alias of `p1`, `tmp N` the `ldi`, the `anew` the arrnew,
+    `tmp DR` and `tmp DV` the two `ldp`s, the loop's `eld` through the struct address with sc 48
+    and off 8, the `est` at K). A `str` field's element is retained before its `stp` (R5); the
+    projection of a view or selection is made of its materialized copy (lead decision L-e).
 
 30. **Element loops.** `fore L v body`: (1) the vector; the loop holds it in a hidden local H: an
     owned value is H itself, a borrowed one is `mov H X`, `retain H` (the variable may be assigned
@@ -5055,7 +5490,11 @@ hoists, §5.2), so a dump shows every load.
 
     From 4e-0 a `fore` reaches `sealower` as the block of §3.5.9 L4, whose lowering is exactly
     the sequences above (§3.5.9 shows the second example's `sea.hirl`); the loop variable is the
-    `tmp` of the `eld`, so it is never retained or released.
+    `tmp` of the `eld`, so it is never retained or released. From 4g-1 the first example is L4 over
+    `lib args` (an owned value, held as H with no instruction) with X = `eld P str 8 0` (the borrowed
+    `ldp p9 p5 i8 8 0`); from 4g-2 a struct element is X = `eld P S s(S) 0`, the element's address
+    (R18), and a fixed-size `str[n]` or `S[n]` vector is copied into H's home with the retains of a
+    borrowed source and released at the block's end (rule 27 (b), (c); rule 16).
 
 31. **`ref` arguments of arrays, elements and fields.** A `rarg` of: a local L of a reference type
     (not a `ref` parameter): rule 12 with `stp L A - 0 0` before the call and `ldp L A - 0 0` after
@@ -5106,7 +5545,8 @@ hoists, §5.2), so a dump shows every load.
     `str` is `rcall sea_str_cmp - 1 C 2 A B`, `li Z 0`, `icmp cc D C Z`. `len(s)` is `ldi D S -
     0 16`. `str(x)`: an `i64` `rcall sea_str_i64 site 1 R 1 X`, an `f64` `rcall sea_str_f64 site 1
     R 1 X` (both owned), a `bool` `la T dA`, `la F dB` (`str dA true`, `str dB false`), `psel R X T
-    F` (borrowed). `lower(s)` is `rcall sea_str_lower site 1 R 1 S`. A `cs` is rule 7 wherever it
+    F` (borrowed); `str(s)` of a `str` never reaches pass 3a (pass 2a writes s itself, §3.5.5,
+    Decision 46). `lower(s)` is `rcall sea_str_lower site 1 R 1 S`. A `cs` is rule 7 wherever it
     stands (borrowed); a `%s` argument of `printf` is any `str` (rule 8's `stp`). Example (line 2
     `if a < b {`, `a`, `b` `str` locals in `p1`, `p2`):
 
@@ -5143,6 +5583,12 @@ hoists, §5.2), so a dump shows every load.
     ```
 
     (the data records are `str d1 x` and `str d2 y`.)
+
+    From 4g-1 this rule is met by `sealoop`'s L16 and `sealower`'s lowering (§3.5.9): the example is
+    L16's block (`tmp S0` the alias of `p1`; the arm's condition the `xblk` of `tmp Q1`, `tmp Q2` and
+    their `bin bor`; the `if` with the `_` arm's block as its `else` part). An owned scrutinee is the
+    block's temporary, released after the last `endif` and by every `break`, `cont` and `ret` that
+    leaves the `match` (§3.5.9 R11, R22).
 
 34. **`error`.** As rule 8, with `rcall sea_error site 0 2 F S` in place of `rcall sea_printf`
     (§4.8): the same `fmt` record and argument slot. The entry does not return; pass 3a writes no
@@ -5201,7 +5647,8 @@ hoists, §5.2), so a dump shows every load.
     (`y` is `f5`.)
 
 38. **Data records of phase 4.** A `slay lab size n` record with its n `soff` records exists for
-    each struct type that is the element type of a dynamic array an instruction allocates
+    each struct type (from 4g also each record type, lead decision L-m: an anonymous struct type,
+    Decision 48) that is the element type of a dynamic array an instruction allocates
     (`sea_arr_new_s`): its label is given at its first `la` (§3.6.2), its size is the struct's
     (§4.8), and the `soff` records list the byte offsets of its reference fields in ascending
     order, those of nested structs and of the elements of fixed-size arrays included. `dat`
@@ -5262,6 +5709,27 @@ rule 17's introduction.
 * (from 4f) `lib sort` and `lib argsort` (R16): rule 24, `rcall sea_sort` or `rcall sea_argsort`
   with the site, the result register (the destination) and the two arguments, the vector's
   register and the `desc` register; an owned vector is released right after the `rcall`.
+* (from 4g, §3.5.9 R17–R25; sizes, offsets and reference offsets from the module `layout`)
+  `est` of a reference value into an address that is not fresh: the value (retained first when
+  borrowed), `ldp O D X sc off`, `stp V D X sc off`, `release O` (R17 (a)); an `est` directly in a
+  `block` of `lv` of an owned `tmp` of that block: no `retain`, and the `tmp` is not released
+  (R17 (b)). `eld` of a struct, record or fixed-size `ty`: `li S sc`, `imul T X S`, `padd R D T`
+  (a `ci` index k: `li O off+k·sc`, `padd R D O`), borrowed (R18). `est` of a struct, record or
+  fixed-size value: the address E (R18, then `li O off`, `padd E E O` for a field inside an
+  element), then a `slit` written in place, or copy(E ← V) of rule 27 (c) into a fresh address,
+  or rule 27 (d) otherwise (R19). `mcpy` into counted elements: the byte count from the element
+  count (`li B n·size`, or `li S size`, `imul B N S`), `mcopy`, then the retains, unrolled for a
+  `ci` count, else in loop(n; K) (R20). `anew` of a struct or record type: `sa P sK` of a new slot
+  (R21); of an array of `str`, struct or record elements: `sea_arr_new` or `sea_arr_new_s`, whatever
+  z (R21, L-j). `adat` of a struct or record home: no instruction (R21). A `tmp` written directly
+  in a `block`: also released by the `break`, `cont` and `ret` that leave the block, with the hidden
+  locals (R22). `cow` of a `fld` chain: the memory form of cow at the field (R23); `ext` and `adat`
+  of the chain `ldp` it afresh, except the `adat` right after its `cow` (and the `est` address
+  `adat` of a `ref` parameter right after its `cow`), which is that cow's register. `eld` and `est`
+  through the address of a struct or record: `ld?`/`st?` `R D X size off` (R24). In an L12 block,
+  the store of `lv Li` (cv 0) into a target L6 did not rewrite (an `asg`, or the `est` of an L17
+  block whose value operand is `lv Li` itself) moves Li (no `retain`, no release at the block's
+  end; R25).
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8, 12, 23, 27 and 31), and their
 `slot` records come at the start of the function in that order (§3.6.3).
@@ -7291,23 +7759,105 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     * `tests/rt/arm64_macos/rt_sort_*` and `tests/rt/x86_64_linux/rt_sort_*` (§4.8): the ABI and
       ownership, `str` sort and argsort with their counts and the heap check, empty and one-element
       vectors, out of memory. `sort` of a `str` vector as a program is 4g's (Decision 40).
-  * **4g**: `str_*`, `struct_*`, `match_*` programs: strings as locals, parameters, elements,
-    struct fields; `+` (a 2³¹-byte result is not tested: it needs 2 GiB), comparisons, `len`,
-    `str(x)` of each type including NaN and ±∞ (`nan`, `inf`, `-inf`), `lower`, `s += t`; `sort_str`: `sort` and
-    `argsort` of a `str` vector ascending and descending, byte-wise with prefixes, ties in input
-    order, empty strings (moved from 4f, Decision 40); structs with every field kind (scalars,
-    `str`, dynamic arrays, fixed arrays, nested structs), struct arrays and projection, literals
-    (missing, duplicate and unknown field errors), records, `match` with several patterns per
-    arm and `_`; `error` (status 1, the message after flushed output); `args` (with `NAME.args`);
-    `.res` dumps of §3.4.2's records (`rt`, `rtst` order, `rcns`, `rslit` with `sid` 0);
-    `heap_*` programs of the ownership rules that strings and structs bring: a value derived from
-    a temporary (`printf("%s\n", args()[0])`, `let s = args()[0]`, `match args()[0]`, `f().name`),
-    struct temporaries with reference fields (a `slit` argument, a call's struct result used once,
-    an `ifx` of a struct), an `eval` of a call returning a `str`, a `_` component of a `str` and
-    of a struct result, `filled` of an owned struct and of an owned `str`, tuple assignment to an
-    element and to a field (`(v[i], s.name) = two()`), nested `ref` calls with borrowed `str`
-    elements and fields (`f(v[0], g(ref v))`, `f(s.name, g(ref s))`); `.lir1` dumps of the
-    examples of rules 15, 18 (the second), 26, 27, 29, 30 (the first), 32, 33 and 35;
+  * **4g** (Decisions 44–48; built in two sub-steps, Decision 47). Every expected output comes from
+    LANGUAGE.md and the rules, through `tests/vectors/` scripts run with `uv` (under `timeout 120`)
+    whose outputs are committed, never from a run of the compiler; every program also runs under the
+    heap check (0 live objects at exit) and on both targets (`make cross`). `+` of a 2³¹-byte result is
+    not tested (it needs 2 GiB). The scripts: `str4g_cases.py`, an independent model (`str(f64)` as
+    C's `%.17g` with `nan`, `inf`, `-inf`; `str(i64)`; the byte-wise unsigned comparison and a stable
+    sort by Python's `sorted` on bytes; ASCII `lower`; the `%s` width and precision of LANGUAGE.md
+    §11.1); `manualD_part1.py` (IEEE arithmetic in the program's order); `dump4g_cases.py` (the
+    `.res`, `.hir1`, `.hirl` and `.lir1` goldens record by record from §3.4.2, §3.5, §3.5.9 and
+    §3.6.6); and `res_gen.py` extended for `rcns`, `rtst`, `rtfd` and `rslit`.
+
+    **4g-1** (strings, `match`, `error`, `args`):
+    * `str_basic`: `str` locals, parameters (borrowed), results (owned), `ref` parameters, tuple
+      components; `+` and `+=`; the six comparisons (a proper prefix is smaller, bytes ≥ 0x80
+      compare unsigned, empty strings, `"a" != "a "`); `len`; `printf("%s")` of dynamic strings with
+      width, precision and `-`; `str` constants (`const S = "a" + "b"`, one naming another, `const T:
+      str = …`, `const B = "a" < "b"`, lead decision L-g).
+    * `str_conv`: `str(x)` of `i64` (0, −2⁶³, 2⁶³ − 1), of `f64` (0.1 → `0.10000000000000001`, −0.0 →
+      `-0`, 100.0 → `100`, 1e300, 5e-324, NaN of both signs → `nan`, `inf`, `-inf`), of `bool`, and of
+      a `str` (unchanged, Decision 46); `lower` (only A–Z changed, bytes ≥ 0x80 kept, the empty
+      string).
+    * `str_arrays`: literals, element reads and replacing stores (`names[i] = s`, `names[i] += "x"`,
+      L17), selections read and stored (a scalar value, an array value, a mask), the concatenation
+      `[v, "x"]`, `filled("", n)`, `filled("ab", r, c)`, `for s in names`, `.flat`, `.col` and `.T` of
+      a `str[,]` (R20's retain loop), `len(names)`, `[]` under a `str[]` annotation, copy on write
+      of a shared `str[]` (the original unchanged), `(names[i], k) = two()` with a `str` result (L12,
+      R25).
+    * `str_ew` (Decision 45): `names == "x"`, `a < b` of two `str[]`, `names + "!"`, `"<" + names`, a
+      `str[,]` broadcast against a `.col` and a `.row`; `errors/r_str_ew_shape` (two `str[]` of
+      lengths 3 and 2: `shape mismatch: 3 vs 2` at the operator's line, status 1).
+    * `sort_str` (Decision 40): `sort` and `argsort` of a dynamic `str` vector ascending and
+      descending, byte-wise with prefixes, ties kept in input order (`argsort`), empty strings, bytes
+      ≥ 0x80, an empty vector.
+    * `match_basic`: several patterns per arm, the first matching arm wins, empty arm bodies, a
+      `match` with only `_`, scrutinee a local, a `ref` parameter, a call's result (owned),
+      `args()[0]`, an element; `break`, `continue` and `return` inside arms with an owned scrutinee
+      (R22: heap check 0).
+    * `args_basic` with `NAME.args` (no argument, one, several, an empty argument, one with blanks):
+      `for a in args()`, `len(args())`; `errors/r_args_oob` (`args()[0]` without arguments: `index 0
+      out of bounds for dimension 0 of extent 0` at its line, status 1).
+    * `errors/r_error_*` (LANGUAGE.md §9.2, §9.3): `error` after printed output (flushed first, then
+      the message), inside a function, with `%s` of a dynamic string and numeric conversions, in a
+      `_` arm; status 1, standard output as flushed.
+    * `heap_str_*`: `printf("%s\n", args()[0])`, `let s = args()[0]`, `match args()[0]` (rule 15
+      (f)), an `eval` of a call returning a `str`, a `_` component of a `str` result, `filled` of an
+      owned `str`, `(v[i], x) = two()` with `str` results (L12, R25), `f(v[0], g(ref v))` with a
+      borrowed `str` element (rule 31).
+    * compile errors (positions from the `at` words of §2.6.2): 201 (`let s: str = 1`; a non-`str`
+      scrutinee, at the scrutinee); 240 (`"a" - "b"`, `s * 2`, `"a" + 1`, `names == 1.0`); 207 (no
+      `_`, `_` not last, a `match` without arms, and 207 reported before an error in the scrutinee
+      that follows it, lead decision L-a); 208 (a pattern repeated within an arm and across arms, an
+      arm after `_`, a second `_`); 233, 210 and 211 for `error`; 243 for `lower(1)`, `lower(names)`,
+      `str(v)` of an array, `str()` and `args(1)` (Decision 46, L-d); `missing return` (223) for
+      `fn f() -> i64 { error("x") }` (LANGUAGE.md §8.1: `error` does not end a path; the information
+      item of §0); `program too large: strings` (400) at the `const` for a `str` constant joining two
+      literals of 2 100 bytes each (L-f); `not supported yet: strings` for `fn f() -> str[2]` and `let
+      a: str[3] = …` at their `type` nodes, and the `structs` and `records` rows unchanged (the
+      phase-rule row 4g-1).
+    * changed goldens (lead decision L-i): `errors/err_const_noval_errtype`,
+      `err_const_noval_shortcircuit`, `err_const_noval_calltype` and the dumps
+      `passes/res_noval_calltype`, `res_noval_shortcircuit` and `res_err_first_pos` keep their
+      intent with an undeclared struct type `Q` in place of `str` in the faulty signature (`fn f() ->
+      Q`, `fn f(s: Q)`: `unknown struct type` (229) at the `type` node, found by `seaname` in the
+      signature as `strings` was; in `res_err_first_pos` the signature error then stands at the type
+      node, still before the item error in source order). Retired, their constructs compiling from
+      4g-1 and covered by the programs above: `err_ns_string_let`, `err_ns_string_type`,
+      `err_ns_str_literal`, `err_ns_arr_str_elem` and `err_ns_match`. Re-derived:
+      `passes/res_err_str_param` and `res_err_str_result` (no `rerr`, the `str` types in `rfn`) and
+      `res_powk_skip` (its `match` resolved). `err_ns_str_fixed_type`, `err_ns_struct`,
+      `err_ns_record` and `passes/res_struct` stay until 4g-2.
+    * dumps (`tests/passes/`; stage.sh checks each `.hirl` from both sides): the `.res` of an `rcns`
+      with `+` and of an `rcnb` from a `str` comparison; the `.lir1` of the agreed examples of rules
+      15, 26, 30 (the first), 32, 33 and 35 as whole programs, each the rule's text exactly; `.hirl`
+      goldens of L16 (one- and two-pattern arms, `_` only, an owned scrutinee with a `break`), L17 of
+      a `str` element (`=` and `+=`), R20 (a dynamic `.flat` of a `str[,]`), L2 and L9 with `str`
+      elements, L7 with `bin cat` and a `str` comparison, and L12 with R25.
+
+    **4g-2** (structs, records, projection, fixed-size `str` and struct arrays):
+    * `struct_basic`: every field kind (`f64`, `i64`, `bool`, `str`, dynamic arrays, fixed arrays, a
+      nested struct), literals in any order with the source evaluation order shown (as `ev.sea`,
+      §3.5.5), field reads, writes (scalar, `str`, struct, nested `s.a.b = …`), `s.v[i] = x`,
+      `s.v[0..2] = 0.0` (an L6 field root), `s.n += 1`, `s.name += "x"`, struct parameters and
+      results, two struct results, `ref` struct parameters, an `ifx` of a struct, value semantics (a
+      copy's array field written, the original unchanged), and an empty struct `struct E {}` (`E {}`,
+      an `E[]` of 3 elements, lead decision L-h).
+    * `struct_arrays`: Appendix D's literal style, `dims[d].f` reads, `dims[d].f = x`, `a[i].v[k] = x`
+      with a shared copy (rule 19's cow chain), `dims[i] = p`, projections (`dims.nom`, `dims.name`,
+      of a fixed `S[3]`), `filled(P { … }, n)`, `for p in dims`, the selections `dims[0..2]` and
+      `dims[0..2].nom` (L-e), `f(ref dims[d].nom)`, `f(ref s.name)`.
+    * `str_fixed`: `str[3]` by annotation, converted by `fix` with its run-time check
+      (`errors/r_str_fix`: a `str[]` of 2 elements into a `str[3]`, `shape mismatch: expected 3, got
+      2`, status 1), `dyn`, element stores, `for s in` a `str[3]`, `sort` of a `str[3]` (a dynamic
+      result, Decision 39), `+` of a `str[3]` and a `str` (Decision 45 on a fixed-size operand).
+    * `records`: bound, read, a `var` record's field assigned, a nested record, and the uses of
+      Decision 48: an array literal of records, `filled`, `if` arms, the projection of a record
+      array, an element loop.
+    * `heap_struct_*`: a `slit` argument, a call's struct result used once, an `ifx` of a struct,
+      `f().name` (rule 15 (f)), a `_` component of a struct result, `filled` of an owned struct,
+      `(v[i], s.name) = two()`, `f(s.name, g(ref s))`.
     **`manualD_part1`** (the first part of LANGUAGE.md Appendix D), a `programs/` test:
     `manualD_part1.sea` is Appendix D's code from the line `struct Dim {` through the line `let
     rssSigma = sqrt(rssVar)`, verbatim, with exactly one line removed (`let scale = linspace(0.4,
@@ -7329,11 +7879,56 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     is derived by hand from LANGUAGE.md: the IEEE operations in the program's order (the sums
     left to right, `dims[d].sign * dims[d].nom` with the `i64` converted, `tol / 3`, `tol /
     sqrt(3)`, `tol / sqrt(6)` with `sqrt` correctly rounded, `^ 2` as one multiplication, §6.8),
-    each `%.17g` value worked out from the exact binary result (a `tests/vectors/` script run with
-    `uv` may do the arithmetic; its output is committed). `errors/manualD_part1_badopt` is the
-    same program with `.args` `--bogus`: standard error `manualD_part1_badopt.sea:<line of the
-    error call in the options loop>: error: unknown option "--bogus"`, status 1, standard output
-    empty.
+    each `%.17g` value worked out from the exact binary result (`tests/vectors/manualD_part1.py`,
+    run with `uv`, does the arithmetic; its output is committed). The expected `.out`, computed so
+    from the agreed text during this specification (an independent IEEE model, every value
+    correctly rounded), is:
+
+    ```
+    nDim 7
+    housing depth normal 0.016666666666666666
+    gasket triangular 0.016329931618554522
+    bearing 1 normal 0.0040000000000000001
+    spacer uniform 0.017320508075688773
+    gear hub triangular 0.016329931618554522
+    bearing 2 normal 0.0040000000000000001
+    retaining ring uniform 0.017320508075688773
+    nomGap 0.30000000000000004
+    wcHalf 0.21400000000000002
+    rssSigma 0.037988302293088999
+    figures
+    ```
+
+    `errors/manualD_part1_badopt` is the same program with `.args` `--bogus`: standard output
+    empty, standard error `manualD_part1_badopt.sea:16: error: unknown option "--bogus"` (line 16
+    is the `_ => { error(…) }` arm of the options loop: the copy starts with `struct Dim {` on line
+    1 and keeps Appendix D's blank line after the struct, verbatim), status 1.
+    * compile errors: 204, 205 and 206 (struct literals); 205 and 222 in a record literal (L-b, at the
+      `init`); 221 (direct, through `P[]`, through `P[2]`, mutual); 222 (a declaration); 229 (`Q { }`);
+      235 (two fields of one name); 238 (a field of a `let` struct, an element's field of a `let`
+      array); 239 (`dims.nom = v`); 240 (`p == q`); 249 (no such field; `.f` of an `S[,]`, L-c); 256
+      (the projection of an array or a struct field); 201 (a record into a struct, the record spelled
+      `{a: i64}`).
+    * changed goldens (L-i): retired `errors/err_ns_struct`, `err_ns_record` and
+      `err_ns_str_fixed_type` (their constructs compile from 4g-2); re-derived `passes/res_struct`
+      (its `let q = P` is `undeclared name 'P'` at the value, LANGUAGE.md §8.1, a `seacheck` error,
+      so the `.res` holds no `rerr`).
+    * dumps: the `.res` of §3.4.2's example `rt.sea` verbatim, one showing the `rtst` order and an
+      `rslit` with `sid` 0; the `.lir1` of the agreed examples of rules 18 (the second), 27 and 29 as
+      whole programs, each the rule's text exactly; `.hirl` goldens of L15, L17 (a field of a struct
+      local, a nested field, a field of an element, a path through two arrays, a compound store, a
+      `ref` root with a field path, two array-field levels whose cows each read the array the cow
+      before left: `struct T { v: f64[] } struct S { w: T[] } var a = [S { w: [T { v: [1.0] }] }];
+      let b = a; a[0].w[0].v[0] = 9.0` with the program printing `b`'s value then `a`'s, `1 9`), R19
+      (the struct elements of a literal, `filled`, a struct literal stored into an existing field
+      by the copy form), R20 with a static count, L6 with a field root (`dims[p()].v[q()..3] = 0.0`,
+      the order of rule 19) and with a counted self-copy (`a[:] = a`, `a: str[3]`), and L12 with a
+      field target and with an L17 target whose value is moved (`(names[i], k) = two()`, R25).
+    * `tests/rt/arm64_macos/rt_arr_new_s_empty` and `tests/rt/x86_64_linux/rt_arr_new_s_empty` (lead
+      decision L-h; no test had a struct size of 0): a descriptor with `SEA_SL_SIZE` 0 and no
+      reference offsets; `sea_arr_new_s` of 3 elements and of 0, `sea_arr_unique` of a shared one
+      (count 2), `sea_free` of each, the heap check 0. If it fails, the fix is in that target's
+      `rt_arr.s` or `rt_mem.s`.
   * **4h**: `prel_*` programs for `linspace` (each case of LANGUAGE.md §10.3: n < 1, n = 1,
     `d1 == -d2` with even and odd n1, `d1 == d2`, the general formula; expected bits derived
     from the formula), `bincount` (its `INDEX_OOB` at the program's line), `meshgrid`,
@@ -7777,7 +8372,8 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4e-0 | **Split of pass 3a; no change of behaviour** (the size gate after 4d decided it, §2.7: projected 9 665 > 8 000; Decisions 26–30). The specification (this step, agreed by the user 2026-10-22): `sealoop` (`sea.hir` → `sea.hirl`) and `sealower` (`sea.hirl` → `sea.lir1`) as §2.1, §2.7, §3.5.9 and §3.6.6 ("Two programs", "Lowering of the `sea.hirl` records") say; set `HL` of `passes.txt` (codes 72–87, enumeration `wop`); `--emit hirl` (§2.2). Then the build, in work packages with disjoint files: **(1)** `passes/sealoop/` (new; `build.list`: `lib io diag tables`, `data errors exits consts records`): reading and validating `sea.hir`, the rewrites L1–L4, writing `sea.hirl`, the capacity checks; **(2)** `passes/sealower/`: reading and validating `sea.hirl`, the lowering of the node records 73–81 (`tptr` 72 is a type, not lowered), the records 82–87 rejected as `BAD_RECORD` (they are implemented with 4e), the `tmp` alias and the `xblk` ownership (rule 15 (k)), the code of `zeros ones filled len rows cols numel` and `fore` removed (those records are now `BAD_RECORD`); **(3)** `tools/seaval.bas` (the format `hirl`: sets `H HF HL`), `driver/sea` (pass sequence, `--emit hirl`, usage line), `Makefile` and `tools/passlines.sh` (the pass list), `tests/stage.sh` (the pairs of §6.2), `tests/run.sh` (dump kind `hirl`), `tests/protocol.sh`, `tests/driver_check.sh`, `tests/lib_check.sh`, the `--emit` list, pass list and `seaval` formats in `CLAUDE.md`, `tests/CORPUS.md`; **(4)** only `tests/passes/*` and the generator script(s) of `tests/vectors/`: the goldens and dump tests of §6.2 ("Tests of the pass-3a split"), hand-derived from §3.5.9; (3)'s `lib_check.sh` step uses (4)'s `arr_rule30.hirl`, so it follows (4). The set number of `HL` (7, after `LF`) in `passes/lib/tables.bas` (`tb_records`), `tools/seaval.bas`, `seagen_a64`/`seagen_x64` (which skip the HIR sets) and `passes/lib/API.md` landed with this specification, in the same commit as the `HL` records of `passes.txt`: every pass loads the `records` table and stops on a set it does not know. Not changed: LANGUAGE.md, every other intermediate format, `sea.lir1` byte for byte, every message, position and exit status (except a capacity error of `sealoop` for a program near a limit, §3.5.9), `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2a, 2b, 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`, the W4 acceptance, the heap check); the 17 `.hirl` goldens and the new tests of §6.2 pass in `run.sh` and in both stage pairs; `protocol.sh` and `driver_check.sh` cover `sealoop`; `seaval` validates `hirl`; `make check-contracts` passes with set `HL`; `make check-limits` reports `sealoop` and `sealower` below 9 000 lines and their measured sizes and free array letters replace the estimates of §2.7; `make test` and `make cross` pass |
 | 4e | **Array expressions** (specified 2026-10-22, Decisions 31–35: `sealoop`'s rewrites L5–L11 of §3.5.9 with the refinements R1–R11, §3.6.6's LIR unchanged): ranges, `:`, steps, index vectors and masks (read, assignment, compound assignment), views, range values (also as a `for`'s vector), array literals and concatenation (Decision 20), fixed-size arrays (`rtfvec`/`rtfmat`; rule 27 for `f64`, `i64` and `bool` elements completely, Decision 32), `dyn`/`fix`, element-wise operators and comparisons with broadcasting, array `cvt`, `where` and the elemental library functions on arrays (`ind2sub` as two loops, Decision 33); rules 20–22, 25, 26 (numeric literals), 27 (fixed-size numeric part), 28, rule 21's clause of Decision 34, the records 82–87 in `sealower`, the 4e entries of §3.5.7, the static shape errors of §3.5.5, and the phase-rule step 4e. Work packages, each owning its files (written in parallel against the hand-written goldens through stage.sh): **T1** spec-derived `programs/` and `errors/` (`tests/programs/{sel_,ew_,arr_,heap_}*`, `tests/errors/*`, their `tests/vectors/` scripts, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4e_cases.py` and its goldens in `tests/passes/` (T1 alone edits `tests/CORPUS.md`; T2 reports its rows to T1); **front end** `passes/seaname/sn6type.bas`, `passes/seacheck/*.bas` and `passes/seacheck/build.list` (and the `build.list` of any front-end pass that gains a file), `passes/seaexpand/seaexpand.bas` (typing, implicit `dyn`/`fix`, static shapes, HIR records, G12; the type of `[]` from the contexts of LANGUAGE.md §6.9 (a binding's declared type, an assignment target, a user function's parameter, a `return`'s result type, the other arm of an `if` expression with an array type; a struct field in 4g), elsewhere 252 at the `[]`, Decision 36); **sealoop** `passes/sealoop/*` (L5–L11); **sealower** `passes/sealower/*` (82–87, R1–R11, rule 27's homes, no new array letter); then `tests/programs/w4_sor_arrays.*` with T1, and the sizes of §2.7 measured | the 4e tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4e dumps holds (`sealoop` writes each hand-written `.hirl` from its `.hir`, `sealower` lowers it to its `.lir1`), the agreed examples of rules 20, 21, 22, 25 and 28 byte for byte; `w4_sor_arrays` prints the same bytes as 4d's W4 program (`programs/`); every earlier test passes unchanged; `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
 | 4f | **Reductions, sorting, searching, library options** (specified 2026-10-22, Decisions 38–41: `sealoop`'s rewrites L13 and L14 of §3.5.9 with the refinements R12–R16, §3.6.6's LIR unchanged): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, errors 225, 237, 262, 243 with named arguments), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets, `f64`, `i64` and `str`, Decision 40), `find find_first find_last`, the named options of library calls (Decision 21), result types on fixed-size arguments (Decision 39), error 115 (Decision 41); rules 23, 24 and the phase-rule step 4f (§2.6.2, "Readings fixed by 4f"); `passes.txt`'s `wop` word `and`, error 115 and the `rt.inc` entries 21–22 (`SEA_ENT_COUNT` 22, §4.8: before any 4f code, so that R16 and the rule-24 dump can name them; a runtime without `rt_sort.s` fails only at link time) enter with this specification. Work packages, each owning its files: **T1** spec-derived `programs/` and `errors/` (`tests/programs/{red_,sort_,find_,heap_red_}*`, `tests/programs/w4_sor_reduce.*`, `tests/errors/*` new and the four `err_ns_lib_*` goldens of §6.2, their `tests/vectors/` script, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4f_cases.py` and its goldens in `tests/passes/` (T2 reports its rows to T1); **front end** `passes/seaparse/seaparse.bas` (115) and `passes/seacheck/*` with its `build.list` (overloads, named options, Decision 39's types and `dyn`, the phase-rule step); **sealoop** `passes/sealoop/*` (L13, L14, R14; a new file in its own line range); **sealower** `passes/sealower/*` and `tools/seaval.bas` (R12, R13, R15, R16 and their validation; `seaval` needed no change, §3.5.9); **runtimes** `runtime/arm64_macos/rt_sort.s`, `runtime/x86_64_linux/rt_sort.s`, the runtime object lists of `Makefile` and `Makefile.linux`, `tests/rt/arm64_macos/rt_sort_*` and `tests/rt/x86_64_linux/rt_sort_*`; then the size gate of §2.7 (Decision 35) | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs), with no leak under the heap check; every stage pair of the 4f dumps holds, the agreed examples of rules 23 and 24 byte for byte; `w4_sor_reduce` prints the bytes of `w4_sor_arrays.out`; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_sort_*`; every earlier test passes unchanged; `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and a program that fails it is split (specified and agreed first) before 4g |
-| 4g | **Strings, structs, records, `match`, `error`, `args`** (the first step specifies the `sea.hirl` records and rewrites 4g needs, Decision 29): §3.4.2's `rtst`/`rtfd`, `rslit`, `rcns` and struct declaration checks (`match` no longer a skipped region), rules 15 (f)–(j) and the rest of 15 for `str` and structs, 18 (struct elements), 26 (`str` and struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29, 30 (`str` and struct elements), 32–35, 38 and the phase-rule step 4g; `sort` and `argsort` of `str` vectors in programs (the runtime path is 4f's, Decision 40; the `sort_str` test of §6.2) | the 4g tests of §6.2 pass on both targets; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error; `make test` and `make cross` pass |
+| 4g-1 | **Strings, `match`, `error`, `args`** (the first sub-step of 4g, Decision 47; 4g's one specification step, agreed 2026-10-23, is Decisions 44–48 with the `sea.hirl` refinements R17–R25 and the `sealoop` rewrites L15–L17 of §3.5.9, §3.6.6's LIR unchanged): §3.4.2's `rcns` with lead decisions L-f and L-g (`match` no longer a skipped region), every `str` construct of the phase-rule row 4g-1 (§2.6.2, "Readings fixed by 4g"), element-wise `str` operators (Decision 45), `str` and `lower` (Decision 46), `error`, `args`, `sort`/`argsort` of a `str` vector in programs (the runtime path is 4f's, Decision 40); rules 15 (f), (h), (i) and the rest of 15 and 16 for `str`, 26 (`str` literals), 28 (the retains of `str` elements), 30 (`str` elements), 32–35; L16, L17 for `str` elements, the `str` cases of L2–L14, R17 (for `str`), R20, R22, R25. No contract file changes (§0); `layout` is not built before 4g-2 (§2.6.3). Work packages, each owning its files: **T1a** spec-derived `programs/` and `errors/` of 4g-1 (`tests/programs/{str_,match_,args_,heap_str_,sort_str}*`, `tests/errors/*` new, the changed and retired goldens of §6.2, `tests/vectors/str4g_cases.py`, `tests/CORPUS.md`; T1a alone edits `tests/CORPUS.md`); **T2a** `tests/vectors/dump4g_cases.py` (its 4g-1 part), `res_gen.py`'s `rcns`, the 4g-1 goldens of `tests/passes/` and the changed `res_*` dumps of 4g-1 (T2a reports its rows to T1a); **front end** `passes/seaname/*`, `passes/seacheck/*`, `passes/seaexpand/seaexpand.bas` and their `build.list`s; **sealoop** `passes/sealoop/*` and its `build.list` (L16, L17 for `str`, the `str` extensions, R20's count; a new file in its own line range); **sealower** `passes/sealower/*` and its `build.list` (rules 32, 34, 35, 15 and 16 for `str`, R17, R20, R22, R25 and their validation); then the size gate after 4g-1 (§2.7) | the 4g-1 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-1 dumps holds, the agreed examples of rules 15, 26, 30 (the first), 32, 33 and 35 byte for byte; every earlier test passes, the changed goldens re-derived from the spec (lead decision L-i); `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and if `sealower` (or `sealoop`, `seacheck`) fails it, a relief is specified and agreed with the user before any 4g-2 code |
+| 4g-2 | **Structs, records, projection** (the second sub-step of 4g, Decision 47, after the gate): §3.4.2's `rtst`/`rtfd`, `rslit` and the struct declaration checks; struct items, types, literals, fields, projection (L15), struct arrays and their literals, records (Decision 48), fixed-size arrays of `str`, struct and record elements (types, locals, parameters, `ref` parameters, results, tuple components, `dyn`/`fix`), the phase-rule row 4g-2 with its errors (§2.6.2, "Readings fixed by 4g"); rules 15 (g), (j) and 16 for structs, 18 (field folding, whole struct elements), 19 (paths through fields, L17), 26 (struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29 (L15), 30 (struct elements), 31 (field paths), 38 (`slay`, also of records, lead decision L-m); R18, R19, R21, R23, R24 and the struct cases of L2–L14. Work packages, as in 4g-1: **WP-LAYOUT** (first) `passes/lib/layout.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3), and the `passes/lib` module list of `sea/CLAUDE.md` (`io diag tables limb f64emu fltlit`, plus `layout`); **T1b**, **T2b** (`tests/programs/{struct_,str_fixed,records,heap_struct_,manualD_part1}*`, `tests/errors/manualD_part1_badopt.*`, `tests/errors/r_str_fix.*` and the other 4g-2 errors, the retired and re-derived goldens of §6.2, `tests/vectors/manualD_part1.py`; the dumps of rules 18, 27 and 29, L15, L17, R19, the `.res` of §3.4.2); **front end b**, **sealoop b** (its `build.list` gains `layout`; L15, L17's field paths and aggregates, L12's routing of field targets, the aggregate cases), **sealower b** (its `build.list` gains `layout`; rules 18, 27, 31, 38, 15 (g)/(j), 16, R18, R19, R21, R23, R24): the same files as in 4g-1; **WP-RT** `tests/rt/arm64_macos/rt_arr_new_s_empty.*` and `tests/rt/x86_64_linux/rt_arr_new_s_empty.*` (and that target's `runtime/*/rt_arr.s` or `rt_mem.s` only if the test fails) | the 4g-2 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-2 dumps holds, the agreed examples of rules 18 (the second), 27 and 29 byte for byte; `make test-lib` passes `layout`; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error at line 16; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_arr_new_s_empty`; every earlier test passes (the changed goldens re-derived); `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
 | 4h | **Prelude and W5; close-out** (the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 |
 
 ## 9. Decisions (agreed)
@@ -8185,3 +8781,84 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
     overload` (243, §2.6.2)**; (b) options also by position. **Decided: (a)** (lead decision,
     2026-10-22, to be reported to the user): it is how §10 writes every option, and what
     "Readings fixed by 4f" already checks. Affects LANGUAGE.md §8.1, §10.
+44. **How 4g's operations are written with the fixed `sea.hirl` records** (raised by the 4g
+    specification: the set `HL` cannot write a replacing store of a reference element, the address
+    of a struct element, a struct copied into an element or written in place there, the retains
+    after a copy of reference elements, struct homes, a field loaded through an element's address,
+    an owned `match` scrutinee released on `break`, `continue` and `return`, the copy on write of
+    an array field, or rule 15 (j)'s moves through L12's locals). Options: (a) **refinements in the
+    style of Decisions 31 and 38, R17–R25 of §3.5.9, with no new record kind and `passes.txt`
+    unchanged, and three new `sealoop` rewrites: L15 projection, L16 `match`, L17 every store of a
+    reference or aggregate value and every store through a field path**; (b) the same refinements,
+    but `match` and the field and aggregate stores lowered by `sealower` itself (rules 33, 19, 27
+    (d), (f)): fewer rewrites, `sealower` 200–350 lines larger, surely above 7 000; (c) new `HL`
+    records 88 and later (a `retain`, an address record, a struct copy): explicit, a format change,
+    the same LIR. **Decided: (a)** (the user, 2026-10-23): the agreed examples of rules 26, 29, 30
+    and 33 come out exactly through `sealoop`, and `sealower` stays as small as possible. Affects
+    §3.5.9 (R17–R25, L15–L17, the extensions of L2–L14, the validation), §3.6.6 (rules 15 (k), 19, 26–30,
+    33, 38 and "Lowering of the `sea.hirl` records"), §8.
+45. **Element-wise operators on `str` arrays** (LANGUAGE.md §6.4 made the comparisons element-wise
+    on arrays, §6.2 made `+` element-wise "on arrays", but §6.3's result-type rule did not mention
+    `str`; no workload uses either). Options: (a) **comparisons and `+` element-wise on `str` arrays,
+    with broadcasting (`names == "x"`, `names + "!"`), through L7; §6.3's result type gains `str`
+    for `+`**; (b) comparisons only, `+` with a `str` array operand 240; (c) neither in v1, 240 for
+    any `str` array operand, §6.4 amended. **Decided: (a)** (the user, 2026-10-23): §6.4 already
+    pinned the comparisons, and `+` costs nothing more in L7. Affects LANGUAGE.md §6.2–§6.4; §2.6.2
+    ("Readings fixed by 4g"), §3.5.9 (L7), §6.2.
+46. **The domains of `str(x)` and `lower(s)`** (LANGUAGE.md §10.9 listed `str` of `i64`, `f64` and
+    `bool` and `lower` of a `str`, but said neither whether `str` of a `str` is allowed, as `f64(f64)`
+    is, nor whether either is elemental like `f64()` and `i64()`). Options: (a) **scalars only: `str`
+    of an `i64`, `f64`, `bool` or `str` (a `str` returned unchanged), `lower` of a `str`; an array
+    argument is 243**; (b) as (a) but `str` of a `str` is 243; (c) both elemental too (`str(v)` a
+    `str[]`, `lower` of a `str[]` a `str[]`). **Decided: (a)** (the user, 2026-10-23): it matches
+    phase-1 decision 2 (the identity conversions) and keeps the library at what the workloads use.
+    Pass 2a writes `str(s)` of a `str` as s itself (§3.5.5). Affects LANGUAGE.md §10.9; §2.6.2,
+    §3.5.5, §3.6.6 (rule 32), §6.2.
+47. **4g in one step or two, and its size gate** (`sealower` had 913 lines left under 7 000 built
+    lines and its 4g increment was estimated at 800–1 360, §2.7). Options: (a) **one specification
+    step (this one), then two build sub-steps: 4g-1 (strings, `match`, `error`, `args`, `str`,
+    `lower`, `str` elements, `sort_str`) and 4g-2 (structs, records, projection, fixed-size `str`
+    and struct arrays, `manualD_part1`), with a size gate after 4g-1 that re-projects `sealower`
+    from its measured increment; if 4g-2 would take it past 7 000 built lines, a relief (more
+    `sealoop` rewrites, a compaction with no change of behaviour, or a split) is specified and
+    agreed before 4g-2**; (b) one 4g with the gate after it (`sealower` may end above 7 000, the
+    relief then coming before 4h); (c) `sealower`'s cap raised to 8 000 built lines (its projected
+    v1 ≤ 9 000 unchanged), one 4g. **Decided: (a)** (the user, 2026-10-23): `sealower`'s estimate
+    after 4g (6 887–7 447) straddles 7 000, and 4g-1 measures the shared ownership machinery before
+    the struct half commits to its design. Affects §2.6.2 (the phase-rule rows 4g-1 and 4g-2), §2.7
+    (the projection and the gate after 4g-1), §6.2, §8 (rows 4g-1 and 4g-2).
+48. **The scope of anonymous records** (LANGUAGE.md §4.6: a record "can be bound with `let`/`var`,
+    read with `.f`, and passed to `write_json`", either a closed list or examples). Options: (a)
+    **records are anonymous struct types wherever no type name is written: bound, read, fields
+    assigned when `var`, nested, array literal elements and `filled`, `if` arms, the projection of
+    a record array, element loops**; (b) only the uses §4.6 listed (bind, `.f` read, nesting,
+    `write_json`): a field assignment 239, an array of records 258 `arrays cannot hold {…}`.
+    **Decided: (a)** (the user, 2026-10-23): no new errors, and records reuse the struct machinery
+    at no cost. Affects LANGUAGE.md §4.6; §2.6.2, §3.5.9 (R21, records with structs throughout),
+    §3.6.6 (rule 38), §6.2.
+
+**Lead decisions of 4g** (2026-10-23, within Decisions 44–48, each taken because one answer is
+clearly right, to be reported to the user; each is written into its normative section):
+L-a, `match is not exhaustive` (207) at the `match` exactly when its last arm is not `_` (a `match`
+without arms included), and `unreachable pattern` (208) at every arm after a `_` arm and at every
+arm with a pattern equal to an earlier one, both by `seacheck`, in plain source order (LANGUAGE.md
+§7.6; §2.6.2 "Readings fixed by 4g"); L-b, in a record literal a repeated name is 205 and `T`,
+`flat`, `col`, `row` 222, by `seacheck` at the `init`, 204 and 206 impossible (LANGUAGE.md §4.6;
+§2.6.2); L-c, `.f` of a matrix of structs or records is 249 with the matrix's type (LANGUAGE.md
+§4.7; §2.6.2); L-d, a wrong number of arguments of `str`, `lower` or `args` is 243, as `now(1)` is
+(§2.6.2); L-e, views and selections under a projection are materialized first, no fusion before
+phase 7 (§3.5.9 L15); L-f, a `str` value of more than 4 096 bytes computed while evaluating a
+constant is `program too large: strings` (400) at the constant's item, `SEA_LIM_LINE_BYTES` reused
+and no limit added (LANGUAGE.md §7.2; §2.6.2 `here`, §3.4.2); L-g, comparisons of `str` constant
+expressions are `bool` constant expressions, written `rcnb` (LANGUAGE.md §7.2; §3.4.2); L-h, empty
+structs are legal (size 0, an 8-byte home slot, element size 0 in arrays), with one runtime test
+per target (LANGUAGE.md §4.6; §2.6.3, §3.5.9 R21, §6.2); L-i, the Decision-25 tests keep their
+intent with an undeclared struct type (229) in place of `str`, the tests of the removed phase-rule
+rows are retired in the sub-step that removes their row, and the affected `.res` goldens are
+re-derived (§6.2); L-j, `anew` of an array of `str`, struct or record elements always uses a
+clearing entry (§3.5.9 R21); L-k, struct layouts come from one shared module `passes/lib/layout.bas`
+used by `sealoop` and `sealower` from 4g-2 (§2.6.3); L-l, every node of L15–L17 takes the rewritten node's
+position, L16 keeping its patterns' and arm blocks' own (§3.5.9); L-m, `slay` records exist for
+record element types too (§3.6.6 rule 38). *For the user's information:* `error` does not end a
+path (LANGUAGE.md §8.1), so `fn f() -> i64 { error("x") }` is `missing return`; a 4g-1 test pins
+it (§6.2).
