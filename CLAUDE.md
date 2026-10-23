@@ -25,8 +25,9 @@ sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, 
 `sealoop` (`sea.hir` → `sea.hirl`, the array constructs made explicit as scalar loops) and
 `sealower` (`sea.hirl` → `sea.lir1`, unchanged). **4e-0 is done** (built and tested, no change of
 behaviour; Decisions 26–30; measured: `sealoop` 2 323 lines with 7 free array letters, `sealower`
-5 164 lines with 4 free, DESIGN.md §2.7); **next: 4e (array expressions)**, starting with its
-specification step (the `sealoop` rewrites of rules 20–25, 26 numeric and 28, DESIGN.md §8).
+5 164 lines with 4 free, DESIGN.md §2.7); **4e (array expressions) is specified** (Decisions 31–36: the `sealoop` rewrites L5–L11 with the
+`sea.hirl` refinements R1–R11, rule 27 for fixed-size numeric arrays, DESIGN.md §3.5.9, §3.6.6,
+§8); **next: its implementation** (the work packages of DESIGN.md §8, row 4e).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

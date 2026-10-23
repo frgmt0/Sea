@@ -134,7 +134,7 @@
     \m 249, NO_FIELD, C2, dot, ss, "no field '%s' in %s"
     \m 250, NOT_INDEXABLE, C2, index, s, "%s cannot be indexed"
     \m 251, NOT_ITERABLE, C2, expr, s, "cannot iterate over %s"
-    \m 252, CANNOT_INFER, C2, binding, -, "type cannot be inferred: add a type annotation"
+    \m 252, CANNOT_INFER, C2, expr, -, "type cannot be inferred: add a type annotation"
     \m 253, ELEM_RESULT, C2, fn, -, "elemental function result must be f64, i64 or bool"
     \m 254, REF_NEEDED, C2, expr, s, "argument for ref parameter '%s' must be marked ref"
     \m 255, REF_UNEXPECTED, C2, ref, s, "'%s' is not a ref parameter"

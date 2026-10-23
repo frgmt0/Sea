@@ -36,8 +36,9 @@ the user's agreement. Phase 0 (§8) did:
    limit or symbol changes only in the include file and its doc section together);
 3. implementation follows the milestones of §8: phases 0, 1, 2 and 3 are complete (the MATLAB
    rerun of Decision 7 is done: sea commit c1736f7); phase 4, arrays and structs, is built in
-   the sub-phases 4a–4h of §8: 4a–4d are done, and the size gate after 4d (§2.7) makes 4e-0, the
-   split of pass 3a into `sealoop` and `sealower`, the next sub-phase.
+   the sub-phases 4a–4h of §8: 4a–4d and 4e-0 (the split of pass 3a into `sealoop` and
+   `sealower`, which the size gate after 4d made run, §2.7) are done, and 4e (array expressions)
+   is specified (Decisions 31–35) and next to be implemented.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -214,6 +215,38 @@ rewrite in 4g (§2.7); a size gate after phase 6 decides whether phase 7's fusio
 its own (§2.7); `tb_records` learns the set `HL` in the commit that adds it to `passes.txt`, since
 every pass loads that table (§8, 4e-0; it landed with the specification); records 82–87 are
 implemented with 4e, `sealower` rejecting them in 4e-0.
+
+**Decided for sub-phase 4e (2026-10-22).** The specification of 4e (array expressions) fixes
+`sealoop`'s rewrites L5–L11 (§3.5.9) of rules 20–22, 25, 26 (numeric literals), 27 (i), (j) and 28,
+with §3.6.6's agreed LIR examples unchanged. The user took Decisions 31, 32, 33 and 35 of §9, each
+the recommended option: the `sea.hirl` records are refined, not extended (R1–R11 of §3.5.9: a
+fixed-size `anew` is a home slot, a constant index gives `- 0 off`, rcount's E is a `bool`, `wbin`
+takes `bool` operands, mutable `.l` locals, and so on; no new record, `passes.txt` unchanged) (31);
+rule 27 is implemented in 4e for fixed-size `f64`, `i64` and `bool` arrays completely (homes,
+copies, assignment, arguments, results, `ifx`, `dyn`, `fix`), 4g adding structs and reference
+elements (32); `ind2sub` with a scalar first and an array second argument is two element-wise loops, an array
+first argument the phase-rule word `ind2sub` until phase 6 (33, refined by a lead decision); a per-program size
+gate after 4f (35). Decision 34 (a borrowed index vector of a store into an `i64` array is retained,
+so that copy on write separates it from the target; on a fixed-size target such an index vector
+that is the target itself is copied) is a lead decision required by LANGUAGE.md §5.5
+(the indices are evaluated before any element is stored). **Lead decisions of 4e** (within
+Decisions 26–35): within one rewrite every extent is loaded once, by the check of its dimension,
+and reused by the count, the allocation and the loop nest; the address arithmetic of a matrix
+selection, element-wise operation, concatenation and `.T` is computed in the innermost body in the
+post-order of its `eld`/`est` (§3.6.6 rules 20, 22, 26, 28); an index vector's check loads ext(B, d)
+first; the `dol` nodes of a rewritten `idx` become `ext` records; nested views materialize every
+view but the outermost; the dynamic `.flat`, `.col`, `.row` byte counts are computed; a selection
+store into a `ref` parameter reads the target afresh at each use; every check of an indexed
+assignment takes the `asg`'s line, of a selection read the `idx`'s, of a range the `rng`'s, of an
+element-wise operation the operator's, of a literal the `arr`'s, of a materialized view the
+`view`'s; a `for` over a range value is an element loop over rule 25's vector; the compile-time
+shape errors of fixed sizes (a fixed mask on a fixed base, fixed parts of a concatenation, a fixed
+value for a fixed target) are 217 at the mask, the part and the value, elements without a common
+type 201 at the element, and a selection's shape is always a run-time value (LANGUAGE.md §5.2,
+§5.5, §6.9); statement rewrites are `block`s written by `sealoop` (rule 21, rule 15 (i), L11), and rule 12 treats
+the statements of an L6 block or of L11 as the one statement they rewrite; an untyped `[]` takes its type from the
+contexts of LANGUAGE.md §6.9, elsewhere 252 at the `[]` (position kind `expr`, Decision 36, lead
+decision of the same date, after the second review).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -677,7 +710,7 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `over` | column `SEA_LIM_LINE_BYTES` + 1 (the first byte beyond the limit) of the line |
 | `stmt` | the first token of the statement |
 | `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
-| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`) |
+| `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`); for `type cannot be inferred: add a type annotation` (252, from 4e) the `[]` itself (its `arr` node), also in a binding without a type annotation (`let x = []` reports at the `[`) |
 | `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
 | `binding` | the node declaring the name: `pname`, `param`, the `for` node (for a loop variable every error is reported at the `for` node; the AST `npos` field is used only for the `loc` record's position, §3.4, §3.5.4), a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
@@ -820,7 +853,7 @@ it equals the error record.
 | 249 | `NO_FIELD` | C2 | dot | `ss` | `no field '%s' in %s` | defined here (LANGUAGE.md §4.6) |
 | 250 | `NOT_INDEXABLE` | C2 | index | `s` | `%s cannot be indexed` | defined here (LANGUAGE.md §5.2) |
 | 251 | `NOT_ITERABLE` | C2 | expr | `s` | `cannot iterate over %s` | defined here (LANGUAGE.md §7.5) |
-| 252 | `CANNOT_INFER` | C2 | binding | - | `type cannot be inferred: add a type annotation` | defined here (LANGUAGE.md §4.10) |
+| 252 | `CANNOT_INFER` | C2 | expr | - | `type cannot be inferred: add a type annotation` | defined here (LANGUAGE.md §4.10, §6.9) |
 | 253 | `ELEM_RESULT` | C2 | fn | - | `elemental function result must be f64, i64 or bool` | defined here (LANGUAGE.md §8.5) |
 | 254 | `REF_NEEDED` | C2 | expr | `s` | `argument for ref parameter '%s' must be marked ref` | defined here (LANGUAGE.md §8.3) |
 | 255 | `REF_UNEXPECTED` | C2 | ref | `s` | `'%s' is not a ref parameter` | defined here (LANGUAGE.md §8.3) |
@@ -889,7 +922,7 @@ row loses names in every sub-phase:
 | Sub-phase | No longer reported (implemented) | Still reported, with these words |
 |-----------|----------------------------------|----------------------------------|
 | 4d | dynamic array types `T[]`, `T[,]` of `f64`, `i64`, `bool` (locals, parameters, results, `ref` parameters, annotations); indexing by scalar indices (read, `=` and `op=` of one element); `$` in a scalar index; a `for` over a vector; the library functions `zeros`, `ones`, `filled` (with an `f64`, `i64` or `bool` value), `len`, `rows`, `cols`, `numel`, and on scalars `abs`, `sign`, `sqrt`, `floor`, `ceil`, `trunc`, `round`, `isnan`, `min`, `max`, `where`, `ind2sub`, `sub2ind` (Decision 23) | `arrays` for: an array literal, a range used as a value, an index that is a range, `:`, an index vector or a mask (at the index's node), a view (`.T`, `.flat`, `.col`, `.row`, at the `dot` node, whose position is the start of its operand, §3.3), a fixed-size array type (at its `type` node, §3.4.2), an element-wise operator or comparison with an array operand (at the operator node), an array argument of an elemental library function (at the `call`), `dyn`, `fix` and an array conversion `f64(a)`/`i64(a)` (at the `call`/`cvt` node); `strings` for `str[]` and every other `str` use of the phase-1 row; `structs` for a struct element type; the name `max` or `min` for a call of `max` or `min` with one argument (the reduction of LANGUAGE.md §10.5, 4f), at the `call`, while an array argument of the two-argument form is `arrays` |
-| 4e | every remaining `arrays` construct: array literals and concatenation (Decision 20; of `f64`, `i64`, `bool` elements), range values, ranges, `:`, steps, index vectors and masks in reads, `=` and `op=`, views, fixed-size arrays, `dyn`, `fix`, element-wise operators, comparisons and logic with broadcasting, array conversions, `where` and the elemental math functions on arrays | the `arrays` row is gone; a literal of `str` or struct elements is `strings` or `structs` (at the `arr` node); `max(v)` and `min(v)` of one argument stay their names until 4f |
+| 4e | every remaining `arrays` construct: array literals and concatenation (Decision 20; of `f64`, `i64`, `bool` elements), range values (also as the vector of a `for`), ranges, `:`, steps, index vectors and masks in reads, `=` and `op=`, views, fixed-size arrays of `f64`, `i64` and `bool` (types, locals, parameters, `ref` parameters, results and tuple components: Decision 32), `dyn`, `fix`, element-wise operators, comparisons and logic with broadcasting, array conversions, `where` and the elemental library functions on arrays (`ind2sub` with a scalar first argument and an array second one included: Decision 33) | the `arrays` row is gone; a literal of `str` or struct elements is `strings` or `structs` (at the `arr` node); a fixed-size type of `str` or struct elements is `strings` or `structs` (at its `type` node); `max(v)` and `min(v)` of one argument stay their names until 4f; new row: `ind2sub` for a call of `ind2sub` whose first argument is an array (at the `call`; until phase 6, Decision 33) |
 | 4f | the library functions `sum`, `mean`, `variance`, `std`, `max` and `min` of one vector, `argmax`, `argmin`, `nnz`, `any`, `all` (with `dim:`), `sort`, `argsort` (with `desc:`), `find`, `find_first`, `find_last`; the named arguments `dim:` and `desc:` of these calls (Decision 21) | `named arguments` for every other named argument (of a user `fn`, or a name the library function does not take in v1, which is the compile error of LANGUAGE.md §8.4 once named arguments are complete) |
 | 4g | the `structs`, `records`, `match` and `strings` rows: struct items, types, literals, fields, projection, struct arrays and their literals, records, `match`, every `str` construct (`str` locals, parameters, results, elements, `+`, comparisons, string literals anywhere, `str` constants, `filled` with a `str` or struct value); the library functions `str`, `lower`, `error`, `args` | — |
 | 4h | the library functions `linspace`, `bincount`, `meshgrid`, `setdiff` (the prelude, §2.5) | — |
@@ -922,6 +955,7 @@ words, and phase 6 and later remove these:
 | `%` with an `f64` operand (Decision 23) | `f64 %` | phase 6 |
 | a handle type (`Figure`, `Axes`, `Lu`, `Chol`, at its `type` node) | `handle types` | phases 8 and 9 |
 | a call of `format`, `write_json`, `print` or `make_dir` | its name | phase 6 |
+| a call of `ind2sub` whose first argument is an array (from 4e, Decision 33) | `ind2sub` | phase 6 |
 | a call of `solve`, `lu`, `chol`, `rcond` or `eig_sym` | its name | phase 8 |
 | a call of `figure`, `panel`, `twin_y`, `plot`, `bar`, `barh`, `contour`, `image`, `xline`, `legend`, `title`, `xlabel`, `ylabel`, `xlim`, `ylim`, `x_ticks`, `y_ticks`, `grid`, `axis_equal`, `y_reverse` or `save_svg` | its name | phase 9 |
 
@@ -934,7 +968,8 @@ program prints a `str` through `printf("%s", s)` until phase 6. Errors that the 
 impossible (§2.6.2, the paragraph above: 204–208, 216–222, 224, 225) become reachable in the
 sub-phase that removes their row, except 216 (`fixed-size array too large`), which is reachable
 from 4d: `seaname` resolves the extents of every type node before the phase rule (§3.4.2), so
-`f64[300]` is 216 in 4d, and `f64[3]` is `arrays` until 4e; then 204–206, 221, 222 and
+`f64[300]` is 216 in 4d, and `f64[3]` is `arrays` until 4e; then 217–220, 252 at an untyped `[]` (Decision 36), 257 (`VIEW_RANK`) and 239 (a `.T`, `.col` or
+`.row` assignment target) in 4e, 204–206, 221, 222 and
 229 at a literal in 4g, 207, 208, 224 and 225 (named and default arguments) in phase 6.
 
 **Which program reports it** (phase 4a on, Decision 17: pass 2a is `seaname` and then
@@ -1557,6 +1592,36 @@ estimate): `sealower` **6 470–7 150** after phase 4 and **7 170–8 250** at v
 after phase 4 and 6 450–9 500 at v1, so the size gate after phase 6 stands as agreed. `sealower`
 keeps its 4 free letters (4g's tables need at most 2); `sealoop` has 7 free letters for the tables
 of 4e–4h, which is the nearer limit there, to be counted again at each gate.
+
+**Projected for 4e** (the 4e specification, estimates, ±30 % on each increment; measured now:
+`seaname` 5 045, `seacheck` 4 737, `seaexpand` 3 996, `sealoop` 2 323, `sealower` 5 165). The
+4e-0 estimate of `sealoop`'s 4e increment (1 800–2 600) did not see the fixed-size constructions,
+the materialized views, the `dol` rewriting and Decision 33, so it is raised:
+
+| Program | 4e increment | After 4e | After 4f | After phase 4 | v1 |
+|---------|-------------:|---------:|---------:|--------------:|---:|
+| `sealoop` | 2 200–3 200 (L5–L11, its reader and validator for the new input records) | 4 500–5 500 | 5 100–6 400 | 5 650–7 350 | 7 050–9 950 |
+| `sealower` | 800–1 200 (records 82–87, R1–R11, rule 27 for fixed-size numeric arrays, Decision 32) | 5 950–6 350 | 6 050–6 600 | 6 600–7 400 (4g's struct homes reuse 4e's) | 7 300–8 500 |
+| `seacheck` | 900–1 400 (the typing of every 4e construct, implicit `dyn`/`fix`) | 5 650–6 150 | 5 950–6 750 | 6 550–7 700 | — |
+| `seaname`, `seaexpand` | 20–60, 80–150 | about 5 080, 4 100 | | | |
+
+`sealoop` may use 1–2 of its 7 free array letters in 4e; `sealower` uses none (the homes of
+fixed-size locals are columns of its tables `A` and `B`), so that 4g keeps 2 of its 4 free.
+
+**The size gate after 4f** (Decision 35; it replaces the ×1.5 gate above, which belonged to the
+branch without the split). After 4f, for each of `sealoop`, `sealower` and `seacheck`: `make
+lines`, `make check-limits` and the free numeric array letters of its main program. A program
+passes when its built size is at most 7 000 lines, its projected v1 size (its built size plus the
+remaining increments of the tables above: 4g, 4h, phases 6 and 7 for `sealoop`; 4g, 4h and v1 for
+`sealower`; 4g and 4h for `seacheck`) is at most 9 000, and it has
+at least 2 free letters. A program that fails is split before 4g: `seacheck` by moving its library
+overload and format checks into `sealib` (`sea.hir1` → `sea.hir1`, before pass 2b), `sealoop` by
+moving the rewrites that work on expression trees into a pass ahead of it (the seam of the gate
+after phase 6), `sealower` by a split specified then (§7.3). The measurements and the outcome are
+recorded here; a split is specified and agreed like 4e-0 before it is made. The tables above
+already put `sealoop`'s projected v1 size at up to 9 950 lines, above the gate's 9 000: if its
+measured 4f size keeps it there, the gate after 4f splits it then (the expression-tree seam);
+otherwise the gate after phase 6 decides again.
 
 ### 2.8 Numbers inside the compiler
 
@@ -2684,8 +2749,45 @@ mismatches between dynamic extents remain run-time checks (LANGUAGE.md §4.10).
   every index is a scalar has the element type; any other `idx` is a selection, whose type is
   always dynamic, also on a fixed-size base: a vector for one kept dimension or for a mask of a
   matrix, a matrix for two. A `view` is fixed exactly when its operand is. A
-  `rng` used as a value has the type `i64[]`. An `arr` follows LANGUAGE.md §6.9 (Decision 20 for
-  `str` and struct elements).
+  `rng` used as a value has the type `i64[]` (also as the vector of a `fore`: `for x in (0..n)`,
+  an element loop over that vector). An `arr` follows LANGUAGE.md §6.9 (Decision 20 for
+  `str` and struct elements); each `row` has the type of its horizontal join, and an element or
+  part of another element type than the literal's is converted by a `cvt` (a scalar, or an array
+  element by element).
+* **Static shapes** (from 4e; LANGUAGE.md §4.10: a mismatch of two compile-time extents is a
+  compile error). `seacheck` reports `shape mismatch` (217, the two shapes as LANGUAGE.md §5.2,
+  §5.5, §6.3 and §6.9 order them) at: the operator node (or the `call`) of an element-wise
+  operation whose shapes, combined statically left to right as LANGUAGE.md §6.3 combines them
+  (scalars skipped), meet an operand k whose static extent differs from the known combined extent in
+  a dimension where neither is 1 (a vector: its length), the text the shape combined so far, then
+  operand k's (`where(a, b, c)` with fixed `a` 1x4, `b` 3x1, `c` 2x4: `shape mismatch: 3x4 vs
+  2x4`; with a fixed `a3`, a dynamic `c` and a fixed `b4`, `where(a3, c, b4)`: `3 vs 4`). A dynamic
+  operand leaves a combined extent known when it is known and not 1 (the operand must equal it or,
+  in a matrix, be 1) and makes it unknown otherwise; a dimension whose combined extent is unknown is
+  not checked statically but left to the run-time check of §3.6.6 rule 22 until a later fixed
+  operand whose extent there is not 1 makes it known again (its own extent); the mask index of a
+  fixed-size mask on a fixed-size base when the shapes differ (for a mask of a vector, and of one
+  dimension of a matrix, `A[m, :]`, that dimension's extent as a vector shape against `len(m)`; for
+  a whole-matrix mask both shapes; what it selects from first, LANGUAGE.md §5.2); the part of a
+  concatenation whose parts are all fixed-size (the joined shape so far first); the value of a
+  fixed-size type stored into a fixed-size target of another shape — a binding, an assignment, an
+  argument or a `return` — (the target's shape first, as §2.6.2's `expr` row and `[]` under a
+  fixed-size type with elements say; 217, not 201). A selection's shape is never static, so a shape
+  mismatch with a selection is always the run-time check of §3.6.6 rule 21, also on a fixed-size
+  base with constant ranges. Elements of a literal without a common element type (`[true, 1]`)
+  are `type mismatch` (201) at the first element that does not combine, the expected type being
+  the type of the elements before it; `[]` with no type from its context (the contexts that give one: LANGUAGE.md §6.9) is 252 at the
+  `[]` (its `arr` node, position kind `expr`, §2.6.2), also in an unannotated binding: `let x = []`
+  reports at the `[`, `len([])` and `[] + v` too.
+* **Implicit `dyn` and `fix`** (from 4e). `seacheck` writes a `dyn` where a fixed-size array is
+  stored into a variable, passed or returned as the dynamic type of the same rank and element type,
+  and a `fix` (with the run-time check of rule 27 (j)) where a dynamic array is so stored, passed or
+  returned as a fixed-size type. The arms of an `if` expression of one rank and element type have
+  the dynamic type when either arm is dynamic or the two fixed-size shapes differ, a `dyn` on each
+  fixed-size arm. No conversion is written for the operands of an element-wise operation, the value
+  of a selection store (its shape is checked against the selection at run time, rule 21), the parts
+  of a concatenation or the arguments of a library function (each rule reads a fixed-size array as
+  it is).
 * **Library calls of phase 4** are written `lib` with their predeclared name, their arguments in
   the order of LANGUAGE.md §10 (options included: `sort(v, desc)`, `argsort(v, desc)`, the
   default `false` inserted as a `cb`), and `name.dim` for a reduction with `dim:` (its arguments
@@ -2734,8 +2836,10 @@ dynamic type of the same rank and element type and a `fix` the reverse; an `asg`
 `lv`, `idx`, `fld` or `view flat` tree whose root is an `lv`. Any violation is `BAD_RECORD`.
 The checks enter with the sub-phase that first writes their records (§8): from 4d those of the
 array type records (`tvec`, `tmat`, `tfvec`, `tfmat`), `idx`, `dol` and `fore` (a `fore` over a
-vector or a fixed-size vector); the others (`view`, `arr`, `row`, `dyn`, `fix`, `fld`, `proj`,
-`slit`, `match`, `arm`, and the `asg` target trees) from 4e and 4g. Until its check enters, such
+vector or a fixed-size vector); from 4e those of `view`, `arr`, `row`, `dyn`, `fix`, the
+selection forms of `idx` (`rng`, `all`, an index vector, a mask) and the `asg` target trees of an
+`lv`, `idx` or `view flat` root (a `fld` in a target is 4g's), and the `fore` over an `i64` vector
+(a range value); from 4g those of `fld`, `proj`, `slit`, `match` and `arm`. Until its check enters, such
 a record is validated only as the first paragraph says and copied.
 
 In this order:
@@ -2891,21 +2995,22 @@ header records, §3.2) and those of set `HL` (`sea.hirl` only, codes 72–87, §
 | `tmp` | `pos:pos lid:lid` | `1` | names the value of its child by the local `lid` (a temporary; rules T1–T3 below) |
 | `hloop` | `pos:pos lid:lid` | `4` | start, last, step (`i64`), `block`: the counted loop of LIR `loop` (§3.6.4) with induction local `lid`, run for k = 0 … last with `lid` = start + k·step; always inside an `if` that excludes the empty range; `break` and `cont` in its block name it |
 | `ext` | `pos:pos ty:ty dim:u` | `1` | an array: the extent of its dimension `dim` (0 or 1); a `str` (dim 0): its length; `ty` is 3 |
-| `adat` | `pos:pos ty:ty` | `1` | an array: the address of its elements (`ty` the `tptr` of its element type) |
-| `eld` | `pos:pos ty:ty sc:u off:i` | `2` | address, index: the element of type `ty` at address + index·sc + off (a reference element borrowed) |
-| `est` | `pos:pos sc:u off:i` | `3` | value, address, index: an initializing store of the value at address + index·sc + off (an element of a fresh array, never read before) |
-| `anew` | `pos:pos ty:ty z:u r:u` | `r` | r extents (`i64`; r the rank of `ty`): a new array of the array type `ty` (owned), its buffer cleared when z is 1, not cleared when z is 0 (every element is then written before any is read, §4.8) |
-| `wbin` | `pos:pos ty:ty op:wop` | `2` | the wrapping `i64` operation `add`, `sub` or `mul` (only where no overflow can occur: positions, counts, induction values); `ty` is 3 |
+| `adat` | `pos:pos ty:ty` | `1` | an array: the address of its elements (`ty` the `tptr` of its element type; of a fixed-size array its home address, R2) |
+| `eld` | `pos:pos ty:ty sc:u off:i` | `2` | address, index: the element of type `ty` at address + index·sc + off (a reference element borrowed; a `ci` index k: at address + k·sc + off, R3) |
+| `est` | `pos:pos sc:u off:i` | `3` | value, address, index: a store of the value at address + index·sc + off (a `ci` index k: at address + k·sc + off, R3); an `f64`, `i64` or `bool` element of any array the rewrite created or made unique, a reference element only of a fresh array, never read before (an initializing store, R5) |
+| `anew` | `pos:pos ty:ty z:u r:u` | `r` | r extents (`i64`; r the rank of `ty`): a new array of the array type `ty` (owned), its buffer cleared when z is 1, not cleared when z is 0 (every element is then written before any is read, §4.8); for a fixed-size `ty`, r = 0 and z = 0: a new home slot (rule 27 (a), R1) |
+| `wbin` | `pos:pos ty:ty op:wop` | `2` | the wrapping `i64` operation `add`, `sub` or `mul` (only where no overflow can occur: positions, counts, induction values); `ty` is 3; an operand may be a `bool`, counting 0 or 1 (R7) |
 | `chkb` | `pos:pos dim:u` | `2` | index, extent: the bounds check of dimension `dim` (from 4e) |
 | `chk` | `pos:pos err:s n:u` | `n+1` | condition, n arguments: the run-time error whose code name in `errors.inc` is `err` when the condition is true (from 4e) |
-| `rcnt` | `pos:pos incl:u l:lid e:lid` | `3` | lo, hi, step: the count of the range (incl 0 `..`, 1 `..=`) into the locals `l` (count − 1) and `e` (1 if not empty), `range step is zero` checked (from 4e) |
+| `rcnt` | `pos:pos incl:u l:lid e:lid` | `3` | lo, hi, step: the count of the range (incl 0 `..`, 1 `..=`) into the locals `l` (count − 1, `i64`) and `e` (true if not empty, a `bool`, R6), `range step is zero` checked (from 4e) |
 | `cow` | `pos:pos` | `1` | an `lv` of a local array or of a `ref` parameter of array type: copy on write of that variable (from 4e) |
 | `mcpy` | `pos:pos` | `3` | destination address, source address, byte count: copy the bytes (from 4e) |
-| `cdat` | `pos:pos ty:ty n:u` | `n` | n constants (`ci`, `cf`, `cb`): the address of a read-only buffer of them in order (`ty` a `tptr`, from 4e) |
+| `cdat` | `pos:pos ty:ty n:u` | `n` | n constants (`ci`, `cf`, `cb`): the address of a read-only buffer of them in order (`ty` a `tptr`; the constants are its data, not lowered as nodes, R4; from 4e) |
 
 The records marked "from 4e" are fixed now so that the contract between the two programs holds
-for 4e and 4f (Decision 29); they are implemented with 4e: in 4e-0 `sealoop` writes none of them
-and `sealower` rejects them as `BAD_RECORD`.
+for 4e and 4f (Decision 29); they are implemented with 4e (in 4e-0 `sealoop` wrote none of them
+and `sealower` rejected them as `BAD_RECORD`). The meanings above include the refinements R1–R11 of
+4e (Decision 31, "What `sealoop` rewrites in 4e" below); no record or field was added for them.
 Further records of 4g and 4h (a replacing store of a reference element, address arithmetic,
 struct copies, the inline block of rule 37) are specified at the start of those sub-phases.
 
@@ -2918,8 +3023,10 @@ is the type only of `adat`, `cdat` and the `tmp` locals bound to them.
 **Locals.** The locals `sealoop` creates are named `.l1`, `.l2`, … per function and numbered after
 the `.j` locals (§3.5.4), in the order of their declaring records in the body (file order: `tmp`,
 `bind`, `rcnt`, `hloop`; an `rcnt` declares its `l` before its `e`); each has a `loc` record (mut
-`let` for `tmp`, `bind` and `rcnt`, `for` for the induction local of an `hloop`; type 3 for the two
-locals of an `rcnt` and the local of an `hloop`; `pos` that of the node the rewrite implements),
+`let` for `tmp`, `bind` and `rcnt`, `for` for the induction local of an `hloop`; type 3 for the `l`
+of an `rcnt` and the local of an `hloop`, type 2 for the `e` of an `rcnt` (R6), the value's type for
+`tmp` and `bind`; `pos` that of the node the rewrite implements: for both locals of an `rcnt`, the
+position of the `rng` it counts),
 and the `fn` record's nl counts them.
 
 **Positions.** Every node `sealoop` writes takes the position of the node its rewrite implements
@@ -2948,14 +3055,19 @@ the instructions):
   after the `xblk`'s value is computed, the `xblk`'s temporaries in the order of their `tmp`
   records — except the one its value names (`lv L` of such a `tmp`), which is moved out: the
   `xblk`'s value is then owned. (This is rule 15 (b)'s "right after the node that consumes it":
-  the `xblk` stands for the consuming node, for example the whole loop nest of rule 22 (8).) A
+  the `xblk` stands for the consuming node, for example the whole loop nest of rule 22 (8).) From 4e an
+  owned `tmp` may also lie directly in a `block` `sealoop` writes; it is then released at the end of
+  that block (R11). A
   `seq` (§3.5.5) whose value a `tmp` binds is consumed by the innermost `xblk` holding that `tmp`:
   its `.t` locals are released right after that `xblk`'s own temporaries (rule 16 (e)), the order
   of the one-program pass (`numel(pick(b: m1(), a: m2()))`: the `imul`, then the release of the
   value, then those of the `.t` locals).
 * **T3.** When an `xblk` has a destination (rule 2: it is the value of a `bind` or `tbind` of a
   local, or rule 15 (d)'s new register V, or an operand or arm with destination R of rule 3) and
-  its value is `lv L` of one of its own `tmp`s, L's register is that destination.
+  its value is `lv L` of one of its own `tmp`s, L's register is that destination. From 4e (R9) this
+  holds for an `xblk` of a reference or scalar type only: an `xblk` of a fixed-size type keeps its
+  own home (the `anew` of R1), and a `bind` or `asg` of a fixed-size local copies it (§3.6.6 rule
+  27 (b), (d)).
 
 **What `sealoop` rewrites in 4e-0** (Decision 28). The shorthand *loop(N; K) { S }*, for an `lv` N
 and a new induction local K, stands for the statements `tmp Z = ci 0` and `if` (e = 0) with the
@@ -2976,7 +3088,8 @@ node; s is the element size of §4.8 (`SEA_ESIZE_F64`, `SEA_ESIZE_I64`, `SEA_ESI
 * **L3** `lib len(a)` and `rows(a)`: `ext P 3 0` of a; `cols(a)`: `ext P 3 1` of a; `numel(a)` of a
   vector: `ext P 3 0` of a; of a matrix: `xblk P 3 1` with the statement `tmp A = a` and the value
   `wbin P 3 mul (ext P 3 0 (lv A)) (ext P 3 1 (lv A))`. In 4e-0 `sealoop` accepts `len` only of a
-  numeric vector; 4g extends L3 to `len` of a `str` (`ext P 3 0` with dim 0), which `sealower`
+  numeric vector (from 4e also of a fixed-size one, and `rows cols numel` of fixed-size matrices:
+  `ext` of a fixed-size array is its static extent); 4g extends L3 to `len` of a `str` (`ext P 3 0` with dim 0), which `sealower`
   already lowers.
 * **L4** `fore X v body` (X the loop variable, of element type E): a `block P 4` (a scope) with the
   statements `bind H = v` (H a new local of v's type: the vector the loop holds, rule 30); `tmp N =
@@ -2993,25 +3106,266 @@ node; s is the element size of §4.8 (`SEA_ESIZE_F64`, `SEA_ESIZE_I64`, `SEA_ESI
   `mov`. When v is a `seq`, its `.t` locals are released at the end of L4's block, right after H.
 
 So `fore` and the `lib` calls `zeros ones filled len rows cols numel` never occur in `sea.hirl`.
-The rewrites of rules 20–25, 26 (numeric literals) and 28 are specified at the start of 4e and 4f
-(23 and 24 at 4f's), those of rules 26 (`str` and struct literals), 29 and 30 (`str` and struct
-elements) at 4g's with its records, and rule 37 at 4h's (Decision 29); in every case the LIR of
-§3.6.6 stays as agreed.
+L4 over a fixed-size vector (from 4e) binds H as a fixed-size `.l` local, whose `bind` copies the
+vector into H's home (rule 30 (1), rule 27 (b)); `ext` and `adat` of H are then its static extent
+(`li`) and its home address.
+
+**What `sealoop` rewrites in 4e** (Decisions 29, 31–34). The rewrites L5–L11 below implement rules
+20–22, 25, 26 (numeric literals), 27 (i), (j) and 28 of §3.6.6, and the `dol` nodes of the `idx`
+they rewrite; with "Lowering of the `sea.hirl` records" they give exactly the LIR those rules
+give (the agreed examples of rules 20, 21, 22, 25 and 28 are dump tests, §6.2). The rewrites of
+rules 23 and 24 are specified at the start of 4f, those of rules 26 (`str` and struct literals), 29
+and 30 (`str` and struct elements) at 4g's with its records, and rule 37 at 4h's; in every case the
+LIR of §3.6.6 stays as agreed.
+
+*Refinements of the records* (Decision 31; no record or field is added, `passes.txt` is
+unchanged; the record table above and the validation below include them):
+
+| # | Refinement |
+|---|------------|
+| R1 | `anew` of a fixed-size type T has r = 0, z = 0 and no children: a new home slot of T (rule 27 (a): `sa P sK` of a new `slot sK size 8`); it holds no counts (`f64`, `i64`, `bool` elements) and is never released |
+| R2 | `adat` of a fixed-size array writes no instruction: its register is its operand's (the home address), as T1's alias |
+| R3 | an `eld` or `est` whose index child is a `ci` k writes no instruction for it: its LIR index is `-` and its offset off + k·sc (rule 26 (a), (b): `stf V P - 0 off`) |
+| R4 | the children of `cdat` are its data (the values of its `dat` record): they write no instruction |
+| R5 | `est` of an `f64`, `i64` or `bool` value stores into any array the rewrite created, any array whose copy on write the rewrite has done (`cow`), or a fixed-size home; of a reference value only into an element of a fresh array never read (an initializing store; 4g adds the replacing store) |
+| R6 | the `e` local of an `rcnt` has type 2 (`bool`): it is the condition of an `if`, the condition of a scalar `lib where` and an operand of `bin band` where rules 20 and 25 use E |
+| R7 | an operand of `wbin` may have type 2: a `bool` counts 0 or 1 (`iadd N N b` of rule 20 (3), `imul SJ t rX` of rule 22 (4)) |
+| R8 | a `bind` of a `.l` local of a scalar type may stand anywhere among the statements `sealoop` writes (lowered by rule 2), and such a local may be the target of `asg set` with a `wbin`, `bin` or `un` value (rule 2: its instruction writes the local's register, `iadd i20 i20 i21`); a `bind` of a `.l` local of a dynamic array type stands only directly in a `block`, never in an `xblk` (the check `sealower` makes; `sealoop` writes it so in L4, L6 and L11, the last also in place of a `tbind`, which stands directly in a block), and is lowered by rule 30 (1) (an owned value moved, a borrowed X `mov H X`, `retain H`); a `.l` local of a fixed-size type is bound by `bind` only in L4 (rule 27 (b), a copy): everywhere else a fixed-size value is named by a `tmp` (R9), which holds no counts and may also stand directly in such a `block` or in place of a `tbind` |
+| R9 | T3 holds for an `xblk` of a reference or scalar type only (above); a `tmp` whose child is an `xblk` of a fixed-size type names that `xblk`'s home (its register is the home's: no instruction, no `mov`), and a home is copied only where a rule copies it (a `bind` or `asg` of a fixed-size local, rule 27 (b), (d); rule 27 (h), (k) and (l); a `dyn`, rule 27 (i)); a `tmp` never copies |
+| R10 | `sea.hirl` holds no array expression: no `view`, `arr`, `row`, `dyn`, `fix`, `all`, no `rng` but a `forr`'s, no `idx` with an index that is not a scalar or with a `view` base, no `bin`, `un`, `cvt`, `powk`, `lib` or `emap` with an array operand, no `asg` with op ≠ `set` whose target is an array (not an element of one), no `tbind`, `tasg` or `tret` of a `lib ind2sub` with an array argument (L11 rewrites them) |
+| R11 | an owned `tmp` written directly in a `block` that `sealoop` writes (an index vector or mask of L6, which a `bind` would retain when borrowed and so change rule 21's example) is a temporary of that block: released at the block's end, before its bound locals, the `tmp`s in the order of their records (an extension of T2; a borrowed one is not retained, rule 15 (k)); the counterpart of L4's `seq` rule: when such a `tmp` or `bind` of L6 (in no `xblk`) binds a `seq` (reachable from 4f: `v[argsort(w, desc: true)] = 0.0`), the `seq`'s `.t` locals are released at the block's end right after that `tmp` or `bind`'s own release (rule 16 (e)) |
+
+*Notation* (with loop(N; K) of 4e-0). P is the position of the rewritten node; every node a rewrite
+writes takes P, except where said (an `rcnt` takes its `rng`'s position, the `ext` of a `dol` the
+`dol`'s); the nodes of the program a rewrite keeps (operands, the scalar operation in a loop body)
+keep their own. s is the element size, E the element type. ext(X, d) is `ext P 3 d (lv X)` and
+data(X) is `adat P ^E (lv X)`. *X += e* is `asg set (lv X) (wbin add (lv X) e)` of a scalar `.l`
+local X bound by `bind` (R8). *rloop(E, LO, L, ST; K) { S }* is `if (lv E)` { `hloop K (lv LO) (lv
+L) (lv ST)` { S } } (the `hloop` K a new `.l` local). *mloop(R, C; I, J) { S }* is loop(C; J) {
+loop(R; I) { S } }. *lin(I, J, R)* is `wbin add (lv I) (wbin mul (lv J) (lv R))` (lowered `imul`,
+then `iadd`). *vchk(err; S, A, B)* is `tmp V = ci SEA_SHAPE_VEC` (read from the `consts` table),
+written right before the `chk`, after its comparison (the order `icmp`, `li V -1`, `chk` of rules
+20, 21 and 27 (j); L7 writes V only at its first vector check and reuses it: rule 22's "once"), and
+`chk err 4 (lv S) (lv A) (lv V) (lv B) (lv V)`; *mchk(err; S, R, C, r, c)* is `chk err 4 (lv S) (lv R) (lv C) (lv r)
+(lv c)`. **Within one rewrite every extent is loaded once**, by the check of its dimension (or,
+without a check, where the rule first needs it), and that `tmp` is reused by the count, the
+allocation and the loop nest (rule 21's agreed example: the mask check's extent is the loop's);
+the `ext` that replaces a `dol` is a load of its own, at the `dol`'s place (rule 20's example loads
+ext(u, 0) for `$` and again for the check).
+
+*The index preparation IX* (L5, L6). The base B is the `tmp` of the `idx`'s base, or, for a
+folded view, of the view's operand; in a store it is `lv T` of the target's root variable T, read
+afresh at each use (so a `ref` parameter is loaded again for every extent, the `cow` and the
+data). The indices are taken left to right; d is an index's dimension; the kinds are S (a scalar),
+R (a range), A (`:`), V (an index vector), M (a mask of one dimension) and MM (a mask of a whole
+matrix, the one index of a matrix base).
+
+1. *Evaluation*: S `tmp I = e`; R `tmp LO = lo`, `tmp HI = hi`, `tmp ST = st` (or `ci 1`),
+   `rcnt incl L E (lv LO) (lv HI) (lv ST)`; A nothing; V `tmp W = e`; M and MM `tmp M = e`. A `dol`
+   among the indices that this `idx` claims is replaced by the extent of its dimension: `ext` of
+   B (for a folded view, the view's extent below), at the `dol`'s position.
+2. *Checks*, dimension by dimension in order: `tmp X = ` the extent of dimension d, then S `chkb d
+   (lv I) (lv X)`; R `if (lv E)` { `chkb d (lv LO) (lv X)`; `chkb d (wbin add (lv LO) (wbin mul (lv
+   L) (lv ST))) (lv X)` }; A nothing more; V `tmp NW = ext(W, 0)`, `tmp DW = data(W)`, loop(NW; K) {
+   `chkb d (eld i64 8 0 (lv DW) (lv K)) (lv X)` }; M `tmp NM = ext(M, 0)`, `tmp S = bin ne (lv X) (lv
+   NM)`, vchk(SHAPE_MISMATCH; S, X, NM); MM the extents X0, X1 of both dimensions, `tmp RM =
+   ext(M, 0)`, `tmp CM = ext(M, 1)`, `tmp S0 = bin ne (lv X0) (lv RM)`, `tmp S1 = bin ne (lv X1) (lv
+   CM)`, `tmp S = bin bor (lv S0) (lv S1)`, mchk(SHAPE_MISMATCH; S, X0, X1, RM, CM), then right after
+   it `tmp NN = wbin mul (lv X0) (lv X1)` (the count of IX 3 and IX 4, written here so that a store
+   of a scalar, which skips IX 3, has it).
+3. *Kept extents*: R `tmp O1 = ci 1`, `tmp T = wbin add (lv L) (lv O1)`, `tmp Z = ci 0`, `tmp N =
+   lib where (lv E) (lv T) (lv Z)`; A its X; V its NW; M `bind N = ci 0`, `tmp DM = data(M)`,
+   loop(X; K) { N += `eld bool 1 0 (lv DM) (lv K)` }; MM the same over loop(NN; K), NN of
+   step 2.
+4. *The nest*: dimension 1 outside, dimension 0 inside: S no loop (its position is I); R rloop(E,
+   LO, L, ST; Q); A loop(X; Q); V loop(NW; K) { `tmp Q = eld i64 8 0 (lv DW) (lv K)`; … }; M loop(X;
+   Q) { `if (eld bool 1 0 (lv DM) (lv Q))` { … } }; MM one loop(NN; Q) over the linear positions
+   with M's `if`. The DW and DM of the nest are new `tmp`s of data(W), data(M), loaded where the
+   rule says (step 5 of L5, step 6 of L6). The base element's position *pos* is Q0 for a vector
+   base, `.flat` and MM, and lin(Q0, Q1, X0) for a matrix base, X0 the rows extent of step 2.
+
+*Folded views* (rule 28). For a `view` base with operand B: `.T` has the extents ext(B, 1) (its
+dimension 0) and ext(B, 0) (dimension 1) and maps (i, j) to lin(j, i, X1), X1 its dimension-1
+extent (B's rows); `.flat` has the extent `tmp R = ext(B, 0)`, `tmp C = ext(B, 1)`, `tmp X = wbin
+mul (lv R) (lv C)` and maps k to k; `.col` has ext(B, 0) and `ci 1` and maps (i, j) to i; `.row` has
+`ci 1` and ext(B, 0) and maps (i, j) to j. Only the outermost view of a base is folded: a view
+whose operand is a view materializes that operand first (L10). A whole-matrix mask (MM) of a `.T`
+base is not folded: the `.T` is materialized (L10) and masked as a plain matrix, since MM runs over
+the linear positions of the base, which `.T` does not keep (`.col` and `.row` keep them).
+
+* **L5** (rules 20, 28) an `idx` with an index of kind R, A, V, M or MM, or with a `view` base:
+  `xblk P T n` with `tmp B = ` the base (the view's operand), IX 1, IX 2, and then, for a
+  selection: IX 3; `tmp R = anew P T 0 k` with the kept extents in dimension order (k = 1 for one
+  kept dimension or MM, 2 for two); `tmp DR = data(R)`, `tmp DB = data(B)`, the DW and DM of each
+  index vector and mask in dimension order, `bind O = ci 0`, `tmp One = ci 1`; IX 4 with the
+  innermost body `est s 0 (eld E s 0 (lv DB) pos) (lv DR) (lv O)` and O += `lv One`; its value `lv
+  R`. When every index is a scalar (a view base, rule 18 folded), its value after IX 2 is `eld E s
+  0 data(B) pos`. Sites: the `idx`'s line; `range step is zero` the `rng`'s.
+* **L6** (rules 21, 19 for `.flat`, 15 (i)) `asg set` to an `idx` with an index of kind R, A, V, M
+  or MM or with a `view flat` base: `block P n` with:
+  1. *the value*: a scalar `tmp Vv = value`; a dynamic array `bind Vv = value` (held, R8: retained
+     when borrowed, rule 21 (1)); a fixed-size array `tmp Vv = value` (it names its home, R9), except
+     that a value that is `lv` of the target's root variable is copied into a new home first (`tmp V0
+     = value`, `tmp Vv = anew P TV 0 0`, `tmp NB = ci bytes`, `mcpy data(Vv) data(V0) (lv NB)`; a
+     fixed-size target has no copy on write, LANGUAGE.md §5.5 "Aliasing", Decision 34's reasoning);
+  2. *the indices*: IX 1 of the target, every index vector and mask a `tmp` (an owned one released at
+     the block's end, R11), except under Decision 34: a dynamic index vector of a dynamic target
+     whose element type is `i64` is `bind W = e` (held: retained when borrowed, so the target's cow
+     copies a shared buffer), and on a fixed-size `i64` target an index vector that is `lv` of the
+     target's root is copied into a new home first (`tmp W0 = e`, `tmp W = anew P TW 0 0`, `tmp NB =
+     ci bytes`, `mcpy data(W) data(W0) (lv NB)`); no other index vector can share the target's
+     storage;
+  3. IX 2;
+  4. for an array value, IX 3 and the shape check, the selection's shape first: a vector `tmp NV =
+     ext(Vv, 0)`, `tmp S = bin ne (lv N) (lv NV)`, vchk(SHAPE_MISMATCH; S, N, NV); a matrix `tmp RV`,
+     `tmp CV`, `tmp S0`, `tmp S1` (`bin ne` of each pair), `tmp S = bin bor`, mchk(SHAPE_MISMATCH; S,
+     R, C, RV, CV);
+  5. for a dynamic target `cow (lv T)` (a fixed-size target needs none, rule 19);
+  6. `tmp DT = data(T)`, for an array value `tmp DV = data(Vv)`, the DW and DM of each index vector
+     and mask, for an array value `bind O = ci 0` and `tmp One = ci 1`;
+  7. IX 4 with the innermost body `est s 0 (lv Vv)` (or `(eld E s 0 (lv DV) (lv O))`, then O += `lv
+     One`) `(lv DT) pos`.
+
+  At the end of the block the owned index `tmp`s are released (R11), then the held locals in reverse
+  order (the retained index vectors, then the value): rule 21 (8). An `asg set` to `.flat` with a
+  scalar index is the same block without step 4 and the nest: steps 1, 2, 3, 5, then `est s 0 (lv
+  Vv) data(T) (lv I)` (rule 19's order). **Compound** `asg op` (op ≠ `set`) to such a target: `block
+  P n` with step 2 of the plain form (Decision 34's `bind` and copy apply: `w[w] += 10`, §6.2); `bind
+  G = xblk P TG m` { IX 2–4 of L5 reading the selection into `tmp G0` with step 2's `tmp`s; `tmp Vv =
+  value`; the statements of L7 for `G0 op Vv` (its shape check with G0 first) into `tmp R0`; value `lv
+  R0` } (T2 releases G0 and an owned Vv right after the operation; for a fixed-size result G is a
+  `tmp`, R9); then steps 3–7 storing G's elements with step 2's `tmp`s (extents and checks loaded
+  again); G is released at the block's end. A compound `.flat` store with a scalar index: step 2, the
+  folded read into `tmp Tv` (checks included), `tmp Vv = value`, `tmp R0 = bin op (lv Tv) (lv Vv)`
+  (rule 1, the `asg`'s site), steps 3 and 5, the store. **Whole arrays**: `asg op (lv a) e` of an
+  array local or `ref` parameter a is `asg set (lv a) x`, x the L7 `xblk` of `bin op (lv a) e` (rule
+  15 (i); a fixed-size a stored by rule 27 (d)). Sites: the `asg`'s line for every check, `chk` and
+  `cow`; `range step is zero` the `rng`'s. For §3.6.6 rule 12 the whole block is the one statement of
+  the `asg` (its reads before a `ref` call are copied, the store's reads of the target are not).
+
+* **L7** (rule 22) a `bin`, `un`, `cvt`, `powk` or elemental `lib` (LANGUAGE.md §10.1, §10.4, §10.7)
+  with an array operand: `xblk P T n` with: (1) `tmp Ak = ` operand k, left to right (scalars too);
+  (2) when the result is dynamic, the extents of every array operand in operand order (a vector
+  `Nk = ext(Ak, 0)`, a matrix `Rk`, `Ck`), when it is fixed-size those of the matrix operands
+  only; then the checks of a dynamic result: vectors, for each array operand k after the first (so none, and
+  no V, with one array operand),
+  `tmp S = bin ne (lv N1) (lv Nk)`, vchk(SHAPE_MISMATCH; S, N1, Nk) (its `tmp V` written at the
+  first check only, after that comparison); matrices, with the combined
+  shape (R, C) = (R1, C1) and each later array operand's (r, c): `tmp O = ci 1` (once), `bind a =
+  bin eq (lv R) (lv r)`, `tmp b = bin eq (lv R) (lv O)`, `tmp c = bin eq (lv r) (lv O)`, `asg set
+  (lv a) (bin bor (lv a) (lv b))`, the same with c, the same for the columns into `bind a2`, `asg set
+  (lv a) (bin band (lv a) (lv a2))`, `tmp S = un not (lv a)`, mchk(SHAPE_MISMATCH; S, R, C, r, c),
+  `tmp R' = lib where (bin eq (lv R) (lv O)) (lv r) (lv R)`, `tmp C' = ` the same for C, (R, C) :=
+  (R', C'); (3) `tmp RES = anew P T 0 k` with N1 (vectors) or the final (R, C), or for a fixed-size
+  T `anew P T 0 0` followed by its extents (a vector `tmp N = ext(RES, 0)`, a matrix `tmp R =
+  ext(RES, 0)` and `tmp C = ext(RES, 1)`, the R and C of (4) and (6)); (4) matrices: for each
+  array operand X `tmp SI = bin ne (lv rX) (lv O)`, `tmp t = bin ne (lv cX) (lv O)`, `tmp SJ = wbin
+  mul (lv t) (lv rX)` (R7; `tmp O = ci 1` at its first use if (2) wrote none); (5) `tmp DR =
+  data(RES)`, then `tmp Dk = data(Ak)` of each array operand in order; (6) a vector loop(N; I) {
+  `est s 0 F (lv DR) (lv I)` }, a matrix mloop(R, C; I, J) { `est s 0 F (lv DR) lin(I, J, R)` },
+  where F is the node itself with each array operand replaced by `eld Ek sk 0 (lv Dk) (lv I)`
+  (matrix: index `wbin add (wbin mul (lv I) (lv SIk)) (wbin mul (lv J) (lv SJk))`) and each scalar
+  operand by `lv Ak`; its value `lv RES`. Owned operands are temporaries of the `xblk`, released
+  after the nest (T2, rule 22 (8)). Site: the node's line.
+* **L8** (rule 25) a `rng` that is neither an index nor a `forr`'s range: `xblk P T n` with `tmp LO =
+  lo`, `tmp HI = hi`, `tmp ST = st` (or `ci 1`), `rcnt incl L E`, `tmp O1 = ci 1`, `tmp T = wbin add
+  (lv L) (lv O1)`, `tmp Z = ci 0`, `tmp N = lib where (lv E) (lv T) (lv Z)`, `tmp X = ci
+  2147483646` (`SEA_LIM_EXTENT` − 1), `tmp G = bin gt (lv L) (lv X)`, `tmp U = bin lt (lv L) (lv Z)`,
+  `bind Bf = bin bor (lv G) (lv U)`, `asg set (lv Bf) (bin band (lv Bf) (lv E))`, `tmp MX = ci
+  9223372036854775807` (written as the field text, never computed: a Baysick number cannot hold
+  it; 2147483646 is exact), `bind Ef = bin eq (lv L) (lv MX)`, `asg set (lv Ef) (bin bor (lv Ef) (lv
+  U))`, `tmp V = lib where (lv Ef) (lv MX) (lv T)`, `chk ARRAY_SIZE 1 (lv Bf) (lv V)`, `tmp A = anew P
+  T 0 1 (lv N)`, `tmp D = data(A)`, `bind Q = ci 0`, `tmp One = ci 1`, rloop(E, LO, L, ST; K) { `est 8
+  0 (lv K) (lv D) (lv Q)`; Q += `lv One` }; its value `lv A`. P and every site: the `rng`'s. A `for`
+  over a range value (`for x in (0..n)`) is L4 over this vector.
+* **L9** (rule 26 (a)–(d), numeric elements) an `arr` of type T: (a) fixed-size T without
+  concatenation: `xblk P T n` with `tmp H = anew P T 0 0`, `tmp D = data(H)`, then each element in
+  source order `est s 0 e (lv D) (ci k)`, k = i + j·r for element (i, j) of an r × c literal; value
+  `lv H`. (b) dynamic T without concatenation: `tmp R = ci n` (one row), or `tmp R = ci r` and `tmp
+  C = ci c`; `tmp A = anew P T 0 k`; `tmp D = data(A)`; when every element is a `ci`, `cf` or `cb`,
+  `tmp S = cdat P ^E n` with the constants in column-major order, `tmp B = ci bytes`, `mcpy (lv D)
+  (lv S) (lv B)`; otherwise each element in source order `est s 0 e (lv D) (ci k)`; value `lv A`.
+  (c) concatenation: `tmp Qk = ` part k in source order (scalar parts too); then the shapes, row by
+  row, each row's join before its stack check: a row of scalars and vectors `tmp L1 = ext(Q1, 0)` (a
+  scalar `tmp L1 = ci 1`), then for each later part its length `tmp Lk` and `tmp Nk = wbin add` of
+  the sum so far and Lk, with no check (a vector row; in a stack it counts as (`tmp = ci 1`, its sum));
+  a row of matrices and scalars (Rr, Cr) = the first part's extents (a scalar two `tmp = ci 1`), then
+  for each later part its (Rk, Ck), `tmp S = bin ne (lv Rr) (lv Rk)`, mchk(SHAPE_MISMATCH; S, Rr, Cr,
+  Rk, Ck), `tmp Cr' = wbin add (lv Cr) (lv Ck)`; the stack (Rs, Cs) = the first row's, then after each
+  later row's join `tmp S = bin ne (lv Cs) (lv Ck)`, mchk(SHAPE_MISMATCH; S, Rs, Cs, Rk, Ck), `tmp Rs'
+  = wbin add (lv Rs) (lv Rk)`; `tmp RES = anew P T 0 k` (a vector result, one row of scalars and vectors: the sum; a matrix
+  result: Rs, Cs, for a single row of matrices its Rr, Cr); `tmp DR =
+  data(RES)`; then each part in source order at its offsets, each offset a `tmp` (a first offset
+  `tmp = ci 0`, a later one `tmp = wbin add` of the previous offset and the previous part's length or
+  extent; r0 per row, c0 per part within its row): in a vector result a scalar part `est s
+  0 (lv Qk) (lv DR) (lv c0)` and a vector part `tmp Dq = data(Qk)`, loop(Lk; I) { `est s 0 (eld E s 0
+  (lv Dq) (lv I)) (lv DR) (wbin add (lv c0) (lv I))` }; in a matrix result a scalar part
+  `est s 0 (lv Qk) (lv DR) lin(r0, c0, Rs)`, and a matrix part, or a vector part of a row of the stack
+  (its Rq a `tmp = ci 1`, its Cq its length), `tmp Dq = data(Qk)`, mloop(Rq, Cq; I, J) { `est s 0 (eld
+  E s 0 (lv Dq) lin(I, J, Rq)) (lv DR) (wbin add (wbin add (lv r0) (lv I)) (wbin mul (wbin add (lv
+  c0) (lv J)) (lv Rs)))` }; value `lv RES`. When every part is fixed-size: `anew P T 0 0`, no checks,
+  the parts' extents their `ext` (`li`), and every offset a `tmp = ci` of its static value (an `li`;
+  never a constant index child, which R3 would fold). The parts are the `xblk`'s first `tmp`s, so T2
+  releases the owned ones after the copies in part order. (d) `[]`: `anew P T 1 k` with `ci 0`
+  children (dynamic T), `anew P T 0 0` (fixed-size T). Site: the `arr`'s line.
+
+* **L10** (rule 28 materialized, rule 27 (i), (j)) a `view` that is not an `idx` base: `.flat`,
+  `.col`, `.row`: `xblk P T n` with `tmp A = ` the operand, for a dynamic operand `tmp R = ext(A,
+  0)` (`.flat` also `tmp C = ext(A, 1)` and `tmp N = wbin mul (lv R) (lv C)`), `tmp V = anew P T 0
+  k` (`.flat` N; `.col` R and `ci 1`; `.row` `ci 1` and R) or `anew P T 0 0` (fixed-size), `tmp D =
+  data(V)`, `tmp S = data(A)`, `tmp NB = wbin mul (count) (ci s)` (fixed-size: `ci bytes`), `mcpy (lv
+  D) (lv S) (lv NB)`, value `lv V`; `.T`: `tmp A`, `tmp R = ext(A, 1)`, `tmp C = ext(A, 0)`, `tmp V =
+  anew P T 0 2 (lv R) (lv C)` (fixed-size: `anew P T 0 0`), `tmp DV = data(V)`, `tmp DA = data(A)`,
+  mloop(R, C; I, J) { `est s 0 (eld E s 0 (lv DA) lin(J, I, C)) (lv DV) lin(I, J, R)` }, value `lv V`.
+  Site: the `view`'s line. `dyn`: `tmp S = ` the operand, `tmp R = ext(S, 0)` (and `tmp C =
+  ext(S, 1)`: `li` of the static extents), `tmp A = anew P T 0 k`, `tmp D = data(A)`, `tmp N = ci
+  bytes`, `mcpy (lv D) data(S) (lv N)`, value `lv A`. `fix`: `tmp A = ` the operand; a vector `tmp R
+  = ext(A, 0)`, `tmp En = ci n`, `tmp S = bin ne (lv R) (lv En)`, vchk(SHAPE_EXPECTED; S, En, R); a
+  matrix `tmp R`, `tmp C`, `tmp Er = ci r`, `tmp Ec = ci c`, `tmp S0 = bin ne (lv R) (lv Er)`, `tmp S1
+  = bin ne (lv C) (lv Ec)`, `tmp S = bin bor`, mchk(SHAPE_EXPECTED; S, Er, Ec, R, C); then `tmp H =
+  anew P T 0 0`, `tmp D = data(A)`, `tmp N = ci bytes`, `mcpy data(H) (lv D) (lv N)`, value `lv H`
+  (an owned A released by T2). Sites: the node's line.
+* **L11** (Decision 33) `ind2sub(r, k)` with a scalar `r` and an array `k` (an array `r` is the
+  phase-rule word `ind2sub` until phase 6, §2.6.2), of type `(T1, T2)`; P is the position of the `lib
+  ind2sub` (every node L11 writes takes it); with one array operand there is no shape check: for
+  `tbind (I, J)`, in place of the `tbind` in its block (not a block of its own: the `tbind` declares
+  I and J for the rest of the enclosing block, LANGUAGE.md §7.7): `bind R' = r` (a scalar `.l` local, rule 2), then k: a dynamic
+  array `bind K' = k` (held, rule 30 (1)), a fixed-size one `tmp K' = k` (naming its home, R9), `bind I = ` the L7 `xblk` of `bin mod (lv K') (lv R')`,
+  `bind J = ` the L7 `xblk` of `lib idiv (lv K') (lv R')` (for a fixed-size result a `tmp`, R8; a `_`
+  component is an `eval` of its L7 `xblk`, whose owned value rule 15 (h) releases right after it),
+  the block's n growing by 3; for `tasg` and `tret`,
+  a new `block P n` with the same statements, I and J new `.l` locals (`bind`, or `tmp` for
+  fixed-size results, R8) followed by the stores of rule 15 (j) in target order (`asg
+  set` of `lv I`, `lv J`) or by `ret 2 (lv I) (lv J)`. The held locals are released at the end of
+  their block (rule 16); for `tbind` that is the enclosing block, so a held K' outlives the
+  statement (a `block` of its own would end the scope of I and J, and `sea.hirl` has no release
+  record): only its memory lives longer, nothing a program can observe. The two loops report the error a single loop would (`integer division by
+  zero` at element 0 of the first loop for r = 0; an `idiv` overflow at its element), so the output
+  cannot differ from one loop (with a scalar `r` only `idiv` can overflow, and both loops fail on r = 0
+  at element 0); phase 7 fuses them (§5.1).
+
 
 **What the passes validate.** `sealoop` validates its input `sea.hir` as `sealower` did before
 4e-0: every record against `passes.txt` (fields, enumeration words, positions within the file
-list), the record kinds the current sub-phase implements, and the tree (`BAD_RECORD`, `BAD_TREE`,
-§2.6.2). `sealower` validates `sea.hirl` the same way, with the sets `H HF HL`, and in addition: no
-`fore` and none of the rewritten `lib` calls; none of the records 82–87 (in 4e-0); each `tmp`
+list), the record kinds the current sub-phase implements (from 4e also `dyn`, `fix`, `view`, `all`,
+`arr`, `row`, `rng` as an index or a value, and the types `tfvec`, `tfmat`), and the tree
+(`BAD_RECORD`, `BAD_TREE`, §2.6.2). `sealower` validates `sea.hirl` the same way, with the sets `H HF HL`, and in addition: no
+`fore` and none of the rewritten `lib` calls; from 4e none of the array expressions of R10; each `tmp`
 local bound by exactly one `tmp`, before every `lv` of it in node order, its type equal to the
-`tmp`'s child's, and never the target of a `bind`, `tbind`, `asg`, `tasg` or `rarg`; the two locals
-of an `rcnt` of type 3, each written only by that `rcnt` (from 4e); a `bind` of a `.l` local only as
-the first statement of an L4 block; a `tmp` of a `tptr` type only of an `adat` or `cdat`; an `hloop`'s
+`tmp`'s child's, and never the target of a `bind`, `tbind`, `asg`, `tasg` or `rarg`; the `l` of
+an `rcnt` of type 3 and its `e` of type 2, each written only by that `rcnt` (from 4e); a `bind` of a
+`.l` local only where R8 allows it (one of an array type only directly in a `block`), and an `asg` to a `.l` local only with op `set` and only to a scalar
+local declared by a `bind`; a `tmp` of a `tptr` type only of an `adat` or `cdat`; an `hloop`'s
 local of mut `for` and type 3, its first three children of type 3, its last a `block`; `ext` of an
 array or a `str`, dim < the array's rank (0 for a `str`); `adat` of an array, `ty` the `tptr` of its
 element type; `eld` with an address of a `tptr` type whose `elt` is `ty`, an index of type 3; `est`
-with an address of a `tptr` type whose `elt` is the value's type; `anew` with `ty` an array type of
-rank r and children of type 3; `wbin` of two type-3 operands; an `xblk`'s `ty` equal to its last
+with an address of a `tptr` type whose `elt` is the value's type; `anew` with `ty` a dynamic array type of
+rank r and children of type 3, or a fixed-size array type with r = 0 and z = 0; `wbin` of two
+operands of type 2 or 3; `chkb` of two type-3 children; `chk` with a type-2 condition and `err` a
+run-time error of `errors.inc` whose arguments take n slots; `rcnt` of three type-3 children;
+`cow` of an `lv` of a local or `ref` parameter of a dynamic array type; `mcpy` of two addresses of a
+`tptr` type and a type-3 count; `cdat` with `ty` a `tptr` whose `elt` is the type of each of its n ≥ 1
+children, every child a `ci`, `cf` or `cb`; an `xblk`'s `ty` equal to its last
 child's. Any violation is `BAD_RECORD` (`BAD_TREE` for the tree). `tools/seaval.bas` validates the
 format `hirl` (sets `H HF HL`) with its generic checks (§2.10).
 
@@ -3326,11 +3680,14 @@ sub-phase that implements its construct.
 **Two programs from sub-phase 4e-0** (Decisions 26–29). The rules below say what `sea.lir1` holds
 for a construct, whichever program of pass 3a does the work. From 4e-0 `sealoop` rewrites the array
 constructs into the records of §3.5.9 and `sealower` lowers them by "Lowering of the `sea.hirl`
-records" (after rule 38); a rule whose construct `sealoop` rewrites (17 and 30 from 4e-0; 20–25,
-26 for numeric literals and 28 when 4e and 4f specify their rewrites, 26 for `str` and struct
-literals, 29 and 30 for `str` and struct elements with 4g) is met by that rewrite and that lowering together, with
+records" (after rule 38); a rule whose construct `sealoop` rewrites (17 and 30 from 4e-0; 20–22, 25,
+26 for numeric literals, 27 (i), (j) and 28 from 4e, §3.5.9 L5–L11; 23 and 24 when 4f specifies
+their rewrites; 26 for `str` and struct literals, 29 and 30 for `str` and struct elements with 4g) is met by that rewrite and that lowering together, with
 the instructions, registers, blocks, slots, labels and sites the rule gives, unchanged. Rules 12,
-15, 16 and 31 are applied by `sealower` to `sea.hirl` (Decision 27).
+15, 16 and 31 are applied by `sealower` to `sea.hirl` (Decision 27), and so is rule 27 (homes),
+except its (i) and (j). Where a rule leaves an order or a register open, the rewrite of §3.5.9
+fixes it (each extent loaded once per rewrite and reused; addresses computed in the innermost
+body in post-order; the sites listed with each rewrite).
 
 1. Each local and parameter has one register of its class. Expressions are lowered in post-order,
    left operand first, one instruction per node, except: `lv` emits nothing (its register is the
@@ -3460,6 +3817,17 @@ the instructions, registers, blocks, slots, labels and sites the rule gives, unc
     `tmp` directly in a block (as in L4) is a statement, whose expression is its child; an `hloop`
     is a statement whose expression is its range only (its first three children), like a `forr`;
     the `bind` of L4 is a statement like any `bind` (its expression the vector, as the `fore` was).
+    From 4e the statements of an L6 `block` (§3.5.9), and the statements L11 writes (in place of a `tbind`,
+    or as the `block` of a `tasg` or `tret`), together form one statement, the rewritten `asg` (or tuple statement): their `tmp`s and `bind`s are not
+    statements of their own. A read of a local that this rule copies there (the value, an index, a
+    mask, a fixed-size value, the left operand of a compound store) is copied at its evaluation point
+    by `mov T L` and (a)–(c), and T1's alias exception does not apply to it: the `tmp` or `bind`
+    names the copy (an owned copy is released at the block's end, R11, or with the held locals, rule
+    21 (8)). The reads of the store into the target stay uncopied (its base `lv T` in IX 2–4 of
+    the store, its extents, `cow` and data):
+    they use the variable as it is after the value and the indices (LANGUAGE.md §5.5). So `v[0..g(ref
+    k)] = k` stores the old `k`, `B[i, g(ref i)..3] = 0.0` uses the old `i`, and `A.flat[k] += g(ref k)`
+    the old `k`.
 13. **Constant exponents.** `powk k` lowers its base x first, then into a new destination d (or
     the destination of rule 2): k = 0 `lf d 1.0`; k = 1 `mov d x`; k = 2 `fmul d x x`; k = 3
     `fmul t x x`, `fmul d t x`; k = 4 `fmul t x x`, `fmul d t t` (t a new register). For k < 0,
@@ -3543,7 +3911,8 @@ hoists, §5.2), so a dump shows every load.
     now, after the call, then its checks and cow), a selection by rule 21 (indices, checks, shape
     check, cow, store), a field by rule 27 (f) or (d); `_` by (h). A run-time error in a later
     target leaves the earlier targets stored.
-    (k) *the records of `sea.hirl`* (from 4e-0, §3.5.9): `anew` is owned; an `xblk` is owned
+    (k) *the records of `sea.hirl`* (from 4e-0, §3.5.9): `anew` of a dynamic array type is owned (of a fixed-size type it is a home,
+    rule 27, R1); an `xblk` is owned
     exactly when its value is owned (an owned node, or `lv` of an owned `tmp` of it, T2); a `tmp` is not a place that holds a
     count, so a borrowed value it binds is not retained, and an owned value it binds is a
     temporary of its `xblk`, released right after the `xblk`'s value, unless that value names it
@@ -3827,10 +4196,23 @@ hoists, §5.2), so a dump shows every load.
 
     (`u1` is `p17`.)
 
+    From 4e a selection reaches `sealower` as §3.5.9 L5 (Decision 31's refinements make E a `bool`
+    and the counter O a `.l` local); L5 fixes what this rule leaves open: an index vector's check
+    loads ext(B, d) before its length and data; every extent is loaded once, by its dimension's
+    check, and reused by (3), (4) and the nest (`:` included); the data of each index vector and mask
+    are loaded again in (5); the linear position of a matrix base is `imul T P1 X0`, `iadd X P0 T` in
+    the innermost body, right before the load, X0 the rows extent of (2); every site is the `idx`'s
+    line except `rcount`'s.
+
 21. **Selection stores, masked and compound assignment.** `asg set` to an `idx` with a selection:
     (1) the value; an array value that is borrowed is retained (owned for the store), so that a
     value sharing the target's buffer makes the target's copy on write copy it (LANGUAGE.md §5.5,
-    "Aliasing"); (2) the target's indices left to right (ranges with `rcount`); (3) the checks of
+    "Aliasing"), and on a fixed-size target (no copy on write) a value that is the target variable
+    itself is copied into a new home slot first; (2) the target's indices left to right (ranges with `rcount`), a borrowed index vector
+    of a target whose element type is `i64` retained like the value (owned), since it may share the
+    target's buffer and the stores must not change the indices (Decision 34, LANGUAGE.md §5.5); for a
+    fixed-size `i64` target (no copy on write) an index vector that is the target variable itself is
+    copied into a new home slot first (`li N bytes`, `mcopy`); (3) the checks of
     rule 20 (2), in dimension order; (4) when the value is an array, the selection's extents (rule
     20 (3)) and the shape check: a vector selection `icmp ne S N Nv`, `li V -1`, `chk S
     SHAPE_MISMATCH site 4 N V Nv V`, a matrix selection both extents (`ior`) and `chk S
@@ -3839,7 +4221,7 @@ hoists, §5.2), so a dump shows every load.
     each index vector and mask, and for an array value `li O 0`, `li One 1`; (7) rule 20's loop
     nest storing into the target at each position the value (a scalar) or the value's element O
     (then O += One): a reference element is replaced (`ldp`, `stp`, `release` of the old), a value
-    element retained first; (8) the owned value released. The extents a loop of the nest uses are
+    element retained first; (8) the owned value and the owned or retained index vectors and masks released. The extents a loop of the nest uses are
     those loaded in (3) (a `:` dimension loads its extent there). A compound `asg op` to a
     selection is: (2); rule 20 (2)–(6) into a temporary G; the value; G op value by rule 22 into R
     (owned; the shape check of rule 22 with G first); then (3)–(8) storing R with the index
@@ -3876,6 +4258,16 @@ hoists, §5.2), so a dump shows every load.
     endloop 3
     endif 2
     ```
+
+    From 4e an indexed assignment of this rule (and an assignment to `.flat`, rule 28) reaches
+    `sealower` as the block of §3.5.9 L6: a dynamic array value (and each retained index vector) is a
+    held `.l` local of the block (`mov`, `retain` when borrowed), the other index vectors and masks
+    `tmp`s (an owned one released at the block's end, R11), a fixed-size value a `tmp` naming its home
+    (copied when it is the target itself); the releases at the block's end are (8); a fixed-size
+    target has no cow;
+    every check, `chk` and `sea_arr_unique` takes the `asg`'s line; a `ref` parameter target is read
+    afresh (`ldp`) for each extent, for its cow (the memory form of rule 19) and for its data after the
+    cow.
 
 22. **Element-wise operations and broadcasting.** A `bin`, `un`, `cvt` or elemental `lib`
     (LANGUAGE.md §10.1, §10.4, §10.7) with an array operand: (1) the operands left to right; (2)
@@ -3921,6 +4313,17 @@ hoists, §5.2), so a dump shows every load.
     ```
 
     (`z` is `p7`.)
+
+    From 4e this rule reaches `sealower` as §3.5.9 L7, which fixes: `li V -1` comes once, at the first
+    check, after its `icmp` and before its `chk` (the order of rules 20, 21 and 27 (j); "before the
+    first check" is before its `chk`), and only with two or more array operands; `li O 1` comes at its first use; the extents are loaded for every array
+    operand when the result is dynamic, for the matrix operands only (their strides) when it is
+    fixed-size, whose loop extents are then the `li` of its own static extents after its home slot;
+    in a matrix body each array operand's index (`imul a I SI`, `imul b J SJ`, `iadd X a b`) comes
+    right before its load, and the result's (`imul t J R`, `iadd Y I t`) after the operation, before
+    the store. `ind2sub` with a scalar `r` and an array `k` is two such loops, `k % r` then `idiv(k, r)`,
+    over held arguments (§3.5.9 L11, Decision 33; an array `r` is the phase-rule word `ind2sub` until
+    phase 6).
 
 23. **Reductions** (LANGUAGE.md §10.5), on a vector V with n = ext(V, 0) (or `li` for a
     fixed vector) and data D. *sum8(load)* is: `li Z 0`, `icmp gt E n Z`, `if B E`, `sa A s` (a new
@@ -4012,7 +4415,8 @@ hoists, §5.2), so a dump shows every load.
     ```
 
 25. **Range values.** A `rng` that is neither an index nor the range of a `forr`: lo, hi, st (`li 1`
-    when absent), `rcount L E lo hi st incl site`; the length `li O 1`, `iadd T L O`, `li Z 0`,
+    when absent), `rcount L E lo hi st incl site` (site the `rng`'s line; from 4e §3.5.9 L8, also as
+    the vector of an element loop, `for x in (0..n)`); the length `li O 1`, `iadd T L O`, `li Z 0`,
     `isel N E T Z`; the size check of LANGUAGE.md §5.1: `li X 2147483646`, `icmp gt g L X`, `icmp lt
     u L Z`, `ior b g u`, `iand b b E`, `li MX 9223372036854775807`, `icmp eq e L MX`, `ior e e u`,
     `isel V e MX T`, `chk b ARRAY_SIZE site 1 V`; arrnew of an `i64` vector of N; data; `li Q 0`,
@@ -4098,6 +4502,14 @@ hoists, §5.2), so a dump shows every load.
     (`names` is `p5`; the data records are `str d1 a` and `str d2 bc`. A literal of 300 `f64`
     constants is `li` 300, arrnew, data, `la` of `dat d1 f64 300`, `li` 2400, `mcopy`.)
 
+    From 4e a literal of `f64`, `i64` or `bool` elements reaches `sealower` as §3.5.9 L9 (its `str`
+    and struct literals at 4g): the home slot of (a) and a fixed-size result of (c) are the `anew` of a
+    fixed-size type (R1), the stores at `- 0 off` are `est`s with a constant index (R3), the `dat` is a
+    `cdat` (R4); in (c) the joined lengths, extents and the offsets (r0, c0) are chains of new
+    registers (`iadd`), a part's element (i, j) is read at `i + j·Rp` and stored at `(r0 + i) + (c0 +
+    j)·R` (both in the innermost body), and with every part fixed-size the offsets are `li` of their
+    static values; every site is the `arr`'s line.
+
 27. **Structs and fixed-size arrays in memory.** (a) *Homes*: every struct or fixed-size array
     value lives in memory: a local's slot, a temporary slot of the node that computes it (a
     `slit`, a `call` with a struct result, a fixed-size element-wise result, a `fix`, a fixed
@@ -4155,6 +4567,16 @@ hoists, §5.2), so a dump shows every load.
 
     (`p` is `p1`, slot `s1` is `slot s1 16 8`, `y` is `f4`.)
 
+    **Sub-phases** (Decision 32). 4e implements this rule for fixed-size arrays of `f64`, `i64` and
+    `bool` elements completely, in `sealower` except (i) and (j): homes and slots (a), `bind` (b),
+    copies (c), assignment (d), arguments by address (h) and `ref` arguments (rule 31), results
+    through the hidden address (h) and several results (l), `ifx` (k), and fixed-size bases in rules
+    18, 19 (no copy on write), 30 (1) and `$`; (i) `dyn` and (j) `fix` are `sealoop` rewrites (§3.5.9
+    L10); a fixed-size temporary home is the `anew` of R1 and is copied, not aliased, into a local
+    (R9). Such homes hold no counts, so (g) and every release of them are empty. 4g adds structs,
+    records, fields (e), (f), (g) and the fixed-size arrays of `str` and struct elements on the same
+    homes, slots and hidden results.
+
 28. **Views.** A `view` that is the base of an `idx` (a read, a selection or an assignment target)
     is folded into the addressing: the `idx` works on the view's operand with positions mapped
     from the view's coordinates: `.T` (i, j) is (j, i) of the operand, its extents swapped; `.flat`
@@ -4174,6 +4596,13 @@ hoists, §5.2), so a dump shows every load.
     ldp p6 p1 - 0 40
     ldf f7 p6 i2 8 0
     ```
+
+    From 4e a folded view reaches `sealower` inside §3.5.9 L5 or L6 and a materialized one as L10:
+    only the outermost view of an `idx` base is folded (a view of a view materializes the inner
+    one); a `.T` indexed by a whole-matrix mask is materialized; the byte count of a dynamic `.flat`, `.col` or `.row` copy is computed (`ldi` of the
+    extents, `imul`, `li` of the element size, `imul`), a fixed-size one is `li`; `.T` reads operand
+    element (J, I) at `J + I·C` and stores at `I + J·R`, both in the innermost body; a materialized
+    view's site is the `view`'s line, a folded one's the `idx`'s (an assignment's, the `asg`'s).
 
 29. **Projections.** `proj i` of a vector V of structs (size s, field i at off): n, arrnew of the
     field's element kind with n, data of the result and of V, loop(n; K) with `ld? x DV K s off`
@@ -4404,7 +4833,8 @@ hoists, §5.2), so a dump shows every load.
     `true` and `false` (rule 32) and the function names of `EMPTY_REDUCE` (`max`, `min`, `argmax`,
     `argmin`, rule 23), one record per occurrence (§3.6.2).
 
-**Lowering of the `sea.hirl` records** (from sub-phase 4e-0, §3.5.9). Each record lowers its
+**Lowering of the `sea.hirl` records** (from sub-phase 4e-0, §3.5.9; the records marked "from 4e" and
+the refinements R1–R11 are implemented in 4e). Each record lowers its
 children first (post-order, rule 1), then writes the instructions below; "the destination" is the
 register of rule 2 (a local's register, an operand or arm destination of rule 3) or else a new
 register; `site` is the line of the record's `pos`; the offsets are the `rt.inc` values named in
@@ -4422,24 +4852,31 @@ rule 17's introduction.
 * `ext dim` of an array A: ext(A, dim) of rule 17 into the destination (`ldi E A - 0 16`, or `24`
   for dim 1; a fixed-size array `li` of its extent); of a `str` S: `ldi E S - 0 16`
   (`SEA_STR_LEN`).
-* `adat` of an array A: data(A) of rule 17 into the destination (`ldp D A - 0 40`; a fixed-size
-  array its home address).
+* `adat` of an array A: data(A) of rule 17 into the destination (`ldp D A - 0 40`); of a
+  fixed-size array no instruction: its register is A's, the home address (R2).
 * `eld sc off` of address D and index X: `ldf` (`f64`), `ldi` (`i64`), `ldb` (`bool`) or `ldp` (a
-  reference, borrowed) `R D X sc off` into the destination.
+  reference, borrowed) `R D X sc off` into the destination. An index child that is a `ci` k writes no
+  instruction: the index is `-` and the offset off + k·sc (R3, from 4e).
 * `est sc off` of value V, address D, index X: `stf`, `sti`, `stb` (`bool`) or `stp` (a reference:
-  retained first when borrowed, rule 15 (a)) `V D X sc off`.
+  retained first when borrowed, rule 15 (a)) `V D X sc off`. A `ci` index as for `eld` (R3, from 4e);
+  a numeric store needs no more, whatever array it writes (R5).
 * `anew z r` of type T with extents R (and C): arrnew of rule 17 (z = 0) or arrnewz (z = 1) of T's
-  element kind and rank with R, and for a vector `li C 1`, into the destination (owned).
-* `wbin op`: `iadd`, `isub` or `imul` `d a b` into the destination.
+  element kind and rank with R, and for a vector `li C 1`, into the destination (owned). Of a
+  fixed-size type T (r = 0, z = 0, from 4e): `sa P sK` of a new slot `slot sK size 8` (size T's,
+  rounded up to a multiple of 8, at least 8; rule 27 (a)) into the destination (R1).
+* `wbin op`: `iadd`, `isub` or `imul` `d a b` into the destination (a `bool` operand is its 0 or 1
+  register, R7).
 * (from 4e) `chkb dim` of index I and extent E: `chkb I E dim site`.
 * (from 4e) `chk err n` of condition C and arguments A1 … An: `chk C err site n A1 … An`.
 * (from 4e) `rcnt incl l e` of lo, hi, st: `rcount L E lo hi st incl site`, L and E the registers of the
-  locals `l` and `e`.
+  locals `l` and `e` (E, a `bool`, is then a condition or operand like any `bool`, R6).
 * (from 4e) `cow` of `lv L`: cow(L) of rule 19 (its register form for a local, its memory form at `P - 0 0`
   for a `ref` parameter P).
 * (from 4e) `mcpy` of D, S, N: `mcopy D S N`.
 * (from 4e) `cdat` of n constants: a `dat dN elt n` data record of the constants in order (rule 26 (b),
-  §3.6.2) and `la P dN` into the destination.
+  §3.6.2) and `la P dN` into the destination; the constants write no instruction (R4).
+* (from 4e) a `bind` of a scalar `.l` local: rule 2; an `asg set` to it: rule 2 (its value's
+  instruction writes its register); a `bind` of an array `.l` local: rule 30 (1) (R8).
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8, 12, 23, 27 and 31), and their
 `slot` records come at the start of the function in that order (§3.6.3).
@@ -6320,7 +6757,49 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     assignment from a dynamic array), `dyn`/`fix`, every element-wise operator and comparison
     with each broadcasting case of LANGUAGE.md §6.3 (and the n-ary order of `where`), array
     conversions with `CONV_I64` at the first bad element, the elemental math functions on arrays;
-    the W4 program of §8 (4e) as a `programs/` test whose `.out` is 4d's W4 output.
+    `sub2ind` and `ind2sub` on vectors (Decision 33: `ind2sub(0, k)` reports `integer division by
+    zero` at the call's line), `errors/err_ns_ind2sub_array` (`let (i, j) = ind2sub(rs, k)` with `rs` an
+    `i64[]`: `not supported yet: ind2sub` at the `call`, status 1), `for x in (0..n)`, nested views (`A.T.flat[k]`), a selection store
+    into a `ref` parameter, compound selection assignment of matrices, fixed-size results and tuple
+    components (Decision 32), the static `shape mismatch` compile errors of §3.5.5 ("Static shapes":
+    an element-wise operation of fixed-size operands, a fixed mask on a fixed base, fixed parts of a
+    concatenation, a fixed value for a fixed target), `[true, 1]` (201), `[]` without a type (252 at the `[`: `let x = []`, `len([])`, `[] + v` with `v` an `f64[]`),
+    `.T` of a vector (218), `ragged matrix literal` (219), `use .row or .col` (220), a `.T` target
+    (239), `view .T is not defined` (257); `sel_alias_index` (Decision 34): `var v: i64[] = [2, 0, 1]` (the
+    `i64[3]` converted by `dyn`), then `v[v] = 5` stores at 2, 0, 1 as evaluated before
+    the stores and prints `5 5 5`, and with `var w: i64[] = [1, 2, 0]` (dynamic, so Decision 34's compound case runs), `w[w] += 10` reads 2, 0, 1 and stores
+    `w[1] = 12`, `w[2] = 10`, `w[0] = 11`, printing `11 12 10`, and the same two cases on fixed-size `i64[3]` locals (`var f = [2, 0, 1]`,
+    whose index vector is copied) print the same (the expected values derived from LANGUAGE.md §5.5
+    by hand); `sel_ref_reads` (§3.6.6 rule 12 across an L6 block, with `fn g(ref k: i64) -> i64` adding 1 to `k` and returning the new `k`): `v[0..g(ref k)] = k` stores the old `k` (the value is evaluated first, LANGUAGE.md §5.5), `B[i, g(ref i)..3] = 0.0` (`B` an `f64[,]`) uses the old `i` as the row, `A.flat[k] += g(ref k)` updates element old `k`; `sel_mask_scalar`: a whole-matrix mask store of a scalar (`T[T > 100.0] = 100.0`, the count `NN` of IX 2); `heap_*` programs for held values, retained index vectors, nested
+    selections and early errors. **Dumps** (`passes/`, `.sea .ast .res .hir1 .hir .hirl .lir1 .out`,
+    one array operation per statement, the `.hir1 … .lir1` written by hand from §3.5.5, §3.5.9 and
+    §3.6.6 by a generator `tests/vectors/dump4e_cases.py` in the style of `dump4d_cases.py`, never
+    printed by a pass): the examples of rules 20, 21, 22, 25 and 28 as whole programs (their `.lir1`
+    the rule's text exactly), and a matrix selection with `:` and a scalar, an index vector and a
+    matrix mask read, a selection store into a `ref` parameter, a compound `x[sel] += e`, matrix
+    broadcasting of `.col` with `.row`, each literal form (fixed, dynamic constant with `cdat`,
+    dynamic non-constant, vector and matrix concatenation, `[]` dynamic and fixed), `.T` and `.flat`
+    materialized, `dyn`, `fix`, a fixed-size local with element read and write, a fixed-size result,
+    `ind2sub` of a vector; stage.sh checks each `.hirl` from both sides. The goldens that hold 4d's
+    `arrays` word change with the row (T2 and T1 rewrite or replace them by spec-derived tests of the
+    same constructs): `errors/err_ns_arr_all_index`, `err_ns_arr_cvt`, `err_ns_arr_elem_arg`,
+    `err_ns_arr_ew`, `err_ns_arr_fixed_local`, `err_ns_arr_max2`, `err_ns_arr_range_index`,
+    `err_ns_arr_view`, `err_ns_array_literal`, `err_ns_array_type` (their programs now compile or
+    report a v1 error; a literal of `str` elements is `strings`, `max(v)` stays `max`), and
+    `passes/res_err_array.res` (`rerr 0:3:9 259 1 arrays` for `fn f(v: f64[3], k: i64)`: from 4e
+    `seaname` resolves the fixed-size type, so the dump changes); `tests/CORPUS.md` follows. **`programs/w4_sor_arrays`**: `tests/accept/w4_sor.sea` with its set-up written as
+    whole-array code and everything else unchanged: `let x = (0..nx) * h`, `let y = (0..ny) * h`;
+    `let hole = (x.row - holeCx) ^ 2 + (y.col - holeCy) ^ 2 <= holeR2`; `let inSrc = x.row >= srcX0 &
+    x.row <= srcX1 & y.col >= srcY0 & y.col <= srcY1`; `var src = zeros(ny, nx)`, `src[inSrc] =
+    srcVal`; `var fixed = hole`, `fixed[0, :] = true`, `fixed[ny - 1, :] = true`; `var T =
+    filled(Ttop, ny, nx)`, `T[0, :] = Tbot0 + (Tbot1 - Tbot0) * x / W`, `T[ny - 1, :] = Ttop`,
+    `T[hole] = Thole`. Its `.out` is the line 4d's W4 program prints (accepted against the MATLAB
+    reference by `compare.py --keys`, §6.3): every element of the set-up is computed by the same IEEE
+    operations in the same order as in the scalar loops (`f64(i) * h`, the squares as one
+    multiplication, `Tbot0 + ((Tbot1 - Tbot0) * x[i]) / W`; LANGUAGE.md §6.8), and `&` gives the
+    values of `&&`, so the solver starts from bit-identical arrays and prints the same bytes; `fixed`
+    sharing `hole`'s buffer exercises copy on write. The acceptance itself (§6.3) is unchanged.
+
   * **4f**: `red_*`, `sort_*` programs: each reduction on empty, one-element, 7-, 8-, 9- and
     17-element vectors with values chosen so the pinned 8-lane order gives a different result
     from left-to-right summation (LANGUAGE.md §10.5, the expected bits derived by hand), NaN and
@@ -6810,9 +7289,10 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4c | **Runtime foundation and pass-4 support**: the entries 9–20 of §4.8 into `rt.inc`'s `SEA_ENTRY_LIST` (`SEA_ENT_COUNT` 20), their rows moved from the phase-4 table of §4.8 into its Id-first contract table, and the `entries` capacities of `sealower` (9) and `seagen_a64`/`seagen_x64` (19) raised to at least 22 (§2.6.3; `seaopt`'s 399 suffice); the allocator, arrays (new, new_u, new_s, unique, free), strings, `args`, `error` and the heap check on both targets (§4.1, §4.5, the runtime files of §4.5); `retain`, `release`, `mcopy`, `slay`/`soff` in `seagen_a64`/`seagen_x64` (§4.9, §4.9.1) and in `seaopt`'s copy and validation (§3.6.5); `seaval` formats `lir1`/`lir` with the new records; the heap check, `env=` and `heap=off` keys in `run.sh`, `cross_run.sh` and `cross_pack.sh` (§6.2, §6.6.1) | `make check-contracts` passes with entries 9–20 in the Id-first table and none left in the phase-4 table but 21–22; `make test-rt` and the Linux `test-rt` pass with the 4c tests of §6.2; the `lir4_*` pass-4 tests pass on both targets; every earlier test passes under the heap check; `make test` and `make cross` pass |
 | 4d | **Dynamic arrays core** (`f64`/`i64`/`bool`): array types (§3.4.2's `rtvec`/`rtmat`, `rtype`; element loops no longer skipped regions), `zeros ones filled len rows cols numel`, scalar indexing read and write with bounds checks, `$`, arrays as locals, parameters, results and `ref` parameters, copy on write, reference counts on every exit, `for` over vectors, the scalar exact math functions, `where` on scalars, `ind2sub`, `sub2ind` (Decision 23); §3.6.6 rules 12 (its phase-4 part) and 15 for arrays, 16–19, 30, 31 (with deferred `ref` arguments), 36 and the phase-rule step 4d of §2.6.2; `compare.py --keys` in `sea/workloads/reference_py/compare.py` (a plain directory of the sea repository, changed in 4d's own commit), and `tests/accept4.sh` with `tests/accept/w4_sor.*` (§6.3); then the **size gate** of §2.7 (`make lines`, the free array letters of `sealower` and `seacheck`), whose result decides whether sub-phase 4e-0 runs | W4's scalar SOR prints `it_sor` 832 ± 1 and `T_max` within 1e-6 (`compare.py --keys` on the Mac, `make test-accept`) and the same bytes on the Linux host; the 4d tests of §6.2 pass on both targets with no leak under the heap check; `make test` and `make cross` pass |
 | 4e-0 | **Split of pass 3a; no change of behaviour** (the size gate after 4d decided it, §2.7: projected 9 665 > 8 000; Decisions 26–30). The specification (this step, agreed by the user 2026-10-22): `sealoop` (`sea.hir` → `sea.hirl`) and `sealower` (`sea.hirl` → `sea.lir1`) as §2.1, §2.7, §3.5.9 and §3.6.6 ("Two programs", "Lowering of the `sea.hirl` records") say; set `HL` of `passes.txt` (codes 72–87, enumeration `wop`); `--emit hirl` (§2.2). Then the build, in work packages with disjoint files: **(1)** `passes/sealoop/` (new; `build.list`: `lib io diag tables`, `data errors exits consts records`): reading and validating `sea.hir`, the rewrites L1–L4, writing `sea.hirl`, the capacity checks; **(2)** `passes/sealower/`: reading and validating `sea.hirl`, the lowering of the node records 73–81 (`tptr` 72 is a type, not lowered), the records 82–87 rejected as `BAD_RECORD` (they are implemented with 4e), the `tmp` alias and the `xblk` ownership (rule 15 (k)), the code of `zeros ones filled len rows cols numel` and `fore` removed (those records are now `BAD_RECORD`); **(3)** `tools/seaval.bas` (the format `hirl`: sets `H HF HL`), `driver/sea` (pass sequence, `--emit hirl`, usage line), `Makefile` and `tools/passlines.sh` (the pass list), `tests/stage.sh` (the pairs of §6.2), `tests/run.sh` (dump kind `hirl`), `tests/protocol.sh`, `tests/driver_check.sh`, `tests/lib_check.sh`, the `--emit` list, pass list and `seaval` formats in `CLAUDE.md`, `tests/CORPUS.md`; **(4)** only `tests/passes/*` and the generator script(s) of `tests/vectors/`: the goldens and dump tests of §6.2 ("Tests of the pass-3a split"), hand-derived from §3.5.9; (3)'s `lib_check.sh` step uses (4)'s `arr_rule30.hirl`, so it follows (4). The set number of `HL` (7, after `LF`) in `passes/lib/tables.bas` (`tb_records`), `tools/seaval.bas`, `seagen_a64`/`seagen_x64` (which skip the HIR sets) and `passes/lib/API.md` landed with this specification, in the same commit as the `HL` records of `passes.txt`: every pass loads the `records` table and stops on a set it does not know. Not changed: LANGUAGE.md, every other intermediate format, `sea.lir1` byte for byte, every message, position and exit status (except a capacity error of `sealoop` for a program near a limit, §3.5.9), `errors.inc`, `limits.inc`, `rt.inc`, the runtimes, passes 1, 2a, 2b, 3b and 4 | every test of the corpus passes unchanged (all `programs/`, all `errors/` with byte-identical diagnostics, every dump, `tests/rt`, `tests/math`, the W4 acceptance, the heap check); the 17 `.hirl` goldens and the new tests of §6.2 pass in `run.sh` and in both stage pairs; `protocol.sh` and `driver_check.sh` cover `sealoop`; `seaval` validates `hirl`; `make check-contracts` passes with set `HL`; `make check-limits` reports `sealoop` and `sealower` below 9 000 lines and their measured sizes and free array letters replace the estimates of §2.7; `make test` and `make cross` pass |
-| 4e | **Array expressions** (in `sealoop`; the first step specifies its rewrites of rules 20–22, 25, 26 and 28 and the fixed-size arrays, §3.5.9, Decision 29, with §3.6.6's LIR unchanged): ranges, `:`, steps, index vectors and masks (read, assignment, compound assignment), views, range values, array literals and concatenation (Decision 20), fixed-size arrays (`rtfvec`/`rtfmat`), `dyn`/`fix`, element-wise operators and comparisons with broadcasting, array `cvt`, `where` and the math functions element-wise; rules 20–22, 25, 26 (numeric literals), 28 and the phase-rule step 4e | the 4e tests of §6.2 pass on both targets; a W4 program whose set-up uses whole-array code prints the same bytes as 4d's (`programs/`); `make test` and `make cross` pass |
-| 4f | **Reductions, sorting, searching, library options** (the first step specifies `sealoop`'s rewrites of rules 23 and 24, Decision 29): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, error 262), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets), `find find_first find_last`, the named options of library calls (Decision 21); rules 23, 24 and the phase-rule step 4f | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs); W4's `T_max` by `max(Thot.flat)` prints the same bytes; `make test` and `make cross` pass |
-| 4g | **Strings, structs, records, `match`, `error`, `args`** (the first step specifies the `sea.hirl` records and rewrites 4g needs, Decision 29): §3.4.2's `rtst`/`rtfd`, `rslit`, `rcns` and struct declaration checks (`match` no longer a skipped region), rules 15 (f)–(j) and the rest of 15 for `str` and structs, 18 (struct elements), 26 (`str` and struct literals), 27, 29, 30 (`str` and struct elements), 32–35, 38 and the phase-rule step 4g | the 4g tests of §6.2 pass on both targets; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error; `make test` and `make cross` pass |
+| 4e | **Array expressions** (specified 2026-10-22, Decisions 31–35: `sealoop`'s rewrites L5–L11 of §3.5.9 with the refinements R1–R11, §3.6.6's LIR unchanged): ranges, `:`, steps, index vectors and masks (read, assignment, compound assignment), views, range values (also as a `for`'s vector), array literals and concatenation (Decision 20), fixed-size arrays (`rtfvec`/`rtfmat`; rule 27 for `f64`, `i64` and `bool` elements completely, Decision 32), `dyn`/`fix`, element-wise operators and comparisons with broadcasting, array `cvt`, `where` and the elemental library functions on arrays (`ind2sub` as two loops, Decision 33); rules 20–22, 25, 26 (numeric literals), 27 (fixed-size numeric part), 28, rule 21's clause of Decision 34, the records 82–87 in `sealower`, the 4e entries of §3.5.7, the static shape errors of §3.5.5, and the phase-rule step 4e. Work packages, each owning its files (written in parallel against the hand-written goldens through stage.sh): **T1** spec-derived `programs/` and `errors/` (`tests/programs/{sel_,ew_,arr_,heap_}*`, `tests/errors/*`, their `tests/vectors/` scripts, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4e_cases.py` and its goldens in `tests/passes/` (T1 alone edits `tests/CORPUS.md`; T2 reports its rows to T1); **front end** `passes/seaname/sn6type.bas`, `passes/seacheck/*.bas` and `passes/seacheck/build.list` (and the `build.list` of any front-end pass that gains a file), `passes/seaexpand/seaexpand.bas` (typing, implicit `dyn`/`fix`, static shapes, HIR records, G12; the type of `[]` from the contexts of LANGUAGE.md §6.9 (a binding's declared type, an assignment target, a user function's parameter, a `return`'s result type, the other arm of an `if` expression with an array type; a struct field in 4g), elsewhere 252 at the `[]`, Decision 36); **sealoop** `passes/sealoop/*` (L5–L11); **sealower** `passes/sealower/*` (82–87, R1–R11, rule 27's homes, no new array letter); then `tests/programs/w4_sor_arrays.*` with T1, and the sizes of §2.7 measured | the 4e tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4e dumps holds (`sealoop` writes each hand-written `.hirl` from its `.hir`, `sealower` lowers it to its `.lir1`), the agreed examples of rules 20, 21, 22, 25 and 28 byte for byte; `w4_sor_arrays` prints the same bytes as 4d's W4 program (`programs/`); every earlier test passes unchanged; `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
+
+| 4f | **Reductions, sorting, searching, library options** (the first step specifies `sealoop`'s rewrites of rules 23 and 24, Decision 29): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, error 262), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets), `find find_first find_last`, the named options of library calls (Decision 21); rules 23, 24 and the phase-rule step 4f; then the per-program size gate of §2.7 (Decision 35) | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs); W4's `T_max` by `max(Thot.flat)` prints the same bytes; `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and a program that fails it is split (specified and agreed first) before 4g |
+| 4g | **Strings, structs, records, `match`, `error`, `args`** (the first step specifies the `sea.hirl` records and rewrites 4g needs, Decision 29): §3.4.2's `rtst`/`rtfd`, `rslit`, `rcns` and struct declaration checks (`match` no longer a skipped region), rules 15 (f)–(j) and the rest of 15 for `str` and structs, 18 (struct elements), 26 (`str` and struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29, 30 (`str` and struct elements), 32–35, 38 and the phase-rule step 4g | the 4g tests of §6.2 pass on both targets; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error; `make test` and `make cross` pass |
 | 4h | **Prelude and W5; close-out** (the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 |
 
 ## 9. Decisions (agreed)
@@ -7091,3 +7571,66 @@ LANGUAGE.md §4.5; §2.5, because no option argued otherwise.)
     the loops explicit); (b) `sea.hir2`, `--emit hir2`; (c) `sea.loop`, `--emit loop`. **Decided:
     (a)** (the user, 2026-10-22): a HIR variant (the same records plus set `HL`), and the suffix `1`
     keeps meaning the first version of a format (`hir1`, `lir1`). Affects §2.2, §3, §6.2, `CLAUDE.md`.
+31. **How the agreed LIR is expressed with the fixed `sea.hirl` records** (raised by the 4e
+    specification: the set `HL` cannot write a fixed-size home slot, a `bool` used as 0 or 1,
+    rcount's E as a condition, stores at `- 0 off`, or the mutable counters of rules 20, 21, 25
+    and 26). Options: (a) **refinements of the existing records and their validation, R1–R10 of
+    §3.5.9** (R11, an owned `tmp` directly in a block `sealoop` writes released at its end, was added
+    on review of the specification as a refinement of the same kind): `anew` of a fixed-size type with r = 0 is a home slot, `adat` of a fixed-size array
+    is no instruction, a `ci` index of `eld`/`est` gives `- 0 off`, the children of `cdat` are
+    data, `est` stores any numeric element, rcnt's `e` is a `bool`, `wbin` takes `bool` operands,
+    scalar `.l` locals bound by `bind` and assigned by `asg`, array `.l` locals bound in the
+    blocks `sealoop` writes, T3 not for fixed-size values, `sealower` rejecting every array
+    expression; no new record or field, `passes.txt` unchanged; (b) new records 88 and later
+    (`home`, a bool-to-integer node, a constant-offset store), a format change with the same LIR;
+    (c) fixed-size construction left in `sealower`, duplicating loop code there. **Decided: (a)**
+    (the user, 2026-10-22): every agreed example comes out exactly, the contract text changes but
+    no format does. Affects §3.5.9, §3.6.6 ("Lowering of the `sea.hirl` records").
+32. **Rule 27 (fixed-size arrays in memory) in 4e or 4g** (the phase-rule step 4e makes every
+    fixed-size array construct legal, while §8 listed rule 27 under 4g). Options: (a) **4e
+    implements rule 27 for fixed-size `f64`, `i64` and `bool` arrays completely — homes, copies,
+    assignment, arguments, `ref` arguments, results through hidden addresses, several results,
+    `ifx`, `dyn`, `fix` — and 4g adds structs and reference elements on the same machinery**; (b)
+    fixed-size results and tuple components unsupported until 4g (a phase-rule row for them); (c)
+    fixed-size arrays only as locals and literals in 4e. **Decided: (a)** (the user, 2026-10-22):
+    it is what the phase-rule table already says, W2's and W3's element functions need fixed-size
+    results, and the hidden-result code is written once. Affects §3.6.6 rule 27, §6.2, §8 (4e,
+    4g), §2.7.
+33. **`ind2sub` with array arguments** (two results; rule 22 has one; W4 needs `[hj, hi] =
+    ind2sub(size(T), holeIdx)`). Options: (a) **two element-wise loops (`k % r`, then `idiv(k, r)`)
+    over held arguments** (§3.5.9 L11), observably identical to one loop, fused in phase 7; (b) one
+    loop writing both arrays; (c) deferred to phase 6 with the multiple-result elemental functions.
+    **Decided: (a)** (the user, 2026-10-22). **Refined** (lead decision, 2026-10-22, on review): the
+    two loops are exact only for a scalar `r` (the same errors at the same element); with an array
+    `r` (`ind2sub` is elemental) they would change the order of errors and of the shape check, so
+    `ind2sub` with an array first argument stays the phase-rule word `ind2sub` (at the `call`) until
+    phase 6 brings the multiple-result elemental functions (§2.6.2). Affects §3.5.9, §3.6.6 rule 22,
+    §2.6.2, §6.2.
+34. **Index vectors that share the target's buffer in a selection store** (`v[v] = 0`, `v[v] += 1`
+    on an `i64[]`: rule 21 as first written read the indices from the buffer its stores were
+    changing). Options: (a) **a borrowed index vector of a store whose target is an `i64` array is
+    retained like the value and released after the store, so that the target's copy on write
+    copies a shared buffer**; (b) every index vector of a store copied; (c) unchanged. **Decided:
+    (a)** (lead decision, 2026-10-22, required by LANGUAGE.md §5.5: the indices are evaluated before
+    any element is stored; rule 21's agreed example, a `bool` mask of an `f64` target, is
+    unchanged). For a fixed-size target, which has no copy on write, the same rule copies an index
+    vector that is the target variable itself into a new home (lead decision of the same date).
+    Affects §3.6.6 rule 21, §3.5.9 L6, §6.2.
+35. **The size gate after 4f, after the split of pass 3a** (§2.7's ×1.5 gate after 4f belonged to
+    the branch without the split, and `sealower` is above its 5 000-line trigger). Options: (a)
+    **a per-program gate after 4f** for `sealoop`, `sealower` and `seacheck`: built lines ≤ 7 000,
+    projected v1 size ≤ 9 000, at least 2 free array letters; a failure schedules that program's
+    split before 4g; (b) the old formula and thresholds; (c) no gate before 4h. **Decided: (a)**
+    (the user, 2026-10-22). Affects §2.7, §8 (4f).
+36. **Where an untyped `[]` gets its type, and where 252 is reported** (raised by the second
+    review of the 4e specification: LANGUAGE.md §6.9 required a type from context without listing
+    the contexts, and error 252's position kind `binding` had no place for `len([])` or `[] + v`).
+    Options: (a) **the contexts listed in LANGUAGE.md §6.9 (a binding's declared type, an
+    assignment target, a user function's parameter, a `return`'s result type, the other arm of an
+    `if` expression with an array type, a struct field's type), anywhere else 252 at the `[]`; the
+    position kind of 252 becomes `expr`**, so an unannotated `let x = []` reports at the `[` too;
+    (b) the kind stays `binding`, other positions a new code; (c) left open. **Decided: (a)** (lead
+    decision, 2026-10-22, to be reported to the user). No pass reads the position kind of an error
+    record (it is documentation that `check-contracts` compares), and no test has a 252 golden, so
+    the change of `include/errors.inc` needs no code or test change with it. Affects
+    `include/errors.inc`, §2.6.2, §3.5.5, §6.2, §8 (4e), LANGUAGE.md §6.9.

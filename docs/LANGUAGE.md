@@ -744,7 +744,8 @@ the shape of what it selects from first and the mask's shape second: for `v[m]` 
 index of one dimension of a matrix (`A[m, :]`) the dimension's extent, as a vector shape, and
 `len(m)` (`v[m]` with a 5-element `v` and a 4-element `m` reports `shape mismatch: 5 vs 4`); for
 `A[M]` the shapes of `A` and `M` (`shape mismatch: 3x4 vs 4x3`). This check is the mask's bounds
-check: it takes the mask's place among the index checks of §5.4.
+check: it takes the mask's place among the index checks of §5.4. When both the mask and what it
+selects from are fixed-size, both shapes are constants and a mismatch is the compile error (§4.10).
 
 **Linear indexing** of a matrix is written through its flat view, `A.flat[k]` (§5.6), with
 `k = i + j·rows(A)`; `A[k]` with one index on a matrix is a compile error. `ind2sub` and
@@ -797,8 +798,9 @@ remains is a compare and a never-taken branch off the latency chain.
   indices, left to right; then the checks, in this order: each index against its dimension, left
   to right (§5.4; a mask's extent is its check, §5.2), then the shape of the value against the
   shape of the selection, written `shape mismatch: %s vs %s` with the **selection's shape first**
-  and the value's second (`v[0..3] = [1.0, 2.0]` with a dynamic `v` reports `shape mismatch: 3 vs
-  2`); then the elements are stored in increasing linear order of the selection. With an index
+  and the value's second (`v[0..3] = [1.0, 2.0]` reports `shape mismatch: 3 vs 2`; a selection's
+  shape is a run-time value, also on a fixed-size `v` with constant ranges, so this check is always
+  made at run time); then the elements are stored in increasing linear order of the selection. With an index
   vector that repeats a position, the last store wins, as in MATLAB. An error stops the program
   before any element is stored.
 * **Compound assignment** `x[sel] op= e` (`+= -= *= /=`) means `x[sel] = x[sel] op e` with the
@@ -1029,11 +1031,21 @@ using FMA-free elementary functions gives up some speed on compute-bound scalar 
   vertically; a vector row counts as a `1 × n` matrix row. A row that mixes vectors and matrices
   is a compile error (`use .row or .col`). The result is dynamic unless all parts are fixed.
 * The element type is the common type of the elements (`i64` and `f64` → `f64`; struct
-  elements must all be the same struct; `str` with `str`).
+  elements must all be the same struct; `str` with `str`); elements with no common type
+  (`[true, 1]`) are `type mismatch` at the first element that does not combine with those before
+  it. When every part of a concatenation is fixed-size, a shape mismatch of its parts is a compile
+  error (§4.10), at the part.
 * `[]` is an empty array; it needs a type from context (`let names: str[] = []`): under a
   vector type it is the vector of length 0, under a matrix type the 0 × 0 matrix, under a
   fixed-size type without elements (`T[0]`, `T[0,c]`, `T[r,0]`) that type; under a fixed-size type
   with elements it is the compile error `shape mismatch` (§4.10, the target's shape first).
+  `[]` takes its type from: the declared type of a binding; the target of an assignment (a whole
+  variable or `ref` parameter: its type; a selection: the dynamic array of the target's element
+  type and the selection's rank); the parameter of a user function it is passed to; the result
+  type of a `return`; the other arm of an `if` expression when that arm has an array type; a
+  struct field's type. Anywhere else (an operand, a library argument, a concatenation part, an
+  index, the vector of a `for`, a binding without a type annotation) it is the compile error
+  `type cannot be inferred: add a type annotation`, at the `[]`.
 
 ### 6.10 `if` expressions
 
