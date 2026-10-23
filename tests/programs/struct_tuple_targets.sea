@@ -1,0 +1,107 @@
+// struct_tuple_targets -- tuple assignments to field and element targets: (q.n, q.m), (q.n, x), (x, q.n),
+// (q.fx[0], x), (q.v[0], x), (qa[0].n, x), (q.n, q.fp) = r6(); three components with
+// later targets (_, _, sv[0]), (_, _, ps[0]), (_, _, ps[1].tag), (_, _, vs[0].v),
+// (xi, y, ps[1]), (q.ps[0].tag, q.ps[0].v, q.ps[1]) = three(); copies unchanged
+// (LANGUAGE.md 4.5, 7.3, 8.4)
+struct P {
+    tag: str
+    v: f64[]
+}
+struct Q {
+    n: i64
+    m: f64
+    fx: f64[2]
+    v: f64[]
+    fp: P[2]
+    ps: P[]
+}
+fn r(k: i64) -> (i64, f64) {
+    return (k, f64(k) + 0.5)
+}
+fn rfi(k: i64) -> (f64, i64) {
+    return (f64(k) * 2.0, k + 100)
+}
+fn rff(k: i64) -> (f64, f64) {
+    return (f64(k), f64(k) + 0.25)
+}
+fn r6(k: i64) -> (i64, P[2]) {
+    return (k, [P { tag: "f" + str(k), v: [1.0] }, P { tag: "g" + str(k), v: [2.0, 3.0] }])
+}
+fn t3s(k: i64) -> (i64, str, str) {
+    return (k, "s" + str(k), "t" + str(k))
+}
+fn t3p(k: i64) -> (i64, str, P) {
+    return (k, "y" + str(k), P { tag: "p" + str(k), v: [f64(k)] })
+}
+fn t3v(k: i64) -> (i64, str, f64[]) {
+    return (k, "u", [f64(k), f64(k)])
+}
+fn three() -> (str, f64[], P) {
+    return ("T" + "", [7.0, 8.0], P { tag: "W" + "", v: [9.0] })
+}
+fn pp(p: P) {
+    printf(" %s", p.tag)
+    for x in p.v {
+        printf(" %g", x)
+    }
+    printf(" |")
+}
+fn pq(q: Q) {
+    printf("%d %g %g %g", q.n, q.m, q.fx[0], q.fx[1])
+    for x in q.v {
+        printf(" %g", x)
+    }
+    printf(" :")
+    pp(q.fp[0])
+    pp(q.fp[1])
+    for p in q.ps {
+        pp(p)
+    }
+    printf("\n")
+}
+var q = Q { n: 0, m: 0.0, fx: [0.0, 0.0], v: [0.0, 0.0], fp: [P { tag: "a", v: [] }, P { tag: "b", v: [] }], ps: [P { tag: "c", v: [] }, P { tag: "d", v: [] }] }
+let q0 = q
+var x = 0.0
+var xi = 0
+(q.n, q.m) = r(3)
+pq(q)
+(q.n, x) = r(4)
+printf("%d %g\n", q.n, x)
+(x, q.n) = rfi(5)
+printf("%g %d\n", x, q.n)
+(q.fx[0], x) = rff(6)
+(q.v[0], x) = rff(7)
+printf("%g %g %g %g\n", q.fx[0], q.fx[1], q.v[0], x)
+var qa = [q, q0]
+(qa[0].n, x) = r(8)
+printf("%d %d %d %g\n", qa[0].n, qa[1].n, q.n, x)
+(q.n, q.fp) = r6(9)
+pq(q)
+pq(q0)
+var sv = ["e" + "", "f" + ""]
+(_, _, sv[0]) = t3s(1)
+printf("%s %s\n", sv[0], sv[1])
+var ps = [P { tag: "h" + "", v: [1.0] }, P { tag: "i" + "", v: [2.0] }]
+let ps0 = ps
+(_, _, ps[0]) = t3p(2)
+(_, _, ps[1].tag) = t3s(3)
+var vs = ps
+(_, _, vs[0].v) = t3v(4)
+var y = ""
+(xi, y, ps[1]) = t3p(5)
+printf("%d %s\n", xi, y)
+for p in ps {
+    pp(p)
+}
+printf("\n")
+for p in vs {
+    pp(p)
+}
+printf("\n")
+for p in ps0 {
+    pp(p)
+}
+printf("\n")
+(q.ps[0].tag, q.ps[0].v, q.ps[1]) = three()
+pq(q)
+pq(qa[1])

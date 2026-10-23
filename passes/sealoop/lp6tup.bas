@@ -71,9 +71,12 @@
 30296 REM local W3 (script name T) converted by cv W6, written at P9$; W6 becomes the value's type
 30300 LET C9 = O9
 30302 LET C7 = 0
+30303 IF H(X3, 1) = 56 THEN 30309
 30304 IF H(X3, 1) <> 39 THEN 30310
 30306 LET Y5 = X3
-30308 GOSUB 15030
+30307 GOSUB 15030
+30308 GOTO 30310
+30309 LET C7 = 3
 30310 LET T8 = H(X3, 2)
 30312 LET V(20) = W3
 30314 LET K8 = 0
@@ -88,7 +91,7 @@
 30329 GOTO 30332
 30330 LET W6 = U(W3, 1)
 30332 IF C7 = 2 THEN 30340
-30333 IF C7 = 3 THEN 40540
+30333 IF C7 = 3 THEN 40530
 30334 LET S$ = S$ & ",asg P set"
 30336 GOTO 9000
 30340 GOSUB 9000
@@ -124,7 +127,7 @@
 30450 LET S$ = "L T,= S,X S 0,= R,L R,anew P %0 0 1,= A"
 30452 IF R5 = 1 THEN 30456
 30454 LET S$ = "L T,= S,X S 0,= R,X S 1,= C,L R,L C,anew P %0 0 2,= A"
-30456 LET S$ = S$ & ",D A,= D,C " & STR$(B5) & ",= K,L D,D S,L K,mcpy P,L A,]"
+30456 GOSUB 45980
 30458 GOTO 30432
 30459 REM ---- fix (L10) of the dynamic local (tmp A) into the fixed-size target type, its shape checked
 30460 GOSUB 9115
@@ -133,7 +136,8 @@
 30466 GOSUB 8700
 30468 LET V(53) = T8
 30472 GOSUB 20580
-30474 LET S$ = "L T,= A," & S$ & ",anew P %0 0 0,= V,D A,= D,C " & STR$(B5) & ",= K,D V,L D,L K,mcpy P,L V,]"
+30474 LET S$ = "L T,= A," & S$
+30475 GOSUB 45986
 30476 GOTO 30432
 30885 REM ---- 30890: Y8 = 1 if the tasg O5 (X5 its last child) is rewritten by L11 or L12
 30890 GOSUB 5750
@@ -141,7 +145,7 @@
 30894 RETURN
 30895 REM ---- 30900: Y8 = 1 if L12 rewrites the tasg O5: a target an L6 store target (an idx with a
 30896 REM range, :, index vector or mask index, or a view base), a cv with bit 2 or 4, or bit 1 of an
-30897 REM array target, or (4g-1) a str element by scalar indices: an L17 target (variables O1-O4;
+30897 REM array target, or an L17 target (a field path, an element holding counts or a struct; O1-O4;
 30898 REM R2 kept)
 30900 LET Y8 = 0
 30902 LET O4 = R2
@@ -155,7 +159,8 @@
 30918 IF VAL(F9$) >= 2 THEN 30938
 30920 IF VAL(F9$) = 0 THEN 30924
 30922 IF H(O1, 2) > 9 THEN 30938
-30924 IF H(O1, 1) <> 39 THEN 30936
+30924 IF H(O1, 1) = 56 THEN 30938
+30925 IF H(O1, 1) <> 39 THEN 30936
 30926 LET O3 = H(O1, 3)
 30928 IF H(O3, 1) = 45 THEN 30938
 30930 LET O3 = H(O3, 4)
@@ -170,8 +175,9 @@
 30940 LET R2 = O4
 30942 RETURN
 30945 REM ---- 30950: U1 = the type of result W4 of the call of tuple type Y6 (its ttuple record)
-30950 LET U1 = T(Y6, 2 + W4)
-30952 IF W4 <= 2 THEN 30968
+30950 IF W4 > 2 THEN 30954
+30952 LET U1 = T(Y6, 2 + W4)
+30953 RETURN
 30954 LET R2 = 0
 30956 LET R2 = R2 + 1
 30957 IF R2 > D0 THEN 2900
@@ -183,6 +189,10 @@
 30965 GOSUB 8440
 30966 LET U1 = VAL(F9$)
 30968 RETURN
-30969 REM a target by scalar indices: L17's (4g-1) when its element type is str
-30970 IF T(H(H(O1, 3), 2), 2) = 5 THEN 30938
-30971 GOTO 30936
+30969 REM a target by scalar indices: L17's when its element type holds counts or is a struct or
+30970 REM record, or its base is a fld (a field path; a fld target: 30924)
+30971 LET O3 = T(H(H(O1, 3), 2), 2)
+30972 IF C(O3, 0) = 4 THEN 30938
+30973 IF C(O3, 3) > 0 THEN 30938
+30974 IF H(H(O1, 3), 1) = 56 THEN 30938
+30975 GOTO 30936

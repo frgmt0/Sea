@@ -1,0 +1,13 @@
+// struct_field_lim -- dims[i].lim = Lim { lo: 0.0, hi: 1.0 }: a struct literal stored into a struct field of an
+// element (DESIGN.md 3.5.9 R19's example), then a field of it; the shared copy unchanged
+struct Lim { lo: f64, hi: f64 }
+struct Dim { name: str, lim: Lim }
+var dims = [Dim { name: "a", lim: Lim { lo: 2.0, hi: 3.0 } }, Dim { name: "b", lim: Lim { lo: 4.0, hi: 5.0 } }]
+let keep = dims
+for i in 0..len(dims) {
+    dims[i].lim = Lim { lo: 0.0, hi: 1.0 }
+}
+dims[1].lim.hi = 6.5
+for k in 0..2 {
+    printf("%s %g %g %g %g\n", dims[k].name, dims[k].lim.lo, dims[k].lim.hi, keep[k].lim.lo, keep[k].lim.hi)
+}

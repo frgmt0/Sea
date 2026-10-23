@@ -1,0 +1,121 @@
+#sea 1
+#target arm64-macos
+#file struct_l17.sea
+tstruct 10 Lim 2
+fd lo 4
+fd hi 4
+tvec 11 4
+tstruct 12 S 4
+fd n 3
+fd name 5
+fd v 11
+fd lim 10
+fn 1 .main main 1 0 0 0:1:1
+ci 0:15:21 3 0
+call 0:15:16 3 2 1
+fconv 0:15:8 1 - - - d
+ftext 0:15:8 1 %0A
+fmt 0:15:8 1 2
+lib 0:15:1 1 printf 1
+eval 0:15:1
+ci 0:16:21 3 1
+call 0:16:16 3 2 1
+fconv 0:16:8 1 - - - d
+ftext 0:16:8 1 %0A
+fmt 0:16:8 1 2
+lib 0:16:1 1 printf 1
+eval 0:16:1
+block 0:1:1 2
+end
+fn 2 edit fn 3 1 4 0:1:1
+par k 3 val
+loc l0 10 let 0:2:9
+loc s 12 var 0:3:9
+loc l1 10 let 0:9:9
+loc l2 10 let 0:11:9
+cf 0:2:24 4 #0000000000000000
+cf 0:2:33 4 #3FF0000000000000
+slit 0:2:14 10 2
+bind 0:2:5 2
+lv 0:3:20 3 1
+cs 0:3:29 5 a
+ci 0:3:43 3 2
+lib 0:3:37 11 zeros 1
+lv 0:3:52 10 2
+slit 0:3:13 12 4
+bind 0:3:5 3
+lv 0:4:5 12 3
+fld 0:4:5 3 0
+lv 0:4:11 12 3
+fld 0:4:11 3 0
+ci 0:4:17 3 1
+bin 0:4:11 3 add
+asg 0:4:5 set
+lv 0:5:5 12 3
+fld 0:5:5 3 0
+ci 0:5:12 3 2
+asg 0:5:5 add
+lv 0:6:5 12 3
+fld 0:6:5 5 1
+cs 0:6:14 5 b
+asg 0:6:5 set
+lv 0:7:5 12 3
+fld 0:7:5 10 3
+fld 0:7:5 4 1
+cf 0:7:16 4 #4008000000000000
+asg 0:7:5 set
+lv 0:8:5 12 3
+fld 0:8:5 11 2
+lv 0:8:9 3 1
+idx 0:8:5 4 1
+cf 0:8:14 4 #4022000000000000
+asg 0:8:5 set
+lv 0:9:14 12 3
+fld 0:9:14 10 3
+bind 0:9:5 4
+lv 0:10:5 12 3
+fld 0:10:5 10 3
+cf 0:10:23 4 #3FE0000000000000
+cf 0:10:32 4 #3FE8000000000000
+slit 0:10:13 10 2
+asg 0:10:5 set
+lv 0:11:14 12 3
+fld 0:11:14 10 3
+bind 0:11:5 5
+lv 0:12:35 12 3
+fld 0:12:35 3 0
+fconv 0:12:12 1 - - - d
+ftext 0:12:12 1 %20
+lv 0:12:40 12 3
+fld 0:12:40 5 1
+fconv 0:12:12 1 - - - s
+ftext 0:12:12 1 %20
+lv 0:12:48 12 3
+fld 0:12:48 11 2
+ci 0:12:52 3 0
+idx 0:12:48 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:56 12 3
+fld 0:12:56 11 2
+ci 0:12:60 3 1
+idx 0:12:56 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:64 10 4
+fld 0:12:64 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:71 10 5
+fld 0:12:71 4 0
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %0A
+fmt 0:12:12 1 12
+lib 0:12:5 1 printf 1
+eval 0:12:5
+lv 0:13:12 12 3
+fld 0:13:12 3 0
+ret 0:13:5 1
+block 0:1:24 12
+end
+#end

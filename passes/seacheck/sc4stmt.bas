@@ -25,22 +25,16 @@
 7700 IF D = 0 THEN 7710
 7705 CALL "er": N(), X(), X$(), I, "COND_BOOL", "", "", "", 0
 7710 SUBEND
-7715 REM ---- ck_tgt: R = the local assigned by target G (a var or a ref parameter, one element or a
-7720 REM selection of such a local, or of its .flat view; LANGUAGE 7.3, 5.5, 5.6), or 0 after an
-7725 REM error: immutable locals, constants, functions, .T .col .row and other expressions ---------
-7730 SUB "ck_tgt": N(), M(), Y(), S$(), X(), X$(), G, R
+7715 REM ---- ck_tgt: R = the local assigned by target G (a var or a ref parameter, its fields and
+7720 REM elements, a selection or .flat as tpath allows; LANGUAGE 7.3, 5.5, 5.6), or 0 after an error:
+7725 REM immutable locals (238 at the root), constants, functions, projections, .T .col .row, others --
+7730 SUB "ck_tgt": N(), M(), Y(), T(), S$(), X(), X$(), G, R
 7735 LET R = 0
 7740 LET B = G
 7745 IF N(G, 0) = 30 THEN 7775
 7750 IF M(G, 1) = 0 THEN 7830
-7755 IF N(G, 0) <> 39 THEN 7825
-7760 REM an element or a selection: the base is the local assigned, or its .flat view
-7765 LET B = N(G, 7)
-7770 IF N(B, 0) = 30 THEN 7775
-7771 IF N(B, 0) <> 43 THEN 7825
-7772 IF S$(N(B, 6)) <> "flat" THEN 7825
-7773 LET B = N(B, 7)
-7774 IF N(B, 0) <> 30 THEN 7825
+7755 CALL "tpath": N(), M(), T(), S$(), G, 1, B
+7760 IF B = 0 THEN 7825
 7775 LET S = M(B, 2)
 7780 IF S = 0 THEN 7830
 7785 IF S < 0 THEN 7825
@@ -233,7 +227,7 @@
 8720 LET O = N(I, 1)
 8725 CALL "ck_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 8730 CALL "ck_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
-8735 CALL "ck_tgt": N(), M(), Y(), S$(), X(), X$(), G, R
+8735 CALL "ck_tgt": N(), M(), Y(), T(), S$(), X(), X$(), G, R
 8740 LET D = M(G, 1)
 8745 IF R = 0 THEN 9035
 8750 IF D = 0 THEN 9035
@@ -336,7 +330,7 @@
 9185 REM M(target,4): the cv of tasg (1 i64 to f64, 2 dyn, 4 fix; tcv for arrays, Decision 37)
 9190 LET M(G, 4) = 0
 9195 IF N(G, 0) = 11 THEN 9295
-9200 CALL "ck_tgt": N(), M(), Y(), S$(), X(), X$(), G, R
+9200 CALL "ck_tgt": N(), M(), Y(), T(), S$(), X(), X$(), G, R
 9205 IF R = 0 THEN 9295
 9210 IF V < 10 THEN 9295
 9215 LET D = T(V + 1 + INT((J - 1) / 9), J - 1 - 9 * INT((J - 1) / 9))

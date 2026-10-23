@@ -1,0 +1,135 @@
+#sea 1
+#target arm64-macos
+#file struct_rule29.sea
+func .main main 0:1:1 0 0
+slot s1 48 8
+sa p1 s1
+la p2 d1
+retain p2
+stp p2 p1 - 0 0
+lf f3 #3FF8000000000000
+stf f3 p1 - 0 8
+lf f4 #3FE0000000000000
+stf f4 p1 - 0 16
+la p5 d2
+retain p5
+stp p5 p1 - 0 24
+li i6 1
+sti i6 p1 - 0 32
+lf f7 #0000000000000000
+stf f7 p1 - 0 40
+li i8 2
+la p9 d3
+li i10 1
+li i11 1
+rcall sea_arr_new_s 0:7 1 p12 4 p9 i10 i8 i11
+ldp p13 p12 - 0 40
+li i14 0
+icmp gt i15 i8 i14
+if 1 i15
+li i16 1
+isub i17 i8 i16
+loop 2 i18 i14 i17 i16
+li i19 48
+imul i20 i18 i19
+padd p21 p13 i20
+li i22 48
+mcopy p21 p1 i22
+ldp p23 p21 - 0 0
+retain p23
+ldp p24 p21 - 0 24
+retain p24
+endloop 2
+endif 1
+call show 0 1 p12
+call show 0 1 p12
+release p12
+ldp p25 p1 - 0 0
+release p25
+ldp p26 p1 - 0 24
+release p26
+ret 0
+endfunc
+func show fn 0:1:1 1 p1 0
+slot s1 32 8
+ldi i2 p1 - 0 16
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new_u 0:2 1 p6 4 i3 i4 i2 i5
+ldp p7 p6 - 0 40
+ldp p8 p1 - 0 40
+li i9 0
+icmp gt i10 i2 i9
+if 1 i10
+li i11 1
+isub i12 i2 i11
+loop 2 i13 i9 i12 i11
+ldf f14 p8 i13 48 8
+stf f14 p7 i13 8 0
+endloop 2
+endif 1
+ldi i15 p1 - 0 16
+li i16 4
+li i17 1
+li i18 1
+rcall sea_arr_new 0:3 1 p19 4 i16 i17 i15 i18
+ldp p20 p19 - 0 40
+ldp p21 p1 - 0 40
+li i22 0
+icmp gt i23 i15 i22
+if 3 i23
+li i24 1
+isub i25 i15 i24
+loop 4 i26 i22 i25 i24
+ldp p27 p21 i26 48 0
+retain p27
+stp p27 p20 i26 8 0
+endloop 4
+endif 3
+li i28 0
+ldi i29 p19 - 0 16
+chkb i28 i29 0 0:4
+ldp p30 p19 - 0 40
+ldp p31 p30 i28 8 0
+li i32 0
+ldi i33 p6 - 0 16
+chkb i32 i33 0 0:4
+ldp p34 p6 - 0 40
+ldf f35 p34 i32 8 0
+li i36 1
+ldi i37 p19 - 0 16
+chkb i36 i37 0 0:4
+ldp p38 p19 - 0 40
+ldp p39 p38 i36 8 0
+li i40 1
+ldi i41 p6 - 0 16
+chkb i40 i41 0 0:4
+ldp p42 p6 - 0 40
+ldf f43 p42 i40 8 0
+sa p44 s1
+stp p31 p44 - 0 0
+stf f35 p44 - 0 8
+stp p39 p44 - 0 16
+stf f43 p44 - 0 24
+la p45 d4
+rcall sea_printf 0:4 0 2 p45 p44
+release p19
+release p6
+ret 0
+endfunc
+str d1 a
+str d2 n
+slay d3 48 2
+soff 0
+soff 24
+fmt d4 8
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

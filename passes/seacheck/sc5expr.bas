@@ -50,9 +50,9 @@
 9863 GOTO 9905
 9865 LET M(J, 1) = 1
 9867 GOTO 9905
-9870 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "structs", "", "", 1
+9870 CALL "ck_slit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 9875 GOTO 9905
-9880 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "records", "", "", 1
+9880 CALL "ck_rlit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 9885 GOTO 9905
 9890 CALL "ck_rng": N(), M(), T(), C(), X(), X$(), J
 9895 GOTO 9905

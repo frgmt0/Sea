@@ -1,0 +1,4 @@
+// err_record_no_field -- a field a record does not have: no field (249), the record type spelled {name: T, ...}
+// (DESIGN.md 2.6.2 text)
+let r = { a: 1, s: "x" }
+let b = r.b

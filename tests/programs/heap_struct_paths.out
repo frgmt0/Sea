@@ -1,0 +1,11 @@
+a L c R
+L L L R
+R g
+new2 7
+9 g
+new3
+new3!? -1 t1x | new3 9 t1 | new3 9
+new3!? g
+new3 new3
+e0! e1! 1
+w new3 xyz

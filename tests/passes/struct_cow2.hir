@@ -1,0 +1,66 @@
+#sea 1
+#target arm64-macos
+#file struct_cow2.sea
+tvec 10 4
+tstruct 11 T 1
+fd v 10
+tvec 12 11
+tstruct 13 S 1
+fd w 12
+tvec 14 13
+tfvec 15 4 1
+fn 1 .main main 1 0 2 0:1:1
+loc a 14 var 0:7:5
+loc b 14 let 0:8:5
+cf 0:7:26 4 #3FF0000000000000
+row 0:7:26 15 1
+arr 0:7:25 15 1
+dyn 0:7:25 10
+slit 0:7:18 11 1
+row 0:7:18 12 1
+arr 0:7:17 12 1
+slit 0:7:10 13 1
+row 0:7:10 14 1
+arr 0:7:9 14 1
+bind 0:7:1 1
+lv 0:8:9 14 1
+bind 0:8:1 2
+lv 0:9:1 14 1
+ci 0:9:3 3 0
+idx 0:9:1 13 1
+fld 0:9:1 12 0
+ci 0:9:8 3 0
+idx 0:9:1 11 1
+fld 0:9:1 10 0
+ci 0:9:13 3 0
+idx 0:9:1 4 1
+cf 0:9:18 4 #4022000000000000
+asg 0:9:1 set
+lv 0:10:19 14 2
+ci 0:10:21 3 0
+idx 0:10:19 13 1
+fld 0:10:19 12 0
+ci 0:10:26 3 0
+idx 0:10:19 11 1
+fld 0:10:19 10 0
+ci 0:10:31 3 0
+idx 0:10:19 4 1
+fconv 0:10:8 1 - - - g
+ftext 0:10:8 1 %20
+lv 0:10:35 14 1
+ci 0:10:37 3 0
+idx 0:10:35 13 1
+fld 0:10:35 12 0
+ci 0:10:42 3 0
+idx 0:10:35 11 1
+fld 0:10:35 10 0
+ci 0:10:47 3 0
+idx 0:10:35 4 1
+fconv 0:10:8 1 - - - g
+ftext 0:10:8 1 %0A
+fmt 0:10:8 1 4
+lib 0:10:1 1 printf 1
+eval 0:10:1
+block 0:1:1 4
+end
+#end

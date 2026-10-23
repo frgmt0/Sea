@@ -1,0 +1,1 @@
+err_struct_redef_field.sea:5:5: error: redefinition of 'x'

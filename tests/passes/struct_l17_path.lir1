@@ -1,0 +1,246 @@
+#sea 1
+#target arm64-macos
+#file struct_l17_path.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 8 8
+slot s3 8 8
+slot s4 32 8
+slot s5 24 8
+sa p1 s1
+lf f2 #0000000000000000
+stf f2 p1 - 0 0
+lf f3 #3FF0000000000000
+stf f3 p1 - 0 8
+li i4 2
+la p5 d1
+li i6 1
+li i7 1
+rcall sea_arr_new_s 0:8 1 p8 4 p5 i6 i4 i7
+ldp p9 p8 - 0 40
+li i10 0
+padd p11 p9 i10
+la p12 d2
+retain p12
+stp p12 p11 - 0 0
+li i13 1
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new 0:8 1 p17 4 i14 i15 i13 i16
+stp p17 p11 - 0 8
+li i18 16
+padd p19 p11 i18
+li i20 16
+mcopy p19 p1 i20
+li i21 32
+padd p22 p9 i21
+la p23 d3
+retain p23
+stp p23 p22 - 0 0
+li i24 1
+li i25 1
+li i26 1
+li i27 1
+rcall sea_arr_new 0:8 1 p28 4 i25 i26 i24 i27
+stp p28 p22 - 0 8
+li i29 16
+padd p30 p22 i29
+li i31 16
+mcopy p30 p1 i31
+mov p32 p8
+retain p32
+sa p33 s2
+stp p8 p33 - 0 0
+li i34 1
+lf f35 #401C000000000000
+call upd 0 3 p33 i34 f35
+ldp p8 p33 - 0 0
+sa p36 s3
+stp p8 p36 - 0 0
+li i37 0
+lf f38 #4020000000000000
+call upd 0 3 p36 i37 f38
+ldp p8 p36 - 0 0
+li i39 1
+ldi i40 p8 - 0 16
+chkb i39 i40 0 0:12
+ldp p41 p8 - 0 40
+ldp p42 p41 i39 32 0
+li i43 1
+ldi i44 p8 - 0 16
+chkb i43 i44 0 0:12
+ldp p45 p8 - 0 40
+ldp p46 p45 i43 32 8
+li i47 0
+ldi i48 p46 - 0 16
+chkb i47 i48 0 0:12
+ldp p49 p46 - 0 40
+ldf f50 p49 i47 8 0
+li i51 1
+ldi i52 p8 - 0 16
+chkb i51 i52 0 0:12
+ldp p53 p8 - 0 40
+ldf f54 p53 i51 32 16
+li i55 1
+ldi i56 p8 - 0 16
+chkb i55 i56 0 0:12
+ldp p57 p8 - 0 40
+ldf f58 p57 i55 32 24
+sa p59 s4
+stp p42 p59 - 0 0
+stf f50 p59 - 0 8
+stf f54 p59 - 0 16
+stf f58 p59 - 0 24
+la p60 d4
+rcall sea_printf 0:12 0 2 p60 p59
+li i61 1
+ldi i62 p32 - 0 16
+chkb i61 i62 0 0:13
+ldp p63 p32 - 0 40
+ldp p64 p63 i61 32 0
+li i65 1
+ldi i66 p32 - 0 16
+chkb i65 i66 0 0:13
+ldp p67 p32 - 0 40
+ldp p68 p67 i65 32 8
+li i69 0
+ldi i70 p68 - 0 16
+chkb i69 i70 0 0:13
+ldp p71 p68 - 0 40
+ldf f72 p71 i69 8 0
+li i73 0
+ldi i74 p8 - 0 16
+chkb i73 i74 0 0:13
+ldp p75 p8 - 0 40
+ldp p76 p75 i73 32 0
+sa p77 s5
+stp p64 p77 - 0 0
+stf f72 p77 - 0 8
+stp p76 p77 - 0 16
+la p78 d5
+rcall sea_printf 0:13 0 2 p78 p77
+release p32
+release p8
+ret 0
+endfunc
+func upd fn 0:1:1 3 p1 i2 f3 0
+slot s1 16 8
+ldp p4 p1 - 0 0
+li i5 0
+ldi i6 p4 - 0 16
+chkb i2 i6 0 0:2
+ldp p7 p4 - 0 40
+li i8 32
+imul i9 i2 i8
+padd p10 p7 i9
+ldp p11 p10 - 0 8
+ldi i12 p11 - 0 16
+chkb i5 i12 0 0:2
+ldp p13 p1 - 0 0
+ldi i14 p13 - 0 0
+li i15 1
+icmp ne i16 i14 i15
+if 1 i16
+rcall sea_arr_unique 0:2 1 p17 1 p13
+stp p17 p1 - 0 0
+mov p13 p17
+endif 1
+ldp p18 p13 - 0 40
+li i19 32
+imul i20 i2 i19
+padd p21 p18 i20
+ldp p22 p21 - 0 8
+ldi i23 p22 - 0 0
+li i24 1
+icmp ne i25 i23 i24
+if 2 i25
+rcall sea_arr_unique 0:2 1 p26 1 p22
+stp p26 p21 - 0 8
+mov p22 p26
+endif 2
+ldp p27 p22 - 0 40
+stf f3 p27 i5 8 0
+sa p28 s1
+stf f3 p28 - 0 0
+lf f29 #4000000000000000
+stf f29 p28 - 0 8
+ldp p30 p1 - 0 0
+ldi i31 p30 - 0 16
+chkb i2 i31 0 0:3
+ldp p32 p1 - 0 0
+ldi i33 p32 - 0 0
+li i34 1
+icmp ne i35 i33 i34
+if 3 i35
+rcall sea_arr_unique 0:3 1 p36 1 p32
+stp p36 p1 - 0 0
+mov p32 p36
+endif 3
+ldp p37 p32 - 0 40
+li i38 32
+imul i39 i2 i38
+padd p40 p37 i39
+li i41 16
+padd p40 p40 i41
+li i42 16
+mcopy p40 p28 i42
+lf f43 #3FF0000000000000
+fadd f44 f3 f43
+ldp p45 p1 - 0 0
+ldi i46 p45 - 0 16
+chkb i2 i46 0 0:4
+ldp p47 p1 - 0 0
+ldi i48 p47 - 0 0
+li i49 1
+icmp ne i50 i48 i49
+if 4 i50
+rcall sea_arr_unique 0:4 1 p51 1 p47
+stp p51 p1 - 0 0
+mov p47 p51
+endif 4
+ldp p52 p47 - 0 40
+stf f44 p52 i2 32 24
+la p53 d6
+ldp p54 p1 - 0 0
+ldi i55 p54 - 0 16
+chkb i2 i55 0 0:5
+ldp p56 p1 - 0 0
+ldi i57 p56 - 0 0
+li i58 1
+icmp ne i59 i57 i58
+if 5 i59
+rcall sea_arr_unique 0:5 1 p60 1 p56
+stp p60 p1 - 0 0
+mov p56 p60
+endif 5
+ldp p61 p56 - 0 40
+retain p53
+ldp p62 p61 i2 32 0
+stp p53 p61 i2 32 0
+release p62
+ret 0
+endfunc
+slay d1 32 2
+soff 0
+soff 8
+str d2 a
+str d3 b
+fmt d4 8
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d5 6
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - s p
+ftext %0A
+str d6 z
+#end

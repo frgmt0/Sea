@@ -1,0 +1,5 @@
+// err_struct_recursive_fixed -- recursion through a fixed array field P[2]: recursive struct (221; DESIGN.md
+// 3.4.2)
+struct P {
+    pair: P[2]
+}

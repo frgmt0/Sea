@@ -1,0 +1,20 @@
+fn nomOf(dims: Dim[], d: i64) -> f64 {
+    // struct_rule18 -- DESIGN.md 3.6.6 rule 18's second example on line 9: dims[d].nom with dims
+    // a Dim[] in p1 (size 48, nom at 8) and d in i2, the fld of the idx folded into one load;
+    // Dim is LANGUAGE.md Appendix D's. The literal of line 11 is L9 (b) with struct elements
+    // written in place (R19, rule 26 (b)) into a sea_arr_new_s array (R21) whose descriptor is
+    // the slay of Dim (rule 38: size 48, its str fields at 0 and 24)
+    //
+    //
+    return dims[d].nom
+}
+let dims = [Dim { name: "a", nom: 1.5, tol: 0.5, dist: "n", sign: 1, alpha: 0.0 }, Dim { name: "b", nom: 2.5, tol: 0.25, dist: "u", sign: 2, alpha: 0.0 }]
+printf("%g %g\n", nomOf(dims, 0), nomOf(dims, 1))
+struct Dim {
+    name: str
+    nom: f64      // nominal length [mm]
+    tol: f64      // symmetric tolerance [mm]
+    dist: str     // "normal" | "uniform" | "triangular"
+    sign: i64     // +1 opens the gap, -1 closes it
+    alpha: f64    // thermal expansion coefficient [1/K]
+}

@@ -1,0 +1,1 @@
+err_record_arg_struct.sea:10:18: error: type mismatch: expected P, found {x: f64, y: f64}

@@ -1,0 +1,93 @@
+// str_fixed -- fixed-size str arrays: str[3] by annotation (fix with its run-time check), element stores,
+// a ref str[3] parameter, dyn into str[], an element loop, sort and argsort of a str[3] (a
+// dynamic result, Decision 39), element-wise + == < on a str[3] (Decision 45), str[3]
+// parameters, results and tuple components, value semantics, a str[3] struct field, a
+// str[2,2] (LANGUAGE.md 4.5, 6.2-6.4, 10.6)
+struct Tri {
+    k: i64
+    names: str[3]
+}
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pms(A: str[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" [%s]", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn first3(x: str[3]) -> str {
+    return x[0] + x[1] + x[2]
+}
+fn mk3(a: str) -> str[3] {
+    return [a, a + a, "z"]
+}
+fn setmid(ref x: str[3], s: str) {
+    x[1] = s
+}
+fn pair() -> (str[3], i64) {
+    return (["p", "q", "r"], 3)
+}
+let base = ["c", "a", "b"]
+let a: str[3] = base
+ps(a)
+var m: str[3] = ["x", "y", "w"]
+m[0] = "X"
+m[2] += "!"
+setmid(ref m, "mid")
+ps(m)
+let dd: str[] = m
+ps(dd)
+for s in m {
+    printf("<%s>", s)
+}
+printf("\n")
+ps(sort(a))
+ps(sort(m, desc: true))
+pvi(argsort(a))
+var srt = sort(a)
+srt = [srt, "d"]
+ps(srt)
+ps(a + "!")
+ps("<" + m)
+pvb(a == "a")
+pvb(a < m)
+printf("%s\n", first3(a))
+let t3 = mk3("k")
+ps(t3)
+let (pq, n) = pair()
+printf("%s %s %s %d\n", pq[0], pq[1], pq[2], n)
+var mm = m
+mm[0] = "changed"
+ps(m)
+ps(mm)
+var tri = Tri { k: 1, names: a }
+tri.names[2] = "Z"
+ps(tri.names)
+ps(a)
+let M: str[2,2] = ["a", "b"; "c", "d"]
+pms(M)
+pms(M.T)
+printf("%s %d\n", M[1, 0], len(M.flat))

@@ -1,5 +1,5 @@
-// res_struct -- rst and rname st (a struct name used as a value); rerr not supported yet:
-// structs at the struct item (DESIGN.md 3.4.1, 2.6.2)
+// res_struct -- rtst/rtfd, rst and rname st (a struct name used as a value); from 4g-2 no
+// rerr: `let q = P` is seacheck's undeclared name 'P' (DESIGN.md 3.4.2, 6.2 L-i: re-derived)
 struct P {
     x: f64
 }

@@ -1,0 +1,84 @@
+#sea 1
+#target arm64-macos
+#file str_ref_ln.sea
+tvec 10 5
+tptr 11 5
+fn 1 .main main 1 0 4 0:1:1
+loc names 10 var 0:4:5
+loc .l1 3 let 0:4:13
+loc .l2 10 let 0:4:13
+loc .l3 11 let 0:4:13
+ci 0:4:13 3 2
+tmp 0:4:13 2
+lv 0:4:13 3 2
+anew 0:4:13 10 0 1
+tmp 0:4:13 3
+lv 0:4:13 10 3
+adat 0:4:13 11
+tmp 0:4:13 4
+cs 0:4:14 5 a
+lv 0:4:13 11 4
+ci 0:4:13 3 0
+est 0:4:13 8 0
+cs 0:4:19 5 b
+lv 0:4:13 11 4
+ci 0:4:13 3 1
+est 0:4:13 8 0
+lv 0:4:13 10 3
+xblk 0:4:13 10 5
+bind 0:4:1 1
+lv 0:5:7 10 1
+rarg 0:5:3 10
+ci 0:5:14 3 0
+call 0:5:1 1 2 2
+eval 0:5:1
+lv 0:6:7 10 1
+rarg 0:6:3 10
+ci 0:6:14 3 1
+call 0:6:1 1 2 2
+eval 0:6:1
+lv 0:7:19 10 1
+ci 0:7:25 3 0
+idx 0:7:19 5 1
+fconv 0:7:8 1 - - - s
+ftext 0:7:8 1 %20
+lv 0:7:29 10 1
+ci 0:7:35 3 1
+idx 0:7:29 5 1
+fconv 0:7:8 1 - - - s
+ftext 0:7:8 1 %0A
+fmt 0:7:8 1 4
+lib 0:7:1 1 printf 1
+eval 0:7:1
+block 0:1:1 4
+end
+fn 2 f fn 1 2 4 0:1:1
+par v 10 ref
+par i 3 val
+loc .l1 5 let 0:2:5
+loc .l2 10 let 0:2:5
+loc .l3 3 let 0:2:5
+loc .l4 3 let 0:2:5
+cs 0:2:12 5 x
+tmp 0:2:5 3
+lv 0:2:5 10 1
+tmp 0:2:5 4
+lv 0:2:7 3 2
+tmp 0:2:5 5
+lv 0:2:5 10 4
+ext 0:2:5 3 0
+tmp 0:2:5 6
+lv 0:2:5 3 5
+lv 0:2:5 3 6
+chkb 0:2:5 0
+lv 0:2:5 10 1
+cow 0:2:5
+lv 0:2:5 5 3
+lv 0:2:5 10 1
+adat 0:2:5 11
+lv 0:2:5 3 5
+est 0:2:5 8 0
+block 0:2:5 7
+block 0:1:28 1
+end
+#end

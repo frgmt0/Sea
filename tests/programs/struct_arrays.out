@@ -1,0 +1,23 @@
+housing 1.5
+gasket -2.5
+ring 4
+2.5 3.25 ring RING 2 7
+new 0.75 0.0625 -1 5 6
+3: 1.5 3.25 0.75
+3: [housing] [gasket] [new]
+3: 1 -1 -1
+2: 1.5 3.25
+2: [new] [housing]
+3: 0.25 0.5 0.125
+3: 0.25 0.5 0.0625
+5.5
+3: [housing] [B2] [new]
+3: [housing] [gasket] [new]
+2 gasket housing
+f 0.5 0 1 1
+f 0.5 0 1 1
+housing 1.5 0.25 1 1 7
+gasket 3.25 0.5 -1 3
+new 0.75 0.0625 -1 5 6
+2 gasket 7
+6.5 housing! housing!? 3.25

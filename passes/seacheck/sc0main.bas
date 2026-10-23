@@ -20,7 +20,7 @@
 95 REM S$ strings, X X$ state, H the hash of C, O that of S$. Layouts: the REM block of sc2util.
 100 REM ====================================================================================
 105 DIM E(299), E$(299,5), J(20), J$(20), K(299,4), K$(299), F$(100), A$(3)
-110 DIM N(99999,9), M(99999,9), Y(49999,9), T(51209,9), W(199999), C(19999,4)
+110 DIM N(99999,9), M(99999,9), Y(49999,9), T(65009,9), W(199999), C(19999,4)
 115 DIM S$(199999), X(60), X$(20), H(39989), O(399989)
 120 FILES "sea.res"; "sea.hir1"
 125 LET P$ = "seacheck"
@@ -49,7 +49,7 @@
 240 LET F = INT(Q / 1E9)
 245 LET L = Q - F * 1E9
 250 FOR J = 1 TO X(8)
-255 LET A$(J) = X$(J + 1)
+255 CALL "tyx": S$(), X$(J + 1), A$(J)
 260 NEXT J
 265 CALL "dg_compile": P$, F$(), N1, F, L, Q1, X$(1), A$(), X(8), E(), E$(), E0
 270 SCRATCH #2
@@ -85,7 +85,7 @@
 400 LET X(34) = V
 405 NEXT I
 410 IF X(20) > 49999 THEN 445
-415 IF 9 + 2 * X(21) + INT(X(23) / 9) + 1 > 51209 THEN 445
+415 IF 9 + 2 * X(21) + INT(X(23) / 4) + 1 > 65009 THEN 445
 420 IF X(21) > 19999 THEN 445
 425 IF X(22) > 19999 THEN 445
 430 IF X(23) > 99999 THEN 445

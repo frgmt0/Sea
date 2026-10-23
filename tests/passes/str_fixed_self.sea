@@ -1,0 +1,14 @@
+fn show(a: str[3]) {
+    printf("%s %s %s\n", a[0], a[1], a[2])
+}
+var a: str[3] = ["x", "y", "z"]
+a[:] = a
+show(a)
+a[0] = "w"
+show(a)
+// str_fixed_self -- DESIGN.md 3.5.9 for a str[3] local (a home that holds counts, R1 as amended):
+// line 4 L10's fix of the dynamic str[] literal by R20 (`mcpy` with the static count `ci 3`, the
+// unrolled retains, the literal released); line 5 L6's counted self-copy (step 1: `mcpy data(Vv)
+// data(V0) (ci 3)` with the retains of the borrowed root, R17's replacing stores in the `:` loop,
+// Vv released by rule 15 (g) at the block's end, R11); line 7 L17 of an element of a fixed-size
+// home (R17, no cow); the home released at the end (rule 16)

@@ -1,4 +1,0 @@
-// err_ns_struct -- phase 1: a struct item (at the item)
-struct P {
-    x: f64
-}

@@ -1,5 +1,5 @@
 24900 REM ====================================================================================
-24902 REM sealoop part 5 (lines 24900-29999): L9, numeric array literals and concatenation (DESIGN
+24902 REM sealoop part 5 (lines 24900-29999): L9, array literals (numeric, str, struct elements), concatenation (DESIGN
 24904 REM 3.5.9, rule 26 (a)-(d)). Of a concatenation each part p keeps in H(p,5) its tmp Q, in
 24906 REM H(p,7) and H(p,8) the tmps of its rows and cols (a vector row's part: its length), each
 24908 REM row r in H(r,5) the tmp of its rows, H(r,7) their static number, H(r,8) 1 for a row of
@@ -14,7 +14,6 @@
 25008 LET Y7 = T6
 25010 GOSUB 8700
 25012 IF R5 = 0 THEN 2900
-25013 IF E5 > 5 THEN 5160
 25014 LET R4 = R5
 25016 LET F4 = F5
 25018 LET V(54) = E5
@@ -33,7 +32,7 @@
 25044 LET Q3 = Q3 + 1
 25046 IF H(X5, 1) <= 3 THEN 25049
 25048 LET Z7 = 0
-25049 IF H(X5, 2) <= 9 THEN 25052
+25049 IF T(H(X5, 2), 1) = 0 THEN 25052
 25050 LET Z8 = 1
 25052 LET X5 = H(X5, 4)
 25053 GOTO 25042
@@ -133,7 +132,7 @@
 25345 LET V(12) = H(X5, 7)
 25346 LET S$ = "L Q,L D,L J,est P %5 0"
 25347 LET Q3 = 1
-25348 IF H(X5, 2) <= 9 THEN 25351
+25348 IF T(H(X5, 2), 1) = 0 THEN 25351
 25349 LET S$ = "D Q,= y,( L z,L y,L z,eld P %1 %5 0,L D,L J,L z,wbin P 3 add,est P %5 0,)"
 25350 LET Q3 = T(H(X5, 2), 0)
 25351 GOSUB 9000
@@ -191,7 +190,7 @@
 25502 IF X5 = 0 THEN 25516
 25503 LET V(17) = H(X5, 5)
 25504 LET S$ = "C 1,= L"
-25505 IF H(X5, 2) <= 9 THEN 25507
+25505 IF T(H(X5, 2), 1) = 0 THEN 25507
 25506 LET S$ = "X Q 0,= L"
 25507 IF Q3 = 0 THEN 25509
 25508 LET S$ = S$ & ",L A,L L,wbin P 3 add,= A"
@@ -209,7 +208,7 @@
 25530 LET Q3 = 0
 25531 LET X5 = H(X6, 3)
 25532 IF X5 = 0 THEN 25538
-25533 IF H(X5, 2) <= 9 THEN 25536
+25533 IF T(H(X5, 2), 1) = 0 THEN 25536
 25534 IF T(H(X5, 2), 1) <> 2 THEN 25536
 25535 LET Q3 = 1
 25536 LET X5 = H(X5, 4)
@@ -228,7 +227,7 @@
 25551 IF X5 = 0 THEN 25575
 25552 LET V(17) = H(X5, 5)
 25553 LET S$ = "C 1,= R,C 1,= C"
-25554 IF H(X5, 2) <= 9 THEN 25556
+25554 IF T(H(X5, 2), 1) = 0 THEN 25556
 25555 LET S$ = "X Q 0,= R,X Q 1,= C"
 25556 IF Q3 = 0 THEN 25562
 25557 IF F4 = 1 THEN 25560
@@ -240,7 +239,7 @@
 25565 IF Q3 > 0 THEN 25571
 25566 LET V(5) = V(18)
 25567 LET V(6) = V(3)
-25568 IF H(X5, 2) <= 9 THEN 25571
+25568 IF T(H(X5, 2), 1) = 0 THEN 25571
 25569 LET H(X6, 7) = T(H(X5, 2), 0)
 25571 LET Q3 = 1
 25572 LET X5 = H(X5, 4)
@@ -255,7 +254,7 @@
 25604 GOSUB 9000
 25605 LET V(17) = H(X5, 5)
 25606 LET S$ = "L Q,L D,L m,L J,L G,wbin P 3 mul,wbin P 3 add,est P %5 0"
-25607 IF H(X5, 2) <= 9 THEN 25616
+25607 IF T(H(X5, 2), 1) = 0 THEN 25616
 25608 LET V(18) = H(X5, 7)
 25609 LET V(3) = H(X5, 8)
 25610 LET S$ = ""
@@ -269,7 +268,7 @@
 25618 IF H(X6, 8) = 1 THEN 25620
 25619 LET V(3) = H(X5, 7)
 25620 LET Q3 = 1
-25621 IF H(X5, 2) <= 9 THEN 25625
+25621 IF T(H(X5, 2), 1) = 0 THEN 25625
 25622 LET Q3 = T(H(X5, 2), 4)
 25623 IF H(X6, 8) = 1 THEN 25625
 25624 LET Q3 = T(H(X5, 2), 0)

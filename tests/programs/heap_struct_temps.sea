@@ -1,0 +1,50 @@
+// heap_struct_temps -- struct temporaries under the heap check: a slit argument, call results used once
+// (an argument, a field, f().name, an element of f().v), if expressions of structs, a
+// _ component, discarded struct results, filled of an owned struct, a struct local
+// replaced in a loop with break and continue, projections of literals of owned values
+// (DESIGN.md 3.6.6 rules 15 (f), (g), (j), 16, 19, 27; heap check 0)
+struct P {
+    name: str
+    v: f64[]
+    k: i64
+}
+fn mk(s: str, k: i64) -> P {
+    return P { name: s + "#", v: filled(f64(k), k), k: k }
+}
+fn show(p: P) {
+    printf("%s %d %d\n", p.name, len(p.v), p.k)
+}
+fn two(k: i64) -> (P, str) {
+    return (mk("t", k), "s" + str(k))
+}
+fn pick(c: bool, a: P, b: P) -> P {
+    return if c { a } else { b }
+}
+show(P { name: "lit", v: [1.0], k: 1 })
+printf("%d\n", mk("once", 3).k)
+show(mk("x", 2))
+printf("%s %g\n", mk("nm", 1).name, mk("el", 4).v[3])
+for i in 0..3 {
+    let q = if i % 2 == 0 { mk("e", i) } else { mk("o", i) }
+    show(q)
+}
+show(pick(false, mk("a", 1), mk("b", 2)))
+let (_, s1) = two(4)
+printf("%s\n", s1)
+two(5)
+let _ = mk("gone", 2)
+let fl = filled(mk("fill", 2), 3)
+printf("%d %s %d\n", len(fl), fl[2].name, len(fl[1].v))
+var acc = mk("acc", 0)
+for i in 0..6 {
+    let t = mk("t", i)
+    if i == 1 {
+        continue
+    }
+    if i == 4 {
+        break
+    }
+    acc = P { name: acc.name + t.name, v: [acc.v, t.v], k: acc.k + t.k }
+}
+show(acc)
+printf("%d %s\n", len([mk("p", 1), mk("q", 2)].name), [mk("p", 1), mk("q", 2)].name[1])

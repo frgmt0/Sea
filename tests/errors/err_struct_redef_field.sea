@@ -1,0 +1,6 @@
+// err_struct_redef_field -- two fields of one name: redefinition (235) at the later field (DESIGN.md 2.6.2, 3.4.2)
+struct P {
+    x: f64
+    y: i64
+    x: str
+}

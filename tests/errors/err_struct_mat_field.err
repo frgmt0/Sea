@@ -1,0 +1,1 @@
+err_struct_mat_field.sea:8:10: error: no field 'x' in P[,]

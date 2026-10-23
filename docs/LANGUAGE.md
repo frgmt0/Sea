@@ -823,6 +823,13 @@ remains is a compare and a never-taken branch off the latency chain.
   made at run time); then the elements are stored in increasing linear order of the selection. With an index
   vector that repeats a position, the last store wins, as in MATLAB. An error stops the program
   before any element is stored.
+* **`$` through a field of an element.** In a target that goes through a field of an array element
+  (`a[i].v[j] = e`), a `$` in a later index expression is the extent of the array that field holds
+  (§5.3), which exists only once the element is known: from the first such index expression whose
+  indices use a `$`, its indices, and those of every index expression after it, are evaluated after
+  the checks of the index expressions before it, still left to right. So `a[5].v[$ - 1] = 1.0` on a
+  5-element `a` reports `index 5 out of bounds for dimension 0 of extent 5` for `a`. Without such a
+  `$` the order above holds for the whole path.
 * **Compound assignment** `x[sel] op= e` (`+= -= *= /=`) means `x[sel] = x[sel] op e` with the
   selection evaluated once, in this order: the indices (left to right); the read of the selected
   elements, with the checks of §5.4; `e`; the operation, with the broadcasting and shape check of

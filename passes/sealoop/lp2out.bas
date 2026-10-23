@@ -50,24 +50,27 @@
 10200 GOTO 10216
 10204 LET J3 = POS(O$(J), "^")
 10206 IF J3 = 0 THEN 10216
-10208 LET E3 = VAL(SEG$(O$(J), J3 + 1, J3 + 1))
+10207 LET J4 = POS(O$(J) & " ", " ", J3)
+10208 LET E3 = VAL(SEG$(O$(J), J3 + 1, J4 - 1))
 10210 GOSUB 10234
 10212 LET J3 = POS(O$(J), "^", J3 + 1)
 10214 GOTO 10206
 10216 LET J = O(J, 0)
 10218 GOTO 10184
-10220 FOR E3 = 1 TO 5
-10225 IF Y(E3) <> 1 THEN 10231
+10220 FOR E3 = 1 TO Y8
+10225 IF C(E3, 6) <> 1 THEN 10231
 10230 CALL "dg_bug": P$, "a tptr type is referred to by no record"
 10231 NEXT E3
 10232 GOTO 10245
-10233 REM ---- 10234: the tptr of element type E3 (2-5; 1 the F8 type of R14; else nothing) is numbered at its first reference
-10234 IF E3 < 1 THEN 10239
-10235 IF Y(E3) <> 1 THEN 10239
+10233 REM ---- 10234: the tptr of element type E3 (1 the F8 type of R14; < 1 nothing) is numbered at
+10234 REM its first reference; C(id,6) of the new id names E3 (10600)
+10235 IF E3 < 1 THEN 10240
+10236 IF C(E3, 6) <> 1 THEN 10240
 10237 LET Y9 = Y9 + 1
-10238 LET Y(E3) = Y9
-10239 RETURN
-10240 REM ---- writing --------------------------------------------------------------------------------
+10238 LET C(E3, 6) = Y9
+10239 LET C(Y9, 6) = E3
+10240 RETURN
+10241 REM ---- writing --------------------------------------------------------------------------------
 10245 SCRATCH #2
 10250 CALL "io_hdr_put": 2, V8, T$, H$(), N1
 10255 LET W5 = 0
@@ -112,7 +115,7 @@
 10510 LET V1 = U(G(F0, 5) + K5 - 1, 5)
 10515 LET Z$ = STR$(U(V1, 1))
 10520 IF U(V1, 1) > 0 THEN 10530
-10525 LET Z$ = STR$(Y(-U(V1, 1)))
+10525 LET Z$ = STR$(C(-U(V1, 1), 6))
 10530 LET Z1$ = "let"
 10535 IF U(V1, 2) = 0 THEN 10545
 10540 LET Z1$ = "for"
@@ -121,15 +124,13 @@
 10555 CALL "io_put": 2, "loc .l" & STR$(K5) & " " & Z$ & " " & Z1$ & " " & P9$
 10558 NEXT K5
 10560 RETURN
-10595 REM ---- 10600: the tptr records (and R14's F8, tfvec of f64 with n 8: Y(1)), in id order --
+10595 REM ---- 10600: the tptr records (and R14's F8, tfvec of f64 with n 8: element 1), in id order --
 10600 FOR K5 = Y8 + 1 TO Y9
-10605 FOR E3 = 1 TO 5
-10610 IF Y(E3) <> K5 THEN 10620
-10612 IF E3 > 1 THEN 10615
+10605 LET E3 = C(K5, 6)
+10610 IF E3 > 1 THEN 10615
 10613 CALL "io_put": 2, "tfvec " & STR$(K5) & " 4 8"
-10614 GOTO 10620
+10614 GOTO 10625
 10615 CALL "io_put": 2, "tptr " & STR$(K5) & " " & STR$(E3)
-10620 NEXT E3
 10625 NEXT K5
 10630 RETURN
 10695 REM ---- 10700: the fn record Z$ with its nl field (field 7) increased by the new locals -----------
@@ -151,7 +152,7 @@
 10835 IF SEG$(Z2$, 1, 1) <> "@" THEN 10845
 10840 LET Z2$ = STR$(U(VAL(SEG$(Z2$, 2, LEN(Z2$))), 4))
 10845 IF SEG$(Z2$, 1, 1) <> "^" THEN 10855
-10850 LET Z2$ = STR$(Y(VAL(SEG$(Z2$, 2, LEN(Z2$)))))
+10850 LET Z2$ = STR$(C(VAL(SEG$(Z2$, 2, LEN(Z2$))), 6))
 10855 IF J3 = 1 THEN 10870
 10860 LET Z$ = Z$ & " " & Z2$
 10865 GOTO 10875

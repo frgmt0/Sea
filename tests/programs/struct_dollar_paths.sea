@@ -1,0 +1,79 @@
+// struct_dollar_paths -- $ in indices under fields of array elements, in assignment targets (= += *=): a
+// dynamic container (v[$ - 1], v[0..$], names[$ - 1] +=) with a copy unchanged; fixed
+// f64[3] and i64[2,2] fields ([$ - 1, $ - 2]); a ref root (ds[i].v[$ - 1] +=,
+// ds[$ - 1].v[0..$ - 1]); nested s.items[$ - 1].v[$ - 1] and q[1].items[$ - 1].v[$ - 3]
+// through two element containers (LANGUAGE.md 4.5, 5.3, 5.5, 7.3, 8.3)
+struct D {
+    name: str
+    v: f64[]
+    names: str[]
+}
+struct F {
+    w: f64[3]
+    m: i64[2,2]
+}
+struct It {
+    v: f64[]
+}
+struct S {
+    items: It[]
+}
+fn bumpd(ref ds: D[], i: i64) {
+    ds[i].v[$ - 1] += 0.5
+    ds[$ - 1].v[0..$ - 1] = -1.0
+}
+fn pd(q: D) {
+    printf("%s", q.name)
+    for x in q.v {
+        printf(" %g", x)
+    }
+    printf(" |")
+    for s in q.names {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pit(s: S) {
+    for it in s.items {
+        printf(" |")
+        for x in it.v {
+            printf(" %g", x)
+        }
+    }
+    printf("\n")
+}
+var a = [D { name: "p", v: [1.0, 2.0, 3.0], names: ["x", "y"] }, D { name: "q", v: [4.0, 5.0], names: ["z"] }]
+let keep = a
+let i = 1
+a[i].v[$ - 1] = 9.0
+a[0].v[0..$] = 0.0
+a[i].names[$ - 1] += "!"
+a[0].names[$ - 2] = "X"
+pd(a[0])
+pd(a[1])
+pd(keep[0])
+pd(keep[1])
+var fs = [F { w: [1.0, 2.0, 3.0], m: [1, 2; 3, 4] }, F { w: [0.5, 0.5, 0.5], m: [0, 0; 0, 0] }]
+let fkeep = fs
+fs[0].w[$ - 1] = 30.0
+fs[0].w[$ - 3] *= 4.0
+fs[0].m[$ - 1, $ - 2] = 40
+fs[0].m[$ - 2, $ - 1] += 5
+printf("%g %g %g | %d %d %d %d\n", fs[0].w[0], fs[0].w[1], fs[0].w[2], fs[0].m[0, 0], fs[0].m[0, 1], fs[0].m[1, 0], fs[0].m[1, 1])
+printf("%g %g %g | %d %d %d %d\n", fkeep[0].w[0], fkeep[0].w[1], fkeep[0].w[2], fkeep[0].m[0, 0], fkeep[0].m[0, 1], fkeep[0].m[1, 0], fkeep[0].m[1, 1])
+bumpd(ref a, 0)
+pd(a[0])
+pd(a[1])
+pd(keep[1])
+var s = S { items: [It { v: [1.0, 2.0] }, It { v: [3.0, 4.0, 5.0] }] }
+s.items[$ - 1].v[$ - 1] = 50.0
+pit(s)
+var q = [s, S { items: [It { v: [6.0] }, It { v: [7.0, 8.0, 9.0] }] }]
+let q0 = q
+q[1].items[$ - 1].v[$ - 3] = 70.0
+q[0].items[$ - 2].v[$ - 1] += 0.25
+pit(q[0])
+pit(q[1])
+pit(q0[0])
+pit(q0[1])
+pit(s)

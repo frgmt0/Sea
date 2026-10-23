@@ -1,0 +1,15 @@
+struct T {
+    v: f64[]
+}
+struct S {
+    w: T[]
+}
+var a = [S { w: [T { v: [1.0] }] }]
+let b = a
+a[0].w[0].v[0] = 9.0
+printf("%g %g\n", b[0].w[0].v[0], a[0].w[0].v[0])
+// struct_cow2 -- DESIGN.md 6.2 (4g-2): two array-field levels, `a[0].w[0].v[0] = 9.0` after
+// `let b = a` prints `1 9`: L17 copies a, then the w of a's copy (R23 at E'+0), then that w's
+// element's v (R23 at E''+0), each element address from the register its cow left (step 5); the
+// literal of line 7 nests L9 (b) (S[] and T[] by sea_arr_new_s with their slays, R21) around
+// L10's dyn of the fixed f64[1] literal [1.0] (L9 (a)) for the f64[] field v (LANGUAGE.md 6.9, 4.5)

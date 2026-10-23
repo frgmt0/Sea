@@ -33,6 +33,19 @@ at the constant's item, reported by seaname at once (status 10: the Capacity exc
 sea.res is written). These evaluation rules hold in every step (no earlier golden has a `str`
 constant); the phase-rule step 4g-1 itself (a `match` resolved, `str` in signatures) is applied
 by the callers that patch this oracle (dump4g_cases.res_gen4g1), as step 4e is by dump4e_cases.
+
+Sub-phase 4g-2 (3.4.2 "Struct literals", "The type table", "Struct declarations"), enabled by the
+module flag STRUCTS (False for every earlier step; dump4g_cases.res_gen4g2 sets it): no 259
+`structs` at a struct item or a struct type node; one struct type per entered struct, created
+first in sid order (id 9 + sid, step 1), written `rtst` followed directly by its `rtfd` records
+(a field whose type has an error has ty 0); a type node whose base denotes an entered struct has
+that struct's id; every `slit` of a resolved region is `rslit` with the sid of the entered struct
+its name denotes where it stands (looked up as a name: a local of that name hides it; 0 when it
+denotes none); the declaration checks of each entered struct in stream order: `redefinition of
+'%s'` (235) at the later of two fields of one name, `field name reserved for views` (222) at a
+field named T, flat, col or row, and `recursive struct` (221) at the struct node of every struct
+whose type contains itself through its fields, nested structs and the elements of fixed and
+dynamic arrays.
 """
 
 import os
@@ -48,6 +61,7 @@ from f64emu import f_add, f_div, f_mul, f_sub  # noqa: E402
 from f64emu import f_cmp as fe_cmp, f_mod as fe_mod, f_sqrt  # noqa: E402
 
 PASSES = os.path.join(os.path.dirname(HERE), 'passes')
+STRUCTS = False                   # the phase-rule step 4g-2 (3.4.2): structs resolve
 SIGN = 1 << 63
 M64 = (1 << 64) - 1
 I64_MIN, I64_MAX = -(1 << 63), (1 << 63) - 1
@@ -544,7 +558,7 @@ def seaname(prog):
         entered.append(it)
         if it.op == 'fn' and it.f[2] == '1':
             err(it.pos, 259, ['elemental functions'])
-        if it.op == 'struct':
+        if it.op == 'struct' and not STRUCTS:
             err(it.pos, 259, ['structs'])
     fns = [it for it in entered if it.op == 'fn']
     sts = [it for it in entered if it.op == 'struct']
@@ -570,6 +584,16 @@ def seaname(prog):
                 err(p.pos, 259, ['strings'])
     for it in sts:
         it.rop, it.rf = 'rst', it.f + [str(sid[it.f[1]])]
+    if STRUCTS:
+        # 3.4.2 "Struct declarations": 235 and 222 per field (221 after the field types below)
+        for it in sts:
+            fnames = set()
+            for fd in it.kids:
+                if fd.f[1] in fnames:
+                    err(fd.pos, 235, [fd.f[1]])
+                fnames.add(fd.f[1])
+                if fd.f[1] in ('T', 'flat', 'col', 'row'):
+                    err(fd.pos, 222, [])
 
     # every int of the file becomes rint (3.4.1)
     for x in walk(prog):
@@ -637,6 +661,10 @@ def seaname(prog):
             resolve(k, scopes, fn)
         if op == 'bin' and n.f[1] == 'pow':
             powk_sites.append(n)
+        if op == 'slit' and STRUCTS:
+            # 3.4.2: the sid of the entered struct the name denotes where it stands, else 0
+            k, ref = lookup(n.f[1], scopes)
+            n.rop, n.rf = 'rslit', n.f + [str(ref if k == 'st' else 0)]
 
     def declare(pat, fn, sc):
         if pat.op == 'pname':
@@ -749,7 +777,7 @@ def seaname(prog):
             if k != 'st':
                 err(tn.pos, 229, [])
                 return None
-            bt = ('st', ref)
+            bt = (9 + ref) if STRUCTS else ('st', ref)   # 4g-2: the struct's id (step 1)
         vals = []
         for d in tn.kids:
             if d.op == 'int':
@@ -804,6 +832,29 @@ def seaname(prog):
     for st in sts:
         for fd in st.kids:
             keys[id(fd.kids[0])] = resolve_type(fd.kids[0], [], True)
+    if STRUCTS:
+        # 221: a struct whose type contains itself, through its fields, nested structs and the
+        # element types of fixed and dynamic arrays, however deep
+        def contained(key):
+            if key is None:
+                return set()
+            if isinstance(key, int):
+                return {key - 9} if key >= 10 else set()
+            return contained(key[1])
+
+        direct = {sid[st.f[1]]: set().union(*[contained(keys[id(fd.kids[0])]) for fd in st.kids])
+                  for st in sts}
+        for st in sts:
+            s0 = sid[st.f[1]]
+            seen_, todo = set(), list(direct[s0])
+            while todo:
+                x = todo.pop()
+                if x in seen_:
+                    continue
+                seen_.add(x)
+                todo += list(direct.get(x, ()))
+            if s0 in seen_:
+                err(st.pos, 221, [])
     for it in fns:
         np_, nr = int(it.f[3]), int(it.f[4])
         for p in it.kids[:np_]:
@@ -832,6 +883,9 @@ def seaname(prog):
         tn.rf = tn.f + [str(ty)]
         return ty
 
+    if STRUCTS:
+        for st in sts:                        # step 1: the struct types, in sid order
+            assert mk(('st', sid[st.f[1]], st.f[1], len(st.kids))) == 9 + sid[st.f[1]]
     for st in sts:
         for fd in st.kids:
             typed(fd.kids[0])
@@ -868,6 +922,12 @@ def seaname(prog):
     for i, key in enumerate(table):
         if key[0] == 't':
             out.append(' '.join(['rtup', str(10 + i), str(len(key[1]))] + [str(t) for t in key[1]]))
+        elif key[0] == 'st':
+            # rtst followed directly by its rtfd records (3.4.2)
+            st = sts[key[1] - 1]
+            out.append('rtst %d %s %d %d' % (10 + i, key[2], key[1], key[3]))
+            for fd in st.kids:
+                out.append('rtfd %s %s' % (fd.f[1], fd.kids[0].rf[-1]))
         else:
             out.append('%s %d %d' % ({'v': 'rtvec', 'm': 'rtmat'}[key[0]], 10 + i, key[1]))
     emit(prog, out)

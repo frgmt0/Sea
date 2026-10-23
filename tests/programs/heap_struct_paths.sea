@@ -1,0 +1,60 @@
+// heap_struct_paths -- struct and field paths under the heap check: (v[i], s.name) = two() with owned str
+// results (also in a loop), f(s.name, g(ref s)) and f(s.v[0], g(ref s)) (the field read
+// before g replaces it), nested field paths written while shared, a ref argument of a
+// nested field, elements of a struct array replaced in a loop, a record holding a struct
+// array (LANGUAGE.md 4.5, 6.8 rule 5, 7.3, 8.3; DESIGN.md 3.6.6 rules 15, 16, 19, 31,
+// L12, R25; heap check 0)
+struct P {
+    name: str
+    v: f64[]
+}
+struct Q {
+    p: P
+    tags: str[]
+}
+fn two() -> (str, str) {
+    return ("L" + "", "R" + "")
+}
+fn g(ref p: P) -> str {
+    p.name = "new" + str(len(p.v))
+    p.v = [9.0, 8.0, 7.0]
+    return "g" + ""
+}
+fn f(a: str, b: str) {
+    printf("%s %s\n", a, b)
+}
+fn fv(x: f64, b: str) {
+    printf("%g %s\n", x, b)
+}
+var v = ["a" + "", "b" + "", "c" + ""]
+var s = P { name: "s" + "", v: [1.0, 2.0] }
+let i = 1
+(v[i], s.name) = two()
+printf("%s %s %s %s\n", v[0], v[1], v[2], s.name)
+for k in 0..3 {
+    (v[k], s.name) = two()
+}
+printf("%s %s %s %s\n", v[0], v[1], v[2], s.name)
+f(s.name, g(ref s))
+printf("%s %g\n", s.name, s.v[2])
+fv(s.v[0], g(ref s))
+printf("%s\n", s.name)
+var q = Q { p: s, tags: ["t" + "1"] }
+let q0 = q
+q.p.v[0] = -1.0
+q.p.name += "!"
+q.tags[0] += "x"
+q.p = P { name: q.p.name + "?", v: q.p.v }
+printf("%s %g %s | %s %g %s | %s %g\n", q.p.name, q.p.v[0], q.tags[0], q0.p.name, q0.p.v[0], q0.tags[0], s.name, s.v[0])
+f(q.p.name, g(ref q.p))
+printf("%s %s\n", q.p.name, q0.p.name)
+var ps = [s, s]
+for k in 0..2 {
+    ps[k] = P { name: "e" + str(k), v: [f64(k)] }
+    ps[k].name += "!"
+}
+printf("%s %s %g\n", ps[0].name, ps[1].name, ps[1].v[0])
+var rec = { a: "x" + "y", b: [s, s] }
+rec.b[1].name = rec.a + "z"
+rec.a = "w" + ""
+printf("%s %s %s\n", rec.a, rec.b[0].name, rec.b[1].name)

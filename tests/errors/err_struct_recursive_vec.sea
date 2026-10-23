@@ -1,0 +1,5 @@
+// err_struct_recursive_vec -- recursion through a dynamic array field P[]: recursive struct (221; DESIGN.md 3.4.2)
+struct P {
+    x: f64
+    kids: P[]
+}

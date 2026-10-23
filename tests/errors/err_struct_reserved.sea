@@ -1,0 +1,6 @@
+// err_struct_reserved -- a struct field named T: field name reserved for views (222) at the field (LANGUAGE.md
+// 4.6)
+struct P {
+    x: f64
+    T: f64
+}

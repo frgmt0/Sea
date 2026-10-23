@@ -1,5 +1,0 @@
-// err_ns_str_fixed_type -- a fixed-size type of str elements is strings, at its type node (DESIGN.md 2.6.2
-// step 4e)
-fn f() -> str[2] {
-    return ["a", "b"]
-}

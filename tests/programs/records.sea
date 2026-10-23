@@ -1,0 +1,53 @@
+// records -- anonymous records (Decision 48): bound, read, a var record's fields assigned and the whole
+// record replaced, a nested record, an array literal of records, filled, if arms, projections
+// (also of a selection), an element loop, element stores into a record array, an array field
+// (LANGUAGE.md 4.6, 4.7, 6.9, 6.10, 7.5, 10.2)
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+let r = { name: "w5", n: 3, x: 0.5 }
+printf("%s %d %g\n", r.name, r.n, r.x)
+var rv = { lo: 0.0, hi: 1.0 }
+rv.hi = 2.5
+rv.lo += 0.25
+printf("%g %g\n", rv.lo, rv.hi)
+rv = { lo: -1.0, hi: rv.hi }
+printf("%g %g\n", rv.lo, rv.hi)
+let nest = { name: "a", lim: { lo: 0.0, hi: 1.0 } }
+var nv = nest
+nv.lim.hi = 9.0
+nv.name += "b"
+printf("%s %g %s %g %g\n", nest.name, nest.lim.hi, nv.name, nv.lim.hi, nv.lim.lo)
+let rs = [{ a: 1, s: "x" }, { a: 2, s: "y" }, { a: 3, s: "z" }]
+let fr = filled({ a: 7, s: "f" }, 2)
+let k = 1
+let pick = if k > 0 { { a: 10, s: "pos" } } else { { a: -10, s: "neg" } }
+pvi(rs.a)
+ps(rs.s)
+pvi(fr.a)
+ps(rs[1..3].s)
+printf("%d %s %d\n", pick.a, pick.s, len(rs))
+for e in rs {
+    printf("%d%s ", e.a, e.s)
+}
+printf("\n")
+var rw = rs
+rw[1].a = 20
+rw[0] = { a: 100, s: "h" }
+pvi(rw.a)
+pvi(rs.a)
+let rr = { v: [1.0, 2.0], tag: "t" }
+var rr2 = rr
+rr2.v[1] = 5.0
+printf("%g %g %s\n", rr.v[1], rr2.v[1], rr2.tag)

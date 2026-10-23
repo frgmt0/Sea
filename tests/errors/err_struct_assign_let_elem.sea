@@ -1,0 +1,8 @@
+// err_struct_assign_let_elem -- an element's field of a let array assigned: 238 at the target, naming the root
+// (DESIGN.md 2.6.2 "Readings fixed by 4g")
+struct P {
+    x: f64
+    y: f64
+}
+let a = [P { x: 1.0, y: 2.0 }]
+a[0].y = 3.0

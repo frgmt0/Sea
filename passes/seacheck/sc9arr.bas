@@ -177,7 +177,7 @@
 17295 REM ---- ectx: Z = 1 when the [] at J stands where LANGUAGE 6.9 gives it a type (Decision 36): the
 17300 REM value of an annotated let/var of one name or _, of an assignment =, an argument of a value
 17305 REM parameter of a user function, a return of the function's result count, an arm of an if
-17310 REM expression (ck_ifx); a struct field's type is 4g's -----------------------------------------
+17310 REM expression (ck_ifx), a field of a struct literal (4g-2) -------------------------------------
 17315 SUB "ectx": N(), M(), Y(), X(), J, Z
 17320 LET Z = 0
 17325 LET P = N(J, 9)
@@ -188,6 +188,7 @@
 17350 IF K = 49 THEN 17400
 17355 IF K = 23 THEN 17410
 17360 IF K = 35 THEN 17440
+17362 IF K = 48 THEN 17435
 17365 GOTO 17525
 17370 IF N(P, 1) <> 1 THEN 17525
 17375 IF N(N(P, 7), 0) = 12 THEN 17525
@@ -203,6 +204,9 @@
 17420 IF H <> R0 THEN 17525
 17425 IF H > 0 THEN 17520
 17430 GOTO 17525
+17435 REM a field value of a struct literal (4g-2; not of a record literal)
+17436 IF N(N(P, 9), 0) = 46 THEN 17520
+17437 GOTO 17525
 17440 REM an argument of a call: of a user function, with a value parameter in its place
 17445 LET G = N(P, 7)
 17450 IF G = J THEN 17525
@@ -222,7 +226,7 @@
 17520 LET Z = 1
 17525 SUBEND
 17530 REM ---- ck_arr: array literal J (LANGUAGE 6.9, 4.5, Decision 20): the common element type of its
-17535 REM elements (201 at the first that does not combine), str elements always dynamic (S9);
+17535 REM elements (201 at the first that does not combine), str and struct elements always dynamic (S9);
 17540 REM rows of scalars: T[n] / T[r,c] up to LIM_FIXED_ELEMS elements, else T[] / T[,] (219 for a
 17545 REM ragged one); with an array element a concatenation (220, and 217 when every part is fixed);
 17550 REM each row has the type of its horizontal join; elements of another element type are converted.
@@ -256,7 +260,8 @@
 17680 IF K = 0 THEN 17695
 17685 LET C9 = 1
 17690 LET F9 = F9 * F
-17695 IF E <> 5 THEN 17705
+17695 IF E = 5 THEN 17700
+17697 IF E < 10 THEN 17705
 17700 LET S9 = 1
 17705 IF G = 99 THEN 17758
 17710 IF G = E THEN 17760
@@ -282,7 +287,7 @@
 17765 NEXT H
 17770 LET W = N(W, 8)
 17775 NEXT R
-17780 REM str elements: a dynamic literal whatever its size (LANGUAGE 6.9, Decision 20)
+17780 REM str, struct or record elements: a dynamic literal whatever its size (LANGUAGE 6.9, Decision 20)
 17785 LET F9 = F9 * (1 - S9)
 17795 IF M9 = 0 THEN 17810
 17800 CALL "er": N(), X(), X$(), M9, "TYPE_MISMATCH", A$, B$, "", 2
@@ -413,14 +418,16 @@
 18395 SUBEND
 18400 REM ---- ck_dot: x.name (LANGUAGE 5.6): a view .T .flat .col .row of an array (fixed-size exactly
 18405 REM when the operand is); 218 for .T of a vector, 257 for another rank or no array; any other
-18410 REM name is a field or projection, 4g ('structs') ---------------------------------------------
+18410 REM name is a field or projection (ck_fld, 4g-2; N(J,1) the field, N(J,2) 1 a projection) -----
 18415 SUB "ck_dot": N(), M(), T(), C(), S$(), X(), X$(), J
 18420 LET Q$ = S$(N(J, 6))
+18422 LET N(J, 1) = 0
+18423 LET N(J, 2) = 0
 18425 LET V = 0
 18430 IF LEN(Q$) > 4 THEN 18440
 18435 LET V = POS("|T|flat|col|row|", "|" & Q$ & "|")
 18440 IF V > 0 THEN 18455
-18445 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "structs", "", "", 1
+18445 CALL "ck_fld": N(), M(), T(), C(), S$(), X(), X$(), J
 18450 GOTO 18565
 18455 LET A0 = N(J, 7)
 18460 CALL "vu": N(), M(), T(), X(), X$(), A0, D

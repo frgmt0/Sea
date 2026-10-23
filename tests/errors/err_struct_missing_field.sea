@@ -1,0 +1,7 @@
+// err_struct_missing_field -- a struct literal without a field: missing field (204) at the slit, the type name
+// (LANGUAGE.md 4.6; DESIGN.md 2.6.2)
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0 }

@@ -1,0 +1,10 @@
+const N = 2
+struct P {
+    v: f64[N]
+}
+fn first(ps: P[]) -> f64 {
+    return ps[0].v[0]
+}
+let a = [P { v: [1.5, 2.5] }]
+printf("%g\n", first(a))
+// res_rt -- DESIGN.md 3.4.2's example rt.sea verbatim (lines 1-9): its sea.res is the documented one

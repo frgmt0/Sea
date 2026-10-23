@@ -1,0 +1,7 @@
+// err_record_into_struct -- a record where a struct is expected: type mismatch (201) at the value, the record spelled
+// {a: i64} (DESIGN.md 2.6.2 "Readings fixed by 4g", Decision 48)
+struct P {
+    x: f64
+    y: f64
+}
+let p: P = { a: 1 }

@@ -1,0 +1,1 @@
+err_struct_eq.sea:9:12: error: operator '==' cannot be applied to P and P

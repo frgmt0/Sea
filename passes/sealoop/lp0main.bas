@@ -4,10 +4,11 @@
 115 REM len rows cols numel, fore) and 4e's L5-L11 (selection reads and folded views, selection
 120 REM stores and compound stores, element-wise operations, range values, numeric literals and
 125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k), 4f's L13-L14, 4g-1's
-127 REM L16 match, L17 stores of str elements and the str cases of L2-L14 (lp8str). Others
+127 REM L16 match and the str cases of L2-L14 (lp8str), 4g-2's L15 projection, L17 (field paths,
+128 REM reference and aggregate elements) and the struct cases (lp9agg). Others
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main lp1walk lp2out lp3sel lp4ew lp5lit lp6tup lp7red lp8str,
-140 REM the modules io diag tables, the DATA blocks errors exits consts records, 99999 END. Exit:
+135 REM as DESIGN 2.6.3 says: the files lp0main ... lp9agg (in name order), the modules io diag
+140 REM tables layout, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
 155 REM (A) lp0main reads and validates all of sea.hir; (B) lp1walk visits the records in file
@@ -20,24 +21,27 @@
 190 REM   the first and last output row of its subtree); W the tree stack, after (A) the parents;
 195 REM   G functions (1 locals base in A, 2 np, 3 nl, 4 new locals, 5 their first entry in
 200 REM   U(.,5), 6 fn record r); A local types; T types (0 n or rows of a fixed type, 1 rank 1 2,
-205 REM   0 a ttuple, 2 element, 3 fixed 1 (ttuple: its first component), 4 cols (ttuple: the
+205 REM   0 a ttuple or struct, 2 element (a struct itself), 3 fixed 1 (ttuple: its first component), 4 cols (ttuple: the
 210 REM   second)); O output rows (0 the next row, row 0 the head; 1 the record r copied, or 0:
 215 REM   generated, text in O$); U new locals (1 type, -e the tptr of e, 2 mut 0 let 1 for, 3 the
-220 REM   record whose pos is its loc pos, 4 lid, 5 the locals in declaring order); Y(e) the tptr
-222 REM   of element type e (2 bool 3 i64 4 f64 5 str): 0 none, 1 used, else its id; S(e) the element
-224 REM   size; V the script variables (lp1walk 9000), M the open blocks of a script (1 count, 2
-226 REM   the loop local or 0). Kinds (R(i,0) per records row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7
+220 REM   record whose pos is its loc pos, 4 lid, 5 the locals in declaring order); the tptr
+222 REM   of element type e in C(e,6) below; S(e) the element size (of a struct its layout size);
+224 REM   V the script variables (lp1walk 9000), M the open blocks of a script (1 count, 2
+225 REM   the loop local or 0); C the layout table of the module layout (C(t,6): the tptr of
+226 REM   element type t: 0 none, 1 used, else its id; of a tptr id: its element); J per node the
+227 REM   path data of L17 (lp9agg). Kinds (R(i,0) per records row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7
 228 REM   un 8 bin 9 powk 10 call 11 rarg 12 lib 13 fmt 14 ftext 15 fconv 16 rng 17 ifx 18 skip
 230 REM   19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont
 232 REM   30 ret 31 tret 32 block 39 idx 40 dol 41 fore 43 dyn 44 fix 45 view 46 all 47 arr 48
-234 REM   row 51 match 52 arm (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple 42 tmat 49 tfvec
-236 REM   50 tfmat.
+234 REM   row 51 match 52 arm 56 fld 57 proj 58 slit (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38
+236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd.
 240 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
-250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), Y(5), S(5)
+250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 260 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
 265 DIM O(449999,1), O$(449999), U(49999,5), V(499), M(99,2), D(64,1)
+266 DIM C(120008,6), J(99999,5)
 270 LET P$ = "sealoop"
 275 REM ---- the tables (canonical order: errors exits consts records) --------------------------
 280 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -89,8 +93,10 @@
 455 LET K1$ = "|ci=01|cf=02|cb=03|cs=04|lv=05|cvt=06|un=07|bin=08|powk=09|call=10|rarg=11|lib=12|fmt=13|ftext=14|fconv=15|rng=16|ifx=17|skip=18|seq=19|bind=20|"
 460 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
 465 LET K1$ = K1$ & K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
+466 LET A9 = 120008
 467 LET K1$ = K1$ & "|dyn=43|fix=44|view=45|all=46|arr=47|row=48|tfvec=49|tfmat=50|"
-468 LET K1$ = K1$ & "|match=51|arm=52|"
+468 LET K1$ = K1$ & "|match=51|arm=52|tstruct=53|trec=54|fd=55|fld=56|proj=57|slit=58|"
+469 CALL "ly_init": C(), K(), K$(), K0, T9, A9, P$
 470 FOR I = 1 TO Z(7)
 475 LET R(I, 0) = 0
 480 IF R(I, 1) = 2 THEN 490
@@ -124,6 +130,8 @@
 600 NEXT I
 605 IF I0 = 0 THEN 2900
 610 LET K = R(I0, 0)
+611 IF C(0, 4) = 0 THEN 615
+612 IF K <> 55 THEN 2900
 615 GOSUB 2000
 620 REM a capacity overflow met at a record without a position is reported at the next one with one
 625 IF Q8 = 0 THEN 645
@@ -142,8 +150,10 @@
 680 LET P(D0, 1) = 0
 685 IF K < 33 THEN 700
 690 IF K = 42 THEN 1310
-691 IF K > 50 THEN 700
-692 IF K > 48 THEN 1310
+691 IF K > 55 THEN 700
+692 IF K > 52 THEN 1400
+693 IF K > 50 THEN 700
+694 IF K > 48 THEN 1310
 695 IF K < 39 THEN 1300
 700 REM ---- a node: inside a function whose par and loc records are complete ------------------
 705 IF F7 = 0 THEN 2905
@@ -159,6 +169,7 @@
 755 IF K < 20 THEN 770
 760 IF K < 39 THEN 775
 765 IF K = 41 THEN 775
+766 IF K > 55 THEN 770
 767 IF K > 50 THEN 775
 770 LET H(H0, 2) = I(2)
 775 FOR I = 3 TO 8
@@ -211,12 +222,7 @@
 1345 LET T(Y9, 3) = 0
 1346 LET T(Y9, 0) = 0
 1347 LET T(Y9, 4) = 1
-1348 IF K < 49 THEN 1290
-1349 LET T(Y9, 3) = 1
-1350 LET T(Y9, 0) = I(3)
-1351 IF K = 49 THEN 1290
-1352 LET T(Y9, 4) = I(4)
-1353 GOTO 1290
+1348 GOTO 1381
 1355 REM ttuple: rank 0; its first two components (n >= 2) in 3 and 4
 1360 IF G0 > 0 THEN 2900
 1362 IF I(1) <> Y9 + 1 THEN 2900
@@ -229,7 +235,54 @@
 1376 LET T(Y9, 3) = VAL(G$(4))
 1378 LET T(Y9, 4) = VAL(G$(5))
 1380 GOTO 1290
-1425 REM fn: functions numbered from 1, kind main or fn; the par and loc records follow (3.5.4)
+1381 REM an array type registered with the module layout: its element str, bool, i64, f64 or a
+1382 REM struct or record (3.5.7); of a fixed-size one n or rows, cols
+1383 LET N5 = I(2)
+1384 IF N5 = 5 THEN 1387
+1385 IF C(N5, 0) = 1 THEN 1387
+1386 IF C(N5, 0) <> 4 THEN 2900
+1387 IF K > 48 THEN 1390
+1388 CALL "ly_dyn": C(), Y9
+1389 GOTO 1290
+1390 LET T(Y9, 3) = 1
+1391 LET T(Y9, 0) = I(3)
+1392 LET N0 = I(3)
+1393 IF K = 49 THEN 1396
+1394 LET T(Y9, 4) = I(4)
+1395 LET N0 = I(3) * I(4)
+1396 CALL "ly_fix": C(), Y9, N5, N0, W0
+1397 IF W0 <> 0 THEN 2900
+1398 GOTO 1290
+1399 REM tstruct and trec: a type (rank 0, its element itself) opened for its n fd records (layout)
+1400 IF G0 > 0 THEN 2900
+1401 IF K = 55 THEN 1416
+1402 IF I(1) <> Y9 + 1 THEN 2900
+1403 LET Y9 = I(1)
+1404 IF Y9 <= T9 THEN 1407
+1405 LET P8$ = "types"
+1406 GOTO 1290
+1407 LET T(Y9, 0) = 0
+1408 LET T(Y9, 1) = 0
+1409 LET T(Y9, 2) = Y9
+1410 LET T(Y9, 3) = 0
+1411 LET T(Y9, 4) = 0
+1412 LET N0 = I(3)
+1413 IF K = 53 THEN 1415
+1414 LET N0 = I(2)
+1415 GOTO 1420
+1416 REM fd: the next field of the open struct (none open: bad record; after a capacity error none)
+1417 IF P8$ <> "" THEN 1290
+1418 IF C(0, 4) = 0 THEN 2900
+1419 GOTO 1424
+1420 CALL "ly_st": C(), Y9, N0, W0
+1421 IF W0 = 0 THEN 1290
+1422 LET P8$ = "types"
+1423 GOTO 1290
+1424 LET N5 = I(2)
+1425 CALL "ly_fd": C(), N5, W0
+1426 IF W0 <> 0 THEN 2900
+1427 GOTO 1290
+1428 REM fn: functions numbered from 1, kind main or fn; the par and loc records follow (3.5.4)
 1430 IF F7 = 1 THEN 2905
 1435 IF I(1) <> G0 + 1 THEN 2900
 1440 LET Q2$ = "symbols"
@@ -273,6 +326,7 @@
 1680 GOTO 1290
 1695 REM #end: nothing may follow; no function may be open; a pending capacity error at 1:1
 1700 IF C0 <> 1 THEN 2900
+1702 IF C(0, 4) <> 0 THEN 2900
 1705 IF F7 = 1 THEN 2905
 1710 IF P8$ = "" THEN 1735
 1715 LET Q2$ = P8$

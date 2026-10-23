@@ -1,0 +1,8 @@
+// err_struct_mat_field -- .x of a matrix of structs: no field with the matrix type (249; LANGUAGE.md 4.7, lead
+// decision L-c)
+struct P {
+    x: f64
+    y: f64
+}
+let M = [P { x: 1.0, y: 2.0 }, P { x: 3.0, y: 4.0 }; P { x: 5.0, y: 6.0 }, P { x: 7.0, y: 8.0 }]
+let xs = M.x

@@ -36,7 +36,7 @@
 8780 SUBEND
 8785 REM ---- tyres: the type of type node I, looked up by tylk (DESIGN 3.4.2 "Resolving a type
 8790 REM node"): the base, then the dims left to right, then the shape, then the phase rule (2.6.2,
-8795 REM step 4e: struct types, handle types, fixed-size str arrays); the first error is the node's
+8795 REM from 4g-2: handle types only); the first error is the node's
 8800 REM and its type is then 0. M(I,1) = the type (a predefined id or a T row), M(I,9) = 1 (done).
 8805 REM A new array type is created here (tarr; the types limit at node X(19), set by the caller).
 8810 REM Locals: B base (-1 a struct), H shape (1 s 2 v 3 m 4 fv 5 fm), V(k,0) the node of dim k,
@@ -111,16 +111,13 @@
 9140 IF H = 1 THEN 9155
 9145 CALL "er": N(), X(), X$(), I, "ELEMENT_TYPE", S$(N(I, 6)), "", "", 1
 9150 GOTO 9200
-9155 REM the phase rule (DESIGN 2.6.2, step 4e), after every error above: a struct type, a handle
-9160 REM type, and a fixed-size type of str elements (strings, at the node)
-9165 LET A$ = "structs"
-9170 IF B = -1 THEN 9198
-9175 LET A$ = "handle types"
-9180 IF B >= 6 THEN 9198
-9182 REM a fixed-size type of str elements is strings until 4g-2 (DESIGN 2.6.2, 3.4.2)
-9184 IF B <> 5 THEN 9190
-9187 LET A$ = "strings"
-9188 IF H >= 4 THEN 9198
+9155 REM the phase rule (DESIGN 2.6.2), after every error above: a handle type (struct types and
+9160 REM fixed-size types of str elements are types from 4g-2); a struct base is its struct type
+9165 LET A$ = "handle types"
+9170 IF B >= 6 THEN 9198
+9175 IF B <> -1 THEN 9190
+9180 LET B = Y(M(I, 2), 2)
+9185 IF B = 0 THEN 9200
 9190 LET R = B
 9191 IF H = 1 THEN 9200
 9192 REM an array type: the extents of a fixed one (each below 2^63, exact while below 2^53)
@@ -212,6 +209,7 @@
 9605 LET F = Y(S, 3)
 9610 LET G = N(F, 7)
 9615 FOR K = 1 TO N(F, 1)
+9617 CALL "stfd": N(), X(), X$(), S$(), F, G
 9620 LET Q = N(G, 7)
 9625 LET X(19) = Q
 9630 CALL "tylk": N(), M(), Y(), W(), S$(), X(), X$(), Q
@@ -219,6 +217,7 @@
 9640 LET G = N(G, 8)
 9642 NEXT K
 9645 NEXT S
+9647 CALL "strec": N(), M(), Y(), T(), W(), X(), X$()
 9650 SUBEND
 9655 REM ---- tyfin: every type node looked up but not yet resolved (the non-scalar annotations of
 9660 REM constants, those of let and var in the walked bodies), in file order (DESIGN 3.4.2 step 4) -

@@ -1,0 +1,8 @@
+// err_struct_recursive_mutual -- two structs containing each other (B through an A[] field): both are recursive;
+// the first in source order is reported (221; DESIGN.md 3.4.2)
+struct A {
+    b: B
+}
+struct B {
+    as: A[]
+}

@@ -1,0 +1,1 @@
+err_struct_assign_let_elem.sea:8:1: error: cannot assign to immutable 'a'

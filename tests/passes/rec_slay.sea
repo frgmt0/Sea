@@ -1,0 +1,11 @@
+let rs = [{ a: 1, b: "x" }, { a: 2, b: "y" }]
+var t = 0
+for r in rs {
+    t += r.a
+    printf("%s\n", r.b)
+}
+printf("%d\n", t)
+// rec_slay -- DESIGN.md 3.6.6 rule 38 for a record type (lead decision L-m): the literal of line 1
+// is L9 (b) with record elements (sea_arr_new_s with the record's slay: size 16, its str at 8,
+// R21; each record literal written in place, R19); line 3 L4 over records (X the element's
+// address, R18), the fields read through it (rule 27 (e))

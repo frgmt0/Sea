@@ -1,0 +1,6 @@
+// err_struct_recursive -- a struct with a field of its own type: recursive struct (221) at the struct item
+// (LANGUAGE.md 4.6; DESIGN.md 3.4.2)
+struct P {
+    x: f64
+    q: P
+}

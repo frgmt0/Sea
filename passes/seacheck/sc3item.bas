@@ -88,6 +88,7 @@
 5195 LET I = N(I, 8)
 5200 GOTO 5015
 5205 CALL "sc_val": N(), M(), Y(), S$(), X(), X$()
+5207 CALL "st_val": N(), Y(), T(), W(), X()
 5210 IF X(26) = 1 THEN 5345
 5215 REM the local rows of each function: its parameters and declared locals (lids 1..Y(S,8))
 5220 LET X(3) = X(33)
@@ -193,6 +194,9 @@
 5760 IF K = 5 THEN 5810
 5765 IF K = 25 THEN 5950
 5770 IF G = 0 THEN 6060
+5772 IF K <> 46 THEN 5775
+5773 IF N(I, 2) > X(33) - X(11) THEN 6060
+5774 GOTO 5950
 5775 IF K = 34 THEN 5950
 5780 IF K = 30 THEN 5850
 5785 IF K = 7 THEN 5800
@@ -207,6 +211,7 @@
 5830 IF K = 10 THEN 6060
 5835 IF K = 18 THEN 6060
 5840 IF K = 7 THEN 6060
+5842 IF K = 46 THEN 6060
 5845 GOTO 5950
 5850 REM rname: k 1 loc (not in a const expression or a signature), 2 cst, 3 fn, 4 st, 5 pd, 6 none
 5855 LET H = N(I, 2)
@@ -494,7 +499,7 @@
 7375 SUBEND
 7380 REM ---- rpl: Z = 1 when node I is a replacement record of sea.res (DESIGN 3.4.1), recognised by
 7385 REM its new fields (layout: sc2util): an entered item (its fid, cid or sid), rname (its k),
-7390 REM rpname and rfor (their lid), rint, rpowk, rtype (its ty + 1) ------------------------------
+7390 REM rpname and rfor (their lid), rint, rpowk, rtype (its ty + 1), rslit (N(i,3) 1) -----------
 7395 SUB "rpl": N(), M(), I, Z
 7400 LET Z = 0
 7405 LET K = N(I, 0)
@@ -506,6 +511,7 @@
 7435 IF K = 10 THEN 7485
 7440 IF K = 18 THEN 7455
 7445 IF K = 7 THEN 7455
+7447 IF K = 46 THEN 7455
 7450 IF K <> 34 THEN 7495
 7455 IF N(I, 3) > 0 THEN 7490
 7460 GOTO 7495

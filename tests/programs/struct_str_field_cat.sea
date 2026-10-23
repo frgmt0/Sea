@@ -1,0 +1,56 @@
+// struct_str_field_cat -- element-wise += of str array fields: p.fs += "z" (str[2]), p.ds += "z" (str[]),
+// p.fs += m (a str[2]), p.ds += "R" in fn rr(ref p: P), a[1].ds += a[0].ds,
+// a[0].fs += "z", s.m += "y" (str[2,2]); copies unchanged (LANGUAGE.md 4.5, 6.2, 6.3;
+// Decision 45)
+struct P {
+    fs: str[2]
+    ds: str[]
+}
+struct S2 {
+    m: str[2,2]
+}
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pms(A: str[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" [%s]", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn rr(ref p: P) {
+    p.ds += "R"
+}
+var p = P { fs: ["a", "b"], ds: ["c", "d", "e"] }
+let p0 = p
+p.fs += "z"
+p.ds += "z"
+var m: str[2] = ["1", "2"]
+p.fs += m
+rr(ref p)
+ps(p.fs)
+ps(p.ds)
+ps(p0.fs)
+ps(p0.ds)
+var a = [P { fs: ["x", "y"], ds: ["p", "q"] }, P { fs: ["u", "v"], ds: ["r", "s"] }]
+let a0 = a
+a[1].ds += a[0].ds
+a[0].fs += "z"
+ps(a[0].fs)
+ps(a[1].ds)
+ps(a[0].ds)
+ps(a0[0].fs)
+ps(a0[1].ds)
+var s = S2 { m: ["a", "b"; "c", "d"] }
+let s0 = s
+s.m += "y"
+pms(s.m)
+pms(s0.m)

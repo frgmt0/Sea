@@ -1,0 +1,9 @@
+// r_struct_dollar_outer -- a[5].v[$ - 1] = 1.0 on a D[] of 2: the outer index 5 is checked before the inner $
+// (the extent of a[5].v) is evaluated (LANGUAGE.md 5.3, 5.4, 5.5)
+struct D {
+    v: f64[]
+}
+var a = [D { v: [1.0, 2.0] }, D { v: [3.0] }]
+printf("start\n")
+a[5].v[$ - 1] = 1.0
+printf("%g\n", a[0].v[0])

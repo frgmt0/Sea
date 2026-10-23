@@ -1,0 +1,165 @@
+#sea 1
+#target arm64-macos
+#file struct_l12.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+slot s3 32 8
+slot s4 16 8
+slot s5 16 8
+slot s6 40 8
+sa p1 s1
+la p2 d1
+retain p2
+stp p2 p1 - 0 0
+lf f3 #3FE0000000000000
+stf f3 p1 - 0 8
+li i4 1
+la p5 d2
+li i6 1
+li i7 1
+rcall sea_arr_new_s 0:8 1 p8 4 p5 i6 i4 i7
+ldp p9 p8 - 0 40
+li i10 0
+padd p11 p9 i10
+la p12 d3
+retain p12
+stp p12 p11 - 0 0
+lf f13 #4004000000000000
+stf f13 p11 - 0 8
+li i14 0
+li i15 7
+call two 2 p16 i17 1 i15
+ldp p18 p1 - 0 0
+stp p16 p1 - 0 0
+release p18
+mov i14 i17
+sa p19 s2
+call mk 1 i20 2 p19 i14
+li i21 0
+ldi i22 p8 - 0 16
+chkb i21 i22 0 0:11
+ldi i23 p8 - 0 0
+li i24 1
+icmp ne i25 i23 i24
+if 1 i25
+rcall sea_arr_unique 0:11 1 p26 1 p8
+mov p8 p26
+endif 1
+ldp p27 p8 - 0 40
+li i28 16
+imul i29 i21 i28
+padd p30 p27 i29
+ldp p31 p30 - 0 0
+release p31
+li i32 16
+mcopy p30 p19 i32
+mov i14 i20
+ldp p33 p1 - 0 0
+li i34 0
+ldi i35 p8 - 0 16
+chkb i34 i35 0 0:12
+ldp p36 p8 - 0 40
+ldp p37 p36 i34 16 0
+li i38 0
+ldi i39 p8 - 0 16
+chkb i38 i39 0 0:12
+ldp p40 p8 - 0 40
+ldf f41 p40 i38 16 8
+sa p42 s3
+stp p33 p42 - 0 0
+sti i14 p42 - 0 8
+stp p37 p42 - 0 16
+stf f41 p42 - 0 24
+la p43 d4
+rcall sea_printf 0:12 0 2 p43 p42
+sa p44 s4
+la p45 d5
+retain p45
+stp p45 p44 - 0 0
+lf f46 #400C000000000000
+stf f46 p44 - 0 8
+li i47 0
+ldi i48 p8 - 0 16
+chkb i47 i48 0 0:13
+ldi i49 p8 - 0 0
+li i50 1
+icmp ne i51 i49 i50
+if 2 i51
+rcall sea_arr_unique 0:13 1 p52 1 p8
+mov p8 p52
+endif 2
+ldp p53 p8 - 0 40
+li i54 16
+imul i55 i47 i54
+padd p56 p53 i55
+ldp p57 p56 - 0 0
+release p57
+li i58 16
+mcopy p56 p44 i58
+li i59 3
+call two 2 p60 i61 1 i59
+sa p62 s5
+li i63 4
+call mk 1 i64 2 p62 i63
+ldp p65 p62 - 0 0
+li i66 0
+ldi i67 p8 - 0 16
+chkb i66 i67 0 0:16
+ldp p68 p8 - 0 40
+ldp p69 p68 i66 16 0
+sa p70 s6
+stp p60 p70 - 0 0
+sti i61 p70 - 0 8
+stp p65 p70 - 0 16
+sti i64 p70 - 0 24
+stp p69 p70 - 0 32
+la p71 d6
+rcall sea_printf 0:16 0 2 p71 p70
+ldp p72 p62 - 0 0
+release p72
+release p60
+release p8
+ldp p73 p1 - 0 0
+release p73
+ret 0
+endfunc
+func two fn 0:1:1 1 i1 2 p i
+rcall sea_str_i64 0:2 1 p2 1 i1
+li i3 1
+iaddc i4 i1 i3 0:2
+ret 2 p2 i4
+endfunc
+func mk fn 0:4:1 2 p1 i2 1 i
+rcall sea_str_i64 0:5 1 p3 1 i2
+stp p3 p1 - 0 0
+lf f4 #3FF8000000000000
+stf f4 p1 - 0 8
+ret 1 i2
+endfunc
+str d1 a
+slay d2 16 1
+soff 0
+str d3 b
+fmt d4 8
+fconv - - - s p
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %0A
+str d5 c
+fmt d6 10
+fconv - - - s p
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %0A
+#end

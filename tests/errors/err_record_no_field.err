@@ -1,0 +1,1 @@
+err_record_no_field.sea:4:9: error: no field 'b' in {a: i64, s: str}

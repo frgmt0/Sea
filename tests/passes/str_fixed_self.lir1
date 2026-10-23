@@ -1,0 +1,129 @@
+#sea 1
+#target arm64-macos
+#file str_fixed_self.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 24 8
+sa p1 s1
+li i2 3
+li i3 4
+li i4 1
+li i5 1
+rcall sea_arr_new 0:4 1 p6 4 i3 i4 i2 i5
+ldp p7 p6 - 0 40
+la p8 d1
+retain p8
+stp p8 p7 - 0 0
+la p9 d2
+retain p9
+stp p9 p7 - 0 8
+la p10 d3
+retain p10
+stp p10 p7 - 0 16
+ldi i11 p6 - 0 16
+li i12 3
+icmp ne i13 i11 i12
+li i14 -1
+chk i13 SHAPE_EXPECTED 0:4 4 i12 i14 i11 i14
+sa p15 s2
+ldp p16 p6 - 0 40
+li i17 24
+mcopy p15 p16 i17
+ldp p18 p15 - 0 0
+retain p18
+ldp p19 p15 - 0 8
+retain p19
+ldp p20 p15 - 0 16
+retain p20
+release p6
+li i21 24
+mcopy p1 p15 i21
+sa p22 s3
+li i23 24
+mcopy p22 p1 i23
+ldp p24 p22 - 0 0
+retain p24
+ldp p25 p22 - 0 8
+retain p25
+ldp p26 p22 - 0 16
+retain p26
+li i27 3
+li i28 3
+icmp ne i29 i27 i28
+li i30 -1
+chk i29 SHAPE_MISMATCH 0:5 4 i27 i30 i28 i30
+li i31 0
+li i32 1
+li i33 0
+icmp gt i34 i27 i33
+if 1 i34
+li i35 1
+isub i36 i27 i35
+loop 2 i37 i33 i36 i35
+ldp p38 p22 i31 8 0
+retain p38
+ldp p39 p1 i37 8 0
+stp p38 p1 i37 8 0
+release p39
+iadd i31 i31 i32
+endloop 2
+endif 1
+ldp p40 p22 - 0 0
+release p40
+ldp p41 p22 - 0 8
+release p41
+ldp p42 p22 - 0 16
+release p42
+call show 0 1 p1
+la p43 d4
+li i44 0
+li i45 3
+chkb i44 i45 0 0:7
+retain p43
+ldp p46 p1 i44 8 0
+stp p43 p1 i44 8 0
+release p46
+call show 0 1 p1
+ldp p47 p1 - 0 0
+release p47
+ldp p48 p1 - 0 8
+release p48
+ldp p49 p1 - 0 16
+release p49
+ret 0
+endfunc
+func show fn 0:1:1 1 p1 0
+slot s1 24 8
+li i2 0
+li i3 3
+chkb i2 i3 0 0:2
+ldp p4 p1 i2 8 0
+li i5 1
+li i6 3
+chkb i5 i6 0 0:2
+ldp p7 p1 i5 8 0
+li i8 2
+li i9 3
+chkb i8 i9 0 0:2
+ldp p10 p1 i8 8 0
+sa p11 s1
+stp p4 p11 - 0 0
+stp p7 p11 - 0 8
+stp p10 p11 - 0 16
+la p12 d5
+rcall sea_printf 0:2 0 2 p12 p11
+ret 0
+endfunc
+str d1 x
+str d2 y
+str d3 z
+str d4 w
+fmt d5 6
+fconv - - - s p
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - s p
+ftext %0A
+#end

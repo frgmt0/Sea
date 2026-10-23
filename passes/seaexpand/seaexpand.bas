@@ -31,6 +31,7 @@
 126 REM Phase 4e (G12): view (the operand's rank), arr (row children), row (n >= 1), dyn and fix (the corresponding
 127 REM fixed and dynamic types), the target of an asg (an lv, idx or view flat tree of an lv) are validated (5000-5158).
 128 REM Phase 4g-1 (G12): match (a str scrutinee, arm children, the last arm _) and arm (k cs patterns) (5160-5185).
+129 REM Phase 4g-2 (G12): fld and proj (the field exists; proj of a scalar or str field of a vector), slit (n = fields) (5186-5234).
 130 REM TABLES  (arrays one letter; DIM below)
 135 REM  E E$ errors  N N$ W$ enums  R R$ records  F F$ fields  Z counts  C C$ constants
 140 REM  V special code of a record row, A its ty field index, B the rows of sea.hir1 (sets H H1)
@@ -47,7 +48,8 @@
 195 REM  A3-A0 B3-B0 R3-R0 limbs of operands and result  T$ text  Z8$ last position
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
 205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk,
-207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg, 33 match, 34 arm
+207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg, 33 match, 34 arm, 35 fld,
+208 REM  36 proj, 37 slit
 210 REM ====================================================================================
 215 FILES "sea.hir1"; "sea.hir"
 220 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
@@ -81,7 +83,7 @@
 340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|dol=24|fore=25|idx=26|"
 342 LET K2$ = K2$ & "view=27|arr=28|row=29|dyn=30|fix=31|asg=32|"
 341 GOSUB 4400
-343 LET K2$ = K2$ & "match=33|arm=34|"
+343 LET K2$ = K2$ & "match=33|arm=34|fld=35|proj=36|slit=37|"
 345 LET N2 = 0
 350 LET R5 = 0
 355 LET R6 = 0
@@ -1004,7 +1006,7 @@
 4995 REM ---- 5000: phase 4e (G12, DESIGN 3.5.7): view, arr, row, dyn, fix, the target tree of an asg; Q4 the last child's root ----
 5000 GOSUB 2980
 5002 LET Q4 = O0
-5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100, 5160, 5180
+5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100, 5160, 5180, 5190, 5190, 5222
 5010 REM view: .T and .flat of a matrix, .col and .row of a vector (fixed-size or dynamic, LANGUAGE 5.6)
 5012 GOSUB 4900
 5014 GOSUB 4950
@@ -1088,3 +1090,34 @@
 5183 IF SEG$(O$(S(S0 + 1 + Q2) - 1), 1, 3) <> "cs " THEN 2915
 5184 NEXT Q2
 5185 GOTO 5150
+5186 REM fld and proj (4g-2, G12): field i of the operand's struct or record type exists and ty is its type (fld);
+5187 REM the operand is a vector of structs or records, field i is a scalar or str and ty the vector of that type (proj)
+5190 LET M$ = "a fld or proj of a field that does not exist, or of a type that does not correspond"
+5192 GOSUB 4900
+5194 GOSUB 4950
+5196 IF Y0 = 35 THEN 5204
+5198 IF Q6 = 1 THEN 5202
+5200 IF Q6 <> 3 THEN 2915
+5202 LET Q5 = Q7
+5203 GOSUB 4950
+5204 IF Q6 < 5 THEN 2915
+5206 IF Q6 > 6 THEN 2915
+5208 IF U(3) >= T(Q5, 3) THEN 2915
+5210 LET Q1 = P(T(Q5, 2) + U(3))
+5212 LET Q7 = U(2)
+5213 IF Y0 = 35 THEN 5219
+5214 IF Q1 < 2 THEN 2915
+5215 IF Q1 > 5 THEN 2915
+5216 LET Q5 = U(2)
+5217 GOSUB 4950
+5218 IF Q6 <> 1 THEN 2915
+5219 IF Q1 <> Q7 THEN 2915
+5220 GOTO 5150
+5221 REM slit (4g-2, G12): ty is a struct or record type with as many fields as the slit has values
+5222 LET M$ = "a slit whose type is not a struct or record, or with a value count unlike its field count"
+5224 LET Q5 = U(2)
+5226 GOSUB 4950
+5228 IF Q6 < 5 THEN 2915
+5230 IF Q6 > 6 THEN 2915
+5232 IF U(3) <> T(Q5, 3) THEN 2915
+5234 GOTO 5150

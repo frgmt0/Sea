@@ -1,0 +1,1 @@
+err_struct_no_field.sea:7:9: error: no field 'z' in P

@@ -1,0 +1,9 @@
+// err_struct_eq -- two structs compared with ==: operator cannot be applied (240) at the operator node, its left
+// operand (LANGUAGE.md 4.6; DESIGN.md 3.3)
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0, y: 2.0 }
+let q = p
+let same = p == q

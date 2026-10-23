@@ -1,0 +1,26 @@
+#sea 1
+#target arm64-macos
+#file struct_rule27.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+sa p1 s1
+lf f2 #3FF8000000000000
+stf f2 p1 - 0 0
+li i3 3
+sti i3 p1 - 0 8
+ldf f4 p1 - 0 0
+ldi i5 p1 - 0 8
+sa p6 s2
+stf f4 p6 - 0 0
+sti i5 p6 - 0 8
+la p7 d1
+rcall sea_printf 0:3 0 2 p7 p6
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

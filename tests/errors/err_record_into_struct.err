@@ -1,0 +1,1 @@
+err_record_into_struct.sea:7:12: error: type mismatch: expected P, found {a: i64}

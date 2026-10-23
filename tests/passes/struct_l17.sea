@@ -1,0 +1,31 @@
+fn edit(k: i64) -> i64 {
+    let l0 = Lim { lo: 0.0, hi: 1.0 }
+    var s = S { n: k, name: "a", v: zeros(2), lim: l0 }
+    s.n = s.n + 1
+    s.n += 2
+    s.name = "b"
+    s.lim.hi = 3.0
+    s.v[k] = 9.0
+    let l1 = s.lim
+    s.lim = Lim { lo: 0.5, hi: 0.75 }
+    let l2 = s.lim
+    printf("%d %s %g %g %g %g\n", s.n, s.name, s.v[0], s.v[1], l1.hi, l2.lo)
+    return s.n
+}
+printf("%d\n", edit(0))
+printf("%d\n", edit(1))
+struct Lim {
+    lo: f64
+    hi: f64
+}
+struct S {
+    n: i64
+    name: str
+    v: f64[]
+    lim: Lim
+}
+// struct_l17 -- DESIGN.md 3.5.9 L17 on a struct local s (S: size 40, n@0 name@8 v@16 lim@24): a
+// scalar field (line 4), the compound form (line 5), a str field (line 6, R17), a nested field
+// (line 7, R24's summed offset 32), an element of an array field (line 8: R23's memory form of cow
+// at s+16, the est's adat that cow's register), a struct field from a slit (line 10: the slit its
+// own temporary home, rule 27 (d)'s copy, R19); lines 9 and 11 copy the field lim (rule 27 (b))

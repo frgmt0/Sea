@@ -1128,7 +1128,7 @@ the named options:
 * **`error`, `args`** (L-d). `error(fmt, …)` is checked as a formatting call ("Within one formatting
   call" below: 233, 234, 211, 210), type `void`. `args()` takes no argument, result `str[]`; any
   argument is 243 (`args(1)` reports `no overload of 'args' accepts (i64)`, as `now(1)` does), and
-  so is every wrong number of arguments of `str` and `lower`.
+  so is every wrong number of arguments of `lower` (of `str` a syntax error, above).
 * **Strings elsewhere.** `len` of a `str` is `i64` (L3). `filled(v, …)` with a `str` v is `str[]` or
   `str[,]` (the 4d reading that gave it the type 0 no longer applies). `sort` and `argsort` accept a
   dynamic `str` vector, result `str[]` (`argsort`: `i64[]`): the clause of "Readings fixed by 4f"
@@ -1152,8 +1152,25 @@ From 4g-2:
   accepted wherever the same record type is expected (a `var` record assigned, an `if` arm, an
   element of an array literal, the value of `filled`, a field of a record) and is 201 wherever
   another type is (`type mismatch: expected P, found {a: i64}`). Structs and records never compare
-  (`==` of two is 240). A field assigned through a `let` struct or record, or through an element of
-  a `let` array, is 238 at the target; a projection target (`dims.nom = v`) is 239.
+  (`==` of two is 240). A record passed to a struct parameter is 201 even when its field names and
+  types are the struct's (`type mismatch: expected P, found {x: f64, y: f64}`): records and structs
+  are distinct types, Decision 48. A field or element assigned through a `let` struct, record or
+  array is 238 at the target, its `%s` the root variable of the path (`cannot assign to immutable
+  'a'` for `a[0].y = …` and for `s.lim.lo = …` with `let s`); a projection anywhere in a target
+  (`dims.nom = v`, `dims.nom[0] = 1.0`) is 239.
+* **Fixed-size `str`, struct and record arrays.** A dynamic value returned as a fixed-size `str[n]`
+  or `S[n]` result, or as such a tuple component of a `return`, gets the same run-time `fix` check
+  as a binding (`shape mismatch: expected n, got m`, LANGUAGE.md §4.5), at the same position. An
+  array literal whose elements are structs or records is always dynamic, whatever its length
+  (`S[]`, LANGUAGE.md §4.5, §6.9, Decision 20); a fixed-size one exists only by annotation.
+* **Targets and `ref` arguments.** In an assignment target a selection (a range, `:`, an index
+  vector or a mask) is allowed only in the outermost `idx` of the path, and `.flat` only as that
+  `idx`'s base (`a[0..2].x = …` and `a[0..2].v[0] = …` are 239; LANGUAGE.md §7.3 lists `x[…]`,
+  `s.f[…]` and `A.flat[…]`); a `ref` argument is a name, element or field path with no selection
+  and no view (`ref argument must be a mutable variable, element or field`, LANGUAGE.md §8.3); a
+  `$` in an index of the path is the extent of that level's array (LANGUAGE.md §5.3), for an `idx`
+  under a field of an element read only after the checks before it (LANGUAGE.md §5.5, §3.5.9
+  L17).
 
 **After phase 4** the table is exactly this (positions as above: the node the row names, of
 several the first in source order); 4h removes every other row and the tests of the removed
@@ -2036,6 +2053,40 @@ dumps prove. `seacheck`'s increment came in well below its estimate, and
 and `seaparse` not at all. No program used a new array letter in 4g-1 (`sealoop` 4, `sealower` 4,
 `seacheck` 14 free, as after 4f). After 4g-2 the sizes are measured and recorded again, with
 `sealower`'s against 7 000 built lines.
+
+**Measured after 4g-2** (2026-10-23, the 4g-2 build; `sh tools/passlines.sh limits`, the `DIM`s
+counted as above; from 4g-2 `sealoop` and `sealower` link the module `layout`, which came in at 123
+lines against its estimate of 60–90 (`ly_st` sets the size and the reference count), so both sizes
+below include it; re-measured after the 4g-2 review fixes):
+
+| Pass | Built lines | `FOR`s | String bytes | Longest line |
+|------|------------:|-------:|-------------:|-------------:|
+| `seaparse` | 3 937 | 74 | 2 581 | 166 |
+| `seaname` | 5 262 | 119 | 2 859 | 202 |
+| `seacheck` | 6 424 | 177 | 5 302 | 194 |
+| `seaexpand` | 4 128 | 98 | 4 985 | 141 |
+| `sealoop` | 5 433 | 75 | 11 098 | 208 |
+| `sealower` | 6 994 | 122 | 4 209 | 239 |
+| `seaopt` | 2 442 | 55 | 4 319 | 178 |
+| `seagen_a64` | 3 500 | 93 | 3 205 | 196 |
+| `seagen_x64` | 3 515 | 88 | 3 431 | 134 |
+
+| Program | After 4g-1 | After 4g-2 | 4g-2 increment (projected at the gate) | Built ≤ 7 000 | Projected v1 (≤ 9 000) | Free letters |
+|---------|-----------:|-----------:|---------------------------------------:|:-------------:|-----------------------:|--------------|
+| `sealower` | 6 349 | 6 994 | 645 (607, P = 6 956) | yes, by 6 | 6 994 + 1 100 = 8 094 | 3 (`C S X`; `O` now used) |
+| `sealoop` | 4 659 | 5 433 | 774 (455, 5 114) | yes | 5 433 + 3 100 = 8 533 | 3 (`B X Y`; `C J` now used, `Y` freed) |
+| `seacheck` | 5 944 | 6 424 | 480 (137, 6 081) | yes | about 6 524 to the end of phase 4 (4h about 100) | 14 (`A B D F G I L P Q R S U V Z`) |
+
+`seaname` grew by 106 (estimate 200–350), `seaexpand` by 33 (40–80), `seaparse` not at all. Every
+pass is below Baysick's limits and every v1 projection under 9 000. **`sealower`'s margin under the
+7 000-line cap is now 6 lines**, its size 38 above the gate's projection P = 6 956. Any further `sealower` growth,
+which 4h brings (about 1 100 lines to v1), therefore needs a relief specified and agreed with the
+user before any 4h code. The candidates are those named at the gate after 4g-1, and none is chosen
+here: (1) more struct and ownership work as `sealoop` rewrites; (2) a compaction of `sealower` with
+no change of behaviour, proved by the dumps; (3) a split of `sealower`, specified and agreed like
+4e-0. `sealoop` came in well above its re-projection (L15, L17's field paths and the aggregate
+cases took more than the 4g-1 rate suggested) and keeps 467 lines of v1 margin; `seacheck` keeps
+576 lines under 7 000.
 
 ### 2.8 Numbers inside the compiler
 
@@ -3981,13 +4032,13 @@ anew …` lies in the same `xblk` or `block` (the buffer of a new array or home,
 |---|------------|
 | R17 | **Replacing stores and moved values.** (a) An `est` of a reference value (`str`, dynamic array, handle) into an address that is not fresh is a replacing store: the value V owned by rule 15 (a) (retained first when borrowed), then `ldp O D X sc off`, `stp V D X sc off`, `release O` (rules 19 (5), 27 (f), 15 (i)); the `retain` of a borrowed V is written at the `est`, right before its `ldp O`, so in an L17 block after the indices, the checks and the cows (rule 15 (a)'s "right after its own instructions" is met as "before the store" for these stores; no agreed example shows the difference, and the counts are the same at every point a program can observe); into a fresh address it stays R5's initializing store. A numeric `est` is unchanged. (b) An `est` that stands directly in a `block` (not inside a loop or `if` of it) and whose value is `lv` of an owned `tmp` written directly in the same block moves that value: no `retain`, and R11 does not release that `tmp` (it is not read after the store); only L17 and L6's single `.flat` store write this form. Everywhere else the `lv` of a `tmp` is borrowed (T1): each store retains it, and an owned `tmp` is released once by T2 or R11 (rule 17's `filled`, L6's scalar value stored into every selected element) |
 | R18 | **Aggregate element addresses.** An `eld` whose `ty` is a struct, record or fixed-size array type loads nothing: its value is the element's address, a borrowed home inside the array (rules 18, 30): `li S sc`, `imul T X S`, `padd R D T`; with a `ci` index k (R3): `li O off+k·sc`, `padd R D O` (rule 26 (b)). Its address child is a `tptr` of that type, sc its size by §4.8's layout rule (`layout`, §2.6.3), off 0 |
-| R19 | **Aggregate stores.** An `est` of a struct, record or fixed-size value V. Its fields sc and off are those of every `est`: sc the stride of the containing elements (the size of the array's element type, or of the home's type) and off the offset of the target inside that element (0 for a whole element, the field's offset for a field, R24: `dims[i].lim = Lim { lo: 0.0, hi: 1.0 }` has sc the size of `Dim` and off that of `lim`); the size of V's type is only the copy length N. First the target address E: with an index X, `li S sc`, `imul T X S`, `padd E D T`, followed when off ≠ 0 by `li O off`, `padd E E O` (rule 31's field address); with a `ci` index k, `li O off+k·sc`, `padd E D O` (a field of a home: k = 0). Then, only into a fresh address, a V that is a `slit` (or a `seq` whose value is one, rule 5) has its fields written in place at E (rules 26 (b), 27 (g)); into an address that is not fresh a `slit` is first its own temporary home (L17's `tmp Vv`, rule 27 (d): "never H directly") and is stored by the copy form below, so the old reference fields are released; into a fresh address otherwise copy(E ← V) of rule 27 (c): `li N size`, `mcopy E V N`, then, when V is borrowed, `ldp R E - 0 o` and `retain R` for each reference offset o in ascending order (an owned V is moved: no retains, and its home is not released); into an address that is not fresh rule 27 (d): V's retains when V is borrowed, then E's old reference values released (`ldp O E - 0 o`, `release O`, ascending), then `li N size`, `mcopy E V N` (an owned V moved as in R17 (b)). Rule 17's struct `filled` is this copy in a loop (`li S size`, `imul T K S`, `padd E D T`, `li N size`, `mcopy E V N`, the retains) |
+| R19 | **Aggregate stores.** An `est` of a struct, record or fixed-size value V. Its fields sc and off are those of every `est`: sc the stride of the containing elements (the size of the array's element type, or of the home's type) and off the offset of the target inside that element (0 for a whole element, the field's offset for a field, R24: `dims[i].lim = Lim { lo: 0.0, hi: 1.0 }` has sc the size of `Dim` and off that of `lim`); the size of V's type is only the copy length N. First the target address E: with an index X, `li S sc`, `imul T X S`, `padd E D T`, followed when off ≠ 0 by `li O off`, `padd E E O` (rule 31's field address); with a `ci` index k, `li O off+k·sc`, `padd E D O` (a field of a home: k = 0). Then, only into a fresh address, a V that is a `slit` (or a `seq` whose value is one, rule 5) has its fields written in place at E (rules 26 (b), 27 (g)), and only where the `slit` is the value of an `est`, a `bind` or a `ret`: a `slit` nested as a field of another `slit` is computed into its own temporary home and copied into that field by copy(E ← V) below, never written in place; into an address that is not fresh a `slit` is first its own temporary home (L17's `tmp Vv`, rule 27 (d): "never H directly") and is stored by the copy form below, so the old reference fields are released; into a fresh address otherwise copy(E ← V) of rule 27 (c): `li N size`, `mcopy E V N`, then, when V is borrowed, `ldp R E - 0 o` and `retain R` for each reference offset o in ascending order (an owned V is moved: no retains, and its home is not released); into an address that is not fresh rule 27 (d): V's retains when V is borrowed, then E's old reference values released (`ldp O E - 0 o`, `release O`, ascending), then `li N size`, `mcopy E V N` (an owned V moved as in R17 (b)). Rule 17's struct `filled` is this copy in a loop (`li S size`, `imul T K S`, `padd E D T`, `li N size`, `mcopy E V N`, the retains) |
 | R20 | **Counted copies.** An `mcpy` whose destination is a `tptr` of an element type that holds counts has as its third child the *element count* n, not the byte count: a `ci` n (a static count, written by the rewrite as the `ci` child itself, not through a `tmp`), which `sealower` writes as one `li B n·size`, or a type-3 expression, written `li S size`, `imul B N S` (the instructions the byte count of the numeric forms gives); then `mcopy D S B`; then the retains of the copied reference values on the destination: for a `ci` n unrolled, `ldp R D - 0 o` and `retain R` for each reference offset o of the n elements in ascending order (o = k·size + o′); otherwise loop(n; K) { for each reference offset o′ of the element, ascending: `ldp R D K size o′`, `retain R` } (rule 28's "the retains of `str` elements" and rule 27 (c), (i), (j), spelled here). There are no retains when the source is an owned fixed-size, struct or record home named by a `tmp` of the same `xblk`: it is moved, and T2 does not release it (rule 27 (c), (i)). An owned dynamic source (rule 27 (j)'s A, a materialized view's operand) is retained-from and released as before |
 | R21 | **Struct and record homes.** R1, R2, R8 and R9 hold for struct and record types exactly as for fixed-size array types: `anew P S 0 0` is a home slot of the size of S rounded up to a multiple of 8, at least 8 (an empty struct too, lead decision L-h; rule 27 (a)); `adat` of a struct or record value is its home address (no instruction; type the `tptr` of S); a `tmp` of such a value names its home; T3 does not apply to an `xblk` of such a type. A home that holds counts is released by rule 15 (g) when it is an owned temporary (T2, R11) and by rule 16 when it is a local's. `anew` of an array of `str`, struct or record elements is rule 17's arrnew with `sea_arr_new` (ek 4) or `sea_arr_new_s` (`la` of the element type's `slay`, rule 38) whatever z: both clear the buffer (§4.8), so no reference element of a new array is ever left with undefined bits (lead decision L-j) |
 | R22 | **Owned temporaries of a block on its exits.** An owned `tmp` written directly in a `block` that `sealoop` writes (R11) is also released, as a hidden local of rule 16 (f), by every `break`, `cont` and `ret` that leaves that block (rule 16 (b), (c)), innermost first with the other hidden locals: L16's S0 is released when its block is left, after the bound locals of the blocks inside it that the exit leaves (an arm's block) and before those of the blocks outside it. Only L16's scrutinee can meet an exit (L6 and L17 blocks hold no exit, and L4's held vector is a `bind`), so no earlier output changes |
-| R23 | **Field paths in copy on write.** A `cow` whose child is a `fld` chain naming an array field, over the `lv` of a struct or record local, of a `ref` struct or record parameter, or of a `tmp` naming an element address (R18), is the memory form of cow (rule 19) at that field's address H and offset off (`ldp A H - 0 off`, `ldi C A - 0 0`, `li O 1`, `icmp ne S C O`, `if B S`, `rcall sea_arr_unique site 1 N 1 A`, `stp N H - 0 off`, `mov A N`, `endif B`). `ext` and `adat` of such a `fld` read the field afresh (`ldp`), except that an `adat` of the same chain in the statement right after its `cow` uses that cow's A (rule 19 (5): "data of the innermost array as (4) left it"); and, from 4g-2 (lead decision L-n), an `adat` of the `lv` of a `ref` parameter in the statement right after the `cow` of that `lv` (the address child of an `est`, or L17 step 5's `tmp D′`) uses that cow's A too (only L17 writes it; L6 reads a `ref` parameter afresh, as 4e has it); in 4g-1 that `adat` reads P afresh (`ldp` after the cow), which gives the same values |
+| R23 | **Field paths in copy on write.** A `cow` whose child is a `fld` chain naming an array field, over the `lv` of a struct or record local, of a `ref` struct or record parameter, or of a `tmp` naming an element address (R18), is the memory form of cow (rule 19) at that field's address H and offset off (`ldp A H - 0 off`, `ldi C A - 0 0`, `li O 1`, `icmp ne S C O`, `if B S`, `rcall sea_arr_unique site 1 N 1 A`, `stp N H - 0 off`, `mov A N`, `endif B`). `ext` and `adat` of such a `fld` read the field afresh (`ldp`), except that an `adat` of the same chain in the statement right after its `cow` uses that cow's A (rule 19 (5): "data of the innermost array as (4) left it"); and, from 4g-2 (lead decision L-n), an `adat` of the `lv` of a `ref` parameter in the statement right after the `cow` of that `lv` (the address child of an `est`, or L17 step 5's `tmp D′`) uses that cow's A too (only L17 writes it; L6 reads a `ref` parameter afresh, as 4e has it); the reuse is limited to these two forms in that next statement, and every other `adat` or `ext` of that `lv` reads P afresh; in 4g-1 that `adat` reads P afresh (`ldp` after the cow), which gives the same values |
 | R24 | **Fields through an element or home address.** An `eld` or `est` whose address child is a `tptr` of a struct or record type S (the data of an array of S, or `adat` of a home, R21) may load or store a field of type F at sc = the size of S and off = the field's offset in S (a nested field: the sum of the offsets along the path): rule 29's `ld? x DV K s off`, rule 18's one load `ld? R D X size off`, rule 19 (5)'s one store, rule 27 (f)'s `st? V P - 0 off` (with a `ci` index, R3). A field of a reference type is stored by R17, of a struct, record or fixed-size type by R19 (at the field's address) |
-| R25 | **Moves out of L12's locals.** In an L12 block, a store `asg set ti (lv Li)` of a `.l` local Li whose type holds counts, with the value exactly `lv Li` (cv 0) and a target that L6 does not rewrite (a local, a `ref` parameter, an element by scalar indices, a field path: rule 15 (d), R17, R19), moves Li's value (rule 15 (j): "each target stored with that owned value"): no `retain`, and rule 16 does not release Li at the block's end. For a target that L17 rewrites (an element by scalar indices, a field path: `(names[i], k) = two()`), `sealower` sees L17's block in place of that `asg`, directly in the L12 block, with no `tmp Vv` and the block's one `est` storing `lv Li` itself (L17 step 1's exception); that store (R17's `stp`, R19's copy) moves Li: no `retain`, no retains of V's reference fields, no release of a replaced value other than the target's old one, and Li is dropped from rule 16's releases at the L12 block's end. `sealower` recognizes the form by that operand, which no other rewrite writes: an `est` whose value is `lv Li` of a `.l` local of the `tbind` that begins the L12 block (R8), in a `block` that stands directly in that L12 block; L6 always binds its value first (`tmp Vv`, `bind Vv`, step 1) and stores `lv Vv` or an element of DV, so an L6 block (a target with a selection or a `view flat` base, also `(names[0..3], k) = two()` and `(names.flat[i], k) = …`) is never a move. Each Li is moved at most once. A target that L6 rewrites (a selection, `.flat`) and a converted component (`cvt`, `dyn`, `fix` of `lv Li`) keep Li as a held local released at the block's end, as 4e has it. (This also drops one `retain` and one `release` from the 4e-reachable form of a dynamic-array result stored into a local or `ref` parameter target of an L12 block; no golden pins that form, and only reference-count instructions change, never output.) |
+| R25 | **Moves out of L12's locals.** In an L12 block, a store `asg set ti (lv Li)` of a `.l` local Li whose type holds counts, with the value exactly `lv Li` (cv 0) and a target that L6 does not rewrite (a local, a `ref` parameter, an element by scalar indices, a field path: rule 15 (d), R17, R19), moves Li's value (rule 15 (j): "each target stored with that owned value"): no `retain`, and rule 16 does not release Li at the block's end. For a target that L17 rewrites (an element by scalar indices, a field path: `(names[i], k) = two()`), and only when Li's type holds counts (else L17 step 1 takes its `tmp Vv` as usual and nothing is moved), `sealower` sees L17's block in place of that `asg`, directly in the L12 block, with no `tmp Vv` and the block's one `est` storing `lv Li` itself (L17 step 1's exception); that store (R17's `stp`, R19's copy) moves Li: no `retain`, no retains of V's reference fields, no release of a replaced value other than the target's old one, and Li is dropped from rule 16's releases at the L12 block's end. `sealower` recognizes the form by that operand, which no other rewrite writes: an `est` whose value is `lv Li` of a `.l` local of the `tbind` that begins the L12 block (R8), in a `block` that stands directly in that L12 block; L6 always binds its value first (`tmp Vv`, `bind Vv`, step 1) and stores `lv Vv` or an element of DV, so an L6 block (a target with a selection or a `view flat` base, also `(names[0..3], k) = two()` and `(names.flat[i], k) = …`) is never a move. Each Li is moved at most once. A target that L6 rewrites (a selection, `.flat`) and a converted component (`cvt`, `dyn`, `fix` of `lv Li`) keep Li as a held local released at the block's end, as 4e has it. (This also drops one `retain` and one `release` from the 4e-reachable form of a dynamic-array result stored into a local or `ref` parameter target of an L12 block; no golden pins that form, and only reference-count instructions change, never output.) |
 
 R5's "4g adds the replacing store" is R17. No record, field or enumeration word is added, so
 `passes.txt`, `tools/seaval.bas` (generic) and the record tables of every pass are unchanged.
@@ -4036,12 +4087,17 @@ list, ascending.
      place of `lv Vv` (the hidden local cannot change before the store; R25 moves it);
   2. for a root that is a `ref` parameter of a dynamic array type, `tmp B = lv T` (rule 19: `ldp B P - 0 0`
      after the value, before the indices); a local root needs none (its `lv` is its register);
-  3. the path's scalar indices, left to right in source order (`tmp Ik`);
+  3. the path's scalar indices, left to right in source order (`tmp Ik`), up to the first `idx`
+     under a field of an array element one of whose indices holds a `$`;
   4. the checks, outermost array first, against the arrays as they are: `tmp Xk = ext(Bk, d)` and
      `chkb d (lv Ik) (lv Xk)` per dimension, the linear position of a matrix as `lin` of rule 18; the
      next array through a field of an element: `tmp Dk = data(Bk)`, `tmp Ek = eld P S s(S) 0 (lv Dk)
      (lv Ik)` (R18, the element's address), `tmp Bk+1 = fld (lv Ek) j` (`ldp V E - 0 off`, rule 27
-     (e)); through a field of a struct local or `ref` parameter `tmp Bk+1 = fld (lv s) j`;
+     (e)); through a field of a struct local or `ref` parameter `tmp Bk+1 = fld (lv s) j`. From the
+     `idx` at which step 3 stopped on, each `idx`'s indices are evaluated here, right after its
+     `tmp Bk` and before its checks, a `$` among them being `ext(Bk, d)` of that level's array (read
+     before any cow; a cow changes no extent), so evaluation stays left to right and
+     `a[5].v[$ - 1] = 1.0` on a 5-element `a` reports `a`'s index 5 first (LANGUAGE.md §5.5);
   5. copy on write, outermost first (rule 19 (4)), each array taken as the cow before it left it
      (R23: the cow's register A, rule 19's "the array is then A", for a `ref` parameter also the
      array the memory form stored; for a `ref` parameter root from 4g-2, lead decision L-n, in 4g-1
@@ -4086,7 +4142,7 @@ sub-step of Decision 47 that brings each in brackets):
 | L3 `len` | [4g-1] of a `str`: `ext P 3 0` |
 | L4 `fore` | [4g-1] X = `eld P str 8 0` (a borrowed `ldp`, rule 30's first example exactly). [4g-2] X = `eld P S s(S) 0` (R18, the element's address); a fixed-size `str[n]` or `S[n]` vector is bound by copy into H's home with the retains of a borrowed source (rule 27 (b), (c)) and released at the block's end (rule 16): rule 30 (1)–(3) |
 | L5 selections | [4g-1] the result's stores are initializing: a `str` element read borrowed and retained (R5). [4g-2] struct and record elements copied by R19 from the R18 address; the projection of a selection by L15 after L5 (L-e) |
-| L6 selection stores | [4g-1] the stores into a `str` target are replacing (R17); a scalar `str` value is retained at each store and an owned one released at the block's end (R11), an array value read borrowed and retained; the single `.flat` store with a scalar index moves an owned value (R17 (b)), and its compound form computes the operation as L17's `tmp R0 = xblk …` (an owned value released right after the operation, rule 15 (i)). [4g-2] struct elements by R19; step 1's copy of a fixed-size value that is `lv` of the target's root, when its element type holds counts (`a[:] = a` with `a: str[3]`), takes R20's form: `mcpy data(Vv) data(V0) (ci n)` with n the element count, then the retains of the copied reference values (V0, the root, is borrowed), and that new home, an owned temporary of the block, is released by rule 15 (g) at the block's end (R11; R1 as amended). A target whose root path holds a `fld` (`s.v[0..2] = …`, `dims[d].v[:] = …`) interleaves L17's path steps with L6's steps in the order of rule 19 and LANGUAGE.md §5.5: the value (L6 step 1); all indices in source order, L17 step 3's path indices merged with L6 step 2's selection indices (`dims[p()].v[q()..3] = 0.0` evaluates `p()`, then `q()` and the range); all checks, L17 step 4 (the path, outermost first) then L6 step 3 (IX 2 on the field array); L6 step 4's shape check; the cows, L17 step 5 (the root, then each field level, R23) in place of L6 step 5; then L6 step 6, whose `tmp DT = adat (fld …)` stands right after the last cow and uses its register (R23), and the nest. The field array's base for IX is that `fld` read afresh at each use, as a `ref` parameter is |
+| L6 selection stores | [4g-1] the stores into a `str` target are replacing (R17); a scalar `str` value is retained at each store and an owned one released at the block's end (R11), an array value read borrowed and retained; the single `.flat` store with a scalar index moves an owned value (R17 (b)), and its compound form computes the operation as L17's `tmp R0 = xblk …` (an owned value released right after the operation, rule 15 (i)). [4g-2] struct elements by R19; step 1's copy of a fixed-size value that is `lv` of the target's root, when its element type holds counts (`a[:] = a` with `a: str[3]`), takes R20's form: `mcpy data(Vv) data(V0) (ci n)` with n the element count, then the retains of the copied reference values (V0, the root, is borrowed), and that new home, an owned temporary of the block, is released by rule 15 (g) at the block's end (R11; R1 as amended). A target whose root path holds a `fld` (`s.v[0..2] = …`, `dims[d].v[:] = …`) interleaves L17's path steps with L6's steps in the order of rule 19 and LANGUAGE.md §5.5: the value (L6 step 1); all indices in source order, L17 step 3's path indices merged with L6 step 2's selection indices (`dims[p()].v[q()..3] = 0.0` evaluates `p()`, then `q()` and the range), except that from the first `idx` under a field of an element whose indices hold a `$` (`dims[d].v[$-2..$] = 0.0`), that `idx`'s indices, the selection's included, are evaluated after the path's checks before it (L17 step 4), `$` being that level's `ext(Bk, d)`; all checks, L17 step 4 (the path, outermost first) then L6 step 3 (IX 2 on the field array); L6 step 4's shape check; the cows, L17 step 5 (the root, then each field level, R23) in place of L6 step 5; then L6 step 6, whose `tmp DT = adat (fld …)` stands right after the last cow and uses its register (R23), and the nest. The field array's base for IX is that `fld` read afresh at each use, as a `ref` parameter is |
 | L7 element-wise | [4g-1] (Decision 45) `str` operands read `eld P str 8 0` (borrowed); F is `bin cat` (owned, moved by the initializing `est`) or a comparison (`bool`); a scalar `str` operand is its `tmp`, an owned one released after the nest (T2). [4g-2] fixed-size `str` operands and results (homes that hold counts, R21) |
 | L9 literals | [4g-1] (b) `str` elements `est 8 0 e (lv D) (ci k)`, retained when borrowed (rule 26's agreed example exactly: `li i1 2`, arrnew with `li i2 4`, `rcall sea_arr_new`, `ldp p6`, `la p7 d1`, `retain p7`, `stp p7 p6 - 0 0`, …); (c) concatenation with `str` parts (each copied element retained, the parts released after the copies); (d) `[]` of `str[]` (R21). [4g-2] struct and record elements by R19 (a `slit` written in place at `li O off`, `padd E D O`; another value copied); `[]` of `S[]` |
 | L10 views, `dyn`, `fix` | [4g-1] materialized `.flat`, `.col`, `.row` of a `str` array by R20 (the element count, the retain loop); `.T` element by element (an `est` of a borrowed element: retained). [4g-2] `dyn` and `fix` of `str[n]`, `S[n]` and of `str` and struct matrices by R20; the materialized views of struct and record arrays |
@@ -4600,6 +4656,9 @@ body in post-order; the sites listed with each rewrite).
     field): copied at its evaluation point into a new temporary home by rule 27 (c), with the
     retains of a borrowed source; the home's reference fields are released after the consumer
     (rule 15 (g)), so the consumer sees the value as it was read.
+    From 4g-2, (b) and (c) apply also to reads through elements of struct and record arrays
+    (`f(dims[0].name, g(ref dims))`, `f(a[i].lim, h(ref a))`): the path's root is the array's
+    root variable, whatever fields and elements follow.
     The base of an element read is such a read: in `d[growi(ref d)]` the base `d` is evaluated
     first (LANGUAGE.md §5.4), so it is copied and retained by (a), and the element is read from
     the old array, its checks against the old extents. The base of an element *assignment target*
@@ -4956,8 +5015,11 @@ hoists, §5.2), so a dump shows every load.
     again after each outer cow, the data of the innermost array as (4) left it by R23), lowered by
     R17, R19, R23 and R24, with one difference in order: (1) computes the value, and the `retain`
     that makes a borrowed value owned comes at the store in (5), after the checks and cows (R17
-    (a)); `sealower` lowers (1)–(5) itself only for a numeric element by scalar
-    indices of an array local or `ref` parameter, as in 4d.
+    (a)), and with a second when an `idx` under a field of an element has a `$` in an index: from
+    that `idx` on, its indices are evaluated in (3) only after the checks of the arrays before it,
+    the `$` being the extent of its own array (L17 steps 3–4, LANGUAGE.md §5.5); `sealower` lowers
+    (1)–(5) itself only for a numeric element by scalar indices of an array local or `ref`
+    parameter, as in 4d.
 
 20. **Selections (reads).** An `idx` with a range, `:`, an index vector or a mask among its
     indices. (1) The base, then the indices left to right; a range index is its operands then
@@ -5567,7 +5629,14 @@ hoists, §5.2), so a dump shows every load.
     checks of rule 18 again (the inner call may have shrunk or replaced the array: a failure is
     `INDEX_OOB` with the call's line), the cow of every dynamic array on the path and the address.
     The reloads after the call are unchanged. So no slot holds, and no address points into, a
-    value or buffer the inner call has released. (This changes the phase-1 rule 12 for a scalar
+    value or buffer the inner call has released. From 4g-2 one general routine of `sealower` lowers
+    every element or field path `rarg` that LANGUAGE.md §8.3 allows (any chain of fields and
+    scalar-index elements over a local or `ref` parameter): the root and the path's indices are
+    evaluated in path order; then, level by level outermost first, a field adds its offset, a
+    fixed-size base (a home) gets its checks against its static extents, and a dynamic base is
+    loaded, checked, made unique by its cow (R23's memory form for an array field) and gives the
+    element's address. A deferred argument evaluates and checks its path at its place and does the
+    whole path again (loads, checks, cows, address) immediately before the `call`, as above. (This changes the phase-1 rule 12 for a scalar
     `f(ref x, g(ref x))`, which stored x before g ran; no earlier test has such a call, and 4d
     makes the change.) In the callee a `ref` parameter P of a reference type is read with `ldp
     V P - 0 0` (borrowed) and assigned by `ldp O P - 0 0`, `stp V P - 0 0`, `release O` (V owned);

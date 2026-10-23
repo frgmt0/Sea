@@ -1,0 +1,5 @@
+// r_str_fix -- a str[] of 2 elements bound to a str[3]: the run-time check of fix (LANGUAGE.md 4.5)
+let v = ["a", "b"]
+printf("before\n")
+let a: str[3] = v
+printf("%s\n", a[0])

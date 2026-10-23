@@ -1,0 +1,79 @@
+// heap_struct_ref_elem -- ref arguments that are elements of array fields: upd(ref s.v[1]) of an f64[2] and of an
+// f64[] field, upd(ref arr[0].v[1]), rp(ref q.fp[1]) and rp(ref q.ps[0]) (whole struct
+// elements), rs(ref q.ps[i].s), rs(ref qs[i].fp[0].s), copies unchanged; the deferred
+// rs2(ref arr[0].name, ga(ref arr)) names the element of the array ga left (LANGUAGE.md
+// 4.5, 8.3; DESIGN.md 3.6.6 rule 31; heap check 0)
+struct E2 {
+    s: str
+    v: f64[]
+}
+struct SF {
+    v: f64[2]
+    name: str
+}
+struct SD {
+    v: f64[]
+    name: str
+}
+struct Q {
+    fp: E2[2]
+    ps: E2[]
+}
+fn upd(ref x: f64) {
+    x = x * 10.0 + 1.0
+}
+fn rp(ref e: E2) {
+    e = E2 { s: e.s + "+", v: [e.v[0], 9.0] }
+}
+fn rs(ref t: str) {
+    t += "#"
+}
+fn rs2(ref x: str, y: str) {
+    x += y
+}
+fn ga(ref a: SD[]) -> str {
+    a = [SD { v: [5.0], name: "N" + "" }]
+    let junk = ["j" + "1", "j" + "2"]
+    return "g" + junk[1]
+}
+fn pe(e: E2) {
+    printf(" %s", e.s)
+    for x in e.v {
+        printf(" %g", x)
+    }
+    printf(" |")
+}
+fn pq(q: Q) {
+    pe(q.fp[0])
+    pe(q.fp[1])
+    for e in q.ps {
+        pe(e)
+    }
+    printf("\n")
+}
+var sf = SF { v: [1.0, 2.0], name: "f" + "" }
+let sf0 = sf
+upd(ref sf.v[1])
+printf("%g %g | %g %g\n", sf.v[0], sf.v[1], sf0.v[0], sf0.v[1])
+var sd = SD { v: [1.0, 2.0], name: "d" + "" }
+let sd0 = sd
+upd(ref sd.v[1])
+printf("%g %g | %g %g\n", sd.v[0], sd.v[1], sd0.v[0], sd0.v[1])
+var arr = [sd0, SD { v: [3.0, 4.0], name: "e" + "" }]
+let arr0 = arr
+upd(ref arr[0].v[1])
+printf("%g %g | %g %g\n", arr[0].v[1], arr[1].v[1], arr0[0].v[1], arr0[1].v[1])
+var q = Q { fp: [E2 { s: "a" + "", v: [1.0] }, E2 { s: "b" + "", v: [2.0] }], ps: [E2 { s: "c" + "", v: [3.0] }] }
+let q0 = q
+rp(ref q.fp[1])
+rp(ref q.ps[0])
+let i = 0
+rs(ref q.ps[i].s)
+var qs = [q, q0]
+rs(ref qs[i].fp[0].s)
+pq(q)
+pq(q0)
+pq(qs[0])
+pq(qs[1])
+rs2(ref arr[0].name, ga(ref arr))
+printf("%d %s %g | %s %s\n", len(arr), arr[0].name, arr[0].v[0], arr0[0].name, arr0[1].name)

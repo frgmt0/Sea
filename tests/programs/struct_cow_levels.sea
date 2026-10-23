@@ -1,0 +1,8 @@
+// struct_cow_levels -- two array-field levels under copy on write: a store through a[0].w[0].v[0] while b
+// shares a leaves b unchanged (DESIGN.md 6.2 4g-2, L17, R23; LANGUAGE.md 4.5)
+struct T { v: f64[] }
+struct S { w: T[] }
+var a = [S { w: [T { v: [1.0] }] }]
+let b = a
+a[0].w[0].v[0] = 9.0
+printf("%g %g\n", b[0].w[0].v[0], a[0].w[0].v[0])

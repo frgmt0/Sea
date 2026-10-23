@@ -1,0 +1,16 @@
+fn p() -> i64 {
+    return 0
+}
+fn q() -> i64 {
+    return 1
+}
+var dims = [G { v: ones(4) }]
+dims[p()].v[q()..3] = 0.0
+printf("%g %g %d %d\n", dims[0].v[1], dims[0].v[3], p(), q())
+struct G {
+    v: f64[]
+}
+// struct_l6_field -- DESIGN.md 3.5.9 L6 with a field root (the 4g-2 row of L6): the value, then
+// p() (L17 step 3) and q() with the range (L6 step 2) in source order, the path's check and the
+// element address E0, IX 2 on the field `fld (lv E0) v` (read afresh), the cows of dims and of
+// the field at E' (R23), DT right after the last cow (its register), and the range loop

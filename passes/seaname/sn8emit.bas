@@ -18,7 +18,7 @@
 12455 LET R = 10
 12460 IF R > X(4) THEN 12510
 12461 IF T(R, 0) = 7 THEN 12465
-12462 IF T(R, 0) > 2 THEN 12500
+12462 IF T(R, 0) > 2 THEN 12496
 12463 LET L$ = SEG$("rtvecrtmat", 5 * T(R, 0) - 4, 5 * T(R, 0)) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
 12464 GOTO 12485
 12465 LET L$ = "rtup " & STR$(T(R, 9)) & " " & STR$(T(R, 1))
@@ -28,6 +28,9 @@
 12485 PRINT #2, L$
 12490 CALL "tnext": T(), R
 12495 GOTO 12460
+12496 IF T(R, 0) <> 5 THEN 12500
+12497 CALL "emst": N(), M(), Y(), T(), S$(), R
+12498 GOTO 12490
 12500 REM a fixed-size type (4e): rtfvec id elt n, rtfmat id elt r c
 12501 LET L$ = SEG$("rtfvecrtfmat", 6 * T(R, 0) - 17, 6 * T(R, 0) - 12) & " " & STR$(T(R, 9)) & " " & STR$(T(R, 1)) & " " & STR$(T(R, 2))
 12502 IF T(R, 0) = 3 THEN 12485
@@ -52,6 +55,7 @@
 12590 IF K = 3 THEN 12840
 12595 IF K = 5 THEN 12860
 12597 IF K = 7 THEN 12920
+12599 IF K = 46 THEN 12932
 12600 GOTO 12935
 12605 REM rint: the literal's value as f64 bits when exact in f64 (2^63 is read as -2^63, whose
 12610 REM bits #C3E0000000000000 3.4.1 asks for), else -
@@ -145,4 +149,8 @@
 12926 IF Q < 10 THEN 12930
 12928 LET Q = T(Q, 9)
 12930 LET L$ = "r" & L$ & " " & STR$(Q)
+12931 GOTO 12935
+12932 REM rslit: the sid of the struct a literal names (0: none, DESIGN 3.4.2)
+12933 IF M(I, 4) <> 1 THEN 12935
+12934 LET L$ = "r" & L$ & " " & STR$(Y(M(I, 2), 5))
 12935 SUBEND

@@ -1,0 +1,10 @@
+let p = P { x: 1.5, n: 3 }
+let y = p.x
+printf("%g %d\n", y, p.n)
+struct P {
+    x: f64
+    n: i64
+}
+// struct_rule27 -- DESIGN.md 3.6.6 rule 27's example on lines 1-2 (p in p1, its slot s1 of 16
+// bytes, y in f4): the bind of a struct local writes the slit's fields into its slot (27 (b),
+// (g)), a scalar field read is one load (27 (e)); sealoop rewrites nothing (the .hirl is the .hir)

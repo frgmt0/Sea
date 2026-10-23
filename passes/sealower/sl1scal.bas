@@ -295,7 +295,7 @@
 4505 GOTO 4630
 4510 REM a rarg of a local L: its ref parameter register, or a slot holding L, reloaded later
 4515 LET X3 = H(X2, 7)
-4520 IF H(X3, 1) = 39 THEN 17130
+4518 IF ABS(H(X3, 1) - 49.5) = 10.5 THEN 53500
 4522 IF H(X3, 1) <> 5 THEN 2360
 4525 LET A1 = H(X3, 5)
 4530 LET R9 = A1
@@ -790,11 +790,12 @@
 7110 IF W(W0 + 4) = 0 THEN 7155
 7115 LET S = 35
 7120 LET X1 = W(W0 + 4)
-7125 LET D1 = 0
+7125 GOSUB 53340
 7130 GOTO 7380
-7135 GOSUB 41120
-7136 IF F5 = 1 THEN 7145
-7137 GOSUB 7970
+7135 GOSUB 41122
+7136 GOSUB 41142
+7137 IF F5 = 1 THEN 7145
+7138 GOSUB 7970
 7140 LET U(U0, 1) = R9
 7142 GOSUB 16530
 7145 LET W(W0 + 4) = H(W(W0 + 4), 8)
@@ -971,9 +972,10 @@
 7950 LET D(D0, 1) = Q3
 7955 LET D(D0, 2) = Q4
 7960 RETURN
-7965 REM ---- 7970 / 7985: one more entry on U (registers) / J (open loops, block B7) ---------
+7965 REM ---- 7970 / 7985: one more entry on U (registers, U(.,2) = 0) / J (open loops, block B7) ---------
 7970 IF U0 >= 199999 THEN 2365
 7975 LET U0 = U0 + 1
+7977 LET U(U0, 2) = 0
 7980 RETURN
 7985 LET J0 = J0 + 1
 7990 LET J(J0, 1) = W(W0 + 3)

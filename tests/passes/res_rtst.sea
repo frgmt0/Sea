@@ -1,0 +1,18 @@
+// res_rtst -- DESIGN.md 3.4.2: the type table (rtst B, A by sid with their rtfd, a field naming a later id,
+// then the field types, the signature types, the other type nodes) and rslit with sid 0 (lines 17, 18)
+struct B {
+    a: A
+    w: f64[]
+    t: A[2]
+}
+struct A {
+    x: i64
+    s: str
+}
+fn mk(b: B, k: i64[,]) -> A[] {
+    return [b.a]
+}
+let v: B[] = []
+let A = 2
+let q = A { x: 1, s: "" }
+let r = Q { x: 1 }

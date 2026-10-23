@@ -10,7 +10,7 @@
 15018 REM ====================================================================================
 15020 REM ---- 15030: C7 = what becomes of idx Y5: 0 copied (rule 18), 1 L5 (a selection or a view
 15022 REM base), 2 the target of an L6 store (of an asg, or of an L11 tasg: not written itself), 3
-15023 REM the target of an L17 store (a str element by scalar indices of an asg or a tasg; 4g-1)
+15023 REM the target of an L17 store or an idx inside an assignment target's path (not written)
 15030 LET C7 = 0
 15031 LET X5 = H(Y5, 3)
 15032 IF H(X5, 1) = 45 THEN 15040
@@ -54,18 +54,22 @@
 15073 RETURN
 15074 LET B6 = H(B6, 3)
 15076 RETURN
-15078 REM every index a scalar: L17's when the element type is str and Y5 is a target
-15080 IF T(H(H(Y5, 3), 2), 2) <> 5 THEN 15049
-15081 LET X5 = W(Y5)
-15082 IF H(X5, 1) <> 23 THEN 15086
-15083 IF H(X5, 3) <> Y5 THEN 15049
-15084 LET C7 = 3
-15085 RETURN
-15086 IF H(X5, 1) <> 24 THEN 15049
-15087 IF H(Y5, 4) > 0 THEN 15084
-15088 RETURN
+15077 REM every index a scalar: L17's (3) as an assignment target when its element type holds counts
+15078 REM or is a struct or record, or its base is a fld (a field path); inside a target's path 3
+15080 LET Y0 = Y5
+15081 GOSUB 45200
+15082 IF T2 = 0 THEN 15049
+15083 IF Z4 <> Y5 THEN 15089
+15084 LET Q3 = H(Y5, 3)
+15085 IF H(Q3, 1) = 56 THEN 15089
+15086 LET Q3 = T(H(Q3, 2), 2)
+15087 IF C(Q3, 0) = 4 THEN 15089
+15088 IF C(Q3, 3) = 0 THEN 15049
+15089 LET C7 = 3
+15090 RETURN
 15095 REM ---- 15100: the global B of idx Y5 (C7 as 15030 gave it): L5 its base's tmp (made at the
 15096 REM first need, its loc pos the idx's), V0, B6; a store's target -lid of its root, V0 0 or 2
+15097 REM (a field chain as its base: lp9agg 45900, B read as that chain)
 15100 IF C7 > 1 THEN 15120
 15102 GOSUB 15060
 15104 IF H(Y5, 5) > 0 THEN 15114
@@ -86,7 +90,7 @@
 15130 IF F9$ <> "flat" THEN 2900
 15131 LET V0 = 2
 15132 LET B6 = H(B6, 3)
-15134 IF H(B6, 1) <> 5 THEN 2900
+15134 IF H(B6, 1) <> 5 THEN 45900
 15136 LET R2 = H(B6, 6)
 15138 LET F9 = 4
 15139 GOSUB 8440
@@ -196,7 +200,8 @@
 15495 REM ---- 15500: IX 1, the indices evaluated: tmps after their subtrees (rcnt after a range's);
 15496 REM a store (Q4 = 1) of an i64 target (E8) keeps a dynamic index vector by a bind, and on a
 15497 REM fixed target (F8) copies an index vector that is its root variable (Decision 34)
-15500 FOR K7 = 1 TO N3
+15500 GOSUB 45920
+15501 FOR K7 = 1 TO N3
 15502 LET K8 = 10 + K7
 15504 LET Q0 = 100 + 25 * K8
 15506 LET X5 = V(Q0 + 13)
@@ -254,7 +259,8 @@
 15596 NEXT K7
 15598 RETURN
 15599 REM ---- 15600: IX 2, the checks dimension by dimension (the extent X of each first)
-15600 FOR K7 = 1 TO N3
+15600 GOSUB 45930
+15601 FOR K7 = 1 TO N3
 15602 LET K8 = 10 + K7
 15604 LET Q0 = 100 + 25 * K8
 15606 LET D7 = V(Q0 + 5)
@@ -422,14 +428,14 @@
 16181 IF VAL(F9$) = -V(2) THEN 16184
 16182 LET K8 = 0
 16183 GOTO 16186
-16184 LET S$ = "= y,anew P " & STR$(V6) & " 0 0,= v,C " & STR$(B5) & ",= T,D v,D y,L T,mcpy P"
+16184 GOSUB 45960
 16185 LET K8 = 0
 16186 GOSUB 9000
 16188 LET V7 = R5
 16190 GOSUB 15500
 16192 GOSUB 16200
 16194 LET S$ = "}"
-16196 GOTO 9000
+16196 GOTO 46000
 16199 REM ---- 16200: steps 3-7 storing the value v (V7: its rank), and a .flat scalar store
 16200 GOSUB 15600
 16202 LET K8 = 0
@@ -462,8 +468,9 @@
 16264 LET S$ = "L h,L O,eld P %1 %5 0,L D," & Q6$ & ",est P %5 0,L O,L O,L U,wbin P 3 add,asg P set"
 16266 GOSUB 9000
 16268 GOTO 15850
-16275 REM ---- 16280: (5) cow (lv T) of a dynamic target
-16280 IF F8 = 1 THEN 16288
+16275 REM ---- 16280: (5) cow (lv T) of a dynamic target (a field root: the path's cows, L17 (5))
+16280 IF F6 = 1 THEN 45660
+16281 IF F8 = 1 THEN 16288
 16282 LET K8 = 0
 16284 LET S$ = "L B,cow P"
 16286 GOSUB 9000
@@ -494,19 +501,19 @@
 16341 LET K8 = 2
 16342 LET S$ = "L v,= a"
 16343 GOSUB 9000
-16344 LET N4 = 2
+16344 GOSUB 46012
 16345 LET T6 = H(X3, 2)
 16346 LET Z6$ = "bin " & P9$ & " " & STR$(E8) & " " & O7$
 16347 LET V(473) = V(2)
 16348 GOSUB 20150
 16349 LET V(2) = V(473)
-16350 LET K8 = 0
+16350 GOSUB 46020
 16352 LET S$ = "L Q,],B v"
 16354 GOSUB 9000
 16356 LET V7 = 1
 16360 GOSUB 16200
 16362 LET S$ = "}"
-16364 GOTO 9000
+16364 GOTO 46000
 16375 REM ---- 16380: the value's rows back at the tail (G7 .. G8), named by tmp v
 16380 LET O(O9, 0) = G7
 16382 LET O9 = G8

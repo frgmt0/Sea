@@ -1,0 +1,75 @@
+#sea 1
+#target arm64-macos
+#file struct_rule18.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 2
+la p2 d1
+li i3 1
+li i4 1
+rcall sea_arr_new_s 0:11 1 p5 4 p2 i3 i1 i4
+ldp p6 p5 - 0 40
+li i7 0
+padd p8 p6 i7
+la p9 d2
+retain p9
+stp p9 p8 - 0 0
+lf f10 #3FF8000000000000
+stf f10 p8 - 0 8
+lf f11 #3FE0000000000000
+stf f11 p8 - 0 16
+la p12 d3
+retain p12
+stp p12 p8 - 0 24
+li i13 1
+sti i13 p8 - 0 32
+lf f14 #0000000000000000
+stf f14 p8 - 0 40
+li i15 48
+padd p16 p6 i15
+la p17 d4
+retain p17
+stp p17 p16 - 0 0
+lf f18 #4004000000000000
+stf f18 p16 - 0 8
+lf f19 #3FD0000000000000
+stf f19 p16 - 0 16
+la p20 d5
+retain p20
+stp p20 p16 - 0 24
+li i21 2
+sti i21 p16 - 0 32
+lf f22 #0000000000000000
+stf f22 p16 - 0 40
+li i23 0
+call nomOf 1 f24 2 p5 i23
+li i25 1
+call nomOf 1 f26 2 p5 i25
+sa p27 s1
+stf f24 p27 - 0 0
+stf f26 p27 - 0 8
+la p28 d6
+rcall sea_printf 0:12 0 2 p28 p27
+release p5
+ret 0
+endfunc
+func nomOf fn 0:1:1 2 p1 i2 1 f
+ldi i3 p1 - 0 16
+chkb i2 i3 0 0:9
+ldp p4 p1 - 0 40
+ldf f5 p4 i2 48 8
+ret 1 f5
+endfunc
+slay d1 48 2
+soff 0
+soff 24
+str d2 a
+str d3 n
+str d4 b
+str d5 u
+fmt d6 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

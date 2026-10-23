@@ -1,0 +1,8 @@
+// err_struct_assign_let -- a field of a let struct assigned: cannot assign to immutable (238) at the target
+// (DESIGN.md 2.6.2 "Readings fixed by 4g")
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0, y: 2.0 }
+p.x = 3.0

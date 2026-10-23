@@ -1,6 +1,6 @@
 # passes/lib -- API of the shared pass modules
 
-Reference for `io.bas`, `diag.bas` and `tables.bas` (DESIGN §2.6.3). The `.bas` files carry
+Reference for `io.bas`, `diag.bas`, `tables.bas` and `layout.bas` (DESIGN §2.6.3). The `.bas` files carry
 only a one-line summary per SUB. Every module has no `DATA`, no `END` and no globals; a SUB
 works on its parameters (at most 16 per SUB, Baysick limit). A pass is built as its own file,
 the modules of its `build.list`, the generated `DATA` blocks and `99999 END`.
@@ -156,3 +156,65 @@ Lookups (no error context: a miss is a result):
   of magnitude below 2^53 (`T` = 0); `T` = 1 if absent or not representable.
 
 Internal SUBs (not part of the API): `tb_fail`, `tb_dec`, `tb_fspec`, `tb_type`.
+
+## layout.bas (lines 86000-88999)
+
+Needs `diag.bas` (`dg_bug`) and `tables.bas` (`tb_cval`). From sub-step 4g-2, in the build lists
+of `sealoop` and `sealower` (DESIGN §2.6.3, lead decision L-k). The struct layout rule of DESIGN
+§4.8 computed once for both programs: sizes and alignments, field offsets, and the ascending byte
+offsets of the reference values (`str`, dynamic arrays, handles) a type holds, those inside nested
+structs, records and fixed-size arrays included (rule 15 (g)'s and rule 38's list). A record type
+(`trec`) is an anonymous struct type (Decision 48) and is laid out the same way (`slay` too,
+lead decision L-m). An empty struct has size 0 and alignment 1 (lead decision L-h; its home is
+still an 8-byte slot, its arrays have element size 0: both the caller's).
+
+The module keeps its results in one numeric table the caller DIMs and passes, written `Q()` here
+(the caller picks the letter; it is the only array the module needs). The caller registers each
+type record as it reads the type table (§3.5.1: ids in order, a type's components always have
+smaller ids, so every component is registered first), then reads the results.
+
+`Q(M,6)` -- `T9` = the highest type id (9 + `SEA_LIM_TYPES`), `M` > `T9`:
+
+| rows | columns |
+|---|---|
+| 0 (header) | `Q(0,2)` = the last field row used (`T9` when none); `Q(0,3)` = `M`; `Q(0,4)` = the id of the struct or record whose `fd` records are still expected, 0 when none (a caller reading another record while it is not 0 has a missing `fd`); `Q(0,5)` = `SEA_ESIZE_PTR` |
+| type id t, 1..`T9` | `Q(t,0)` kind: 0 no layout (`void`, `ttuple`, `tptr`, not registered), 1 scalar value (`bool` `i64` `f64`), 2 reference (`str`, the handles, `tvec`, `tmat`), 3 fixed-size array, 4 struct or record; `Q(t,1)` size in bytes; `Q(t,2)` alignment; `Q(t,3)` the number of reference values (0: holds no counts); `Q(t,4)` kind 3: the element type, kind 4: the row of field 0; `Q(t,5)` kind 3: the element count (n, or r·c), kind 4: the number of fields; `Q(t,6)` the caller's (never used by the module: e.g. `sealower`'s `slay` label) |
+| field rows `T9`+1..`M` | `Q(r,0)` the field's type; `Q(r,1)` its byte offset in its struct; `Q(r,2)` the number of reference values in the fields before it |
+
+Type ids passed to the SUBs (I, E, F, S) are ids the caller has already checked to lie in
+1..`T9` (the module does not range-check them); each id is registered once. `Q(t,0..5)` may be
+read directly; the field rows through `ly_fld`. Every SUB below is cheap
+(no list is stored: the reference offsets are computed on demand) and no SUB recurses.
+
+* `ly_init Q(), C(), C$(), C0, T9, M, P$` -- call once, on a freshly DIMmed (all 0) `Q`; sets the
+  predefined types: 2 `bool`, 3 `i64`, 4 `f64` (kind 1) and 5 `str`, 6-9 the handles (kind 2,
+  one reference at offset 0), each with alignment = size = `SEA_ESIZE_BOOL`, `SEA_ESIZE_I64`,
+  `SEA_ESIZE_F64`, `SEA_ESIZE_PTR` from the consts table `C() C$() C0` (`tb_consts`; never written
+  numbers). Type 1 `void` has kind 0. `M` <= `T9` or a missing constant: `dg_bug`
+  (`<P$>: ly_init: ...`, STOP 11).
+* `ly_dyn Q(), I` -- type I is a dynamic array (`tvec`, `tmat`): kind 2, size and alignment
+  `SEA_ESIZE_PTR`, one reference at offset 0.
+* `ly_fix Q(), I, E, N, T` -- type I is N elements of type E inline, column-major (`tfvec` with
+  N = n, `tfmat` with N = r·c): kind 3, size N·size(E), E's alignment, N·refs(E) references.
+  `T` = 1 (nothing set) if E has no layout or a struct is still open (its `fd` records missing).
+* `ly_st Q(), I, N, T` -- opens the struct or record type I with N fields (`tstruct`, `trec`);
+  N = 0 completes it at once (size 0, alignment 1). `T` = 1 (nothing set) if another struct is
+  still open or the N fields do not fit the field rows (`Q(0,2)` + N > `M`; the caller's
+  capacity error).
+* `ly_fd Q(), F, T` -- the next field, of type F, of the open struct (one call per `fd` record,
+  in order): placed at the next multiple of its alignment; the struct's alignment is the largest
+  of its fields'; after the N-th field the size is rounded up to the alignment and the struct is
+  closed (`Q(0,4)` = 0). `T` = 1 (nothing set) if no struct is open, F has no
+  layout, or is the open struct itself.
+* `ly_fld Q(), S, I, F, O` -- `F` = the type and `O` = the byte offset of field I (from 0, the
+  `i` of a `fld` record) of the struct or record S. A nested field's offset is the sum along
+  the path (the caller adds them up while it walks a `fld` chain).
+* `ly_ref Q(), S, K, O` -- `O` = the byte offset in S of the K-th of its `Q(S,3)` reference
+  values, in ascending order (K from 1): `ly_ref` for K = 1 .. `Q(S,3)` lists the `soff` records
+  of rule 38 and the releases and retains of rules 15 (g), 16, 27, 28 and R19-R20. For a
+  reference type S it is 0 (K = 1). `O` = -1 if K is outside 1..`Q(S,3)` (also for a type
+  holding no reference).
+* `ly_at Q(), S, O, F, Y` -- `Y` = 1 if the struct or record S has a field of type F at byte
+  offset O, or a field of a struct or record field at that total offset, at any depth (R24's
+  test: sc the size of S, off the offset of a field whose type is the value's); else 0 (also
+  when S is not a struct or record). Fields inside fixed-size array fields are not field paths.

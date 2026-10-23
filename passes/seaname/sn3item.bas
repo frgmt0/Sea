@@ -28,6 +28,7 @@
 3565 LET I = N(I, 8)
 3570 GOTO 3520
 3575 LET X(33) = X(3)
+3576 CALL "tyst": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 3577 REM the type nodes in the order of DESIGN 3.4.2: scalar const annotations, the constants,
 3578 REM the struct fields, the signatures, then (after the walks) every other one in file order
 3580 CALL "tyconst": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
@@ -82,7 +83,6 @@
 3805 LET Y(R, 0) = 3
 3806 LET X(42) = X(42) + 1
 3807 LET Y(R, 5) = X(42)
-3810 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "structs", "", "", 1
 3815 SUBEND
 3820 REM ---- tyof: R = the type of type node I of a signature (DESIGN 3.4.2): looked up with no local
 3825 REM in scope (tylk) and resolved (tyres, which reports its errors); 0 after an error and for a

@@ -1,0 +1,1 @@
+err_struct_proj_struct.sea:10:10: error: cannot project field 'lim' of type Lim

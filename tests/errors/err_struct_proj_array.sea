@@ -1,0 +1,10 @@
+// err_struct_proj_array -- the projection of a field of array type: cannot project (256; LANGUAGE.md 4.7)
+struct Lim { lo: f64, hi: f64 }
+struct Dim {
+    name: str
+    nom: f64
+    v: f64[]
+    lim: Lim
+}
+var dims = [Dim { name: "a", nom: 1.0, v: [1.0], lim: Lim { lo: 0.0, hi: 1.0 } }]
+let vs = dims.v

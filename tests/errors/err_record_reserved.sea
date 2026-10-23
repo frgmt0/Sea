@@ -1,0 +1,3 @@
+// err_record_reserved -- a record literal field named flat: field name reserved for views (222) at its init
+// (LANGUAGE.md 4.6; lead decision L-b)
+let r = { a: 1, flat: 2 }

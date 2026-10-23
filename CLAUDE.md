@@ -34,17 +34,21 @@ searching, library options) is done** (Decisions 38–43: the `sealoop` rewrites
 named one; DESIGN.md §0, §3.5.9, §4.8, §8). The size gate after 4f (Decision 35) passed with no
 split: `sealoop` 4 400 built lines (projected v1 7 950, 4 free array letters), `sealower` 6 087
 (7 987, 4 free), `seacheck` 5 830 (6 780, 14 free), DESIGN.md §2.7. **4g** (strings, structs,
-records, `match`, `error`, `args`) **is specified** (Decisions 44–48 and the lead decisions L-a … L-n:
+records, `match`, `error`, `args`) **is done** (Decisions 44–48 and the lead decisions L-a … L-n:
 the `sea.hirl` refinements R17–R25 with no new record kind, the `sealoop` rewrites L15 projection, L16
 `match` and L17 reference, aggregate and field-path stores, element-wise `str` operators, scalar-only
 `str()`/`lower()`, records as anonymous struct types, the shared module `passes/lib/layout.bas`; no
-contract file changes; DESIGN.md §0, §2.6.2, §2.7, §3.5.9, §6.2, §8) and is built in two sub-steps
-(Decision 47). **4g-1 is done** (strings, `match`, `error`, `args`, `str` elements, `sort_str`; lead
+contract file changes; DESIGN.md §0, §2.6.2, §2.7, §3.5.9, §6.2, §8), built in two sub-steps
+(Decision 47). **4g-1** (strings, `match`, `error`, `args`, `str` elements, `sort_str`; lead
 decision L-n: an L17 `str` element store into a `ref` parameter root reads P afresh after the cow
 until 4g-2). The size gate after 4g-1 passed with no relief: `sealower` 6 349 built lines (projected
 after 4g-2 P = 6 956, 44 under 7 000; v1 8 056; 4 free array letters), `sealoop` 4 659 (5 114; 8 214;
-4 free), `seacheck` 5 944 (6 081; 14 free), DESIGN.md §2.7. **Next is 4g-2** (structs, records,
-projection, fixed-size `str` and struct arrays, the module `layout`, `manualD_part1`).
+4 free), `seacheck` 5 944 (6 081; 14 free), DESIGN.md §2.7. **4g-2** (structs, records, projection,
+fixed-size `str` and struct arrays, the module `layout` of 123 lines, `manualD_part1`) measured
+`sealower` 6 994 built lines (v1 8 094, 3 free array letters), `sealoop` 5 433 (8 533, 3 free),
+`seacheck` 6 424 (14 free), `seaname` 5 262 (DESIGN.md §2.7, "Measured after 4g-2"): `sealower` is
+6 lines under its 7 000-line cap. **Next is 4h, which first needs a `sealower` relief (more
+`sealoop` rewrites, a neutral compaction or a split) specified and agreed with the user.**
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -96,7 +100,7 @@ projection, fixed-size `str` and struct arrays, the module `layout`, `manualD_pa
 
 ## Repo layout (DESIGN.md §2.10)
 - `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
-  (`io diag tables limb f64emu fltlit`), interfaces in `passes/lib/API.md`, `API-arith.md`.
+  (`io diag tables limb f64emu fltlit layout`), interfaces in `passes/lib/API.md`, `API-arith.md`.
 - `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirl lir1 lir`),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the

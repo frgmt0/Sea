@@ -1,0 +1,7 @@
+// err_struct_unknown_field -- a struct literal naming no field of the struct: unknown field (206) at that init
+// (LANGUAGE.md 4.6)
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0, y: 2.0, z: 3.0 }

@@ -1,0 +1,25 @@
+fn two(k: i64) -> (str, i64) {
+    return (str(k), k + 1)
+}
+fn mk(k: i64) -> (P, i64) {
+    return (P { name: str(k), x: 1.5 }, k)
+}
+var s = P { name: "a", x: 0.5 }
+var ps = [P { name: "b", x: 2.5 }]
+var k = 0
+(s.name, k) = two(7)
+(ps[0], k) = mk(k)
+printf("%s %d %s %g\n", s.name, k, ps[0].name, ps[0].x)
+ps[0] = P { name: "c", x: 3.5 }
+let (t, j) = two(3)
+let (q, m) = mk(4)
+printf("%s %d %s %d %s\n", t, j, q.name, m, ps[0].name)
+struct P {
+    name: str
+    x: f64
+}
+// struct_l12 -- DESIGN.md 3.5.9 L12 with a field target (line 10, `s.name`) and an aggregate
+// element target (line 11, `ps[0]`): L17's block directly in the L12 block, no `tmp Vv`, its est
+// storing the .l local itself, which R25 moves (R17's stp; R19's copy with no retains, the old
+// name released); line 13 a slit into an existing element (R19, rule 27 (d): its own temporary
+// home, the old reference field released); lines 14-15 tbinds (a struct result into q's slot)

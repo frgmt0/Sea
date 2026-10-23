@@ -1,0 +1,1 @@
+err_struct_assign_let.sea:8:1: error: cannot assign to immutable 'p'

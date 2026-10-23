@@ -1,0 +1,56 @@
+#sea 1
+#target arm64-macos
+#file struct_rule18.sea
+tstruct 10 Dim 6
+fd name 5
+fd nom 4
+fd tol 4
+fd dist 5
+fd sign 3
+fd alpha 4
+tvec 11 10
+fn 1 .main main 1 0 1 0:1:1
+loc dims 11 let 0:11:5
+cs 0:11:25 5 a
+cf 0:11:35 4 #3FF8000000000000
+cf 0:11:45 4 #3FE0000000000000
+cs 0:11:56 5 n
+ci 0:11:67 3 1
+cf 0:11:77 4 #0000000000000000
+slit 0:11:13 10 6
+cs 0:11:96 5 b
+cf 0:11:106 4 #4004000000000000
+cf 0:11:116 4 #3FD0000000000000
+cs 0:11:128 5 u
+ci 0:11:139 3 2
+cf 0:11:149 4 #0000000000000000
+slit 0:11:84 10 6
+row 0:11:13 11 2
+arr 0:11:12 11 1
+bind 0:11:1 1
+lv 0:12:25 11 1
+ci 0:12:31 3 0
+call 0:12:19 4 2 2
+fconv 0:12:8 1 - - - g
+ftext 0:12:8 1 %20
+lv 0:12:41 11 1
+ci 0:12:47 3 1
+call 0:12:35 4 2 2
+fconv 0:12:8 1 - - - g
+ftext 0:12:8 1 %0A
+fmt 0:12:8 1 4
+lib 0:12:1 1 printf 1
+eval 0:12:1
+block 0:1:1 2
+end
+fn 2 nomOf fn 4 2 0 0:1:1
+par dims 11 val
+par d 3 val
+lv 0:9:12 11 1
+lv 0:9:17 3 2
+idx 0:9:12 10 1
+fld 0:9:12 4 1
+ret 0:9:5 1
+block 0:1:38 1
+end
+#end

@@ -1,0 +1,7 @@
+// err_struct_no_field -- a field the struct does not have: no field (249) at the dot, its operand (DESIGN.md 3.3)
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0, y: 2.0 }
+let z = p.z

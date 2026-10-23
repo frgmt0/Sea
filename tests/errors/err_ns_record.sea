@@ -1,2 +1,0 @@
-// err_ns_record -- phase 1: a record literal (at the rlit)
-let r = { a: 1 }

@@ -1,0 +1,11 @@
+fn f(ref v: str[], i: i64) {
+    v[i] = "x"
+}
+var names = ["a", "b"]
+f(ref names, 0)
+f(ref names, 1)
+printf("%s %s\n", names[0], names[1])
+// str_ref_ln -- DESIGN.md 3.5.9 R23 from 4g-2 (lead decision L-n): L17 of a str element of a ref
+// parameter root: step 2's `tmp B = lv v` (`ldp B v - 0 0`) for the check, the memory form of cow
+// at v, and the est's address `adat (lv v)` right after that cow is the cow's register A (`ldp D A
+// - 0 40`, no second `ldp` of v); R17 (a)'s replacing store

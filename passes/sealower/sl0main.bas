@@ -32,7 +32,7 @@
 245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(22), Y$(22,5), Z(8), I(40), L(4)
 250 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 255 DIM H(99999,8), G(49999,8), A(99999,4), T(20008,3), M(199999), S$(199999), A$(2)
-260 DIM V(199999,2), W(599999), U(199999,2), D(49999,2), B(9999,2), J(59999,4), P(131071)
+260 DIM V(199999,3), W(599999), U(199999,2), D(49999,2), B(9999,2), J(59999,4), P(131071), O(99999,6)
 265 DIM L$(199999)
 270 LET P$ = "sealower"
 275 REM ---- the tables (canonical order: errors exits consts entries records) ----------------
@@ -87,6 +87,7 @@
 516 LET Q1$ = "LIM_TYPES"
 517 GOSUB 1850
 518 LET T9 = Q1 + 9
+519 CALL "ly_init": O(), K(), K$(), K0, T9, 99999, P$
 520 REM the tables above are DIMmed for these limits
 521 REM type ids run to 9 + SEA_LIM_TYPES (the predefined 1-9, then the program's)
 522 IF T9 > 20008 THEN 565
@@ -121,7 +122,7 @@
 660 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
 662 LET K2$ = K2$ & "|idx=39|dol=40|tmat=42|"
 663 LET K2$ = K2$ & "|xblk=43|tmp=44|hloop=45|ext=46|adat=47|eld=48|est=49|anew=50|wbin=51|tptr=52|"
-664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|"
+664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|fld=60|slit=61|tstruct=62|trec=63|fd=64|"
 665 LET K1$ = K1$ & K2$
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0
@@ -153,6 +154,7 @@
 800 GOTO 2360
 805 LET K = R(I0, 0)
 810 GOSUB 1970
+811 IF O(0, 4) * (K - 64) <> 0 THEN 2360
 815 REM a capacity overflow met at a record without a position is reported at the next one with one
 820 IF Q8 = 0 THEN 840
 825 IF P8$ = "" THEN 840
@@ -268,6 +270,7 @@
 1335 GOTO 1285
 1340 LET T(Y9, 1) = 1 + 2 * INT(K / 42)
 1342 LET T(Y9, 2) = I(2)
+1343 CALL "ly_dyn": O(), Y9
 1345 GOTO 1285
 1350 IF G0 > 0 THEN 2360
 1352 IF Y7 = 1 THEN 2360
@@ -356,7 +359,7 @@
 1745 FOR I = 1 TO D0
 1750 LET X = D(I, 2)
 1752 IF D(I, 1) = 3 THEN 41562
-1753 IF D(I, 1) > 3 THEN 42480
+1753 IF D(I, 1) > 3 THEN 42479
 1755 IF D(I, 1) = 2 THEN 1770
 1760 CALL "io_put": 2, "str d" & STR$(I) & " " & S$(H(X, 0))
 1765 GOTO 1825
@@ -506,6 +509,7 @@
 2481 LET T5 = T1
 2482 GOSUB 40600
 2483 LET V(I, 0) = F5
+2484 LET V(I, 3) = T5
 2485 NEXT I
 2490 LET V0 = N7
 2495 LET V9 = N7
@@ -558,7 +562,7 @@
 2645 FOR K5 = A5 TO B5
 2650 IF H(K5, 1) <> 11 THEN 2715
 2655 LET C5 = H(K5, 7)
-2660 IF H(C5, 1) = 39 THEN 23450
+2660 IF ABS(H(C5, 1) - 49.5) = 10.5 THEN 23450
 2662 IF H(C5, 1) <> 5 THEN 2715
 2665 LET L5 = H(C5, 5)
 2670 IF A(G(F0, 0) + L5, 2) = 1 THEN 23490

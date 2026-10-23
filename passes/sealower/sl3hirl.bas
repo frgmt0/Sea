@@ -40,6 +40,7 @@
 30110 LET P8$ = "types"
 30112 GOTO 1285
 30114 IF I(2) < 2 THEN 2360
+30115 IF T(I(2), 1) = 7 THEN 30118
 30116 IF I(2) > 5 THEN 2360
 30118 LET T(Y9, 1) = 4
 30120 LET T(Y9, 2) = I(2)
@@ -65,7 +66,7 @@
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their
 30199 REM fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
-30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320
+30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320, 2360, 52800, 52820
 30204 REM ---- xblk ty n: ty is its last child's type ------------------------------------------
 30210 LET H(H1, 4) = I(2)
 30212 LET H(H1, 6) = I(3)
@@ -113,7 +114,9 @@
 30360 REM ---- adat ty: of an array; ty the tptr of its element type -----------------------------
 30370 LET H(H1, 4) = I(2)
 30372 LET E3 = H(H(H1, 7), 4)
-30374 GOSUB 30900
+30373 LET E6 = E3
+30374 IF T(E3, 1) = 7 THEN 30380
+30375 GOSUB 30900
 30376 IF E4 = 0 THEN 2360
 30378 LET E6 = T(E3, 2)
 30380 LET E3 = I(2)
@@ -129,8 +132,9 @@
 30410 LET E2 = H(H1, 7)
 30412 LET E3 = H(E2, 4)
 30414 LET E6 = I(2)
-30416 GOSUB 30920
-30418 IF E5 = 0 THEN 2360
+30415 LET W7 = I(3)
+30416 CALL "io_i": G$(5), W8, K9, L(), T
+30418 GOSUB 51300
 30420 IF H(H(E2, 8), 4) <> 3 THEN 2360
 30422 GOTO 1285
 30430 REM ---- est sc off: a value, an address of the tptr of the value's type, an index of type 3 -
@@ -142,8 +146,9 @@
 30450 LET E6 = H(E2, 4)
 30452 LET E2 = H(E2, 8)
 30454 LET E3 = H(E2, 4)
-30456 GOSUB 30920
-30458 IF E5 = 0 THEN 2360
+30455 LET W7 = I(2)
+30456 CALL "io_i": G$(4), W8, K9, L(), T
+30458 GOSUB 51300
 30460 IF H(H(E2, 8), 4) <> 3 THEN 2360
 30462 GOTO 1285
 30470 REM ---- anew ty z r: z 0 or 1; ty an array type of rank r; r extents of type 3 ------------
@@ -152,6 +157,7 @@
 30484 LET H(H1, 6) = I(4)
 30486 IF I(3) > 1 THEN 2360
 30488 LET E3 = I(2)
+30489 IF T(E3, 1) = 7 THEN 40344
 30490 GOSUB 30900
 30492 IF E4 = 0 THEN 2360
 30493 IF T(E3, 1) > 4 THEN 40344
@@ -178,7 +184,7 @@
 30890 REM ---- 30900: E4 = the rank of the type E3 when it is an array (tvec tfvec 1, tmat tfmat 2), else 0
 30900 LET E4 = 0
 30902 IF E3 <= 9 THEN 30910
-30904 LET E4 = VAL(SEG$("102012", T(E3, 1), T(E3, 1)))
+30904 LET E4 = VAL(SEG$("1020120", T(E3, 1), T(E3, 1)))
 30910 RETURN
 30915 REM ---- 30920: E5 = 1 if the type E3 is the tptr of the element type E6, else 0 ---------------
 30920 LET E5 = 0
@@ -255,8 +261,8 @@
 31160 IF A(E1 + H(O1, 5), 0) <> 0 THEN 2360
 31162 RETURN
 31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
-32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 32400, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532
-32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056
+32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700
+32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056, 50220, 50730, 51580
 32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its
 32091 REM destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a
 32092 REM rule-12 copy), an ifx, && or || is lowered with no destination and L names its register
@@ -331,6 +337,7 @@
 32318 LET E4 = P4 - 1
 32319 GOTO 32312
 32320 IF H(E4, 1) <> 44 THEN 32336
+32321 IF H(E4, 6) = 1 THEN 32336
 32322 IF H(E4, 5) = E5 THEN 32336
 32324 LET X0 = H(E4, 7)
 32326 GOSUB 9890
@@ -351,6 +358,7 @@
 32391 REM nothing), onto U above x1 = U0; x2 = the next child; an hloop stops before its block
 32400 LET W(W0 + 3) = U0
 32402 LET W(W0 + 4) = H(X, 7)
+32403 IF H(X, 1) = 49 THEN 51500
 32404 IF W(W0 + 4) = 0 THEN 32430
 32406 IF H(X, 1) <> 45 THEN 32409
 32408 IF H(W(W0 + 4), 8) = 0 THEN 32430
@@ -365,7 +373,7 @@
 32426 LET W(W0 + 4) = H(W(W0 + 4), 8)
 32428 GOTO 32404
 32430 LET E1 = W(W0 + 3)
-32432 ON H(X, 1) - 44 GOTO 32500, 32600, 32700, 32800, 32900, 41302, 33100, 2365, 41400, 41412, 41452, 2365, 41438
+32432 ON H(X, 1) - 44 GOTO 32500, 32600, 32700, 32800, 51550, 41302, 33100, 2365, 41400, 41412, 41452, 2365, 41437
 32490 REM ---- hloop K: loop B K start last step (B the next block, 3.6.4), its block, endloop B; a
 32491 REM loop for break, cont and rule 16 (b) (J: 7985 with x1 = B)
 32500 LET E2 = U(E1 + 1, 1)
@@ -434,6 +442,7 @@
 32800 LET E2 = U(E1 + 1, 1)
 32802 LET E3 = U(E1 + 2, 1)
 32804 LET U0 = E1
+32805 IF H(X, 4) > 9 THEN 52100
 32806 LET T1 = H(X, 4)
 32808 GOSUB 7395
 32810 GOSUB 7470
@@ -455,6 +464,7 @@
 32906 LET U0 = E1
 32908 LET X0 = H(X, 7)
 32910 LET R9 = E2
+32911 IF H(X0, 4) > 9 THEN 52000
 32912 GOSUB 42000
 32914 LET E5 = H(H(X, 7), 4)
 32915 LET D4 = 0
@@ -491,6 +501,7 @@
 33010 LET Z3 = G5
 33012 IF C3 = 2 THEN 33016
 33014 LET Z3 = G7 + (I1 - G7) * INT(C3 / 4)
+33015 IF C3 = 5 THEN 52700
 33016 GOSUB 10590
 33018 LET R1 = N2
 33020 LET Z3 = H(X, 6)
@@ -507,6 +518,7 @@
 33040 LET Q9 = Y4
 33042 IF H(X, 5) + INT(C3 / 4) = 0 THEN 33046
 33044 LET Q9 = Y3
+33045 IF C3 = 5 THEN 52730
 33046 LET C1 = 3
 33048 GOSUB 7470
 33050 GOSUB 5590

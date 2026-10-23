@@ -1,0 +1,81 @@
+struct Dim {
+    name: str
+    nom: f64      // nominal length [mm]
+    tol: f64      // symmetric tolerance [mm]
+    dist: str     // "normal" | "uniform" | "triangular"
+    sign: i64     // +1 opens the gap, -1 closes it
+    alpha: f64    // thermal expansion coefficient [1/K]
+}
+
+var exportRef = false
+var figures = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- inputs
+let dims = [
+    Dim { name: "housing depth",  nom: 84.00, tol: 0.050, dist: "normal",     sign: 1,  alpha: 23.1e-6 },
+    Dim { name: "gasket",         nom: 0.25,  tol: 0.040, dist: "triangular", sign: 1,  alpha: 80e-6 },
+    Dim { name: "bearing 1",      nom: 19.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "spacer",         nom: 24.75, tol: 0.030, dist: "uniform",    sign: -1, alpha: 11.5e-6 },
+    Dim { name: "gear hub",       nom: 22.00, tol: 0.040, dist: "triangular", sign: -1, alpha: 11.5e-6 },
+    Dim { name: "bearing 2",      nom: 17.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "retaining ring", nom: 1.20,  tol: 0.030, dist: "uniform",    sign: -1, alpha: 12.0e-6 },
+]
+let nSample = 1_000_000      // Monte Carlo samples [-]
+let seed = 7_340_117         // LCG seed [-]
+let Tref = 20.0              // reference (inspection) temperature [degC]
+let Tlo = 20.0               // operating temperature range, uniform [degC]
+let Thi = 95.0
+let LSL = 0.20               // cold end-play lower limit [mm]
+let USL = 0.42               // cold end-play upper limit [mm]
+let hotMax = 0.45            // hot end-play upper limit [mm]
+let histLo = 0.0             // histogram range for the cold gap [mm]
+let histHi = 0.6
+let nBin = 60
+let pct = [0.135, 2.5, 50, 97.5, 99.865]   // percentiles to report [%]
+let yieldTarget = 0.9973
+
+let nDim = len(dims)
+for d in 0..nDim {
+    match dims[d].dist {
+        "normal" | "uniform" | "triangular" => {}
+        _ => { error("dimension \"%s\": unknown distribution \"%s\"", dims[d].name, dims[d].dist) }
+    }
+    if dims[d].tol <= 0 {
+        error("dimension \"%s\": tolerance must be positive", dims[d].name)
+    }
+}
+
+// ---------------------------------------------------------------- analytic limits
+var nomGap = 0.0
+var wcHalf = 0.0
+var rssVar = 0.0
+var sigmaDim = zeros(nDim)
+for d in 0..nDim {
+    nomGap = nomGap + dims[d].sign * dims[d].nom
+    wcHalf = wcHalf + dims[d].tol
+    match dims[d].dist {
+        "normal" => { sigmaDim[d] = dims[d].tol / 3 }
+        "uniform" => { sigmaDim[d] = dims[d].tol / sqrt(3) }
+        "triangular" => { sigmaDim[d] = dims[d].tol / sqrt(6) }
+        _ => {}
+    }
+    rssVar = rssVar + sigmaDim[d] ^ 2
+}
+let rssSigma = sqrt(rssVar)
+printf("nDim %d\n", nDim)
+for d in 0..nDim {
+    printf("%s %s %.17g\n", dims[d].name, dims[d].dist, sigmaDim[d])
+}
+printf("nomGap %.17g\n", nomGap)
+printf("wcHalf %.17g\n", wcHalf)
+printf("rssSigma %.17g\n", rssSigma)
+if exportRef { printf("export\n") }
+if figures { printf("figures\n") }

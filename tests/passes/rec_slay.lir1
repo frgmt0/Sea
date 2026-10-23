@@ -1,0 +1,68 @@
+#sea 1
+#target arm64-macos
+#file rec_slay.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 2
+la p2 d1
+li i3 1
+li i4 1
+rcall sea_arr_new_s 0:1 1 p5 4 p2 i3 i1 i4
+ldp p6 p5 - 0 40
+li i7 0
+padd p8 p6 i7
+li i9 1
+sti i9 p8 - 0 0
+la p10 d2
+retain p10
+stp p10 p8 - 0 8
+li i11 16
+padd p12 p6 i11
+li i13 2
+sti i13 p12 - 0 0
+la p14 d3
+retain p14
+stp p14 p12 - 0 8
+li i15 0
+mov p16 p5
+retain p16
+ldi i17 p16 - 0 16
+li i18 0
+icmp gt i19 i17 i18
+if 1 i19
+ldp p20 p16 - 0 40
+li i21 1
+isub i22 i17 i21
+loop 2 i23 i18 i22 i21
+li i24 16
+imul i25 i23 i24
+padd p26 p20 i25
+ldi i27 p26 - 0 0
+iaddc i15 i15 i27 0:4
+ldp p28 p26 - 0 8
+sa p29 s1
+stp p28 p29 - 0 0
+la p30 d4
+rcall sea_printf 0:5 0 2 p30 p29
+endloop 2
+endif 1
+release p16
+sa p31 s2
+sti i15 p31 - 0 0
+la p32 d5
+rcall sea_printf 0:7 0 2 p32 p31
+release p5
+ret 0
+endfunc
+slay d1 16 1
+soff 8
+str d2 x
+str d3 y
+fmt d4 2
+fconv - - - s p
+ftext %0A
+fmt d5 2
+fconv - - - d i
+ftext %0A
+#end

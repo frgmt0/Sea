@@ -1,0 +1,67 @@
+// heap_struct_rule12_elem -- reads through an element of a struct array before a call that replaces the root by
+// ref (and then allocates): fs(a[0].name, gsa(ref a)), fs(a[0].name, gs(ref a[0])),
+// fs(a[0].q.t, ...), fp(a[1], gs(ref a[1])), fsa(a[0].fs, ...), fq(a[0].q, g(ref a)),
+// a[1].name += gs(ref a[1]), a[0].name + gsa(ref a): the old values are seen
+// (LANGUAGE.md 5.5, 6.8 rule 5, 7.3, 8.2, 8.3; DESIGN.md 3.6.6 rule 12; heap check 0)
+struct In {
+    t: str
+    w: f64[]
+}
+struct A {
+    name: str
+    q: In
+    fs: str[2]
+    v: f64[]
+}
+fn mk(n: str) -> A {
+    return A { name: n + "", q: In { t: "t" + n, w: [1.0] }, fs: [n + "0", n + "1"], v: [2.0] }
+}
+fn gsa(ref a: A[]) -> str {
+    a = [mk("Z"), mk("Y")]
+    let junk = ["j" + "1", "j" + "2", mk("J").name]
+    return "ga" + junk[0]
+}
+fn gs(ref x: A) -> str {
+    x = mk("W")
+    let junk = "k" + "k"
+    return "gs" + junk
+}
+fn g(ref a: A[]) -> str {
+    a[0] = mk("V")
+    a = [a[0], mk("U")]
+    return "g" + ["h" + "", "i" + ""][1]
+}
+fn fs(s: str, r: str) {
+    printf("%s %s\n", s, r)
+}
+fn fp(x: A, r: str) {
+    printf("%s %s %s %s %g %s\n", x.name, x.q.t, x.fs[0], x.fs[1], x.v[0], r)
+}
+fn fsa(x: str[2], r: str) {
+    printf("%s %s %s\n", x[0], x[1], r)
+}
+fn fq(x: In, r: str) {
+    printf("%s %g %s\n", x.t, x.w[0], r)
+}
+var a = [mk("a"), mk("b")]
+fs(a[0].name, gsa(ref a))
+printf("%s %s\n", a[0].name, a[1].name)
+a = [mk("a"), mk("b")]
+fs(a[0].name, gs(ref a[0]))
+a = [mk("a"), mk("b")]
+fs(a[0].q.t, gs(ref a[0]))
+printf("%s %s\n", a[0].name, a[0].q.t)
+a = [mk("a"), mk("b")]
+fp(a[1], gs(ref a[1]))
+a = [mk("a"), mk("b")]
+fsa(a[0].fs, gs(ref a[0]))
+printf("%s %s\n", a[0].fs[0], a[0].fs[1])
+a = [mk("a"), mk("b")]
+fq(a[0].q, g(ref a))
+printf("%s %s %d\n", a[0].name, a[1].name, len(a))
+a = [mk("a"), mk("b")]
+a[1].name += gs(ref a[1])
+printf("%s %s %s %s\n", a[0].name, a[1].name, a[1].q.t, a[1].fs[0])
+a = [mk("a"), mk("b")]
+let t = a[0].name + gsa(ref a)
+printf("%s %s\n", t, a[0].name)

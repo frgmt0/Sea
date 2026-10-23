@@ -201,7 +201,7 @@
 20359 REM str elements (4g-1): the operation of the compound store is cat (rule 32)
 20360 LET F9$ = "cat"
 20361 GOTO 20316
-20495 REM ==== L10 (rule 27 (i), (j)): dyn and fix of the operand X1 ===================================
+20495 REM ==== L10 (rule 27 (i), (j)): dyn and fix of the operand X1 (counted elements: R20, lp9agg) ====
 20500 LET R2 = H(X, 6)
 20502 GOSUB 8400
 20504 LET T6 = H(X, 2)
@@ -227,12 +227,12 @@
 20542 LET S$ = "X S 0,= R,L R,anew P %0 0 1,= A"
 20543 IF R5 = 1 THEN 20545
 20544 LET S$ = "X S 0,= R,X S 1,= C,L R,L C,anew P %0 0 2,= A"
-20545 LET S$ = S$ & ",D A,= D,C " & STR$(B5) & ",= K,L D,D S,L K,mcpy P,L A,]"
+20545 GOSUB 45980
 20546 GOTO 20570
 20550 LET S$ = "= A"
 20552 GOSUB 8900
 20554 GOSUB 20580
-20562 LET S$ = S$ & ",anew P %0 0 0,= V,D A,= D,C " & STR$(B5) & ",= K,D V,L D,L K,mcpy P,L V,]"
+20562 GOSUB 45986
 20570 GOSUB 9000
 20572 LET N7 = N7 - 1
 20574 GOTO 5180
@@ -274,10 +274,10 @@
 20654 IF V0 = 4 THEN 20659
 20656 LET C8$ = "K"
 20658 LET S$ = "X A 0,= R,X A 1,= C,L R,L C,wbin P 3 mul,= K,L K,anew P %0 0 1"
-20659 IF V(54) = 5 THEN 20667
+20659 IF C(V(54), 3) > 0 THEN 20667
 20660 LET S$ = S$ & ",= V,D V,= D,D A,= S,L " & C8$ & ",ci P 3 %5,wbin P 3 mul,= B,L D,L S,L B,mcpy P,L V,]"
 20662 GOTO 20690
-20664 LET S$ = "anew P %0 0 0,= V,D V,= D,D A,= S,C " & STR$(B5) & ",= B,L D,L S,L B,mcpy P,L V,]"
+20664 GOSUB 45992
 20666 GOTO 20690
 20667 LET S$ = S$ & ",= V,D V,= D,D A,= S,L D,L S,L " & C8$ & ",mcpy P,L V,]"
 20668 GOTO 20690

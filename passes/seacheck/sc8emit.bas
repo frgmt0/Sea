@@ -9,6 +9,9 @@
 14560 FOR J = 1 TO X(28)
 14565 LET Q = W(180000 + J)
 14570 IF T(Q, 0) = 7 THEN 14590
+14572 IF ABS(T(Q, 0) - 5.5) > 1 THEN 14575
+14573 CALL "emtst": T(), W(), X(), S$(), Q, J
+14574 GOTO 14620
 14575 CALL "tyr": T(), W(), X(), T(Q, 1), A$
 14577 IF T(Q, 0) > 2 THEN 14582
 14580 CALL "wr": X(), SEG$("tvectmat", 4 * T(Q, 0) - 3, 4 * T(Q, 0)) & " " & STR$(9 + J) & " " & A$
@@ -72,6 +75,9 @@
 14830 GOTO 14890
 14835 IF T(Q, 9) > 0 THEN 14885
 14840 IF T(Q, 0) = 7 THEN 14855
+14842 IF ABS(T(Q, 0) - 5.5) > 1 THEN 14845
+14843 CALL "tyrf": T(), W(), X(), Q
+14844 GOTO 14870
 14845 CALL "tyr": T(), W(), X(), T(Q, 1), A$
 14850 GOTO 14870
 14855 FOR J = 1 TO T(Q, 1)
@@ -87,6 +93,10 @@
 14905 LET F = Y(S, 3)
 14910 LET P0 = Y(S, 6)
 14915 LET L0 = Y(S, 8) - Y(S, 9) + 1 - P0
+14916 REM the .t locals of ck_slit follow the declared ones (emtmp)
+14917 LET X(40) = P0 + L0
+14918 CALL "emtmp": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S, 0, K
+14919 LET L0 = L0 + K
 14920 IF S > 1 THEN 14940
 14925 LET P$ = STR$(X(18)) & ":1:1"
 14930 CALL "wr": X(), "fn 1 .main main 1 0 " & STR$(L0) & " " & P$
@@ -110,6 +120,7 @@
 15020 LET C$ = STR$(G) & ":" & STR$(N(I, 1) - G * 1E9) & ":" & STR$(N(I, 2))
 15025 CALL "wr": X(), "loc " & B$ & " " & A$ & " " & SEG$("let var for", 4 * U - 3, 4 * U - 1) & " " & C$
 15030 NEXT R
+15032 CALL "emtmp": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S, 1, K
 15035 IF S > 1 THEN 15095
 15040 LET I = N(X(17), 7)
 15045 IF I = 0 THEN 15085
@@ -267,6 +278,10 @@
 15775 IF N(N(J, 9), 0) <> 35 THEN 15785
 15780 IF N(N(J, 9), 7) = J THEN 15790
 15785 CALL "em_node": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
+15786 IF N(J, 0) <> 48 THEN 15790
+15787 IF M(J, 4) = 0 THEN 15790
+15788 CALL "pos": N(), N(J, 7), P$
+15789 CALL "wr": X(), "bind " & P$ & " " & STR$(X(40) + M(J, 4))
 15790 LET J = J + 1
 15795 GOTO 15735
 15800 SUBEND
@@ -277,7 +292,7 @@
 15825 LET Q$ = " " & P$ & " " & A$
 15830 LET K = N(J, 0)
 15835 IF K < 25 THEN 16220
-15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16172, 16195, 16211, 16185, 16220, 16213, 16217, 16217, 16220, 16220, 16220, 16215
+15840 ON K - 24 GOTO 15845, 15900, 15920, 15935, 15945, 15955, 16205, 16010, 16065, 16075, 16130, 16220, 16165, 16172, 16195, 16211, 16185, 16220, 16213, 16217, 16217, 16207, 16207, 16220, 16215
 15845 LET H = M(J, 5)
 15850 IF M(J, 1) = 4 THEN 15870
 15855 CALL "lfmt": C(H, 1), C(H, 2), C(H, 3), C(H, 4), B$
@@ -363,10 +378,13 @@
 16195 CALL "wr": X(), "idx" & Q$ & " " & STR$(N(J, 1))
 16200 GOTO 16220
 16205 CALL "wr": X(), "dol" & Q$ & " " & STR$(M(J, 5))
+16206 GOTO 16220
+16207 CALL "emslit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J, Q$
+16208 GOTO 16220
 16210 GOTO 16220
 16211 CALL "wr": X(), "all" & Q$
 16212 GOTO 16220
-16213 CALL "wr": X(), "view" & Q$ & " " & S$(N(J, 6))
+16213 CALL "emdot": N(), S$(), X(), J, Q$
 16214 GOTO 16220
 16215 CALL "wr": X(), "ifx" & Q$
 16216 GOTO 16220

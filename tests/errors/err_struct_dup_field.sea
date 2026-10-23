@@ -1,0 +1,7 @@
+// err_struct_dup_field -- a field initialised twice in a struct literal: duplicate field (205) at the second init
+// (LANGUAGE.md 4.6)
+struct P {
+    x: f64
+    y: f64
+}
+let p = P { x: 1.0, y: 2.0, x: 3.0 }

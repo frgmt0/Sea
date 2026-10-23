@@ -1,0 +1,100 @@
+// struct_arrays -- arrays of structs: Appendix D's literal style, dims[k].f read and written, an array field's
+// element written while a copy shares the array, a whole element stored, projections
+// (f64, str, i64; of a range and an index-vector selection; of a fixed Dim[3]), Dim[3]
+// parameters (also ref) and a Dim[2] result, filled with a struct, element loops, a selection
+// of elements, ref arguments of fields (LANGUAGE.md 4.5, 4.7, 5.2, 5.5, 6.9, 7.5, 8.3, 10.2)
+struct Dim {
+    name: str
+    nom: f64
+    tol: f64
+    sign: i64
+    v: f64[]
+}
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn ps(v: str[]) {
+    printf("%d:", len(v))
+    for s in v {
+        printf(" [%s]", s)
+    }
+    printf("\n")
+}
+fn pd(q: Dim) {
+    printf("%s %g %g %d", q.name, q.nom, q.tol, q.sign)
+    for x in q.v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn scale(ref x: f64, k: f64) {
+    x = x * k
+}
+fn app(ref s: str, t: str) {
+    s += t
+}
+fn sumnom(ds: Dim[3]) -> f64 {
+    return ds[0].nom + ds[1].nom + ds[2].nom
+}
+fn rename(ref ds: Dim[3], k: i64, s: str) {
+    ds[k].name = s
+}
+fn top2(ds: Dim[]) -> Dim[2] {
+    return [ds[1], ds[0]]
+}
+var dims = [
+    Dim { name: "housing", nom: 1.5,  tol: 0.25,  sign: 1,  v: [1.0, 2.0] },
+    Dim { name: "gasket",  nom: 2.5,  tol: 0.5,   sign: -1, v: [3.0] },
+    Dim { name: "ring",    nom: 4,    tol: 0.125, sign: 1,  v: [] },
+]
+for k in 0..len(dims) {
+    printf("%s %g\n", dims[k].name, dims[k].sign * dims[k].nom)
+}
+let snap = dims
+dims[1].nom = 3.25
+dims[2].name = "RING"
+dims[0].v[1] = 7.0
+printf("%g %g %s %s %g %g\n", snap[1].nom, dims[1].nom, snap[2].name, dims[2].name, snap[0].v[1], dims[0].v[1])
+let p = Dim { name: "new", nom: 0.75, tol: 0.0625, sign: -1, v: [5.0, 6.0] }
+dims[2] = p
+pd(dims[2])
+pf(dims.nom)
+ps(dims.name)
+pvi(dims.sign)
+pf(dims[0..2].nom)
+ps(dims[[2, 0]].name)
+pf(snap.tol)
+let fd: Dim[3] = dims
+pf(fd.tol)
+printf("%g\n", sumnom(fd))
+var fv: Dim[3] = dims
+rename(ref fv, 1, "B2")
+ps(fv.name)
+ps(dims.name)
+let t2 = top2(dims)
+printf("%d %s %s\n", len(t2), t2[0].name, t2[1].name)
+let fl = filled(Dim { name: "f", nom: 0.5, tol: 0.0, sign: 1, v: [1.0] }, 2)
+for q in fl {
+    pd(q)
+}
+for q in dims {
+    pd(q)
+}
+let sel = dims[0..2]
+printf("%d %s %g\n", len(sel), sel[1].name, sel[0].v[1])
+scale(ref dims[1].nom, 2.0)
+app(ref dims[0].name, "!")
+var s = dims[0]
+app(ref s.name, "?")
+printf("%g %s %s %g\n", dims[1].nom, dims[0].name, s.name, sel[1].nom)

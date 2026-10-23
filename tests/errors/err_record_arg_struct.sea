@@ -1,0 +1,10 @@
+// err_record_arg_struct -- a record passed to a struct parameter, even with the struct's field names and types:
+// type mismatch (201) at the argument (Decision 48: records are not structs)
+struct P {
+    x: f64
+    y: f64
+}
+fn f(p: P) -> f64 {
+    return p.x
+}
+printf("%g\n", f({ x: 1.0, y: 2.0 }))

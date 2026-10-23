@@ -78,6 +78,7 @@
 935 LET D0 = 0
 940 LET D9 = 0
 945 LET D8 = 0
+947 LET H5 = 0
 950 LET X(32) = 9
 955 REM ---- one record per pass of this loop; L$ holds it
 960 IF LEN(L$) <> 4 THEN 970
@@ -90,11 +91,13 @@
 995 LET K0 = (P1 - 1) / 10 + 1
 1000 LET R0 = G(K0)
 1005 REM the place of a record: rerr first (at most one), then the type table (rtup rtvec rtmat
-1010 REM rtfvec rtfmat, DESIGN 3.4.2), then the tree. The records of 4g-2 (rtst rtfd rslit) are
-1015 REM not written before 4g-2; rcns (4g-1) replaces a const.
+1010 REM rtfvec rtfmat rtst rtfd, DESIGN 3.4.2), then the tree; the n rtfd records of an rtst follow
+1015 REM it directly (H5 owed); rcns (4g-1) replaces a const, rslit (4g-2) a slit.
+1016 IF K0 <> 69 THEN 1018
+1017 IF H5 = 0 THEN 2400
+1018 IF H5 * (69 - K0) <> 0 THEN 2400
 1020 IF K0 < 50 THEN 1085
-1025 IF K0 > 69 THEN 1080
-1030 IF K0 > 67 THEN 2400
+1025 IF K0 > 69 THEN 1085
 1035 IF K0 > 63 THEN 1065
 1040 IF K0 > 51 THEN 1085
 1045 IF K0 = 51 THEN 1065
@@ -104,7 +107,6 @@
 1065 IF D8 > 2 THEN 2400
 1070 LET D8 = 2
 1075 GOTO 1210
-1080 IF K0 = 71 THEN 2400
 1085 IF D8 = 3 THEN 1110
 1090 REM the first record of the tree: the type table is complete, its ty fields become T rows
 1095 CALL "sc_tfix": T(), W(), X(), Z
@@ -221,10 +223,13 @@
 1642 IF K0 <> 72 THEN 2400
 1645 LET N9 = N9 + 1
 1650 CALL "intern": S$(), X(), O(), S0$, H
-1655 IF H > 0 THEN 1675
+1655 IF H > 0 THEN 1671
 1660 LET A$(1) = "strings"
 1665 LET F1 = INT(N(I, 4) / 1E9)
 1670 CALL "dg_compile": P$, F$(), N1, F1, N(I, 4) - F1 * 1E9, N(I, 5), "TOO_LARGE", A$(), 1, E(), E$(), E0
+1671 IF ABS(K0 - 68.5) > 1 THEN 1675
+1673 LET H7 = H
+1674 GOTO 1855
 1675 IF N9 = 2 THEN 1678
 1676 LET N(I, 6) = H
 1677 GOTO 1855
@@ -268,7 +273,7 @@
 1860 NEXT J
 1865 IF F9 <> G0 THEN 2400
 1870 IF K0 < 50 THEN 2200
-1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 1965, 1965, 2400, 2400, 2015, 2400, 2141
+1875 ON K0 - 49 GOTO 1880, 1890, 2040, 2075, 2090, 2090, 2090, 2090, 2090, 2145, 2145, 2200, 2170, 2185, 1965, 1965, 1965, 1965, 2011, 2011, 2015, 2036, 2141
 1880 CALL "sc_rerr": P$, E(), E$(), E0, X(), X$(), V()
 1885 GOTO 2375
 1890 REM rtup id n t1..tn: ids dense from 10, n >= 2; one T row and ceil(n/9) more (the ids of the
@@ -301,11 +306,18 @@
 2000 LET X(32) = V(1)
 2005 LET W(150000 + V(1)) = H
 2010 GOTO 2375
+2011 CALL "rdst": N(), T(), W(), X(), X$(), V(), K0, H7, H6, H5, H4, Z
+2012 IF Z = 1 THEN 2400
+2013 GOTO 2375
 2015 REM rtype: shape (1 s 2 v 3 m 4 fv 5 fm) and nd as type, N(i,3) the T row of ty plus 1
 2020 LET N(I, 1) = V(1)
 2025 LET N(I, 2) = V(2)
 2030 LET N(I, 3) = V(3) + 1
 2035 GOTO 2200
+2036 LET N(I, 1) = V(1)
+2037 LET N(I, 2) = V(2)
+2038 LET N(I, 3) = 1
+2039 GOTO 2200
 2040 REM rfn: el np nr (as fn) fid rty, the parameter types follow
 2045 LET N(I, 1) = V(1)
 2050 LET N(I, 2) = V(2)
@@ -406,16 +418,23 @@
 2505 SUBEND
 2510 REM ---- sc_tfix: the end of the type table (DESIGN 3.4.2): every ty field of its records (read
 2515 REM as ids, a field may name a later id) becomes the T row of that id; an element type must be
-2520 REM bool, i64, f64 or str (4d: no struct types yet), a tuple component 1-9 or an id of the
-2525 REM table. Z = 1 for a violation (BAD_RECORD) ----------------------------------------------
+2520 REM bool, i64, f64, str or a struct type (an rtst id), a tuple component 1-9 or an id of the
+2525 REM table, a struct field 0-9 or an id (fdtf). Z = 1 for a violation (BAD_RECORD) ------------
 2530 SUB "sc_tfix": T(), W(), X(), Z
 2535 LET Z = 0
 2540 FOR I = 10 TO X(32)
 2545 LET R = W(150000 + I)
 2550 IF T(R, 0) = 7 THEN 2570
+2551 IF T(R, 0) = 5 THEN 2566
 2555 IF T(R, 1) < 2 THEN 2625
-2560 IF T(R, 1) > 5 THEN 2625
+2560 IF T(R, 1) <= 5 THEN 2615
+2561 IF T(R, 1) > X(32) THEN 2625
+2562 IF T(W(150000 + T(R, 1)), 0) <> 5 THEN 2625
+2563 LET T(R, 1) = W(150000 + T(R, 1))
 2565 GOTO 2615
+2566 CALL "fdtf": T(), W(), X(), R, Z
+2567 IF Z = 1 THEN 2630
+2568 GOTO 2615
 2570 FOR J = 1 TO T(R, 1)
 2575 LET R1 = R + 1 + INT((J - 1) / 9)
 2580 LET C1 = J - 1 - 9 * INT((J - 1) / 9)

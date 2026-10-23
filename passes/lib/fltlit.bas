@@ -1,4 +1,4 @@
-82000 REM fltlit.bas: float literal -> binary64 bits (needs limb); lines 82000-88999; API: API-arith.md
+82000 REM fltlit.bas: float literal -> binary64 bits (needs limb); lines 82000-85999; API: API-arith.md
 82010 SUB "FLCVT": S$,R3,R2,R1,R0,E ' float_lit -> binary64; E 1 out of range, 2 invalid, 3 > 4096 bytes
 82020     DIM M(1400),D(1400),Q(20)
 82030     LET L = LEN(S$)

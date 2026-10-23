@@ -1,0 +1,41 @@
+three: count 1
+three: tag array
+three: ek struct
+three: rank 1
+three: rows
+three: cols 1
+three: cap
+three: esize 0
+three: slay the descriptor
+three: data after the header
+three: data aligned
+1 live
+zero: count 1
+zero: tag array
+zero: ek struct
+zero: rank 1
+zero: rows
+zero: cols 1
+zero: cap
+zero: esize 0
+zero: slay the descriptor
+zero: data after the header
+zero: data aligned
+2 live
+unique: a new array
+unique: old count 1
+copy: count 1
+copy: tag array
+copy: ek struct
+copy: rank 1
+copy: rows
+copy: cols 1
+copy: cap
+copy: esize 0
+copy: slay the descriptor
+copy: data after the header
+copy: data aligned
+3 live
+2 live
+1 live
+0 live after the releases

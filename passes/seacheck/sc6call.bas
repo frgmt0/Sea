@@ -53,22 +53,11 @@
 12115 LET G = N(A, 7)
 12120 LET B = G
 12125 IF N(G, 0) = 30 THEN 12210
-12130 IF N(G, 0) = 39 THEN 12145
-12135 IF M(G, 1) = 0 THEN 12325
-12140 GOTO 12250
-12145 REM an element of a var or ref parameter; a selection (a range, :, an index vector or a mask)
-12150 REM is no ref target (LANGUAGE 8.3)
-12155 LET Q = N(N(G, 7), 8)
-12160 IF Q = 0 THEN 12195
-12165 IF N(Q, 0) = 40 THEN 12250
-12170 IF N(Q, 0) = 41 THEN 12250
-12175 CALL "elt": T(), M(Q, 1), E9, K9
-12180 IF K9 > 0 THEN 12250
-12185 LET Q = N(Q, 8)
-12190 GOTO 12160
-12195 IF M(G, 1) = 0 THEN 12325
-12200 LET B = N(G, 7)
-12205 IF N(B, 0) <> 30 THEN 12250
+12130 IF M(G, 1) = 0 THEN 12325
+12135 REM a field or an element of a var or ref parameter, through fields and elements; a selection
+12140 REM or a projection is no ref target (LANGUAGE 8.3)
+12145 CALL "tpath": N(), M(), T(), S$(), G, 0, B
+12150 IF B = 0 THEN 12250
 12210 REM a name: undeclared (reported at the name), else it must be a var or a ref parameter;
 12215 REM a function, struct, constant, predeclared name or handle type is no ref target
 12220 LET S = M(B, 2)
@@ -113,14 +102,15 @@
 12415 LET A = N(A, 8)
 12420 NEXT I
 12425 SUBEND
-12430 REM ---- root: S = the local at the root of argument A (a name or an element of one, through
-12435 REM every index, or ref of such a path; LANGUAGE 8.3), else 0 --------------------------------
+12430 REM ---- root: S = the local at the root of argument A (a name or an element or field of one,
+12435 REM through every index and dot, or ref of such a path; LANGUAGE 8.3), else 0 ---------------
 12440 SUB "root": N(), M(), Y(), A, S
 12445 LET S = 0
 12450 LET G = A
 12455 IF N(G, 0) <> 37 THEN 12465
 12460 LET G = N(G, 7)
-12465 IF N(G, 0) <> 39 THEN 12480
+12465 IF N(G, 0) = 43 THEN 12470
+12467 IF N(G, 0) <> 39 THEN 12480
 12470 LET G = N(G, 7)
 12475 GOTO 12465
 12480 IF N(G, 0) <> 30 THEN 12500
@@ -309,7 +299,10 @@
 13300 IF U(I) <> 3 THEN 13545
 13305 NEXT I
 13310 IF U(1) < 2 THEN 13545
-13315 IF U(1) > 5 THEN 13545
+13315 IF U(1) <= 5 THEN 13330
+13316 REM filled with a struct or record value (4g-2, Decision 48)
+13317 IF U(1) < 10 THEN 13545
+13318 IF ABS(T(U(1), 0) - 5.5) > 1 THEN 13545
 13330 CALL "tarr": T(), N(), X(), X$(), H - 1, U(1), 0, 0, D
 13335 GOTO 13605
 13340 IF H <> 1 THEN 13545

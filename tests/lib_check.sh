@@ -1,5 +1,5 @@
 #!/bin/sh
-# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables}.bas and of the
+# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables,layout}.bas and of the
 # intermediate-file validator tools/seaval.bas (docs/DESIGN.md 2.2, 2.6.2, 2.6.3, 3, 3.9).
 #
 #   sh tests/lib_check.sh [-v]            (make test-lib)
@@ -16,6 +16,7 @@
 #   diag   dg_compile / dg_internal: the diagnostics of DESIGN 2.6.2
 #   tab    the loaders of tables.bas against counts taken from the contract files, tb_cval
 #   boot   a table that does not fit: BAD_DATA
+#   lay    layout.bas: the struct layout rule of DESIGN 4.8 (sizes, offsets, reference offsets)
 # and the validator tools/seaval.bas is run on the dump examples of DESIGN 3.4, 3.5.8 and 3.6.7
 # (taken from the document itself) and on mutated copies, which it must reject with status 11.
 #
@@ -110,7 +111,7 @@ chk_range() { # FILE FIRST LAST
         $2 == "END" || $2 == "DATA" { print FILENAME ": line " NR ": a module has no END or DATA"; bad = 1 }
         END { exit bad }' "$1"
 }
-for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 88999" "tools/seaval.bas 1 59999"; do
+for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 85999" "passes/lib/layout.bas 86000 88999" "tools/seaval.bas 1 59999"; do
     set -- $spec
     if [ ! -f "$SEA/$1" ]; then bad "module $1 exists"; continue; fi
     if msg=$(chk_range "$SEA/$1" "$2" "$3"); then ok "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA"; else bad "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA" "$msg"; fi
@@ -121,7 +122,7 @@ n=$(grep -c "DIM W($rb)" "$SEA/passes/lib/io.bas")
 if [ "$n" -eq 3 ]; then ok "io.bas: the three long work lists are DIM W(SEA_LIM_RECORD_BYTES = $rb)"; else bad "io.bas: three DIM W($rb) expected, found $n"; fi
 # at most 16 parameters per SUB, one SUB name per SUB line (Baysick LANGUAGE 7.27)
 if awk '/^[0-9]+ SUB / { s = $0; sub(/^[0-9]+ SUB "[^"]*"(: )?/, "", s); k = (s == "") ? 0 : gsub(/, /, ", ", s) + 1; if (k > 16) { print "line " NR ": " k " parameters"; bad = 1 } } END { exit bad }' \
-    "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/limb.bas" "$SEA/passes/lib/f64emu.bas" "$SEA/passes/lib/fltlit.bas" > "$T/p16" 2>&1; then ok "modules: no SUB has more than 16 parameters"; else bad "modules: SUB with more than 16 parameters" "$(cat "$T/p16")"; fi
+    "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/limb.bas" "$SEA/passes/lib/f64emu.bas" "$SEA/passes/lib/fltlit.bas" "$SEA/passes/lib/layout.bas" > "$T/p16" 2>&1; then ok "modules: no SUB has more than 16 parameters"; else bad "modules: SUB with more than 16 parameters" "$(cat "$T/p16")"; fi
 
 # ==============================================================================================
 # 1. unit: field encodings and splitting (DESIGN 3.1)
@@ -789,6 +790,330 @@ echo 2 > "$T/b2.in"
 printf 'boot: %s\n' "$BD" > "$T/b.err"
 expect "boot: tb_errors with more rows than its capacity -> <pass>: BAD_DATA text of errors.inc, status 11" "$T/boot" "$T/b1.in" 11 /dev/null "$T/b.err"
 expect "boot: tb_errno with more rows than its capacity -> BAD_DATA from the error table, status 11" "$T/boot" "$T/b2.in" 11 /dev/null "$T/b.err"
+
+# ==============================================================================================
+# 5b. layout: the struct layout rule of DESIGN 4.8 through passes/lib/layout.bas (2.6.3, L-h, L-k,
+#     L-m): sizes, alignments, field offsets, reference offsets (rule 15 (g), rule 38's soff list),
+#     R24's field-path test, the misuse statuses and the capacity of the field rows
+# ==============================================================================================
+# the rule's sizes (f64, i64, references 8; bool 1) are rt.inc's SEA_ESIZE_*: the module reads those
+esz_ok=1
+for e in "F64 8" "I64 8" "BOOL 1" "PTR 8"; do
+    set -- $e
+    v=$(awk -v n="SEA_ESIZE_$1," '$1 == ".equiv" && $2 == n { print $3; exit }' "$SEA/include/rt.inc")
+    [ "$v" = "$2" ] || esz_ok=0
+done
+if [ $esz_ok -eq 1 ]; then ok "layout: rt.inc's SEA_ESIZE_F64/I64/BOOL/PTR are the sizes of the layout rule (8, 8, 1, 8; DESIGN 4.8)"; else bad "layout: rt.inc's SEA_ESIZE_* differ from the layout rule's sizes 8, 8, 1, 8 (DESIGN 4.8)"; fi
+
+cat > "$T/h_lay.bas" <<'EOF'
+10 REM layout harness: the first input line "I t9 m" calls ly_init, then one command per line:
+11 REM D i (ly_dyn), X i e n (ly_fix), S i n (ly_st), F f (ly_fd), Q i (kind size align nref),
+12 REM O (the open struct), L s i (ly_fld), R s (ly_ref k = 0 .. nref + 1), A s o f (ly_at)
+20 DIM E(299), E$(299,5), C(299,4), C$(299), Q(60,6), F$(8), V(8)
+30 LET P$ = "lyh"
+40 CALL "tb_errors": P$, E(), E$(), 299, E0
+50 CALL "tb_consts": P$, E(), E$(), E0, C(), C$(), 299, C0
+60 IF END #0 THEN 990
+70 LINPUT #0, L$
+80 CALL "io_split": L$, F$(), 8, N
+90 FOR I = 2 TO N
+100 LET V(I) = VAL(F$(I))
+110 NEXT I
+120 LET K$ = F$(1)
+130 IF K$ = "I" THEN 200
+140 IF K$ = "D" THEN 220
+150 IF K$ = "X" THEN 240
+160 IF K$ = "S" THEN 260
+170 IF K$ = "F" THEN 280
+175 IF K$ = "Q" THEN 300
+180 IF K$ = "O" THEN 320
+185 IF K$ = "L" THEN 340
+190 IF K$ = "R" THEN 360
+195 IF K$ = "A" THEN 400
+197 PRINT "BAD COMMAND " & L$
+198 STOP 3
+200 CALL "ly_init": Q(), C(), C$(), C0, V(2), V(3), P$
+210 GOTO 60
+220 CALL "ly_dyn": Q(), V(2)
+230 GOTO 60
+240 CALL "ly_fix": Q(), V(2), V(3), V(4), T
+250 GOTO 290
+260 CALL "ly_st": Q(), V(2), V(3), T
+270 GOTO 290
+280 CALL "ly_fd": Q(), V(2), T
+290 PRINT L$ & ": T=" & STR$(T)
+295 GOTO 60
+300 LET I = V(2)
+310 PRINT L$ & ": " & STR$(Q(I, 0)) & " " & STR$(Q(I, 1)) & " " & STR$(Q(I, 2)) & " " & STR$(Q(I, 3))
+315 GOTO 60
+320 PRINT L$ & ": " & STR$(Q(0, 4))
+330 GOTO 60
+340 CALL "ly_fld": Q(), V(2), V(3), F, O
+350 PRINT L$ & ": F=" & STR$(F) & " O=" & STR$(O)
+355 GOTO 60
+360 LET R$ = L$ & ":"
+370 FOR K = 0 TO Q(V(2), 3) + 1
+375 CALL "ly_ref": Q(), V(2), K, O
+380 LET R$ = R$ & " " & STR$(O)
+385 NEXT K
+390 PRINT R$
+395 GOTO 60
+400 CALL "ly_at": Q(), V(2), V(3), V(4), Y
+410 PRINT L$ & ": Y=" & STR$(Y)
+420 GOTO 60
+990 STOP
+EOF
+cat "$T/h_lay.bas" "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/layout.bas" > "$T/lay.bas"
+printf '%s\n' errors consts | (cd "$T/gd" && "$GENDATA" 89000) >> "$T/lay.bas" || { echo "lib_check: gendata failed for lay" >&2; exit 2; }
+echo "99999 END" >> "$T/lay.bas"
+"$BSK" "$T/lay.bas" -o "$T/lay" || { echo "lib_check: cannot compile lay" >&2; exit 2; }
+
+# The types (ids 10-23 of a table of T9 = 40 rows, 20 field rows 41-60), each expected value by the
+# rule of DESIGN 4.8 (fields in order, each at the next multiple of its alignment; alignment the
+# largest field's, 1 if none; size rounded up to it; T[n] n elements inline with T's alignment):
+#   10 f64[]                                    a reference: 8, align 8, 1 reference at 0
+#   11 struct P { x: f64, b: bool, y: i64 }      x 0, b 8, y 16; size 24, align 8
+#   12 struct M { b: bool, c: bool }             b 0, c 1; size 2, align 1
+#   13 struct E { }                              size 0, align 1 (L-h)
+#   14 struct R { b: bool, s: str, e: E, v: f64[], c: bool }
+#                                                b 0, s 8, e 16 (size 0), v 16, c 24; size 25 -> 32;
+#                                                references at 8 (s) and 16 (v)
+#   15 str[3]                                    24, align 8, references 0 8 16
+#   16 R[2]                                      64, align 8, references 8 16 40 48
+#   17 bool[2,3]                                 6 elements: 6, align 1
+#   18 struct N { m: M, q: bool[2,3], p: P, a: R[2], h: Figure }
+#                                                m 0 (2), q 2 (6), p 8 (24), a 32 (64), h 96;
+#                                                size 104, align 8; references 40 48 72 80 96
+#   19 E[3]                                      0, align 1 (element size 0, L-h)
+#   20 record { e: E, x: f64 }  (trec, L-m)       e 0, x 0; size 8, align 8
+#   21 struct { f64, i64 } built after misuse   16, align 8
+#   23 struct { f64 } in the last field row     8, align 8
+cat > "$T/lay.in" <<'EOF'
+I 40 60
+Q 1
+Q 2
+Q 3
+Q 4
+Q 5
+Q 6
+Q 9
+D 10
+Q 10
+S 11 3
+O
+F 4
+F 2
+F 3
+O
+Q 11
+S 12 2
+F 2
+F 2
+Q 12
+S 13 0
+O
+Q 13
+S 14 5
+F 2
+F 5
+F 13
+F 10
+F 2
+Q 14
+X 15 5 3
+Q 15
+X 16 14 2
+Q 16
+X 17 2 6
+Q 17
+S 18 5
+F 12
+F 17
+F 11
+F 16
+F 6
+Q 18
+X 19 13 3
+Q 19
+S 20 2
+F 13
+F 4
+Q 20
+L 11 0
+L 11 1
+L 11 2
+L 14 1
+L 14 2
+L 14 3
+L 14 4
+L 18 0
+L 18 1
+L 18 2
+L 18 3
+L 18 4
+L 20 1
+R 5
+R 10
+R 11
+R 13
+R 14
+R 15
+R 16
+R 18
+R 19
+A 18 8 11
+A 18 8 4
+A 18 16 2
+A 18 24 3
+A 18 24 4
+A 18 0 12
+A 18 0 2
+A 18 1 2
+A 18 2 17
+A 18 3 2
+A 18 32 16
+A 18 40 5
+A 18 96 6
+A 18 104 6
+A 11 8 2
+A 14 16 13
+A 14 16 10
+A 20 0 13
+A 20 0 4
+A 4 0 4
+F 4
+X 21 1 2
+X 21 40 2
+S 21 2
+O
+F 1
+S 22 1
+F 21
+X 22 21 2
+F 4
+F 3
+O
+Q 21
+S 23 2
+S 23 1
+F 4
+Q 23
+EOF
+cat > "$T/lay.exp" <<'EOF'
+Q 1: 0 0 0 0
+Q 2: 1 1 1 0
+Q 3: 1 8 8 0
+Q 4: 1 8 8 0
+Q 5: 2 8 8 1
+Q 6: 2 8 8 1
+Q 9: 2 8 8 1
+Q 10: 2 8 8 1
+S 11 3: T=0
+O: 11
+F 4: T=0
+F 2: T=0
+F 3: T=0
+O: 0
+Q 11: 4 24 8 0
+S 12 2: T=0
+F 2: T=0
+F 2: T=0
+Q 12: 4 2 1 0
+S 13 0: T=0
+O: 0
+Q 13: 4 0 1 0
+S 14 5: T=0
+F 2: T=0
+F 5: T=0
+F 13: T=0
+F 10: T=0
+F 2: T=0
+Q 14: 4 32 8 2
+X 15 5 3: T=0
+Q 15: 3 24 8 3
+X 16 14 2: T=0
+Q 16: 3 64 8 4
+X 17 2 6: T=0
+Q 17: 3 6 1 0
+S 18 5: T=0
+F 12: T=0
+F 17: T=0
+F 11: T=0
+F 16: T=0
+F 6: T=0
+Q 18: 4 104 8 5
+X 19 13 3: T=0
+Q 19: 3 0 1 0
+S 20 2: T=0
+F 13: T=0
+F 4: T=0
+Q 20: 4 8 8 0
+L 11 0: F=4 O=0
+L 11 1: F=2 O=8
+L 11 2: F=3 O=16
+L 14 1: F=5 O=8
+L 14 2: F=13 O=16
+L 14 3: F=10 O=16
+L 14 4: F=2 O=24
+L 18 0: F=12 O=0
+L 18 1: F=17 O=2
+L 18 2: F=11 O=8
+L 18 3: F=16 O=32
+L 18 4: F=6 O=96
+L 20 1: F=4 O=0
+R 5: -1 0 -1
+R 10: -1 0 -1
+R 11: -1 -1
+R 13: -1 -1
+R 14: -1 8 16 -1
+R 15: -1 0 8 16 -1
+R 16: -1 8 16 40 48 -1
+R 18: -1 40 48 72 80 96 -1
+R 19: -1 -1
+A 18 8 11: Y=1
+A 18 8 4: Y=1
+A 18 16 2: Y=1
+A 18 24 3: Y=1
+A 18 24 4: Y=0
+A 18 0 12: Y=1
+A 18 0 2: Y=1
+A 18 1 2: Y=1
+A 18 2 17: Y=1
+A 18 3 2: Y=0
+A 18 32 16: Y=1
+A 18 40 5: Y=0
+A 18 96 6: Y=1
+A 18 104 6: Y=0
+A 11 8 2: Y=1
+A 14 16 13: Y=1
+A 14 16 10: Y=1
+A 20 0 13: Y=1
+A 20 0 4: Y=1
+A 4 0 4: Y=0
+F 4: T=1
+X 21 1 2: T=1
+X 21 40 2: T=1
+S 21 2: T=0
+O: 21
+F 1: T=1
+S 22 1: T=1
+F 21: T=1
+X 22 21 2: T=1
+F 4: T=0
+F 3: T=0
+O: 0
+Q 21: 4 16 8 0
+S 23 2: T=1
+S 23 1: T=0
+F 4: T=0
+Q 23: 4 8 8 0
+EOF
+expect "layout: sizes, alignments, field offsets, reference offsets and field paths of DESIGN 4.8 (empty structs L-h, records L-m, misuse, field-row capacity)" "$T/lay" "$T/lay.in" 0 "$T/lay.exp" /dev/null
+
+# ly_init without field rows above the type rows: a misuse of the module (dg_bug), status 11
+echo "I 40 40" > "$T/lay2.in"
+printf 'lyh: ly_init: Q has no field rows, or a constant SEA_ESIZE_* is missing\n' > "$T/lay2.err"
+expect "layout: ly_init with no field rows -> <pass>: ly_init: ..., status 11" "$T/lay" "$T/lay2.in" 11 /dev/null "$T/lay2.err"
 
 # ==============================================================================================
 # 6. seaval: the dump examples of DESIGN 3.4, 3.5.8, 3.6.7 are valid; mutated copies are rejected

@@ -27,7 +27,7 @@
 2765 REM local row. Rows: 1 .main, 2..X(30) the entered fns by fid, then the constants by cid
 2770 REM (X(31) the row before the first), the structs by sid, X(33) the last item row; a local of
 2775 REM function S with lid l is row Y(S,9) - 1 + l (DESIGN 3.4.1: lids come from sea.res).
-2780 REM T(t,0) 1 tvec 2 tmat 3 tfvec 4 tfmat 7 ttuple 0 continuation; T(t,1) element or count, T(t,2..3)
+2780 REM T(t,0) 1 tvec 2 tmat 3 tfvec 4 tfmat 5 struct 6 record (sc9st) 7 ttuple 0 continuation; T(t,1) element or count, T(t,2..3)
 2785 REM the extents n or r c of a fixed one; tuple components in the next rows, 9 per row (columns
 2787 REM 0-8); T(t,9) the written id (DESIGN 3.5.1). From 4e also: M(i,4) of an array literal 2 (its
 2788 REM elements were untyped integer constants: i64 until an f64 context retypes it, sc9arr rtf), of
@@ -135,6 +135,7 @@
 3300 IF T(Q, 0) = 1 THEN 3355
 3305 IF T(Q, 0) = 2 THEN 3370
 3307 IF T(Q, 0) < 5 THEN 3381
+3308 IF T(Q, 0) < 7 THEN 3352
 3310 LET R$ = "("
 3315 FOR J = 1 TO T(Q, 1)
 3320 CALL "tyn": T(), T(Q + 1 + INT((J - 1) / 9), J - 1 - 9 * INT((J - 1) / 9)), A$
@@ -144,6 +145,8 @@
 3340 NEXT J
 3345 LET R$ = R$ & ")"
 3350 GOTO 3440
+3352 CALL "tynst": T(), Q, R$
+3353 GOTO 3440
 3355 CALL "tyn": T(), T(Q, 1), A$
 3360 LET R$ = A$ & "[]"
 3365 GOTO 3440
@@ -406,9 +409,12 @@
 4525 LET H(Q) = R
 4530 SUBEND
 4535 REM ---- tnext: R = the T row of the type after the one at row R (a tuple has 1 + ceil(n/9)
-4540 REM rows: its continuation rows are skipped) --------------------------------------------
+4540 REM rows, a struct or record 1 + ceil(n/4): their continuation rows are skipped) ---------
 4545 SUB "tnext": T(), R
-4550 IF T(R, 0) <> 7 THEN 4560
+4550 IF T(R, 0) = 7 THEN 4555
+4552 IF ABS(T(R, 0) - 5.5) > 1 THEN 4560
+4553 LET R = R + INT((T(R, 1) + 3) / 4)
+4554 GOTO 4560
 4555 LET R = R + INT((T(R, 1) + 8) / 9)
 4560 LET R = R + 1
 4565 SUBEND

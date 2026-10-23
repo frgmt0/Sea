@@ -1,0 +1,114 @@
+// struct_basic -- every field kind (f64, i64, bool, str, a dynamic array, a fixed array, a str[], a nested
+// struct); a literal in another order than the declaration, its values evaluated in source
+// order; field reads and writes (scalar, +=, str, nested, element, range, whole struct
+// field); struct parameters and results, two struct results, ref struct parameters, an if
+// expression of a struct, value semantics; an empty struct (LANGUAGE.md 4.6, 5.5, 6.8, 6.10,
+// 7.3, 8.2-8.4; DESIGN.md 3.5.5; lead decision L-h)
+struct Lim { lo: f64, hi: f64 }
+struct P {
+    name: str
+    x: f64
+    n: i64
+    ok: bool
+    v: f64[]
+    w: f64[3]
+    tags: str[]
+    lim: Lim
+}
+struct E {}
+fn tf(x: f64) -> f64 {
+    printf("f%g ", x)
+    return x
+}
+fn ti(k: i64) -> i64 {
+    printf("i%d ", k)
+    return k
+}
+fn tr(s: str) -> str {
+    printf("%s ", s)
+    return s
+}
+fn pp(p: P) {
+    printf("%s x=%g n=%d ok=%d v=", p.name, p.x, p.n, p.ok)
+    for x in p.v {
+        printf(" %g", x)
+    }
+    printf(" w=%g,%g,%g tags=", p.w[0], p.w[1], p.w[2])
+    for t in p.tags {
+        printf(" [%s]", t)
+    }
+    printf(" lim=%g..%g\n", p.lim.lo, p.lim.hi)
+}
+fn mk(name: str, k: i64) -> P {
+    return P { name: name, x: f64(k) / 2.0, n: k, ok: k > 0, v: [f64(k)], w: [1.0, 2.0, 3.0], tags: [], lim: Lim { lo: 0.0, hi: 1.0 } }
+}
+fn swap2(a: P, b: P) -> (P, P) {
+    return (b, a)
+}
+fn renamed(p: P, s: str) -> P {
+    var r = p
+    r.name = s
+    r.v[0] = -1.0
+    return r
+}
+fn bump(ref p: P) {
+    p.n += 10
+    p.name += "!"
+    p.v[0] = -2.0
+    p.lim.hi = 7.0
+    p.w[2] *= 2.0
+}
+fn reset(ref p: P, k: i64) {
+    p = mk("z", k)
+}
+fn takeE(e: E) -> E {
+    return e
+}
+let p = P { lim: Lim { hi: tf(2.0), lo: tf(1.0) }, tags: ["a", tr("b")], w: [tf(3.0), 4.0, 5.0], v: [1.5, 2.5, 3.5, 4.5], ok: true, n: ti(7), x: tf(0.5), name: tr("p") }
+printf("\n")
+pp(p)
+printf("%s %g %d %d %g %g %s %g %d %d\n", p.name, p.x, p.n, p.ok, p.v[1], p.w[2], p.tags[0], p.lim.hi, len(p.v), len(p.tags))
+var q = p
+q.x = -1.25
+q.n += 1
+q.ok = false
+q.name += "x"
+q.name = q.name + "y"
+let i = 3
+q.v[i] = 9.0
+q.v[0..2] = 0.0
+q.w[1] = 8.0
+q.w[0] += 1.0
+q.tags[1] = "B"
+q.lim.lo = -1.0
+q.lim = Lim { lo: q.lim.lo, hi: 3.5 }
+pp(q)
+pp(p)
+let (a, b) = swap2(mk("a", 1), mk("b", 2))
+pp(a)
+pp(b)
+pp(renamed(p, "rn"))
+printf("%s %g\n", p.name, p.v[0])
+var r = mk("r", 3)
+bump(ref r)
+pp(r)
+let k = 2
+let c = if k > 5 { r } else { q }
+var c2 = c
+c2.v[0] = 100.0
+c2.lim.hi = -3.0
+pp(c)
+pp(c2)
+reset(ref r, 4)
+pp(r)
+let e = E {}
+let es = [E {}, E {}, E {}]
+var ne = 0
+for x in es {
+    ne += 1
+}
+let ef = filled(e, 2)
+var ev = es
+ev[1] = takeE(es[2])
+ev = [ev, E {}]
+printf("%d %d %d %d\n", len(es), ne, len(ef), len(ev))

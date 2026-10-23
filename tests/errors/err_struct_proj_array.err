@@ -1,0 +1,1 @@
+err_struct_proj_array.sea:10:10: error: cannot project field 'v' of type f64[]
