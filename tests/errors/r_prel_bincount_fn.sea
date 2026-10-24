@@ -1,0 +1,8 @@
+// r_prel_bincount_fn -- bincount called inside a user function: the line of that call, never a line of the
+// prelude (LANGUAGE.md 10; DESIGN.md 2.6.2 L-y)
+fn counts(v: i64[]) -> i64[] {
+    return bincount(v, 2)
+}
+printf("%d\n", len(counts([0, 1])))
+printf("%d\n", len(counts([2])))
+printf("never\n")

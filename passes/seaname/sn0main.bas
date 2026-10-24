@@ -32,6 +32,7 @@
 138 CALL "dg_bug": P$, "sqrt is not a predeclared name"
 139 LET X(41) = P9
 140 CALL "sc_read": P$, E(), E$(), E0, N(), M(), C(), S$(), W(), X(), D$(), F$(), N1, T$, H(), O()
+142 LET X(44) = N1
 145 REM the mtab words of FEPOW (DESIGN 4.10.5): the last DATA block, after records (sc_read)
 150 CALL "FEMTI": Q(), E9
 155 IF E9 = 0 THEN 170

@@ -1,0 +1,64 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_rule12.sea
+tvec 10 4
+fn 1 .main main 1 0 4 1:1:1
+loc v 10 var 1:8:5
+loc m 3 let 1:9:5
+loc n 3 var 1:10:5
+loc s 3 let 1:11:5
+ci 1:8:15 3 2
+lib 1:8:9 10 zeros 1
+bind 1:8:1 1
+lv 1:9:13 10 1
+lv 1:9:25 10 1
+rarg 1:9:21 10
+call 1:9:16 3 4 1
+call 1:9:9 3 2 2
+bind 1:9:1 2
+ci 1:10:9 3 1
+bind 1:10:1 3
+lv 1:11:13 3 3
+lv 1:11:25 3 3
+rarg 1:11:21 3
+call 1:11:16 3 5 1
+call 1:11:9 3 3 2
+bind 1:11:1 4
+block 1:1:1 4
+end
+fn 2 cnt fn 3 2 0 0:1:1
+par a 10 val
+par b 3 val
+lv 0:1:46 10 1
+lib 0:1:42 3 len 1
+lv 0:1:51 3 2
+bin 0:1:42 3 add
+ret 0:1:35 1
+block 0:1:33 1
+end
+fn 3 add fn 3 2 0 0:2:1
+par a 3 val
+par b 3 val
+lv 0:2:40 3 1
+lv 0:2:44 3 2
+bin 0:2:40 3 add
+ret 0:2:33 1
+block 0:2:31 1
+end
+fn 4 grow fn 3 1 0 1:1:1
+par w 10 ref
+ci 1:2:12 3 3
+ret 1:2:5 1
+block 1:1:30 1
+end
+fn 5 bump fn 3 1 0 1:4:1
+par k 3 ref
+lv 1:5:5 3 1
+ci 1:5:10 3 1
+asg 1:5:5 add
+ci 1:6:12 3 10
+ret 1:6:5 1
+block 1:4:28 2
+end
+#end

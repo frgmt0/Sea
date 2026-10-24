@@ -1,0 +1,28 @@
+#sea 1
+#target arm64-macos
+#file res_noprelude_pnames.sea
+pname 0:4:5 a
+name 0:4:9 linspace
+int 0:4:18 0
+int 0:4:21 1
+int 0:4:24 3
+call 0:4:9 3
+let 0:4:1 0
+pname 0:5:5 b
+name 0:5:9 meshgrid
+let 0:5:1 0
+name 0:6:1 setdiff
+name 0:6:9 bincount
+call 0:6:1 1
+cstmt 0:6:1
+name 0:7:1 printf
+str 0:7:8 %25d%0A
+name 0:7:16 len
+name 0:7:20 zeros
+int 0:7:26 2
+call 0:7:20 1
+call 0:7:16 1
+call 0:7:1 2
+cstmt 0:7:1
+prog 4
+#end

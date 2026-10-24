@@ -1,0 +1,5 @@
+// r_prel_bincount_size_big -- bincount with n = 3 000 000 000 > 2^31 - 1: invalid array size, reported before the
+// out-of-range value 5 is looked at (the result is allocated first, DESIGN.md 2.5)
+printf("start\n")
+let c = bincount([5], 3000000000)
+printf("%d\n", len(c))

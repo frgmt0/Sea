@@ -1,0 +1,47 @@
+// prel_meshgrid -- meshgrid (LANGUAGE.md 10.3; DESIGN.md 6.2 "4h", Decision 54): -0.0 and nan copied, an i64[] y
+// converted (dynamic, fixed, and 2^53 + 1 rounding to even), empty x and y, a tuple assignment
+// into existing vars, return meshgrid(...) from a user function, _ components
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn mg(x: f64[], y: f64[]) -> (f64[,], f64[,]) {
+    return meshgrid(x, y)
+}
+let x = [-0.0, 1.5, nan]
+var yi = filled(0, 2)
+yi[0] = 7
+yi[1] = -3
+let (X, Y) = meshgrid(x, yi)
+pm(X)
+pm(Y)
+let e: f64[] = []
+let (EX, EY) = meshgrid(e, [1.0, 2.0])
+pm(EX)
+pm(EY)
+let (FX, FY) = meshgrid([1.0], e)
+pm(FX)
+pm(FY)
+var A = zeros(1, 1)
+var B = ones(3, 3)
+(A, B) = meshgrid([1.0, 2.0], [3.0])
+pm(A)
+pm(B)
+let (M1, M2) = mg([0.5, 0.25], [1.0, 2.0, 3.0])
+pm(M1)
+pm(M2)
+let (X2, _) = meshgrid([4.0], [1.0, 2.0])
+pm(X2)
+let yf = [1, 2]
+let (_, Y3) = meshgrid([0.5], yf)
+pm(Y3)
+let yb = filled(9007199254740993, 1)
+let (_, Yb) = meshgrid([0.0], yb)
+printf("%.17g\n", Yb[0, 0])
+printf("%g %g %g\n", x[0], X[1, 0], Y[0, 2])

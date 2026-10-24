@@ -1,0 +1,154 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file prel_meshgrid_tbind.sea
+func .main main 1:1:1 0 0
+slot s1 32 8
+lf f1 #4004000000000000
+li i2 2
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new_u 1:4 1 p6 4 i3 i4 i2 i5
+ldp p7 p6 - 0 40
+li i8 0
+icmp gt i9 i2 i8
+if 1 i9
+li i10 1
+isub i11 i2 i10
+loop 2 i12 i8 i11 i10
+stf f1 p7 i12 8 0
+endloop 2
+endif 1
+li i13 3
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new_u 1:4 1 p17 4 i14 i15 i13 i16
+lf f18 #3FF0000000000000
+ldp p19 p17 - 0 40
+li i20 0
+icmp gt i21 i13 i20
+if 3 i21
+li i22 1
+isub i23 i13 i22
+loop 4 i24 i20 i23 i22
+stf f18 p19 i24 8 0
+endloop 4
+endif 3
+do 5
+ldi i25 p17 - 0 16
+ldi i26 p6 - 0 16
+li i27 1
+li i28 2
+rcall sea_arr_new 1:4 1 p29 4 i27 i28 i25 i26
+li i30 1
+li i31 2
+rcall sea_arr_new 1:4 1 p32 4 i30 i31 i25 i26
+li i33 0
+li i34 1
+rcount i35 i36 i33 i26 i34 0 1:4
+if 6 i36
+loop 7 i37 i33 i35 i34
+ldi i38 p6 - 0 16
+chkb i37 i38 0 1:4
+ldp p39 p6 - 0 40
+ldf f40 p39 i37 8 0
+li i41 0
+li i42 1
+rcount i43 i44 i41 i25 i42 0 1:4
+if 8 i44
+loop 9 i45 i41 i43 i42
+ldi i46 p29 - 0 16
+chkb i45 i46 0 1:4
+ldi i47 p29 - 0 24
+chkb i37 i47 1 1:4
+ldi i48 p29 - 0 0
+li i49 1
+icmp ne i50 i48 i49
+if 10 i50
+rcall sea_arr_unique 1:4 1 p51 1 p29
+mov p29 p51
+endif 10
+ldp p52 p29 - 0 40
+imul i53 i37 i46
+iadd i54 i45 i53
+stf f40 p52 i54 8 0
+ldi i55 p17 - 0 16
+chkb i45 i55 0 1:4
+ldp p56 p17 - 0 40
+ldf f57 p56 i45 8 0
+ldi i58 p32 - 0 16
+chkb i45 i58 0 1:4
+ldi i59 p32 - 0 24
+chkb i37 i59 1 1:4
+ldi i60 p32 - 0 0
+li i61 1
+icmp ne i62 i60 i61
+if 11 i62
+rcall sea_arr_unique 1:4 1 p63 1 p32
+mov p32 p63
+endif 11
+ldp p64 p32 - 0 40
+imul i65 i37 i58
+iadd i66 i45 i65
+stf f57 p64 i66 8 0
+endloop 9
+endif 8
+endloop 7
+endif 6
+retain p29
+retain p32
+release p32
+release p29
+mov p67 p29
+mov p68 p32
+exit 5
+enddo 5
+mov p69 p67
+mov p70 p68
+release p6
+release p17
+ldi i71 p69 - 0 16
+ldi i72 p69 - 0 24
+li i73 2
+li i74 1
+ldi i75 p69 - 0 16
+chkb i73 i75 0 1:5
+ldi i76 p69 - 0 24
+chkb i74 i76 1 1:5
+ldp p77 p69 - 0 40
+imul i78 i74 i75
+iadd i79 i73 i78
+ldf f80 p77 i79 8 0
+li i81 2
+li i82 1
+ldi i83 p70 - 0 16
+chkb i81 i83 0 1:5
+ldi i84 p70 - 0 24
+chkb i82 i84 1 1:5
+ldp p85 p70 - 0 40
+imul i86 i82 i83
+iadd i87 i81 i86
+ldf f88 p85 i87 8 0
+sa p89 s1
+sti i71 p89 - 0 0
+sti i72 p89 - 0 8
+stf f80 p89 - 0 16
+stf f88 p89 - 0 24
+la p90 d1
+rcall sea_printf 1:5 0 2 p90 p89
+release p70
+release p69
+ret 0
+endfunc
+fmt d1 8
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

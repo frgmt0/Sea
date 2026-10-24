@@ -1,10 +1,113 @@
 // std.sea -- the Sea prelude (docs/DESIGN.md 2.5, LANGUAGE.md section 10).
 //
-// The driver streams this file to pass 1 ahead of every program, and pass 2b drops each
-// function the program does not reach. It will hold the library functions that are naturally
-// written in Sea with value semantics, marked (P) in LANGUAGE.md section 10: linspace,
-// meshgrid, setdiff and bincount.
+// The driver streams this file to pass 1 ahead of every program; pass 2b drops each function
+// the program does not reach, and every call of one that remains is inlined (DESIGN.md 3.6.6
+// rule 37). It holds the library functions marked (P) in LANGUAGE.md section 10, written in
+// Sea with value semantics: linspace, bincount, meshgrid and setdiff.
 //
-// Those functions need arrays, which arrive in phase 4 (DESIGN.md section 8). Until then this
-// file holds comments only; the driver still streams it, so the prelude path is exercised
-// on every compilation.
+// Rules for this file (DESIGN.md 2.5, Decisions 54-55, lead decisions L-t, L-x, L-y):
+// * exactly these four fn items, each with the one signature of LANGUAGE.md section 10 and its
+//   parameter names (the call errors show them); no ref parameter, no recursion, no const or
+//   struct item; a prelude function may call another, with no cycle (none of the four does);
+// * result types are void, scalars, str, dynamic arrays or tuples of those;
+// * every error is raised by an ordinary check whose message 2.6.2 fixes, never by error();
+//   each result is allocated before any other check that can fail, so that a negative or too
+//   large size reports `invalid array size n` first.
+
+// linspace -- n points from d1 to d2, bit-exact to LANGUAGE.md 10.3 (MATLAB R2026a). The result
+// is allocated first: n < 1 gives the empty vector with no error, n above 2^31 - 1 is
+// `invalid array size n`. With n1 = n - 1: n == 1 gives [d2]; the symmetric case d1 == -d2,
+// n > 2 scales the exact integers -n1 + 2k by the one quotient d2 / n1 (so linspace(0.0, 0.0, 4)
+// is 0 -0 0 0); otherwise d1 + (k * (d2 - d1)) / n1 in this order, every point d1 when d1 == d2.
+fn linspace(d1: f64, d2: f64, n: i64) -> f64[] {
+    var y = zeros(if n < 1 { 0 } else { n })
+    if n < 1 {
+        return y
+    }
+    if n == 1 {
+        y[0] = d2
+        return y
+    }
+    let n1 = n - 1
+    if d1 == -d2 && n > 2 {
+        // rule 2: one quotient, exact integer factors, then the fixed points
+        let q = d2 / f64(n1)
+        for k in 0..n {
+            y[k] = f64(-n1 + 2 * k) * q
+        }
+        y[0] = d1
+        y[n1] = d2
+        if n1 % 2 == 0 {
+            y[idiv(n1, 2)] = 0.0
+        }
+        return y
+    }
+    if d1 == d2 {
+        // rule 3 with d1 == d2: every point is d1
+        for k in 0..n {
+            y[k] = d1
+        }
+        return y
+    }
+    // rule 3: multiply, then divide, then add; then the end points exactly
+    let w = d2 - d1
+    let m = f64(n1)
+    for k in 0..n {
+        y[k] = d1 + (f64(k) * w) / m
+    }
+    y[0] = d1
+    y[n1] = d2
+    return y
+}
+
+// bincount -- the count of each value 0 ... n - 1 in idx (LANGUAGE.md 10.7). The result is
+// allocated first (n < 0 or above 2^31 - 1 is `invalid array size n`); a value v outside is the
+// element store's `index v out of bounds for dimension 0 of extent n`.
+fn bincount(idx: i64[], n: i64) -> i64[] {
+    var c = filled(0, n)
+    for v in idx {
+        c[v] += 1
+    }
+    return c
+}
+
+// meshgrid -- X[i, j] = x[j] and Y[i, j] = y[i], both len(y) x len(x) (LANGUAGE.md 10.3), each
+// element a copy of the argument's bits. Both results are allocated first (too large is
+// `out of memory`) and filled column by column, the storage order.
+fn meshgrid(x: f64[], y: f64[]) -> (f64[,], f64[,]) {
+    let r = len(y)
+    let c = len(x)
+    var X = zeros(r, c)
+    var Y = zeros(r, c)
+    for j in 0..c {
+        let xj = x[j]
+        for i in 0..r {
+            X[i, j] = xj
+            Y[i, j] = y[i]
+        }
+    }
+    return (X, Y)
+}
+
+// setdiff -- the sorted unique values of a that are not in b (LANGUAGE.md 10.6): both sorted,
+// then one merge marks the first of each run of equal values of a that b lacks, and the mask
+// selects them in ascending order.
+fn setdiff(a: i64[], b: i64[]) -> i64[] {
+    let sa = sort(a)
+    let sb = sort(b)
+    let na = len(sa)
+    let nb = len(sb)
+    var keep = filled(false, na)
+    var j = 0
+    for i in 0..na {
+        let v = sa[i]
+        if i == 0 || sa[i - 1] != v {
+            // advance b to the first value not below v
+            while j < nb && sb[j] < v {
+                j += 1
+            }
+            keep[i] = j == nb || sb[j] != v
+        }
+    }
+    return sa[keep]
+}

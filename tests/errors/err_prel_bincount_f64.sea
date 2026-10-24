@@ -1,0 +1,2 @@
+// err_prel_bincount_f64 -- bincount([1.0], 2): the literal is a fixed-size f64[1] (LANGUAGE.md 4.5), 201 at it (L-t)
+let c = bincount([1.0], 2)

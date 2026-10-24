@@ -1,0 +1,4 @@
+// err_prel_meshgrid_matrix -- meshgrid of a matrix: 201 at the argument, f64[,] for f64[] (L-t, Decision 54)
+let A = zeros(2, 2)
+let y = zeros(2)
+let (X, Y) = meshgrid(A, y)

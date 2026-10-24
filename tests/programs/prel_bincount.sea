@@ -1,0 +1,24 @@
+// prel_bincount -- bincount (LANGUAGE.md 10.7; DESIGN.md 6.2 "4h"): repeats, an empty idx, n = 0, a fixed-size
+// literal argument converted, an owned argument, the result modified afterwards
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+pvi(bincount([2, 0, 2, 2, 1], 4))
+pvi(bincount([], 3))
+pvi(bincount([], 0))
+let fixed = [1, 1, 0]
+pvi(bincount(fixed, 2))
+pvi(bincount([3], 4))
+var c = bincount(setdiff([4, 0, 4], [9]), 5)
+c[1] += 10
+pvi(c)
+let d = bincount(c, 11)
+pvi(d)
+let v = [0.2, 1.7, 1.2, 2.9]
+pvi(bincount(i64(floor(v)), 3))
+let big = bincount(filled(1, 1000), 2)
+printf("%d %d %d\n", len(big), big[0], big[1])

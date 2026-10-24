@@ -18,7 +18,7 @@ commit c1736f7. **Phase 3** (elementary functions: Sea's own scalar `log exp sin
 on both targets (Decision 6), and the compile-time `pow`; DESIGN.md §4.10) is complete at sea commit 98e1e14: the
 `math/` tests pass on both targets (≤ 1 ulp against the high-precision references, identical bits
 on both targets). **Phase 4** of DESIGN.md §8
-(**arrays and structs**) is under way: sub-phases 4a (pass 2a split into `seaname` and `seacheck`,
+(**arrays and structs**) is complete: sub-phases 4a (pass 2a split into `seaname` and `seacheck`,
 sea commit 263ee1f), 4b (the phase-4 specification, 2dfe535), 4c (heap runtime, a59ca07) and 4d
 (dynamic arrays core, W4 scalar SOR accepted by `make test-accept`) are done. The size gate after
 4d (DESIGN.md §2.7) projected `sealower` to 9 665 lines, so sub-phase 4e-0 split pass 3a into
@@ -53,13 +53,13 @@ into `seaval`, rule 36's composites into `sealoop`, a middle HIR→HIR pass), th
 through 4h, gates after 4h-0, 4h, phase 6 and phase 8. **4h-0 is done**: `sealower` 6 304 built
 lines (690 saved; the multi-line `DEF` functions `FNQ`, `FNE`, `FNR$`; 3 free array letters),
 proved neutral by byte-identical `sea.lir1`, and the gate after 4h-0 passed (6 604 ≤ 7 000 with
-4h, v1 7 704, stress 8 254; reserve V not needed), DESIGN.md §2.7 "Measured after 4h-0". **4h**
-(prelude inlining, `linspace`/`meshgrid`/`setdiff`/`bincount`, W5, the close-out of phase 4) **is
-specified** (Decisions 53–57, lead decisions L-s–L-ab: rule 37 as the `sea.hirl` records `iblk` and
-`iret` (`passes.txt` HL 88–89), `sealoop`'s rewrite L18 with the `.i` locals and recursive inlining,
-the refinements R26–R30 in `sealower`, one signature per prelude function, `NAME.prelude` beside
-`.hir`/`.hirl`/`.lir1`/`.out`, `sealoop` in the gate after 4h; DESIGN.md §0, §2.5, §2.6.2, §2.7,
-§3.5.9, §3.6.6, §6.2, §8, §9). **Next is the 4h build.**
+4h, v1 7 704, stress 8 254; reserve V not needed), DESIGN.md §2.7 "Measured after 4h-0". **4h is
+done** (Decisions 53–57, lead decisions L-s–L-ab: prelude inlining by `sealoop`'s rewrite L18 into
+the `sea.hirl` records `iblk`/`iret` (`passes.txt` HL 88–89), lowered by `sealower` (R26–R30);
+`std.sea`'s `linspace`, `meshgrid`, `setdiff`, `bincount`; W5 accepted). The gate after 4h passed:
+`sealower` 6 473 built lines (v1 7 573, stress 8 123; free letters `C S X`), `sealoop` 5 829 (v1
+8 429; `B X Y`), `seacheck` 6 426 (14 free), `seaname` 5 281 (DESIGN.md §2.7 "Measured after 4h").
+**Phase 4 is complete. Next is phase 5 (scalar code quality, DESIGN.md §8).**
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

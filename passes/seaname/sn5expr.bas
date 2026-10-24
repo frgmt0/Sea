@@ -47,7 +47,7 @@
 7435 REM a value has its type (rcns: str), pi inf nan eps are f64, the callee of a call is left to the call;
 7440 REM any other name (a constant waiting or without a value: Decision 25) fails it ------------
 7445 SUB "rs_name": N(), M(), Y(), W(), S$(), X(), X$(), J
-7450 CALL "lk": Y(), W(), X(), X$(), S$(), N(J, 6), R
+7450 CALL "lk": N(), Y(), W(), X(), X$(), S$(), N(J, 6), R
 7455 LET M(J, 2) = R
 7460 LET M(J, 4) = 1
 7465 LET P = N(J, 9)

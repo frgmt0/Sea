@@ -70,7 +70,7 @@
 13700 REM 0); M(J,4) 1: it becomes rslit. A literal is no constant expression: the typed path fails --
 13705 SUB "rsl": N(), M(), Y(), W(), S$(), X(), X$(), J
 13710 CALL "fl": X()
-13715 CALL "lk": Y(), W(), X(), X$(), S$(), N(J, 6), R
+13715 CALL "lk": N(), Y(), W(), X(), X$(), S$(), N(J, 6), R
 13720 LET M(J, 2) = 0
 13725 LET M(J, 4) = 1
 13730 IF R <= 0 THEN 13745

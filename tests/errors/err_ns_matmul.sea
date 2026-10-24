@@ -1,0 +1,5 @@
+// err_ns_matmul -- A @ B of two matrices: not supported yet: @ until phase 8, at the operator node, which
+// stands at its left operand (DESIGN.md 2.6.2 after-phase-4 table, 3.3; L-z)
+let A = zeros(2, 2)
+let B = zeros(2, 2)
+let C = A @ B

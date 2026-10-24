@@ -1,0 +1,2 @@
+// err_prel_too_many -- linspace with four arguments: too many arguments (242) at the call (L-t)
+let v = linspace(0.0, 1.0, 2, 3)

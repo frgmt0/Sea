@@ -1,0 +1,41 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_scope.sea
+func .main main 1:1:1 0 0
+li i1 3
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 1:1 1 p5 4 i2 i3 i1 i4
+do 1
+li i6 0
+ldi i7 p5 - 0 16
+li i8 1
+rcount i9 i10 i6 i7 i8 0 1:1
+if 2 i10
+loop 3 i11 i6 i9 i8
+rcall sea_str_i64 1:1 1 p12 1 i11
+la p13 d1
+rcall sea_str_cmp - 1 i14 2 p12 p13
+li i15 0
+icmp eq i16 i14 i15
+if 4 i16
+release p12
+mov i17 i11
+exit 1
+else 4
+endif 4
+release p12
+endloop 3
+endif 2
+li i18 0
+mov i17 i18
+exit 1
+enddo 1
+mov i19 i17
+release p5
+ret 0
+endfunc
+str d1 1
+#end

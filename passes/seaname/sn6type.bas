@@ -10,13 +10,13 @@
 8645 CALL "tyb": S$(N(I, 6)), B
 8650 LET M(I, 3) = B
 8655 IF B > 0 THEN 8670
-8660 CALL "lk": Y(), W(), X(), X$(), S$(), N(I, 6), R
+8660 CALL "lk": N(), Y(), W(), X(), X$(), S$(), N(I, 6), R
 8665 LET M(I, 2) = R
 8670 REM the dims, left to right: an int stays a literal (rint), a name is looked up
 8675 LET J = N(I, 7)
 8680 FOR K = 1 TO N(I, 2)
 8685 IF N(J, 0) <> 30 THEN 8705
-8690 CALL "lk": Y(), W(), X(), X$(), S$(), N(J, 6), R
+8690 CALL "lk": N(), Y(), W(), X(), X$(), S$(), N(J, 6), R
 8695 LET M(J, 2) = R
 8700 LET M(J, 4) = 1
 8705 LET J = N(J, 8)

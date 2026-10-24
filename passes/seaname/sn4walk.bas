@@ -7,6 +7,10 @@
 5175 LET X(12) = 200000
 5180 LET X(13) = 0
 5185 LET X(14) = S
+5186 LET X(46) = 0
+5187 IF X(44) < 2 THEN 5190
+5188 IF S = 1 THEN 5190
+5189 LET X(46) = 1 - SGN(INT(N(F, 4) / 1E9))
 5190 IF S = 1 THEN 5250
 5195 LET I = N(F, 7)
 5200 FOR J = 1 TO Y(S, 6)
@@ -19,7 +23,7 @@
 5235 LET I = N(I, 8)
 5240 NEXT J
 5245 CALL "rs_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
-5247 GOTO 5300
+5247 GOTO 5299
 5250 REM .main: one scope for the top-level statements; the items are not statements
 5255 LET X(12) = X(12) - 2
 5260 LET W(X(12)) = -1
@@ -32,6 +36,7 @@
 5292 CALL "rs_st": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
 5295 LET I = N(I, 8)
 5297 GOTO 5270
+5299 LET X(46) = 0
 5300 SUBEND
 5305 REM ---- rs_blk: block B, a scope (LANGUAGE 7.7) ---------------------------------------------
 5310 SUB "rs_blk": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), B

@@ -2,7 +2,7 @@
 30002 REM sealower part 3 (lines 30000-39999): sea.hirl, sub-phase 4e-0 (DESIGN 3.5.9; 3.6.6 "Two programs", "Lowering of the sea.hirl records", rules T1-T3, 15 (k), 16 (e), 30 (1)). Node kinds: 43 xblk 44 tmp 45 hloop 46 ext 47 adat 48 eld 49 est 50
 30004 REM anew 51 wbin; 52 tptr is a type (T kind 4, T(.,2) its elt). Records 82-87 are not in the kind map: BAD_RECORD. Locals: A(.,0) the tmp node that binds it, A(.,3) the register it names when that is not its own (T1 another name, T3 the xblk's
 30006 REM destination, rule 30 (1) the vector the loop holds), A(.,4) 1 a .l local + 2 mut for. H(bind,6) = 1: the bind of an L4 block. Fields: xblk H6 n; tmp, hloop H5 lid; ext H5 dim; eld, est H5 sc, H0 off (text); anew H5 z, H6 r; wbin H5 op (1
-30008 REM add 2 sub 3 mul). Resume codes 60-65 (32010).
+30008 REM add 2 sub 3 mul). Resume codes 60-65 (32010). Sub-phase 4h: kinds 65 iblk, 66 iret, resume codes 71, 72 (33690).
 30020 REM ====================================================================================
 30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14 take an array operand: R10, 40116); sort and argsort do (R16) ---------------------------
 30050 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
@@ -52,16 +52,19 @@
 30160 GOTO 1285
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
-30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320, 2360, 52800, 52820
-30204 REM ---- xblk ty n: ty is its last child's type ------------------------------------------
+30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320, 2360, 52800, 52820, 2360, 2360, 2360, 33900, 33978
+30204 REM ---- xblk ty n: ty is its last child's type; an iblk value makes it inline (33980)
 30210 LET H(H1, 4) = I(2)
 30212 LET H(H1, 6) = I(3)
 30214 LET E2 = H(H1, 7)
+30215 LET E5 = 0
 30216 IF H(E2, 8) = 0 THEN 30222
+30217 LET E5 = E5 + SGN(ABS(H(E2, 1) - 44))
 30218 LET E2 = H(E2, 8)
 30220 GOTO 30216
 30222 IF H(E2, 4) <> I(2) THEN 2360
-30224 GOTO 1285
+30223 IF H(E2, 1) = 65 THEN 33982
+30224 GOTO 33990
 30230 REM ---- tmp lid: its local bound once, of the child's type; a tptr local only of an adat --
 30240 LET H(H1, 5) = I(2)
 30242 LET E2 = H(H1, 7)
@@ -179,7 +182,7 @@
 30928 LET E5 = 1
 30930 RETURN
 30990 REM ==== 31000: the checks of 3.5.9 on the function just read (its nodes H2 .. H0): a tmp local read only after its tmp and never written (bind, tbind, asg, tasg, rarg; nor the local of an hloop or forr); a tptr local only a tmp's; the bind of
-30991 REM a .l local only the first statement of an L4 block (a block of 4), which is marked H(bind,6) = 1
+30991 REM a .l local only the first statement of an L4 block (a block of 4), which is marked H(bind,6) = 1; an iblk claimed by its inline xblk, an iret by its iblk (H5, 4h)
 31000 LET E1 = G(G0, 0)
 31002 GOSUB 40400
 31020 FOR E2 = H2 TO H0
@@ -192,8 +195,11 @@
 31034 IF E3 = 11 THEN 31120
 31036 IF E3 = 45 THEN 31090
 31038 IF E3 = 27 THEN 31090
+31039 IF ABS(E3 - 65.5) = .5 THEN 31044
 31040 NEXT E2
 31042 RETURN
+31044 IF H(E2, 5) = 0 THEN 2360
+31046 GOTO 31040
 31050 REM an lv: after the tmp of its local; a tptr local is always a tmp's
 31060 LET E4 = H(E2, 5)
 31062 LET E5 = A(E1 + E4, 0)
@@ -243,8 +249,8 @@
 31160 IF A(E1 + H(O1, 5), 0) <> 0 THEN 2360
 31162 RETURN
 31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
-32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700
-32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056, 50220, 50730, 51580
+32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700, 2365, 2365, 2365, 33700, 33800
+32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056, 50220, 50730, 51580, 33750, 33812
 32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a rule-12 copy), an ifx, && or || is lowered with no destination and
 32091 REM L names its register
 32100 LET E1 = G(F0, 0) + H(X, 5)
@@ -257,6 +263,7 @@
 32112 LET W(W0 + 3) = 1
 32113 IF F5 = 1 THEN 32124
 32114 IF H(E2, 1) = 17 THEN 32124
+32115 IF H(E2, 1) + SGN(H(E2, 5)) = 44 THEN 32124
 32116 IF H(E2, 1) <> 8 THEN 32119
 32117 IF H(E2, 5) = 16 THEN 32124
 32118 IF H(E2, 5) = 17 THEN 32124
@@ -282,7 +289,7 @@
 32208 IF E4 = 0 THEN 33520
 32209 IF E4 < E3 THEN 32214
 32210 IF E4 >= X THEN 32214
-32211 IF H(E4, 1) <> 44 THEN 32214
+32211 IF H(E4, 1) * SGN(ABS(H(H(E4, 7), 1) + SGN(H(H(E4, 7), 5)) - 44)) <> 44 THEN 32214
 32212 LET A(G(F0, 0) + H(E2, 5), 3) = D
 32214 LET E2 = W(W0 + 4)
 32216 LET X1 = E2
@@ -307,7 +314,7 @@
 32308 LET E6 = U0
 32310 LET E4 = X - 1
 32312 IF E4 < E3 THEN 32340
-32314 IF H(E4, 1) <> 43 THEN 32320
+32314 IF ABS(H(E4, 1) - 54) <> 11 THEN 32320
 32315 REM a nested xblk has its own temporaries: skip its subtree
 32316 LET P4 = E4
 32317 GOSUB 13480
@@ -521,6 +528,7 @@
 33404 IF H(W(E2), 1) <> 44 THEN 33416
 33406 LET E2 = E2 - 6
 33408 IF E2 < 6 THEN 33416
+33409 IF H(W(E2), 1) = 65 THEN 33416
 33410 IF H(W(E2), 1) <> 43 THEN 33406
 33412 LET J(J9, 4) = E2
 33416 RETURN
@@ -570,3 +578,149 @@
 33652 LET R0 = U(Z6 + 1, 1)
 33654 GOSUB 10080
 33656 GOTO 19575
+33690 REM ==== sub-phase 4h (DESIGN 3.5.9 L18, R26-R30 and their validation; 3.6.6 rule 37 and its iblk/iret bullet): kinds 65 iblk (H4 ty, H6 k, H5 its inline xblk) and 66 iret (H6 k, H5 its iblk); an inline xblk has H5 = its iblk. Resume codes 71, 72
+33700 REM ---- iblk k (R27): R1 .. Rk on U above x1 (D = -2: a component's own new register is its Ri), do B (x2 = B), its block above the scope height x3 (resume 71); a value with a destination (D >= 0) has k = 1
+33702 IF D < 0 THEN 33706
+33704 IF H(X, 6) <> 1 THEN 2360
+33706 LET W(W0 + 3) = U0
+33708 FOR O6 = 1 TO H(X, 6)
+33710 IF D <> -2 THEN 33716
+33712 LET N2 = U(W(W0 + 3) - H(X, 6) + O6, 1)
+33714 IF N2 > N7 THEN 33726
+33716 LET T1 = H(X, 4)
+33718 IF T1 <= 9 THEN 33724
+33720 IF T(T1, 1) <> 2 THEN 33724
+33722 LET T1 = M(T(T1, 3) + O6 - 1)
+33724 GOSUB 7395
+33725 GOSUB 7420
+33726 GOSUB 7970
+33728 LET U(U0, 1) = N2
+33730 NEXT O6
+33732 GOSUB 7885
+33734 LET W(W0 + 4) = B7
+33736 LET W(W0 + 5) = J9
+33738 LET L1$ = "do " & STR$(B7)
+33740 GOSUB 7695
+33742 LET S = 71
+33744 GOTO 7370
+33746 REM the block done (for k = 0 with its releases): exit B unless k > 0 or its last statement is an iret (R29), enddo B
+33750 IF H(X, 6) > 0 THEN 33764
+33751 LET P3 = H(H(X, 7), 7)
+33752 IF H(P3, 8) = 0 THEN 33758
+33754 LET P3 = H(P3, 8)
+33756 GOTO 33752
+33758 IF H(P3, 1) = 66 THEN 33764
+33760 LET L1$ = "exit " & STR$(W(W0 + 4))
+33762 GOSUB 7695
+33764 LET L1$ = "enddo " & STR$(W(W0 + 4))
+33766 GOSUB 7695
+33767 REM R27, the value R1 .. Rk: P3 = the statement's frame (below the inline xblk, past seqs and xblks); a destination D gets mov D R1, except the new register V of rule 15 (d) or of a scalar ref parameter's asg set (W(P3 + 3) = D): V is R1
+33768 LET E1 = W(W0 + 3)
+33769 LET R9 = U(E1 + 1, 1) * SGN(H(X, 6))
+33770 LET P3 = W0 - 6
+33771 LET P3 = P3 - 6
+33772 IF ABS(H(W(P3), 1) - 31) = 12 THEN 33771
+33773 IF D = -2 THEN 33786
+33774 IF D < 1 THEN 33797
+33775 IF H(W(P3), 1) <> 23 THEN 33779
+33776 IF W(P3 + 3) <> D THEN 33779
+33777 LET W(P3 + 3) = R9
+33778 GOTO 33797
+33779 LET L1$ = "mov" & FNR$(D) & FNR$(R9)
+33780 GOSUB 7620
+33781 LET R9 = D
+33782 GOTO 33797
+33785 REM D = -2: a component in a local's register (a tbind's local, a tasg's scalar local) gets mov L Ri here under a tbind, from step (d) of rule 2 under a tasg (U(.,2) = -L)
+33786 FOR O6 = 1 TO H(X, 6)
+33787 LET E2 = E1 - H(X, 6) + O6
+33788 IF U(E2, 1) > N7 THEN 33796
+33789 IF H(W(P3), 1) = 24 THEN 33793
+33790 LET L1$ = "mov" & FNR$(U(E2, 1)) & FNR$(U(E1 + O6, 1))
+33791 GOSUB 7620
+33792 GOTO 33796
+33793 LET U(E2, 2) = -U(E2, 1)
+33794 LET U(E2, 1) = U(E1 + O6, 1)
+33796 NEXT O6
+33797 LET U0 = E1
+33798 GOTO 3090
+33800 REM ---- iret k (R29): its values on U above x1, owned (rule 15 (a); resume 72); the releases down to its iblk's scope height (rule 16 (c) inside it, R22); mov Ri Vi; exit B
+33802 LET W(W0 + 3) = U0
+33804 LET W(W0 + 4) = H(X, 7)
+33806 IF W(W0 + 4) = 0 THEN 33820
+33808 LET S = 72
+33810 GOTO 7366
+33812 GOSUB 7966
+33814 LET X0 = W(W0 + 4)
+33816 GOSUB 10230
+33818 LET W(W0 + 4) = H(W(W0 + 4), 8)
+33819 GOTO 33806
+33820 FOR O6 = W0 - 6 TO 6 STEP -6
+33822 IF H(W(O6), 1) = 65 THEN 33826
+33824 NEXT O6
+33825 GOTO 2365
+33826 GOSUB 10450
+33828 LET U4 = W(O6 + 5)
+33830 GOSUB 10390
+33832 FOR E5 = 1 TO H(X, 6)
+33834 LET L1$ = "mov" & FNR$(U(W(O6 + 3) + E5, 1)) & FNR$(U(W(W0 + 3) + E5, 1))
+33836 GOSUB 7620
+33838 NEXT E5
+33840 LET L1$ = "exit " & STR$(W(O6 + 4))
+33842 LET U0 = W(W0 + 3)
+33844 GOTO 7664
+33900 REM ---- reading iblk ty k (R26, validation of 4h): a block child; k 0 for ty 1, m for a ttuple of m, else 1; inside no ret or tret, a break or cont only in a loop inside it; each iret no inner iblk claimed claimed (H5), k values of the result types
+33902 LET H(H1, 4) = I(2)
+33904 LET H(H1, 6) = I(3)
+33906 IF H(H(H1, 7), 1) <> 32 THEN 2360
+33908 LET E4 = 1
+33910 IF I(2) > 1 THEN 33914
+33912 LET E4 = 0
+33914 IF I(2) <= 9 THEN 33920
+33916 IF T(I(2), 1) <> 2 THEN 33920
+33918 LET E4 = T(I(2), 2)
+33920 IF E4 <> I(3) THEN 2360
+33922 LET P4 = H1
+33924 GOSUB 13480
+33926 LET E2 = P4 - 1
+33928 LET E2 = E2 + 1
+33930 IF E2 >= H1 THEN 1285
+33932 LET E3 = H(E2, 1)
+33934 IF ABS(E3 - 30.5) = .5 THEN 2360
+33936 IF ABS(E3 - 28.5) = .5 THEN 33962
+33938 IF E3 <> 66 THEN 33928
+33940 IF H(E2, 5) > 0 THEN 33928
+33942 LET H(E2, 5) = H1
+33944 IF H(E2, 6) <> I(3) THEN 2360
+33946 LET E5 = H(E2, 7)
+33948 LET E4 = 0
+33950 IF E5 = 0 THEN 33928
+33952 LET E4 = E4 + 1
+33954 LET E6 = I(2)
+33955 IF E6 <= 9 THEN 33958
+33956 IF T(E6, 1) <> 2 THEN 33958
+33957 LET E6 = M(T(E6, 3) + E4 - 1)
+33958 IF H(E5, 4) <> E6 THEN 2360
+33959 LET E5 = H(E5, 8)
+33960 GOTO 33950
+33961 REM a break or cont E2: some hloop, while or forr E6 of the iblk's subtree holds it
+33962 LET E6 = E2
+33964 LET E6 = E6 + 1
+33966 IF E6 >= H1 THEN 2360
+33968 IF H(E6, 1) = 45 THEN 33972
+33970 IF ABS(H(E6, 1) - 26.5) <> .5 THEN 33964
+33972 LET P4 = E6
+33973 GOSUB 13480
+33974 IF P4 > E2 THEN 33964
+33976 GOTO 33928
+33977 REM ---- reading iret k (claimed by its innermost iblk, 33942; checked at the function's end, 31044)
+33978 LET H(H1, 6) = I(2)
+33979 GOTO 1285
+33980 REM ---- (30223) an inline xblk H1, its value E2 an iblk: every statement a tmp (E5 counts the others, R26); H5 links the two. Any other xblk of type 1 or of a ttuple is not allowed (30224)
+33982 IF E5 > 0 THEN 2360
+33984 LET H(H1, 5) = E2
+33986 LET H(E2, 5) = H1
+33988 GOTO 1285
+33990 IF I(2) = 1 THEN 2360
+33992 IF I(2) <= 9 THEN 1285
+33994 IF T(I(2), 1) = 2 THEN 2360
+33996 GOTO 1285

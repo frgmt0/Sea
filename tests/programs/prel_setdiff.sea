@@ -1,0 +1,22 @@
+// prel_setdiff -- setdiff (LANGUAGE.md 10.6; DESIGN.md 6.2 "4h"): duplicates, negatives, unsorted input, an
+// empty a, an empty b written [], a range argument, everything removed, i64 extremes
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+pvi(setdiff([3, 1, 3, 2, 1], [2]))
+pvi(setdiff([-5, 3, -1, 0], [0]))
+pvi(setdiff([9, 4, 7, 4], [8]))
+pvi(setdiff([], [1, 2]))
+pvi(setdiff([4, 2, 4], []))
+pvi(setdiff((0..6), [0, 5]))
+pvi(setdiff([1, 2], [2, 1, 7]))
+pvi(setdiff([9223372036854775807, -9223372036854775807, 0, 5], [5]))
+var a = setdiff([5, 3], [])
+a[0] = 100
+pvi(a)
+pvi(setdiff(a, a))
+pvi(setdiff(a, [5]))

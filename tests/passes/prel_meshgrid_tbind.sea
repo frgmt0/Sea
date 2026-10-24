@@ -1,0 +1,5 @@
+// prel_meshgrid_tbind -- DESIGN.md 6.2 (4h, NAME.prelude): a two-result inline call under a
+// tbind (3.5.9 R27): meshgrid's copy returns (X, Y) as R1 and R2, moved into the locals, then the
+// owned argument temporaries (the filled and ones vectors) are released (R26)
+let (X, Y) = meshgrid(filled(2.5, 2), ones(3))
+printf("%d %d %g %g\n", rows(X), cols(X), X[2, 1], Y[2, 1])

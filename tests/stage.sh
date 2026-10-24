@@ -23,6 +23,12 @@
 # sealower test written by hand (a record sealoop does not write yet, DESIGN.md 3.5.9): the
 # sealoop pair skips it, the sealower pair runs on it.
 #
+# A NAME.hir with no NAME.hir1 and no NAME.sea (or with a NAME.prelude) is the input of a sealoop
+# test written by hand (a two-file sea.hir with the prelude, DESIGN.md 6.2, Decision 55): the
+# seaexpand pair skips it; with a NAME.sea and no NAME.prelude the missing NAME.hir1 is a FAILURE. A NAME.hirl with no
+# NAME.hir and a NAME.prelude starts the chain at sealower (the dumps of a prelude test are
+# committed goldens): the sealoop pair skips it. The goldens hold the prelude's `#file std.sea`.
+#
 # A NAME.lir with neither NAME.lir1 nor NAME.sea is not a seaopt golden but a pass-4 test: LIR
 # written by hand, with NAME.out (expected standard output) [+ NAME.err, NAME.status]. It runs
 # seagen_a64 on it (as sea.lir, standard input /dev/null), assembles sea.s with `as`, links it
@@ -129,6 +135,13 @@ stage() {
         if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.lir1 (no NAME.hirl, no NAME.sea) is a seaopt-only test: no sealower golden
         if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
+        # 4h (DESIGN.md 6.2): a golden NAME.hir with no NAME.hir1 is a stage-only input of sealoop
+        # (hand-written two-file sea.hir, no NAME.sea) or the start of a prelude test: no seaexpand
+        # golden. A NAME.sea test without NAME.prelude still needs its NAME.hir1.
+        if [ "$_next" = hir ] && [ ! -f "$in" ] && { [ ! -f "$ROOT/tests/passes/$nm.sea" ] || [ -f "$ROOT/tests/passes/$nm.prelude" ]; }; then continue; fi
+        # a NAME.hirl with no NAME.hir but a NAME.prelude starts at .hirl (the prelude test
+        # builds the dumps from the real prelude): no sealoop golden
+        if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ -f "$ROOT/tests/passes/$nm.prelude" ]; then continue; fi
         selected "$name" || continue
         if [ ! -f "$in" ]; then fail "$name" "golden input $nm.$_prev missing"; continue; fi
         if [ ! -x "$BUILD/$_p" ]; then fail "$name" "pass '$_p' not built ($BUILD/$_p)"; continue; fi

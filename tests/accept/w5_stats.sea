@@ -1,0 +1,138 @@
+// w5_stats -- the phase-4 acceptance program of sub-phase 4h (DESIGN.md 6.3, Decision 19, lead decision
+// L-aa): W5's sampling and statistics. The code below is LANGUAGE.md Appendix D's port of
+// workloads/w5_tolerance_mc.m, copied verbatim for what the four keys first_dev, mean_cold, std_cold
+// and hist_counts need (the Dim struct and table, the inputs, the validation match, the sampling loop,
+// uTop and Top, stack_gap, the cold statistics, the histogram by bincount, lcg_fill), followed by the
+// JSON subset of DESIGN.md 6.3 written with printf; nothing else is written to standard output.
+
+struct Dim {
+    name: str
+    nom: f64      // nominal length [mm]
+    tol: f64      // symmetric tolerance [mm]
+    dist: str     // "normal" | "uniform" | "triangular"
+    sign: i64     // +1 opens the gap, -1 closes it
+    alpha: f64    // thermal expansion coefficient [1/K]
+}
+
+// ---------------------------------------------------------------- inputs
+let dims = [
+    Dim { name: "housing depth",  nom: 84.00, tol: 0.050, dist: "normal",     sign: 1,  alpha: 23.1e-6 },
+    Dim { name: "gasket",         nom: 0.25,  tol: 0.040, dist: "triangular", sign: 1,  alpha: 80e-6 },
+    Dim { name: "bearing 1",      nom: 19.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "spacer",         nom: 24.75, tol: 0.030, dist: "uniform",    sign: -1, alpha: 11.5e-6 },
+    Dim { name: "gear hub",       nom: 22.00, tol: 0.040, dist: "triangular", sign: -1, alpha: 11.5e-6 },
+    Dim { name: "bearing 2",      nom: 17.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "retaining ring", nom: 1.20,  tol: 0.030, dist: "uniform",    sign: -1, alpha: 12.0e-6 },
+]
+let nSample = 1_000_000      // Monte Carlo samples [-]
+let seed = 7_340_117         // LCG seed [-]
+let Tref = 20.0              // reference (inspection) temperature [degC]
+let Tlo = 20.0               // operating temperature range, uniform [degC]
+let Thi = 95.0
+let LSL = 0.20               // cold end-play lower limit [mm]
+let USL = 0.42               // cold end-play upper limit [mm]
+let hotMax = 0.45            // hot end-play upper limit [mm]
+let histLo = 0.0             // histogram range for the cold gap [mm]
+let histHi = 0.6
+let nBin = 60
+let pct = [0.135, 2.5, 50, 97.5, 99.865]   // percentiles to report [%]
+let scale = linspace(0.4, 1.6, 25)         // tolerance scaling factors for the sweep [-]
+let yieldTarget = 0.9973
+
+let nDim = len(dims)
+for d in 0..nDim {
+    match dims[d].dist {
+        "normal" | "uniform" | "triangular" => {}
+        _ => { error("dimension \"%s\": unknown distribution \"%s\"", dims[d].name, dims[d].dist) }
+    }
+    if dims[d].tol <= 0 {
+        error("dimension \"%s\": tolerance must be positive", dims[d].name)
+    }
+}
+
+// ---------------------------------------------------------------- sampling
+var s = seed
+var dev = zeros(nSample, nDim)        // deviation of each dimension from nominal [mm]
+for d in 0..nDim {
+    match dims[d].dist {
+        "normal" => {
+            let u = lcg_fill(ref s, 2 * nSample)
+            let u1 = u[0..$ step 2]
+            let u2 = u[1..$ step 2]
+            let z = sqrt(-2 * log(u1)) * cos(2 * pi * u2)
+            dev[:, d] = z * (dims[d].tol / 3)
+        }
+        "uniform" => {
+            let u = lcg_fill(ref s, nSample)
+            dev[:, d] = dims[d].tol * (2 * u - 1)
+        }
+        "triangular" => {
+            let u = lcg_fill(ref s, nSample)
+            let t = dims[d].tol
+            dev[:, d] = where(u < 0.5, -t + t * sqrt(2 * u), t - t * sqrt(2 * (1 - u)))
+        }
+        _ => {}
+    }
+}
+let uTop = lcg_fill(ref s, nSample)
+let Top = Tlo + (Thi - Tlo) * uTop
+
+let nom = dims.nom
+let sgn = dims.sign
+let alpha = dims.alpha
+let (gapCold, gapHot) = stack_gap(dev, 1, nom, sgn, alpha, Top, Tref)
+
+// ---------------------------------------------------------------- statistics
+let muC = mean(gapCold)
+let sdC = std(gapCold)
+
+let binW = (histHi - histLo) / nBin
+let bin = floor((gapCold - histLo) / binW)          // 0-based bin number, as f64
+let inRange = bin >= 0 & bin < nBin
+let counts = bincount(i64(bin[inRange]), nBin)
+
+// ---------------------------------------------------------------- JSON subset (DESIGN.md 6.3)
+printf("{\"first_dev\": [")
+for i in 0..10 {
+    if i > 0 { printf(", ") }
+    printf("[")
+    for j in 0..nDim {
+        if j > 0 { printf(", ") }
+        printf("%.17g", dev[i, j])
+    }
+    printf("]")
+}
+printf("], \"mean_cold\": %.17g, \"std_cold\": %.17g, \"hist_counts\": [", muC, sdC)
+for k in 0..nBin {
+    if k > 0 { printf(", ") }
+    printf("%d", counts[k])
+}
+printf("]}\n")
+
+// ================================================================ functions
+
+// n uniforms in (0,1) from the Park-Miller minimal-standard LCG (exact in i64).
+fn lcg_fill(ref s: i64, n: i64) -> f64[] {
+    var u = zeros(n)
+    for i in 0..n {
+        s = 16807 * s % 2147483647
+        u[i] = s / 2147483647
+    }
+    return u
+}
+
+// End play at the reference temperature and at the operating temperature, with the
+// deviations scaled by k. Terms are summed in chain order.
+fn stack_gap(dev: f64[,], k: f64, nom: f64[], sgn: i64[], alpha: f64[], Top: f64[],
+             Tref: f64) -> (f64[], f64[]) {
+    let n = rows(dev)
+    var gapCold = zeros(n)
+    var gapHot = zeros(n)
+    let dT = Top - Tref
+    for d in 0..len(nom) {
+        let L = nom[d] + k * dev[:, d]
+        gapCold = gapCold + sgn[d] * L
+        gapHot = gapHot + sgn[d] * (L * (1 + alpha[d] * dT))
+    }
+    return (gapCold, gapHot)
+}

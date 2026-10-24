@@ -43,9 +43,10 @@ the user's agreement. Phase 0 (§8) did:
    as 4g-1 and 4g-2 with the size gate after 4g-1 passed, §2.7) are done; `sealower` ended 4g 6
    lines under its 7 000-line cap, so the relief of Decisions 49–52 ran as sub-step 4h-0, a
    compaction of `sealower` with no change of behaviour (§2.7, §8), which is done: `sealower` 6 304
-   built lines, the gate after 4h-0 passed (§2.7); the specification of 4h (prelude inlining as the
-   `sea.hirl` records `iblk` and `iret`, the four prelude functions, W5, the close-out; Decisions
-   53–57) is agreed, and the build of 4h is next.
+   built lines, the gate after 4h-0 passed (§2.7); 4h (prelude inlining as the `sea.hirl` records
+   `iblk` and `iret`, the four prelude functions, W5, the close-out; Decisions 53–57) is done, its
+   gate passed (§2.7, "Measured after 4h"), so phase 4 is complete; phase 5 (scalar code quality,
+   §8) is next.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -421,8 +422,9 @@ LANGUAGE.md §10.3 rule 2, `linspace(0.0, 0.0, 4)` is `[0, -0, 0, 0]` (the symme
 before `d1 == d2`; the reference `common.mlinspace` agrees), and a test pins it. *Corrections made
 to the plan while writing this specification* (the planning notes were data): `.main` is function
 1 and precedes the prelude's functions, which precede the program's other `fn` items (§3.5.4), so
-L18's renumbering moves only the program's own functions; L18 renumbers every `fid` field,
-`inst` included (§3.5.3); `run.sh` and `cross_pack.sh` build the `NAME.prelude` tests with the
+L18's renumbering moves only the program's own functions; L18 renumbers every `fid` field, in
+4h those of `fn` and `call` (an `inst`, §3.5.3, reaches `sealoop` only from phase 6, whose work
+owns its renumbering); `run.sh` and `cross_pack.sh` build the `NAME.prelude` tests with the
 prelude, and `tests/stage.sh` needs two skips for the goldens that start at `.hir` or `.hirl` (§6.2,
 §8) but no prelude handling (its pairs work on the committed goldens, which hold `#file
 std.sea`); LANGUAGE.md §3.3 already states L-s's rule, so only DESIGN changes for it; the set
@@ -2361,6 +2363,63 @@ with the fusion seam; `seacheck` passes when built ≤ 7 000 with at least 2 fre
 that fails gets a relief specified and agreed with the user before phase 5's code (for
 `sealower` the next reserve of the list above).
 
+**Measured after 4h** (2026-10-24, the 4h build; `sh tools/passlines.sh limits` = `make
+check-limits`, the `DIM`s counted as above). `make test` passes every group (programs 1 203,
+stage 558, driver 107, protocol 37, rt 94, accept 2, `w5_stats` within its tolerances) and `make
+cross` passes 483 cases with none failing.
+
+| Pass | Built lines | `FOR`s | String bytes | Longest line |
+|------|------------:|-------:|-------------:|-------------:|
+| `seaparse` | 3 939 | 74 | 2 581 | 166 |
+| `seaname` | 5 281 | 119 | 2 897 | 202 |
+| `seacheck` | 6 426 | 177 | 5 302 | 194 |
+| `seaexpand` | 4 130 | 98 | 4 985 | 141 |
+| `sealoop` | 5 829 | 90 | 11 437 | 208 |
+| `sealower` | 6 473 | 124 | 4 427 | 255 |
+| `seaopt` | 2 444 | 55 | 4 319 | 178 |
+| `seagen_a64` | 3 502 | 93 | 3 205 | 196 |
+| `seagen_x64` | 3 517 | 88 | 3 431 | 134 |
+
+Every pass is below Baysick's limits; `sealower`'s longest line is at the 255-byte limit, so a
+line of it cannot grow. The 4h increments against the projection: `sealower` 169 (150–330),
+`sealoop` 396 (255–515), `seaname` 19 (20–50), `seacheck` 2 (0–40), `seaexpand` 2 (the `DATA`
+lines), the other passes 2 each.
+
+**The gate after 4h** applied: `sealower` 6 473 ≤ 7 000, 6 473 + 1 100 = 7 573 ≤ 9 000, 6 473 +
+1 650 = 8 123 ≤ 9 000, 3 free letters (`C S X`): pass; `sealoop` 5 829 ≤ 7 000, 5 829 + 2 600 =
+8 429 ≤ 9 000, 3 free letters (`B X Y`): pass, its stress line 5 829 + 3 900 = 9 729 recorded for
+the gate after phase 6 (5 829 + 1 650 = 7 479 if phase 7's fusion becomes a pass of its own,
+Decision 56); `seacheck` 6 426 ≤ 7 000, 14 free letters (`A B D F G I L P Q R S U V Z`): pass.
+**All three pass, so no relief is needed before phase 5.**
+
+*Readings of the 4h build* (where the specification was silent):
+
+* `sealoop`'s L18 rebuilds the record stream with the prelude calls inlined and then reads it
+  again through its existing reader; a file with no prelude function is processed exactly as
+  before.
+* Capacity: the nodes counted are the copies, the `tmp`s, the `iblk` and the `xblk`, and the
+  replaced `call` stops counting; the prelude functions' own nodes and locals are not counted
+  (they are dropped). Both limits are checked as each node or local is added and reported at the
+  position P of the outermost inlined call. Each inline call copies the whole body, so about 188
+  calls of `setdiff` in one program reach `program too large: nodes`, which LANGUAGE.md §3.1's
+  capacity bound allows.
+* The no-cycle check of the prelude's call graph runs along the inline stack.
+* The `.i` loop variables are numbered at their `forr` (post-order), literally as §3.5.4 says: in
+  `meshgrid`, `xj` is `.i5`, `i` is `.i6` and `j` is `.i7`.
+* Under a `bind`, the release of an owned argument `tmp` comes after `mov D R1`; under an `eval`
+  of an owned result, the argument `tmp` is released first, then R1.
+* Several `iret`s of one `iblk` share R1 … Rk, numbered at the first `iret`'s `mov`.
+* An empty `_` arm under L16 still writes its `else B`.
+* Every site in inlined code carries the call's line, the sites of `chkb`, `rcount`, `iaddc` and
+  `rcall` included.
+* `sealower`: R1 … Rk are new registers that the `iblk` pushes on its value stack; after `enddo`,
+  a destination D > 0 gets `mov D R1`, except when the frame is an `asg` whose x1 equals D (rule
+  15 (d)'s V, or the `asg set` of a scalar `ref` parameter), where R1 replaces V with no `mov`.
+  Under a `tbind`, `mov L Ri` comes before T2's releases; a scalar-local `tasg` component is
+  handed to rule 2 (d)'s step. An `iret` releases the scope entries down to the scope height
+  recorded at the `iblk`'s entry. The rule-12 pre-pass does not visit `iblk` bodies. R30's parent
+  inline `xblk` is found as "last sibling + 1".
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -2809,7 +2868,10 @@ numbers all types again when it writes `sea.hir1` (§3.5.1).
 locals and parameters of the current function that are in scope (innermost first), then the
 entered items, then the predeclared names (from 4h without the four prelude names `linspace`,
 `meshgrid`, `setdiff` and `bincount`, which only an entered item names: with `--no-prelude` they
-resolve as `none`, lead decision L-s). Locals are numbered as §3.5.4 says (the parameters
+resolve as `none`, lead decision L-s). In the body of a prelude function (file 0 of a stream with
+more than one `#file` record) the entered items are only those of the prelude: an item of the
+program, even one that redefines a predeclared name (212), is never found there, so a program item
+cannot capture a call inside the prelude (lead decision L-s). Locals are numbered as §3.5.4 says (the parameters
 1 … np, then the declared names in source order; a shadowing declaration is a new local), and
 the lids of `rpname`, `rfor` and `rname loc` are those numbers, so they are the lids of the
 `loc` records `seacheck` writes. The expression of a constant sees no locals. A skipped
@@ -4534,7 +4596,10 @@ it writes (as before), so it has every prelude body when it reaches a call.
   selection reads by L5, its element stores by L17, …). A `seq` whose value is the call keeps its
   `bind`s, its value becoming the `xblk`. When every call is rewritten, `sealoop` drops every
   prelude function (its records from `fn` to `end`) and renumbers the remaining functions densely
-  in their order, rewriting every `fid` field (`fn`, `call`, `inst`; lead decision L-v): no prelude
+  in their order, rewriting every `fid` field (lead decision L-v): in 4h the fields of `fn` and
+  `call` records; an `inst` record cannot reach `sealoop` before phase 6 (`seaname` rejects
+  elemental functions by the phase rule, and `sealoop`'s reader rejects `inst` as `BAD_RECORD`),
+  so rewriting its `fid` belongs to the phase-6 work that teaches the reader `inst`. No prelude
   function is a LIR function (rule 37), and `sealower` requires dense `fid`s. A file with no
   prelude function (every `--no-prelude` compilation, and every program that calls none of the
   four, since pass 2b drops unreached functions) is written as before; with one, the `fid`s of the
@@ -8085,7 +8150,8 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
   * **`NAME.prelude`** (an empty marker file beside a `passes/NAME.sea`): the dumps of that test
     are built with the prelude (no `--no-prelude`; §3.6.6 rule 37), and stage.sh feeds the
     passes the same way (its pairs read the committed goldens; from 4h it skips the pair `hir1 →
-    hir` when `NAME.hir1` is absent, and the pair `hir → hirl` when `NAME.hir` is absent and
+    hir` when `NAME.hir1` is absent and the test has no `NAME.sea` or has a `NAME.prelude`
+    marker (a `.sea` test without the marker still fails on a missing golden), and the pair `hir → hirl` when `NAME.hir` is absent and
     `NAME.prelude` exists, so that a dump starting at `.hir` or `.hirl` is not a missing golden
     input). From 4h (Decision 57) allowed
     beside `.hir`, `.hirl` and `.lir1` dumps and an optional `.out`, and beside no other kind (no
@@ -8445,7 +8511,7 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
       `i64[]` y converted, an empty x; `(A, B) = meshgrid(…)` into existing `var`s, their old
       values released; `return meshgrid(x, y)` from a user function; `let (X, _) = …`);
       `prel_setdiff` (duplicates, negatives, unsorted input, an empty a, an empty b written `[]`,
-      a range argument, `setdiff(0..6, [0, 5])` printing `1 2 3 4`, everything removed);
+      a range argument, `setdiff((0..6), [0, 5])` printing `1 2 3 4`, everything removed);
       `prel_ctx` (a prelude call as an `eval` statement, as an index base, as the vector of a
       `for`, in an `if`-expression arm, in a `while` condition re-run each iteration, two in one
       expression, inside a user function, inside a loop left by `break`, the argument order
@@ -8476,8 +8542,12 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
       `inl_void` (k = 0: `exit B` before `enddo B`, under `eval`), `inl_multi` (k = 2 under a
       `tbind`, a `tasg` with a cv 1 component and a `ref` parameter target, a `tret`, a `_`),
       `inl_loop_ret` (an `iret` inside an element loop: L4's H and the copy's array local released
-      before `exit`), `inl_owned_arg` (an owned argument released after the `mov`s, R26); without
-      the prelude `res_noprelude_pnames` (`.res`: `linspace` resolved as `rname … none 0`, L-s).
+      before `exit`), `inl_owned_arg` (an owned argument released after the `mov`s, R26), and,
+      added by the build, `inl_dest`, `inl_rule12` and `inl_scope` (R27's destinations, R30's
+      protections, R26's bounded scope searches); without the prelude `res_noprelude_pnames`
+      (`.res`: `linspace` resolved as `rname … none 0`, L-s). The `prel_*` dump goldens hold the
+      positions of `std/std.sea`'s lines, so `tests/vectors/dump4h_cases.py` is re-run after any
+      edit of `std.sea`.
     * the driver: one `tests/driver_check.sh` case, `sea build --no-prelude` of a program calling
       `linspace` printing `undeclared name 'linspace'` with status 1 (§2.2).
     * the acceptance: `tests/accept/w5_stats.{sea,keys,wl}` (`first_dev,mean_cold,std_cold,

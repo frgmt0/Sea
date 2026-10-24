@@ -1,0 +1,16 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_half.sea
+func .main main 1:1:1 0 0
+lf f1 #4008000000000000
+do 1
+lf f2 #4000000000000000
+fdiv f3 f1 f2
+mov f4 f3
+exit 1
+enddo 1
+mov f5 f4
+ret 0
+endfunc
+#end

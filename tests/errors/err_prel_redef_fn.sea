@@ -1,0 +1,5 @@
+// err_prel_redef_fn -- a program fn bincount: 212 at the item, the prelude's own items being exempt (L-s;
+// LANGUAGE.md 3.3)
+fn bincount(v: i64[], n: i64) -> i64[] {
+    return v
+}

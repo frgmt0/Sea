@@ -46,6 +46,11 @@
 #   lir) present, `sea build --emit X --no-prelude NAME.sea` must exit 0 with empty stderr and
 #   write exactly NAME.X to stdout. If NAME.out exists, the program built with --no-prelude and
 #   run (no stdin, no arguments) must print exactly NAME.out, with empty stderr and status 0.
+#   NAME.prelude (an empty marker file, Decision 57): the test is built WITHOUT --no-prelude,
+#   so the real prelude std/std.sea is streamed and inlined (rule 37); the `#file` record of
+#   file 0 of each dump (the prelude, written with the absolute install path) is compared as
+#   `#file std.sea`. Allowed beside the dump kinds hir, hirl and lir1 and beside NAME.out only;
+#   a NAME.prelude beside ast, res, hir1 or lir is a corpus mistake (exit 2).
 #
 # Exit status: 0 if every selected test passed, 1 otherwise, 2 on setup error.
 
@@ -320,14 +325,30 @@ for src in "$ROOT"/tests/passes/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     base=${src%.sea}
+    # NAME.prelude (Decision 57): built with the real prelude; only the kinds hir, hirl, lir1
+    # and out may sit beside it (a corpus mistake otherwise, like an unknown .meta line).
+    NOPRE=--no-prelude
+    if [ -f "$base.prelude" ]; then
+        NOPRE=
+        for x in ast res hir1 lir; do
+            if [ -f "$base.$x" ]; then
+                echo "run.sh: passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirl, .lir1 and .out)" >&2; exit 2
+            fi
+        done
+    fi
     for x in ast res hir1 hir hirl lir1 lir; do
         [ -f "$base.$x" ] || continue
         name=passes/$nm.$x
         selected "$name" || continue
-        sea_build "$ROOT/tests/passes" --emit "$x" --no-prelude "$nm.sea"
+        sea_build "$ROOT/tests/passes" --emit "$x" $NOPRE "$nm.sea"
         bst=$?
         ok=1
         [ $bst -eq 0 ] || { fail "$name" "--emit $x exit status $bst: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; ok=0; }
+        if [ $ok = 1 ] && [ -z "$NOPRE" ]; then
+            # the driver writes the prelude's absolute install path as file 0: compare `#file std.sea`
+            awk '!d && /^#file / { print "#file std.sea"; d = 1; next } { print }' "$TMP/c.out" > "$TMP/c.norm" \
+                && mv "$TMP/c.norm" "$TMP/c.out"
+        fi
         [ $ok = 1 ] && { same "$base.$x" "$TMP/c.out" "dump" "$name" || ok=0; }
         [ $ok = 1 ] && { same "$TMP/empty" "$TMP/c.err" "stderr" "$name" || ok=0; }
         [ $ok = 1 ] && pass
@@ -336,7 +357,7 @@ for src in "$ROOT"/tests/passes/*.sea; do
         name=passes/$nm.out
         selected "$name" || continue
         exe=$TMP/prog; rm -f "$exe"
-        sea_build "$ROOT/tests/passes" --no-prelude "$nm.sea" -o "$exe"
+        sea_build "$ROOT/tests/passes" $NOPRE "$nm.sea" -o "$exe"
         if [ $? -ne 0 ]; then fail "$name" "compile failed: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; continue; fi
         WORK=$(mktemp -d "$TMP/work.XXXXXX")
         heap_begin "$base"

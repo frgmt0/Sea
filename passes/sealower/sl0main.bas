@@ -75,7 +75,7 @@
 660 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
 662 LET K2$ = K2$ & "|idx=39|dol=40|tmat=42|"
 663 LET K2$ = K2$ & "|xblk=43|tmp=44|hloop=45|ext=46|adat=47|eld=48|est=49|anew=50|wbin=51|tptr=52|"
-664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|fld=60|slit=61|tstruct=62|trec=63|fd=64|"
+664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|fld=60|slit=61|tstruct=62|trec=63|fd=64||iblk=65|iret=66|"
 665 LET K1$ = K1$ & K2$
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0

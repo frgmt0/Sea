@@ -1,0 +1,7 @@
+// res_noprelude_pnames -- without the prelude the names linspace, meshgrid, setdiff and
+// bincount are not predeclared (lead decision L-s; DESIGN.md 3.4.1): each resolves as none;
+// printf, len and zeros still resolve as pd
+let a = linspace(0, 1, 3)
+let b = meshgrid
+setdiff(bincount)
+printf("%d\n", len(zeros(2)))

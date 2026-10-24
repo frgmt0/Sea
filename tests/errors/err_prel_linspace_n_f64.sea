@@ -1,0 +1,2 @@
+// err_prel_linspace_n_f64 -- an f64 n of linspace: type mismatch (201) at the argument, never no overload (L-t)
+let v = linspace(0.0, 1.0, 2.5)

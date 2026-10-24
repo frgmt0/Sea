@@ -1,0 +1,3 @@
+// err_prel_ref -- bincount(ref v, 2): the parameter as LANGUAGE.md 10 names it, 255 at the ref (L-t)
+var v: i64[] = [1]
+let c = bincount(ref v, 2)

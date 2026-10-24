@@ -417,6 +417,25 @@ if begin driver/keep-temps; then
     [ -d "$d" ] && [ -f "$d/sea.in" ] && [ -f "$d/sea.ast" ] || bad "kept directory '$d' lacks sea.in / sea.ast"
     rm -rf "$d"; end; fi
 
+# ---- the prelude's names under --no-prelude (4h, DESIGN.md 2.2, 6.2) ------------------------------
+# Real passes (seaparse, seaname, seacheck of the build directory, $BUILD) behind the driver under
+# test: with --no-prelude the four prelude names are not declared, so a call of `linspace` is the
+# compile error `undeclared name 'linspace'` at the name, exit status 1. A missing pass is a failure.
+if begin driver/no-prelude-library-name; then
+    RB=${BUILD:-$ROOT/build}; case $RB in /*) ;; *) RB=$ROOT/$RB ;; esac
+    HOMER=$T/homer; mkdir -p "$HOMER"
+    ready=1
+    for p in seaparse seaname seacheck; do
+        if [ -x "$RB/$p" ]; then ln -sf "$RB/$p" "$HOMER/$p"; else bad "pass '$p' not built ($RB/$p)"; ready=0; fi
+    done
+    if [ $ready = 1 ]; then
+        cp "$ROOT/include/errors.inc" "$ROOT/include/limits.inc" "$HOMER/"
+        printf 'fn main() {\n    let v = linspace(0.0, 1.0, 3)\n}\n' > "$W/lp.sea"
+        (cd "$W" && SEA_HOME=$HOMER TMPDIR=$TD "$DRIVER" build --no-prelude --emit hir1 lp.sea) >"$T/o" 2>"$T/e" </dev/null; st=$?
+        want_status 1; want_out_empty; want_err "lp.sea:2:13: error: undeclared name 'linspace'"; want_tmp_clean
+    fi
+    end; fi
+
 # ---- pass statuses ---------------------------------------------------------------------------------
 fail_case() { # fail_case NAME PASS STATUS DRIVER-STATUS EXTRA-STDERR-LINE
     if begin "$1"; then

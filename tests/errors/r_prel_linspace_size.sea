@@ -1,0 +1,4 @@
+// r_prel_linspace_size -- linspace with n = 3 000 000 000 > 2^31 - 1: invalid array size (LANGUAGE.md 10.3, L-y)
+printf("start\n")
+let v = linspace(0.0, 1.0, 3000000000)
+printf("%d\n", len(v))

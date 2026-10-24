@@ -1,0 +1,4 @@
+// r_prel_bincount_size -- bincount with n = -2: invalid array size -2, from the allocation of the result (L-y)
+printf("start\n")
+let c = bincount([0], -2)
+printf("%d\n", len(c))

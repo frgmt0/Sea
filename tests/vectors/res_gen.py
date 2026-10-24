@@ -46,6 +46,12 @@ denotes none); the declaration checks of each entered struct in stream order: `r
 field named T, flat, col or row, and `recursive struct` (221) at the struct node of every struct
 whose type contains itself through its fields, nested structs and the elements of fixed and
 dynamic arrays.
+
+Sub-phase 4h (lead decision L-s, 2.6.2 "Readings fixed by 4h", 3.4.1 "Names"): the four prelude
+names `linspace`, `meshgrid`, `setdiff` and `bincount` resolve only as entered items (PRELUDE_NAMES
+below), so without the prelude they are `rname ... none 0` (the golden res_noprelude_pnames of
+dump4h_cases.py); 212 and 213 still apply to them. This holds in every step: no earlier golden uses
+one of the four names.
 """
 
 import os
@@ -77,6 +83,12 @@ ind2sub isnan legend len linspace log lower lu make_dir max mean meshgrid min nn
 panel plot pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str
 sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim y_reverse
 y_ticks ylabel ylim zeros'''.split())
+# Sub-phase 4h (lead decision L-s; 2.6.2 "Readings fixed by 4h", 3.4.1 "Names" and `rname`): the
+# four prelude names resolve only as entered items, never as `pd`, so with --no-prelude (every
+# test of this oracle) a use of one is `rname ... none 0`. They stay in PREDECLARED (LANGUAGE.md
+# Appendix C still lists them): a program item with such a name is still 212 and a local 213.
+PRELUDE_NAMES = {'linspace', 'meshgrid', 'setdiff', 'bincount'}
+assert PRELUDE_NAMES <= PREDECLARED
 SCALAR_TY = {'bool': 2, 'i64': 3, 'f64': 4}
 HANDLE_TY = {'Figure': 6, 'Axes': 7, 'Lu': 8, 'Chol': 9}
 LIM_FIXED_ELEMS = 256             # SEA_LIM_FIXED_ELEMS (include/limits.inc)
@@ -623,7 +635,7 @@ def seaname(prog):
             if it.op == 'fn':
                 return ('fn', fid[name])
             return ('st', sid[name])
-        if name in PREDECLARED:
+        if name in PREDECLARED and name not in PRELUDE_NAMES:
             return ('pd', 0)
         return ('none', 0)
 

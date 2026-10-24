@@ -1,0 +1,2 @@
+// err_prel_missing_arg -- linspace with two arguments: missing argument (226) at the call (L-t; LANGUAGE.md 10)
+let v = linspace(0.0, 1.0)

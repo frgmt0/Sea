@@ -200,14 +200,23 @@ for src in "$ROOT"/tests/errors/*.sea; do
     PACKED=$((PACKED + 1))
 done
 
-# passes/NAME.sea with NAME.out: built with --no-prelude and run
+# passes/NAME.sea with NAME.out: built with --no-prelude and run; with a NAME.prelude marker
+# (Decision 57) built with the real prelude, and the marker is a corpus mistake beside a dump
+# kind other than hir, hirl and lir1 (as tests/run.sh rejects it)
 for src in "$ROOT"/tests/passes/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     base=${src%.sea}
     [ -f "$base.out" ] || continue
     selected "passes/$nm" || continue
-    pack_sea passes "$ROOT/tests/passes" "$nm" --no-prelude
+    if [ -f "$base.prelude" ]; then
+        for x in ast res hir1 lir; do
+            [ -f "$base.$x" ] && setup_fail "passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirl, .lir1 and .out)"
+        done
+        pack_sea passes "$ROOT/tests/passes" "$nm"
+    else
+        pack_sea passes "$ROOT/tests/passes" "$nm" --no-prelude
+    fi
     check_meta "$base"
     sidecars "$base" "$BUNDLE/cases/passes/$nm" out meta
     PACKED=$((PACKED + 1))

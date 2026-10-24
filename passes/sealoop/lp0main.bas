@@ -7,7 +7,7 @@
 127 REM L16 match and the str cases of L2-L14 (lp8str), 4g-2's L15 projection, L17 (field paths,
 128 REM reference and aggregate elements) and the struct cases (lp9agg). Others
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main ... lp9agg (in name order), the modules io diag
+135 REM as DESIGN 2.6.3 says: the files lp0main ... lpainl (in name order), the modules io diag
 140 REM tables layout, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
@@ -34,7 +34,8 @@
 230 REM   19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont
 232 REM   30 ret 31 tret 32 block 39 idx 40 dol 41 fore 43 dyn 44 fix 45 view 46 all 47 arr 48
 234 REM   row 51 match 52 arm 56 fld 57 proj 58 slit (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38
-236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd.
+236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd; 59 tmp 60 xblk 61 iblk 62 iret
+237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B).
 240 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
 250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
@@ -168,6 +169,7 @@
 750 LET H(H0, 2) = 0
 755 IF K < 20 THEN 770
 760 IF K < 39 THEN 775
+762 IF ABS(K - 60.5) = 1.5 THEN 775
 765 IF K = 41 THEN 775
 766 IF K > 55 THEN 770
 767 IF K > 50 THEN 775
@@ -203,7 +205,8 @@
 878 LET D9 = Q5
 880 GOTO 872
 1285 REM ---- the next record ------------------------------------------------------------------------
-1290 CALL "io_read": 1, L$, L9, P$, E(), E$(), E0
+1290 IF A2 = 1 THEN 50740
+1292 CALL "io_read": 1, L$, L9, P$, E(), E$(), E0
 1295 GOTO 550
 1300 REM ---- declarations: fn par loc end tvec ttuple (tmat tfvec tfmat: 1310) -----------------------
 1305 ON K - 32 GOTO 1430, 1550, 1585, 1650, 1310, 1360
@@ -295,6 +298,7 @@
 1475 LET G(G0, 3) = I(6)
 1480 LET G(G0, 4) = 0
 1485 LET G(G0, 5) = 0
+1487 LET G(G0, 0) = 0
 1490 LET G(G0, 6) = D0
 1495 LET F7 = 1
 1500 LET P7 = I(5)
@@ -314,6 +318,8 @@
 1620 GOTO 1290
 1625 LET A0 = A0 + 1
 1630 LET A(A0) = I(2)
+1632 IF POS("|.p |.i |", "|" & G$(2) & " |") = 0 THEN 1640
+1634 LET G(G0, 0) = G(G0, 0) + 1
 1640 GOTO 1290
 1645 REM end pops the body block; the stack is then empty (3.3)
 1650 IF F7 = 0 THEN 2905
@@ -334,8 +340,9 @@
 1725 LET L1 = 1
 1730 LET C1 = 1
 1732 GOTO 2920
-1735 CALL "io_end": 1, P$, E(), E$(), E0
-1740 GOTO 5000
+1735 IF A2 = 1 THEN 5000
+1737 CALL "io_end": 1, P$, E(), E$(), E0
+1740 GOTO 50040
 1840 REM ==== subroutines of the reader ===========================================================
 1845 REM ---- 1850: Q1 = the constant Q1$ of the consts table ------------------------------------
 1850 CALL "tb_cval": K(), K$(), K0, Q1$, Q1, W7

@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_nested.sea
+func .main main 1:1:1 0 0
+lf f1 #4008000000000000
+lf f2 #4010000000000000
+do 1
+do 2
+fmul f3 f1 f1
+mov f4 f3
+exit 2
+enddo 2
+do 3
+fmul f5 f2 f2
+mov f6 f5
+exit 3
+enddo 3
+fadd f7 f4 f6
+mov f8 f7
+exit 1
+enddo 1
+mov f9 f8
+lf f10 #3FF0000000000000
+lf f11 #4000000000000000
+do 4
+do 5
+fmul f12 f10 f10
+mov f13 f12
+exit 5
+enddo 5
+do 6
+fmul f14 f11 f11
+mov f15 f14
+exit 6
+enddo 6
+fadd f16 f13 f15
+mov f17 f16
+exit 4
+enddo 4
+do 7
+fmul f18 f17 f17
+mov f19 f18
+exit 7
+enddo 7
+mov f20 f19
+ret 0
+endfunc
+#end

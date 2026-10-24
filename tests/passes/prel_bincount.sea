@@ -1,0 +1,6 @@
+// prel_bincount -- DESIGN.md 6.2 (4h, NAME.prelude): one call of the prelude's bincount, inlined
+// by 3.6.6 rule 37: in its copy filled (L2), the element loop over idx (L4) and the compound
+// element store c[v] += 1 (rule 19); counts of [2, 2] in 0 ... 2
+let v = filled(2, 2)
+let c = bincount(v, 3)
+printf("%d %d %d\n", c[0], c[1], c[2])

@@ -1,0 +1,38 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_scope.sea
+tvec 10 4
+tvec 11 3
+fn 1 .main main 1 0 1 1:1:1
+loc j 3 let 1:1:5
+ci 1:1:21 3 3
+lib 1:1:15 10 zeros 1
+call 1:1:9 3 2 1
+bind 1:1:1 1
+block 1:1:1 1
+end
+fn 2 find1 fn 3 1 1 0:1:1
+par v 10 val
+loc k 3 for 0:2:9
+ci 0:2:14 3 0
+lv 0:2:21 10 1
+lib 0:2:17 3 len 1
+rng 0:2:14 11 0 0
+lv 0:3:19 3 2
+lib 0:3:15 5 str 1
+cs 0:4:13 5 1
+lv 0:4:29 3 2
+ret 0:4:22 1
+block 0:4:20 1
+arm 0:4:13 1
+block 0:5:18 0
+arm 0:5:13 0
+match 0:3:9 2
+block 0:2:24 1
+forr 0:2:5 2
+ci 0:8:12 3 0
+ret 0:8:5 1
+block 0:1:27 2
+end
+#end

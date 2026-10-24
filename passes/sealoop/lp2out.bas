@@ -8,17 +8,25 @@
 10035 REM Then the header, the records in list order (the tptr records before the first fn; a fn
 10040 REM record with nl + its new locals, their loc records after its own), and #end.
 10045 REM ====================================================================================
+10046 IF A2 = 0 THEN 10050
+10047 GOSUB 52000
 10050 LET U5 = 0
 10055 LET F0 = 0
 10060 LET J = O(0, 0)
 10065 IF J = 0 THEN 10165
 10070 IF O(J, 1) = 0 THEN 10095
-10075 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10155
+10075 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10092
 10080 LET F0 = P(O(J, 1), 1)
 10085 LET G(F0, 5) = U5 + 1
+10086 GOSUB 52050
 10090 GOTO 10155
+10092 LET Z$ = D$(O(J, 1))
+10093 GOSUB 52100
+10094 GOTO 10155
 10095 REM a generated record: tmp, bind, tbind, hloop or rcnt declares each new local @p it names
 10100 LET Z1$ = O$(J)
+10101 LET Z$ = Z1$
+10102 GOSUB 52100
 10105 LET J3 = POS(Z1$, " ")
 10110 IF POS("|tmp|bind|tbind|hloop|rcnt|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
 10115 LET J3 = POS(Z1$, "@")
@@ -29,7 +37,7 @@
 10140 LET V1 = VAL(SEG$(Z1$, J3 + 1, J4 - 1))
 10145 LET U5 = U5 + 1
 10147 LET U(U5, 5) = V1
-10150 LET U(V1, 4) = G(F0, 2) + G(F0, 3) + U5 - G(F0, 5) + 1
+10150 LET U(V1, 4) = G(F0, 2) + G(F0, 3) - G(F0, 0) + U5 - G(F0, 5) + 1
 10152 LET J3 = POS(Z1$, "@", J4)
 10153 GOTO 10120
 10155 LET J = O(J, 0)
@@ -81,6 +89,7 @@
 10280 LET R1 = O(J, 1)
 10285 LET K = R(P(R1, 0), 0)
 10290 IF K = 33 THEN 10320
+10292 IF A2 = 1 THEN 52200
 10295 CALL "io_put": 2, D$(R1)
 10300 IF K < 34 THEN 10370
 10305 IF K > 35 THEN 10370
@@ -94,6 +103,7 @@
 10330 GOSUB 10600
 10335 LET W5 = 1
 10340 LET F0 = P(R1, 1)
+10342 GOSUB 52050
 10345 LET Z$ = D$(R1)
 10350 IF G(F0, 4) > 0 THEN 10700
 10352 CALL "io_put": 2, Z$
@@ -101,7 +111,7 @@
 10356 IF M5 <> 0 THEN 10370
 10358 GOSUB 10500
 10360 GOTO 10370
-10365 GOSUB 10800
+10365 GOSUB 52300
 10367 CALL "io_put": 2, Z$
 10370 LET J = O(J, 0)
 10375 GOTO 10270
@@ -123,7 +133,8 @@
 10550 GOSUB 8400
 10555 CALL "io_put": 2, "loc .l" & STR$(K5) & " " & Z$ & " " & Z1$ & " " & P9$
 10558 NEXT K5
-10560 RETURN
+10560 IF G(F0, 0) > 0 THEN 52400
+10562 RETURN
 10595 REM ---- 10600: the tptr records (and R14's F8, tfvec of f64 with n 8: element 1), in id order --
 10600 FOR K5 = Y8 + 1 TO Y9
 10605 LET E3 = C(K5, 6)

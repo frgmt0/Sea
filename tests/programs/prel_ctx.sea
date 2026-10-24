@@ -1,0 +1,110 @@
+// prel_ctx -- prelude calls in every context (DESIGN.md 6.2 "4h"; LANGUAGE.md 6.4, 6.8 rule 5, 6.10, 7.3-7.6):
+// an eval statement, an index base, a for vector, if-expression arms (only the selected one runs),
+// a while condition, two in one expression, a user function, a loop left by break, the argument
+// order f g h, setdiff(v, grow(ref v)) seeing the old v (rule 12, R30), short-circuit operands,
+// a match scrutinee and arm, nested calls, if arms, a tuple assignment
+fn pe(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pf(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn f() -> f64 {
+    printf("f ")
+    return 0.0
+}
+fn g() -> f64 {
+    printf("g ")
+    return 1.0
+}
+fn h() -> i64 {
+    printf("h ")
+    return 3
+}
+fn grow(ref v: i64[]) -> i64[] {
+    printf("grow ")
+    v = [v, 9]
+    return [2]
+}
+fn spread(n: i64) -> f64 {
+    let v = linspace(0.0, 10.0, n)
+    return v[n - 1] - v[0]
+}
+setdiff([1, 2], [2])
+printf("eval\n")
+printf("%g %d\n", linspace(0.0, 1.0, 5)[3], bincount([0, 0, 1], 2)[0])
+printf("for")
+for x in linspace(1.0, 2.0, 3) {
+    printf(" %g", x)
+}
+printf("\n")
+let w = if len(setdiff([1, 2, 3], [9])) == 3 { linspace(0.0, 1.0, 3) } else { linspace(f(), 1.0, 2) }
+pf(w)
+let no = len(w) > 5
+let w2 = if no { linspace(f(), 1.0, 2) } else { linspace(g(), 2.0, 2) }
+pf(w2)
+var done: i64[] = []
+var it = 0
+while len(setdiff([1, 2, 3], done)) > 0 {
+    it += 1
+    done = [done, it]
+}
+printf("while %d %d\n", it, len(done))
+printf("%d\n", len(linspace(0.0, 1.0, 4)) + len(setdiff((0..5), [1])))
+printf("%g\n", sum(linspace(0.0, 1.0, 5)) + sum(bincount([0, 1, 1], 3)))
+printf("%g %g\n", spread(3), spread(1))
+for k in 0..10 {
+    let c = bincount([k % 3], 3)
+    if c[2] == 1 {
+        printf("break %d\n", k)
+        break
+    }
+}
+pe(linspace(f(), g(), h()))
+var v: i64[] = [1, 2, 3]
+pvi(setdiff(v, grow(ref v)))
+pvi(v)
+let yes = len(v) == 4
+if !yes && len(linspace(f(), 1.0, 2)) == 2 {
+    printf("no\n")
+}
+if yes || len(linspace(f(), 1.0, 2)) == 2 {
+    printf("or\n")
+}
+if yes && len(linspace(g(), 1.0, 2)) == 2 {
+    printf("and\n")
+}
+match str(len(setdiff([5, 6, 7], [6]))) {
+    "2" => {
+        printf("match two\n")
+        pvi(bincount([1], 2))
+    }
+    _ => { printf("match other\n") }
+}
+pvi(bincount(setdiff([3, 1, 3, 0], [1]), 4))
+pe(linspace(0.0, f64(len(setdiff([4, 4, 5], []))), 3))
+if len(linspace(0.0, 1.0, 3)) == 3 {
+    let q = setdiff([2, 1], [1])
+    pvi(q)
+} else {
+    pvi(setdiff([9], []))
+}
+var P = zeros(1, 1)
+var Q = zeros(1, 1)
+(P, Q) = meshgrid(linspace(0.0, 1.0, 2), [5.0])
+printf("%d %d %g %g\n", rows(P), cols(P), P[0, 1], Q[0, 0])

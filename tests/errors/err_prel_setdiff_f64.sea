@@ -1,0 +1,2 @@
+// err_prel_setdiff_f64 -- setdiff([1.5], [1]): 201 at the f64[1] literal (L-t)
+let d = setdiff([1.5], [1])

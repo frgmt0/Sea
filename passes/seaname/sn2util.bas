@@ -94,7 +94,7 @@
 1930 LET R = (P - 1) / 12 + 1
 1935 SUBEND
 1940 REM ---- lk: R = the symbol named Q (S$ index): scopes, then items, then predeclared (-slot) ---
-1945 SUB "lk": Y(), W(), X(), X$(), S$(), Q, R
+1945 SUB "lk": N(), Y(), W(), X(), X$(), S$(), Q, R
 1950 LET R = 0
 1955 FOR J = X(12) TO 199998 STEP 2
 1960 IF W(J) <> Q THEN 1975
@@ -103,11 +103,19 @@
 1975 NEXT J
 1980 FOR J = 2 TO X(33)
 1985 IF Y(J, 1) <> Q THEN 2000
+1986 REM prelude code sees no user item (a user item named like a predeclared name is 212, not a callee)
+1987 IF X(46) = 0 THEN 1990
+1988 IF N(Y(J, 3), 4) >= 1E9 THEN 2000
 1990 LET R = J
 1995 GOTO 2015
 2000 NEXT J
 2005 CALL "pdx": X$(), S$(Q), P
-2010 LET R = -P
+2006 REM the four prelude names are not predeclared lookups: only an entered item names them (L-s)
+2007 IF P = 0 THEN 2012
+2008 IF LEN(S$(Q)) < 7 THEN 2012
+2009 IF POS("|linspace|meshgrid|setdiff|bincount|", "|" & S$(Q) & "|") = 0 THEN 2012
+2010 LET P = 0
+2012 LET R = -P
 2015 SUBEND
 2020 REM ---- nsym: R = a new, cleared symbol row for the declaration at node I (capacity: program
 2025 REM too large: symbols, reported at that declaration, fsym) ----------------------------

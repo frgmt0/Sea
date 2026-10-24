@@ -1,0 +1,4 @@
+// r_prel_bincount_neg_idx -- a negative bincount value, the first bad one in index order (LANGUAGE.md 10.7)
+printf("start\n")
+let c = bincount([1, -1, 5], 2)
+printf("%d\n", c[0])

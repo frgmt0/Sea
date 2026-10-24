@@ -1,0 +1,6 @@
+// r_prel_meshgrid_oom -- meshgrid results of 10^7 x 10^7 elements (8e14 bytes each) cannot be allocated: out of
+// memory at the line of the call (LANGUAGE.md 10.3; DESIGN.md 2.6.2 L-y)
+let x = zeros(10000000)
+printf("start\n")
+let (X, Y) = meshgrid(x, x)
+printf("%d\n", rows(X))

@@ -1,0 +1,74 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_loop_ret.sea
+tvec 10 4
+tptr 11 4
+fn 1 .main main 1 0 12 1:1:1
+loc u 10 var 1:1:5
+loc m 4 let 1:2:5
+loc .l1 10 let 1:2:9
+loc .l2 10 let 1:2:9
+loc .l3 3 let 1:2:9
+loc .l4 3 let 1:2:9
+loc .l5 11 let 1:2:9
+loc .l6 3 let 1:2:9
+loc .l7 3 let 1:2:9
+loc .l8 3 for 1:2:9
+loc .i1 10 let 1:2:9
+loc .i2 4 for 1:2:9
+ci 1:1:15 3 3
+anew 1:1:9 10 1 1
+bind 1:1:1 1
+lv 1:2:18 10 1
+tmp 1:2:9 3
+lv 1:2:9 10 3
+bind 1:2:9 11
+lv 1:2:9 10 11
+bind 1:2:9 4
+lv 1:2:9 10 4
+ext 1:2:9 3 0
+tmp 1:2:9 5
+ci 1:2:9 3 0
+tmp 1:2:9 6
+lv 1:2:9 3 5
+lv 1:2:9 3 6
+bin 1:2:9 2 gt
+lv 1:2:9 10 4
+adat 1:2:9 11
+tmp 1:2:9 7
+ci 1:2:9 3 1
+tmp 1:2:9 8
+lv 1:2:9 3 5
+lv 1:2:9 3 8
+wbin 1:2:9 3 sub
+tmp 1:2:9 9
+lv 1:2:9 3 6
+lv 1:2:9 3 9
+lv 1:2:9 3 8
+lv 1:2:9 11 7
+lv 1:2:9 3 10
+eld 1:2:9 4 8 0
+tmp 1:2:9 12
+lv 1:2:9 4 12
+cf 1:2:9 4 #0000000000000000
+bin 1:2:9 2 lt
+lv 1:2:9 4 12
+iret 1:2:9 1
+block 1:2:9 1
+if 1:2:9 0
+block 1:2:9 1
+block 1:2:9 2
+hloop 1:2:9 10
+block 1:2:9 4
+if 1:2:9 0
+block 1:2:9 4
+cf 1:2:9 4 #0000000000000000
+iret 1:2:9 1
+block 1:2:9 3
+iblk 1:2:9 4 1
+xblk 1:2:9 4 1
+bind 1:2:1 2
+block 1:1:1 2
+end
+#end

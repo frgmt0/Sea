@@ -46,6 +46,7 @@
 3627 CALL "tyfin": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 3630 SUBEND
 3635 REM ---- ck_item: one top-level item I becomes a symbol (fn 1, const 2, struct 3) ---------------
+3638 REM An item of file 0 of a stream of more than one #file (the prelude) is exempt (L-s).
 3640 REM A predeclared name is 'redefinition of predeclared name'; a name already taken by an earlier
 3645 REM item is 'redefinition' at the later item, which is then not entered (LANGUAGE 3.3, 7.2).
 3650 SUB "ck_item": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I
@@ -53,6 +54,8 @@
 3660 LET K = N(I, 0)
 3665 CALL "pdx": X$(), S$(Q), P
 3670 IF P = 0 THEN 3680
+3672 IF X(44) < 2 THEN 3675
+3674 IF N(I, 4) < 1E9 THEN 3680
 3675 CALL "er": N(), X(), X$(), I, "PREDECLARED", "", "", "", 0
 3680 FOR J = 2 TO X(3)
 3685 IF Y(J, 1) <> Q THEN 3700
@@ -198,7 +201,7 @@
 4905 CALL "cexp": N(), Y(), S, E
 4910 IF J > E THEN 4990
 4915 IF N(J, 0) <> 30 THEN 4980
-4920 CALL "lk": Y(), W(), X(), X$(), S$(), N(J, 6), R
+4920 CALL "lk": N(), Y(), W(), X(), X$(), S$(), N(J, 6), R
 4925 IF R <= 0 THEN 4980
 4930 IF Y(R, 0) <> 2 THEN 4980
 4935 IF Y(R, 6) <> 0 THEN 4980

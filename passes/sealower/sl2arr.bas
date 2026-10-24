@@ -42,6 +42,7 @@
 9672 IF K = 41 THEN 40030
 9673 IF K = 59 THEN 40030
 9675 IF K = 52 THEN 30100
+9676 IF K > 64 THEN 850
 9677 IF K > 61 THEN 52850
 9680 IF K > 38 THEN 850
 9690 GOTO 1300
@@ -67,7 +68,7 @@
 9850 IF T(T3, 1) <> 3 THEN 9870
 9860 LET U3 = 1
 9870 RETURN
-9880 REM ---- 9890: Z0 = 1 if node X0 is an owned reference value (rule 15; anew, xblk: 15 (k)) -----
+9880 REM ---- 9890: Z0 = 1 if node X0 is an owned reference value (rule 15; anew, xblk: 15 (k); an iblk, R26) -----
 9890 LET Z0 = 0
 9900 LET P5 = X0
 9910 LET T3 = H(P5, 4)
@@ -83,6 +84,7 @@
 9964 IF H(P5, 1) = 43 THEN 33300
 9965 IF H(P5, 1) = 61 THEN 10050
 9966 IF H(P5, 1) = 60 THEN 53334
+9967 IF H(P5, 1) = 65 THEN 10050
 9970 IF H(P5, 1) <> 5 THEN 10000
 9980 IF H(P5, 6) = 1 THEN 10050
 9990 RETURN
@@ -601,9 +603,10 @@
 16570 LET U4 = 0
 16580 GOSUB 10390
 16590 GOTO 7170
-16610 REM ==== block end (rule 16 (a), R11): its owned tmps, then its bound locals in reverse (41690)
+16610 REM ==== block end (rule 16 (a), R11): its owned tmps, then its bound locals in reverse (41690); none after a last ret, tret or iret, nor at the end of the body of an iblk with k >= 1 (R29)
 16620 LET U4 = W(W0 + 3)
 16630 IF J9 = U4 THEN 3090
+16635 IF H(W(W0 - 6), 1) + 100 * SGN(H(W(W0 - 6), 6)) = 165 THEN 16730
 16640 IF X <> G(F0, 8) THEN 16660
 16650 IF G(F0, 3) <> 1 THEN 16730
 16660 LET P3 = H(X, 7)
@@ -612,6 +615,7 @@
 16690 GOTO 16670
 16700 IF H(P3, 1) = 30 THEN 16730
 16710 IF H(P3, 1) = 31 THEN 16730
+16715 IF H(P3, 1) = 66 THEN 16730
 16720 GOSUB 41690
 16730 LET J9 = U4
 16740 GOTO 3090
@@ -920,7 +924,7 @@
 23500 GOSUB 41350
 23510 IF U3 = 0 THEN 2715
 23520 GOTO 2675
-23530 REM ---- 23550: the read J5 of the root L5 before the rarg K5: scalars always, a reference value only when its consumer comes after the call; never the target of a ref argument itself
+23530 REM ---- 23550: the read J5 of the root L5 before the rarg K5: scalars always, a reference value only when its consumer comes after the call; never the target of a ref argument itself (R30: a tmp of an inline xblk is read by its iblk)
 23550 LET U5 = K5
 23560 GOSUB 23360
 23570 LET K4 = U6
@@ -943,6 +947,13 @@
 23710 GOSUB 41350
 23720 IF U3 = 0 THEN 2705
 23730 LET U5 = P4
+23731 IF H(P4, 1) <> 44 THEN 23740
+23732 LET P6 = P4
+23733 IF H(P6, 8) = 0 THEN 23736
+23734 LET P6 = H(P6, 8)
+23735 GOTO 23733
+23736 IF H(P6 + 1, 1) + SGN(H(P6 + 1, 5)) <> 44 THEN 23740
+23737 LET U5 = H(P6 + 1, 5)
 23740 GOSUB 23360
 23750 IF U6 > K4 THEN 2705
 23760 GOTO 2710

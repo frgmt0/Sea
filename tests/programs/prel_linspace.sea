@@ -1,0 +1,35 @@
+// prel_linspace -- linspace (LANGUAGE.md 10.3; DESIGN.md 6.2 "4h"): n < 1 empty, n = 1 [d2], the symmetric
+// branch with n1 even and odd and with zeros, d1 == d2 (also infinite), the general formula,
+// (-inf, inf, 3), W5's scale, untyped and i64 arguments converted; printed with %.17g
+fn pe(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+pe(linspace(0.0, 1.0, 0))
+pe(linspace(0.0, 1.0, -3))
+pe(linspace(5.0, 7.0, 1))
+pe(linspace(-1.0, 1.0, 5))
+pe(linspace(-1.0, 1.0, 4))
+pe(linspace(0.0, 0.0, 4))
+pe(linspace(-0.0, -0.0, 3))
+pe(linspace(-1.0, 1.0, 2))
+pe(linspace(2.5, 2.5, 3))
+pe(linspace(inf, inf, 3))
+pe(linspace(0.0, 1.0, 11))
+pe(linspace(1.0, 0.0, 4))
+pe(linspace(-inf, inf, 3))
+pe(linspace(0.1, 0.7, 7))
+pe(linspace(-3.0, 7.0, 6))
+pe(linspace(0.4, 1.6, 25))
+pe(linspace(0, 10, 5))
+let a = 1
+let b = 4
+let n = 4
+pe(linspace(a, b, n))
+let m = 3
+pe(linspace(-2.0, 2.0, m))
+let sc = linspace(0.4, 1.6, 25)
+printf("%d %.17g %.17g %.17g\n", len(sc), sc[1], sc[12], sc[24])

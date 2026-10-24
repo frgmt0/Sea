@@ -1,0 +1,6 @@
+// r_prel_bincount_oob -- a bincount value outside 0 .. n-1 after printed output: INDEX_OOB with the value,
+// dimension 0 and extent n, at the line of the call (LANGUAGE.md 10.7; DESIGN.md 2.6.2)
+let idx = [0, 1, 3]
+printf("start\n")
+let c = bincount(idx, 2)
+printf("%d\n", c[0])

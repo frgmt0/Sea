@@ -1,0 +1,2 @@
+// err_prel_redef_const -- a program const linspace: 212 at the item (L-s)
+const linspace = 3

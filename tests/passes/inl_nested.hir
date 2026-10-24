@@ -1,0 +1,38 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_nested.sea
+fn 1 .main main 1 0 2 1:1:1
+loc r 4 let 1:1:5
+loc z 4 let 1:2:5
+cf 1:1:13 4 #4008000000000000
+cf 1:1:18 4 #4010000000000000
+call 1:1:9 4 3 2
+bind 1:1:1 1
+cf 1:2:16 4 #3FF0000000000000
+cf 1:2:21 4 #4000000000000000
+call 1:2:12 4 3 2
+call 1:2:9 4 2 1
+bind 1:2:1 2
+block 1:1:1 2
+end
+fn 2 sq fn 4 1 0 0:1:1
+par x 4 val
+lv 0:1:31 4 1
+lv 0:1:35 4 1
+bin 0:1:31 4 mul
+ret 0:1:24 1
+block 0:1:22 1
+end
+fn 3 hyp fn 4 2 0 0:2:1
+par a 4 val
+par b 4 val
+lv 0:2:43 4 1
+call 0:2:40 4 2 1
+lv 0:2:51 4 2
+call 0:2:48 4 2 1
+bin 0:2:40 4 add
+ret 0:2:33 1
+block 0:2:31 1
+end
+#end

@@ -1,0 +1,53 @@
+// heap_prel_args -- owned argument temporaries of prelude calls, an eval of each function, _ components and
+// results replaced in a loop (DESIGN.md 3.5.9 R26, R27; 3.6.6 rules 15, 37); heap check 0
+fn pe(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let a = [5, 1, 5, 3]
+pvi(setdiff(setdiff(a, [1]), [3]))
+let v = linspace(0.0, 2.0, 5)
+pvi(bincount(i64(v * 2.0), 5))
+let (X, Y) = meshgrid(linspace(0.0, 1.0, 2), linspace(2.0, 3.0, 3))
+printf("%dx%d %g %g\n", rows(X), cols(X), X[2, 1], Y[2, 1])
+linspace(0.0, 1.0, 3)
+meshgrid(v, v)
+setdiff(a, [5])
+bincount([0, 1], 2)
+printf("evals\n")
+let (_, Y2) = meshgrid([1.0], [7.0, 8.0])
+pm(Y2)
+let (_, _) = meshgrid(v, [1.0])
+printf("discarded\n")
+var B = zeros(1, 1)
+(_, B) = meshgrid([1.0, 2.0], [4.0])
+pm(B)
+for i in 0..3 {
+    let w = setdiff(setdiff([i, 1, 2], [1]), [])
+    pvi(w)
+}
+var r = linspace(0.0, 1.0, 2)
+for i in 0..3 {
+    r = linspace(r[1], 2.0, 3)
+}
+pe(r)

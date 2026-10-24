@@ -1,0 +1,42 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_void.sea
+func .main main 1:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 7
+do 1
+li i2 0
+icmp lt i3 i1 i2
+if 2 i3
+exit 1
+endif 2
+sa p4 s1
+sti i1 p4 - 0 0
+la p5 d1
+rcall sea_printf 1:1 0 2 p5 p4
+exit 1
+enddo 1
+li i6 -1
+do 3
+li i7 0
+icmp lt i8 i6 i7
+if 4 i8
+exit 3
+endif 4
+sa p9 s2
+sti i6 p9 - 0 0
+la p10 d2
+rcall sea_printf 1:2 0 2 p10 p9
+exit 3
+enddo 3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+fmt d2 2
+fconv - - - d i
+ftext %0A
+#end

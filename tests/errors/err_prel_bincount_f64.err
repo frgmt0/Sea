@@ -1,0 +1,1 @@
+err_prel_bincount_f64.sea:2:18: error: type mismatch: expected i64[], found f64[1]

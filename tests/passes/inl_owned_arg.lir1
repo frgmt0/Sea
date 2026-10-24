@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_owned_arg.sea
+func .main main 1:1:1 0 0
+li i1 2
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 1:1 1 p5 4 i2 i3 i1 i4
+do 1
+ldi i6 p5 - 0 16
+mov i7 i6
+exit 1
+enddo 1
+mov i8 i7
+release p5
+li i9 3
+li i10 1
+li i11 1
+li i12 1
+rcall sea_arr_new 1:2 1 p13 4 i10 i11 i9 i12
+do 2
+ldi i14 p13 - 0 16
+ldi i15 p13 - 0 16
+li i16 1
+iaddc i17 i15 i16 1:2
+mov i18 i14
+mov i19 i17
+exit 2
+enddo 2
+mov i20 i18
+mov i21 i19
+release p13
+li i22 4
+li i23 1
+li i24 1
+li i25 1
+rcall sea_arr_new 1:3 1 p26 4 i23 i24 i22 i25
+do 3
+retain p26
+mov p27 p26
+exit 3
+enddo 3
+release p26
+release p27
+ret 0
+endfunc
+#end

@@ -1,0 +1,54 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_rule12.sea
+func .main main 1:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+li i1 2
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 1:8 1 p5 4 i2 i3 i1 i4
+mov p6 p5
+retain p6
+sa p7 s1
+stp p5 p7 - 0 0
+call grow 1 i8 1 p7
+ldp p5 p7 - 0 0
+do 1
+ldi i9 p6 - 0 16
+iaddc i10 i9 i8 1:9
+mov i11 i10
+exit 1
+enddo 1
+mov i12 i11
+release p6
+li i13 1
+mov i14 i13
+sa p15 s2
+sti i13 p15 - 0 0
+call bump 1 i16 1 p15
+ldi i13 p15 - 0 0
+do 2
+iaddc i17 i14 i16 1:11
+mov i18 i17
+exit 2
+enddo 2
+mov i19 i18
+release p5
+ret 0
+endfunc
+func grow fn 1:1:1 1 p1 1 i
+li i2 3
+ret 1 i2
+endfunc
+func bump fn 1:4:1 1 p1 1 i
+ldi i2 p1 - 0 0
+li i3 1
+iaddc i4 i2 i3 1:5
+sti i4 p1 - 0 0
+li i5 10
+ret 1 i5
+endfunc
+#end

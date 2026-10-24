@@ -1,0 +1,30 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file inl_void.sea
+fn 1 .main main 1 0 0 1:1:1
+ci 1:1:5 3 7
+call 1:1:1 1 2 1
+eval 1:1:1
+ci 1:2:5 3 -1
+call 1:2:1 1 2 1
+eval 1:2:1
+block 1:1:1 2
+end
+fn 2 say fn 1 1 0 0:1:1
+par n 3 val
+lv 0:2:8 3 1
+ci 0:2:12 3 0
+bin 0:2:8 2 lt
+ret 0:3:9 0
+block 0:2:14 1
+if 0:2:5 0
+lv 0:5:20 3 1
+fconv 0:5:12 1 - - - d
+ftext 0:5:12 1 %0A
+fmt 0:5:12 1 2
+lib 0:5:5 1 printf 1
+eval 0:5:5
+block 0:1:16 2
+end
+#end
