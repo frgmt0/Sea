@@ -50,9 +50,11 @@ fixed-size `str` and struct arrays, the module `layout` of 123 lines, `manualD_p
 6 lines under its 7 000-line cap. The relief is agreed (Decisions 49–52, lead decisions L-o–L-r, DESIGN.md §0, §2.7, §8, §9): a
 behaviour-neutral compaction of `sealower` (C1–C6, about 600 lines; reserves: `sea.hirl` validation
 into `seaval`, rule 36's composites into `sealoop`, a middle HIR→HIR pass), the 7 000-line cap kept
-through 4h, gates after 4h-0, 4h, phase 6 and phase 8. **Next is 4h-0** (WP-0, a scratch prototype
-of multi-line string `DEF`, then the compaction, proved by byte-identical `sea.lir1`; only
-`passes/sealower/*` changes), then its gate, then the 4h specification.
+through 4h, gates after 4h-0, 4h, phase 6 and phase 8. **4h-0 is done**: `sealower` 6 304 built
+lines (690 saved; the multi-line `DEF` functions `FNQ`, `FNE`, `FNR$`; 3 free array letters),
+proved neutral by byte-identical `sea.lir1`, and the gate after 4h-0 passed (6 604 ≤ 7 000 with
+4h, v1 7 704, stress 8 254; reserve V not needed), DESIGN.md §2.7 "Measured after 4h-0". **Next is
+the 4h specification** (rule 37 in `sealoop`, `sealower` limited to the inline block and its return).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

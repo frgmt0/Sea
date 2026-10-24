@@ -41,9 +41,9 @@ the user's agreement. Phase 0 (§8) did:
    and 4f (reductions, sorting, searching, library options, Decisions 38–43; the size gate after 4f
    passed with no split, §2.7) and 4g (strings, structs, records, `match`, Decisions 44–48, built
    as 4g-1 and 4g-2 with the size gate after 4g-1 passed, §2.7) are done; `sealower` ended 4g 6
-   lines under its 7 000-line cap, so the relief of Decisions 49–52 comes next: sub-step 4h-0, a
-   compaction of `sealower` with no change of behaviour (§2.7, §8), then its gate, then the 4h
-   specification.
+   lines under its 7 000-line cap, so the relief of Decisions 49–52 ran as sub-step 4h-0, a
+   compaction of `sealower` with no change of behaviour (§2.7, §8), which is done: `sealower` 6 304
+   built lines, the gate after 4h-0 passed (§2.7); the 4h specification is next.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -2153,7 +2153,7 @@ of behaviour, by these patterns (counted on the 4g-2 code; the savings are estim
 | C1 | two-line shapes `LET v = e` / `GOSUB`·`GOTO t` repeated at many sites, and `GOSUB t` / `RETURN` tail pairs (as 4g-1's 7532) | an entry line in front of the target that sets v and falls into it; `GOTO` for a tail call; the dead store after 7970 dropped | 180–230 |
 | C2 | 502 `REM` lines, many short | a comment merged into the `REM` before it within 250 bytes, every comment's text kept | 120–135 |
 | C3 | constant and entry lookups (`LET Q1$ = "…"` / `GOSUB 1850` / `LET G = Q1`, the lookups of 9580 and 8705) | one multi-line numeric `DEF` per table (the consts table, the entries row) with a string parameter, its body the lookup loop | 55–65 |
-| C4 | the `V1`…`V5` register-name protocol of the emit helpers (7500, 7532, 7540, 7575, 7640, 7650, 11410, 11530, 32950) | a multi-line string `DEF` giving `" "` and the register's text, numbered at first use as 7500 numbers it; on overflow it sets a flag that is tested where the register count is tested now, so the same `registers` error at the same node; an instruction becomes one `LET L1$ = "op" & FN…$(a) & FN…$(b)` and one emit, Baysick evaluating `&` left to right, each operand to its value (Baysick LANGUAGE.md §4.6 (c)), so the numbering order is unchanged | 250–350 |
+| C4 | the `V1`…`V5` register-name protocol of the emit helpers (7500, 7532, 7540, 7575, 7640, 7650, 11410, 11530, 32950) | a multi-line string `DEF` giving `" "` and the register's text, numbered at first use as 7500 numbers it; on overflow the function itself sets `A$(1) = "registers"` and calls `dg_compile` (as built in 4h-0: the same error at the same node and point as the old 7500 and 2390); an instruction becomes one `LET L1$ = "op" & FN…$(a) & FN…$(b)` and one emit, Baysick evaluating `&` left to right, each operand to its value (Baysick LANGUAGE.md §4.6 (c)), so the numbering order is unchanged | 250–350 |
 | C5 | recurring validation tests before `THEN 2360` | 3–4 predicate subroutines, as 30900 and 30920 are | 30–60 |
 | C6 | 8 copies of "evaluate the children onto U, resume at S" | one shared loop with the resume point as a parameter | 30–50 |
 | | all, less 70–100 that C4 absorbs from C1 | | 600–770 |
@@ -2195,6 +2195,43 @@ A gate that fails applies the next reserve (V, then rule 36 into `sealoop`, then
 specified and agreed with the user before the next phase's code. `sealoop`'s own v1 margin (467)
 is weighed with its fusion seam at the gate after phase 6, where the same C1 and C4 compaction is
 a candidate.
+
+**Measured after 4h-0** (2026-10-24, the 4h-0 build; `sh tools/passlines.sh limits`, the `DIM`s
+counted as above; only `sealower` changed, L-r):
+
+| Pass | Built lines | `FOR`s | String bytes | Longest line |
+|------|------------:|-------:|-------------:|-------------:|
+| `seaparse` | 3 937 | 74 | 2 581 | 166 |
+| `seaname` | 5 262 | 119 | 2 859 | 202 |
+| `seacheck` | 6 424 | 177 | 5 302 | 194 |
+| `seaexpand` | 4 128 | 98 | 4 985 | 141 |
+| `sealoop` | 5 433 | 75 | 11 098 | 208 |
+| `sealower` | 6 304 | 120 | 4 382 | 250 |
+| `seaopt` | 2 442 | 55 | 4 319 | 178 |
+| `seagen_a64` | 3 500 | 93 | 3 205 | 196 |
+| `seagen_x64` | 3 515 | 88 | 3 431 | 134 |
+
+`sealower` went from 6 994 to 6 304, 690 lines saved (estimate 600–770): C1 220 (180–230), C2 124
+(120–135), C3 66 (55–65), C4 258 (250–350), C5 14 (30–60), C6 8 (30–50). It still has 3 free array
+letters (`C S X`); its `DEF` functions are `FNQ` (1850, the consts table), `FNE` (9580, the entries
+row) and `FNR$` (7500, the register text) (L-q). About 37 call sites
+keep the `V`-register helpers (7540, 7575, 7640 and 7650, 10810, 11410, 11530, 32950) by design.
+
+**The gate after 4h-0** (Decision 50): 6 304 + 300 = 6 604 ≤ 7 000 (4h fits under the cap, 396 to
+spare at its upper end); 6 304 + 300 + 1 100 = 7 704 ≤ 9 000; stress 6 304 + 300 + 1 650 = 8 254 ≤
+9 000; 3 free letters ≥ 2. **It passes, so reserve V is not applied before 4h.**
+
+*Readings of the 4h-0 build.* WP-0's prototype confirmed the multi-line string `DEF` as Baysick
+LANGUAGE.md §7.10 specifies it: the globals are shared with the body, `&` evaluates left to right,
+a `CALL` inside a body works, and `GOSUB`, jumps out of the body and recursion are rejected; the
+function form ran slightly faster than the `GOSUB` protocol it replaces. On register overflow
+`FNR$` sets `A$(1) = "registers"` and calls `dg_compile` itself, no flag being needed (C4 above).
+The neutrality proof (L-p) held: `--emit lir1` byte-identical before and after for 387 programs
+(every `tests/programs` program, every run-phase `tests/errors` program, `tests/accept/w4_sor.sea`),
+identical standard error for the 297 test programs that stop at an earlier error, every stage pair,
+`make test` and `make cross`. The independent review also compared the old and new binaries on
+the error and capacity paths (register-overflow sweeps, type limits, `BAD_RECORD` fields, 3 200
+random mutants): all identical.
 
 ### 2.8 Numbers inside the compiler
 

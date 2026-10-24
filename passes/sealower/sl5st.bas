@@ -1,6 +1,5 @@
-50000 REM sealower part 5 (lines 50000-59999): sub-phase 4g-2, structs, records, fields (DESIGN 3.5.9 R18-R24; 3.6.6 rules 15 (g), 16, 18, 27, 31, 38).
-50001 REM Layouts from layout.bas in O() (L-k; O(t,6) a slay label). A home or aggregate address register has V(.,0) = 1, V(.,3) its type. Fields: fld H5 i.
-50002 REM ---- 50003: I2 = the base of the fld chain from node I2, I3 = the sum of its field offsets --
+50000 REM sealower part 5 (lines 50000-59999): sub-phase 4g-2, structs, records, fields (DESIGN 3.5.9 R18-R24; 3.6.6 rules 15 (g), 16, 18, 27, 31, 38). Layouts from layout.bas in O() (L-k; O(t,6) a slay label). A home or aggregate address register
+50001 REM has V(.,0) = 1, V(.,3) its type. Fields: fld H5 i. ---- 50003: I2 = the base of the fld chain from node I2, I3 = the sum of its field offsets --
 50003 LET I3 = 0
 50004 IF H(I2, 1) <> 60 THEN 50010
 50005 CALL "ly_fld": O(), H(H(I2, 7), 4), H(I2, 5), I4, I5
@@ -14,8 +13,7 @@
 50102 LET I7 = V(V1, 3)
 50104 FOR I8 = 1 TO O(I7, 3)
 50106 CALL "ly_ref": O(), I7, I8, Z3
-50108 LET C1 = 3
-50110 GOSUB 7420
+50108 GOSUB 7418
 50112 LET V2 = N2
 50114 LET V3 = I6
 50116 GOSUB 7640
@@ -32,8 +30,7 @@
 50208 LET S = 22
 50210 IF H(I2, 1) = 39 THEN 7380
 50212 LET S = 68
-50214 LET D1 = 0
-50216 GOTO 7380
+50214 GOTO 7375
 50220 LET Q0 = R9
 50222 LET I2 = X
 50224 GOSUB 50003
@@ -46,8 +43,7 @@
 50238 LET X0 = I2
 50240 LET R0 = Q0
 50242 GOSUB 10080
-50244 LET R9 = D2
-50246 GOTO 3090
+50244 GOTO 3088
 50298 REM ---- 50300: the load ld? D2 Q0 M2 M3 M4 (M2 = 0: Q0 - 0 M4) of type M8; an aggregate M8 (50330): its address li S M3, imul, padd (li O M4, padd), a new home D2
 50300 LET T5 = M8
 50302 GOSUB 40600
@@ -65,8 +61,7 @@
 50326 LET V4 = M2
 50328 LET Z3 = M3
 50329 GOTO 11410
-50330 LET C1 = 3
-50332 GOSUB 7420
+50330 GOSUB 7418
 50334 LET D2 = N2
 50336 LET V(D2, 0) = 1
 50338 LET V(D2, 3) = M8
@@ -93,8 +88,7 @@
 50398 REM ---- 50400: D2 = a new home holding a copy of the aggregate D2, its references retained (rules 12 (c), 15 (f), 27 (c)); falls into 50600
 50400 LET V3 = D2
 50402 LET T5 = V(D2, 3)
-50404 LET D3 = 0
-50406 GOSUB 40630
+50404 GOSUB 40622
 50408 LET V2 = D2
 50410 LET Z0 = 0
 50498 REM ---- 50600: copy (rule 27 (c)) of type T5 from V3 into the home V2; retains on V2 unless Z0 = 1 (an owned source, moved)
@@ -108,15 +102,12 @@
 50702 IF D < 1 THEN 50706
 50704 IF V(D, 0) = 1 THEN 50710
 50706 LET T5 = H(X, 4)
-50707 LET D3 = 0
-50708 GOSUB 40630
+50707 GOSUB 40622
 50710 LET W(W0 + 3) = D2
 50712 LET W(W0 + 4) = H(X, 7)
 50716 IF W(W0 + 4) = 0 THEN 50760
 50718 LET S = 69
-50720 LET X1 = W(W0 + 4)
-50722 LET D1 = 0
-50724 GOTO 7380
+50720 GOTO 7366
 50730 CALL "ly_fld": O(), H(X, 4), W(W0 + 5), M8, M4
 50732 LET Q0 = W(W0 + 3)
 50734 LET X0 = W(W0 + 4)
@@ -143,7 +134,8 @@
 50759 GOTO 50716
 50760 LET R9 = W(W0 + 3)
 50762 GOTO 3090
-51098 REM ---- 51100: M4 = the off of the eld or est X, plus k*sc when its index (last child) is a ci k (R3)
+51098 REM ---- 51100: M4 = the off of the eld or est X, plus k*sc when its index (last child) is a ci k (R3); 51099: with M3 = H(X, 5)
+51099 LET M3 = H(X, 5)
 51100 CALL "io_i": S$(H(X, 0)), M4, K9, L(), T
 51102 LET O4 = H(X, 7)
 51104 IF H(O4, 8) = 0 THEN 51110
@@ -167,8 +159,7 @@
 51218 IF D6 <> D5 THEN 51216
 51219 LET W4 = 1
 51220 RETURN
-51298 REM ---- 51300 (reading eld, est): address type E3, value type E6, sc W7, off W8: the tptr of E6 (an aggregate whole only at off 0, R18, R19), or of a struct or record S
-51299 REM with sc its size and a field of type E6 at off (R24, ly_at)
+51298 REM ---- 51300 (reading eld, est): address type E3, value type E6, sc W7, off W8: the tptr of E6 (an aggregate whole only at off 0, R18, R19), or of a struct or record S with sc its size and a field of type E6 at off (R24, ly_at)
 51300 GOSUB 30920
 51302 LET T5 = E6
 51304 GOSUB 40600
@@ -203,16 +194,14 @@
 51556 IF W4 = 0 THEN 2360
 51558 LET Q0 = U(E1 + 1, 1)
 51560 LET M2 = U(E1 + 2, 1)
-51562 LET M3 = H(X, 5)
-51564 GOSUB 51100
+51562 GOSUB 51099
 51566 LET M8 = H(H(X, 7), 4)
 51568 GOSUB 50330
 51570 LET S = 70
 51572 LET X1 = H(X, 7)
 51574 LET D1 = D2
 51576 GOTO 7380
-51580 LET R9 = 0
-51582 GOTO 3090
+51580 GOTO 3081
 51998 REM ---- est of an aggregate value E2 (R19, from 32911): E, then fresh copy(E <- V) with retains of a borrowed V, else V's retains, E's old references released, mcopy
 52000 LET T5 = H(X0, 4)
 52002 GOSUB 40600
@@ -220,8 +209,7 @@
 52006 GOSUB 51200
 52008 LET Q0 = E3
 52010 LET M2 = E4
-52012 LET M3 = H(X, 5)
-52014 GOSUB 51100
+52012 GOSUB 51099
 52016 LET M8 = H(X0, 4)
 52018 GOSUB 50330
 52020 LET W7 = D2
@@ -237,16 +225,13 @@
 52036 LET V3 = E2
 52038 LET T5 = M8
 52040 GOSUB 50600
-52042 LET R9 = 0
-52044 GOTO 3090
+52042 GOTO 3081
 52098 REM ---- eld of an aggregate type (R18, from 32805): its address, borrowed (15 (f) of a temporary: 42666)
-52100 LET T5 = H(X, 4)
-52102 GOSUB 40600
+52100 GOSUB 40592
 52104 IF F5 = 0 THEN 32806
 52106 LET Q0 = E2
 52108 LET M2 = E3
-52110 LET M3 = H(X, 5)
-52112 GOSUB 51100
+52110 GOSUB 51099
 52114 LET M8 = T5
 52116 GOSUB 50330
 52118 GOTO 32825
@@ -317,11 +302,8 @@
 52704 LET Q4 = T2
 52706 GOSUB 7935
 52708 LET O(T2, 6) = D0
-52710 LET C1 = 3
-52712 GOSUB 7420
-52714 LET V1 = N2
-52716 GOSUB 7500
-52718 LET L1$ = "la " & Z$ & " d" & STR$(O(T2, 6))
+52710 GOSUB 7418
+52714 LET L1$ = "la" & FNR$(N2) & " d" & STR$(O(T2, 6))
 52720 GOSUB 7695
 52722 GOTO 33018
 52730 LET Q9 = U1
@@ -357,18 +339,14 @@
 52838 GOTO 1285
 52848 REM ---- reading tstruct, trec (after sea.hir's tvec ... types, before any tptr) and their fd records into the layout (ly_st, ly_fd)
 52850 IF K = 64 THEN 52880
-52852 IF G0 > 0 THEN 2360
-52854 IF Y7 = 1 THEN 2360
-52856 IF I(1) <> Y9 + 1 THEN 2360
-52858 LET Y9 = I(1)
+52852 GOSUB 1301
 52860 IF Y9 > T9 THEN 52876
 52862 LET T(Y9, 1) = 7
 52864 LET T(Y9, 2) = I(3 - INT(K / 63))
 52866 CALL "ly_st": O(), Y9, T(Y9, 2), T
 52868 IF T = 0 THEN 1285
 52870 IF O(0, 4) <> 0 THEN 2360
-52876 LET P8$ = "types"
-52878 GOTO 1285
+52876 GOTO 1282
 52880 IF P8$ <> "" THEN 1285
 52882 CALL "ly_fd": O(), I(2), T
 52884 IF T <> 0 THEN 2360
@@ -457,8 +435,7 @@
 53510 LET W(W0 + 5) = P6
 53512 LET S = 45
 53514 LET X1 = P6
-53516 LET D1 = 0
-53518 GOTO 7380
+53516 GOTO 7375
 53520 LET P6 = W(W0 + 5)
 53522 LET H(P6, 0) = R9
 53524 IF H(P6, 8) > 0 THEN 53534
@@ -487,8 +464,8 @@
 53606 GOTO 53602
 53608 LET A1 = H(H8, 5)
 53610 RETURN
-53618 REM ---- 53620: R9 = the address of the path of X2 from its root H8 (rule 31): J7 = 1 with the cows, J8 = 1 at its place (the root as loaded there, the idx sites)
-53619 REM A8 + T7 (T7 < 0: none) is the address of the node H8 (T8 1), the place of its array (T8 2), or T8 3 a local array in A8; X3 its parent
+53618 REM ---- 53620: R9 = the address of the path of X2 from its root H8 (rule 31): J7 = 1 with the cows, J8 = 1 at its place (the root as loaded there, the idx sites) A8 + T7 (T7 < 0: none) is the address of the node H8 (T8 1), the place of its
+53619 REM array (T8 2), or T8 3 a local array in A8; X3 its parent
 53620 LET A8 = A(G(F0, 0) + A1, 3)
 53622 IF A8 > 0 THEN 53626
 53624 LET A8 = A1
@@ -547,12 +524,10 @@
 53726 LET I3 = T7
 53727 GOTO 52646
 53729 RETURN
-53730 LET C1 = 3
-53732 GOSUB 7420
-53734 LET V2 = N2
-53735 LET V3 = A8
-53736 LET Z3 = (T7 + ABS(T7)) / 2
-53737 GOSUB 7640
+53730 GOSUB 7418
+53734 LET Z3 = (T7 + ABS(T7)) / 2
+53735 LET L1$ = SEG$("ldildfldp", 3 * V(N2, 1) - 2, 3 * V(N2, 1)) & FNR$(N2) & FNR$(A8) & " - 0 " & STR$(Z3)
+53736 GOSUB 7695
 53738 LET R6 = N2
 53739 RETURN
 53758 REM ---- 53760 ($ in an index of the idx P3 of a rarg path whose base is no root, 13370): the base's array R6 by 53620 up to P3 (checks, no cows), kept in H(P3,0)

@@ -1,23 +1,14 @@
 40000 REM ====================================================================================
-40002 REM sealower part 4 (lines 40000-49999): sub-phase 4e (DESIGN 3.5.9 R1-R11 and the validation of
-40004 REM sea.hirl; 3.6.6 "Lowering of the sea.hirl records" 82-87; rule 27 for fixed-size f64, i64
-40006 REM and bool arrays; rule 12's grouping of the statements of L6 and L11). Node kinds 53 chkb
-40008 REM 54 chk 55 rcnt 56 cow 57 mcpy 58 cdat; types 41 tfvec 59 tfmat (T kind 5, 6: T(.,2) elt,
-40010 REM T(.,3) n or rows, T(.,0) 1 or cols). Fields: chkb H5 dim; chk H0 err, H6 n; rcnt H5 incl,
-40012 REM H6 l, H0 e; cdat H4 ty, H6 n. A fixed-size value is the address of its home: a p register
-40014 REM marked V(.,0) = 1 (a local or parameter of a fixed type, an R1 slot, a hidden result
-40016 REM address N7+1 .. N7+H7, 3.6.3); homes hold no counts in 4e. A call whose fixed results
-40018 REM it provides itself runs in mode D = -3 (a value: its home on U) or -4 (eval, discarded).
-40020 REM J(.,0) of a scope entry: 0 a bound local, 1 an owned R11 tmp, 2 the anchor of a seq's .t.
+40002 REM sealower part 4 (lines 40000-49999): sub-phase 4e (DESIGN 3.5.9 R1-R11 and the validation of sea.hirl; 3.6.6 "Lowering of the sea.hirl records" 82-87; rule 27 for fixed-size f64, i64 and bool arrays; rule 12's grouping of the statements of
+40004 REM L6 and L11). Node kinds 53 chkb 54 chk 55 rcnt 56 cow 57 mcpy 58 cdat; types 41 tfvec 59 tfmat (T kind 5, 6: T(.,2) elt, T(.,3) n or rows, T(.,0) 1 or cols). Fields: chkb H5 dim; chk H0 err, H6 n; rcnt H5 incl, H6 l, H0 e; cdat H4 ty, H6 n.
+40006 REM A fixed-size value is the address of its home: a p register marked V(.,0) = 1 (a local or parameter of a fixed type, an R1 slot, a hidden result address N7+1 .. N7+H7, 3.6.3); homes hold no counts in 4e. A call whose fixed results it
+40008 REM provides itself runs in mode D = -3 (a value: its home on U) or -4 (eval, discarded). J(.,0) of a scope entry: 0 a bound local, 1 an owned R11 tmp, 2 the anchor of a seq's .t.
 40022 REM ====================================================================================
 40028 REM ---- reading tfvec id elt n / tfmat id elt r c (types, ids in order, 3.5.1) -------------
 40030 IF G0 > 0 THEN 2360
 40032 IF Y7 = 1 THEN 40062
-40034 IF I(1) <> Y9 + 1 THEN 2360
-40036 LET Y9 = I(1)
-40038 IF Y9 <= T9 THEN 40044
-40040 LET P8$ = "types"
-40042 GOTO 1285
+40034 GOSUB 1303
+40038 IF Y9 > T9 THEN 1282
 40044 IF I(2) < 2 THEN 2360
 40045 IF T(I(2), 1) = 7 THEN 40048
 40046 IF I(2) > 5 THEN 2360
@@ -39,9 +30,8 @@
 40074 IF T(E6, 3) = 8 THEN 2360
 40076 NEXT E6
 40078 GOTO 40034
-40090 REM ---- 40100 (R10, every node H1 of kind K just read): a rng only as a forr's range; no
-40091 REM array operand of cvt un bin powk lib; no array index of an idx; no asg op to an array;
-40092 REM an idx of an array base has as many indices as the base has dimensions (else bad tree)
+40090 REM ---- 40100 (R10, every node H1 of kind K just read): a rng only as a forr's range; no array operand of cvt un bin powk lib; no array index of an idx; no asg op to an array; an idx of an array base has as many indices as the base has
+40091 REM dimensions (else bad tree)
 40100 LET E9 = H(H1, 7)
 40102 IF E9 = 0 THEN 40127
 40104 IF H(E9, 1) <> 16 THEN 40108
@@ -100,8 +90,7 @@
 40234 NEXT E6
 40236 IF E5 <> I(3) THEN 2360
 40238 GOTO 1285
-40240 REM ---- rcnt incl l e: l (type 3) and e (type 2, R6) distinct, written only by it (A(.,0));
-40241 REM lo, hi, st of type 3
+40240 REM ---- rcnt incl l e: l (type 3) and e (type 2, R6) distinct, written only by it (A(.,0)); lo, hi, st of type 3
 40242 LET H(H1, 5) = I(2)
 40244 LET H(H1, 6) = I(3)
 40246 LET H(H1, 0) = I(4)
@@ -156,11 +145,8 @@
 40342 REM ---- anew of a fixed-size type: r = 0 and z = 0 (R1) -----------------------------------
 40344 IF I(3) + I(4) > 0 THEN 2360
 40346 GOTO 1285
-40390 REM ==== the checks of a function just read (from 31000) ===================================
-40391 REM ---- 40400: rule 12's groups. A block whose statements are all at its own position and whose
-40392 REM blocks outside xblks are too (an rcnt has its rng's; L6, L11's block) is one statement:
-40393 REM H(block,0) = the first node of its subtree. A run of two or more bind and tmp statements of
-40394 REM one block at one position (L11 in place of a tbind) is one statement: H(last,0) likewise
+40390 REM ==== the checks of a function just read (from 31000) ---- 40400: rule 12's groups. A block whose statements are all at its own position and whose blocks outside xblks are too (an rcnt has its rng's; L6, L11's block) is one statement:
+40391 REM H(block,0) = the first node of its subtree. A run of two or more bind and tmp statements of one block at one position (L11 in place of a tbind) is one statement: H(last,0) likewise
 40400 FOR E2 = H2 TO H0
 40402 IF H(E2, 1) <> 32 THEN 40470
 40404 IF H(E2, 6) = 0 THEN 40470
@@ -206,9 +192,7 @@
 40468 GOTO 40446
 40470 NEXT E2
 40472 RETURN
-40480 REM ---- 40490 (a bind of a .l local E2, R8): a scalar anywhere (A(.,4) = 5: declared by a bind);
-40481 REM a dynamic array only directly in a block (rule 30 (1): H(E2,6) = 1); a fixed-size one only
-40482 REM in L4 (first of a block of 4)
+40480 REM ---- 40490 (a bind of a .l local E2, R8): a scalar anywhere (A(.,4) = 5: declared by a bind); a dynamic array only directly in a block (rule 30 (1): H(E2,6) = 1); a fixed-size one only in L4 (first of a block of 4)
 40490 LET E3 = A(E1 + E4, 1)
 40492 GOSUB 30900
 40494 IF E3 <= 4 THEN 40515
@@ -236,8 +220,7 @@
 40530 NEXT O2
 40532 LET O2 = 0
 40538 RETURN
-40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar
-40541 REM local declared by a bind (R8)
+40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar local declared by a bind (R8)
 40550 LET O1 = H(E2, 7)
 40552 IF H(O1, 1) <> 5 THEN 40564
 40554 LET O1 = H(O1, 5)
@@ -255,16 +238,19 @@
 40574 IF H(O1, 1) <> 12 THEN 2360
 40576 IF S$(H(O1, 0)) <> "where" THEN 2360
 40578 GOTO 40564
-40590 REM ==== fixed-size values (rule 27) ===============================================================
-40591 REM ---- 40600: F5 = 1 if the type T5 is fixed-size, a struct or a record (an aggregate); then F8 = its size in bytes (4.8, layout)
+40590 REM ==== fixed-size values (rule 27) ---- 40600: F5 = 1 if the type T5 is fixed-size, a struct or a record (an aggregate); then F8 = its size in bytes (4.8, layout); 40595: of T5 = T1, 40592: of the type of X
+40592 LET T5 = H(X, 4)
+40593 GOTO 40600
+40595 LET T5 = T1
 40600 LET F5 = 0
 40602 IF T5 <= 9 THEN 40620
 40604 IF T(T5, 1) < 5 THEN 40620
 40606 LET F5 = 1
 40608 LET F8 = O(T5, 1)
 40620 RETURN
-40628 REM ---- 40630: D2 = a new home of the fixed type T5 (rule 27 (a), R1): sa into D3 (a register),
-40629 REM or into a new p register when D3 = 0; slot sK of the size rounded up to the slot word
+40622 LET D3 = 0
+40623 GOTO 40630
+40628 REM ---- 40630: D2 = a new home of the fixed type T5 (rule 27 (a), R1): sa into D3 (a register), or into a new p register when D3 = 0 (40622: with D3 = 0); slot sK of the size rounded up to the slot word
 40630 GOSUB 40600
 40632 LET Z1 = Z7 * INT((F8 + Z7 - 1) / Z7)
 40634 IF Z1 > 0 THEN 40638
@@ -273,52 +259,41 @@
 40640 GOSUB 7905
 40642 LET D2 = D3
 40644 IF D3 > 0 THEN 40650
-40646 LET C1 = 3
-40647 GOSUB 7420
+40646 GOSUB 7418
 40648 LET D2 = N2
 40650 LET V(D2, 0) = 1
 40651 LET V(D2, 3) = T5
-40652 LET V1 = D2
-40654 GOSUB 7500
-40656 LET L1$ = "sa " & Z$ & " s" & STR$(S5)
-40658 GOSUB 7695
-40659 RETURN
+40652 LET L1$ = "sa" & FNR$(D2) & " s" & STR$(S5)
+40658 GOTO 7695
 40660 REM ---- 40670: copy (rule 27 (c), (d)) of the fixed type T5 from V3 to V2: li N size, mcopy ---
 40670 GOSUB 40600
 40672 LET Z3 = F8
 40674 GOSUB 10590
 40676 LET V4 = N2
 40678 LET O$ = "mcopy"
-40680 GOSUB 7575
-40682 RETURN
-40690 REM ---- lv of a fixed local or parameter (a ref one too, rule 31): its register is the home;
-40691 REM a rule-12 copy is a new home (rule 12 (c))
+40680 GOTO 7575
+40690 REM ---- lv of a fixed local or parameter (a ref one too, rule 31): its register is the home; a rule-12 copy is a new home (rule 12 (c))
 40700 LET R9 = A(G(F0, 0) + A1, 3)
 40702 IF R9 > 0 THEN 40706
 40704 LET R9 = A1
 40706 IF H(X, 6) = 0 THEN 3090
 40708 LET D2 = R9
 40710 GOSUB 50400
-40712 LET R9 = D2
-40714 GOTO 3090
-40730 REM ---- 40740 (every node, 3071): a node of a fixed type other than a call or seq is lowered
-40731 REM without a destination (R9: an xblk keeps its own home; a bind or asg copies)
+40712 GOTO 3088
+40730 REM ---- 40740 (every node, 3071): a node of a fixed type other than a call or seq is lowered without a destination (R9: an xblk keeps its own home; a bind or asg copies)
 40740 IF D < 1 THEN 40752
 40742 IF H(X, 1) = 10 THEN 40752
 40744 IF H(X, 1) = 19 THEN 40752
 40745 IF H(X, 1) = 61 THEN 40752
-40746 LET T5 = H(X, 4)
-40748 GOSUB 40600
+40746 GOSUB 40592
 40749 IF F5 = 0 THEN 40752
 40750 LET D = 0
 40751 LET W(W0 + 1) = 0
 40752 RETURN
 40760 REM ---- 40770: ifx of a fixed type (rule 27 (k)): its home, sa before the condition (x3) ----
-40770 LET T5 = H(X, 4)
-40772 GOSUB 40600
+40770 GOSUB 40592
 40774 IF F5 = 0 THEN 40780
-40776 LET D3 = 0
-40777 GOSUB 40630
+40776 GOSUB 40622
 40778 LET W(W0 + 5) = D2
 40780 RETURN
 40782 REM each arm's value is copied into the home (then 4100, else 4130)
@@ -349,8 +324,7 @@
 40834 GOSUB 40600
 40836 LET N5 = F5
 40838 RETURN
-40840 REM ---- 40850 (a call, before its arguments): the homes of its fixed results (rule 27 (l))
-40841 REM unless its parent gives them (D = -2): a bind's local (D > 0), else new homes
+40840 REM ---- 40850 (a call, before its arguments): the homes of its fixed results (rule 27 (l)) unless its parent gives them (D = -2): a bind's local (D > 0), else new homes
 40850 IF D = -2 THEN 40888
 40852 LET T1 = G(H(X, 5), 3)
 40854 GOSUB 40810
@@ -366,8 +340,7 @@
 40874 LET T5 = M(T(T1, 3) + O8 - 1)
 40876 GOSUB 40600
 40878 IF F5 = 0 THEN 40883
-40879 LET D3 = 0
-40880 GOSUB 40630
+40879 GOSUB 40622
 40881 GOSUB 7970
 40882 LET U(U0, 1) = D2
 40883 NEXT O8
@@ -382,8 +355,7 @@
 40908 IF D = -2 THEN 40912
 40910 LET Q6 = N5
 40912 RETURN
-40920 REM ---- 40930: L1$ = the call record: nr (0 when discarded), the register results, na, the
-40921 REM hidden result addresses (V(.,0) = 1) in result order, then the arguments (3.6.3)
+40920 REM ---- 40930: L1$ = the call record: nr (0 when discarded), the register results, na, the hidden result addresses (V(.,0) = 1) in result order, then the arguments (3.6.3)
 40930 LET M5 = Z5
 40932 IF D = -1 THEN 40936
 40934 IF D > -3 THEN 40938
@@ -395,22 +367,18 @@
 40945 LET N5 = N5 + 1
 40946 GOTO 40954
 40948 IF M5 = 0 THEN 40954
-40950 LET V1 = U(I, 1)
-40951 GOSUB 7532
+40950 LET L1$ = L1$ & FNR$(U(I, 1))
 40954 NEXT I
 40956 LET L1$ = L1$ & " " & STR$(H(X, 6) + N5)
 40958 FOR I = A2 - Q6 + 1 TO A2
 40960 IF V(U(I, 1), 0) = 0 THEN 40966
-40962 LET V1 = U(I, 1)
-40963 GOSUB 7532
+40962 LET L1$ = L1$ & FNR$(U(I, 1))
 40966 NEXT I
 40968 FOR I = W(W0 + 3) + 1 TO W(W0 + 3) + H(X, 6)
-40970 LET V1 = U(I, 1)
-40972 GOSUB 7532
+40970 LET L1$ = L1$ & FNR$(U(I, 1))
 40976 NEXT I
 40978 RETURN
-40990 REM ---- bind of a fixed local (rule 27 (b); rule 30 (1) of L4): sa of its slot, then the value
-40991 REM written into it: a call (through seqs) gets it as its hidden result address, else a copy
+40990 REM ---- bind of a fixed local (rule 27 (b); rule 30 (1) of L4): sa of its slot, then the value written into it: a call (through seqs) gets it as its hidden result address, else a copy
 41000 LET T5 = A(G(F0, 0) + H(X, 5), 1)
 41002 LET D3 = H(X, 5)
 41004 GOSUB 40630
@@ -431,14 +399,12 @@
 41035 LET X0 = H(X, 7)
 41036 GOSUB 52950
 41038 GOTO 52900
-41040 REM ---- asg set to a fixed local or ref parameter (rule 27 (d)): the value (its own home, or a
-41041 REM borrowed address), then li N size, mcopy H V N
+41040 REM ---- asg set to a fixed local or ref parameter (rule 27 (d)): the value (its own home, or a borrowed address), then li N size, mcopy H V N
 41050 IF H(X, 5) > 1 THEN 2360
 41052 LET S = 67
 41054 GOTO 7380
 41056 GOTO 53200
-41060 REM ---- tbind and tasg components, tret, eval: homes of fixed results (rule 27 (l)) ----------
-41061 REM tbind: the local's slot (written in place), or a temporary home for _
+41060 REM ---- tbind and tasg components, tret, eval: homes of fixed results (rule 27 (l)) tbind: the local's slot (written in place), or a temporary home for _
 41070 LET D3 = U(U0, 1)
 41072 GOSUB 40630
 41074 LET U(U0, 1) = D2
@@ -448,8 +414,7 @@
 41082 GOTO 8385
 41084 GOSUB 41086
 41085 GOTO 16140
-41086 LET D3 = 0
-41087 GOSUB 40630
+41086 GOSUB 40622
 41088 LET N2 = D2
 41089 RETURN
 41090 REM tasg step (d): the home V2 copied into the target local or ref parameter A2
@@ -468,8 +433,7 @@
 41110 LET N2 = N2 + F5
 41112 NEXT O6
 41114 GOTO 7265
-41118 REM ---- 41120 (ret, before each value; 41122 after it): F5, N2 its hidden address; 41142 (after): a fixed result R9 is copied into it (rule 27
-41119 REM (h)) before the releases, F5 = 1; x3 counts the values
+41118 REM ---- 41120 (ret, before each value; 41122 after it): F5, N2 its hidden address; 41142 (after): a fixed result R9 is copied into it (rule 27 (h)) before the releases, F5 = 1; x3 counts the values
 41120 LET W(W0 + 5) = W(W0 + 5) + 1
 41122 LET T1 = G(F0, 3)
 41124 LET N2 = N7
@@ -505,13 +469,10 @@
 41190 RETURN
 41194 REM ---- 41200 (the func record): the hidden result addresses before the parameters ------------
 41200 FOR O6 = 1 TO H7
-41202 LET V1 = N7 + O6
-41204 GOSUB 7500
-41206 LET F9$ = F9$ & " " & Z$
+41202 LET F9$ = F9$ & FNR$(N7 + O6)
 41208 NEXT O6
 41210 RETURN
-41220 REM ---- fixed bases of rules 18, 19, 31 and $ (li extents, the home as data, no cow) --------
-41221 REM 41230: T6 = the type of the base node O5, F6 = 1 if it is fixed-size
+41220 REM ---- fixed bases of rules 18, 19, 31 and $ (li extents, the home as data, no cow) 41230: T6 = the type of the base node O5, F6 = 1 if it is fixed-size
 41230 LET T6 = H(O5, 4)
 41232 LET T5 = T6
 41234 GOSUB 40600
@@ -519,37 +480,28 @@
 41238 RETURN
 41240 REM 10680 for F6 = 1: N2 = li of the extent of dimension Z3
 41242 LET Z3 = T(T6, 3 * (1 - Z3))
-41244 GOSUB 10590
-41246 RETURN
+41244 GOTO 10590
 41248 REM 10740 for F6 = 1: the data is the home itself; 11690: no copy on write
 41250 LET N2 = V3
 41252 RETURN
-41260 REM ---- ext of a fixed array (T6 its type) and $ of a fixed base: li of the static extent of
-41261 REM dimension H(X,5) into D2
+41260 REM ---- ext of a fixed array (T6 its type) and $ of a fixed base: li of the static extent of dimension H(X,5) into D2
 41270 LET O5 = H(X, 7)
-41272 GOSUB 41230
-41274 RETURN
-41280 LET V1 = D2
-41282 GOSUB 7500
-41284 GOSUB 7865
-41286 LET L1$ = "li " & Z$ & " " & STR$(T(T6, 3 * (1 - H(X, 5))))
-41288 GOSUB 7695
-41290 LET R9 = D2
-41292 GOTO 3090
+41272 GOTO 41230
+41280 LET L1$ = "li" & FNR$(D2) & " " & STR$(T(T6, 3 * (1 - H(X, 5))))
+41282 GOSUB 7865
+41288 GOTO 7662
 41294 REM adat of a fixed array (R2): no instruction, its register is the operand's
 41296 LET R9 = E2
 41298 GOTO 3090
 41300 REM ---- anew of a fixed type (R1): a new home into the destination ------------------------------
-41302 LET T5 = H(X, 4)
-41304 GOSUB 40600
+41302 GOSUB 40592
 41306 IF F5 = 0 THEN 33000
 41308 LET D3 = D
 41310 GOSUB 40630
 41312 LET R9 = D2
 41314 LET U0 = E1
 41316 GOTO 3090
-41320 REM ---- 41330 (tmp, child E2): F5 = 1 if it names its child's register: a fixed value (R9), or
-41321 REM an adat of a fixed array (R2)
+41320 REM ---- 41330 (tmp, child E2): F5 = 1 if it names its child's register: a fixed value (R9), or an adat of a fixed array (R2)
 41330 LET T5 = H(E2, 4)
 41332 GOSUB 40600
 41334 IF F5 = 1 THEN 41342
@@ -564,22 +516,18 @@
 41355 GOSUB 40600
 41356 LET U3 = F5
 41358 RETURN
-41390 REM ==== the records 82-87 (from 32000 and 32432) ===========================================
-41391 REM ---- chkb dim: chkb I E dim site ---------------------------------------------------------
+41390 REM ==== the records 82-87 (from 32000 and 32432) ---- chkb dim: chkb I E dim site ---------------------------------------------------------
 41400 LET V2 = U(E1 + 1, 1)
 41402 LET V3 = U(E1 + 2, 1)
 41404 LET Z3 = H(X, 5)
 41406 GOSUB 10810
 41408 GOTO 41444
 41410 REM ---- chk err n: chk C err site n A1 .. An -----------------------------------------------
-41412 LET V1 = U(E1 + 1, 1)
-41414 GOSUB 7500
-41416 LET L1$ = "chk " & Z$ & " " & S$(H(X, 0))
+41412 LET L1$ = "chk" & FNR$(U(E1 + 1, 1)) & " " & S$(H(X, 0))
 41418 GOSUB 7775
 41420 LET L1$ = L1$ & " " & Z9$ & " " & STR$(H(X, 6))
 41422 FOR O6 = E1 + 2 TO U0
-41424 LET V1 = U(O6, 1)
-41426 GOSUB 7532
+41424 LET L1$ = L1$ & FNR$(U(O6, 1))
 41430 NEXT O6
 41432 GOSUB 7695
 41434 GOTO 41444
@@ -592,17 +540,11 @@
 41442 IF V4 = 0 THEN 2360
 41443 GOSUB 7575
 41444 LET U0 = E1
-41446 LET R9 = 0
-41448 GOTO 3090
+41446 GOTO 3081
 41450 REM ---- rcnt incl l e: rcount L E lo hi st incl site, L and E the registers of l and e --------
-41452 LET L1$ = "rcount"
-41454 LET V1 = H(X, 6)
-41456 GOSUB 7532
-41460 LET V1 = H(X, 0)
-41462 GOSUB 7532
+41452 LET L1$ = "rcount" & FNR$(H(X, 6)) & FNR$(H(X, 0))
 41466 FOR O6 = E1 + 1 TO E1 + 3
-41468 LET V1 = U(O6, 1)
-41470 GOSUB 7532
+41468 LET L1$ = L1$ & FNR$(U(O6, 1))
 41474 NEXT O6
 41476 GOSUB 7775
 41478 LET L1$ = L1$ & " " & STR$(H(X, 5)) & " " & Z9$
@@ -613,8 +555,7 @@
 41492 LET V3 = U(E1 + 2, 1)
 41494 LET V4 = U(E1 + 3, 1)
 41496 RETURN
-41500 REM ---- cow of lv L: cow(L) of rule 19, the register form or the memory form of a ref parameter;
-41501 REM its lv is not lowered (the store's reads of the target are not copied, rule 12)
+41500 REM ---- cow of lv L: cow(L) of rule 19, the register form or the memory form of a ref parameter; its lv is not lowered (the store's reads of the target are not copied, rule 12)
 41502 LET A1 = H(H(X, 7), 5)
 41503 IF H(H(X, 7), 1) = 60 THEN 52400
 41504 LET C7 = 0
@@ -626,20 +567,14 @@
 41516 LET F6 = 0
 41518 GOSUB 11690
 41519 GOSUB 52420
-41520 LET R9 = 0
-41522 GOTO 3090
+41520 GOTO 3081
 41530 REM ---- cdat: a dat data record of its constants (R4) and la P dN into the destination -------
 41532 LET Q3 = 3
 41534 LET Q4 = X
 41536 GOSUB 7935
-41538 LET C1 = 3
-41540 GOSUB 7470
-41542 LET V1 = D2
-41544 GOSUB 7500
-41546 LET L1$ = "la " & Z$ & " d" & STR$(D0)
-41548 GOSUB 7695
-41550 LET R9 = D2
-41552 GOTO 3090
+41538 GOSUB 7466
+41542 LET L1$ = "la" & FNR$(D2) & " d" & STR$(D0)
+41548 GOTO 7662
 41560 REM ---- writing a dat record (label I, node X) and its dvi / dvf records (3.6.2) -------------
 41562 LET O$ = "bool"
 41564 IF T(H(X, 4), 2) = 2 THEN 41570
@@ -668,10 +603,8 @@
 41600 GOSUB 51100
 41602 LET L1$ = L1$ & " - 0 " & STR$(M4)
 41604 GOTO 7695
-41630 REM ==== R11 and the block end =========================================================================
-41631 REM ---- 41640 (a tmp done, register its local's): directly in a block and in no xblk, an owned
-41632 REM one is a temporary of the block (R11), J(.,0) = 1; the .t locals of a seq it binds wait for
-41633 REM its release at the block's end (attached below it; a borrowed tmp leaves an anchor, J(.,0) = 2)
+41630 REM ==== R11 and the block end ---- 41640 (a tmp done, register its local's): directly in a block and in no xblk, an owned one is a temporary of the block (R11), J(.,0) = 1; the .t locals of a seq it binds wait for its release at the block's
+41631 REM end (attached below it; a borrowed tmp leaves an anchor, J(.,0) = 2)
 41640 IF H(W(W0 - 6), 1) <> 32 THEN 41672
 41642 FOR O6 = W0 - 12 TO 6 STEP -6
 41644 IF H(W(O6), 1) = 43 THEN 41672
@@ -692,21 +625,18 @@
 41669 GOSUB 10320
 41670 LET J(J9, 0) = 2 - Z0
 41672 RETURN
-41680 REM ---- 41690 (rule 16 (a), R11): the end of block frame W0 above scope height U4: first its
-41681 REM owned tmps in record order, then its bound locals in reverse order, each followed by the
-41682 REM entries attached below it (J(.,4) = W0, the .t locals of a seq it binds) in their order
+41680 REM ---- 41690 (rule 16 (a), R11): the end of block frame W0 above scope height U4: first its owned tmps in record order, then its bound locals in reverse order, each followed by the entries attached below it (J(.,4) = W0, the .t locals of a
+41681 REM seq it binds) in their order
 41690 FOR K6 = U4 + 1 TO J9
 41692 IF J(K6, 0) = 0 THEN 41698
 41694 IF J(K6, 0) = 2 THEN 41697
-41695 LET V1 = J(K6, 2)
-41696 GOSUB 10140
+41695 GOSUB 10135
 41697 GOSUB 41720
 41698 NEXT K6
 41700 FOR K6 = J9 TO U4 + 1 STEP -1
 41702 IF J(K6, 0) > 0 THEN 41710
 41704 IF J(K6, 4) <> 0 THEN 41710
-41706 LET V1 = J(K6, 2)
-41707 GOSUB 10140
+41706 GOSUB 10135
 41708 GOSUB 41720
 41710 NEXT K6
 41712 RETURN
@@ -742,8 +672,7 @@
 41784 IF T(E9, 1) = 2 THEN 41788
 41786 LET E9 = 0
 41788 RETURN
-41789 REM ---- 41791 (a tbind E2, from 31100): one of .l locals only as the first statement of a block
-41790 REM (L12, R8); each .l local it binds is marked A(.,4) + 8 (R25)
+41789 REM ---- 41791 (a tbind E2, from 31100): one of .l locals only as the first statement of a block (L12, R8); each .l local it binds is marked A(.,4) + 8 (R25)
 41791 LET O3 = 0
 41792 FOR O1 = 1 TO H(E2, 6)
 41794 LET O4 = M(H(E2, 0) + O1 - 1)
@@ -757,8 +686,8 @@
 41810 IF H(O2, 1) <> 32 THEN 2360
 41812 IF H(O2, 7) <> E2 THEN 2360
 41814 RETURN
-41990 REM ==== sub-phase 4g-1 (DESIGN 3.5.9 R17, R20, R22, R25; 3.6.6 rules 12, 15, 16, 32, 34, 35). R22 is 10390's: an owned R11 tmp is on J
-41991 REM ---- 42000 (est or asg X, value X0 in R9): moved, Z0 = 1 (R17 (b): lv of an owned tmp of the est's block, J(.,0) = 1; R25: lv of an L12 tbind's .l local, A(.,4) >= 8, J(.,0) = 0; J entry set 2, read nowhere after), else 10230
+41990 REM ==== sub-phase 4g-1 (DESIGN 3.5.9 R17, R20, R22, R25; 3.6.6 rules 12, 15, 16, 32, 34, 35). R22 is 10390's: an owned R11 tmp is on J ---- 42000 (est or asg X, value X0 in R9): moved, Z0 = 1 (R17 (b): lv of an owned tmp of the est's block,
+41991 REM J(.,0) = 1; R25: lv of an L12 tbind's .l local, A(.,4) >= 8, J(.,0) = 0; J entry set 2, read nowhere after), else 10230
 42000 LET Z0 = 0
 42002 LET L6 = 1
 42004 IF H(X0, 1) <> 5 THEN 42044
@@ -786,17 +715,13 @@
 42056 NEXT K6
 42058 RETURN
 42090 REM ---- 42100: rcall of the entry Q1$ into D2 with the Z5 (0-2) arguments V3 V4 ------------
-42100 GOSUB 9580
+42100 LET Q9 = FNE(Q1$, "")
 42102 GOSUB 5590
-42104 LET V1 = D2
-42106 GOSUB 7500
-42108 LET L1$ = L1$ & " " & Z$ & " " & STR$(Z5)
+42104 LET L1$ = L1$ & FNR$(D2) & " " & STR$(Z5)
 42110 IF Z5 = 0 THEN 7695
-42112 LET V1 = V3
-42114 GOSUB 7532
+42112 LET L1$ = L1$ & FNR$(V3)
 42118 IF Z5 = 1 THEN 7695
-42120 LET V1 = V4
-42122 GOSUB 7532
+42120 LET L1$ = L1$ & FNR$(V4)
 42126 GOTO 7695
 42190 REM ---- bin cat / comparison of str A1 A2 (rule 32) into D2, the temporary operands released (15 (b)); 42192 (from 6304): str += (15 (i)), cat into a new R, then stored
 42192 LET A1 = A2
@@ -815,13 +740,10 @@
 42218 LET D2 = N2
 42220 GOSUB 42100
 42222 IF A3 = 18 THEN 42236
-42224 LET Z3 = 0
-42226 GOSUB 10590
-42228 LET O$ = "icmp " & S$(H(X, 0))
-42230 LET V2 = D4
-42232 LET V3 = D2
-42234 LET V4 = N2
-42235 GOSUB 7575
+42224 GOSUB 10585
+42228 LET V4 = N2
+42230 LET L1$ = "icmp " & S$(H(X, 0)) & FNR$(D4) & FNR$(D2) & FNR$(V4)
+42232 GOSUB 7620
 42236 LET D2 = D4
 42238 LET X0 = H(X, 7)
 42240 LET R0 = A1
@@ -839,8 +761,7 @@
 42282 LET V1 = N2
 42284 GOTO 10180
 42390 REM ---- lib str, lower, args (rules 32, 35; W2 23-25, argument U(Z6+1)): an rcall into D2; str of a bool la T, la F (str true, false), psel (borrowed)
-42400 LET C1 = 3
-42402 GOSUB 7470
+42400 GOSUB 7466
 42404 LET V3 = U(Z6 + 1, 1)
 42406 LET Z5 = H(X, 6)
 42408 LET D5 = W2 - 21
@@ -852,32 +773,28 @@
 42426 LET X0 = H(X, 7)
 42428 LET R0 = V3
 42430 GOSUB 10080
-42432 LET R9 = D2
-42434 GOTO 19580
+42432 GOTO 19575
 42440 LET D4 = D2
 42442 FOR Q3 = 4 TO 5
 42444 GOSUB 42461
 42446 LET V4 = V5
 42448 LET V5 = D2
 42450 NEXT Q3
-42452 LET O$ = "psel"
-42454 LET V2 = D4
-42456 GOSUB 11530
+42452 LET L1$ = "psel" & FNR$(D4) & FNR$(V3) & FNR$(V4) & FNR$(V5)
+42454 GOSUB 7695
 42458 LET R9 = D4
 42460 GOTO 19580
 42461 GOSUB 7420
 42462 LET D2 = N2
 42464 LET Q4 = X
 42466 GOSUB 7935
-42468 LET V1 = D2
-42470 GOSUB 7500
-42472 LET L1$ = "la " & Z$ & " d" & STR$(D0)
+42468 LET L1$ = "la" & FNR$(D2) & " d" & STR$(D0)
 42474 GOTO 7695
 42479 IF D(I, 1) = 6 THEN 52750
 42480 CALL "io_put": 2, "str d" & STR$(I) & " " & SEG$("truefalse", 4 * D(I, 1) - 15, 5 * D(I, 1) - 16)
 42482 GOTO 1825
-42590 REM ---- 42620 (9890): str of a bool is borrowed, a str element (flagged H(P4,5) = 1 by 53300 when read before a ref call of its root, consumed after it)
-42591 REM owned when flagged or of an owned array (15 (f)); 42640 (40109): no asg or tasg target that L17 rewrites, an element of a type that holds counts
+42590 REM ---- 42620 (9890): str of a bool is borrowed, a str element (flagged H(P4,5) = 1 by 53300 when read before a ref call of its root, consumed after it) owned when flagged or of an owned array (15 (f)); 42640 (40109): no asg or tasg target
+42591 REM that L17 rewrites, an element of a type that holds counts
 42620 IF S$(H(P5, 0)) <> "str" THEN 10050
 42622 IF H(H(P5, 7), 4) = 2 THEN 10060
 42624 GOTO 10050
@@ -909,8 +826,8 @@
 42671 IF V(D2, 0) = 1 THEN 50400
 42672 LET V1 = D2
 42674 GOTO 10180
-42690 REM ---- mcpy into counted elements (R20): the element count n (a ci: li B n*size; else li S size, imul B N S), mcopy, then the retains of the reference values of
-42691 REM the n elements (53000; unrolled for a ci, else in loop(n; K)); none for a moved source (53100)
+42690 REM ---- mcpy into counted elements (R20): the element count n (a ci: li B n*size; else li S size, imul B N S), mcopy, then the retains of the reference values of the n elements (53000; unrolled for a ci, else in loop(n; K)); none for a moved
+42691 REM source (53100)
 42700 LET D4 = U(E1 + 1, 1)
 42701 LET D5 = U(E1 + 2, 1)
 42702 LET D7 = U(E1 + 3, 1)
@@ -927,10 +844,8 @@
 42715 LET V3 = D7
 42716 GOSUB 42795
 42718 LET V4 = V2
-42720 LET O$ = "mcopy"
-42721 LET V2 = D4
-42722 LET V3 = D5
-42723 GOSUB 7575
+42720 LET L1$ = "mcopy" & FNR$(D4) & FNR$(D5) & FNR$(V4)
+42721 GOSUB 7620
 42724 GOSUB 53100
 42725 IF Z0 = 1 THEN 41444
 42726 LET J3 = 0
@@ -941,8 +856,7 @@
 42731 LET J3 = J3 + M3
 42732 NEXT J1
 42733 GOTO 41444
-42740 LET Z3 = 0
-42741 GOSUB 10590
+42740 GOSUB 10585
 42742 LET D6 = N2
 42744 LET O$ = "icmp gt"
 42746 LET V3 = D7
@@ -950,9 +864,7 @@
 42748 GOSUB 42795
 42749 GOSUB 7885
 42750 LET D8 = B7
-42751 LET V1 = V2
-42752 GOSUB 7500
-42753 LET L1$ = "if " & STR$(B7) & " " & Z$
+42751 LET L1$ = "if " & STR$(B7) & FNR$(V2)
 42754 GOSUB 7695
 42755 LET Z3 = 1
 42756 GOSUB 10590
@@ -981,8 +893,7 @@
 42798 REM ---- est of a reference (32918): into a fresh address (lv D of a tmp D = adat (lv A), A's tmp an anew before D's in its xblk or block) initializing (R5); else replacing (R17 (a)): ldp O, stp, release O (32929)
 42800 GOSUB 51200
 42802 IF W4 = 1 THEN 32922
-42830 LET C1 = 3
-42832 GOSUB 7420
+42830 GOSUB 7418
 42834 LET D4 = N2
 42836 LET O$ = "ldp"
 42838 LET V2 = N2

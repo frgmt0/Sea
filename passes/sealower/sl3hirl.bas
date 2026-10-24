@@ -1,19 +1,12 @@
 30000 REM ====================================================================================
-30002 REM sealower part 3 (lines 30000-39999): sea.hirl, sub-phase 4e-0 (DESIGN 3.5.9; 3.6.6 "Two
-30004 REM programs", "Lowering of the sea.hirl records", rules T1-T3, 15 (k), 16 (e), 30 (1)).
-30006 REM Node kinds: 43 xblk 44 tmp 45 hloop 46 ext 47 adat 48 eld 49 est 50 anew 51 wbin; 52 tptr
-30008 REM is a type (T kind 4, T(.,2) its elt). Records 82-87 are not in the kind map: BAD_RECORD.
-30010 REM Locals: A(.,0) the tmp node that binds it, A(.,3) the register it names when that is not
-30012 REM its own (T1 another name, T3 the xblk's destination, rule 30 (1) the vector the loop
-30014 REM holds), A(.,4) 1 a .l local + 2 mut for. H(bind,6) = 1: the bind of an L4 block. Fields:
-30016 REM xblk H6 n; tmp, hloop H5 lid; ext H5 dim; eld, est H5 sc, H0 off (text); anew H5 z, H6 r;
-30018 REM wbin H5 op (1 add 2 sub 3 mul). Resume codes 60-65 (32010).
+30002 REM sealower part 3 (lines 30000-39999): sea.hirl, sub-phase 4e-0 (DESIGN 3.5.9; 3.6.6 "Two programs", "Lowering of the sea.hirl records", rules T1-T3, 15 (k), 16 (e), 30 (1)). Node kinds: 43 xblk 44 tmp 45 hloop 46 ext 47 adat 48 eld 49 est 50
+30004 REM anew 51 wbin; 52 tptr is a type (T kind 4, T(.,2) its elt). Records 82-87 are not in the kind map: BAD_RECORD. Locals: A(.,0) the tmp node that binds it, A(.,3) the register it names when that is not its own (T1 another name, T3 the xblk's
+30006 REM destination, rule 30 (1) the vector the loop holds), A(.,4) 1 a .l local + 2 mut for. H(bind,6) = 1: the bind of an L4 block. Fields: xblk H6 n; tmp, hloop H5 lid; ext H5 dim; eld, est H5 sc, H0 off (text); anew H5 z, H6 r; wbin H5 op (1
+30008 REM add 2 sub 3 mul). Resume codes 60-65 (32010).
 30020 REM ====================================================================================
-30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14
-30041 REM take an array operand: R10, 40116); sort and argsort do (R16) ---------------------------
+30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14 take an array operand: R10, 40116); sort and argsort do (R16) ---------------------------
 30050 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
-30052 LET W2$ = G$(4)
-30054 GOSUB 1875
+30052 GOSUB 1872
 30056 IF W2 > 0 THEN 2360
 30057 IF POS("|sort|argsort|", "|" & W2$ & "|") > 0 THEN 30130
 30058 GOTO 1285
@@ -30,23 +23,17 @@
 30077 LET A(A0, 3) = 0
 30079 LET A(A0, 4) = H3
 30081 GOTO 1285
-30098 REM ---- tptr id elt: after sea.hir's table (Y7 = 1 from here), ids on from its last; elt a
-30099 REM scalar or str (the elements of 4d and 4g); T kind 4 -----------------------------------
-30100 IF G0 > 0 THEN 2360
-30102 IF I(1) <> Y9 + 1 THEN 2360
-30104 LET Y9 = I(1)
+30098 REM ---- tptr id elt: after sea.hir's table (Y7 = 1 from here), ids on from its last; elt a scalar or str (the elements of 4d and 4g); T kind 4 -----------------------------------
+30100 GOSUB 1302
 30106 LET Y7 = 1
-30108 IF Y9 <= T9 THEN 30114
-30110 LET P8$ = "types"
-30112 GOTO 1285
+30108 IF Y9 > T9 THEN 1282
 30114 IF I(2) < 2 THEN 2360
 30115 IF T(I(2), 1) = 7 THEN 30118
 30116 IF I(2) > 5 THEN 2360
 30118 LET T(Y9, 1) = 4
 30120 LET T(Y9, 2) = I(2)
 30122 GOTO 1285
-30126 REM ---- lib sort / argsort (R16): two children, a dynamic vector of f64, i64 or str elements and
-30127 REM a bool desc; the result that vector's type (sort) or an i64 vector (argsort)
+30126 REM ---- lib sort / argsort (R16): two children, a dynamic vector of f64, i64 or str elements and a bool desc; the result that vector's type (sort) or an i64 vector (argsort)
 30130 IF H(H1, 6) <> 2 THEN 2360
 30132 LET E2 = H(H1, 7)
 30134 LET E3 = H(E2, 4)
@@ -63,8 +50,7 @@
 30156 GOTO 2360
 30158 IF E4 <> E3 THEN 2360
 30160 GOTO 1285
-30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their
-30199 REM fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
+30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
 30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320, 2360, 52800, 52820
 30204 REM ---- xblk ty n: ty is its last child's type ------------------------------------------
@@ -171,8 +157,7 @@
 30530 LET H(H1, 4) = I(2)
 30532 IF I(2) <> 3 THEN 2360
 30534 LET K3$ = "|add    |sub    |mul    |and    "
-30536 LET W2$ = G$(4)
-30538 GOSUB 1875
+30536 GOSUB 1872
 30540 IF W2 = 0 THEN 2360
 30542 LET H(H1, 5) = W2
 30544 LET E2 = H(H1, 7)
@@ -193,10 +178,8 @@
 30926 IF T(E3, 2) <> E6 THEN 30930
 30928 LET E5 = 1
 30930 RETURN
-30990 REM ==== 31000: the checks of 3.5.9 on the function just read (its nodes H2 .. H0): a tmp
-30991 REM local read only after its tmp and never written (bind, tbind, asg, tasg, rarg; nor the
-30992 REM local of an hloop or forr); a tptr local only a tmp's; the bind of a .l local only the
-30993 REM first statement of an L4 block (a block of 4), which is marked H(bind,6) = 1
+30990 REM ==== 31000: the checks of 3.5.9 on the function just read (its nodes H2 .. H0): a tmp local read only after its tmp and never written (bind, tbind, asg, tasg, rarg; nor the local of an hloop or forr); a tptr local only a tmp's; the bind of
+30991 REM a .l local only the first statement of an L4 block (a block of 4), which is marked H(bind,6) = 1
 31000 LET E1 = G(G0, 0)
 31002 GOSUB 40400
 31020 FOR E2 = H2 TO H0
@@ -250,8 +233,7 @@
 31136 LET E4 = H(E4, 8)
 31138 NEXT E6
 31140 GOTO 31040
-31145 REM ---- 31150: the root local of the target E4 (its lv, or the base lv of an idx; a skip has
-31146 REM none) is not a tmp local
+31145 REM ---- 31150: the root local of the target E4 (its lv, or the base lv of an idx; a skip has none) is not a tmp local
 31150 LET O1 = E4
 31152 IF H(O1, 1) = 18 THEN 31162
 31154 IF H(O1, 1) = 5 THEN 31160
@@ -263,9 +245,8 @@
 31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
 32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700
 32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056, 50220, 50730, 51580
-32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its
-32091 REM destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a
-32092 REM rule-12 copy), an ifx, && or || is lowered with no destination and L names its register
+32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a rule-12 copy), an ifx, && or || is lowered with no destination and
+32091 REM L names its register
 32100 LET E1 = G(F0, 0) + H(X, 5)
 32102 LET E2 = H(X, 7)
 32104 LET W(W0 + 3) = 0
@@ -290,12 +271,9 @@
 32130 IF W(W0 + 3) = 0 THEN 32134
 32132 LET A(G(F0, 0) + H(X, 5), 3) = R9
 32134 GOSUB 41640
-32135 LET R9 = 0
-32136 GOTO 3090
-32190 REM ---- xblk: with a destination D and the value lv L of one of its own tmps (T3) or of a scalar
-32191 REM .l accumulator bound by a bind inside it (R12 (b), 33520), L's register is D; its statements
-32192 REM in order, then its value with the destination D; then the releases of its owned temporaries
-32193 REM (T2); x1 = the value's register, x2 = the next child
+32135 GOTO 3081
+32190 REM ---- xblk: with a destination D and the value lv L of one of its own tmps (T3) or of a scalar .l accumulator bound by a bind inside it (R12 (b), 33520), L's register is D; its statements in order, then its value with the destination D; then
+32191 REM the releases of its owned temporaries (T2); x1 = the value's register, x2 = the next child
 32200 LET W(W0 + 4) = H(X, 7)
 32202 IF D < 1 THEN 32214
 32204 GOSUB 33500
@@ -320,9 +298,8 @@
 32252 GOSUB 32300
 32254 LET R9 = W(W0 + 3)
 32256 GOTO 3090
-32290 REM ---- 32300: release the owned temporaries of the xblk X -- the tmps whose innermost xblk it
-32291 REM is and whose child 9890 calls owned -- in the order of their tmp records, except the one
-32292 REM its value names (moved out, T2); collected on U from the last tmp back
+32290 REM ---- 32300: release the owned temporaries of the xblk X -- the tmps whose innermost xblk it is and whose child 9890 calls owned -- in the order of their tmp records, except the one its value names (moved out, T2); collected on U from the
+32291 REM last tmp back
 32300 GOSUB 33500
 32302 LET E5 = 0
 32304 IF H(E2, 1) <> 5 THEN 32308
@@ -354,8 +331,7 @@
 32346 LET U0 = U0 - 1
 32348 GOTO 32340
 32350 RETURN
-32390 REM ---- the children of hloop ext adat eld est anew wbin, left to right (rule 1; an lv emits
-32391 REM nothing), onto U above x1 = U0; x2 = the next child; an hloop stops before its block
+32390 REM ---- the children of hloop ext adat eld est anew wbin, left to right (rule 1; an lv emits nothing), onto U above x1 = U0; x2 = the next child; an hloop stops before its block
 32400 LET W(W0 + 3) = U0
 32402 LET W(W0 + 4) = H(X, 7)
 32403 IF H(X, 1) = 49 THEN 51500
@@ -364,87 +340,62 @@
 32408 IF H(W(W0 + 4), 8) = 0 THEN 32430
 32409 IF H(W(W0 + 4), 8) = 0 THEN 41592
 32410 LET S = 63
-32412 LET X1 = W(W0 + 4)
-32414 LET D1 = 0
-32416 GOTO 7380
-32420 GOSUB 7970
-32422 LET U(U0, 1) = R9
-32424 LET U(U0, 2) = 0
+32412 GOTO 7366
+32420 GOSUB 7966
 32426 LET W(W0 + 4) = H(W(W0 + 4), 8)
 32428 GOTO 32404
 32430 LET E1 = W(W0 + 3)
 32432 ON H(X, 1) - 44 GOTO 32500, 32600, 32700, 32800, 51550, 41302, 33100, 2365, 41400, 41412, 41452, 2365, 41437
-32490 REM ---- hloop K: loop B K start last step (B the next block, 3.6.4), its block, endloop B; a
-32491 REM loop for break, cont and rule 16 (b) (J: 7985 with x1 = B)
+32490 REM ---- hloop K: loop B K start last step (B the next block, 3.6.4), its block, endloop B; a loop for break, cont and rule 16 (b) (J: 7985 with x1 = B)
 32500 LET E2 = U(E1 + 1, 1)
 32502 LET E3 = U(E1 + 2, 1)
 32504 LET E4 = U(E1 + 3, 1)
 32506 LET U0 = E1
 32508 GOSUB 7885
 32510 LET W(W0 + 3) = B7
-32512 LET L1$ = "loop " & STR$(B7)
-32514 LET V1 = H(X, 5)
-32516 GOSUB 7532
-32520 LET V1 = E2
-32522 GOSUB 7532
-32526 LET V1 = E3
-32528 GOSUB 7532
-32532 LET V1 = E4
-32534 GOSUB 7532
+32512 LET L1$ = "loop " & STR$(B7) & FNR$(H(X, 5)) & FNR$(E2) & FNR$(E3) & FNR$(E4)
 32538 GOSUB 7695
 32540 GOSUB 7985
 32542 LET S = 64
-32544 LET X1 = W(W0 + 4)
-32546 LET D1 = 0
-32548 GOTO 7380
+32544 GOTO 7366
 32560 LET J0 = J0 - 1
 32562 LET L1$ = "endloop " & STR$(W(W0 + 3))
 32564 GOSUB 7695
-32566 LET R9 = 0
-32568 GOTO 3090
-32590 REM ---- ext dim: ext(A, dim) of rule 17 (ldi E A - 0 16 or 24), of a str ldi E S - 0 16
-32591 REM (SEA_STR_LEN), into the destination; an owned operand released after it (rule 15 (k))
+32566 GOTO 3081
+32590 REM ---- ext dim: ext(A, dim) of rule 17 (ldi E A - 0 16 or 24), of a str ldi E S - 0 16 (SEA_STR_LEN), into the destination; an owned operand released after it (rule 15 (k))
 32600 LET E2 = U(E1 + 1, 1)
 32602 LET U0 = E1
-32604 LET C1 = 1
-32606 GOSUB 7470
+32604 GOSUB 7468
 32607 GOSUB 41270
 32608 LET Z3 = H9
 32609 IF F5 = 1 THEN 41280
 32610 IF H(H(X, 7), 4) = 5 THEN 32614
 32612 LET Z3 = G2 + H(X, 5) * (G3 - G2)
-32614 LET V2 = D2
-32616 LET V3 = E2
-32618 GOSUB 7640
+32614 LET L1$ = SEG$("ldildfldp", 3 * V(D2, 1) - 2, 3 * V(D2, 1)) & FNR$(D2) & FNR$(E2) & " - 0 " & STR$(Z3)
+32616 GOSUB 7695
 32620 LET X0 = H(X, 7)
 32622 LET R0 = E2
 32624 GOSUB 10080
-32626 LET R9 = D2
-32628 GOTO 3090
+32626 GOTO 3088
 32690 REM ---- adat: data(A) of rule 17 (ldp D A - 0 40) into the destination -------------------
 32700 LET E2 = U(E1 + 1, 1)
 32701 GOSUB 41270
 32702 LET U0 = E1
 32703 IF F5 = 1 THEN 41296
-32704 LET C1 = 3
-32706 GOSUB 7470
-32708 LET V2 = D2
-32710 LET V3 = E2
-32712 LET Z3 = G4
-32714 GOSUB 7640
+32704 GOSUB 7466
+32708 LET Z3 = G4
+32710 LET L1$ = SEG$("ldildfldp", 3 * V(D2, 1) - 2, 3 * V(D2, 1)) & FNR$(D2) & FNR$(E2) & " - 0 " & STR$(Z3)
+32712 GOSUB 7695
 32716 LET X0 = H(X, 7)
 32718 LET R0 = E2
 32720 GOSUB 10080
-32722 LET R9 = D2
-32724 GOTO 3090
-32790 REM ---- eld sc off: ldb (bool), ldi (i64), ldf (f64) or ldp (a reference, borrowed) R D X sc
-32791 REM off into the destination
+32722 GOTO 3088
+32790 REM ---- eld sc off: ldb (bool), ldi (i64), ldf (f64) or ldp (a reference, borrowed) R D X sc off into the destination
 32800 LET E2 = U(E1 + 1, 1)
 32802 LET E3 = U(E1 + 2, 1)
 32804 LET U0 = E1
 32805 IF H(X, 4) > 9 THEN 52100
-32806 LET T1 = H(X, 4)
-32808 GOSUB 7395
+32806 GOSUB 7391
 32810 GOSUB 7470
 32812 LET O$ = "ldp"
 32814 IF H(X, 4) > 4 THEN 32818
@@ -454,10 +405,8 @@
 32822 LET V4 = E3
 32824 GOSUB 32950
 32825 GOSUB 42666
-32826 LET R9 = D2
-32828 GOTO 3090
-32890 REM ---- est sc off: stb, sti, stf or stp (a reference: retained first when borrowed, rule 15
-32891 REM (a)) V D X sc off
+32826 GOTO 3088
+32890 REM ---- est sc off: stb, sti, stf or stp (a reference: retained first when borrowed, rule 15 (a)) V D X sc off
 32900 LET E2 = U(E1 + 1, 1)
 32902 LET E3 = U(E1 + 2, 1)
 32904 LET E4 = U(E1 + 3, 1)
@@ -476,23 +425,13 @@
 32926 LET V4 = E4
 32928 GOSUB 32950
 32929 IF D4 > 0 THEN 42850
-32930 LET R9 = 0
-32932 GOTO 3090
+32930 GOTO 3081
 32945 REM ---- 32950: L1$ = O$ V2 V3 V4, then the sc and off of node X; emitted ------------------
-32950 LET V1 = V2
-32952 GOSUB 7500
-32954 LET L1$ = O$ & " " & Z$
-32956 LET V1 = V3
-32958 GOSUB 7532
-32962 IF V4 = 0 THEN 41600
-32963 LET V1 = V4
-32964 GOSUB 7500
-32966 LET L1$ = L1$ & " " & Z$ & " " & STR$(H(X, 5)) & " " & S$(H(X, 0))
-32968 GOSUB 7695
-32970 RETURN
-32990 REM ---- anew z r: arrnew (z 0, sea_arr_new_u) or arrnewz (z 1, sea_arr_new) of rule 17 with
-32991 REM the element kind and rank of its type: li K ek, li N rank, for a vector li C 1, then the
-32992 REM rcall into the destination (owned)
+32950 LET L1$ = O$ & FNR$(V2) & FNR$(V3)
+32952 IF V4 = 0 THEN 41600
+32954 LET L1$ = L1$ & FNR$(V4) & " " & STR$(H(X, 5)) & " " & S$(H(X, 0))
+32956 GOTO 7695
+32990 REM ---- anew z r: arrnew (z 0, sea_arr_new_u) or arrnewz (z 1, sea_arr_new) of rule 17 with the element kind and rank of its type: li K ek, li N rank, for a vector li C 1, then the rcall into the destination (owned)
 33000 LET T3 = H(X, 4)
 33002 LET T2 = T(T3, 2)
 33004 GOSUB 11300
@@ -519,43 +458,24 @@
 33042 IF H(X, 5) + INT(C3 / 4) = 0 THEN 33046
 33044 LET Q9 = Y3
 33045 IF C3 = 5 THEN 52730
-33046 LET C1 = 3
-33048 GOSUB 7470
+33046 GOSUB 7466
 33050 GOSUB 5590
-33052 LET V1 = D2
-33054 GOSUB 7500
-33056 LET L1$ = L1$ & " " & Z$ & " 4"
-33058 LET V1 = R1
-33060 GOSUB 7532
-33064 LET V1 = R2
-33066 GOSUB 7532
-33070 LET V1 = R3
-33072 GOSUB 7532
-33076 LET V1 = R4
-33078 GOSUB 7532
-33082 GOSUB 7695
-33084 LET R9 = D2
-33086 GOTO 3090
+33052 LET L1$ = L1$ & FNR$(D2) & " 4" & FNR$(R1) & FNR$(R2) & FNR$(R3) & FNR$(R4)
+33082 GOTO 7662
 33090 REM ---- wbin op: iadd, isub, imul (wrapping) or iand (R13) d a b into the destination ----------
 33100 LET E2 = U(E1 + 1, 1)
 33102 LET E3 = U(E1 + 2, 1)
 33104 LET U0 = E1
-33106 LET C1 = 1
-33108 GOSUB 7470
-33110 LET O$ = SEG$("iaddisubimuliand", 4 * H(X, 5) - 3, 4 * H(X, 5))
-33112 LET V2 = D2
-33114 LET V3 = E2
-33116 LET V4 = E3
-33118 GOSUB 7575
-33120 LET R9 = D2
-33122 GOTO 3090
-33190 REM ---- the bind of an L4 block (rule 30 (1), not rule 2): the vector with no destination; an
-33191 REM owned value's register is the hidden local H's (A(.,3)), a borrowed X gets mov H X, retain
-33192 REM H; the .t locals of a seq vector wait for the end of the block, right after H (16 (e))
+33106 GOSUB 7468
+33110 LET V4 = E3
+33112 LET L1$ = SEG$("iaddisubimuliand", 4 * H(X, 5) - 3, 4 * H(X, 5)) & FNR$(D2) & FNR$(E2) & FNR$(V4)
+33114 GOSUB 7620
+33120 GOTO 3088
+33190 REM ---- the bind of an L4 block (rule 30 (1), not rule 2): the vector with no destination; an owned value's register is the hidden local H's (A(.,3)), a borrowed X gets mov H X, retain H; the .t locals of a seq vector wait for the end of the
+33191 REM block, right after H (16 (e))
 33200 LET S = 65
 33202 LET X1 = H(X, 7)
-33204 LET D1 = 0
-33206 GOTO 7380
+33204 GOTO 7375
 33210 LET E1 = G(F0, 0) + H(X, 5)
 33212 LET X0 = H(X, 7)
 33214 GOSUB 9890
@@ -563,10 +483,8 @@
 33218 LET A(E1, 3) = R9
 33220 LET V1 = R9
 33222 GOTO 33240
-33224 LET O$ = "mov"
-33226 LET V2 = H(X, 5)
-33228 LET V3 = R9
-33230 GOSUB 7540
+33224 LET L1$ = "mov" & FNR$(H(X, 5)) & FNR$(R9)
+33226 GOSUB 7620
 33232 LET V1 = H(X, 5)
 33234 GOSUB 10180
 33236 LET V1 = H(X, 5)
@@ -579,8 +497,7 @@
 33250 GOTO 33242
 33252 GOSUB 10320
 33254 GOTO 3090
-33290 REM ---- 33300 (of 9890): an xblk P5 is owned exactly when its value is (rule 15 (k), T2): an
-33291 REM owned node, or lv L of a tmp of it whose child is owned
+33290 REM ---- 33300 (of 9890): an xblk P5 is owned exactly when its value is (rule 15 (k), T2): an owned node, or lv L of a tmp of it whose child is owned
 33300 LET O1 = H(P5, 7)
 33302 IF H(O1, 8) = 0 THEN 33308
 33304 LET O1 = H(O1, 8)
@@ -598,8 +515,7 @@
 33326 GOTO 9910
 33330 LET P5 = O1
 33332 GOTO 9910
-33390 REM ---- 33400 (of the seq, 15360): J(J9,4) = the frame that consumes the seq of frame W0: its
-33391 REM parent, or for a tmp the innermost xblk holding it (T2), else that tmp
+33390 REM ---- 33400 (of the seq, 15360): J(J9,4) = the frame that consumes the seq of frame W0: its parent, or for a tmp the innermost xblk holding it (T2), else that tmp
 33400 LET E2 = W0 - 6
 33402 LET J(J9, 4) = E2
 33404 IF H(W(E2), 1) <> 44 THEN 33416
@@ -618,8 +534,7 @@
 33512 LET E3 = H(E3, 7)
 33514 GOTO 33510
 33516 RETURN
-33518 REM ---- (from 32208) R12 (b): the value lv L of a scalar .l local that a bind in the subtree of
-33519 REM the xblk X (E3 .. X - 1) declares, an accumulator: L's register is the destination D
+33518 REM ---- (from 32208) R12 (b): the value lv L of a scalar .l local that a bind in the subtree of the xblk X (E3 .. X - 1) declares, an accumulator: L's register is the destination D
 33520 LET E5 = H(E2, 5)
 33522 IF A(G(F0, 0) + E5, 4) - 2 * INT(A(G(F0, 0) + E5, 4) / 2) = 0 THEN 32214
 33524 IF A(G(F0, 0) + E5, 1) > 4 THEN 32214
@@ -629,42 +544,29 @@
 33532 LET A(G(F0, 0) + E5, 3) = D
 33534 NEXT E4
 33536 GOTO 32214
-33548 REM ---- 33550 (rule 3 for the node X): F3 = 1 if X is an ifx with a destination D that is the
-33549 REM value of an xblk (R12 (a)): D is its R even when it is a local's register, with no mov
+33548 REM ---- 33550 (rule 3 for the node X): F3 = 1 if X is an ifx with a destination D that is the value of an xblk (R12 (a)): D is its R even when it is a local's register, with no mov
 33550 LET F3 = 0
 33552 IF D < 1 THEN 33560
 33554 IF H(X, 1) <> 17 THEN 33560
 33556 IF H(W(W0 - 6), 1) <> 43 THEN 33560
 33558 LET F3 = 1
 33560 RETURN
-33590 REM ---- lib sort / argsort (R16, rule 24; from 19570, W2 21 or 22, its arguments U(Z6+1 ..)):
-33591 REM rcall sea_sort or sea_argsort site 1 R 2 V Dsc into the destination (owned), then the
-33592 REM release of an owned vector right after it (rule 15 (b))
+33590 REM ---- lib sort / argsort (R16, rule 24; from 19570, W2 21 or 22, its arguments U(Z6+1 ..)): rcall sea_sort or sea_argsort site 1 R 2 V Dsc into the destination (owned), then the release of an owned vector right after it (rule 15 (b))
 33600 LET Q1$ = "SORT"
 33602 IF W2 = 21 THEN 33606
 33604 LET Q1$ = "ARGSORT"
-33606 LET Q9 = 0
-33608 FOR I = 1 TO Y0
-33610 IF Y$(I, 1) <> Q1$ THEN 33614
-33612 LET Q9 = I
-33614 NEXT I
-33616 IF Q9 = 0 THEN 33622
+33606 LET Q9 = FNE(Q1$, " (pi, p)")
 33618 IF Y$(Q9, 4) <> "pi" THEN 33622
 33620 IF Y$(Q9, 5) = "p" THEN 33626
 33622 CALL "dg_bug": P$, "entry " & Q1$ & " (pi, p) is not in the entries table"
-33626 LET C1 = 3
-33628 GOSUB 7470
+33626 GOSUB 7466
 33630 GOSUB 5590
-33632 LET V1 = D2
-33634 GOSUB 7500
-33636 LET L1$ = L1$ & " " & Z$ & " 2"
+33632 LET L1$ = L1$ & FNR$(D2) & " 2"
 33638 FOR I = Z6 + 1 TO Z6 + 2
-33640 LET V1 = U(I, 1)
-33642 GOSUB 7532
+33640 LET L1$ = L1$ & FNR$(U(I, 1))
 33646 NEXT I
 33648 GOSUB 7695
 33650 LET X0 = H(X, 7)
 33652 LET R0 = U(Z6 + 1, 1)
 33654 GOSUB 10080
-33656 LET R9 = D2
-33658 GOTO 19580
+33656 GOTO 19575

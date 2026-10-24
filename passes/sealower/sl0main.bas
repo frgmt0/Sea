@@ -1,32 +1,15 @@
 100 REM ====================================================================================
-105 REM sealower -- pass 3a: sea.hirl -> sea.lir1 (docs/DESIGN.md 2.1, 3.5.9, 3.6). Phase 1: the
-110 REM canonical lowering of scalar code (DESIGN 3.6.6 rules 1-12); no call is inlined (3.6.6).
-115 REM Built as DESIGN 2.6.3 says: this file, the modules io diag tables, the DATA blocks errors
-120 REM exits consts entries records, and 99999 END. Exit status: 0, 10 (program too large, 2.7),
-125 REM 11 (internal error: truncated input, bad header, bad record, bad tree; DESIGN 2.2).
-130 REM Reads all of sea.hirl into tables; lowers each function in file order into L$ (its slot
-135 REM records come first, 3.6.3) and writes it; then the data records in label order (3.6.2).
-140 REM A record outside the phase-1 subset of 3.6.6 (arrays, structs, strings beyond printf %s,
-145 REM f64 %, pow, other library functions, elemental code) is rejected by pass 2a, so meeting
-150 REM one here is the internal error bad record.
-155 REM Tables: H nodes (1 kind, 2 F*1E9+L, 3 column, 4 ty, 5 a, 6 b, 7 first child, 8 next
-160 REM   sibling, 0 string); G functions (0 locals base in A, 1 name, 2 kind 1 main 2 fn, 3 rty,
-165 REM   4 np, 5 nl, 6 F*1E9+L, 7 column, 8 body); A locals (1 ty, 2 ref); T types (1 kind 1 tvec
-170 REM   2 ttuple, 2 n, 3 first component in M); M lists (tuple components, tbind lids, 0 for -);
-175 REM   S$ field texts; V registers (1 class 1 i 2 f 3 p, 2 output number); W frames (6 words:
-180 REM   node, dest, resume, x1, x2, x3), the tree stack while reading; U value stack (1 register,
-185 REM   2 reload local, store target or class); D data items (1 kind 1 str 2 fmt, 2 node);
-190 REM   B slots (1 size, 2 align); J open loops; P site hash; L$ the function's records.
-195 REM Node kinds (column 1 of H, R(i,0) per record row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7 un
-200 REM   8 bin 9 powk 10 call 11 rarg 12 lib 13 fmt 14 ftext 15 fconv 16 rng 17 ifx 18 skip
-205 REM   19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont
-210 REM   30 ret 31 tret 32 block; records 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple; 39 idx
-211 REM   40 dol 42 tmat; sea.hirl (sl3hirl): 43 xblk 44 tmp 45 hloop 46 ext 47 adat 48 eld 49 est
-212 REM   50 anew 51 wbin 52 tptr. Locals A: 0 the tmp binding it, 3 its register if not its own, 4 flags.
-215 REM Dest D of a node (rules 2, 3): 0 a new register; 1..N7 the register of a local; above N7
-220 REM   a given new register R; -1 a call whose results are discarded (nr 0); -2 a call whose
-225 REM   result registers are the top of U (tbind, tasg, tret). Registers are virtual numbers
-230 REM   (locals 1..N7 = their lid) numbered for output on first appearance (3.6.1).
+105 REM sealower -- pass 3a: sea.hirl -> sea.lir1 (docs/DESIGN.md 2.1, 3.5.9, 3.6). Phase 1: the canonical lowering of scalar code (DESIGN 3.6.6 rules 1-12); no call is inlined (3.6.6). Built as DESIGN 2.6.3 says: this file, the modules io diag
+110 REM tables, the DATA blocks errors exits consts entries records, and 99999 END. Exit status: 0, 10 (program too large, 2.7), 11 (internal error: truncated input, bad header, bad record, bad tree; DESIGN 2.2). Reads all of sea.hirl into tables;
+115 REM lowers each function in file order into L$ (its slot records come first, 3.6.3) and writes it; then the data records in label order (3.6.2). A record outside the phase-1 subset of 3.6.6 (arrays, structs, strings beyond printf %s, f64 %, pow,
+120 REM other library functions, elemental code) is rejected by pass 2a, so meeting one here is the internal error bad record. Tables: H nodes (1 kind, 2 F*1E9+L, 3 column, 4 ty, 5 a, 6 b, 7 first child, 8 next sibling, 0 string); G functions (0
+125 REM locals base in A, 1 name, 2 kind 1 main 2 fn, 3 rty, 4 np, 5 nl, 6 F*1E9+L, 7 column, 8 body); A locals (1 ty, 2 ref); T types (1 kind 1 tvec 2 ttuple, 2 n, 3 first component in M); M lists (tuple components, tbind lids, 0 for -); S$ field
+130 REM texts; V registers (1 class 1 i 2 f 3 p, 2 output number); W frames (6 words: node, dest, resume, x1, x2, x3), the tree stack while reading; U value stack (1 register, 2 reload local, store target or class); D data items (1 kind 1 str 2 fmt,
+135 REM 2 node); B slots (1 size, 2 align); J open loops; P site hash; L$ the function's records. Node kinds (column 1 of H, R(i,0) per record row): 1 ci 2 cf 3 cb 4 cs 5 lv 6 cvt 7 un 8 bin 9 powk 10 call 11 rarg 12 lib 13 fmt 14 ftext 15 fconv 16
+140 REM rng 17 ifx 18 skip 19 seq 20 bind 21 tbind 22 eval 23 asg 24 tasg 25 if 26 while 27 forr 28 break 29 cont 30 ret 31 tret 32 block; records 33 fn 34 par 35 loc 36 end 37 tvec 38 ttuple; 39 idx 40 dol 42 tmat; sea.hirl (sl3hirl): 43 xblk 44 tmp
+145 REM 45 hloop 46 ext 47 adat 48 eld 49 est 50 anew 51 wbin 52 tptr. Locals A: 0 the tmp binding it, 3 its register if not its own, 4 flags. Dest D of a node (rules 2, 3): 0 a new register; 1..N7 the register of a local; above N7 a given new
+150 REM register R; -1 a call whose results are discarded (nr 0); -2 a call whose result registers are the top of U (tbind, tasg, tret). Registers are virtual numbers (locals 1..N7 = their lid) numbered for output on first appearance (3.6.1).
+155 REM Functions (multi-line DEFs; no GOSUB, no jump out): FNQ(Q3$) a constant of the consts table, also left in Q1 and T (1850); FNE(Q3$, Q4$) the row of an entry, clobbers I (9580); FNR$(V6) " " and a register's text, numbered at first use (7500).
 235 REM ====================================================================================
 240 FILES "sea.hirl"; "sea.lir1"
 245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(22), Y$(22,5), Z(8), I(40), L(4)
@@ -45,51 +28,22 @@
 310 LET Z(3) = 399
 315 LET Z(4) = 1499
 320 CALL "tb_records": P$, E(), E$(), E0, N(), N$(), W$(), R(), R$(), F(), F$(), Z()
-325 LET Q1$ = "FILE_VERSION"
-330 GOSUB 1850
-335 LET V8 = Q1
-340 LET Q1$ = "LIM_NODES"
-345 GOSUB 1850
-350 LET N8 = Q1
-355 LET Q1$ = "LIM_LIR_INSTRS"
-360 GOSUB 1850
-365 LET I9 = Q1
-370 LET Q1$ = "LIM_LIR_OPERANDS"
-375 GOSUB 1850
-380 LET O9 = Q1
-385 LET Q1$ = "LIM_LIR_REGS"
-390 GOSUB 1850
-395 LET R8 = Q1
-400 LET Q1$ = "LIM_LIR_BLOCKS"
-405 GOSUB 1850
-410 LET B9 = Q1
-415 LET Q1$ = "LIM_LIR_SLOTS"
-420 GOSUB 1850
-425 LET S9 = Q1
-430 LET Q1$ = "LIM_LIR_IMMS"
-435 GOSUB 1850
-440 LET M9 = Q1
-445 LET Q1$ = "LIM_LIR_LABELS"
-450 GOSUB 1850
-455 LET D9 = Q1
-460 LET Q1$ = "LIM_LIR_SITES"
-465 GOSUB 1850
-470 LET Z8 = Q1
-475 LET Q1$ = "SLOT_SIZE"
-480 GOSUB 1850
-485 LET Z7 = Q1
-490 LET Q1$ = "ESIZE_I64"
-495 GOSUB 1850
-500 LET E7 = Q1
-505 LET Q1$ = "ESIZE_F64"
-510 GOSUB 1850
-515 LET E8 = Q1
-516 LET Q1$ = "LIM_TYPES"
-517 GOSUB 1850
-518 LET T9 = Q1 + 9
+325 LET V8 = FNQ("FILE_VERSION")
+340 LET N8 = FNQ("LIM_NODES")
+355 LET I9 = FNQ("LIM_LIR_INSTRS")
+370 LET O9 = FNQ("LIM_LIR_OPERANDS")
+385 LET R8 = FNQ("LIM_LIR_REGS")
+400 LET B9 = FNQ("LIM_LIR_BLOCKS")
+415 LET S9 = FNQ("LIM_LIR_SLOTS")
+430 LET M9 = FNQ("LIM_LIR_IMMS")
+445 LET D9 = FNQ("LIM_LIR_LABELS")
+460 LET Z8 = FNQ("LIM_LIR_SITES")
+475 LET Z7 = FNQ("SLOT_SIZE")
+490 LET E7 = FNQ("ESIZE_I64")
+505 LET E8 = FNQ("ESIZE_F64")
+516 LET T9 = FNQ("LIM_TYPES") + 9
 519 CALL "ly_init": O(), K(), K$(), K0, T9, 99999, P$
-520 REM the tables above are DIMmed for these limits
-521 REM type ids run to 9 + SEA_LIM_TYPES (the predefined 1-9, then the program's)
+520 REM the tables above are DIMmed for these limits type ids run to 9 + SEA_LIM_TYPES (the predefined 1-9, then the program's)
 522 IF T9 > 20008 THEN 565
 525 IF N8 > 99999 THEN 565
 530 IF I9 > 199999 THEN 565
@@ -97,8 +51,7 @@
 540 IF B9 > 9999 THEN 565
 545 IF S9 > 9999 THEN 565
 550 IF D9 > 49999 THEN 565
-555 IF Z8 > 65535 THEN 565
-560 GOTO 575
+555 IF Z8 <= 65535 THEN 575
 565 CALL "dg_bug": P$, "a capacity limit is larger than the pass's tables"
 570 REM the runtime entries of rules 8 and 9 (rt.inc SEA_ENTRY_LIST)
 575 LET Y1 = 0
@@ -214,13 +167,11 @@
 1060 LET H(H1, 6) = I(2)
 1065 GOTO 1285
 1070 LET K3$ = "|neg    |not    "
-1075 LET W2$ = G$(4)
-1080 GOSUB 1875
+1075 GOSUB 1872
 1085 LET H(H1, 5) = W2
 1090 GOTO 1285
 1095 LET K3$ = "|add    |sub    |mul    |div    |mod    |pow    |matmul |eq     |ne     |lt     |le     |gt     |ge     |band   |bor    |and    |or     |cat    "
-1100 LET W2$ = G$(4)
-1105 GOSUB 1875
+1100 GOSUB 1872
 1110 LET H(H1, 5) = W2
 1115 GOSUB 1900
 1120 LET S$(S0) = G$(4)
@@ -255,27 +206,24 @@
 1265 GOSUB 1875
 1270 LET H(H1, 5) = W2
 1275 GOTO 1285
-1280 REM ---- the next record --------------------------------------------------------------------
+1280 REM ---- the next record (1282: a type past SEA_LIM_TYPES, P8$ = "types", reported at the next node) ---
+1282 LET P8$ = "types"
 1285 CALL "io_read": 1, L$, L9, P$, E(), E$(), E0
 1290 GOTO 740
-1295 REM ---- declarations: fn par loc end tvec ttuple --------------------------------------------
+1295 REM ---- declarations: fn par loc end tvec ttuple. Types come first, ids from 10 in order (3.5.1); the next id I(1) is checked and Y9 = I(1): 1301 no tptr yet (Y7), no fn yet, next id; 1302 from the fn check on; 1303 the next id only
 1300 ON K - 32 GOTO 1430, 1550, 1585, 1650, 1310, 1350
-1305 REM types come first, ids from 10 in order (3.5.1)
-1310 IF G0 > 0 THEN 2360
-1312 IF Y7 = 1 THEN 2360
-1315 IF I(1) <> Y9 + 1 THEN 2360
-1320 LET Y9 = I(1)
-1325 IF Y9 <= T9 THEN 1340
-1330 LET P8$ = "types"
-1335 GOTO 1285
+1301 IF Y7 = 1 THEN 2360
+1302 IF G0 > 0 THEN 2360
+1303 IF I(1) <> Y9 + 1 THEN 2360
+1304 LET Y9 = I(1)
+1305 RETURN
+1310 GOSUB 1301
+1325 IF Y9 > T9 THEN 1282
 1340 LET T(Y9, 1) = 1 + 2 * INT(K / 42)
 1342 LET T(Y9, 2) = I(2)
 1343 CALL "ly_dyn": O(), Y9
 1345 GOTO 1285
-1350 IF G0 > 0 THEN 2360
-1352 IF Y7 = 1 THEN 2360
-1355 IF I(1) <> Y9 + 1 THEN 2360
-1360 LET Y9 = I(1)
+1350 GOSUB 1301
 1365 IF Y9 > T9 THEN 1415
 1370 IF M1 + I(2) > 199999 THEN 1415
 1375 LET T(Y9, 1) = 2
@@ -286,8 +234,7 @@
 1400 LET M(M1) = VAL(G$(3 + I))
 1405 NEXT I
 1410 GOTO 1285
-1415 LET P8$ = "types"
-1420 GOTO 1285
+1415 GOTO 1282
 1425 REM fn: functions numbered from 1; the par and loc records follow (3.5.4)
 1430 IF F7 = 1 THEN 2365
 1435 IF I(1) <> G0 + 1 THEN 2360
@@ -295,8 +242,7 @@
 1445 IF G0 >= 49999 THEN 2375
 1450 LET G0 = G0 + 1
 1455 LET K3$ = "|main   |fn     "
-1460 LET W2$ = G$(4)
-1465 GOSUB 1875
+1460 GOSUB 1872
 1470 IF W2 = 0 THEN 2360
 1475 GOSUB 1900
 1480 LET S$(S0) = G$(3)
@@ -377,13 +323,15 @@
 1825 NEXT I
 1830 CALL "io_fin": 2
 1835 STOP
-1840 REM ==== subroutines of the reader ===========================================================
-1845 REM ---- 1850: Q1 = the constant Q1$ of the consts table ------------------------------------
-1850 CALL "tb_cval": K(), K$(), K0, Q1$, Q1, T
+1840 REM ==== subroutines of the reader ---- FNQ(Q3$) = the constant Q3$ of the consts table (also left in Q1, and T = 0 from tb_cval); not there: dg_bug -----
+1850 DEF FNQ(Q3$)
+1852 CALL "tb_cval": K(), K$(), K0, Q3$, Q1, T
 1855 IF T = 0 THEN 1865
-1860 CALL "dg_bug": P$, "constant " & Q1$ & " is not in the consts table"
-1865 RETURN
-1870 REM ---- 1875: W2 = the position (1..) of the word W2$ in the list K3$ ("|" + 7 bytes), or 0 -
+1860 CALL "dg_bug": P$, "constant " & Q3$ & " is not in the consts table"
+1865 LET FNQ = Q1
+1866 FNEND
+1870 REM ---- 1875: W2 = the position (1..) of the word W2$ in the list K3$ ("|" + 7 bytes), or 0; 1872: of W2$ = G$(4)
+1872 LET W2$ = G$(4)
 1875 LET W2 = POS(K3$, "|" & W2$ & " ")
 1880 IF W2 = 0 THEN 1890
 1885 LET W2 = (W2 - 1) / 8 + 1
@@ -401,8 +349,7 @@
 1945 LET P1 = P1 + I(-P2)
 1950 NEXT J
 1955 RETURN
-1960 REM ---- 1970: the fields of the record against passes.txt; I(j) = value of a u-like field j;
-1965 REM a pos field sets F1 L1 C1 and Q8 = 1; a bad field is the internal error bad record
+1960 REM ---- 1970: the fields of the record against passes.txt; I(j) = value of a u-like field j; a pos field sets F1 L1 C1 and Q8 = 1; a bad field is the internal error bad record
 1970 LET Q8 = 0
 1975 LET T0 = 1
 1980 LET N6 = 0
@@ -426,14 +373,13 @@
 2070 NEXT J
 2075 IF T0 < C0 THEN 2360
 2080 RETURN
-2085 REM 2090: the token Z$ of type T1 (u i f s pos site fl ty lid fid cid iid; 100+ enum)
+2085 REM 2090: the token Z$ of type T1 (u i f s pos site fl ty lid fid cid iid; 100+ enum); the u-like ones (u ty lid fid cid iid) share 2290: I(j) = the value, within B2 .. B1
 2090 IF T1 >= 100 THEN 2340
 2095 IF T1 > 12 THEN 2360
 2100 ON T1 GOTO 2105, 2125, 2140, 2155, 2170, 2195, 2215, 2255, 2285, 2315, 2315, 2315
-2105 CALL "io_u": Z$, V, T
-2110 IF T <> 0 THEN 2360
-2115 LET I(J) = V
-2120 RETURN
+2105 LET B1 = 1E9
+2110 LET B2 = 0
+2115 GOTO 2290
 2125 CALL "io_i": Z$, V, K9, L(), T
 2130 IF T <> 0 THEN 2360
 2135 RETURN
@@ -460,23 +406,18 @@
 2240 LET P2 = X7
 2245 NEXT X6
 2250 RETURN
-2255 CALL "io_u": Z$, V, T
-2260 IF T <> 0 THEN 2360
-2265 IF V < 1 THEN 2360
-2270 IF V > Y9 THEN 2360
-2275 LET I(J) = V
-2280 RETURN
-2285 CALL "io_u": Z$, V, T
-2290 IF T <> 0 THEN 2360
-2295 IF V < 1 THEN 2360
-2300 IF V > N6 THEN 2360
+2255 LET B1 = Y9
+2260 GOTO 2288
+2285 LET B1 = N6
+2288 LET B2 = 1
+2290 CALL "io_u": Z$, V, T
+2295 IF T <> 0 THEN 2360
+2300 IF V < B2 THEN 2360
+2302 IF V > B1 THEN 2360
 2305 LET I(J) = V
 2310 RETURN
-2315 CALL "io_u": Z$, V, T
-2320 IF T <> 0 THEN 2360
-2325 IF V < 1 THEN 2360
-2330 LET I(J) = V
-2335 RETURN
+2315 LET B1 = 1E9
+2320 GOTO 2288
 2340 CALL "tb_word": N(), W$(), T1 - 100, Z$, X7
 2345 IF X7 = 0 THEN 2360
 2350 RETURN
@@ -506,8 +447,7 @@
 2470 IF A(G(F0, 0) + I, 2) = 0 THEN 2480
 2475 LET V(I, 1) = 3
 2480 LET V(I, 2) = 0
-2481 LET T5 = T1
-2482 GOSUB 40600
+2481 GOSUB 40595
 2483 LET V(I, 0) = F5
 2484 LET V(I, 3) = T5
 2485 NEXT I
@@ -524,19 +464,15 @@
 2532 LET J9 = 0
 2535 LET U0 = 0
 2540 LET S7 = 0
-2541 REM the func record's pos is a site too (2.7, 4.9); a capacity error here is reported at
-2542 REM that pos, held in the unused node row 0
+2541 REM the func record's pos is a site too (2.7, 4.9); a capacity error here is reported at that pos, held in the unused node row 0
 2543 LET H(0, 2) = G(F0, 6)
 2544 LET H(0, 3) = G(F0, 7)
 2545 LET X = 0
 2546 LET K8 = G(F0, 6)
 2547 GOSUB 7795
 2548 LET X = G(F0, 8)
-2550 REM rule 12 snapshots: in one statement (its expressions; an if, while, forr or hloop only its
-2555 REM condition or range), a read of a local L before a ref argument of L is flagged H(.,6) = 1
-2560 REM (an lv's own column 6 is free); the read then copies L into a new register. The nodes are
-2561 REM visited last first, so an xblk is met before its subtree [E6, xblk]: the statements inside
-2562 REM an xblk belong to the statement that holds it (3.6.6 rule 12, sea.hirl)
+2550 REM rule 12 snapshots: in one statement (its expressions; an if, while, forr or hloop only its condition or range), a read of a local L before a ref argument of L is flagged H(.,6) = 1 (an lv's own column 6 is free); the read then copies L into
+2555 REM a new register. The nodes are visited last first, so an xblk is met before its subtree [E6, xblk]: the statements inside an xblk belong to the statement that holds it (3.6.6 rule 12, sea.hirl)
 2565 LET N3 = G(F0, 8)
 2570 IF H(N3, 7) = 0 THEN 2582
 2575 LET N3 = H(N3, 7)
@@ -584,9 +520,7 @@
 2755 LET F9$ = F9$ & " " & STR$(F1) & ":" & STR$(L1) & ":" & STR$(G(F0, 7)) & " " & STR$(N6 + H7)
 2757 GOSUB 41200
 2760 FOR I = 1 TO N6
-2765 LET V1 = I
-2770 GOSUB 7500
-2775 LET F9$ = F9$ & " " & Z$
+2765 LET F9$ = F9$ & FNR$(I)
 2780 NEXT I
 2785 LET T1 = G(F0, 3)
 2790 GOSUB 2935
@@ -638,8 +572,7 @@
 3002 LET Z5 = Z5 + 1
 3005 NEXT X6
 3015 RETURN
-3020 REM ==== the frame machine ======================================================================
-3025 REM 3030: lower node X1 with dest D1 (the caller has stored its resume code in its frame)
+3020 REM ==== the frame machine 3030: lower node X1 with dest D1 (the caller has stored its resume code in its frame)
 3030 LET W0 = W0 + 6
 3035 LET W(W0) = X1
 3040 LET W(W0 + 1) = D1
@@ -653,7 +586,12 @@
 3072 IF H(X, 1) > 32 THEN 9705
 3075 ON H(X, 1) GOTO 3140, 3210, 3175, 3250, 3310, 3435, 3490, 3575, 4150, 4450, 3080, 4985, 3080, 3080, 3080, 3080, 4025, 3080, 5645, 5710, 5735, 6045, 6070, 5850, 6395, 6515, 6650, 7060, 7070, 7100, 7220, 7320
 3080 GOTO 2365
-3085 REM 3090: the node of the top frame is done, its value in R9; resume the frame below it
+3081 LET R9 = 0
+3082 GOTO 3090
+3083 LET U0 = W(W0 + 3)
+3084 GOTO 3090
+3085 REM 3090: the node of the top frame is done, its value in R9; resume the frame below it. Entries: 3088 with R9 = D2, 3081 with R9 = 0, 3083 with U0 = W(W0 + 3) (the frame's operands popped)
+3088 LET R9 = D2
 3090 GOSUB 10450
 3091 LET W0 = W0 - 6
 3095 IF W0 = 0 THEN 2820
@@ -663,4 +601,4 @@
 3112 IF S > 38 THEN 9715
 3115 IF S > 20 THEN 3125
 3120 ON S GOTO 3445, 3500, 3595, 3620, 3850, 3915, 4035, 16360, 16400, 4160, 4500, 5080, 5400, 5510, 5535, 5695, 15360, 15230, 5835, 5995
-3125 ON S - 20 GOTO 16210, 3090, 6180, 15010, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8620
+3125 ON S - 20 GOTO 16210, 3090, 6180, 15010, 6285, 6405, 6460, 6495, 6545, 6620, 6680, 6705, 6775, 7025, 7135, 7305, 7350, 8005
