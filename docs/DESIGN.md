@@ -39,10 +39,11 @@ the user's agreement. Phase 0 (§8) did:
    the sub-phases 4a–4h of §8: 4a–4d and 4e-0 (the split of pass 3a into `sealoop` and
    `sealower`, which the size gate after 4d made run, §2.7), 4e (array expressions, Decisions 31–37)
    and 4f (reductions, sorting, searching, library options, Decisions 38–43; the size gate after 4f
-   passed with no split, §2.7) are done; the specification of 4g (strings, structs, records,
-   `match`, Decisions 44–48) is agreed, and 4g is built in two sub-steps, of which 4g-1 (strings,
-   `match`, `error`, `args`) is next, then the size gate after 4g-1 (§2.7) and 4g-2 (structs,
-   records, projection).
+   passed with no split, §2.7) and 4g (strings, structs, records, `match`, Decisions 44–48, built
+   as 4g-1 and 4g-2 with the size gate after 4g-1 passed, §2.7) are done; `sealower` ended 4g 6
+   lines under its 7 000-line cap, so the relief of Decisions 49–52 comes next: sub-step 4h-0, a
+   compaction of `sealower` with no change of behaviour (§2.7, §8), then its gate, then the 4h
+   specification.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -349,6 +350,39 @@ no longer lowers itself); L17 does not rewrite the assignment of a whole local o
 released by R11; R25 does not apply to a target that L6 rewrites or to a converted component;
 L-f covers every `str` value computed while evaluating a constant, not only its final value;
 `str(s)` of a `str` is written by pass 2a as s itself (§3.5.5).
+
+**Decided for the `sealower` relief, sub-step 4h-0 (2026-10-23).** After 4g-2 `sealower` was 6 994
+built lines, 6 under the 7 000-line cap that Decisions 35 and 47 keep, with 4h, phase 6 and the
+library phases still to come (§2.7). The user took Decisions 49–52 of §9, each the recommended
+option: a new sub-step 4h-0, before the 4h specification's code, compacts `sealower` with no change
+of behaviour by the patterns C1–C6 of §2.7 (fall-through entries and tail calls, merged `REM`s,
+constant and entry lookups and the register text as multi-line `DEF` functions, validation
+predicates, one shared child-evaluation loop), its first step a scratch prototype of the
+multi-line string `DEF` (WP-0), about 600 lines freed; three reserves stand in this order: (V)
+`sealower`'s semantic validation of `sea.hirl` moved into `tools/seaval.bas` (300–400), rule 36's
+composite sequences with `ind2sub` and `sub2ind` moved into `sealoop` as rewrites (150–170), and a
+middle HIR→HIR pass between `sealoop` and `sealower` reusing the `sea.hirl` format (440–520) (49);
+the 7 000-line cap stays through 4h, with gates after 4h-0, after 4h, after phase 6 and after phase
+8, each with a stress projection that multiplies the phase-level estimates by 1.5 (§2.7; 50); the
+validation of `sea.hirl` stays in `sealower`, its move being the first reserve (51); the library
+calls of phases 6, 8 and 9 are lowered table-driven from the entry records of `rt.inc`, specified
+with phase 6 (52). No contract file, intermediate format, driver, test script or other pass
+changes in 4h-0.
+**Lead decisions of 4h-0** (within Decisions 49–52; listed in §9): L-o, `sealower`'s v1
+projection counts 4h's own increment, corrected to 8 394 before the relief (§2.7); L-p, the
+neutrality of the compaction is proved by byte-identical `sea.lir1` (§2.7, §8); L-q, the compaction
+keeps every part file's line range and the insert-between numbering, documents each new `DEF FN`
+and uses no new array letter (§2.6.3, §8); L-r, 4h-0 touches only `passes/sealower/*` and the text
+of the docs (§8). *Corrections made to the relief plan while writing this* (the plan was data):
+Baysick evaluates the operands of `&` left to right, each to its value, by Baysick LANGUAGE.md §4.6
+(c), not §4.5; a letter names one function of a program unit, `FNx` and `FNx$` included (Baysick
+LANGUAGE.md §7.10.1, `DUPLICATE FUNCTION`), so C3's and C4's functions take three distinct letters;
+the shared modules of `passes/lib` are `SUB`s, so these functions of `sealower`'s main program are
+called only from its own lines, where every emission site is (Baysick LANGUAGE.md §7.10: the
+functions of a unit are called from that unit); a multi-line body allows no `GOSUB`, `RETURN` or
+jump out of the body and no recursion, so the lookup functions inline the loops of 1850 and 9580
+and the register function inlines 7500's numbering; the recorded v1 projection of the gate tables
+is corrected where it stands (§2.7) rather than only in the new text.
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -2073,20 +2107,94 @@ below include it; re-measured after the 4g-2 review fixes):
 
 | Program | After 4g-1 | After 4g-2 | 4g-2 increment (projected at the gate) | Built ≤ 7 000 | Projected v1 (≤ 9 000) | Free letters |
 |---------|-----------:|-----------:|---------------------------------------:|:-------------:|-----------------------:|--------------|
-| `sealower` | 6 349 | 6 994 | 645 (607, P = 6 956) | yes, by 6 | 6 994 + 1 100 = 8 094 | 3 (`C S X`; `O` now used) |
+| `sealower` | 6 349 | 6 994 | 645 (607, P = 6 956) | yes, by 6 | 6 994 + 300 + 1 100 = 8 394 (L-o; first recorded as 8 094, without 4h) | 3 (`C S X`; `O` now used) |
 | `sealoop` | 4 659 | 5 433 | 774 (455, 5 114) | yes | 5 433 + 3 100 = 8 533 | 3 (`B X Y`; `C J` now used, `Y` freed) |
 | `seacheck` | 5 944 | 6 424 | 480 (137, 6 081) | yes | about 6 524 to the end of phase 4 (4h about 100) | 14 (`A B D F G I L P Q R S U V Z`) |
 
 `seaname` grew by 106 (estimate 200–350), `seaexpand` by 33 (40–80), `seaparse` not at all. Every
 pass is below Baysick's limits and every v1 projection under 9 000. **`sealower`'s margin under the
 7 000-line cap is now 6 lines**, its size 38 above the gate's projection P = 6 956. Any further `sealower` growth,
-which 4h brings (about 1 100 lines to v1), therefore needs a relief specified and agreed with the
-user before any 4h code. The candidates are those named at the gate after 4g-1, and none is chosen
+which 4h brings (150–300 lines, then 1 100 to v1), therefore needs a relief specified and agreed
+with the user before any 4h code. The candidates are those named at the gate after 4g-1, and none is chosen
 here: (1) more struct and ownership work as `sealoop` rewrites; (2) a compaction of `sealower` with
 no change of behaviour, proved by the dumps; (3) a split of `sealower`, specified and agreed like
 4e-0. `sealoop` came in well above its re-projection (L15, L17's field paths and the aggregate
 cases took more than the 4g-1 rate suggested) and keeps 467 lines of v1 margin; `seacheck` keeps
 576 lines under 7 000.
+
+**The corrected projection** (lead decision L-o). "Projected for 4f" gave `sealower` 550–800 for
+"4g and 4h" and 700–1 100 to v1 after them; 4g alone took 907, and the projection after 4g-2 kept
+only the 1 100, dropping 4h's own increment. 4h's increment is estimated, assuming the 4h
+specification keeps `sealower`'s part to two new records (§8 row 4h), at 150–300: reading and
+validating the inline block and its return 40–60, lowering the inline block (`do`/`enddo`, the
+result registers, rule 2's destinations including `eval`, `tbind`, `tasg` and `tret`) 60–110, the
+return inside it (values owned, releases down to the block's scope mark, `mov`s, `exit`) 40–80,
+the rule-12 and evaluation-order hooks of a statement-bearing expression 10–30, fixes found by W5
+and the prelude tests 0–30. Phases 5–10 bring 1 100 at the recorded upper end (per phase: 5 none, 6
+350–600 for `format`, the records of `write_json` and `f64 %`, 7 0–100, 8 200–300, 9 150–250, 10
+none; 8 100–150 and 9 80–120 table-driven, Decision 52). Before the relief:
+
+| `sealower` | Basis | At v1 | Margin under 9 000 |
+|------------|-------|------:|-------------------:|
+| recorded upper ends | 6 994 + 300 + 1 100 | 8 394 | 606 |
+| per-phase upper ends | 6 994 + 300 + 1 250 | 8 544 | 456 |
+| stress: the phase-level part × 1.5 | 6 994 + 300 + 1 650 | 8 944 | 56 |
+
+The detailed sub-phase estimates of `sealower` have been accurate or low (4e 806 against
+800–1 200, 4f 116 against 120–250, 4g-1 262 against 240–410), its phase-level ones have ended at
+their top (4g 907 against 550–800); hence the stress line, which multiplies only the phase-level
+part.
+
+**The `sealower` relief** (Decisions 49–52). Sub-step 4h-0 (§8) compacts `sealower` with no change
+of behaviour, by these patterns (counted on the 4g-2 code; the savings are estimates):
+
+| # | Pattern | Change | Saves (est.) |
+|---|---------|--------|-------------:|
+| C1 | two-line shapes `LET v = e` / `GOSUB`·`GOTO t` repeated at many sites, and `GOSUB t` / `RETURN` tail pairs (as 4g-1's 7532) | an entry line in front of the target that sets v and falls into it; `GOTO` for a tail call; the dead store after 7970 dropped | 180–230 |
+| C2 | 502 `REM` lines, many short | a comment merged into the `REM` before it within 250 bytes, every comment's text kept | 120–135 |
+| C3 | constant and entry lookups (`LET Q1$ = "…"` / `GOSUB 1850` / `LET G = Q1`, the lookups of 9580 and 8705) | one multi-line numeric `DEF` per table (the consts table, the entries row) with a string parameter, its body the lookup loop | 55–65 |
+| C4 | the `V1`…`V5` register-name protocol of the emit helpers (7500, 7532, 7540, 7575, 7640, 7650, 11410, 11530, 32950) | a multi-line string `DEF` giving `" "` and the register's text, numbered at first use as 7500 numbers it; on overflow it sets a flag that is tested where the register count is tested now, so the same `registers` error at the same node; an instruction becomes one `LET L1$ = "op" & FN…$(a) & FN…$(b)` and one emit, Baysick evaluating `&` left to right, each operand to its value (Baysick LANGUAGE.md §4.6 (c)), so the numbering order is unchanged | 250–350 |
+| C5 | recurring validation tests before `THEN 2360` | 3–4 predicate subroutines, as 30900 and 30920 are | 30–60 |
+| C6 | 8 copies of "evaluate the children onto U, resume at S" | one shared loop with the resume point as a parameter | 30–50 |
+| | all, less 70–100 that C4 absorbs from C1 | | 600–770 |
+
+The functions of C3 and C4 are Baysick multi-line `DEF`s of `sealower`'s main program (Baysick
+LANGUAGE.md §7.10, §7.10.1): three distinct letters (a letter names one function, numeric or
+string), called only from `sealower`'s own lines (the modules of `passes/lib` are `SUB`s), their
+bodies without `GOSUB`, `RETURN`, jumps out of the body or recursion, reading and writing the
+global tables; none is used in any pass before 4h-0, so WP-0 prototypes them first (§8). Expected,
+at the conservative −600: after 4h-0 about 6 394, after 4h about 6 694, at v1 7 794 (recorded upper
+ends), 7 944 (per phase) and 8 344 (stress). C4 also lowers the lines per emitted instruction from
+about 6–8 to 2–3, which phases 6–9, mostly instruction emission, inherit. If WP-0 fails, C3 and
+C4 become C1-style entry lines and the expected saving is 415–540.
+
+**Reserves**, applied in this order when a gate below fails, each specified and agreed with the
+user before the next code: (V) `sealower`'s semantic validation of `sea.hirl` beyond `passes.txt`
+and the tree (§3.5.9 "What the passes validate") moved into `tools/seaval.bas` (format `hirl`),
+`tests/run.sh` then running `seaval hirl` on the `sea.hirl` of every program test, frees 300–400
+(Decision 51); rule 36's composite sequences (`f64` `sign`, `i64` `abs`, `sign`, `min`, `max`) and
+`ind2sub`, `sub2ind` as `sealoop` rewrites into existing records with exactly §3.6.6's LIR, frees
+150–170 at a `sealoop` cost of 60–100; a middle HIR→HIR pass between `sealoop` and `sealower`
+taking rules 18, 19 and 36 and the field reads of structs as rewrites into the same `sea.hirl`
+format, frees 440–520, a step the size of 4e-0 (driver, `Makefile`, test scripts, a dump kind).
+
+**The gates of `sealower` from 4h-0** (Decision 50). The cap stays 7 000 built lines through 4h.
+At each gate `make check-limits` and the free numeric array letters of the main program (counted
+as above) are measured and recorded here, with the projection to v1 by the remaining upper ends
+and the stress projection (the remaining phase-level part × 1.5):
+
+* **after 4h-0:** S its built size; it passes when S + 300 ≤ 7 000 (4h fits under the cap), S +
+  300 + 1 100 ≤ 9 000, S + 300 + 1 650 ≤ 9 000 and it has at least 2 free letters. If it fails
+  (the saving came in short), the gate decides on reserve V before any 4h code;
+* **after 4h:** built ≤ 7 000, built + 1 100 ≤ 9 000 and built + 1 650 ≤ 9 000;
+* **after phase 6:** built + the upper ends of phases 7–9 (100 + 150 + 120, table-driven, Decision
+  52) ≤ 9 000, and built + 1.5 × 370 ≤ 9 000;
+* **after phase 8:** built + 120 (phase 9) ≤ 9 000, and built + 180 ≤ 9 000.
+
+A gate that fails applies the next reserve (V, then rule 36 into `sealoop`, then the middle pass),
+specified and agreed with the user before the next phase's code. `sealoop`'s own v1 margin (467)
+is weighed with its fusion seam at the gate after phase 6, where the same C1 and C4 compaction is
+a candidate.
 
 ### 2.8 Numbers inside the compiler
 
@@ -8497,7 +8605,8 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4f | **Reductions, sorting, searching, library options** (specified 2026-10-22, Decisions 38–41: `sealoop`'s rewrites L13 and L14 of §3.5.9 with the refinements R12–R16, §3.6.6's LIR unchanged): `sum mean variance std max min argmax argmin nnz any all` (with `dim:`, errors 225, 237, 262, 243 with named arguments), `sort`/`argsort` (with `desc:`; the entries `sea_sort`, `sea_argsort` and `rt_sort.s` on both targets, `f64`, `i64` and `str`, Decision 40), `find find_first find_last`, the named options of library calls (Decision 21), result types on fixed-size arguments (Decision 39), error 115 (Decision 41); rules 23, 24 and the phase-rule step 4f (§2.6.2, "Readings fixed by 4f"); `passes.txt`'s `wop` word `and`, error 115 and the `rt.inc` entries 21–22 (`SEA_ENT_COUNT` 22, §4.8: before any 4f code, so that R16 and the rule-24 dump can name them; a runtime without `rt_sort.s` fails only at link time) enter with this specification. Work packages, each owning its files: **T1** spec-derived `programs/` and `errors/` (`tests/programs/{red_,sort_,find_,heap_red_}*`, `tests/programs/w4_sor_reduce.*`, `tests/errors/*` new and the four `err_ns_lib_*` goldens of §6.2, their `tests/vectors/` script, `tests/CORPUS.md`); **T2** the dump generator `tests/vectors/dump4f_cases.py` and its goldens in `tests/passes/` (T2 reports its rows to T1); **front end** `passes/seaparse/seaparse.bas` (115) and `passes/seacheck/*` with its `build.list` (overloads, named options, Decision 39's types and `dyn`, the phase-rule step); **sealoop** `passes/sealoop/*` (L13, L14, R14; a new file in its own line range); **sealower** `passes/sealower/*` and `tools/seaval.bas` (R12, R13, R15, R16 and their validation; `seaval` needed no change, §3.5.9); **runtimes** `runtime/arm64_macos/rt_sort.s`, `runtime/x86_64_linux/rt_sort.s`, the runtime object lists of `Makefile` and `Makefile.linux`, `tests/rt/arm64_macos/rt_sort_*` and `tests/rt/x86_64_linux/rt_sort_*`; then the size gate of §2.7 (Decision 35) | the 4f tests of §6.2 pass on both targets (summation order, NaN, −0, ties, stability, empty inputs), with no leak under the heap check; every stage pair of the 4f dumps holds, the agreed examples of rules 23 and 24 byte for byte; `w4_sor_reduce` prints the bytes of `w4_sor_arrays.out`; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_sort_*`; every earlier test passes unchanged; `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and a program that fails it is split (specified and agreed first) before 4g |
 | 4g-1 | **Strings, `match`, `error`, `args`** (the first sub-step of 4g, Decision 47; 4g's one specification step, agreed 2026-10-23, is Decisions 44–48 with the `sea.hirl` refinements R17–R25 and the `sealoop` rewrites L15–L17 of §3.5.9, §3.6.6's LIR unchanged): §3.4.2's `rcns` with lead decisions L-f and L-g (`match` no longer a skipped region), every `str` construct of the phase-rule row 4g-1 (§2.6.2, "Readings fixed by 4g"), element-wise `str` operators (Decision 45), `str` and `lower` (Decision 46), `error`, `args`, `sort`/`argsort` of a `str` vector in programs (the runtime path is 4f's, Decision 40); rules 15 (f), (h), (i) and the rest of 15 and 16 for `str`, 26 (`str` literals), 28 (the retains of `str` elements), 30 (`str` elements), 32–35; L16, L17 for `str` elements, the `str` cases of L2–L14, R17 (for `str`), R20, R22, R25. No contract file changes (§0); `layout` is not built before 4g-2 (§2.6.3). Work packages, each owning its files: **T1a** spec-derived `programs/` and `errors/` of 4g-1 (`tests/programs/{str_,match_,args_,heap_str_,sort_str}*`, `tests/errors/*` new, the changed and retired goldens of §6.2, `tests/vectors/str4g_cases.py`, `tests/CORPUS.md`; T1a alone edits `tests/CORPUS.md`); **T2a** `tests/vectors/dump4g_cases.py` (its 4g-1 part), `res_gen.py`'s `rcns`, the 4g-1 goldens of `tests/passes/` and the changed `res_*` dumps of 4g-1 (T2a reports its rows to T1a); **front end** `passes/seaname/*`, `passes/seacheck/*`, `passes/seaexpand/seaexpand.bas` and their `build.list`s; **sealoop** `passes/sealoop/*` and its `build.list` (L16, L17 for `str`, the `str` extensions, R20's count; a new file in its own line range); **sealower** `passes/sealower/*` and its `build.list` (rules 32, 34, 35, 15 and 16 for `str`, R17, R20, R22, R25 and their validation); then the size gate after 4g-1 (§2.7) | the 4g-1 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-1 dumps holds, the agreed examples of rules 15, 26, 30 (the first), 32, 33 and 35 byte for byte; every earlier test passes, the changed goldens re-derived from the spec (lead decision L-i); `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and if `sealower` (or `sealoop`, `seacheck`) fails it, a relief is specified and agreed with the user before any 4g-2 code |
 | 4g-2 | **Structs, records, projection** (the second sub-step of 4g, Decision 47, after the gate): §3.4.2's `rtst`/`rtfd`, `rslit` and the struct declaration checks; struct items, types, literals, fields, projection (L15), struct arrays and their literals, records (Decision 48), fixed-size arrays of `str`, struct and record elements (types, locals, parameters, `ref` parameters, results, tuple components, `dyn`/`fix`), the phase-rule row 4g-2 with its errors (§2.6.2, "Readings fixed by 4g"); rules 15 (g), (j) and 16 for structs, 18 (field folding, whole struct elements), 19 (paths through fields, L17), 26 (struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29 (L15), 30 (struct elements), 31 (field paths), 38 (`slay`, also of records, lead decision L-m); R18, R19, R21, R23, R24 and the struct cases of L2–L14. Work packages, as in 4g-1: **WP-LAYOUT** (first) `passes/lib/layout.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3), and the `passes/lib` module list of `sea/CLAUDE.md` (`io diag tables limb f64emu fltlit`, plus `layout`); **T1b**, **T2b** (`tests/programs/{struct_,str_fixed,records,heap_struct_,manualD_part1}*`, `tests/errors/manualD_part1_badopt.*`, `tests/errors/r_str_fix.*` and the other 4g-2 errors, the retired and re-derived goldens of §6.2, `tests/vectors/manualD_part1.py`; the dumps of rules 18, 27 and 29, L15, L17, R19, the `.res` of §3.4.2); **front end b**, **sealoop b** (its `build.list` gains `layout`; L15, L17's field paths and aggregates, L12's routing of field targets, the aggregate cases), **sealower b** (its `build.list` gains `layout`; rules 18, 27, 31, 38, 15 (g)/(j), 16, R18, R19, R21, R23, R24): the same files as in 4g-1; **WP-RT** `tests/rt/arm64_macos/rt_arr_new_s_empty.*` and `tests/rt/x86_64_linux/rt_arr_new_s_empty.*` (and that target's `runtime/*/rt_arr.s` or `rt_mem.s` only if the test fails) | the 4g-2 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-2 dumps holds, the agreed examples of rules 18 (the second), 27 and 29 byte for byte; `make test-lib` passes `layout`; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error at line 16; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_arr_new_s_empty`; every earlier test passes (the changed goldens re-derived); `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
-| 4h | **Prelude and W5; close-out** (the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 |
+| 4h-0 | **The `sealower` relief: a compaction with no change of behaviour** (Decisions 49–52 and lead decisions L-o–L-r, agreed 2026-10-23; before the 4h specification's code): the patterns C1–C6 of §2.7 (fall-through entries and tail calls, merged `REM`s with every comment's text kept, the constant and entry lookups and the register text as multi-line `DEF` functions, validation predicates, one shared child-evaluation loop), about 600 lines freed; every part file keeps its line range, new lines are numbered between existing ones, each new `DEF FN` gets a header comment in `sl0main`'s table of helpers, and no array letter is added (L-q); only `passes/sealower/*` and the docs text change: no contract file, intermediate format, `sealoop`, driver or test script (L-r). Work packages, by one `sealower` implementer owning `passes/sealower/*`, in sequence: **WP-0** (first, scratch only, in the session scratchpad and not committed) a Baysick prototype of the multi-line string `DEF` of C4 and the lookup `DEF` of C3 (reading and writing the global register table and its counter, the consts table, the overflow flag) confirming their semantics and speed, and if it fails C3 and C4 become C1-style entry lines; **WP-1** C1, C2, C3, C5, C6; **WP-2** C4 | L-p's proof holds: `--emit lir1` of every `tests/programs` program, every run-phase `tests/errors` program and `tests/accept/w4_sor.sea` byte-identical before and after (a scratch harness, not committed), every stage pair `sealower hirl lir1`, `make test` and `make cross`; `make check-limits` measured and recorded in §2.7 ("Measured after 4h-0", with the free letters); the gate after 4h-0 applied (§2.7): if the saving came in short, the gate decides on reserve V, specified and agreed with the user before any 4h code |
+| 4h | **Prelude and W5; close-out** (after 4h-0 and its gate; the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29, keeping `sealower`'s part to two new records, the inline block (its type and result count) and its return, which `sealower` lowers to `do`/`enddo` and to "values owned, releases down to the block's scope mark, `mov`s, `exit`", while `sealoop` does everything tree-shaped: it drops the prelude `fn`s, inlines recursively, gives every copied node the call's `pos`, renames the callee's locals as new locals of the caller and binds the parameters with `tmp`s (T1); this keeps §2.7's 150–300 for `sealower` true): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 and the gate after 4h applied |
 
 ## 9. Decisions (agreed)
 
@@ -8988,3 +9097,56 @@ parameter root reads P afresh after the cow (the same values), and R23's reuse o
 register takes effect with 4g-2, together with a stage golden for it (§3.5.9 R23, L17 steps 5–6). *For the user's information:* `error` does not end a
 path (LANGUAGE.md §8.1), so `fn f() -> i64 { error("x") }` is `missing return`; a 4g-1 test pins
 it (§6.2).
+
+49. **Which relief for `sealower` before 4h** (`sealower` was 6 994 built lines after 4g-2, 6 under
+    its 7 000-line cap, with 4h's 150–300 and phases 5–10's 1 100 still to come, §2.7). Options:
+    (a) **compaction now: a sub-step 4h-0 that compacts `sealower` with no change of behaviour by
+    C1–C6, the register-text function of C4 included, about 600–770 lines, its first step a scratch
+    prototype of the multi-line string `DEF` (WP-0); reserves in this order: (V) the semantic
+    validation of `sea.hirl` moved into `tools/seaval.bas` (300–400), rule 36's composites with
+    `ind2sub` and `sub2ind` moved into `sealoop` (150–170), a middle HIR→HIR pass (440–520)**; (b)
+    the mechanical compaction only (C1–C3, C5, C6: 415–540, no `DEF`-based emission); (c) a split
+    now, the middle HIR→HIR pass taking rules 18, 19, 36 and the field reads (440–520, a new program
+    with the same `sea.hirl` format); (d) rules 18, 19, 36 and the field reads moved into `sealoop`
+    (440–520; `sealoop` to 8 820–8 990 at v1). **Decided: (a)** (the user, 2026-10-23): it lasts to
+    v1 with margin (7 794 at the recorded upper ends, 8 344 under stress), lowers the cost of every
+    later emitted instruction, is proved neutral by byte-identical `sea.lir1` and spends none of
+    `sealoop`'s margin. Affects §0, §2.7 (the relief, the reserves, "Measured after 4h-0"), §8 (row
+    4h-0).
+50. **`sealower`'s cap and gates after the relief.** Options: (a) **the 7 000-line cap kept
+    through 4h; gates after 4h-0 (4h starts only if built + 300 ≤ 7 000), after 4h, after phase 6
+    and after phase 8; a gate fails when the built size plus the remaining upper ends, or the
+    stress projection (the phase-level part × 1.5), exceeds 9 000, and a failure applies the next
+    reserve before the next phase's code**; (b) 7 000 as a hard cap until v1, any phase that would
+    cross it needing a relief first; (c) the cap raised to 8 000 now (Decision 47 (c)'s figure) and
+    no relief now. **Decided: (a)** (the user, 2026-10-23). Affects §2.7 (the gates), §8 (rows 4h-0
+    and 4h).
+51. **Where `sealower`'s semantic validation of `sea.hirl` lives.** Options: (a) **it stays in
+    `sealower`; its move to `tools/seaval.bas` is the first reserve relief**; (b) moved now:
+    `seaval` (format `hirl`) gets the checks of §3.5.9, `tests/run.sh` runs `seaval hirl` on every
+    program's `sea.hirl`, `sealower` keeps the `passes.txt`, tree and safety checks (frees 300–400;
+    a production compile then no longer checks `sealoop`'s output); (c) a validating pass between
+    `sealoop` and `sealower`. **Decided: (a)** (the user, 2026-10-23). Affects §2.7 (the reserves),
+    §3.5.9 ("What the passes validate", only if the reserve is applied).
+52. **How the library calls of phases 6, 8 and 9 are lowered in `sealower`.** Options: (a)
+    **table-driven: one generic path builds the `rcall` from `rt.inc`'s entry records (arguments,
+    results, site), with rule 15's ownership (owned results, temporaries among the arguments
+    released after the call); a new library function is then an entry row plus front-end and
+    `sealoop` work; specified with phase 6**; (b) per-function lowering, as rules 14, 24 and 35 are
+    written now. **Decided: (a)** (the user, 2026-10-23): it brings phase 8's estimate from 200–300
+    to 100–150 and phase 9's from 150–250 to 80–120. Affects §2.7 (the increments and the gates
+    after phases 6 and 8), §3.6.6 (a rule for library calls, specified with phase 6), §8 (rows 6, 8
+    and 9 when they are specified).
+
+**Lead decisions of 4h-0** (2026-10-23, within Decisions 49–52, each taken because one answer is
+clearly right, to be reported to the user; each is written into its normative section): L-o,
+`sealower`'s v1 projection counts 4h's own increment: the recorded 8 094 omitted it because 4g
+alone spent the "4g and 4h" allowance (907 against 550–800), corrected to 6 994 + 300 + 1 100 =
+8 394 before the relief (§2.7); L-p, the neutrality of any `sealower` compaction is proved by
+byte-identical `sea.lir1` of every `tests/programs` program, every run-phase `tests/errors`
+program and the W4 acceptance program (`tests/accept/w4_sor.sea`), before against after, plus
+every stage pair, `make test` and `make cross` (§2.7, §8 row 4h-0); L-q, the compaction keeps every
+part file's line range and the insert-between numbering (§2.6.3), each new `DEF FN` gets a header
+comment in `sl0main`'s table of helpers, and no array letter is used (`C S X` stay free; §8 row
+4h-0); L-r, 4h-0 touches only `passes/sealower/*` and the text of the docs, with no contract file,
+intermediate format, `sealoop`, driver or test script changing (§8 row 4h-0).

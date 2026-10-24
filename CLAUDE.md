@@ -45,10 +45,14 @@ until 4g-2). The size gate after 4g-1 passed with no relief: `sealower` 6 349 bu
 after 4g-2 P = 6 956, 44 under 7 000; v1 8 056; 4 free array letters), `sealoop` 4 659 (5 114; 8 214;
 4 free), `seacheck` 5 944 (6 081; 14 free), DESIGN.md §2.7. **4g-2** (structs, records, projection,
 fixed-size `str` and struct arrays, the module `layout` of 123 lines, `manualD_part1`) measured
-`sealower` 6 994 built lines (v1 8 094, 3 free array letters), `sealoop` 5 433 (8 533, 3 free),
+`sealower` 6 994 built lines (v1 8 394 with 4h counted, lead decision L-o; 3 free array letters), `sealoop` 5 433 (8 533, 3 free),
 `seacheck` 6 424 (14 free), `seaname` 5 262 (DESIGN.md §2.7, "Measured after 4g-2"): `sealower` is
-6 lines under its 7 000-line cap. **Next is 4h, which first needs a `sealower` relief (more
-`sealoop` rewrites, a neutral compaction or a split) specified and agreed with the user.**
+6 lines under its 7 000-line cap. The relief is agreed (Decisions 49–52, lead decisions L-o–L-r, DESIGN.md §0, §2.7, §8, §9): a
+behaviour-neutral compaction of `sealower` (C1–C6, about 600 lines; reserves: `sea.hirl` validation
+into `seaval`, rule 36's composites into `sealoop`, a middle HIR→HIR pass), the 7 000-line cap kept
+through 4h, gates after 4h-0, 4h, phase 6 and phase 8. **Next is 4h-0** (WP-0, a scratch prototype
+of multi-line string `DEF`, then the compaction, proved by byte-identical `sea.lir1`; only
+`passes/sealower/*` changes), then its gate, then the 4h specification.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
