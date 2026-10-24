@@ -216,6 +216,9 @@ rec HL 84 rcnt 3 pos:pos incl:u l:lid e:lid
 rec HL 85 cow 1 pos:pos
 rec HL 86 mcpy 3 pos:pos
 rec HL 87 cdat n pos:pos ty:ty n:u
+; from sub-phase 4h (3.5.9 L18): the inlined call of a prelude function and its return (rule 37)
+rec HL 88 iblk 1 pos:pos ty:ty k:u
+rec HL 89 iret k pos:pos k:u
 
 ; ---------------------------------------------------------------- sea.lir1 and sea.lir (3.6)
 ; data (3.6.2)

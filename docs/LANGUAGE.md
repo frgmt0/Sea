@@ -1484,7 +1484,12 @@ specification of it exists in this document.
 (`sort(v, desc: false)` shows the default).
 
 **Where each function lives** (DESIGN.md §2.5): *intrinsic* (expanded by the compiler), *runtime*
-(assembly in `libsea.a`), or *prelude* (Sea source, marked **(P)**).
+(assembly in `libsea.a`), or *prelude* (Sea source, marked **(P)**). A (P) function has exactly
+one signature, written below, and is called like a user function (§8.1): its parameters have the
+names given here (so `linspace(0.0, 1.0)` is `missing argument`, `bincount(ref v, 2)` is `'idx'
+is not a ref parameter`, and named arguments use these names), its arguments convert as any
+argument does (§4.2), and a run-time error inside it reports the line of the program's call,
+never a line of the prelude.
 
 ### 10.1 Conversions and constants
 
@@ -1510,9 +1515,9 @@ A negative extent is the run-time error `invalid array size`.
 
 ### 10.3 `linspace` and `meshgrid` (P)
 
-**`linspace(d1, d2, n)`** → `f64[]`, bit-exact to MATLAB R2026a (`toolbox/matlab/elmat/
+**`linspace(d1: f64, d2: f64, n: i64) -> f64[]`**, bit-exact to MATLAB R2026a (`toolbox/matlab/elmat/
 linspace.m`, as reproduced by `common.mlinspace`), with `n1 = n − 1` and all arithmetic in
-`f64` (`n` is an `i64`):
+`f64`; an `n` above 2³¹ − 1 is the run-time error `invalid array size %d` with n:
 
 1. `n < 1` → empty. `n == 1` → `[d2]`.
 2. If `d1 == -d2` and `n > 2`: `y[k] = (-n1 + 2k) * (d2 / n1)` for `k = 0 … n1` (the integer
@@ -1521,8 +1526,11 @@ linspace.m`, as reproduced by `common.mlinspace`), with `n1 = n − 1` and all a
 3. Otherwise `y[k] = d1 + (k * (d2 - d1)) / n1` (multiply, then divide, then add — this order
    matters); then if `d1 == d2` every `y[k] = d1`, else `y[0] = d1` and `y[n1] = d2`.
 
-**`meshgrid(x, y)`** → `(X, Y)`, both `len(y) × len(x)`: `X[i, j] = x[j]`, `Y[i, j] = y[i]`
-(MATLAB). A fused consumer never materializes them (DESIGN.md §5.1).
+**`meshgrid(x: f64[], y: f64[]) -> (f64[,], f64[,])`**, both results `len(y) × len(x)`: `X[i, j] =
+x[j]`, `Y[i, j] = y[i]` (MATLAB), each element a copy of the argument's bits (`-0`, NaN); an
+`i64[]` argument is converted element by element (§4.2), so the results are always `f64`; results
+too large to allocate are `out of memory`. A fused consumer never materializes them (DESIGN.md
+§5.1).
 
 ### 10.4 Elementary functions (elemental)
 
@@ -1604,7 +1612,7 @@ a few ulps times the number of terms, far below 1e-12).
 | `argsort(v, desc: false)` | the stable sorting permutation (`i64[]`), MATLAB's `[~, idx] = sort(v)` |
 | `find(m)` | `i64[]` of the indices where the `bool` vector is true, ascending; for a `bool[,]` use `find(M.flat)` (column-major linear indices, MATLAB `find`) |
 | `find_first(m)`, `find_last(m)` | `i64` index of the first/last `true`, **−1** if none (MATLAB `find(m, 1)`, `find(m, 1, 'last')`, `isempty`) |
-| `setdiff(a, b)` (P) | sorted unique `i64` values of `a` not in `b` (W2's free DOFs) |
+| `setdiff(a: i64[], b: i64[]) -> i64[]` (P) | sorted unique `i64` values of `a` not in `b` (W2's free DOFs) |
 
 `sort` and `argsort` accept `f64`, `i64` and `str` vectors; `desc:` is any `bool` expression.
 The result of `sort` is a dynamic vector of v's element type and that of `argsort` an `i64[]`, also
@@ -1622,7 +1630,7 @@ order-preserving 64-bit key transform for large `f64`/`i64` vectors (DESIGN.md �
 |----------|--------|
 | `ind2sub(r, k)` | `(i64, i64)` = `(k % r, idiv(k, r))`, elemental (`[i, j] = ind2sub(size(T), k)`) |
 | `sub2ind(r, i, j)` | `i + j * r`, elemental, with a bounds check against `r` |
-| `bincount(idx, n)` (P) | an `i64[]` of length `n`: the count of each value `0 … n − 1` in `idx` (`accumarray(idx, 1, [n 1])`); a value outside → run-time error |
+| `bincount(idx: i64[], n: i64) -> i64[]` (P) | an `i64[]` of length `n`: the count of each value `0 … n − 1` in `idx` (`accumarray(idx, 1, [n 1])`); a value v outside → `index v out of bounds for dimension 0 of extent n`; n < 0 or above 2³¹ − 1 → `invalid array size n` |
 
 ### 10.8 Dense linear algebra
 

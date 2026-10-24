@@ -43,7 +43,9 @@ the user's agreement. Phase 0 (§8) did:
    as 4g-1 and 4g-2 with the size gate after 4g-1 passed, §2.7) are done; `sealower` ended 4g 6
    lines under its 7 000-line cap, so the relief of Decisions 49–52 ran as sub-step 4h-0, a
    compaction of `sealower` with no change of behaviour (§2.7, §8), which is done: `sealower` 6 304
-   built lines, the gate after 4h-0 passed (§2.7); the 4h specification is next.
+   built lines, the gate after 4h-0 passed (§2.7); the specification of 4h (prelude inlining as the
+   `sea.hirl` records `iblk` and `iret`, the four prelude functions, W5, the close-out; Decisions
+   53–57) is agreed, and the build of 4h is next.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -384,6 +386,49 @@ jump out of the body and no recursion, so the lookup functions inline the loops 
 and the register function inlines 7500's numbering; the recorded v1 projection of the gate tables
 is corrected where it stands (§2.7) rather than only in the new text.
 
+**Decided for sub-phase 4h (2026-10-24).** The specification of 4h (the prelude and W5, the
+close-out of phase 4) fixes how rule 37's agreed LIR is written in `sea.hirl` (Decision 29), with
+§3.6.6's LIR, rule 37's example included, unchanged. The user took Decisions 53–57 of §9, each the
+recommended option: rule 37 is written in `sea.hirl` as two new records, `iblk` (the inlined body,
+its type and result count) and `iret` (its return), the `iblk` always the value of an `xblk` whose
+statements are the parameter `tmp`s; `sealoop`'s new rewrite L18 does all the tree work (the copy,
+the call's position on every copied node, the callee's locals renamed, the parameters bound,
+recursion, the prelude functions dropped and the rest renumbered), and `sealower` gains only the
+lowering of `iblk` and `iret` (R26–R30 of §3.5.9) (53); one signature per prelude function, with
+LANGUAGE.md §10's parameter names, `meshgrid` taking `f64` vectors only, an `i64[]` argument
+converted element by element (LANGUAGE.md §10.3, §10.6, §10.7; 54); recursive prelude inlining is
+built in 4h and tested with hand-written two-file stage goldens (55); `sealoop` joins the gate
+after 4h, its stress line decided at the gate after phase 6 together with the fusion seam (§2.7;
+56); `NAME.prelude` is allowed beside `.hir`, `.hirl` and `.lir1` dumps and `.out`, and the runners
+compare the prelude's `#file` record of such a dump as `#file std.sea` (§6.2; 57). This is a
+contract change: `passes.txt` gains `rec HL 88 iblk 1 pos:pos ty:ty k:u` and `rec HL 89 iret k
+pos:pos k:u`, with §3.5.9's table in the same change; `errors.inc`, `rt.inc` and `limits.inc`
+stay as they are (every entry the four bodies need exists on both targets since 4c and 4f).
+**Lead decisions of 4h** (within Decisions 53–57; listed in §9): L-s, the prelude's items are
+exempt from 212 and the four prelude names resolve only as entered items, so that with
+`--no-prelude` they are `undeclared name` (LANGUAGE.md §3.3; §2.2, §2.6.2, §3.4.1); L-t, prelude
+calls are checked as ordinary calls, with LANGUAGE.md §10's parameter names (§2.5, §2.6.2); L-u,
+the callee's locals become `.i` locals of the caller, ordinary locals in every respect (§3.5.4,
+§3.5.9 R28); L-v, `sealoop` drops the prelude functions and renumbers the rest densely (§3.5.9
+L18); L-w, the order and ownership details of R26, R27, R29 and R30, each making an inline call
+behave as the call it replaces (§3.5.9); L-x, a prelude function's result types are void, scalars,
+`str`, dynamic arrays or tuples of those (§2.5, §3.5.9); L-y, every error a prelude function can
+report has its message fixed (§2.6.2, LANGUAGE.md §10.3, §10.7); L-z, the close-out adds one
+test per after-phase-4 phase-rule row without one (§2.6.2, §6.2); L-aa, `w5_stats.sea` is
+Appendix D's text for what its four keys need (§6.2, §6.3); L-ab, neither `sealower` nor
+`sealoop` takes more than its spare array letters (§2.7). *For the user's information:* by
+LANGUAGE.md §10.3 rule 2, `linspace(0.0, 0.0, 4)` is `[0, -0, 0, 0]` (the symmetric branch comes
+before `d1 == d2`; the reference `common.mlinspace` agrees), and a test pins it. *Corrections made
+to the plan while writing this specification* (the planning notes were data): `.main` is function
+1 and precedes the prelude's functions, which precede the program's other `fn` items (§3.5.4), so
+L18's renumbering moves only the program's own functions; L18 renumbers every `fid` field,
+`inst` included (§3.5.3); `run.sh` and `cross_pack.sh` build the `NAME.prelude` tests with the
+prelude, and `tests/stage.sh` needs two skips for the goldens that start at `.hir` or `.hirl` (§6.2,
+§8) but no prelude handling (its pairs work on the committed goldens, which hold `#file
+std.sea`); LANGUAGE.md §3.3 already states L-s's rule, so only DESIGN changes for it; the set
+comment of `passes.txt` names no code range, so the two records get a comment line of their own
+instead.
+
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
@@ -717,7 +762,7 @@ plays the role Baysick's IR plays for Baysick's backends, but is lower level.
 |------|----------|
 | **Compiler intrinsics** (passes 2–3) | operators, views, indexing, `len rows cols numel`, conversions, `where`, reductions (fused into loops), the elemental math functions (inline code or runtime calls), `printf`/`format` (pre-parsed formats), and **`write_json`**, which pass 2b expands per static type into calls of the runtime's JSON emitter (LANGUAGE.md §11.4) — so no generics or reflection are needed |
 | **Runtime** (assembly, `libsea.a`, §4) | memory, strings, number-to-text conversion, I/O, clock, the elementary functions, sorting, linear-algebra kernels, the JSON emitter, and the **plotting library**: the `Figure`/`Axes` handle objects, layout, SVG writer and PNG/base64 encoder (LANGUAGE.md §12.1) |
-| **Prelude** `std/std.sea` | what is naturally written in Sea with value semantics: `linspace`, `meshgrid`, `setdiff`, `bincount` (marked **(P)** in LANGUAGE.md §10); until sub-phase 4h (§8), which brings them, it holds comments only, and the driver streams it as usual. From 4h it holds exactly these four `fn` items (and comments), each with the signature, results and errors of LANGUAGE.md §10, written with no `ref` parameter, no recursion, no `const` or `struct` item and no other function (so that every prelude call inlines, §3.6.6 rule 37), and with every error it can report raised by an ordinary check of its code whose message and arguments §2.6.2 fixes (the `bincount` index error, an `INDEX_OOB` of an element store with the value as index, dimension 0 and extent n), never by `error`, so that the message does not depend on the prelude's text; `linspace` with n < 1 returns an empty vector without an error |
+| **Prelude** `std/std.sea` | what is naturally written in Sea with value semantics: `linspace`, `meshgrid`, `setdiff`, `bincount` (marked **(P)** in LANGUAGE.md §10); until sub-phase 4h (§8), which brings them, it holds comments only, and the driver streams it as usual. From 4h it holds exactly these four `fn` items (and comments), each with the signature, results and errors of LANGUAGE.md §10, written with no `ref` parameter, no recursion, no `const` or `struct` item and no other function (so that every prelude call inlines, §3.6.6 rule 37), and with every error it can report raised by an ordinary check of its code whose message and arguments §2.6.2 fixes (the `bincount` index error, an `INDEX_OOB` of an element store with the value as index, dimension 0 and extent n), never by `error`, so that the message does not depend on the prelude's text; `linspace` with n < 1 returns an empty vector without an error. From 4h also (Decisions 54, 55, lead decisions L-t, L-x, L-y): each function has one signature, with LANGUAGE.md §10's parameter names, which the call errors expose (`linspace(d1: f64, d2: f64, n: i64) -> f64[]`, `meshgrid(x: f64[], y: f64[]) -> (f64[,], f64[,])`, `setdiff(a: i64[], b: i64[]) -> i64[]`, `bincount(idx: i64[], n: i64) -> i64[]`); its result types are void, scalars, `str`, dynamic arrays or tuples of those, and its body holds no `tret` (rule 37 moves only register values); each result is allocated before any other check of the body can fail, so that a too large or negative size reports `invalid array size` first; a prelude function may call another (rule 37 inlines recursively, Decision 55), although none of the four does, and the prelude's call graph has no cycle |
 
 **Decision: the prelude is Sea source streamed to pass 1 ahead of the program on every
 compilation**, and pass 2b drops every function the program does not reach. It is small (an
@@ -1206,9 +1251,33 @@ From 4g-2:
   under a field of an element read only after the checks before it (LANGUAGE.md §5.5, §3.5.9
   L17).
 
-**After phase 4** the table is exactly this (positions as above: the node the row names, of
-several the first in source order); 4h removes every other row and the tests of the removed
-words, and phase 6 and later remove these:
+**Readings fixed by 4h** (lead decisions L-s, L-t, L-z; `seaname` and `seacheck`):
+
+* **Prelude names** (L-s). The items of file 0 of a stream with more than one `#file` record (the
+  prelude, §3.2) are exempt from 212, as LANGUAGE.md §3.3 says (its first rule applies to the
+  user's file only); 213 applies to the prelude's locals as to the program's. The four prelude
+  names `linspace`, `meshgrid`, `setdiff` and `bincount` resolve only as entered items: with the
+  prelude they name its `fn` items (`rname fn`), and with `--no-prelude` they resolve as `none`,
+  so a use is `undeclared name '%s'` (200) at the name, as §2.2 says. A program item with such a
+  name is still 212 and a local 213 (LANGUAGE.md Appendix C still lists them).
+* **Prelude calls** (L-t). A call of a prelude function is checked as a call of a user function
+  (§3.5.5, "Library calls of phase 4"): `missing argument` (226) and `too many arguments` (242) at
+  the `call`; `type mismatch` (201) at an argument that does not convert to its parameter's type
+  (`linspace(0.0, 1.0, 2.5)` is `type mismatch: expected i64, found f64`, `bincount([1.0], 2)`
+  `expected i64[], found f64[1]`, the literal being fixed-size, LANGUAGE.md §4.5; an `i64[]` argument of `meshgrid` converts, LANGUAGE.md §4.2);
+  `'%s' is not a ref parameter` (255) naming the parameter as LANGUAGE.md §10 names it
+  (`bincount(ref v, 2)` is `'idx' is not a ref parameter`); a named argument is `not supported yet:
+  named arguments` until phase 6. A prelude call is never `no overload` (243).
+* **Errors inside prelude code** (L-y): "Uses of an existing message" below.
+* **The close-out** (L-z). 4h removes the last row of the phase-4 table above (its four library
+  names), so from 4h the table in force is exactly the after-phase-4 table below; the phase-1
+  table and the phase-4 table above stay as the record of how it shrank. No test names one of the
+  four removed words, so none is retired; 4h adds one test for each after-phase-4 row that has
+  none (`@` of two matrices, a call of `format`, of `solve` and of `figure`, §6.2).
+
+**After phase 4** the table is exactly this, and from 4h it is the table in force (positions as
+above: the node the row names, of several the first in source order); 4h removes every other row
+and the tests of the removed words, and phase 6 and later remove these:
 
 | Construct (after phase 4) | `%s` | Removed in |
 |---------------------------|------|------------|
@@ -1246,7 +1315,8 @@ so it is reported before every pass-2 error, the `named arguments` row included.
 `seacheck`, §2.1, §3.4.1). `seaname` reports the errors of the declaration checks, which a
 single pass-2a program finds before all others:
 
-* of the items, in stream order: `redefinition of predeclared name` (212), `redefinition of
+* of the items, in stream order: `redefinition of predeclared name` (212; from 4h none for an item
+  of the prelude, L-s), `redefinition of
   '%s'` (235) of two items, and `not supported yet` (259) at an item (`elemental functions`,
   `structs`);
 * then of the signatures of the entered functions (§3.4.1), in item order, each function's
@@ -1308,7 +1378,12 @@ operand, a `match` scrutinee that is not `str`, and a `return` value of the wron
 mismatch`; an out-of-range `bincount` value v (prelude code) is `INDEX_OOB` with v, dimension 0
 and extent n, at the site of the program's call (§3.6.4, "Sites"); `sub2ind(r, i, j)` checks only
 i against r (LANGUAGE.md §10.7) and reports `INDEX_OOB` with i, dimension 0 and extent r
-(dimensions count from 0, LANGUAGE.md §5.4).
+(dimensions count from 0, LANGUAGE.md §5.4). From 4h (lead decision L-y) every other error of
+prelude code is an existing message too, each at the site of the program's call: `bincount` with
+n < 0 or n above 2³¹ − 1 and `linspace` with n above 2³¹ − 1 are `ARRAY_SIZE` with n (`invalid
+array size %d`, from the allocation of the result, made before any other check of the body that
+can fail, §2.5; `linspace` with n < 1 allocates its empty result without an error), and a
+`meshgrid` result that cannot be allocated is `OUT_OF_MEMORY`.
 
 **The errno table** (LANGUAGE.md §9.2:
 "a fixed table of errno texts so both targets print the same bytes"). A host errno value that is not in the table prints the text of id 0. Names
@@ -2233,6 +2308,59 @@ identical standard error for the 297 test programs that stop at an earlier error
 the error and capacity paths (register-overflow sweeps, type limits, `BAD_RECORD` fields, 3 200
 random mutants): all identical.
 
+**Projected for 4h** (the 4h specification, Decisions 53–57; estimates, from the sizes measured
+after 4h-0). Every pass that loads the `records` table (all nine) grows by 2 generated `DATA`
+lines for `iblk` and `iret`. Per program:
+
+* `seaname`: 20–50 (the prelude's items exempt from 212, the four prelude names resolved only as
+  entered items, L-s).
+* `seacheck`: 0–40 (prelude calls are user calls already; the four names no longer reach its
+  library checks; a budget for a fix that the prelude bodies expose).
+* `seaexpand`: none (pass 2b's reachability already drops unreached prelude functions).
+* `sealoop`: 255–515: prelude identification and validation 25–45; L18's copy (the local map, the
+  position P, `ret` → `iret`, the parameter `tmp`s, the `xblk` and `iblk`, the recursion) 110–200;
+  the `.i` locals (their `loc` records, numbering group and nl) 30–60; dropping the prelude
+  functions and renumbering the `fid`s 20–40; the walker (rewrites inside the copies, `tbind`,
+  `tasg`, `tret`, `eval`, `seq` and L12 with an inline child) 40–90; capacity 10–20; fixes found by
+  the prelude tests and W5 20–60.
+* `sealower`: 150–330: reading and validating `iblk`, `iret` and R26's `xblk`s, 40–70; lowering
+  `iblk` (`do`/`enddo`, R1 … Rk, R27's destinations, the void `exit`) 60–110; `iret` (owned values,
+  the releases down to the `iblk`, the `mov`s, `exit`, rule 16 (a)) 40–80; rule 15 (k) and R30
+  10–30; fixes 0–40. This keeps the 150–300 of "The corrected projection" (the 30 above it are
+  fixes).
+* `seaparse`, `seaopt`, `seagen_a64`, `seagen_x64`: the 2 `DATA` lines only. The runtimes: none.
+  `std/std.sea` (not a built pass): about 70–100 source lines.
+
+`sealower`'s detailed estimates have been accurate or low and its overruns came from phase-level
+estimates (the stress line of Decision 50 multiplies only those); `sealoop`'s have been erratic
+(4f 271 against 600–900, 4g-1 259 against 150–290, 4g-2 774 against 315–510), so its 4h upper end
+is also shown × 1.5. Remaining after 4h: `sealower` 1 100 to v1 (stress 1 650, Decision 50);
+`sealoop` phase 6 1 100 and phase 7 1 500, 2 600 (stress 3 900); `seacheck` to the end of phase 4
+only, its later phases being `sealib`'s question at the measurement after phase 4.
+
+| Program | After 4h-0 (measured) | After 4h | 4h upper end × 1.5 | ≤ 7 000 built | Projected v1 (≤ 9 000) | Stress v1 | Free letters (≥ 2) |
+|---------|----------------------:|---------:|-------------------:|:-------------:|-----------------------:|----------:|--------------------|
+| `sealower` | 6 304 | 6 456–6 636 | 6 802 | yes (364 at the upper end) | 7 556–7 736 | 8 106–8 286 (8 452 with 4h × 1.5) | 3 (`C S X`); 4h needs none (the `iblk` stack in its existing block tables, L-ab) |
+| `sealoop` | 5 433 | 5 690–5 950 | 6 209 | yes | 8 290–8 550 | 9 590–9 850 (10 109 with 4h × 1.5): over 9 000, decided at the gate after phase 6 (Decision 56) | 3 (`B X Y`); 4h needs 0–1, leaving ≥ 2 (L-ab) |
+| `seacheck` | 6 424 | 6 426–6 466 | — | yes (534 at the upper end) | — (after phase 4) | — | 14 |
+| `seaname` | 5 262 | 5 284–5 314 | — | yes | — | — | — |
+| `seaexpand` | 4 128 | 4 130 | — | yes | — | — | — |
+
+4h's own `sealoop` increment was already counted in its recorded v1 (5 433 + 500 + 2 600 = 8 533),
+so 4h moves its recorded margin from 467 to 450–710; its real exposure is the phase-level stress
+of phases 6 and 7, which passes 9 000 unless phase 7's fusion becomes a pass of its own (then
+`sealoop`'s remaining phase-level part is phase 6's 1 100, stress 1 650: 5 950 + 1 650 = 7 600).
+
+**The gate after 4h** (Decision 50 for `sealower`; Decision 56 adds `sealoop`). After 4h, `make
+check-limits` and the free numeric array letters of the main programs of `sealower`, `sealoop`
+and `seacheck` (counted as above) are measured and recorded here. `sealower` passes as the list
+above says (built ≤ 7 000, built + 1 100 ≤ 9 000, built + 1 650 ≤ 9 000) with at least 2 free
+letters; `sealoop` passes when built ≤ 7 000, built + 2 600 ≤ 9 000 and it has at least 2 free
+letters, its stress line (built + 3 900) recorded and decided at the gate after phase 6 together
+with the fusion seam; `seacheck` passes when built ≤ 7 000 with at least 2 free letters. A program
+that fails gets a relief specified and agreed with the user before phase 5's code (for
+`sealower` the next reserve of the list above).
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -2630,7 +2758,8 @@ is unchanged in `sea.res`.
 **Entered items and resolved regions.** An *entered* item is a top-level item that becomes a
 symbol: every `fn`, `const` and `struct` item except one whose name an earlier item already has
 (the later one is `redefinition of '%s'` and is not entered; an item with a predeclared name is
-entered, after its `redefinition of predeclared name`). The *resolved regions* are the body block
+entered, after its `redefinition of predeclared name`, which from 4h an item of the prelude, in
+file 0 of a stream with more than one `#file` record, does not get, lead decision L-s). The *resolved regions* are the body block
 of every entered `fn`, the top-level statements of the program's file (the body of `.main`),
 and the expression (not the type annotation) of every entered `const`, without the *skipped
 regions*: every `match` statement and every `for` whose iterable is not a `range` (each whole
@@ -2673,12 +2802,14 @@ numbers all types again when it writes `sea.hir1` (§3.5.1).
 | `rpname` | `name:s lid:lid` | `0` | `pname` | the local the name declares |
 | `rfor` | `name:s npos:pos lid:lid` | `2` | `for` | the local of the loop variable |
 | `rint` | `v:i fv:f?` | `0` | `int` | `fv`: the bits of the literal's value as an `f64` when that value is exact in `f64`, else `-`; for the literal 2⁶³ (only the operand of a `neg`, §3.4) the bits of −2⁶³, `#C3E0000000000000`, because the two are written as one constant (§3.5.5) |
-| `rname` | `name:s k:nkind ref:u` | `0` | `name` | what the name denotes where it stands: k `loc` a local or parameter of the current function (ref its lid), `cst` an entered constant (its cid), `fn` an entered function (its fid), `st` an entered struct (its sid), `pd` a predeclared name (LANGUAGE.md Appendix C; ref 0), `none` nothing (ref 0) |
+| `rname` | `name:s k:nkind ref:u` | `0` | `name` | what the name denotes where it stands: k `loc` a local or parameter of the current function (ref its lid), `cst` an entered constant (its cid), `fn` an entered function (its fid), `st` an entered struct (its sid), `pd` a predeclared name (LANGUAGE.md Appendix C; ref 0; from 4h every name of Appendix C except `linspace`, `meshgrid`, `setdiff` and `bincount`, which only an entered item names, lead decision L-s), `none` nothing (ref 0) |
 | `rpowk` | `k:i` | `2` | `bin` (`pow`) | a `^` whose exponent is a constant integer k with \|k\| ≤ `SEA_LIM_POWK` (below); both children are kept |
 
 **Names.** Each name is looked up by the scope rules of LANGUAGE.md §3.3, §7.2 and §7.7: the
 locals and parameters of the current function that are in scope (innermost first), then the
-entered items, then the predeclared names. Locals are numbered as §3.5.4 says (the parameters
+entered items, then the predeclared names (from 4h without the four prelude names `linspace`,
+`meshgrid`, `setdiff` and `bincount`, which only an entered item names: with `--no-prelude` they
+resolve as `none`, lead decision L-s). Locals are numbered as §3.5.4 says (the parameters
 1 … np, then the declared names in source order; a shadowing declaration is a new local), and
 the lids of `rpname`, `rfor` and `rname loc` are those numbers, so they are the lids of the
 `loc` records `seacheck` writes. The expression of a constant sees no locals. A skipped
@@ -3160,14 +3291,18 @@ end                                          pops the body (one block)
 | `end` | — | `1` | the end of the function; pops its body block |
 
 Functions are numbered from 1: `.main` first, then every `fn` item in stream order (the prelude's
-first). Locals are numbered per function: the parameters in order, then the locals in the order
+first); in `sea.hirl` the prelude's functions are dropped and the rest renumbered densely in their
+order (§3.5.9 L18, from 4h). Locals are numbered per function: the parameters in order, then the locals in the order
 of their declaring names in the source (the names of a `let`/`var` pattern from left to right, a
 loop variable at its `for`), then the temporaries `.t1`, `.t2`, … that pass 2a creates
 ("Evaluation order", §3.5.5), then the locals `.j1`, `.j2`, … that pass 2b creates (§3.5.7), and
-in `sea.hirl` then the locals `.l1`, `.l2`, … that `sealoop` creates (§3.5.9).
+in `sea.hirl` then the locals `.l1`, `.l2`, … that `sealoop` creates (§3.5.9) and, from 4h, then
+the locals `.i1`, `.i2`, … that its rewrite L18 creates for the locals of inlined prelude bodies
+(§3.5.9, lead decision L-u).
 Each group is numbered in the order of its declaring records in the function's body (file order:
 the `bind` of a `.t` local, the `bind`, `forr` or `fore` of a `.j` local, the `tmp`, `bind`,
-`rcnt` or `hloop` of a `.l` local), and the names count
+`rcnt` or `hloop` of a `.l` local, the `bind`, `tbind`, `forr` or `tmp` of an `.i` local), so the
+numbering is a property of the written file, and the names count
 from 1 in each function. A shadowing declaration (`var lo = lo`) is a new local. The body of
 `.main` is a `block`, at the position of `.main`, holding the top-level statements of the
 program's file in order (the prelude has items only). Default arguments, named arguments and the
@@ -3630,7 +3765,7 @@ end
 `sealoop` reads `sea.hir` and writes `sea.hirl`: the same program with the array constructs listed
 below rewritten into explicit scalar HIR, so that `sealower` lowers no whole-array operation of its
 own (Decision 26, §2.7). `sea.hirl` holds the records of `sea.hir` (sets `H` and `HF`, the same
-header records, §3.2) and those of set `HL` (`sea.hirl` only, codes 72–87, §3.9):
+header records, §3.2) and those of set `HL` (`sea.hirl` only, codes 72–89, §3.9):
 
 | Record | Fields | Pops | Meaning |
 |--------|--------|------|---------|
@@ -3650,6 +3785,8 @@ header records, §3.2) and those of set `HL` (`sea.hirl` only, codes 72–87, §
 | `cow` | `pos:pos` | `1` | an `lv` of a local array or of a `ref` parameter of array type: copy on write of that variable (from 4e); from 4g also a `fld` chain naming an array field: copy on write of that field in memory (R23) |
 | `mcpy` | `pos:pos` | `3` | destination address, source address, byte count: copy the bytes (from 4e); from 4g, into elements that hold counts, the element count, and the copied reference values retained (R20) |
 | `cdat` | `pos:pos ty:ty n:u` | `n` | n constants (`ci`, `cf`, `cb`): the address of a read-only buffer of them in order (`ty` a `tptr`; the constants are its data, not lowered as nodes, R4; from 4e) |
+| `iblk` | `pos:pos ty:ty k:u` | `1` | an inlined call of a prelude function (rule 37, L18; from 4h): its one child is the callee's body `block` as L18 copies it; lowered `do B`, the block, `enddo B`; its value is the k result registers R1 … Rk, owned like a call's results; `ty` the call's type, k 0 for `ty` 1 (void), m for a `ttuple` of m results, else 1; it stands only as the value of an inline `xblk` (R26) |
+| `iret` | `pos:pos k:u` | `k` | k values: the return from the innermost enclosing `iblk` (from 4h): the values computed and owned (rule 15 (a)), the releases of R29, `mov R1 V1` … `mov Rk Vk` (R1 … Rk numbered at the first `mov` of the `iblk`'s first `iret` in node order), `exit B` |
 
 The records marked "from 4e" are fixed now so that the contract between the two programs holds
 for 4e and 4f (Decision 29); they are implemented with 4e (in 4e-0 `sealoop` wrote none of them
@@ -3659,8 +3796,9 @@ and `sealower` rejected them as `BAD_RECORD`). The meanings above include the re
 below); no record or field was added for them, and 4f adds one word, `and`,
 to the enumeration `wop` of `passes.txt` (R13). 4g's needs (a replacing store of a reference
 element, address arithmetic, struct copies), which this paragraph once announced as further
-records, are met by R17–R25 with the record set unchanged (Decision 44); the inline block of
-rule 37 is specified at the start of 4h.
+records, are met by R17–R25 with the record set unchanged (Decision 44). The inline block of
+rule 37 is the two records `iblk` and `iret`, added by 4h with R26–R30 ("What `sealoop` rewrites
+in 4h" below; Decision 53), the one contract change of `passes.txt` since 4e-0.
 
 **Types.** The type table of `sea.hirl` is that of `sea.hir`, with the same ids, followed by one
 `tptr` record per element type whose address the file takes (`adat`, `cdat`), numbered on from the
@@ -3683,11 +3821,18 @@ of an `rcnt` and the local of an `hloop`, type 2 for the `e` of an `rcnt` (R6), 
 `tmp` and `bind`, the result's type for a `tbind` component; `pos` that of the node the rewrite
 implements (for L12's `tbind`, P, the `tasg`'s): for both locals of an `rcnt`, the
 position of the `rng` it counts),
-and the `fn` record's nl counts them.
+and the `fn` record's nl counts them. From 4h L18 also creates the `.i` locals, named `.i1`, `.i2`,
+… per function and numbered after the `.l` locals (§3.5.4), one for each local of an inlined
+prelude function other than its parameters (its source locals and its `.t` and `.j` locals), per
+inlined call: the same type and mut as that local, `pos` the call's position P (lead decision
+L-u); the `fn` record's nl counts them too.
 
 **Positions.** Every node `sealoop` writes takes the position of the node its rewrite implements
 (the `lib` call, the `fore`); the nodes it keeps keep their own. So every site of `sea.lir1`
-(§3.6.4) is the line §3.6.6 names, and the distinct sites are those of the one-program pass.
+(§3.6.4) is the line §3.6.6 names, and the distinct sites are those of the one-program pass. From
+4h every node L18 copies or writes takes the position P of the `call` it inlines, while the
+arguments, which are the caller's own code, keep theirs: every site of inlined code is the call's
+line (§3.6.4 "Sites"), transitively for a nested call, which the outer copy positions again.
 
 **Unchanged functions.** A function that holds none of the rewritten constructs is written exactly
 as in `sea.hir`; a file without them is `sea.hir` byte for byte.
@@ -3702,8 +3847,8 @@ the instructions):
   M (no instruction; `sealower` reads M's register for L); otherwise the child is computed with
   L's register as its destination (rule 2: a constant's `li`/`lf`, a call's result register, a
   `ref` parameter's `ldi`/`ldf`/`ldp`, a copy of rule 12 into L), except that a child whose root
-  is an `ifx`, `and` or `or` is computed into its own new register R by rule 3 and L is another
-  name for R, with no `mov L R`: rule 2's exception protects the old value of a local, and a `tmp`
+  is an `ifx`, `and`, `or` or an inline `xblk` (R27) is computed into its own new register R (by
+  rule 3, or R1 of the `iblk`) and L is another name for R, with no `mov L R`: rule 2's exception protects the old value of a local, and a `tmp`
   local has none (this is the lowering of a library argument with no destination, as before
   4e-0).
 * **T2.** An `xblk` lowers its statements in order, then its value. A `tmp` whose value is owned
@@ -3713,7 +3858,8 @@ the instructions):
   `xblk`'s value is then owned. (This is rule 15 (b)'s "right after the node that consumes it":
   the `xblk` stands for the consuming node, for example the whole loop nest of rule 22 (8).) From 4e an
   owned `tmp` may also lie directly in a `block` `sealoop` writes; it is then released at the end of
-  that block (R11). A
+  that block (R11). From 4h the search for the innermost `xblk` stops at an `iblk` (R26): inside an
+  inlined body only the `xblk`s inside that body count. A
   `seq` (§3.5.5) whose value a `tmp` binds is consumed by the innermost `xblk` holding that `tmp`:
   its `.t` locals are released right after that `xblk`'s own temporaries (rule 16 (e)), the order
   of the one-program pass (`numel(pick(b: m1(), a: m2()))`: the `imul`, then the release of the
@@ -3786,10 +3932,10 @@ unchanged; the record table above and the validation below include them):
 | R5 | `est` of an `f64`, `i64` or `bool` value stores into any array the rewrite created, any array whose copy on write the rewrite has done (`cow`), or a fixed-size home; of a reference value only into an element of a fresh array never read (an initializing store; 4g adds the replacing store) |
 | R6 | the `e` local of an `rcnt` has type 2 (`bool`): it is the condition of an `if`, the condition of a scalar `lib where` and an operand of `bin band` where rules 20 and 25 use E |
 | R7 | an operand of `wbin` may have type 2: a `bool` counts 0 or 1 (`iadd N N b` of rule 20 (3), `imul SJ t rX` of rule 22 (4)) |
-| R8 | a `bind` of a `.l` local of a scalar type may stand anywhere among the statements `sealoop` writes (lowered by rule 2), and such a local may be the target of `asg set` with a `wbin`, `bin` or `un` value (rule 2: its instruction writes the local's register, `iadd i20 i20 i21`); a `bind` of a `.l` local of a dynamic array type stands only directly in a `block`, never in an `xblk` (the check `sealower` makes; `sealoop` writes it so in L4, L6 and L11, the last also in place of a `tbind`, which stands directly in a block), and is lowered by rule 30 (1) (an owned value moved, a borrowed X `mov H X`, `retain H`); a `.l` local of a fixed-size type is bound by `bind` only in L4 (rule 27 (b), a copy): everywhere else a fixed-size value is named by a `tmp` (R9), which holds no counts and may also stand directly in such a `block` or in place of a `tbind`; a `tbind` of `.l` locals (of any type, with no `cv`) stands only as the first statement of an L12 block and is lowered by rule 2 (the call of (b), each result into its local's register) and rule 27 (l) |
+| R8 | a `bind` of a `.l` local of a scalar type may stand anywhere among the statements `sealoop` writes (lowered by rule 2), and such a local may be the target of `asg set` with a `wbin`, `bin` or `un` value (rule 2: its instruction writes the local's register, `iadd i20 i20 i21`); a `bind` of a `.l` local of a dynamic array type stands only directly in a `block`, never directly in an `xblk` (from 4h the search stops at an `iblk`, R26; the check `sealower` makes; `sealoop` writes it so in L4, L6 and L11, the last also in place of a `tbind`, which stands directly in a block), and is lowered by rule 30 (1) (an owned value moved, a borrowed X `mov H X`, `retain H`); a `.l` local of a fixed-size type is bound by `bind` only in L4 (rule 27 (b), a copy): everywhere else a fixed-size value is named by a `tmp` (R9), which holds no counts and may also stand directly in such a `block` or in place of a `tbind`; a `tbind` of `.l` locals (of any type, with no `cv`) stands only as the first statement of an L12 block and is lowered by rule 2 (the call of (b), each result into its local's register) and rule 27 (l) |
 | R9 | T3 holds for an `xblk` of a reference or scalar type only (above); a `tmp` whose child is an `xblk` of a fixed-size type names that `xblk`'s home (its register is the home's: no instruction, no `mov`), and a home is copied only where a rule copies it (a `bind` or `asg` of a fixed-size local, rule 27 (b), (d); rule 27 (h), (k) and (l); a `dyn`, rule 27 (i)); a `tmp` never copies |
 | R10 | `sea.hirl` holds no array expression: no `view`, `arr`, `row`, `dyn`, `fix`, `all`, no `rng` but a `forr`'s, no `idx` with an index that is not a scalar or with a `view` base, no `bin`, `un`, `cvt`, `powk`, `lib` or `emap` with an array operand, no `asg` with op ≠ `set` whose target is an array (not an element of one), no `tbind`, `tasg` or `tret` of a `lib ind2sub` with an array argument (L11 rewrites them), no `tasg` with an L6 store target or a `cv` other than 0 or 1 of a scalar (L12 rewrites them); from 4f also no `lib` of a reduction, `find`, `find_first` or `find_last` (L13, L14 rewrite them), the one exception being R16 (`sort`, `argsort`); from 4g no `proj` or `match` (L15, L16), and no `tasg` with a target that L17 rewrites (L12 rewrites it, each target through its `.l` local) |
-| R11 | an owned `tmp` written directly in a `block` that `sealoop` writes (an index vector or mask of L6, which a `bind` would retain when borrowed and so change rule 21's example) is a temporary of that block: released at the block's end, before its bound locals, the `tmp`s in the order of their records (an extension of T2; a borrowed one is not retained, rule 15 (k)); the counterpart of L4's `seq` rule: when such a `tmp` or `bind` of L6 (in no `xblk`) binds a `seq` (reachable from phase 6, when named arguments given in another order than the parameters' make a `seq`; no call of 4f can: a library call of 4f has one positional argument and at most one option after it, and error 115 rejects the reverse order), the `seq`'s `.t` locals are released at the block's end right after that `tmp` or `bind`'s own release (rule 16 (e)) |
+| R11 | an owned `tmp` written directly in a `block` that `sealoop` writes (an index vector or mask of L6, which a `bind` would retain when borrowed and so change rule 21's example) is a temporary of that block: released at the block's end, before its bound locals, the `tmp`s in the order of their records (an extension of T2; a borrowed one is not retained, rule 15 (k)); the counterpart of L4's `seq` rule: when such a `tmp` or `bind` of L6 (in no `xblk`; from 4h only the `xblk`s inside an enclosing `iblk` count, R26) binds a `seq` (reachable from phase 6, when named arguments given in another order than the parameters' make a `seq`; no call of 4f can: a library call of 4f has one positional argument and at most one option after it, and error 115 rejects the reverse order), the `seq`'s `.t` locals are released at the block's end right after that `tmp` or `bind`'s own release (rule 16 (e)) |
 
 *Notation* (with loop(N; K) of 4e-0). P is the position of the rewritten node; every node a rewrite
 writes takes P, except where said (an `rcnt` takes its `rng`'s position, the `ext` of a `dol` the
@@ -4369,6 +4515,62 @@ other `.l` locals are unchanged, and an L6 block, which stores `lv Vv`, is never
 (also of struct and record types) and F8, as before. Any violation is `BAD_RECORD`. `tools/seaval.bas`
 needs no change for 4g (no record, field or word is added).
 
+**What `sealoop` rewrites in 4h** (Decisions 53 and 55; §3.6.6 rule 37, whose LIR is unchanged).
+When `sea.hir` has more than one `#file` record, file 0 is the prelude and a function whose `fn`
+record's `pos` is in file 0 is a prelude function (rule 37). `sealoop` reads the whole file before
+it writes (as before), so it has every prelude body when it reaches a call.
+
+* **L18** (rule 37) `call P ty fid n` with children a1 … an whose callee F is a prelude function,
+  with parameters p1 … pn and k results (k 0 when F's result type is 1, m for a `ttuple` of m
+  results, else 1): `xblk P ty n` whose statements are `tmp Ai = ai` for i = 1 … n in order (Ai a
+  new `.l` local of pi's type; ai the argument as written, already of pi's type, since pass 2a
+  made every conversion explicit, and rewritten by L1–L17 like any expression), and whose value is
+  `iblk P ty k` with one child B, a copy of F's body `block` in which: (1) every node takes P (the
+  copied `block`s and the `cs` patterns included); (2) every `lv` of pi refers to Ai; (3) every
+  other local of F is replaced by a new `.i` local of the caller (Locals, above); (4) every `ret
+  P′ m V1 … Vm` becomes `iret P m V1 … Vm`; (5) every `call` of a prelude function in the copy is
+  itself rewritten by L18, so inlining is recursive (Decision 55). The whole `xblk` is then
+  rewritten by L1–L17 like any code of the caller (the copy's `fore` by L4, its `zeros` by L1, its
+  selection reads by L5, its element stores by L17, …). A `seq` whose value is the call keeps its
+  `bind`s, its value becoming the `xblk`. When every call is rewritten, `sealoop` drops every
+  prelude function (its records from `fn` to `end`) and renumbers the remaining functions densely
+  in their order, rewriting every `fid` field (`fn`, `call`, `inst`; lead decision L-v): no prelude
+  function is a LIR function (rule 37), and `sealower` requires dense `fid`s. A file with no
+  prelude function (every `--no-prelude` compilation, and every program that calls none of the
+  four, since pass 2b drops unreached functions) is written as before; with one, the `fid`s of the
+  program's functions after `.main` move down by the number of prelude functions dropped.
+  Example (the stage golden `inl_half`, §6.2): the hand-written two-file `sea.hir` of rule 37's
+  example (`fn half(x: f64) -> f64 { return x / 2.0 }` in file 0, `let y = half(3.0)` on line 1 of
+  file 1) gives in `.main` the locals `y` (1) and `.l1` (2, the parameter's `tmp`), the argument
+  `cf` at its own position, then at the call's position the `tmp` of `.l1`, the copy (`lv` of
+  `.l1`, `cf` 2.0, `bin div`, `iret` with k 1, its `block`), the `iblk` (`ty` 4, k 1) and the `xblk`
+  (`ty` 4, n 1), then `y`'s `bind`; `half` is dropped. Lowered as "Lowering of the `sea.hirl`
+  records" says, it gives rule 37's example byte for byte.
+
+Refinements of 4h (no record or field beyond `iblk` and `iret`; lead decision L-w: each reading
+makes an inline call behave exactly as the call it replaces):
+
+| # | Refinement |
+|---|------------|
+| R26 | **Inline `xblk`.** An `xblk` whose n statements are exactly one `tmp` per parameter, in order, and whose value is an `iblk` is an *inline `xblk`*. Its `ty` may be a `ttuple` (only as the child of a `tbind`, `tasg`, `tret` or `eval`, or as the value of a `seq` that is such a child, L12's `tbind` of `.l` locals included) or 1 (only under `eval`). It is owned exactly when its results are reference values, as a call is (rule 15 (k)). T1 holds for its `tmp`s: an `lv M` argument makes Ai another name for M, rule 37's "each parameter's register is its argument's register"; T2 releases its owned `tmp`s (owned argument temporaries) right after its value, in the order R27 gives (after the `mov`s of a `tbind`, before the stores of a `tasg`), as rule 15 (b) releases them after a call; T3 does not apply (its value is no `lv`): its destination is handed to the `iblk`. An `iblk` bounds every search for an enclosing node: within its body, T2's "innermost `xblk`", R11's and R22's "directly in a `block`" ("in no `xblk`") and R8's "directly in a `block`" stop at the `iblk`, so a `tmp` inside the body is never a temporary of an `xblk` outside the `iblk`, and an owned `tmp` directly in a `block` inside the body, with no `xblk` between it and the `iblk`, is R11's and R22's (released at that block's end and on the exits that leave it), whatever `xblk`s enclose the inline call. Validation: every statement of an inline `xblk` is a `tmp` and its value an `iblk` (`sealower`). |
+| R27 | **The value of an `iblk`** (the one statement of the inline destination rule; §3.6.6 refers to it). Without a destination its value is R1 … Rk, with no `mov`: so rule 15 (d)'s new register V of an `asg set` to a reference local is R1 (`release L`, `mov L R1`, as for a call), an `asg set` to a scalar `ref` parameter stores R1 as rule 2 stores a call's result there, and under a `tmp` (the inline `xblk` as an operand, a library argument, a `fix`, a `match` scrutinee, an argument of another inline call: `linspace(…) + 1.0`, `sum(linspace(…))`) L is another name for R1, with no `mov`, as T1 makes it for an `ifx` (rule 3). With a destination D of rule 2 or 3 (a `bind`, an `asg set` to a scalar local, an operand or arm register), `mov D R1` after `enddo B` (rule 37: "a destination of rule 2 receives it with `mov`"). This takes precedence over T3: when an `xblk` with a destination D has the value `lv L` and its `tmp L` binds an inline `xblk`, T3 does not apply, and the destination receives `mov D R1`. Under a `tbind` or `tasg` each component is stored exactly as rule 2 (d) and rule 15 (j) store a call's new result register for that target (a local, a `ref` parameter, a numeric element by scalar indices; `itof` for cv 1; a `_` that holds counts released, rule 15 (h)); under a `tbind` the `mov`s into the locals come first, then T2's releases of the owned argument `tmp`s, then rule 15 (h)'s releases of the `_` components; under a `tasg` the owned argument `tmp`s are released before the stores, as after a call. Under a `tret`, the releases of rule 16 (c), then `ret k R1 … Rk`; under an `eval`, each owned Ri released right after the statement (rule 15 (h)). |
+| R28 | **`.i` locals are ordinary locals.** They are declared by `bind`, `forr`, `tbind`, a `seq`'s `bind` or, for a loop variable that L4 rewrites, a `tmp`; they are assigned, indexed, compound-assigned and released (rule 16) exactly as source locals; R8's limits and `sealower`'s checks of `.l` locals do not apply to them (the prefix `.i` is not `.l`). |
+| R29 | **Exits of an `iblk`.** A `break` or `cont` inside an `iblk` names a loop inside it. An `iret` releases, after its values are owned, the bound locals of every enclosing block inside the `iblk`'s body (innermost first, rule 16 (c)), the hidden locals inside it (L4's H, an owned `match` scrutinee) and the owned `tmp`s of the blocks it leaves inside it (R22), never anything of the caller. Rule 16 (a): no releases at the end of a block whose last statement is an `iret`, nor at the end of the body block of an `iblk` with k ≥ 1 (never reached: `missing return`, LANGUAGE.md §8.1); the body block of an `iblk` with k = 0 ends with its releases and `exit B` unless its last statement is an `iret` (rule 37 (4)). Rule 15 (a)'s places that need an owned value include `iret`. |
+| R30 | **Rule 12 and an inline call.** The reads of an inline `xblk`'s `tmp`s are the arguments of the inlined call (rule 37 (1)), and rule 12 applies to them exactly as to a call's arguments: its scalar copy by evaluation order (`g(linspace(0.0, 1.0, n), h(ref n))` copies n into the parameter's register), and its protections (a)–(c) of reference and struct values when a later `tmp` of the same inline `xblk` holds a call whose roots include the read's root (`setdiff(v, grow(ref v))`: the first parameter is v as it was before `grow` ran). A `tmp` so protected names the protected copy (rule 12 (a)'s `mov T L` and `retain T`, (b)'s retained load, (c)'s temporary home), not M: T1's alias does not apply, and the copy is an owned `tmp` that T2 releases with the inline `xblk`'s other owned `tmp`s. Only a call after the inline `xblk` never needs them, because the `iblk` consumes its arguments before any later call of the statement (rule 12: "a value consumed before the call needs nothing"). The reads inside the body are of the copy's own locals, which no `ref` argument outside it reaches. |
+
+**What the passes validate in 4h** (in addition to the above; Decision 53, lead decision L-x).
+`sealoop`, on its input `sea.hir`: a prelude function has kind `fn` (not `elem`), no `ref`
+parameter, no `tret` in its body and a result type that is 1, a scalar, `str`, a dynamic array or
+a `ttuple` of those; the prelude's call graph has no cycle; a `call` of a prelude function has n
+equal to its np and each child's `ty` equal to its parameter's type (pass 2a made every conversion
+explicit). `sealower`, in addition to §3.5.9: an `iblk` only as the value of an inline `xblk`
+(R26: every statement a `tmp`, the value an `iblk`), its one child a `block`, k consistent with `ty`; an `iret` only inside an `iblk`, its k that
+of the innermost `iblk` and its values of the result types; no `ret` or `tret` inside an `iblk`; a
+`break` or `cont` inside an `iblk` only within a loop inside it; an `xblk` of a `ttuple` type or of
+type 1 only as R26 allows; the `fid`s dense (as before). `.i` locals need no check of their own.
+Any violation is `BAD_RECORD`. `tools/seaval.bas` reads the two records from `passes.txt` and
+needs no change.
+
 **Capacity.** `sealoop` counts `sea.hirl` as a whole: all its nodes against `SEA_LIM_NODES`
 (`program too large: nodes`), all its locals, the new `.l` locals included, against
 `SEA_LIM_SYMBOLS` (`symbols`), and all its types, the appended `tptr` types (and from 4f the type F8, R14) included, against
@@ -4378,7 +4580,10 @@ number of `par` and `loc` records of all the functions (counted while `sealoop` 
 plus the `.l` locals the rewrites add, and it is checked only when a rewrite adds a local, so a
 program without rewrites is never rejected on symbols; a program near the limit may see `program
 too large: symbols` from `sealoop` at the position of the rewritten node, although `seaname`
-accepted it (pass 2b keeps no running count of its `.j` locals and is not the model).
+accepted it (pass 2b keeps no running count of its `.j` locals and is not the model). From 4h
+the nodes L18 adds (the copies, the `tmp`s, the `xblk` and the `iblk`) count against
+`SEA_LIM_NODES` and its `.l` and `.i` locals against `SEA_LIM_SYMBOLS`, a limit reported at the
+position of the `call` being inlined.
 
 **Example** (the test `arr_rule30`, §3.6.6 rule 30's second example): `fn walk(v: f64[]) { for x in
 v { } … }`, whose `fore` is at 0:3:5. In `sea.hirl` the type table gains `tptr 11 4` after `tvec 10
@@ -4670,8 +4875,9 @@ inlines no call of a program's own function (the performance guarantee of LANGUA
 observable in a program's output); from phase 4 it inlines every call of a prelude function, in
 the canonical form of rule 37 (Decision 18). Until phase 6 the dump tests use only programs in which LANGUAGE.md §8.6 requires no
 inlining (no function called from exactly one call site, none that rule (c) covers, no elemental
-function); the prelude calls are tested by program tests and by `.lir1` dump tests built with
-the prelude (a `NAME.prelude` marker, §6.2), whose expected dumps follow rule 37.
+function); the prelude calls are tested by program tests, by `.hir`, `.hirl` and `.lir1` dump
+tests built with the prelude (a `NAME.prelude` marker, §6.2, Decision 57), whose expected dumps
+follow rule 37, and by stage goldens of hand-written two-file `sea.hir` (Decision 55).
 
 Rules 1–14 are the scalar subset of phase 1–3; rules 15–38 are the arrays, structs, strings,
 reference counts and copy on write of phase 4 (§8, sub-phases 4d–4h), each introduced by the
@@ -5889,10 +6095,11 @@ hoists, §5.2), so a dump shows every load.
     included), `mov R1 V1` … `mov Rk Vk` and `exit B`, R1 … Rk new registers numbered at the first
     such `mov`; a body whose function has no result ends with `exit B` unless its last statement is
     a `ret`; (5) `enddo B`. The call's value is R1 … Rk (owned like a call's results); a destination
-    of rule 2 receives it with `mov`. The callee's parameters are borrowed, as in a call. Example,
-    illustrative only (it is not a dump test: `std.sea` holds no `half`; the 4h dump tests of rule
-    37 are built with the real prelude, `NAME.prelude`, §6.2, their expected dumps derived from
-    these rules and the committed `std.sea` text) (were the prelude to hold `fn half(x: f64) -> f64 { return x / 2.0 }`, the program `let y =
+    of rule 2 receives it with `mov`. The callee's parameters are borrowed, as in a call. Example
+    (no program test, since `std.sea` holds no `half`: it is the stage golden `inl_half` of §6.2,
+    whose hand-written two-file `sea.hir` holds `half` in file 0, Decision 55; the other dump tests
+    of rule 37 are built with the real prelude, `NAME.prelude`, §6.2, their expected dumps derived
+    from these rules and the committed `std.sea` text) (were the prelude to hold `fn half(x: f64) -> f64 { return x / 2.0 }`, the program `let y =
     half(3.0)` on its line 1 would lower to):
 
     ```
@@ -5910,6 +6117,10 @@ hoists, §5.2), so a dump shows every load.
     ```
 
     (`y` is `f5`.)
+
+    From 4h `sealoop` writes this rule as its rewrite L18 with the records `iblk` and `iret`
+    (§3.5.9, Decision 53), and `sealower` lowers them as "Lowering of the `sea.hirl` records" says
+    (R26–R30); the LIR above is unchanged, and `inl_half` reproduces it byte for byte.
 
 38. **Data records of phase 4.** A `slay lab size n` record with its n `soff` records exists for
     each struct type (from 4g also each record type, lead decision L-m: an anonymous struct type,
@@ -5933,7 +6144,8 @@ rule 17's introduction.
   No instruction of its own.
 * `xblk`: its statements in order, then its value with the `xblk`'s destination (T3: the value's
   `tmp` local takes that register); then, right after the value, `release` of each of its owned
-  temporaries other than the value's, in the order of their `tmp` records (T2; rule 15 (k)). From 4f
+  temporaries other than the value's, in the order of their `tmp` records (T2; rule 15 (k)); an
+  inline `xblk` (from 4h) hands its destination to its `iblk`, as R27 says (the 4h bullet below). From 4f
   (R12) the destination also reaches a value that is an `ifx` (it is the `ifx`'s R of rule 3, a local's
   register included, with no `mov`; applied to every `ifx` whose parent is an `xblk`, which only L13
   writes) and a value `lv L` of a scalar `.l` accumulator bound by a `bind`
@@ -5995,6 +6207,18 @@ rule 17's introduction.
   the store of `lv Li` (cv 0) into a target L6 did not rewrite (an `asg`, or the `est` of an L17
   block whose value operand is `lv Li` itself) moves Li (no `retain`, no release at the block's
   end; R25).
+* (from 4h, §3.5.9 L18, R26–R30; rule 37) An inline `xblk`: its `tmp`s by T1 (rule 37 (1)), then
+  its `iblk`, then the release of its owned `tmp`s (T2, R26: in the order R27 gives, after the `mov`s of a `tbind`, before the stores of a `tasg`).
+  `iblk k`: `do B` (B the next block number, §3.6.4), its block, and for k = 0, unless the block's
+  last statement is an `iret`, the block's releases (rule 16 (a)) and `exit B`; then `enddo B`. Its
+  value R1 … Rk reaches its destination, its `tmp` parent or its statement as R27 says, the single
+  statement of that rule. Within the body the scope searches of T2, R8, R11 and R22 stop at the
+  `iblk` (R26). `iret k` of V1 … Vk: the values, owned (rule 15 (a): a borrowed one
+  `retain`ed); the releases of R29 (the bound locals of the blocks it leaves inside the `iblk`,
+  innermost first, the hidden locals and R22's `tmp`s inside it, nothing of the caller); `mov R1
+  V1` … `mov Rk Vk` (R1 … Rk new registers numbered at the first such `mov` of the `iblk`); `exit
+  B`. A `break` or `cont` inside the `iblk` names a loop inside it (rule 4); no `ret` or `tret`
+  stands inside it.
 
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8, 12, 23, 27 and 31), and their
 `slot` records come at the start of the function in that order (§3.6.3).
@@ -6091,7 +6315,7 @@ cell (where the table has one; else 0) starts with the pop expression below. Its
 * `rec <set> <code> <op> <pops> <field> …` defines a record:
   * `<set>`: `A` (`sea.ast` and `sea.res`: codes 1–49 in both, codes 50–63 only in `sea.res`,
     §3.4.1), `H` (every HIR file: `sea.hir1`, `sea.hir`, `sea.hirl`), `H1` (`sea.hir1` only), `HF`
-    (`sea.hir` and `sea.hirl`), `HL` (`sea.hirl` only, codes 72–87, §3.5.9), `L` (both LIR files),
+    (`sea.hir` and `sea.hirl`), `HL` (`sea.hirl` only, codes 72–89, §3.5.9), `L` (both LIR files),
     `LF` (`sea.lir` only);
   * `<code>`: its opcode number, unique within `A`, within `H H1 HF HL`, and within `L LF`;
   * `<pops>`: the number of nodes it pops: a sum of terms joined by `+` (no spaces), each a
@@ -7860,8 +8084,14 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     environment variable for the run; only `SEA_HEAP_CHECK` is allowed in a program case.
   * **`NAME.prelude`** (an empty marker file beside a `passes/NAME.sea`): the dumps of that test
     are built with the prelude (no `--no-prelude`; §3.6.6 rule 37), and stage.sh feeds the
-    passes the same way. Allowed only beside `.lir1` dumps (no `.lir` in phase 4, §3.6.6
-    "Phase-4 dump tests") and an optional `.out`.
+    passes the same way (its pairs read the committed goldens; from 4h it skips the pair `hir1 →
+    hir` when `NAME.hir1` is absent, and the pair `hir → hirl` when `NAME.hir` is absent and
+    `NAME.prelude` exists, so that a dump starting at `.hir` or `.hirl` is not a missing golden
+    input). From 4h (Decision 57) allowed
+    beside `.hir`, `.hirl` and `.lir1` dumps and an optional `.out`, and beside no other kind (no
+    `.lir` in phase 4, §3.6.6 "Phase-4 dump tests"); `run.sh` and `cross_pack.sh` build such a
+    test without `--no-prelude` and compare the `#file` record of file 0 of its dumps as `#file
+    std.sea` (the goldens are written so; the driver still writes the install path, §2.2).
   * **`tests/accept/`** (§6.3): the phase-4 acceptance programs, run by `tests/accept4.sh`
     (Mac) and as cross cases (§6.6.1).
   The tests each sub-phase adds (each item at least one test; "both orders" and "each" mean one
@@ -8197,10 +8427,65 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
       reference offsets; `sea_arr_new_s` of 3 elements and of 0, `sea_arr_unique` of a shared one
       (count 2), `sea_free` of each, the heap check 0. If it fails, the fix is in that target's
       `rt_arr.s` or `rt_mem.s`.
-  * **4h**: `prel_*` programs for `linspace` (each case of LANGUAGE.md §10.3: n < 1, n = 1,
-    `d1 == -d2` with even and odd n1, `d1 == d2`, the general formula; expected bits derived
-    from the formula), `bincount` (its `INDEX_OOB` at the program's line), `meshgrid`,
-    `setdiff`; `.lir1` dumps with `NAME.prelude` of rule 37; the W5 acceptance (§6.3).
+  * **4h** (Decisions 53–57; the expected outputs from LANGUAGE.md §10.3, §10.6, §10.7 and the
+    rules, never from the implementation): two generators in `tests/vectors/` (run by `uv run`
+    under `timeout 120`, committed with their outputs): `prel4h_cases.py`, an independent model
+    of LANGUAGE.md §10.3, §10.6 and §10.7 (`linspace` in IEEE doubles by its three cases,
+    `setdiff` by sorted set difference, `bincount` by counting, `meshgrid` by indexing, printed as
+    Sea's `printf` prints), and `dump4h_cases.py`, the dump goldens record by record from §3.5,
+    §3.5.9 as amended, §3.6.6 and the committed `std.sea` text. Every program runs under the heap
+    check and on both targets.
+    * programs: `prel_linspace` (n = 0 and n < 0 empty; n = 1 `[d2]`; `d1 == -d2` with n1 even
+      and odd, `(-1.0, 1.0, 5)` and `(-1.0, 1.0, 4)`; `(0.0, 0.0, 4)` printing `0 -0 0 0`;
+      `d1 == d2`; the general formula, `(0.0, 1.0, 11)`; `(-inf, inf, 3)` printing `-Inf 0 Inf`
+      as Sea spells them; W5's `linspace(0.4, 1.6, 25)`; untyped and `i64` arguments converted);
+      `prel_bincount` (repeats, an empty `idx`, n = 0, a fixed-size literal argument converted by
+      pass 2a's `dyn`, an owned argument, the result modified afterwards); `prel_meshgrid`
+      (Decision 54: `let (X, Y) = meshgrid(x, y)` with `-0.0` and `nan` in x copied bit for bit, an
+      `i64[]` y converted, an empty x; `(A, B) = meshgrid(…)` into existing `var`s, their old
+      values released; `return meshgrid(x, y)` from a user function; `let (X, _) = …`);
+      `prel_setdiff` (duplicates, negatives, unsorted input, an empty a, an empty b written `[]`,
+      a range argument, `setdiff(0..6, [0, 5])` printing `1 2 3 4`, everything removed);
+      `prel_ctx` (a prelude call as an `eval` statement, as an index base, as the vector of a
+      `for`, in an `if`-expression arm, in a `while` condition re-run each iteration, two in one
+      expression, inside a user function, inside a loop left by `break`, the argument order
+      `linspace(f(), g(), h())` printing `f g h`, and `setdiff(v, grow(ref v))` with `grow`
+      appending to v, which removes from the old v, R30); `heap_prel_*` (owned argument temporaries, an
+      `eval` of each function, `_` components, the early returns of `linspace` for n < 1 and n =
+      1, a call in a loop body left by `break`; heap check 0).
+    * run-time errors (status 1, standard output flushed first, the program's line of the call):
+      `r_prel_bincount_oob` (`index 3 out of bounds for dimension 0 of extent 2`, after printed
+      output), `r_prel_bincount_neg_idx` (`index -1 …`), `r_prel_bincount_fn` (the call inside a
+      user function: that call's line), `r_prel_bincount_size` (n = −2: `invalid array size -2`,
+      L-y), `r_prel_linspace_size` (n = 3 000 000 000: `invalid array size 3000000000`, L-y).
+    * compile errors (positions from the `at` words of the error table, L-t, L-s): 226
+      `linspace(0.0, 1.0)`; 242 `linspace(0.0, 1.0, 2, 3)`; 201 `linspace(0.0, 1.0, 2.5)`,
+      `bincount([1.0], 2)` (`expected i64[], found f64[1]`), `meshgrid(A, y)` with a matrix A and
+      `setdiff([1.5], [1])` (`expected i64[], found f64[1]`); 255
+      `bincount(ref v, 2)` (`'idx' is not a ref parameter`); `not supported yet: named arguments`
+      for `linspace(0.0, 1.0, n: 3)`; 212 for a program's `fn bincount`; 213 for `let setdiff =
+      1`; and the close-out tests of the after-phase-4 rows that had none (L-z): `err_ns_matmul`
+      (`A @ B` of two matrices: `not supported yet: @`), `err_ns_lib_format`, `err_ns_lib_solve`,
+      `err_ns_lib_figure`.
+    * dumps (`tests/passes/`): with `NAME.prelude` (Decision 57) `prel_bincount` (`.hir`, `.hirl`,
+      `.lir1`, `.out`: one call, the copy's element loop, `filled` and compound element store
+      through L4, L2 and rule 19) and `prel_meshgrid_tbind` (`.hirl`, `.lir1`, `.out`: a
+      two-result inline call under `tbind`); stage-only goldens of hand-written two-file `sea.hir`
+      (`.hir` → `.hirl` → `.lir1`, no `.sea`, Decision 55): `inl_half` (rule 37's example, its
+      `.lir1` byte for byte rule 37's text), `inl_nested` (a prelude function calling another),
+      `inl_void` (k = 0: `exit B` before `enddo B`, under `eval`), `inl_multi` (k = 2 under a
+      `tbind`, a `tasg` with a cv 1 component and a `ref` parameter target, a `tret`, a `_`),
+      `inl_loop_ret` (an `iret` inside an element loop: L4's H and the copy's array local released
+      before `exit`), `inl_owned_arg` (an owned argument released after the `mov`s, R26); without
+      the prelude `res_noprelude_pnames` (`.res`: `linspace` resolved as `rname … none 0`, L-s).
+    * the driver: one `tests/driver_check.sh` case, `sea build --no-prelude` of a program calling
+      `linspace` printing `undeclared name 'linspace'` with status 1 (§2.2).
+    * the acceptance: `tests/accept/w5_stats.{sea,keys,wl}` (`first_dev,mean_cold,std_cold,
+      hist_counts`; `w5_tolerance_mc`; §6.3), its text Appendix D's for what the four keys need
+      (lead decision L-aa: the struct, `dims`, the constants, the validation `match`, the sampling
+      loop, `uTop` and `Top`, `stack_gap`, `lcg_fill`, the cold statistics, `bin`, `inRange` and
+      `counts`), followed by the `printf` JSON of §6.3 and nothing else on standard output;
+      `make test-accept` on the Mac and the cross case on the host.
 
 ### 6.3 Workload acceptance
 
@@ -8643,7 +8928,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4g-1 | **Strings, `match`, `error`, `args`** (the first sub-step of 4g, Decision 47; 4g's one specification step, agreed 2026-10-23, is Decisions 44–48 with the `sea.hirl` refinements R17–R25 and the `sealoop` rewrites L15–L17 of §3.5.9, §3.6.6's LIR unchanged): §3.4.2's `rcns` with lead decisions L-f and L-g (`match` no longer a skipped region), every `str` construct of the phase-rule row 4g-1 (§2.6.2, "Readings fixed by 4g"), element-wise `str` operators (Decision 45), `str` and `lower` (Decision 46), `error`, `args`, `sort`/`argsort` of a `str` vector in programs (the runtime path is 4f's, Decision 40); rules 15 (f), (h), (i) and the rest of 15 and 16 for `str`, 26 (`str` literals), 28 (the retains of `str` elements), 30 (`str` elements), 32–35; L16, L17 for `str` elements, the `str` cases of L2–L14, R17 (for `str`), R20, R22, R25. No contract file changes (§0); `layout` is not built before 4g-2 (§2.6.3). Work packages, each owning its files: **T1a** spec-derived `programs/` and `errors/` of 4g-1 (`tests/programs/{str_,match_,args_,heap_str_,sort_str}*`, `tests/errors/*` new, the changed and retired goldens of §6.2, `tests/vectors/str4g_cases.py`, `tests/CORPUS.md`; T1a alone edits `tests/CORPUS.md`); **T2a** `tests/vectors/dump4g_cases.py` (its 4g-1 part), `res_gen.py`'s `rcns`, the 4g-1 goldens of `tests/passes/` and the changed `res_*` dumps of 4g-1 (T2a reports its rows to T1a); **front end** `passes/seaname/*`, `passes/seacheck/*`, `passes/seaexpand/seaexpand.bas` and their `build.list`s; **sealoop** `passes/sealoop/*` and its `build.list` (L16, L17 for `str`, the `str` extensions, R20's count; a new file in its own line range); **sealower** `passes/sealower/*` and its `build.list` (rules 32, 34, 35, 15 and 16 for `str`, R17, R20, R22, R25 and their validation); then the size gate after 4g-1 (§2.7) | the 4g-1 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-1 dumps holds, the agreed examples of rules 15, 26, 30 (the first), 32, 33 and 35 byte for byte; every earlier test passes, the changed goldens re-derived from the spec (lead decision L-i); `make test` and `make cross` pass; the gate is measured and recorded in §2.7, and if `sealower` (or `sealoop`, `seacheck`) fails it, a relief is specified and agreed with the user before any 4g-2 code |
 | 4g-2 | **Structs, records, projection** (the second sub-step of 4g, Decision 47, after the gate): §3.4.2's `rtst`/`rtfd`, `rslit` and the struct declaration checks; struct items, types, literals, fields, projection (L15), struct arrays and their literals, records (Decision 48), fixed-size arrays of `str`, struct and record elements (types, locals, parameters, `ref` parameters, results, tuple components, `dyn`/`fix`), the phase-rule row 4g-2 with its errors (§2.6.2, "Readings fixed by 4g"); rules 15 (g), (j) and 16 for structs, 18 (field folding, whole struct elements), 19 (paths through fields, L17), 26 (struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29 (L15), 30 (struct elements), 31 (field paths), 38 (`slay`, also of records, lead decision L-m); R18, R19, R21, R23, R24 and the struct cases of L2–L14. Work packages, as in 4g-1: **WP-LAYOUT** (first) `passes/lib/layout.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3), and the `passes/lib` module list of `sea/CLAUDE.md` (`io diag tables limb f64emu fltlit`, plus `layout`); **T1b**, **T2b** (`tests/programs/{struct_,str_fixed,records,heap_struct_,manualD_part1}*`, `tests/errors/manualD_part1_badopt.*`, `tests/errors/r_str_fix.*` and the other 4g-2 errors, the retired and re-derived goldens of §6.2, `tests/vectors/manualD_part1.py`; the dumps of rules 18, 27 and 29, L15, L17, R19, the `.res` of §3.4.2); **front end b**, **sealoop b** (its `build.list` gains `layout`; L15, L17's field paths and aggregates, L12's routing of field targets, the aggregate cases), **sealower b** (its `build.list` gains `layout`; rules 18, 27, 31, 38, 15 (g)/(j), 16, R18, R19, R21, R23, R24): the same files as in 4g-1; **WP-RT** `tests/rt/arm64_macos/rt_arr_new_s_empty.*` and `tests/rt/x86_64_linux/rt_arr_new_s_empty.*` (and that target's `runtime/*/rt_arr.s` or `rt_mem.s` only if the test fails) | the 4g-2 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-2 dumps holds, the agreed examples of rules 18 (the second), 27 and 29 byte for byte; `make test-lib` passes `layout`; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error at line 16; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_arr_new_s_empty`; every earlier test passes (the changed goldens re-derived); `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
 | 4h-0 | **The `sealower` relief: a compaction with no change of behaviour** (Decisions 49–52 and lead decisions L-o–L-r, agreed 2026-10-23; before the 4h specification's code): the patterns C1–C6 of §2.7 (fall-through entries and tail calls, merged `REM`s with every comment's text kept, the constant and entry lookups and the register text as multi-line `DEF` functions, validation predicates, one shared child-evaluation loop), about 600 lines freed; every part file keeps its line range, new lines are numbered between existing ones, each new `DEF FN` gets a header comment in `sl0main`'s table of helpers, and no array letter is added (L-q); only `passes/sealower/*` and the docs text change: no contract file, intermediate format, `sealoop`, driver or test script (L-r). Work packages, by one `sealower` implementer owning `passes/sealower/*`, in sequence: **WP-0** (first, scratch only, in the session scratchpad and not committed) a Baysick prototype of the multi-line string `DEF` of C4 and the lookup `DEF` of C3 (reading and writing the global register table and its counter, the consts table, the overflow flag) confirming their semantics and speed, and if it fails C3 and C4 become C1-style entry lines; **WP-1** C1, C2, C3, C5, C6; **WP-2** C4 | L-p's proof holds: `--emit lir1` of every `tests/programs` program, every run-phase `tests/errors` program and `tests/accept/w4_sor.sea` byte-identical before and after (a scratch harness, not committed), every stage pair `sealower hirl lir1`, `make test` and `make cross`; `make check-limits` measured and recorded in §2.7 ("Measured after 4h-0", with the free letters); the gate after 4h-0 applied (§2.7): if the saving came in short, the gate decides on reserve V, specified and agreed with the user before any 4h code |
-| 4h | **Prelude and W5; close-out** (after 4h-0 and its gate; the first step specifies rule 37 in `sealoop` with its `sea.hirl` records, Decision 29, keeping `sealower`'s part to two new records, the inline block (its type and result count) and its return, which `sealower` lowers to `do`/`enddo` and to "values owned, releases down to the block's scope mark, `mov`s, `exit`", while `sealoop` does everything tree-shaped: it drops the prelude `fn`s, inlines recursively, gives every copied node the call's `pos`, renames the callee's locals as new locals of the caller and binds the parameters with `tmp`s (T1); this keeps §2.7's 150–300 for `sealower` true): prelude inlining (Decision 18, rule 37), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` (§2.5), `tests/accept/w5_stats.*` (§6.3), the sizes of §2.7 measured, the phase-rule table reduced to its after-phase-4 form (§2.6.2) with the tests of the removed words | the phase-4 "done when" above holds on both targets; `make test` and `make cross` pass; the measured sizes are recorded in §2.7 and the gate after 4h applied |
+| 4h | **Prelude and W5; close-out** (after 4h-0 and its gate; specified 2026-10-24, Decisions 53–57 and lead decisions L-s–L-ab: rule 37 as the `sea.hirl` records `iblk` and `iret`, `sealoop`'s rewrite L18 and the refinements R26–R30 of §3.5.9, §3.6.6's LIR unchanged; `passes.txt` HL 88–89): prelude inlining (Decision 18, rule 37, recursive, Decision 55), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` with the signatures of LANGUAGE.md §10 (Decision 54; §2.5), the readings of §2.6.2 ("Readings fixed by 4h"), `tests/accept/w5_stats.*` (§6.3), the phase-rule table in its after-phase-4 form (§2.6.2) with the close-out tests, the sizes of §2.7 measured. Work packages, each owning its files: **WP-FE** `passes/seaname/*` (L-s), `passes/seacheck/*` only if a prelude body exposes a defect, and their `build.list`s; **WP-STD** (in parallel) `std/std.sea` only: the four functions with LANGUAGE.md's parameter names, written as §2.5 and L-t, L-x, L-y say (each result allocated first in `linspace` and `bincount`; `meshgrid` by loops; `setdiff` by `sort`, a merge and a mask selection; `bincount` by `filled(0, n)` and `c[v] += 1` over `for v in idx`), frozen when WP-FE and WP-STD are done; then **T1** `tests/programs/{prel_,heap_prel_}*`, `tests/errors/{err_prel_,r_prel_,err_ns_matmul,err_ns_lib_}*`, `tests/accept/w5_stats.*`, `tests/vectors/prel4h_cases.py`, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump4h_cases.py`, `tests/vectors/res_gen.py` (the prelude names), the dump goldens of §6.2's 4h list in `tests/passes/`, `inl_half` first (T2 reports its CORPUS rows to T1); **WP-LOOP** `passes/sealoop/*` (L18, the `.i` locals, dropping and renumbering, validation, capacity; a new file in its own line range) and its `build.list`; **WP-LOWER** `passes/sealower/*` (`iblk`, `iret`, R26–R30, validation, the scope searches of T2, R8, R11 and R22 stopped at an `iblk`, so its frame scan for an enclosing `xblk` stops there; no new array letter, L-ab) and its `build.list`; **WP-TOOLS** `tests/run.sh` and `tests/cross_pack.sh` (`NAME.prelude`: such dumps and `.out` built without `--no-prelude`, the kinds `.hir`, `.hirl`, `.lir1` and `.out` only, the file-0 `#file` record compared as `#file std.sea`, Decision 57), `tests/cross_run.sh` if its comparison needs the same, `tests/stage.sh` (the two skips of §6.2: the pair `hir1 → hir` when `NAME.hir1` is absent, the pair `hir → hirl` when `NAME.hir` is absent and `NAME.prelude` exists) and `tests/driver_check.sh` (§6.2's case). WP-LOOP and WP-LOWER work against T2's goldens through `stage.sh`. Then the gate after 4h (§2.7) and the close-out | the phase-4 "done when" above holds on both targets (W4 since 4d; W5's `first_dev`, `mean_cold`, `std_cold` and `hist_counts` by `compare.py --keys` on the Mac and byte identity on the host); the 4h tests of §6.2 pass on both targets with no leak under the heap check; every stage pair holds, `inl_half.lir1` equal to rule 37's example text; `run.sh` runs the `NAME.prelude` cases and rejects a `NAME.prelude` beside another kind; `driver_check.sh` passes; every earlier test passes; `make check-contracts`, `make test` and `make cross` pass; the measured sizes and free letters are recorded in §2.7 and the gate after 4h applied (`sealower` and, by Decision 56, `sealoop` and `seacheck`), a failing program getting a relief agreed with the user before phase 5's code |
 
 ## 9. Decisions (agreed)
 
@@ -9187,3 +9472,81 @@ part file's line range and the insert-between numbering (§2.6.3), each new `DEF
 comment in `sl0main`'s table of helpers, and no array letter is used (`C S X` stay free; §8 row
 4h-0); L-r, 4h-0 touches only `passes/sealower/*` and the text of the docs, with no contract file,
 intermediate format, `sealoop`, driver or test script changing (§8 row 4h-0).
+
+53. **How rule 37 is written in `sea.hirl`** (no record was a block with a value that can be left
+    early: `ret` returns from the caller, an `xblk` has no exit, a `block` no value). Options: (a)
+    **two new records, `iblk` (code 88: the callee's body block, lowered `do`/`enddo`, its value R1
+    … Rk, with its type and result count) and `iret` (89: the values owned, the releases down to the
+    `iblk`, the `mov`s, `exit`), the `iblk` always the value of an `xblk` whose statements are the
+    parameter `tmp`s; `sealoop`'s new rewrite L18 does all the tree work, `sealower` gains only
+    their lowering; `passes.txt` gains the two records**; (b) the same records with the `iblk`
+    holding the parameter `tmp`s itself (pops n + 1), with its own release rule for owned arguments
+    (one record fewer per call, a second copy of the `xblk`'s release logic in `sealower`); (c) no
+    record: `sealoop` writes return-free bodies with a result local and flags (no `do`/`exit`, a
+    change to rule 37's agreed LIR, reopening Decision 29). **Decided: (a)** (the user,
+    2026-10-24): the argument temporaries reuse T1 and T2 unchanged, rule 37's example comes out
+    exactly, and `sealower`'s part is the smallest, as the 4h-0 guidance agreed. Affects
+    `passes.txt`, §3.5.4, §3.5.9 (the table, L18, R26–R30, the validation), §3.6.6 (rule 37, the
+    lowering of the records), §3.9.
+54. **The signatures of the prelude functions** (LANGUAGE.md left `meshgrid`'s element type and the
+    argument types of `setdiff` and `bincount` implicit). Options: (a) **one signature each, with
+    LANGUAGE.md's parameter names: `linspace(d1: f64, d2: f64, n: i64) -> f64[]`, `meshgrid(x:
+    f64[], y: f64[]) -> (f64[,], f64[,])` (an `i64[]` argument converted element by element,
+    LANGUAGE.md §4.2), `setdiff(a: i64[], b: i64[]) -> i64[]`, `bincount(idx: i64[], n: i64) ->
+    i64[]`**; (b) `meshgrid` also on `i64` vectors giving `i64[,]`, which one prelude `fn` cannot
+    be (Sea has no overloading), so a compiler intrinsic (a `seacheck` overload and a `sealoop`
+    rewrite, about 100 lines in two tight passes). **Decided: (a)** (the user, 2026-10-24): all four
+    stay in the prelude as §2.5 agreed, at no compiler cost; W4's integer grid is written by
+    broadcasting. Affects LANGUAGE.md §10.3, §10.6, §10.7; §2.5.
+55. **Recursive prelude inlining in 4h** (the committed prelude has no call from one prelude
+    function to another). Options: (a) **built now, as rule 37 says, and tested with stage-only
+    hand-written two-file `sea.hir` goldens (`inl_nested`)**; (b) deferred to phase 6, a prelude
+    call inside the prelude rejected as `BAD_RECORD` until then. **Decided: (a)** (the user,
+    2026-10-24): about 20–40 `sealoop` lines, no part of the agreed rule left unbuilt, and phase 6
+    reuses it. Affects §2.5, §3.5.9 (L18), §6.2.
+56. **`sealoop`'s size gate** (its v1 margin 450–467 at the recorded upper ends, over 9 000 under a
+    × 1.5 stress of phases 6 and 7). Options: (a) **`sealoop` joins the gate after 4h (built ≤ 7 000,
+    built + 2 600 ≤ 9 000, at least 2 free letters), its stress line recorded and decided at the
+    gate after phase 6 together with the fusion seam**; (b) phase 7's fusion decided now as a pass
+    of its own in front of `sealoop`; (c) a behaviour-neutral compaction of `sealoop` before 4h's
+    code (4h-0's patterns, about 300–450 lines). **Decided: (a)** (the user, 2026-10-24): 4h's own
+    increment was already counted in `sealoop`'s recorded margin, and the phase-6 gate measures the
+    phase that brings the risk. Affects §2.7, §8 (row 4h).
+57. **How rule 37's dumps are tested against the real prelude** (`NAME.prelude` allowed only
+    `.lir1`, and every intermediate file holds the prelude's `#file` record with its install
+    path). Options: (a) **`NAME.prelude` allowed beside `.hir`, `.hirl`, `.lir1` and `.out`, the
+    runners comparing the file-0 `#file` record of such a dump as `#file std.sea` (the goldens
+    written so), the driver unchanged**; (b) `.lir1` only, with the same normalization, `sealoop`'s
+    rewrite stage-checked only by the hand-written goldens; (c) the driver writes the prelude's
+    `#file` record as `std.sea`, a change to §2.2's agreed stream. **Decided: (a)** (the user,
+    2026-10-24): both programs of pass 3a are stage-checked on the real prelude, and only test
+    scripts change. Affects §6.2, `tests/run.sh`, `tests/cross_pack.sh`.
+
+**Lead decisions of 4h** (2026-10-24, within Decisions 53–57, each taken because one answer is
+clearly right, to be reported to the user; each is written into its normative section): L-s, the
+prelude's items (file 0 of a stream with more than one `#file` record) are exempt from 212, as
+LANGUAGE.md §3.3 says, and the four prelude names resolve only as entered items, so that with
+`--no-prelude` they are `undeclared name` as §2.2 says, while a program item with such a name
+stays 212 and a local 213 (§2.6.2 "Readings fixed by 4h", §3.4.1); L-t, prelude calls are checked
+as ordinary calls (226, 242, 201, 255; named arguments by the phase rule until phase 6), and
+`std.sea` uses LANGUAGE.md §10's parameter names, which those messages expose (§2.5, §2.6.2); L-u,
+the callee's locals become `.i` locals of the caller, ordinary in every respect and numbered after
+the `.l` locals, `.l`'s restrictions staying intact for `sealoop`'s own temporaries (§3.5.4,
+§3.5.9 R28); L-v, `sealoop` drops the prelude functions and renumbers the rest densely, because
+`sealower` requires dense `fid`s and no prelude function is a LIR function (§3.5.9 L18); L-w, the
+order and ownership details of R26, R27, R29 and R30 (owned arguments released in the order R27 gives, after the `mov`s of a `tbind` and before the stores of a `tasg`,
+an `iblk` without a destination yielding R1 … Rk, rule 2 (d)'s path for `tbind` and `tasg`, no
+end-of-block releases after an `iret`), each the reading that makes an inline call behave as the
+call it replaces (§3.5.9); L-x, a prelude function's result types are void, scalars, `str`,
+dynamic arrays or tuples of those, rule 37's `mov` covering only register values, and `sealoop`
+rejects others, which phase 6 specifies with LANGUAGE.md §8.6 (§2.5, §3.5.9); L-y, every prelude
+error has its message: `bincount` with n < 0 or above 2³¹ − 1 and `linspace` with n above 2³¹ − 1
+are `invalid array size n`, a too large `meshgrid` result is `out of memory`, all at the program's call line
+(LANGUAGE.md §10.3, §10.7; §2.6.2); L-z, the close-out adds one test per after-phase-4 row that has
+none (`@`, `format`, `solve`, `figure`), and no test names the four removed words, so none is
+retired (§2.6.2, §6.2); L-aa, `w5_stats.sea` is Appendix D's text for what its four keys need,
+followed by the `printf` JSON of §6.3 and nothing else on standard output (§6.2); L-ab, neither
+`sealower` nor `sealoop` takes more than its spare array letters (`sealower` none, the `iblk` stack
+living in its existing block tables; `sealoop` at most one, leaving at least 2) (§2.7, §8).
+*For the user's information:* by LANGUAGE.md §10.3 rule 2, `linspace(0.0, 0.0, 4)` is `[0, -0, 0,
+0]`; the reference `common.mlinspace` agrees, and a test pins it.

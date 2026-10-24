@@ -53,8 +53,13 @@ into `seaval`, rule 36's composites into `sealoop`, a middle HIR→HIR pass), th
 through 4h, gates after 4h-0, 4h, phase 6 and phase 8. **4h-0 is done**: `sealower` 6 304 built
 lines (690 saved; the multi-line `DEF` functions `FNQ`, `FNE`, `FNR$`; 3 free array letters),
 proved neutral by byte-identical `sea.lir1`, and the gate after 4h-0 passed (6 604 ≤ 7 000 with
-4h, v1 7 704, stress 8 254; reserve V not needed), DESIGN.md §2.7 "Measured after 4h-0". **Next is
-the 4h specification** (rule 37 in `sealoop`, `sealower` limited to the inline block and its return).
+4h, v1 7 704, stress 8 254; reserve V not needed), DESIGN.md §2.7 "Measured after 4h-0". **4h**
+(prelude inlining, `linspace`/`meshgrid`/`setdiff`/`bincount`, W5, the close-out of phase 4) **is
+specified** (Decisions 53–57, lead decisions L-s–L-ab: rule 37 as the `sea.hirl` records `iblk` and
+`iret` (`passes.txt` HL 88–89), `sealoop`'s rewrite L18 with the `.i` locals and recursive inlining,
+the refinements R26–R30 in `sealower`, one signature per prelude function, `NAME.prelude` beside
+`.hir`/`.hirl`/`.lir1`/`.out`, `sealoop` in the gate after 4h; DESIGN.md §0, §2.5, §2.6.2, §2.7,
+§3.5.9, §3.6.6, §6.2, §8, §9). **Next is the 4h build.**
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
