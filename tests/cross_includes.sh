@@ -8,7 +8,7 @@
 #                   include/runtime.inc Sea is checked against (default: the
 #                   parent of the Sea repository, Sea being Baysick's submodule)
 #
-# Packs Makefile.linux, include/limits.inc, errors.inc, rt.inc,
+# Packs Makefile.linux, include/limits.inc, errors.inc, rt.inc, math_tables.inc,
 # tests/include_check_x86_64.s and tests/include_asserts.inc, with Baysick's two
 # include files, into a local temp directory, streams it as tar into ONE ssh call
 # that unpacks it into a remote mktemp -d directory (removed on exit; HUP/INT/TERM/
@@ -53,7 +53,7 @@ B=$TMP/bundle
 if ! mkdir -p "$B/baysick/include" "$B/baysick/sea/include" "$B/baysick/sea/tests" ||
    ! cp "$BAYSICK/include/limits.inc" "$BAYSICK/include/runtime.inc" "$B/baysick/include/" ||
    ! cp "$ROOT/Makefile.linux" "$B/baysick/sea/" ||
-   ! cp "$ROOT/include/limits.inc" "$ROOT/include/errors.inc" "$ROOT/include/rt.inc" "$B/baysick/sea/include/" ||
+   ! cp "$ROOT/include/limits.inc" "$ROOT/include/errors.inc" "$ROOT/include/rt.inc" "$ROOT/include/math_tables.inc" "$B/baysick/sea/include/" ||
    ! cp "$ROOT/tests/include_check_x86_64.s" "$ROOT/tests/include_asserts.inc" "$B/baysick/sea/tests/"; then
     echo "cross_includes.sh: packing the files failed" >&2
     exit 2
