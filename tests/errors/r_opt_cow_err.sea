@@ -1,0 +1,8 @@
+// r_opt_cow_err -- a loop storing into an array another variable shares, printing both, with an index
+// error at i = 3: the other variable kept its values (4.5, 5.5)
+var a = filled(1.0, 3)
+var b = a
+for i in 0..5 {
+    b[i] = f64(i) + 0.5
+    printf("%g %g\n", a[i], b[i])
+}

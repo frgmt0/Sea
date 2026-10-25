@@ -1,0 +1,7 @@
+// r_opt_oob_iter -- a loop prints a line per iteration, then A[1, j] is out of bounds at j = 4 (dimension 1,
+// extent 4): the lines before, then the error (LANGUAGE.md 5.4, 9.2)
+let A = ones(3, 4)
+for j in 0..6 {
+    printf("col %d\n", j)
+    printf("%g\n", A[1, j])
+}

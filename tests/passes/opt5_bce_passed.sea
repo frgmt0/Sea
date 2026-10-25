@@ -1,0 +1,15 @@
+fn twice(v: f64[], w: f64[], n: i64) -> f64 {
+    var s = 0.0
+    for i in 0..n {
+        let j = i * 5 % len(v)
+        s = s + v[j] * v[j]
+        s = s + w[j]
+    }
+    return s
+}
+let a = [1.0, 2.0, 3.0]
+let b = [4.0, 5.0, 6.0, 7.0]
+printf("%g %g\n", twice(a, b, 4), twice(b, b, 2))
+// opt5_bce_passed -- DESIGN.md 5.8 T1 with F4: the first check of v[j] (j unknown) stays and
+// proves the second (deleted); it proves nothing for w[j] (another array: kept). T2 leaves the
+// `%` by a non-constant; T3 then shares the header and element loads (p1 is a private base).

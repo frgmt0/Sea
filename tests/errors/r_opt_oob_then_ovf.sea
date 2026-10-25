@@ -1,0 +1,8 @@
+// r_opt_oob_then_ovf -- the same with v[i] first in the body: the index error is reported (5.4, 6.5)
+let v = filled(1, 4)
+let x = 9223372036854775804
+for i in 0..6 {
+    let u = v[i]
+    let t = x + i
+    printf("%d %d\n", t, u)
+}

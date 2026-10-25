@@ -1,0 +1,38 @@
+#sea 1
+#target arm64-macos
+#file ra5_ovf.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 8 8
+li i1 #000000007FFFFFFF
+li i2 1
+iadd i3 i1 i2
+li i4 #000000007FFFFFFE
+li i5 1
+iadd i6 i4 i5
+imulc i3 i3 i6 0:2
+sa p7 s1
+sti i3 p7 - 0 0
+sti i6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:3 0 2 p8 p7
+imulc i6 i3 i6 0:5
+sa p9 s2
+sti i6 p9 - 0 0
+la p10 d2
+rcall sea_printf 0:6 0 2 p10 p9
+ret 0
+endfunc
+fmt d1 6
+ftext ok
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 4
+ftext unreached
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

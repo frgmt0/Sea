@@ -1,21 +1,25 @@
 10 REM ====================================================================================
 12 REM seagen_a64 -- Sea pass 4 for arm64-macos: sea.lir -> sea.s (DESIGN 2.1, 3.6, 4.6, 4.8,
-14 REM 4.9). Built as DESIGN 2.6.3: this file and a64data.bas (lines 1-59999), the modules io
-16 REM diag tables, the DATA blocks errors exits consts entries records, 99999 END.
+14 REM 4.9, 4.9.2). Built as DESIGN 2.6.3: this file and a64data.bas (lines 1-59999), the modules
+16 REM io diag tables ralloc, the DATA blocks errors exits consts entries records, 99999 END.
 18 REM Reads sea.lir twice: pass A collects every function's parameter and result classes (a
 20 REM call needs its callee's, even when it discards the results), pass B writes sea.s. Each
-22 REM function is buffered and swept three times: mode 0 counts the lines it will need (more
-24 REM than 240000 instructions do not fit the +-1 MiB conditional branches: the far form,
-26 REM b.<inverse> 9f / b <label> / 9:), mode 1 writes the code, mode 2 the cold blocks
-28 REM (_sea_err calls) and the f64 constants (.quad 0x...). Data records are copied as read.
-30 REM Phase-1 allocator (DESIGN 4.9): every virtual register has an 8-byte frame slot;
-32 REM operands are loaded into x9 x10 x11 (i, p) and d16 d17 d18 (f), results stored from
-34 REM x9 / d16; x16 x17 address slots, data, the results area and the stack limit.
+21 REM function is buffered, analysed (validation, the definitions and reads of its registers;
+22 REM sweep 2: immediates, fused comparisons, one-branch ifs; sweep 3: the allocator's reference
+23 REM walk and the allocation, passes/lib/ralloc.bas) and swept three times: mode 0 counts the
+24 REM lines it will need (more than 240000 instructions do not fit the +-1 MiB conditional
+25 REM branches: the far form, b.<inverse> 9f / b <label> / 9:), mode 1 writes the code, mode 2
+26 REM the cold blocks (_sea_err calls) and the f64 constants (.quad 0x...). Data records are
+28 REM copied as read.
+30 REM Phase-5 allocator (DESIGN 4.9.2): the linear scan of ralloc over machine registers
+32 REM numbered P = n + 1 for xn and n + 33 for dn (25 general, 29 FP allocatable); scratch x15
+34 REM x16 x17 and d29 d30 d31 (a spilled operand in position n in scratch n, a spilled
+35 REM destination in scratch 1; staged templates on them; x17 / d31 break move cycles).
 36 REM Frame, from sp up: [0,A1) outgoing stack arguments and the _sea_err argument slots;
-38 REM [A1,A1+A2) the results area of calls; the LIR slots; 16 bytes per loop block (remaining
-40 REM count, step); F9 the saved address of this function's own results area; the register
-42 REM slots from A5 (register r at A5 + 8(r-1)); A6 bytes in all; the frame record above.
-44 REM A7 = the frame (16 + A6, + realignment); A9 = 1: the prologue stack check (DESIGN 4.6).
+38 REM [A1,A1+A2) the results area of calls; the LIR slots; the spill slots from A3 (slot s at
+40 REM A3 + 8(s-1)); the saved callee-saved registers from A4 (table order x19-x28, d8-d15); F9
+42 REM the saved address of this function's own results area; A6 bytes in all; the frame record
+43 REM above. A7 = the frame (16 + A6, + realignment); A9 = 1: the prologue stack check (DESIGN 4.6).
 46 REM Arrays: E E$ errors; X X$ exits; C C$ consts; Y Y$ entries; N N$ W$ R R$ F F$ Z
 48 REM passes.txt; K K$ the needed constants (a64data.bas order: K(1) SLOT_SIZE, K(2)
 50 REM STACK_LEAF_MAX, K(3) RC_STATIC, K(4) TAG_STR, K(5-8) STR_RC TAG LEN BYTES, K(9-11)
@@ -27,23 +31,27 @@
 60 REM A(row,1) special code, A(row,2) template of each LIR record row; P$ M Q$ T$ templates
 62 REM (M: first line, code lines, cold lines, error rows of $C $D, argument slots); V$ cc
 64 REM map; U$ inversions; B$ the function's records, O their rows, G their callee, entry or
-66 REM error row; G$ fields; U u values; L limbs; Q P J$ source registers, classes, scratch;
-68 REM D register classes (1 i, 2 f, 3 p); T parameter registers; J slots (size, align,
-70 REM offset); B blocks (kind 1 loop 2 do 3 if, else seen, hidden offset, ind); I open
-72 REM blocks; S sites (file, line), H their hash; S$ signatures (name, parameter classes,
-74 REM result classes); H$ #file paths; V helper limbs; W byte codes; A$ message argument.
+66 REM error row (other records: 1 = a fused comparison, a one-branch if and its exit/next and
+67 REM endif); G$ fields; U u values; L limbs; Q P the source registers and classes, J$ operand
+68 REM names (and move sources 3000+j); D the allocator's table (ralloc: D(r,0) the class 1 i,
+69 REM 2 f, 3 p, D(r,8) the location); T(r) the record of r's only definition (-1: several); W(r)
+70 REM its reads that need a register; J slots (size, align, offset); B blocks (kind 1 loop 2 do
+71 REM 3 if, else seen, step register, ind); I open blocks; S sites (file, line), H their hash;
+72 REM S$ signatures (name, parameter classes, result classes); H$ #file paths; V helper limbs;
+74 REM W also the byte codes of CHANGE outside a function; A$ message argument.
 76 REM Scalars: W0 mode (0 count, 1 code, 2 cold, 3 analysis), W1 far, W2 lines counted; F0
 78 REM function number; F1 F2 F3 its pos; F4 kind; F5$ name; F6$ F7$ classes; F8 own extra
 80 REM results; N0 records; M0 registers; S0 slots; A0 largest alignment; B7 blocks; K7 open
 82 REM blocks; L1 leaf; X8 definition site; X9 sites; D9 data section; D8 last label; M9 mains;
-83 REM Y3 the entries row of FREE (release calls it). Phase 4c: retain release mcopy slay soff.
-84 REM ====================================================================================
+83 REM Y3 the entries row of FREE (release calls it); S8 spill slots; C4 C5 a fused comparison
+84 REM (1 flags, condition C7$; 2 a test of register C6 against 0), M7 = 1 in a ret's move.
+85 REM ====================================================================================
 200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(29), Y$(29,5)
 205 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 210 DIM K(60), K$(60), A(399,2), P$(199), M(199,6), Q$(1999), T$(199,2), V$(10,3), U$(30,2)
-215 DIM B$(219999), O(219999), G(219999), G$(300), U(40), L(4), Q(200), P(200), J$(200), V(4)
-220 DIM D(99999), T(200), J(9999,3), B(9999,4), I(10000), S(49999,2), H(131071), S$(19999,3)
-225 DIM H$(100), W(65536), A$(4)
+215 DIM B$(219999), O(219999), G(219999), G$(300), U(40), L(4), Q(200), P(200), J$(320), V(4)
+220 DIM D(111110,8), T(99999), J(9999,3), B(9999,4), I(10000), S(49999,2), H(131071), S$(19999,3)
+225 DIM H$(100), W(99999), A$(4)
 230 FILES "sea.lir"; "sea.s"
 235 LET P$ = "seagen_a64"
 240 REM ---- own DATA (a64data.bas), read before the generated blocks ------------------------
@@ -126,6 +134,7 @@
 600 IF K(41) > 9999 THEN 9975
 605 IF K(42) > 9999 THEN 9975
 610 IF K(45) > 49999 THEN 9975
+612 GOSUB 1400
 615 REM the error rows of the templates' cold blocks and of the stack check
 620 FOR I5 = 1 TO T7
 625 FOR I6 = 1 TO 2
@@ -272,11 +281,369 @@
 1360 GOSUB 3000
 1365 CALL "io_read": 1, L$, L0, P$, E(), E$(), E0
 1370 GOTO 1250
+1400 REM ---- the allocator (passes/lib/ralloc.bas, DESIGN 4.9.2, Decision 60): its table D and the
+1401 REM register tables; machine register P = n + 1 for xn, n + 33 for dn
+1402 CALL "ra_init": D(), K(40), K(41), 111110, T
+1403 LET M$ = "the register table D is smaller than the allocator needs"
+1404 IF T <> 0 THEN 9975
+1405 REM x9-x14 x8 x0-x7 x19-x28 crossing no call, x19-x28 x9-x14 x8 x0-x7 crossing one
+1406 FOR I5 = 0 TO 28
+1407 IF I5 = 8 THEN 1416
+1408 IF I5 < 8 THEN 1418
+1409 IF I5 < 15 THEN 1420
+1410 IF I5 < 19 THEN 1424
+1411 CALL "ra_tab": D(), I5 + 1, 1, I5 - 3, I5 - 18, 1
+1412 GOTO 1424
+1416 CALL "ra_tab": D(), 9, 1, 7, 17, 0
+1417 GOTO 1424
+1418 CALL "ra_tab": D(), I5 + 1, 1, I5 + 8, I5 + 18, 0
+1419 GOTO 1424
+1420 CALL "ra_tab": D(), I5 + 1, 1, I5 - 8, I5 + 2, 0
+1424 NEXT I5
+1426 REM d16-d28 d0-d7 d8-d15 crossing no call, d8-d15 (callee-saved) d16-d28 d0-d7 crossing one
+1428 FOR I5 = 0 TO 28
+1430 IF I5 > 15 THEN 1440
+1432 IF I5 > 7 THEN 1436
+1433 CALL "ra_tab": D(), I5 + 33, 2, I5 + 14, I5 + 22, 0
+1434 GOTO 1442
+1436 CALL "ra_tab": D(), I5 + 33, 2, I5 + 14, I5 - 7, 1
+1438 GOTO 1442
+1440 CALL "ra_tab": D(), I5 + 33, 2, I5 - 15, I5 - 7, 0
+1442 NEXT I5
+1443 REM the staged templates (DESIGN 4.9.2 "Templates")
+1444 LET S7$ = "|idivf|imodf|rcount|ftoi|fmin|fmax|ffloor|fceil|ftrunc|fround|mcopy|"
+1446 RETURN
+1450 REM ---- FNN$(P) = the name of machine register P (x0-x30, d0-d31) ---------------------------
+1452 DEF FNN$(P9)
+1454 LET P9$ = "x" & STR$(P9 - 1)
+1456 IF P9 < 33 THEN 1460
+1458 LET P9$ = "d" & STR$(P9 - 33)
+1460 LET FNN$ = P9$
+1462 FNEND
+1464 REM ---- FNI(R) = 1 if register R's only definition is an li (an immediate candidate) --------
+1466 DEF FNI(R6)
+1468 LET R7 = 0
+1470 IF T(R6) <= 0 THEN 1476
+1472 IF A(O(T(R6)),1) <> 4 THEN 1476
+1474 LET R7 = 1
+1476 LET FNI = R7
+1478 FNEND
+2000 REM ---- analysis: the definitions (T) and reads (W) of the record's registers (DESIGN 4.9.2
+2001 REM "Immediates", fusion): T(r) the record of r's only definition, -1 for several (or a
+2002 REM parameter); W(r) its reads
+2003 IF J = 1 THEN 2049
+2004 IF Y0 = 2 THEN 2049
+2005 FOR K2 = 1 TO P0
+2006 IF K2 > 1 THEN 2008
+2007 IF Y0 = 8 THEN 2009
+2008 LET W(Q(K2)) = W(Q(K2)) + 1
+2009 NEXT K2
+2010 IF D1 = 0 THEN 2018
+2011 IF Y0 = 19 THEN 2018
+2012 IF Y0 = 20 THEN 2018
+2013 IF Y0 = 24 THEN 2017
+2014 LET R2 = D1
+2015 GOSUB 2040
+2016 GOTO 2018
+2017 LET W(D1) = W(D1) + 1
+2018 IF E1 = 0 THEN 2022
+2019 LET R2 = E1
+2020 GOSUB 2040
+2022 IF Y0 <> 8 THEN 2026
+2023 LET R2 = Q(1)
+2024 GOSUB 2040
+2026 IF Y0 < 19 THEN 2049
+2027 IF Y0 > 20 THEN 2049
+2028 LET Y4 = Y0 - 15
+2029 FOR K2 = 1 TO VAL(G$(Y4 - 1))
+2030 LET Z$ = G$(Y4 + K2 - 1)
+2031 LET R2 = VAL(SEG$(Z$, 2, LEN(Z$)))
+2032 GOSUB 2040
+2033 NEXT K2
+2034 RETURN
+2040 IF T(R2) = 0 THEN 2044
+2041 LET T(R2) = -1
+2042 RETURN
+2044 LET T(R2) = J
+2049 RETURN
+2100 REM ---- sweep 2: the immediates (W keeps only the reads that need a register), the fused
+2101 REM comparisons and the one-branch ifs (G = 1; DESIGN 4.9.2 "Compare and branch fusion")
+2102 FOR J = 2 TO N0 - 1
+2103 GOSUB 2300
+2104 IF Y0 = 2 THEN 2140
+2105 IF Q0 = 0 THEN 2108
+2106 LET W(Q(Q0)) = W(Q(Q0)) - 1
+2108 FOR K2 = 1 TO P0
+2109 GOSUB 2650
+2110 IF V9 = 0 THEN 2112
+2111 LET W(Q(K2)) = W(Q(K2)) - 1
+2112 NEXT K2
+2113 IF Y0 = 12 THEN 2150
+2114 IF Y0 = 13 THEN 2150
+2115 IF Y0 <> 0 THEN 2140
+2116 REM a comparison read only by the next if/ifz or the condition of the next selection
+2117 IF POS("|icmp|fcmp|bnot|", "|" & R$(I0) & "|") = 0 THEN 2140
+2118 IF T(D1) <> J THEN 2140
+2119 IF W(D1) <> 1 THEN 2140
+2120 CALL "io_split": B$(J + 1), J$(), 300, C1
+2122 IF C1 < 3 THEN 2140
+2124 IF J$(3) <> "i" & STR$(D1) THEN 2140
+2126 IF POS("|if|ifz|isel|psel|fsel|", "|" & J$(1) & "|") = 0 THEN 2140
+2128 LET G(J) = 1
+2140 NEXT J
+2142 RETURN
+2150 REM an if/ifz without else whose first part is one exit or next: one conditional branch (G
+2151 REM = 1 on it and on the exit/next and the endif, which emit nothing)
+2152 CALL "io_split": B$(J + 1), J$(), 300, C1
+2154 IF C1 <> 2 THEN 2140
+2156 IF J$(1) = "exit" THEN 2160
+2158 IF J$(1) <> "next" THEN 2140
+2160 IF B$(J + 2) <> "endif " & G$(2) THEN 2140
+2162 LET G(J) = 1
+2164 LET G(J + 1) = 1
+2166 LET G(J + 2) = 1
+2168 GOTO 2140
+2200 REM ---- sweep 3: the allocator's reference walk (passes/lib/API.md, ralloc), then the
+2201 REM allocation. Reported: every reference that exists in the code (not an immediate, not an
+2202 REM li that is not emitted, not the register of a fused comparison)
+2203 FOR I5 = 1 TO LEN(F6$)
+2204 CALL "ra_par": D(), I5
+2205 NEXT I5
+2206 LET C5 = 0
+2207 FOR J = 2 TO N0 - 1
+2208 GOSUB 2300
+2209 LET C4 = C5
+2210 LET C5 = 0
+2211 IF Y0 = 2 THEN 2290
+2212 IF Y0 <> 4 THEN 2214
+2213 IF W(D1) = 0 THEN 2290
+2214 FOR K2 = 1 TO P0
+2215 IF K2 = Q0 THEN 2222
+2216 GOSUB 2650
+2217 IF V9 = 1 THEN 2222
+2218 IF K2 > 1 THEN 2221
+2219 IF Y0 = 8 THEN 2222
+2220 IF C4 > 0 THEN 2222
+2221 CALL "ra_ref": D(), J, Q(K2), 0
+2222 NEXT K2
+2223 IF C4 <> 2 THEN 2225
+2224 CALL "ra_ref": D(), J, C6, 0
+2225 IF Y0 <> 24 THEN 2227
+2226 CALL "ra_ref": D(), J, D1, 0
+2227 IF Y0 = 19 THEN 2232
+2228 IF Y0 = 20 THEN 2232
+2229 IF Y0 <> 23 THEN 2234
+2232 CALL "ra_call": D(), J
+2234 IF Y0 <> 0 THEN 2240
+2235 IF G(J) = 0 THEN 2240
+2236 GOSUB 2700
+2237 GOTO 2290
+2240 IF D1 = 0 THEN 2246
+2241 IF Y0 = 24 THEN 2246
+2242 IF Y0 = 19 THEN 2250
+2243 IF Y0 = 20 THEN 2250
+2244 CALL "ra_ref": D(), J, D1, 1
+2246 IF E1 = 0 THEN 2248
+2247 CALL "ra_ref": D(), J, E1, 1
+2248 IF Y0 <> 8 THEN 2250
+2249 CALL "ra_ref": D(), J, Q(1), 1
+2250 IF Y0 < 19 THEN 2257
+2251 IF Y0 > 20 THEN 2257
+2252 LET Y4 = Y0 - 15
+2253 FOR K3 = 1 TO VAL(G$(Y4 - 1))
+2254 LET Z$ = G$(Y4 + K3 - 1)
+2255 CALL "ra_ref": D(), J, VAL(SEG$(Z$, 2, LEN(Z$))), 1
+2256 NEXT K3
+2257 IF Y0 <> 0 THEN 2260
+2258 IF R$(I0) <> "mov" THEN 2290
+2259 CALL "ra_hint": D(), J, D1, Q(1), 0
+2260 IF Y0 < 8 THEN 2290
+2261 IF Y0 > 15 THEN 2290
+2262 LET Y7 = VAL(G$(2))
+2263 ON Y0 - 7 GOTO 2264,2268,2270,2268,2272,2272,2290,2268
+2264 LET K2 = 4
+2265 GOSUB 2650
+2266 CALL "ra_open": D(), J, Y7, 1, Q(1), Q(4) * (1 - V9)
+2267 GOTO 2290
+2268 CALL "ra_close": D(), J, Y7
+2269 GOTO 2290
+2270 CALL "ra_open": D(), J, Y7, 2, 0, 0
+2271 GOTO 2290
+2272 CALL "ra_open": D(), J, Y7, 3, 0, 0
+2290 NEXT J
+2292 CALL "ra_end": D(), M0, S8, T
+2294 LET M$ = "a block still open after the allocation"
+2296 IF T <> 0 THEN 9975
+2298 RETURN
+2300 REM ---- decode record J: row I0, code Y0, fields (9400), immediates (2400), move kind (2620)
+2302 LET I0 = O(J)
+2304 LET Y0 = A(I0,1)
+2306 CALL "io_split": B$(J), G$(), 300, C0
+2308 GOSUB 9400
+2310 GOSUB 2400
+2312 GOSUB 2620
+2314 RETURN
+2400 REM ---- the immediate operand of a direct instruction (DESIGN 4.9.2 "Immediates"): Q0 its
+2401 REM position (0: none), Q0$ its text, N8 = 1 when the mnemonic takes the opposite sign (add /
+2402 REM sub, adds / subs, cmp / cmn). An immediate first operand of a commuting add, a logical
+2403 REM operation or a compare moves to the second place (icmp: the condition mirrored)
+2404 LET Q0 = 0
+2405 LET N8 = 0
+2406 IF Y0 <> 0 THEN 2449
+2407 LET Z$ = "|" & R$(I0) & "|"
+2408 LET Q7 = 1
+2409 IF POS("|iadd|isub|padd|iaddc|isubc|icmp|", Z$) > 0 THEN 2416
+2410 LET Q7 = 2
+2411 IF POS("|iand|ior|ixor|", Z$) > 0 THEN 2416
+2412 LET Q7 = 3
+2413 IF POS("|ishl|ishr|isar|", Z$) > 0 THEN 2416
+2414 IF Z$ <> "|chkb|" THEN 2449
+2415 LET Q7 = 4
+2416 LET Q6 = 2
+2417 IF Q7 < 4 THEN 2419
+2418 LET Q6 = 1
+2419 GOSUB 2460
+2420 IF Q9 = 1 THEN 2440
+2421 IF POS("|iadd|iaddc|icmp|iand|ior|ixor|", Z$) = 0 THEN 2449
+2422 LET Q6 = 1
+2423 GOSUB 2460
+2424 IF Q9 = 0 THEN 2449
+2425 LET Q6 = Q(1)
+2426 LET Q(1) = Q(2)
+2427 LET Q(2) = Q6
+2428 LET Q6 = 2
+2429 LET Y5 = POS("|lt=gt|le=ge|gt=lt|ge=le|", "|" & K1$ & "=")
+2430 IF Y5 = 0 THEN 2440
+2431 LET K1$ = SEG$("|lt=gt|le=ge|gt=lt|ge=le|", Y5 + 4, Y5 + 5)
+2440 LET Q0 = Q6
+2441 LET Q0$ = Q9$
+2449 RETURN
+2460 REM operand Q6 as an immediate of kind Q7 (1 add / sub / cmp, 2 logical, 3 shift, 4 chkb):
+2461 REM Q9 = 1 and its text Q9$ when it is one
+2462 LET Q9 = 0
+2463 IF FNI(Q(Q6)) = 0 THEN 2479
+2464 LET R4 = Q(Q6)
+2465 GOSUB 2500
+2466 ON Q7 GOTO 2468,2470,2472,2475
+2468 GOSUB 2520
+2469 RETURN
+2470 GOSUB 2540
+2471 RETURN
+2472 IF K9 <> 0 THEN 2479
+2473 IF V0 > 63 THEN 2479
+2474 GOTO 2476
+2475 IF K9 <> 0 THEN 2479
+2476 IF V0 < 0 THEN 2479
+2477 IF V0 > 4095 THEN 2479
+2478 LET Q9 = 1
+2479 LET Q9$ = "#" & STR$(V0)
+2480 RETURN
+2500 REM ---- the value of li register R4 (FNI(R4) = 1): its field H2$; V0 and K9 (0: decimal V0,
+2501 REM 1: |v| >= 1E9) and the limbs V() as io_i gives them
+2502 LET Z$ = B$(T(R4))
+2504 LET H2$ = SEG$(Z$, POS(Z$, " ", 4) + 1, LEN(Z$))
+2506 CALL "io_i": H2$, V0, K9, V(), T
+2508 RETURN
+2520 REM ---- V0 (K9) as the 12-bit immediate of add / sub / cmp, optionally shifted by 12: Q9 = 1,
+2521 REM Q9$ "#v" or "#v, lsl #12" of |V0|, N8 = 1 for a negative V0 (the opposite instruction)
+2522 LET Q9 = 0
+2523 IF K9 <> 0 THEN 2532
+2524 LET V1 = ABS(V0)
+2525 LET Q9$ = "#" & STR$(V1)
+2526 IF V1 <= 4095 THEN 2530
+2527 IF V1 <> INT(V1 / 4096) * 4096 THEN 2532
+2528 IF V1 > 4095 * 4096 THEN 2532
+2529 LET Q9$ = "#" & STR$(V1 / 4096) & ", lsl #12"
+2530 LET Q9 = 1
+2531 LET N8 = 0
+2532 IF Q9 = 0 THEN 2535
+2533 IF V0 >= 0 THEN 2535
+2534 LET N8 = 1
+2535 RETURN
+2540 REM ---- the limbs V() as a logical immediate (a 2-64-bit element, repeated, that is a
+2541 REM rotated run of ones): Q9 = 1, Q9$ = "#0x" and 16 hex digits. H3$: the bits, lowest first
+2542 LET Q9 = 0
+2543 LET V1 = V(1) + V(2) + V(3) + V(4)
+2544 IF V1 = 0 THEN 2569
+2545 IF V1 = 4 * 65535 THEN 2569
+2546 LET H3$ = ""
+2547 FOR E4 = 4 TO 1 STEP -1
+2548 LET E5 = V(E4)
+2549 FOR E6 = 1 TO 16
+2550 LET H3$ = H3$ & STR$(E5 - 2 * INT(E5 / 2))
+2551 LET E5 = INT(E5 / 2)
+2552 NEXT E6
+2553 NEXT E4
+2554 REM E2 = the smallest element size: the bits repeat with period E2 / 2 while it halves
+2555 LET E2 = 64
+2556 IF SEG$(H3$, 1, 64 - E2 / 2) <> SEG$(H3$, E2 / 2 + 1, 64) THEN 2560
+2557 LET E2 = E2 / 2
+2558 IF E2 > 2 THEN 2556
+2560 LET H4$ = SEG$(H3$, 1, E2) & SEG$(H3$, 1, 1)
+2561 LET E5 = 0
+2562 LET E6 = POS(H4$, "10")
+2563 IF E6 = 0 THEN 2567
+2564 LET E5 = E5 + 1
+2565 LET E6 = POS(H4$, "10", E6 + 1)
+2566 GOTO 2563
+2567 IF E5 <> 1 THEN 2569
+2568 GOSUB 2575
+2569 RETURN
+2575 CALL "io_hex": V(), H2$
+2576 LET Q9$ = "#0x" & SEG$(H2$, 2, 17)
+2577 LET Q9 = 1
+2578 RETURN
+2620 REM ---- N2 = 1 if the record's operands are read by a parallel move (ret, call, rcall, loop,
+2621 REM the staged templates), which takes any li value as an immediate source (DESIGN 4.9.2)
+2622 LET N2 = 1
+2623 IF Y0 = 8 THEN 2632
+2624 IF Y0 = 24 THEN 2632
+2625 IF Y0 = 0 THEN 2630
+2626 IF Y0 < 18 THEN 2628
+2627 IF Y0 <= 20 THEN 2632
+2628 LET N2 = 0
+2629 RETURN
+2630 IF POS(S7$, "|" & R$(I0) & "|") = 0 THEN 2628
+2632 RETURN
+2650 REM ---- V9 = 1 if operand K2 of a move record (N2 = 1) is an immediate source: its only
+2651 REM definition is an li; never a loop's ind, its step only when the closing add encodes it
+2652 LET V9 = 0
+2653 IF N2 = 0 THEN 2665
+2654 IF FNI(Q(K2)) = 0 THEN 2665
+2655 IF Y0 <> 8 THEN 2664
+2656 IF K2 = 1 THEN 2665
+2657 IF K2 < 4 THEN 2664
+2658 LET R4 = Q(4)
+2659 GOSUB 2500
+2660 GOSUB 2520
+2661 IF Q9 = 0 THEN 2665
+2664 LET V9 = 1
+2665 RETURN
+2700 REM ---- a fused comparison (G(J) = 1): C5 = 2 when the next record is an if/ifz and the
+2701 REM comparison tests against 0 (bnot, icmp eq / ne with the immediate 0): cbz / cbnz on
+2702 REM register C6, C7$ = eq (true when it is 0) or ne; otherwise C5 = 1, C7$ the condition
+2703 REM after the compare (L-as)
+2704 LET C5 = 1
+2705 LET C6 = Q(1)
+2706 LET C7$ = "eq"
+2707 IF R$(I0) = "bnot" THEN 2718
+2708 FOR I2 = 1 TO V8
+2709 IF V$(I2,1) = K1$ THEN 2712
+2710 NEXT I2
+2711 GOTO 9990
+2712 LET C7$ = V$(I2,2)
+2713 IF R$(I0) <> "fcmp" THEN 2715
+2714 LET C7$ = V$(I2,3)
+2715 IF Q0 <> 2 THEN 2721
+2716 IF Q0$ <> "#0" THEN 2721
+2717 IF POS("|eq|ne|", "|" & K1$ & "|") = 0 THEN 2721
+2718 IF SEG$(B$(J + 1), 1, 3) = "if " THEN 2720
+2719 IF SEG$(B$(J + 1), 1, 4) <> "ifz " THEN 2721
+2720 LET C5 = 2
+2721 RETURN
 3000 REM ---- one function: analysis (W0 = 3), layout, sweeps ---------------------------------
 3005 LET F0 = F0 + 1
-3010 FOR I5 = 1 TO M0
-3015 LET D(I5) = 0
-3020 NEXT I5
+3010 CALL "ra_fn": D()
 3025 LET M0 = 0
 3030 LET S0 = 0
 3035 LET S9 = 0
@@ -308,7 +675,7 @@
 3165 REM the func record: parameter registers and classes, result classes
 3170 LET F6$ = ""
 3175 FOR I5 = 1 TO P0
-3180 LET T(I5) = Q(I5)
+3180 LET T(I5) = -1
 3182 IF Q(I5) <> I5 THEN 9990
 3185 LET F6$ = F6$ & SEG$("ifp", P(I5), P(I5))
 3190 NEXT I5
@@ -382,7 +749,8 @@
 3347 IF Y0 <> 8 THEN 3480
 3348 GOSUB 3630
 3349 LET B(B7,4) = Q(1)
-3350 GOTO 3480
+3350 LET B(B7,3) = Q(4)
+3351 GOTO 3480
 3360 REM closing: the innermost open block, of the matching kind
 3362 LET Y1 = VAL(G$(2))
 3364 IF K7 = 0 THEN 9990
@@ -474,7 +842,8 @@
 3475 IF Y2 <> U(4) THEN 9990
 3476 IF (P0 - 1) * K(1) <= A1 THEN 3480
 3478 LET A1 = (P0 - 1) * K(1)
-3480 NEXT J
+3480 GOSUB 2000
+3481 NEXT J
 3482 IF K7 <> 0 THEN 9990
 3484 LET A$(1) = "instructions"
 3485 IF N9 > K(38) THEN 9960
@@ -482,8 +851,10 @@
 3487 IF O0 > K(39) THEN 9960
 3488 LET A$(1) = "immediates"
 3489 IF I9 > K(43) THEN 9960
-3490 GOSUB 3800
-3492 GOSUB 3900
+3490 GOSUB 2100
+3491 GOSUB 2200
+3492 GOSUB 3800
+3493 GOSUB 3900
 3494 RETURN
 3496 REM release: its sequence calls the FREE entry, so the function is not a leaf (DESIGN 4.9)
 3497 LET L1 = 0
@@ -578,17 +949,16 @@
 3830 LET Y7 = Y7 + J(I5,1)
 3835 NEXT I5
 3840 LET Y7 = INT((Y7 + 7) / 8) * 8
-3845 FOR I5 = 1 TO B7
-3850 IF B(I5,1) <> 1 THEN 3860
-3855 LET B(I5,3) = Y7
-3858 LET Y7 = Y7 + 16
-3860 NEXT I5
+3845 LET A3 = Y7
+3850 LET Y7 = Y7 + 8 * S8
+3855 LET A4 = Y7
+3856 LET Z1$ = ""
+3857 GOSUB 4500
+3858 LET Y7 = Y7 + 8 * Y1
 3862 LET F9 = 0
-3864 IF F8 = 0 THEN 3870
+3864 IF F8 = 0 THEN 3874
 3866 LET F9 = Y7
 3868 LET Y7 = Y7 + 8
-3870 LET A5 = Y7
-3872 LET Y7 = Y7 + 8 * M0
 3874 LET A6 = INT((Y7 + 15) / 16) * 16
 3876 LET A8 = 0
 3878 IF A0 <= 16 THEN 3882
@@ -676,46 +1046,52 @@
 4170 GOSUB 9010
 4175 LET X$ = "and sp, x16, #-" & STR$(A0)
 4178 GOSUB 9010
-4180 REM the parameters into their slots: x0-x7 (after the results area), d0-d7, the stack
+4180 REM the callee-saved registers the function uses (DESIGN 4.9.2 "Calls"), then the parameters
+4181 REM from x0-x7 (after the results area), d0-d7 and the stack into their locations: one
+4182 REM parallel move (DESIGN 4.9.2 "Moves")
+4183 LET Z1$ = "str"
+4184 GOSUB 4500
 4185 LET G1 = 0
-4190 LET G2 = 0
-4195 LET G3 = 0
-4200 IF F8 = 0 THEN 4225
-4205 LET Z1$ = "str"
-4210 LET Z2$ = "x0"
-4212 LET Z3 = F9
-4214 LET Z4$ = "sp"
-4216 GOSUB 9020
-4220 LET G1 = 1
-4225 FOR K2 = 1 TO LEN(F6$)
-4230 LET V1 = A5 + 8 * (T(K2) - 1)
-4232 LET Z1$ = "str"
-4234 LET Z4$ = "sp"
-4236 LET Z3 = V1
-4238 IF SEG$(F6$, K2, K2) = "f" THEN 4250
-4240 IF G1 >= 8 THEN 4260
-4242 LET Z2$ = "x" & STR$(G1)
-4244 LET G1 = G1 + 1
-4246 GOSUB 9020
-4248 GOTO 4290
-4250 IF G2 >= 8 THEN 4260
-4252 LET Z2$ = "d" & STR$(G2)
-4254 LET G2 = G2 + 1
-4256 GOSUB 9020
-4258 GOTO 4290
-4260 LET Z1$ = "ldr"
-4262 LET Z2$ = "x9"
-4264 LET Z3 = 16 + 8 * G3
-4266 LET Z4$ = "x29"
-4268 GOSUB 9020
-4270 LET G3 = G3 + 1
-4272 LET Z1$ = "str"
-4274 LET Z3 = V1
-4276 LET Z4$ = "sp"
-4278 GOSUB 9020
-4290 NEXT K2
+4186 IF F8 = 0 THEN 4192
+4187 LET Z1$ = "str"
+4188 LET Z2$ = "x0"
+4189 LET Z3 = F9
+4190 LET Z4$ = "sp"
+4191 LET Z0$ = "x16"
+4192 IF F8 = 0 THEN 4196
+4193 GOSUB 9020
+4194 LET G1 = 1
+4196 LET G2 = 0
+4197 LET G3 = 0
+4198 LET M8 = 0
+4199 LET M7 = 0
+4200 FOR K2 = 1 TO LEN(F6$)
+4202 LET M4 = 1
+4204 IF SEG$(F6$, K2, K2) = "f" THEN 4212
+4206 IF G1 >= 8 THEN 4218
+4208 LET M2 = 1 + G1
+4209 LET G1 = G1 + 1
+4210 GOTO 4224
+4212 LET M4 = 2
+4213 IF G2 >= 8 THEN 4218
+4214 LET M2 = 33 + G2
+4215 LET G2 = G2 + 1
+4216 GOTO 4224
+4218 LET M8 = M8 + 1
+4219 LET J$(M8) = "x" & STR$(16 + 8 * G3)
+4220 LET G3 = G3 + 1
+4222 LET M2 = 3000 + M8
+4224 LET M3 = D(K2,8)
+4226 IF M3 = 0 THEN 4232
+4228 CALL "ra_mv": D(), M2, M3, M4, T
+4230 IF T <> 0 THEN 6790
+4232 NEXT K2
+4234 GOSUB 6700
 4295 RETURN
-4300 REM ---- the records of the function (slots have no code) ---------------------------------
+4300 REM ---- the records of the function (slots have no code); modes 0 and 1 replay the saves ----
+4302 LET C5 = 0
+4303 IF W0 = 2 THEN 4305
+4304 CALL "ra_rew": D()
 4305 FOR J = 2 TO N0 - 1
 4310 IF A(O(J),1) = 2 THEN 4320
 4315 GOSUB 5000
@@ -724,6 +1100,8 @@
 4400 REM ---- epilogue: every ret branches here ---------------------------------------------------
 4405 LET X$ = "L" & STR$(F0) & "_ret:"
 4410 GOSUB 9000
+4412 LET Z1$ = "ldr"
+4414 GOSUB 4500
 4415 LET X$ = "mov sp, x29"
 4420 GOSUB 9010
 4425 LET X$ = "ldp x29, x30, [sp], #16"
@@ -739,59 +1117,99 @@
 4475 LET X0 = X8
 4480 GOSUB 9375
 4490 RETURN
+4500 REM ---- Z1$ (str, ldr; "" only counts) the callee-saved registers this function uses, 8
+4501 REM bytes each from A4 in table order x19-x28, d8-d15 (DESIGN 4.9.2 "Frame"): Y1 of them
+4502 LET Y1 = 0
+4504 FOR K3 = 1 TO 18
+4506 LET P1 = K3 + 19
+4508 IF K3 <= 10 THEN 4512
+4510 LET P1 = K3 + 30
+4512 CALL "ra_used": D(), P1, U1
+4514 IF U1 = 0 THEN 4530
+4516 IF Z1$ = "" THEN 4528
+4518 LET Z2$ = FNN$(P1)
+4520 LET Z3 = A4 + 8 * Y1
+4521 LET Z4$ = "sp"
+4522 LET Z0$ = "x16"
+4524 IF Z1$ = "str" THEN 4527
+4525 IF P1 > 32 THEN 4527
+4526 LET Z0$ = Z2$
+4527 GOSUB 9020
+4528 LET Y1 = Y1 + 1
+4530 NEXT K3
+4532 RETURN
 5000 REM ---- one record: code (modes 0, 1) and cold part (modes 0, 2) ----------------------------
-5005 LET I0 = O(J)
-5010 LET Y0 = A(I0,1)
-5015 CALL "io_split": B$(J), G$(), 300, C0
-5020 GOSUB 9400
-5025 LET L9$ = "L" & STR$(F0) & "_"
+5005 GOSUB 2300
+5010 LET C4 = C5
+5015 LET C5 = 0
+5020 LET L9$ = "L" & STR$(F0) & "_"
+5025 LET M7 = 0
 5030 IF Y0 = 0 THEN 5100
-5035 ON Y0 GOTO 9990,9990,9990,5300,5350,9990,5400,5450,5500,5550,5600,5650,5650,5700,5750,5800,5850,5900,6000,6200,6400,6500,6500,6500
-5100 REM ---- an instruction from its template --------------------------------------------------
+5035 ON Y0 GOTO 9990,9990,9990,5300,5350,9990,5400,5450,5500,5550,5600,5650,5650,5700,5750,5800,5850,5900,6000,6200,6400,5100,6500,5100
+5100 REM ---- an instruction from its template: staged, special or direct (DESIGN 4.9.2) ---------
 5102 LET T5 = A(I0,2)
-5104 IF R$(I0) <> "rcount" THEN 5110
-5106 IF U0 <> 1 THEN 5110
-5108 LET T5 = T9
-5110 IF W0 = 2 THEN 5200
-5112 LET G1 = 0
-5114 LET G2 = 0
-5116 FOR K2 = 1 TO P0
-5118 LET Z1$ = "ldr"
-5120 LET Z4$ = "sp"
-5122 LET Z3 = A5 + 8 * (Q(K2) - 1)
-5124 IF P(K2) = 2 THEN 5132
-5126 LET G1 = G1 + 1
-5128 LET Z2$ = "x" & STR$(8 + G1)
-5130 GOTO 5136
-5132 LET G2 = G2 + 1
-5134 LET Z2$ = "d" & STR$(15 + G2)
-5136 LET J$(K2) = Z2$
-5138 GOSUB 9020
-5140 NEXT K2
-5142 LET M$ = "a template instruction with more than three operands of a class"
-5144 IF G1 > 3 THEN 9975
-5146 IF G2 > 3 THEN 9975
-5148 IF B1 = 0 THEN 5152
-5150 GOSUB 9250
-5152 FOR I6 = M(T5,1) TO M(T5,1) + M(T5,2) - 1
-5154 LET Z$ = Q$(I6)
-5156 GOSUB 9150
-5158 NEXT I6
-5160 IF D1 = 0 THEN 5200
-5162 LET Z1$ = "str"
-5164 LET Z4$ = "sp"
-5166 LET Z3 = A5 + 8 * (D1 - 1)
-5168 LET Z2$ = "x9"
-5170 IF D2 <> 2 THEN 5174
-5172 LET Z2$ = "d16"
-5174 GOSUB 9020
-5176 IF E1 = 0 THEN 5200
-5178 LET Z1$ = "str"
-5180 LET Z4$ = "sp"
-5182 LET Z3 = A5 + 8 * (E1 - 1)
-5184 LET Z2$ = "x10"
-5186 GOSUB 9020
-5200 IF W0 = 1 THEN 5290
+5104 IF R$(I0) <> "rcount" THEN 5108
+5106 IF U0 <> 1 THEN 5108
+5107 LET T5 = T9
+5108 IF POS(S7$, "|" & R$(I0) & "|") > 0 THEN 6100
+5110 IF R$(I0) = "mov" THEN 5250
+5112 IF R$(I0) = "chkb" THEN 6300
+5114 IF POS("|isel|psel|fsel|", "|" & R$(I0) & "|") > 0 THEN 6350
+5116 IF G(J) = 1 THEN 6460
+5118 IF W0 = 2 THEN 5200
+5120 GOSUB 5150
+5122 FOR I6 = M(T5,1) TO M(T5,1) + M(T5,2) - 1
+5124 LET Z$ = Q$(I6)
+5126 GOSUB 9150
+5128 NEXT I6
+5130 GOSUB 5185
+5132 IF W0 = 1 THEN 5290
+5134 GOTO 5200
+5150 REM ---- the operand names J$(1..P0) (the immediate, the register, or the scratch register of
+5151 REM the position loaded from the spill slot; a load or store: 9800) and the destination's J0$
+5152 REM (D7 = its spill slot, 0 if in a register; 5185 stores it)
+5153 IF B1 > 0 THEN 5165
+5154 FOR K2 = 1 TO P0
+5155 LET Z2$ = Q0$
+5156 IF K2 = Q0 THEN 5163
+5157 LET Z2$ = ""
+5158 IF K2 > 1 THEN 5160
+5159 IF C4 > 0 THEN 5163
+5160 LET R3 = Q(K2)
+5161 LET K4 = K2
+5162 GOSUB 9720
+5163 LET J$(K2) = Z2$
+5164 NEXT K2
+5165 GOSUB 5170
+5166 IF B1 = 0 THEN 5169
+5167 GOSUB 9800
+5169 RETURN
+5170 LET D7 = 0
+5171 LET J0$ = ""
+5172 IF D1 = 0 THEN 5184
+5173 IF G(J) = 1 THEN 5184
+5174 LET D6 = D(D1,8)
+5175 IF D6 <> 0 THEN 5177
+5176 GOTO 5193
+5177 IF D6 < 0 THEN 5180
+5178 LET J0$ = FNN$(D6)
+5179 RETURN
+5180 LET D7 = -D6
+5181 LET J0$ = "x15"
+5182 IF D2 <> 2 THEN 5184
+5183 LET J0$ = "d29"
+5184 RETURN
+5185 IF D7 = 0 THEN 5184
+5186 LET Z1$ = "str"
+5187 LET Z2$ = J0$
+5188 LET Z3 = A3 + 8 * (D7 - 1)
+5189 LET Z4$ = "sp"
+5190 LET Z0$ = "x16"
+5191 GOSUB 9020
+5192 RETURN
+5193 LET M$ = "a destination without a location"
+5194 GOTO 9975
+5200 REM ---- the cold part of a template: its cold lines and _sea_err ----------------------------
 5205 IF M(T5,4) = 0 THEN 5240
 5210 LET X$ = L9$ & "e" & STR$(J) & ":"
 5215 GOSUB 9000
@@ -802,30 +1220,44 @@
 5232 LET Z8 = E(M(T5,4))
 5235 GOSUB 9375
 5240 IF M(T5,5) = 0 THEN 5290
-5245 LET X$ = L9$ & "f" & STR$(J) & ":"
-5250 GOSUB 9000
-5255 LET Z8 = E(M(T5,5))
-5260 GOSUB 9375
+5242 LET X$ = L9$ & "f" & STR$(J) & ":"
+5244 GOSUB 9000
+5246 LET Z8 = E(M(T5,5))
+5248 GOSUB 9375
+5249 GOTO 5290
+5250 REM ---- mov: one move step between the two locations (nothing between equal ones) --------
+5252 IF W0 = 2 THEN 5290
+5254 LET M2 = D(Q(1),8)
+5256 LET M3 = D(D1,8)
+5258 LET M4 = 1
+5260 IF D2 <> 2 THEN 5264
+5262 LET M4 = 2
+5264 LET M$ = "a mov operand without a location"
+5266 IF M2 = 0 THEN 9975
+5268 IF M3 = 0 THEN 9975
+5270 IF M2 = M3 THEN 5290
+5272 GOSUB 6800
 5290 RETURN
-5300 REM ---- li: the constant into x9 -------------------------------------------------------------
+5300 REM ---- li: the constant into the destination, unless every read takes it as an immediate --
 5305 IF W0 = 2 THEN 5290
-5310 FOR I1 = 1 TO 4
-5315 LET V(I1) = L(I1)
-5320 NEXT I1
-5325 LET Z5$ = "x9"
-5330 GOSUB 9060
-5335 LET Z2$ = "x9"
-5340 GOSUB 5960
-5341 GOTO 5290
+5310 IF W(D1) = 0 THEN 5290
+5315 GOSUB 5170
+5320 FOR I1 = 1 TO 4
+5325 LET V(I1) = L(I1)
+5330 NEXT I1
+5335 LET Z5$ = J0$
+5340 GOSUB 9060
+5345 GOSUB 5185
+5348 GOTO 5290
 5350 REM ---- lf: the constant is a .quad in the cold part, loaded pc-relative ------------------
 5355 LET Y6$ = L9$ & "c" & STR$(J)
 5360 IF W0 = 2 THEN 5385
+5362 GOSUB 5170
 5365 LET X$ = "adrp x16, " & Y6$ & "@PAGE"
 5370 GOSUB 9010
-5375 LET X$ = "ldr d16, [x16, " & Y6$ & "@PAGEOFF]"
+5375 LET X$ = "ldr " & J0$ & ", [x16, " & Y6$ & "@PAGEOFF]"
 5378 GOSUB 9010
-5380 LET Z2$ = "d16"
-5382 GOSUB 5960
+5380 GOSUB 5185
 5383 IF W0 = 1 THEN 5290
 5385 LET X$ = ".p2align 3"
 5388 GOSUB 9010
@@ -836,92 +1268,144 @@
 5398 GOTO 5290
 5400 REM ---- sa: the address of a LIR slot --------------------------------------------------------
 5405 IF W0 = 2 THEN 5290
+5408 GOSUB 5170
 5410 LET Y7 = J(H1,3)
 5415 IF Y7 > 4095 THEN 5430
-5420 LET X$ = "add x9, sp, #" & STR$(Y7)
+5420 LET X$ = "add " & J0$ & ", sp, #" & STR$(Y7)
 5425 GOTO 5440
 5430 LET Z5 = Y7
-5432 LET Z5$ = "x9"
+5432 LET Z5$ = J0$
 5434 GOSUB 9050
-5436 LET X$ = "add x9, sp, x9"
+5436 LET X$ = "add " & J0$ & ", sp, " & J0$
 5440 GOSUB 9010
-5445 LET Z2$ = "x9"
-5448 GOSUB 5960
+5445 GOSUB 5185
 5449 GOTO 5290
-5450 REM ---- loop b ind start last step: ind, remaining last - k and step stored; no entry test ----
-5451 IF W0 = 2 THEN 5290
-5452 LET Y7 = VAL(G$(2))
-5453 LET Y6$ = L9$ & STR$(Y7) & "_"
-5454 LET Z1$ = "ldr"
-5455 LET Z4$ = "sp"
-5456 LET Z2$ = "x9"
-5457 LET Z3 = A5 + 8 * (Q(2) - 1)
-5458 GOSUB 9020
-5459 LET Z2$ = "x10"
-5460 LET Z3 = A5 + 8 * (Q(3) - 1)
-5461 GOSUB 9020
-5462 LET Z2$ = "x11"
-5463 LET Z3 = A5 + 8 * (Q(4) - 1)
-5464 GOSUB 9020
-5465 LET Z1$ = "str"
-5466 LET Z2$ = "x9"
-5467 LET Z3 = A5 + 8 * (Q(1) - 1)
-5468 GOSUB 9020
-5469 LET Z2$ = "x10"
-5470 LET Z3 = B(Y7,3)
-5471 GOSUB 9020
-5472 LET Z2$ = "x11"
-5473 LET Z3 = B(Y7,3) + 8
-5474 GOSUB 9020
-5475 LET X$ = Y6$ & "top:"
-5476 GOSUB 9000
-5485 GOTO 5290
-5500 REM ---- endloop b: done when k = last (remaining 0), else count down, ind + step, the top --
+5450 REM ---- loop b ind start last step: one parallel move ind <- start, the hidden count <- last
+5451 REM (and the hidden step <- step), then the top (DESIGN 4.9.2 "Moves", "Loop closing")
+5452 IF W0 = 2 THEN 5290
+5453 LET Y7 = VAL(G$(2))
+5454 LET Y6$ = L9$ & STR$(Y7) & "_"
+5455 CALL "ra_blk": D(), Y7, C3, S3, B5
+5456 LET M8 = 0
+5457 LET K2 = 2
+5458 LET M3 = D(Q(1),8)
+5459 GOSUB 5480
+5460 LET K2 = 3
+5461 LET M3 = C3
+5462 GOSUB 5480
+5463 IF S3 = 0 THEN 5467
+5464 LET K2 = 4
+5465 LET M3 = S3
+5466 GOSUB 5480
+5467 GOSUB 6700
+5468 LET X$ = Y6$ & "top:"
+5469 GOSUB 9000
+5470 GOTO 5290
+5480 REM ---- appends the move of operand K2 (an immediate source J$(tag) or its location) to M3
+5481 GOSUB 2650
+5482 LET M2 = D(Q(K2),8)
+5483 LET M4 = 1
+5484 IF D(Q(K2),0) <> 2 THEN 5486
+5485 LET M4 = 2
+5486 IF V9 = 0 THEN 5492
+5487 LET R4 = Q(K2)
+5488 GOSUB 2500
+5489 LET M8 = M8 + 1
+5490 LET J$(M8) = "v" & H2$
+5491 LET M2 = 3000 + M8
+5492 LET M$ = "a move source without a location"
+5493 IF M2 = 0 THEN 9975
+5494 CALL "ra_mv": D(), M2, M3, M4, T
+5495 IF T <> 0 THEN 6790
+5496 RETURN
+5500 REM ---- endloop b: ind + step, the count down, the branch to the top (DESIGN 4.9.2, L-ai) ----
 5501 IF W0 = 2 THEN 5290
 5502 LET Y7 = VAL(G$(2))
 5503 LET Y6$ = L9$ & STR$(Y7) & "_"
 5504 LET X$ = Y6$ & "next:"
 5505 GOSUB 9000
-5506 LET Z1$ = "ldr"
-5507 LET Z2$ = "x10"
-5508 LET Z3 = B(Y7,3)
-5509 LET Z4$ = "sp"
-5510 GOSUB 9020
-5511 LET Z1$ = "cbz"
-5512 LET Z2$ = "x10, "
-5513 LET Z3$ = Y6$ & "exit"
-5514 GOSUB 9100
-5515 LET Z2$ = "x10"
-5516 LET Z3 = B(Y7,3)
-5517 LET Z4$ = "sp"
-5518 LET X$ = "sub x10, x10, #1"
-5519 GOSUB 9010
-5520 LET Z1$ = "str"
-5521 GOSUB 9020
-5522 LET Z1$ = "ldr"
-5523 LET Z2$ = "x9"
-5524 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
-5525 GOSUB 9020
-5526 LET Z2$ = "x11"
-5527 LET Z3 = B(Y7,3) + 8
-5528 GOSUB 9020
-5529 LET X$ = "add x9, x9, x11"
-5530 GOSUB 9010
-5531 LET Z1$ = "str"
-5532 LET Z2$ = "x9"
-5533 LET Z3 = A5 + 8 * (B(Y7,4) - 1)
-5534 GOSUB 9020
-5535 LET X$ = "b " & Y6$ & "top"
+5506 CALL "ra_blk": D(), Y7, C3, S3, B5
+5507 LET M$ = "a loop without a count location"
+5508 IF C3 = 0 THEN 9975
+5509 LET G6$ = "x17"
+5510 IF C3 < 0 THEN 5513
+5511 LET G6$ = FNN$(C3)
+5512 GOTO 5519
+5513 LET Z1$ = "ldr"
+5514 LET Z2$ = "x17"
+5515 LET Z3 = A3 + 8 * (-C3 - 1)
+5516 LET Z4$ = "sp"
+5517 LET Z0$ = "x17"
+5518 GOSUB 9020
+5519 IF B5 = 1 THEN 5530
+5520 REM ind not read after the loop: add, subs, b.hs (last + 1 runs for every last)
+5521 GOSUB 5560
+5522 LET X$ = "subs " & G6$ & ", " & G6$ & ", #1"
+5523 GOSUB 9010
+5524 GOSUB 5620
+5525 LET Z1$ = "b.hs"
+5526 LET Z2$ = ""
+5527 LET Z3$ = Y6$ & "top"
+5528 GOSUB 9100
+5529 GOTO 5545
+5530 REM ind read after the loop: cbz to the exit, sub, add, b
+5531 LET Z1$ = "cbz"
+5532 LET Z2$ = G6$ & ", "
+5533 LET Z3$ = Y6$ & "exit"
+5534 GOSUB 9100
+5535 LET X$ = "sub " & G6$ & ", " & G6$ & ", #1"
 5536 GOSUB 9010
-5537 LET X$ = Y6$ & "exit:"
-5538 GOSUB 9000
-5539 GOTO 5290
+5537 GOSUB 5620
+5538 GOSUB 5560
+5540 LET X$ = "b " & Y6$ & "top"
+5542 GOSUB 9010
+5545 LET X$ = Y6$ & "exit:"
+5546 GOSUB 9000
+5548 GOTO 5290
 5550 REM ---- do b: the top label -----------------------------------------------------------------
 5552 IF W0 = 2 THEN 5290
 5554 LET Y6$ = L9$ & G$(2) & "_"
 5556 LET X$ = Y6$ & "top:"
 5558 GOSUB 9000
-5560 GOTO 5290
+5559 GOTO 5290
+5560 REM ---- ind + step of loop Y7 (ind in x15 when spilled, stored back): the step's hidden
+5561 REM register S3 (x16 when spilled), the immediate, or the step register (x16 when spilled)
+5562 LET R3 = B(Y7,4)
+5563 LET K4 = 1
+5564 GOSUB 9720
+5565 LET G7$ = Z2$
+5566 LET G9$ = "add"
+5567 IF S3 <> 0 THEN 5582
+5568 LET R4 = B(Y7,3)
+5569 LET Q9 = 0
+5570 IF FNI(R4) = 0 THEN 5573
+5571 GOSUB 2500
+5572 GOSUB 2520
+5573 IF Q9 = 0 THEN 5578
+5574 LET G8$ = Q9$
+5575 IF N8 = 0 THEN 5590
+5576 LET G9$ = "sub"
+5577 GOTO 5590
+5578 LET R3 = R4
+5579 LET K4 = 2
+5580 GOSUB 9720
+5581 GOTO 5589
+5582 LET Z2$ = FNN$(ABS(S3))
+5583 IF S3 > 0 THEN 5589
+5584 LET Z2$ = "x16"
+5585 LET S1 = -S3
+5586 GOSUB 9750
+5589 LET G8$ = Z2$
+5590 LET X$ = G9$ & " " & G7$ & ", " & G7$ & ", " & G8$
+5591 GOSUB 9010
+5592 IF D(B(Y7,4),8) > 0 THEN 5599
+5593 LET Z1$ = "str"
+5594 LET Z2$ = "x15"
+5595 LET Z3 = A3 + 8 * (-D(B(Y7,4),8) - 1)
+5596 LET Z4$ = "sp"
+5597 LET Z0$ = "x16"
+5598 GOSUB 9020
+5599 RETURN
 5600 REM ---- enddo b -------------------------------------------------------------------------------
 5602 IF W0 = 2 THEN 5290
 5604 LET Y6$ = L9$ & G$(2) & "_"
@@ -930,21 +1414,52 @@
 5610 LET X$ = Y6$ & "exit:"
 5612 GOSUB 9000
 5614 GOTO 5290
-5650 REM ---- if b c / ifz b c: to the else label when c = 0 / c <> 0 --------------------------
+5620 REM ---- the spilled count back from x17 (str leaves the flags alone) --------------------------
+5621 IF C3 > 0 THEN 5629
+5622 LET Z1$ = "str"
+5623 LET Z2$ = "x17"
+5624 LET Z3 = A3 + 8 * (-C3 - 1)
+5625 LET Z4$ = "sp"
+5626 LET Z0$ = "x16"
+5627 GOSUB 9020
+5629 RETURN
+5650 REM ---- if b c / ifz b c: to the else label when the first part does not run; a one-branch
+5651 REM if (G = 1) to its exit / next label when it does (DESIGN 4.9.2 "Compare and branch fusion")
 5652 IF W0 = 2 THEN 5290
-5654 LET Y6$ = L9$ & G$(2) & "_"
-5656 LET Z1$ = "ldr"
-5658 LET Z2$ = "x9"
-5660 LET Z3 = A5 + 8 * (Q(1) - 1)
-5662 LET Z4$ = "sp"
-5664 GOSUB 9020
-5666 LET Z1$ = "cbz"
-5668 IF Y0 = 12 THEN 5672
-5670 LET Z1$ = "cbnz"
-5672 LET Z2$ = "x9, "
-5674 LET Z3$ = Y6$ & "else"
-5676 GOSUB 9100
-5678 GOTO 5290
+5653 LET Z3$ = L9$ & G$(2) & "_else"
+5654 LET B6 = 1
+5655 IF Y0 = 13 THEN 5657
+5656 LET B6 = 0
+5657 IF G(J) = 0 THEN 5666
+5658 CALL "io_split": B$(J + 1), J$(), 300, C1
+5659 LET Z3$ = L9$ & J$(2) & "_exit"
+5660 IF J$(1) = "exit" THEN 5665
+5661 LET Z3$ = L9$ & J$(2) & "_top"
+5662 IF B(VAL(J$(2)),1) <> 1 THEN 5665
+5663 LET Z3$ = L9$ & J$(2) & "_next"
+5665 LET B6 = 1 - B6
+5666 REM B6 = 1: branch when the condition holds, 0: when it does not
+5667 IF C4 <> 1 THEN 5674
+5668 LET Z1$ = "b." & C7$
+5669 IF B6 = 1 THEN 5671
+5670 GOSUB 9140
+5671 LET Z2$ = ""
+5672 GOSUB 9100
+5673 GOTO 5290
+5674 LET R3 = Q(1)
+5675 LET G9$ = "ne"
+5676 IF C4 <> 2 THEN 5679
+5677 LET R3 = C6
+5678 LET G9$ = C7$
+5679 LET K4 = 1
+5680 GOSUB 9720
+5681 LET Z2$ = Z2$ & ", "
+5682 LET Z1$ = "cbz"
+5683 IF G9$ = "eq" THEN 5685
+5684 LET B6 = 1 - B6
+5685 IF B6 = 1 THEN 5672
+5686 LET Z1$ = "cbnz"
+5687 GOTO 5672
 5700 REM ---- else b -------------------------------------------------------------------------------
 5702 IF W0 = 2 THEN 5290
 5704 LET Y6$ = L9$ & G$(2) & "_"
@@ -953,8 +1468,9 @@
 5710 LET X$ = Y6$ & "else:"
 5712 GOSUB 9000
 5714 GOTO 5290
-5750 REM ---- endif b (the else label too when there was no else) --------------------------------
+5750 REM ---- endif b (the else label too when there was no else; nothing after a one-branch if) --
 5752 IF W0 = 2 THEN 5290
+5753 IF G(J) = 1 THEN 5290
 5754 LET Y7 = VAL(G$(2))
 5756 LET Y6$ = L9$ & G$(2) & "_"
 5758 IF B(Y7,2) = 1 THEN 5766
@@ -963,218 +1479,406 @@
 5766 LET X$ = Y6$ & "end:"
 5768 GOSUB 9000
 5770 GOTO 5290
-5800 REM ---- exit b ------------------------------------------------------------------------------
+5800 REM ---- exit b (nothing in a one-branch if) ------------------------------------------------
 5802 IF W0 = 2 THEN 5290
+5803 IF G(J) = 1 THEN 5290
 5804 LET X$ = "b " & L9$ & G$(2) & "_exit"
 5806 GOSUB 9010
 5808 GOTO 5290
-5850 REM ---- next b: a loop's step, a do's top -------------------------------------------------
+5850 REM ---- next b: a loop's closing sequence, a do's top (nothing in a one-branch if) -----------
 5852 IF W0 = 2 THEN 5290
+5853 IF G(J) = 1 THEN 5290
 5854 LET Y7 = VAL(G$(2))
 5856 LET X$ = "b " & L9$ & G$(2) & "_top"
 5858 IF B(Y7,1) <> 1 THEN 5862
 5860 LET X$ = "b " & L9$ & G$(2) & "_next"
 5862 GOSUB 9010
 5864 GOTO 5290
-5900 REM ---- ret: results into x0-x7, d0-d7 and the results area, to the epilogue --------------
+5900 REM ---- ret: one parallel move of the results into x0-x7, d0-d7 and the caller's results
+5901 REM area (its address from F9 in x16), then to the epilogue
 5902 IF W0 = 2 THEN 5290
-5904 IF F8 = 0 THEN 5914
-5906 LET Z1$ = "ldr"
-5908 LET Z2$ = "x17"
-5910 LET Z3 = F9
-5912 LET Z4$ = "sp"
-5913 GOSUB 9020
-5914 LET G1 = 0
-5916 LET G2 = 0
-5918 LET G4 = 0
-5920 FOR K2 = 1 TO P0
-5922 LET Z1$ = "ldr"
-5924 LET Z4$ = "sp"
-5926 LET Z3 = A5 + 8 * (Q(K2) - 1)
-5928 IF P(K2) = 2 THEN 5938
-5930 IF G1 >= 8 THEN 5946
-5932 LET Z2$ = "x" & STR$(G1)
-5934 LET G1 = G1 + 1
-5936 GOTO 5944
-5938 IF G2 >= 8 THEN 5946
-5940 LET Z2$ = "d" & STR$(G2)
-5942 LET G2 = G2 + 1
-5944 GOSUB 9020
-5945 GOTO 5956
-5946 LET Z2$ = "x9"
-5948 GOSUB 9020
-5950 LET Z1$ = "str"
-5951 LET Z3 = 8 * G4
-5952 LET Z4$ = "x17"
-5953 GOSUB 9020
-5954 LET G4 = G4 + 1
-5956 NEXT K2
-5957 LET X$ = "b " & L9$ & "ret"
-5958 GOSUB 9010
-5959 GOTO 5290
-5960 REM ---- store Z2$ into the destination's slot ----------------------------------------------
-5962 LET Z1$ = "str"
-5964 LET Z4$ = "sp"
-5966 LET Z3 = A5 + 8 * (D1 - 1)
-5968 GOSUB 9020
-5970 RETURN
-6000 REM ---- call: arguments, bl, results (DESIGN 4.8 calling convention) ----------------------
+5904 IF F8 = 0 THEN 5910
+5906 LET Z2$ = "x16"
+5907 LET Z3 = F9
+5908 LET Z4$ = "sp"
+5909 GOSUB 9752
+5910 LET M7 = 1
+5911 LET M8 = 0
+5912 LET G1 = 0
+5913 LET G2 = 0
+5914 LET G4 = 0
+5915 FOR K2 = 1 TO P0
+5916 IF P(K2) = 2 THEN 5922
+5917 LET M3 = 1 + G1
+5918 LET G1 = G1 + 1
+5919 IF G1 <= 8 THEN 5928
+5920 GOTO 5925
+5922 LET M3 = 33 + G2
+5923 LET G2 = G2 + 1
+5924 IF G2 <= 8 THEN 5928
+5925 LET M3 = 2000 + G4
+5926 LET G4 = G4 + 1
+5928 GOSUB 5480
+5930 NEXT K2
+5932 GOSUB 6700
+5934 LET X$ = "b " & L9$ & "ret"
+5936 GOSUB 9010
+5938 GOTO 5290
+6000 REM ---- call: saves, the argument move, bl, the result move, the loads (DESIGN 4.8, 4.9.2) --
 6002 IF W0 = 2 THEN 5290
 6004 LET Y7 = G(J)
 6006 LET Z6$ = S$(Y7,3)
 6008 GOSUB 9630
-6010 LET G1 = 0
-6012 LET G2 = 0
-6014 LET G3 = 0
-6016 IF Z8 = 0 THEN 6040
-6018 IF A1 > 4095 THEN 6026
-6020 LET X$ = "add x0, sp, #" & STR$(A1)
-6022 GOSUB 9010
-6024 GOTO 6038
-6026 LET Z5 = A1
-6028 LET Z5$ = "x0"
-6030 GOSUB 9050
-6032 LET X$ = "add x0, sp, x0"
-6034 GOSUB 9010
-6038 LET G1 = 1
-6040 GOSUB 6100
-6042 LET X$ = "bl Lfn_" & S$(Y7,1)
-6044 GOSUB 9010
-6046 LET Y8 = VAL(G$(3))
-6048 LET Y4 = 4
-6050 GOSUB 6300
-6052 GOTO 5290
-6100 REM ---- the arguments Q() P() into x<G1>.. d<G2>.. and the stack slots from G3 -------------
-6102 FOR K2 = 1 TO P0
-6104 LET Z1$ = "ldr"
-6106 LET Z4$ = "sp"
-6108 LET Z3 = A5 + 8 * (Q(K2) - 1)
-6110 IF P(K2) = 2 THEN 6120
-6112 IF G1 >= 8 THEN 6130
-6114 LET Z2$ = "x" & STR$(G1)
-6116 LET G1 = G1 + 1
-6118 GOTO 6126
-6120 IF G2 >= 8 THEN 6130
-6122 LET Z2$ = "d" & STR$(G2)
-6124 LET G2 = G2 + 1
-6126 GOSUB 9020
-6128 GOTO 6140
-6130 LET Z2$ = "x9"
-6132 GOSUB 9020
-6134 LET Z1$ = "str"
-6136 LET Z3 = 8 * G3
-6137 GOSUB 9020
-6138 LET G3 = G3 + 1
-6140 NEXT K2
-6142 RETURN
-6200 REM ---- rcall: arguments, the site index (entries with site S), bl _<symbol>, results ----
+6010 LET Y4 = 4
+6012 LET N5 = VAL(G$(3))
+6014 GOSUB 6600
+6016 LET M8 = 0
+6018 LET G1 = 0
+6020 LET G2 = 0
+6022 LET G3 = 0
+6024 IF Z8 = 0 THEN 6032
+6026 LET M8 = 1
+6027 LET J$(1) = "a"
+6028 CALL "ra_mv": D(), 3001, 1, 1, T
+6030 LET G1 = 1
+6032 GOSUB 6050
+6034 GOSUB 6700
+6036 LET X$ = "bl Lfn_" & S$(Y7,1)
+6038 GOSUB 9010
+6040 GOSUB 6070
+6042 GOSUB 6650
+6044 GOTO 5290
+6050 REM ---- the arguments Q() P() to x<G1>.. d<G2>.. and the stack slots 1000+G3 ..: appended ----
+6051 FOR K2 = 1 TO P0
+6052 IF P(K2) = 2 THEN 6058
+6053 LET M3 = 1 + G1
+6054 LET G1 = G1 + 1
+6055 IF G1 <= 8 THEN 6064
+6056 GOTO 6061
+6058 LET M3 = 33 + G2
+6059 LET G2 = G2 + 1
+6060 IF G2 <= 8 THEN 6064
+6061 LET M3 = 1000 + G3
+6062 LET G3 = G3 + 1
+6064 GOSUB 5480
+6066 NEXT K2
+6068 RETURN
+6070 REM ---- the N5 results G$(Y4 ...) from x0-x7, d0-d7, the results area (2000+j): one move ----
+6071 LET G1 = 0
+6072 LET G2 = 0
+6073 LET G4 = 0
+6074 FOR K3 = 1 TO N5
+6075 LET Z$ = G$(Y4 + K3 - 1)
+6076 LET R3 = VAL(SEG$(Z$, 2, LEN(Z$)))
+6077 LET M4 = 1
+6078 IF SEG$(Z$, 1, 1) = "f" THEN 6084
+6079 LET M2 = 1 + G1
+6080 LET G1 = G1 + 1
+6081 IF G1 <= 8 THEN 6090
+6082 GOTO 6088
+6084 LET M4 = 2
+6085 LET M2 = 33 + G2
+6086 LET G2 = G2 + 1
+6087 IF G2 <= 8 THEN 6090
+6088 LET M2 = 2000 + G4
+6089 LET G4 = G4 + 1
+6090 LET M3 = D(R3,8)
+6091 LET M$ = "a call result without a location"
+6092 IF M3 = 0 THEN 9975
+6093 CALL "ra_mv": D(), M2, M3, M4, T
+6094 IF T <> 0 THEN 6790
+6095 NEXT K3
+6096 GOSUB 6700
+6098 RETURN
+6100 REM ---- a staged template (DESIGN 4.9.2, L-an): the operands into x15 x16 x17 / d29 d30 d31
+6101 REM in operand order by class (one parallel move; mcopy's d first), the sequence, the results
+6102 REM from x15 (x16) / d29 into their locations (one parallel move)
+6103 IF W0 = 2 THEN 5200
+6104 LET M8 = 0
+6105 LET G1 = 0
+6106 LET G2 = 0
+6107 IF Y0 <> 24 THEN 6112
+6108 LET G1 = 1
+6109 CALL "ra_mv": D(), D(D1,8), 16, 1, T
+6112 FOR K2 = 1 TO P0
+6113 IF P(K2) = 2 THEN 6117
+6114 LET G1 = G1 + 1
+6115 LET M3 = 15 + G1
+6116 GOTO 6119
+6117 LET G2 = G2 + 1
+6118 LET M3 = 61 + G2
+6119 GOSUB 5480
+6120 NEXT K2
+6122 GOSUB 6700
+6124 FOR I6 = M(T5,1) TO M(T5,1) + M(T5,2) - 1
+6126 LET Z$ = Q$(I6)
+6128 GOSUB 9150
+6130 NEXT I6
+6132 IF Y0 = 24 THEN 6146
+6134 LET M4 = 1
+6135 LET M2 = 16
+6136 IF D2 <> 2 THEN 6139
+6137 LET M4 = 2
+6138 LET M2 = 62
+6139 CALL "ra_mv": D(), M2, D(D1,8), M4, T
+6140 IF E1 = 0 THEN 6144
+6142 CALL "ra_mv": D(), 17, D(E1,8), 1, T
+6144 GOSUB 6700
+6146 IF W0 = 1 THEN 5290
+6148 GOTO 5200
+6200 REM ---- rcall: saves, the argument move (the site index last for an entry with site S), bl
+6201 REM _<symbol>, the result move, the loads
 6202 IF W0 = 2 THEN 5290
 6204 LET Y7 = G(J)
-6206 LET G1 = 0
-6208 LET G2 = 0
-6210 LET G3 = 0
-6212 GOSUB 6100
-6214 IF X3 = 0 THEN 6240
-6216 LET Z5 = X0
-6218 IF G1 >= 8 THEN 6226
-6220 LET Z5$ = "x" & STR$(G1)
-6222 GOSUB 9050
-6224 GOTO 6240
-6226 LET Z5$ = "x9"
-6228 GOSUB 9050
-6230 LET Z1$ = "str"
-6232 LET Z2$ = "x9"
-6234 LET Z3 = 8 * G3
-6236 LET Z4$ = "sp"
-6238 GOSUB 9020
-6240 LET X$ = "bl _" & Y$(Y7,2)
-6242 GOSUB 9010
-6244 LET Y8 = VAL(G$(4))
-6246 LET Y4 = 5
-6248 GOSUB 6300
-6250 GOTO 5290
-6300 REM ---- Y8 results, registers G$(Y4 ...), from x0-x7, d0-d7, the results area at A1 ------
-6302 LET G1 = 0
-6304 LET G2 = 0
-6306 LET G4 = 0
-6308 FOR K3 = 1 TO Y8
-6310 LET Y5$ = G$(Y4 + K3 - 1)
-6312 LET V3 = A5 + 8 * (VAL(SEG$(Y5$, 2, LEN(Y5$))) - 1)
-6314 LET Z1$ = "str"
-6316 LET Z4$ = "sp"
-6318 LET Z3 = V3
-6320 IF SEG$(Y5$, 1, 1) = "f" THEN 6330
-6322 IF G1 >= 8 THEN 6340
-6324 LET Z2$ = "x" & STR$(G1)
-6326 LET G1 = G1 + 1
-6328 GOTO 6336
-6330 IF G2 >= 8 THEN 6340
-6332 LET Z2$ = "d" & STR$(G2)
-6334 LET G2 = G2 + 1
-6336 GOSUB 9020
-6338 GOTO 6350
-6340 LET Z1$ = "ldr"
-6342 LET Z2$ = "x9"
-6343 LET Z3 = A1 + 8 * G4
-6344 GOSUB 9020
-6345 LET Z1$ = "str"
-6346 LET Z3 = V3
-6347 GOSUB 9020
-6348 LET G4 = G4 + 1
-6350 NEXT K3
-6352 RETURN
+6206 LET Y4 = 5
+6208 LET N5 = VAL(G$(4))
+6210 GOSUB 6600
+6212 LET M8 = 0
+6214 LET G1 = 0
+6216 LET G2 = 0
+6218 LET G3 = 0
+6220 GOSUB 6050
+6222 IF X3 = 0 THEN 6236
+6224 LET M8 = M8 + 1
+6226 LET J$(M8) = "v" & STR$(X0)
+6228 LET M3 = 1 + G1
+6230 IF G1 < 8 THEN 6234
+6232 LET M3 = 1000 + G3
+6234 CALL "ra_mv": D(), 3000 + M8, M3, 1, T
+6236 GOSUB 6700
+6238 LET X$ = "bl _" & Y$(Y7,2)
+6240 GOSUB 9010
+6242 GOSUB 6070
+6244 GOSUB 6650
+6246 GOTO 5290
+6300 REM ---- chkb idx ext dim: unsigned idx >= ext fails (idx < 0 too); an immediate index 0-4095:
+6301 REM cmp ext, #idx / b.ls (DESIGN 4.9.2); the cold block stores idx, dim, ext
+6302 IF W0 = 2 THEN 6330
+6304 LET R3 = Q(2)
+6305 LET K4 = 2
+6306 GOSUB 9720
+6307 LET G6$ = Z2$
+6308 IF Q0 = 1 THEN 6316
+6309 LET R3 = Q(1)
+6310 LET K4 = 1
+6311 GOSUB 9720
+6312 LET X$ = "cmp " & Z2$ & ", " & G6$
+6313 LET Z1$ = "b.hs"
+6314 GOTO 6320
+6316 LET X$ = "cmp " & G6$ & ", " & Q0$
+6318 LET Z1$ = "b.ls"
+6320 GOSUB 9010
+6321 LET Z2$ = ""
+6322 LET Z3$ = L9$ & "e" & STR$(J)
+6323 GOSUB 9100
+6324 IF W0 = 1 THEN 5290
+6330 LET X$ = L9$ & "e" & STR$(J) & ":"
+6331 GOSUB 9000
+6332 LET R3 = Q(2)
+6333 LET K4 = 2
+6334 GOSUB 9720
+6335 LET J$(2) = Z2$
+6336 IF Q0 = 1 THEN 6341
+6337 LET R3 = Q(1)
+6338 LET K4 = 1
+6339 GOSUB 9720
+6340 GOTO 6344
+6341 LET X$ = "mov x15, " & Q0$
+6342 GOSUB 9010
+6343 LET Z2$ = "x15"
+6344 LET J$(1) = Z2$
+6345 GOTO 5220
+6350 REM ---- isel / psel / fsel d c a b: csel / fcsel on the flags of a fused comparison, else of
+6351 REM cmp c, #0 (condition ne)
+6352 IF W0 = 2 THEN 5290
+6354 GOSUB 5150
+6356 LET G9$ = C7$
+6358 IF C4 = 1 THEN 6364
+6360 LET G9$ = "ne"
+6361 LET X$ = "cmp " & J$(1) & ", #0"
+6362 GOSUB 9010
+6364 LET Z1$ = "csel"
+6365 IF R$(I0) <> "fsel" THEN 6367
+6366 LET Z1$ = "fcsel"
+6367 LET X$ = Z1$ & " " & J0$ & ", " & J$(2) & ", " & J$(3) & ", " & G9$
+6368 GOSUB 9010
+6370 GOSUB 5185
+6372 GOTO 5290
 6400 REM ---- chk c err site n a...: to the cold block when c <> 0 ---------------------------------
 6402 LET Y6$ = L9$ & "e" & STR$(J)
 6404 IF W0 = 2 THEN 6430
-6406 LET Z1$ = "ldr"
-6408 LET Z2$ = "x9"
-6410 LET Z3 = A5 + 8 * (Q(1) - 1)
-6412 LET Z4$ = "sp"
-6414 GOSUB 9020
+6406 LET R3 = Q(1)
+6408 LET K4 = 1
+6410 GOSUB 9720
 6416 LET Z1$ = "cbnz"
-6418 LET Z2$ = "x9, "
+6418 LET Z2$ = Z2$ & ", "
 6420 LET Z3$ = Y6$
 6422 GOSUB 9100
 6424 IF W0 = 1 THEN 5290
 6430 LET X$ = Y6$ & ":"
 6432 GOSUB 9000
 6434 FOR K2 = 2 TO P0
-6436 LET Z1$ = "ldr"
-6438 LET Z2$ = "x9"
-6440 LET Z3 = A5 + 8 * (Q(K2) - 1)
-6442 LET Z4$ = "sp"
-6444 GOSUB 9020
-6446 LET Z1$ = "str"
-6448 LET Z3 = (K2 - 2) * K(1)
+6436 LET R3 = Q(K2)
+6438 LET K4 = 1
+6440 GOSUB 9720
+6442 LET Z1$ = "str"
+6444 LET Z3 = (K2 - 2) * K(1)
+6446 LET Z4$ = "sp"
+6448 LET Z0$ = "x16"
 6450 GOSUB 9020
 6452 NEXT K2
 6454 LET Z8 = E(G(J))
 6456 GOSUB 9375
 6458 GOTO 5290
-6500 REM ---- retain a / release a / mcopy d s n (DESIGN 4.9 phase-4 code): the operands into x9
-6502 REM (x10 x11; mcopy's d first, it is read, not written), then the record's template; $M of
-6504 REM release is _<symbol of FREE>
-6506 IF W0 = 2 THEN 5290
-6508 LET Z1$ = "ldr"
-6510 LET Z4$ = "sp"
-6512 LET G1 = 0
-6514 IF D1 = 0 THEN 6524
-6516 LET Z2$ = "x9"
-6518 LET Z3 = A5 + 8 * (D1 - 1)
-6520 GOSUB 9020
-6522 LET G1 = 1
-6524 FOR K2 = 1 TO P0
-6526 LET Z2$ = "x" & STR$(8 + G1 + K2)
-6528 LET Z3 = A5 + 8 * (Q(K2) - 1)
-6530 GOSUB 9020
-6532 NEXT K2
-6534 LET M$ = "_" & Y$(Y3,2)
-6536 LET T5 = A(I0,2)
-6538 FOR I6 = M(T5,1) TO M(T5,1) + M(T5,2) - 1
-6540 LET Z$ = Q$(I6)
-6542 GOSUB 9150
-6544 NEXT I6
-6546 GOTO 5290
+6460 REM ---- a fused icmp / fcmp / bnot: its template's first line sets the flags (C5 = 1), or
+6461 REM nothing for a test against 0 read by cbz / cbnz (C5 = 2); 2700
+6462 IF W0 = 2 THEN 5290
+6464 GOSUB 2700
+6466 IF C5 = 2 THEN 5290
+6468 GOSUB 5150
+6470 LET Z$ = Q$(M(T5,1))
+6472 GOSUB 9150
+6474 GOTO 5290
+6500 REM ---- release a: the count down; at 0 the free path saves, calls FREE with a in x0 and
+6501 REM loads (DESIGN 4.9, 4.9.2); a in x15 when spilled, the count in x16
+6502 IF W0 = 2 THEN 5290
+6504 LET R3 = Q(1)
+6506 LET K4 = 1
+6508 GOSUB 9720
+6510 LET G6$ = Z2$
+6512 LET X$ = "ldr x16, [" & G6$ & "]"
+6514 GOSUB 9010
+6516 LET X$ = "cbz x16, 1f"
+6518 GOSUB 9010
+6520 LET X$ = "subs x16, x16, #1"
+6522 GOSUB 9010
+6524 LET X$ = "str x16, [" & G6$ & "]"
+6526 GOSUB 9010
+6528 LET X$ = "b.ne 1f"
+6530 GOSUB 9010
+6532 LET N5 = 0
+6534 GOSUB 6600
+6536 IF G6$ = "x0" THEN 6542
+6538 LET X$ = "mov x0, " & G6$
+6540 GOSUB 9010
+6542 LET X$ = "bl _" & Y$(Y3,2)
+6544 GOSUB 9010
+6546 GOSUB 6650
+6548 LET X$ = "1:"
+6550 GOSUB 9000
+6552 GOTO 5290
+6600 REM ---- the saves of record J (ra_sv): every interval in a caller-saved register crossing it,
+6601 REM except the N5 results G$(Y4 ...) (whose save slot, if any, is unused), stored to its
+6602 REM save slot; 6650 loads them back
+6603 CALL "ra_sv": D(), J, N4, T
+6604 LET Z1$ = "str"
+6610 FOR I4 = 1 TO N4
+6612 CALL "ra_svi": D(), I4, P1, S1, R5
+6614 FOR K3 = 1 TO N5
+6616 LET Z$ = G$(Y4 + K3 - 1)
+6618 IF VAL(SEG$(Z$, 2, LEN(Z$))) = R5 THEN 6630
+6620 NEXT K3
+6621 IF S1 = 0 THEN 6634
+6622 LET Z2$ = FNN$(P1)
+6624 IF Z1$ = "ldr" THEN 6628
+6626 GOSUB 9760
+6627 GOTO 6630
+6628 GOSUB 9750
+6630 NEXT I4
+6632 RETURN
+6634 LET M$ = "a call crossed by an interval without a save slot"
+6636 GOTO 9975
+6650 LET Z1$ = "ldr"
+6652 GOTO 6610
+6700 REM ---- the listed moves as one parallel move (ra_pm): its steps emitted in order ------------
+6702 CALL "ra_pm": D(), M6
+6704 FOR M1 = 1 TO M6
+6706 CALL "ra_st": D(), M1, M2, M3, M4, M5
+6708 GOSUB 6800
+6710 NEXT M1
+6712 RETURN
+6790 LET M$ = "more than 320 moves in one parallel move"
+6792 GOTO 9975
+6800 REM ---- one move step: source M2, destination M3, class M4 (codes of passes/lib/API.md: 1-64
+6801 REM a register, 0 the cycle scratch x17 / d31, -s a spill slot, 1000+j an outgoing stack slot,
+6802 REM 2000+j a results-area slot, at x16 in a ret (M7 = 1), 3000+j the source J$(j)): a memory
+6803 REM destination from a register directly, from memory or an immediate through x17
+6804 IF M3 < 0 THEN 6820
+6806 IF M3 >= 1000 THEN 6820
+6808 LET N6 = M3
+6810 GOSUB 6890
+6812 LET Z2$ = N6$
+6814 GOTO 6850
+6820 LET Z4$ = "sp"
+6821 IF M3 >= 0 THEN 6824
+6822 LET Z3 = A3 + 8 * (-M3 - 1)
+6823 GOTO 6832
+6824 LET Z3 = 8 * (M3 - 1000)
+6825 IF M3 < 2000 THEN 6832
+6826 LET Z3 = A1 + 8 * (M3 - 2000)
+6827 IF M7 = 0 THEN 6832
+6828 LET Z3 = 8 * (M3 - 2000)
+6829 LET Z4$ = "x16"
+6830 LET M$ = "a ret with more than 4095 results in the results area"
+6831 IF Z3 > 32760 THEN 9975
+6832 IF M2 < 0 THEN 6840
+6833 IF M2 > 64 THEN 6840
+6834 LET N6 = M2
+6835 GOSUB 6890
+6836 LET Z2$ = N6$
+6837 LET Z1$ = "str"
+6838 LET Z0$ = "x17"
+6839 GOTO 9020
+6840 LET G5 = Z3
+6841 LET G5$ = Z4$
+6842 LET Z2$ = "x17"
+6843 GOSUB 6850
+6844 LET Z3 = G5
+6845 LET Z4$ = G5$
+6846 LET Z1$ = "str"
+6847 LET Z2$ = "x17"
+6848 LET Z0$ = "x16"
+6849 GOTO 9020
+6850 REM ---- the source M2 into the register Z2$: a register move, a spill or results-area load,
+6851 REM an immediate, the results-area address (a), an incoming stack parameter (x<offset>)
+6852 IF M2 < 0 THEN 6860
+6853 IF M2 >= 2000 THEN 6863
+6854 LET N6 = M2
+6855 GOSUB 6890
+6856 IF N6$ = Z2$ THEN 6899
+6857 LET X$ = "mov " & Z2$ & ", " & N6$
+6858 IF SEG$(Z2$, 1, 1) <> "d" THEN 9010
+6859 LET X$ = "f" & X$
+6860 IF M2 >= 0 THEN 9010
+6861 LET S1 = -M2
+6862 GOTO 9750
+6863 IF M2 >= 3000 THEN 6868
+6864 LET Z3 = A1 + 8 * (M2 - 2000)
+6865 LET Z4$ = "sp"
+6866 GOTO 9752
+6868 LET Z$ = J$(M2 - 3000)
+6869 IF SEG$(Z$, 1, 1) <> "v" THEN 6874
+6870 CALL "io_i": SEG$(Z$, 2, LEN(Z$)), V0, K9, V(), T
+6871 LET Z5$ = Z2$
+6872 GOTO 9060
+6874 IF Z$ <> "a" THEN 6884
+6875 LET X$ = "add " & Z2$ & ", sp, #" & STR$(A1)
+6876 IF A1 <= 4095 THEN 9010
+6877 LET Z5 = A1
+6878 LET Z5$ = Z2$
+6879 GOSUB 9050
+6880 LET X$ = "add " & Z2$ & ", sp, " & Z2$
+6881 GOTO 9010
+6884 LET Z3 = VAL(SEG$(Z$, 2, LEN(Z$)))
+6885 LET Z4$ = "x29"
+6886 GOTO 9752
+6890 REM ---- N6$ = the name of register code N6 of class M4 (0: the cycle scratch x17 / d31) ----
+6891 LET N6$ = "x17"
+6892 IF M4 <> 2 THEN 6894
+6893 LET N6$ = "d31"
+6894 IF N6 = 0 THEN 6899
+6895 LET N6$ = FNN$(N6)
+6899 RETURN
 7000 REM ---- data: str lab v -- a static string object (rt.inc SEA_STR_*) ---------------------
 7005 GOSUB 7900
 7010 GOSUB 9400
@@ -1540,7 +2244,8 @@
 9009 RETURN
 9010 LET X$ = "    " & X$
 9012 GOTO 9002
-9020 REM ---- Z1$ Z2$, [Z4$, #Z3]: a load or store of an 8-byte frame slot -------------------------
+9020 REM ---- Z1$ Z2$, [Z4$, #Z3]: a load or store of 8 bytes at Z4$ + Z3 (Z3 >= 0); an offset
+9021 REM beyond the scaled form goes through the general register Z0$: [Z4$, Z0$]
 9022 IF Z3 > 32760 THEN 9036
 9024 IF Z3 <> INT(Z3 / 8) * 8 THEN 9036
 9026 IF Z3 = 0 THEN 9032
@@ -1549,12 +2254,10 @@
 9032 LET X$ = Z1$ & " " & Z2$ & ", [" & Z4$ & "]"
 9034 GOTO 9010
 9036 LET Z5 = Z3
-9038 LET Z5$ = "x16"
+9038 LET Z5$ = Z0$
 9040 GOSUB 9050
-9042 LET X$ = "add x16, " & Z4$ & ", x16"
-9044 GOSUB 9010
-9046 LET X$ = Z1$ & " " & Z2$ & ", [x16]"
-9048 GOTO 9010
+9042 LET X$ = Z1$ & " " & Z2$ & ", [" & Z4$ & ", " & Z0$ & "]"
+9044 GOTO 9010
 9050 REM ---- Z5$ = Z5 (an integer 0 <= Z5 < 2^53); 9060: Z5$ = the limbs V(1..4) ---------------
 9052 LET V5 = Z5
 9053 FOR I1 = 4 TO 1 STEP -1
@@ -1601,8 +2304,17 @@
 9126 GOSUB 9010
 9128 LET X$ = "9:"
 9130 GOTO 9000
+9140 REM ---- Z1$ = the inverse of the conditional branch Z1$ (U$; L-as: it holds when unordered) --
+9141 FOR I1 = 1 TO U8
+9142 IF U$(I1,1) = Z1$ THEN 9146
+9143 NEXT I1
+9144 LET M$ = "no inversion for the branch " & Z1$
+9145 GOTO 9975
+9146 LET Z1$ = U$(I1,2)
+9147 RETURN
 9150 REM ---- one template line Z$: placeholders replaced; a branch to $C / $D through 9100 -------
 9152 LET R$ = ""
+9153 LET N3 = 0
 9154 LET Y1 = 1
 9156 LET Y2 = POS(Z$, "$", Y1)
 9158 IF Y2 = 0 THEN 9170
@@ -1612,7 +2324,9 @@
 9166 GOSUB 9200
 9168 GOTO 9156
 9170 LET R$ = R$ & SEG$(Z$, Y1, LEN(Z$))
-9172 LET Y3$ = SEG$(Z$, LEN(Z$) - 1, LEN(Z$))
+9171 IF N3 = 0 THEN 9173
+9172 GOSUB 9280
+9173 LET Y3$ = SEG$(Z$, LEN(Z$) - 1, LEN(Z$))
 9174 IF Y3$ = "$C" THEN 9184
 9176 IF Y3$ = "$D" THEN 9184
 9178 LET X$ = R$
@@ -1626,6 +2340,7 @@
 9194 LET Z2$ = SEG$(R$, Y2 + 1, LEN(R$) - LEN(Z3$))
 9196 GOTO 9100
 9200 REM ---- the value of placeholder Y3$, appended to R$ ------------------------------------
+9201 IF POS("dabcwx", Y3$) > 0 THEN 9253
 9202 IF Y3$ <> "C" THEN 9206
 9204 LET R$ = R$ & L9$ & "e" & STR$(J)
 9205 RETURN
@@ -1660,31 +2375,35 @@
 9246 IF Y5 = 0 THEN 9975
 9247 LET R$ = R$ & STR$((Y5 - 1) * K(1))
 9248 RETURN
-9250 REM ---- the memory operand M$ of base Q(B1) + idx Q(B2) * scale U2 + off L() --------------
-9252 IF B2 > 0 THEN 9262
-9254 IF O1 = 1 THEN 9258
-9256 LET M$ = "[" & J$(B1) & "]"
-9257 RETURN
-9258 LET X$ = "mov x16, " & J$(B1)
-9260 GOTO 9274
-9262 IF U2 <> 1 THEN 9268
-9264 LET X$ = "add x16, " & J$(B1) & ", " & J$(B2)
-9266 GOTO 9274
-9268 LET Z5 = U2
-9270 LET Z5$ = "x17"
-9271 GOSUB 9050
-9272 LET X$ = "madd x16, " & J$(B2) & ", x17, " & J$(B1)
-9274 GOSUB 9010
-9276 LET M$ = "[x16]"
-9278 IF O1 = 0 THEN 9290
-9280 FOR I1 = 1 TO 4
-9282 LET V(I1) = L(I1)
-9284 NEXT I1
-9285 LET Z5$ = "x17"
-9286 GOSUB 9060
-9287 LET X$ = "add x16, x16, x17"
-9288 GOSUB 9010
-9290 RETURN
+9250 REM ---- the operand placeholders: $d the destination J0$, $a $b $c the operands J$(1..3), $w
+9251 REM $x the 32-bit names of the destination and of the first operand; an immediate $b of the
+9252 REM opposite sign (N8) turns the mnemonic (N3, 9280)
+9253 LET Y5 = POS("dabcwx", Y3$)
+9254 IF Y5 > 1 THEN 9257
+9255 LET R$ = R$ & J0$
+9256 RETURN
+9257 IF Y5 > 4 THEN 9264
+9258 LET R$ = R$ & J$(Y5 - 1)
+9259 IF Y5 <> 3 THEN 9256
+9260 IF Q0 <> 2 THEN 9256
+9261 IF N8 = 0 THEN 9256
+9262 LET N3 = 1
+9263 RETURN
+9264 LET Y6 = Y5 - 5
+9265 LET Z9$ = J0$
+9266 IF Y6 = 0 THEN 9268
+9267 LET Z9$ = J$(1)
+9268 LET R$ = R$ & "w" & SEG$(Z9$, 2, LEN(Z9$))
+9269 RETURN
+9280 REM the opposite instruction of an add / sub / cmp with a negative immediate
+9281 LET Y2 = POS(R$, " ")
+9282 LET Z1$ = SEG$(R$, 1, Y2 - 1)
+9283 LET Y5 = POS("|add=sub|sub=add|adds=subs|subs=adds|cmp=cmn|", "|" & Z1$ & "=")
+9284 LET M$ = "no opposite instruction for " & Z1$
+9285 IF Y5 = 0 THEN 9975
+9286 LET Y6 = POS("|add=sub|sub=add|adds=subs|subs=adds|cmp=cmn|", "|", Y5 + 1)
+9287 LET R$ = SEG$("|add=sub|sub=add|adds=subs|subs=adds|cmp=cmn|", Y5 + LEN(Z1$) + 2, Y6 - 1) & SEG$(R$, Y2, LEN(R$))
+9288 RETURN
 9300 REM ---- X0 = the index of site X1:X2 in _sea_sites; added in mode 1 (first occurrence) ----
 9302 LET S5 = X1 * 1E9 + X2
 9304 LET S6 = S5 - INT(S5 / 131071) * 131071
@@ -1836,7 +2555,7 @@
 9548 GOTO 9540
 9549 RETURN
 9550 REM ---- the register Z$ of field type T1 (16 reg, 17 ri, 18 rf, 19 rp): R0 number, R1 class
-9551 REM (1 i, 2 f, 3 p); one class per register (D); a new one is M0 + 1, the highest (DESIGN 3.6.1)
+9551 REM (1 i, 2 f, 3 p); one class per register (D(r,0)); a new one is M0 + 1, the highest (DESIGN 3.6.1)
 9552 LET R1 = POS("ifp", SEG$(Z$, 1, 1))
 9554 IF R1 = 0 THEN 9990
 9556 IF T1 = 16 THEN 9560
@@ -1847,11 +2566,13 @@
 9566 IF R0 <= K(40) THEN 9572
 9568 LET A$(1) = "registers"
 9570 GOTO 9960
-9572 IF D(R0) = 0 THEN 9577
-9574 IF D(R0) <> R1 THEN 9990
+9572 IF D(R0,0) = 0 THEN 9577
+9574 IF D(R0,0) <> R1 THEN 9990
 9576 RETURN
 9577 IF R0 <> M0 + 1 THEN 9990
-9578 LET D(R0) = R1
+9578 LET D(R0,0) = R1
+9579 LET T(R0) = 0
+9580 LET W(R0) = 0
 9582 LET M0 = R0
 9584 RETURN
 9590 REM the base and index fields of loads and stores
@@ -1895,6 +2616,111 @@
 9682 IF T1 <> 6 THEN 9686
 9684 LET X5 = X5 + 1
 9686 RETURN
+9720 REM ---- Z2$ = the name of register R3 as the operand in position K4: its machine register,
+9721 REM or scratch register K4 of its class (x15 x16 x17, d29 d30 d31) loaded from its spill
+9722 REM slot (an f load's offset beyond the scaled form through x<14+K4>, which its position
+9723 REM leaves free); DESIGN 4.9.2 "Operands"
+9724 LET L2 = D(R3,8)
+9725 IF L2 <> 0 THEN 9727
+9726 GOTO 9738
+9727 IF L2 < 0 THEN 9730
+9728 LET Z2$ = FNN$(L2)
+9729 RETURN
+9730 LET Z2$ = "x" & STR$(14 + K4)
+9731 LET Z0$ = Z2$
+9732 IF D(R3,0) <> 2 THEN 9734
+9733 LET Z2$ = "d" & STR$(28 + K4)
+9734 LET Z1$ = "ldr"
+9735 LET Z3 = A3 + 8 * (-L2 - 1)
+9736 LET Z4$ = "sp"
+9737 GOTO 9020
+9738 LET M$ = "a register without a location"
+9739 GOTO 9975
+9745 REM ---- 9750: spill slot S1 into the register Z2$; 9752: [Z4$ + Z3] into Z2$ (an offset
+9746 REM beyond the scaled form through Z2$ itself, through x17 for a d register)
+9750 LET Z3 = A3 + 8 * (S1 - 1)
+9751 LET Z4$ = "sp"
+9752 LET Z1$ = "ldr"
+9753 LET Z0$ = Z2$
+9754 IF SEG$(Z2$, 1, 1) <> "d" THEN 9020
+9755 LET Z0$ = "x17"
+9756 GOTO 9020
+9760 REM ---- the register Z2$ into spill slot S1 (an offset beyond the scaled form through x16) ---
+9761 LET Z3 = A3 + 8 * (S1 - 1)
+9762 LET Z4$ = "sp"
+9763 LET Z1$ = "str"
+9764 LET Z0$ = "x16"
+9765 GOTO 9020
+9800 REM ---- the memory operand M$ of a load or store (DESIGN 4.9.2 "Loads and stores"): base
+9801 REM Q(B1) (x16 when spilled), idx Q(B2) (x17 when spilled) times scale U2, off L() (O1 = 1
+9802 REM if not 0; G8 its value when 0 <= off < 65536, else -1): [base], [base, #off] with an
+9803 REM encodable offset, [base, idx] or [base, idx, lsl #3] (scale 1 or the access size, off 0),
+9804 REM else the address formed in x16; a store's spilled value loaded afterwards into x15 / d29
+9805 LET Z9 = 8
+9806 IF POS("|ldb|stb|", "|" & R$(I0) & "|") = 0 THEN 9808
+9807 LET Z9 = 1
+9808 LET R3 = Q(B1)
+9809 LET K4 = 2
+9810 GOSUB 9720
+9811 LET G6$ = Z2$
+9812 LET G7$ = ""
+9813 IF B2 = 0 THEN 9818
+9814 LET R3 = Q(B2)
+9815 LET K4 = 3
+9816 GOSUB 9720
+9817 LET G7$ = Z2$
+9818 LET G8 = -1
+9819 IF L(1) + L(2) + L(3) <> 0 THEN 9821
+9820 LET G8 = L(4)
+9821 IF B2 > 0 THEN 9834
+9822 LET M$ = "[" & G6$ & "]"
+9823 IF O1 = 0 THEN 9880
+9824 LET M$ = "[" & G6$ & ", #" & STR$(G8) & "]"
+9825 IF G8 < 0 THEN 9828
+9826 IF G8 <> INT(G8 / Z9) * Z9 THEN 9828
+9827 IF G8 <= 4095 * Z9 THEN 9880
+9828 LET G9$ = G6$
+9829 GOTO 9862
+9834 LET M$ = "[" & G6$ & ", " & G7$ & "]"
+9835 IF O1 = 1 THEN 9840
+9836 IF U2 = 1 THEN 9880
+9837 LET M$ = "[" & G6$ & ", " & G7$ & ", lsl #3]"
+9838 IF U2 = Z9 THEN 9880
+9840 LET Y1 = 1
+9841 LET Y2 = 0
+9842 IF Y1 >= U2 THEN 9846
+9843 LET Y1 = Y1 * 2
+9844 LET Y2 = Y2 + 1
+9845 GOTO 9842
+9846 LET X$ = "add x16, " & G6$ & ", " & G7$ & ", lsl #" & STR$(Y2)
+9847 IF Y1 = U2 THEN 9853
+9848 LET Z5 = U2
+9849 LET Z5$ = "x15"
+9850 GOSUB 9050
+9851 LET X$ = "madd x16, " & G7$ & ", x15, " & G6$
+9853 GOSUB 9010
+9854 LET M$ = "[x16]"
+9855 IF O1 = 0 THEN 9880
+9856 LET G9$ = "x16"
+9862 REM the offset added to x16 or to the base: an immediate 0-4095, else through x17
+9863 LET X$ = "add x16, " & G9$ & ", #" & STR$(G8)
+9864 IF G8 < 0 THEN 9867
+9865 IF G8 > 4095 THEN 9867
+9866 GOTO 9874
+9867 FOR I1 = 1 TO 4
+9868 LET V(I1) = L(I1)
+9869 NEXT I1
+9870 LET Z5$ = "x17"
+9871 GOSUB 9060
+9872 LET X$ = "add x16, " & G9$ & ", x17"
+9874 GOSUB 9010
+9876 LET M$ = "[x16]"
+9880 IF SEG$(R$(I0), 1, 1) <> "s" THEN 9890
+9882 LET R3 = Q(1)
+9884 LET K4 = 1
+9886 GOSUB 9720
+9888 LET J$(1) = Z2$
+9890 RETURN
 9960 CALL "dg_compile": P$, H$(), N1, F1, F2, F3, "TOO_LARGE", A$(), 1, E(), E$(), E0
 9970 CALL "dg_boot": P$
 9975 CALL "dg_bug": P$, M$

@@ -1,0 +1,53 @@
+// opt_ref_elem -- a ref to an element of an array that another variable shares, with the other variable
+// passed beside it: f(ref v[3], v2) updating the element in a loop while reading v2, one
+// call per element in a loop, a matrix element; both arrays printed afterwards
+// (LANGUAGE.md 8.3, 4.5)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn bump_all(ref x: f64, w: f64[], n: i64) {
+    for i in 0..n {
+        x = x + w[i]
+        printf("%g %g\n", x, w[3])
+    }
+}
+fn twice(ref x: i64, src: i64[]) {
+    for k in 0..len(src) {
+        x = x * 2 + src[k]
+    }
+}
+fn addto(ref x: f64, k: f64) {
+    for j in 0..3 {
+        x += k
+    }
+}
+var v = zeros(5)
+for i in 0..5 {
+    v[i] = f64(i + 1)
+}
+let v2 = v
+bump_all(ref v[3], v2, 3)
+pv(v)
+pv(v2)
+var iv = filled(1, 4)
+let iv2 = iv
+for i in 0..4 {
+    twice(ref iv[i], iv2)
+}
+pvi(iv)
+pvi(iv2)
+var M = zeros(2, 2)
+let M2 = M
+addto(ref M[1, 0], 0.5)
+printf("%g %g %g %g / %g\n", M[0, 0], M[1, 0], M[0, 1], M[1, 1], M2[1, 0])

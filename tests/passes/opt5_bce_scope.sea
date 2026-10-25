@@ -1,0 +1,27 @@
+fn scope(k: i64) -> f64 {
+    var v = zeros(8)
+    var s = 0.0
+    if k >= 0 {
+        for i in k..8 {
+            s = s + v[k] + v[i]
+        }
+        s = s + v[k]
+    }
+    var j = 0
+    while j < 100 {
+        j = j + 1
+        if j >= 5 {
+            break
+        }
+        if j < 0 {
+            break
+        }
+        s = s + v[j]
+    }
+    s = s + v[j]
+    return s
+}
+printf("%g %g\n", scope(2), scope(7))
+// opt5_bce_scope -- DESIGN.md 5.8 F3 and F6: a guard's non-emptiness k <= 7 proves v[k] and v[i]
+// inside its loop but not after its endif (kept); two break tests narrow j inside the do loop
+// (deleted), and after the loop j is unknown again (kept)

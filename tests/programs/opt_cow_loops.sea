@@ -1,0 +1,75 @@
+// opt_cow_loops -- copy on write in loops: a loop storing into an array another variable shares, a loop
+// whose stores are all skipped, a ref array parameter updated in a loop while the caller
+// keeps a copy, a loop storing into an array it also passes to functions (one returns it
+// and the result is kept), a copy made before a loop passed to a function inside it, a
+// matrix row (LANGUAGE.md 4.5, 8.2, 8.3)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn ident(a: f64[]) -> f64[] {
+    return a
+}
+fn fill_ref(ref v: f64[], k: f64) {
+    for i in 0..len(v) {
+        v[i] = v[i] + k
+    }
+}
+fn total(a: f64[]) -> f64 {
+    var t = 0.0
+    for x in a {
+        t += x
+    }
+    return t
+}
+var a = filled(1.0, 4)
+var b = a
+for i in 0..4 {
+    b[i] = f64(i) * 2.0
+}
+pv(a)
+pv(b)
+var c = b
+for i in 0..4 {
+    if c[i] > 100.0 {
+        c[i] = 0.0
+    }
+}
+pv(c)
+c[1] = -1.0
+pv(c)
+pv(b)
+var d = b
+let dsave = d
+fill_ref(ref d, 0.5)
+pv(d)
+pv(dsave)
+pv(b)
+var u = zeros(3)
+var snap = zeros(0)
+for i in 0..3 {
+    u[i] = f64(i + 1) * 10.0
+    pv(snap)
+    printf("%g\n", total(u))
+    snap = ident(u)
+}
+u[0] = -5.0
+pv(u)
+pv(snap)
+var e = filled(3.0, 3)
+let ecopy = e
+for i in 0..3 {
+    e[i] = f64(-i)
+    printf("%g\n", total(ecopy))
+}
+pv(e)
+pv(ecopy)
+var M = ones(2, 3)
+let M0 = M
+for j in 0..3 {
+    M[1, j] = f64(j) + 0.25
+}
+printf("%g %g %g / %g %g %g\n", M[1, 0], M[1, 1], M[1, 2], M0[1, 0], M0[1, 1], M0[1, 2])

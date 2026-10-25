@@ -1,0 +1,25 @@
+// r_opt_struct_ovf -- p.c + 1 on the i64 field of a struct parameter holding 2^63 - 1: integer overflow at
+// that line, after a call that does not overflow (LANGUAGE.md 6.5, 4.6, 8.2)
+struct S {
+    a: f64
+    c: i64
+}
+fn next(p: S, n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return p.c + 1 + t
+}
+fn nexta(v: i64[3], n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return v[2] + 1 + t
+}
+let ok = S { a: 1.5, c: 41 }
+printf("%d\n", next(ok, 2))
+let big = S { a: 0.5, c: 9223372036854775807 }
+printf("%d\n", next(big, 0))
+printf("never\n")

@@ -1,0 +1,3556 @@
+#sea 1
+#target arm64-macos
+#file ra5_fcmp.sea
+func .main main 0:1:1 0 0
+slot s1 336 8
+slot s2 336 8
+slot s3 336 8
+slot s4 336 8
+slot s5 336 8
+slot s6 336 8
+slot s7 336 8
+slot s8 336 8
+slot s9 336 8
+slot s10 336 8
+li i1 1
+li i2 0
+li i3 3
+lf f4 #3FF0000000000000
+lf f5 #0000000000000000
+lf f6 #7FF8000000000000
+lf f7 #8000000000000000
+fadd f8 f6 f7
+lf f9 #3FF0000000000000
+lf f10 #8000000000000000
+fadd f11 f9 f10
+fcmp eq i12 f8 f11
+fcmp ne i13 f8 f11
+fcmp lt i14 f8 f11
+fcmp le i15 f8 f11
+fcmp gt i16 f8 f11
+fcmp ge i17 f8 f11
+fcmp eq i18 f8 f11
+if 1 i18
+li i19 1
+else 1
+li i19 0
+endif 1
+fcmp ne i20 f8 f11
+if 2 i20
+li i21 1
+else 2
+li i21 0
+endif 2
+fcmp lt i22 f8 f11
+if 3 i22
+li i23 1
+else 3
+li i23 0
+endif 3
+fcmp le i24 f8 f11
+if 4 i24
+li i25 1
+else 4
+li i25 0
+endif 4
+fcmp gt i26 f8 f11
+if 5 i26
+li i27 1
+else 5
+li i27 0
+endif 5
+fcmp ge i28 f8 f11
+if 6 i28
+li i29 1
+else 6
+li i29 0
+endif 6
+li i30 5
+fcmp eq i31 f8 f11
+ifz 7 i31
+li i30 7
+endif 7
+li i32 5
+fcmp ne i33 f8 f11
+ifz 8 i33
+li i32 7
+endif 8
+li i34 5
+fcmp lt i35 f8 f11
+ifz 9 i35
+li i34 7
+endif 9
+li i36 5
+fcmp le i37 f8 f11
+ifz 10 i37
+li i36 7
+endif 10
+li i38 5
+fcmp gt i39 f8 f11
+ifz 11 i39
+li i38 7
+endif 11
+li i40 5
+fcmp ge i41 f8 f11
+ifz 12 i41
+li i40 7
+endif 12
+li i42 0
+do 13
+iadd i42 i42 i1
+fcmp eq i43 f8 f11
+if 14 i43
+exit 13
+endif 14
+icmp ge i44 i42 i3
+if 15 i44
+exit 13
+endif 15
+enddo 13
+li i45 0
+do 16
+iadd i45 i45 i1
+fcmp ne i46 f8 f11
+if 17 i46
+exit 16
+endif 17
+icmp ge i47 i45 i3
+if 18 i47
+exit 16
+endif 18
+enddo 16
+li i48 0
+do 19
+iadd i48 i48 i1
+fcmp lt i49 f8 f11
+if 20 i49
+exit 19
+endif 20
+icmp ge i50 i48 i3
+if 21 i50
+exit 19
+endif 21
+enddo 19
+li i51 0
+do 22
+iadd i51 i51 i1
+fcmp le i52 f8 f11
+if 23 i52
+exit 22
+endif 23
+icmp ge i53 i51 i3
+if 24 i53
+exit 22
+endif 24
+enddo 22
+li i54 0
+do 25
+iadd i54 i54 i1
+fcmp gt i55 f8 f11
+if 26 i55
+exit 25
+endif 26
+icmp ge i56 i54 i3
+if 27 i56
+exit 25
+endif 27
+enddo 25
+li i57 0
+do 28
+iadd i57 i57 i1
+fcmp ge i58 f8 f11
+if 29 i58
+exit 28
+endif 29
+icmp ge i59 i57 i3
+if 30 i59
+exit 28
+endif 30
+enddo 28
+li i60 0
+loop 31 i61 i2 i1 i1
+fcmp eq i62 f8 f11
+if 32 i62
+next 31
+endif 32
+iadd i60 i60 i1
+endloop 31
+li i63 0
+loop 33 i64 i2 i1 i1
+fcmp ne i65 f8 f11
+if 34 i65
+next 33
+endif 34
+iadd i63 i63 i1
+endloop 33
+li i66 0
+loop 35 i67 i2 i1 i1
+fcmp lt i68 f8 f11
+if 36 i68
+next 35
+endif 36
+iadd i66 i66 i1
+endloop 35
+li i69 0
+loop 37 i70 i2 i1 i1
+fcmp le i71 f8 f11
+if 38 i71
+next 37
+endif 38
+iadd i69 i69 i1
+endloop 37
+li i72 0
+loop 39 i73 i2 i1 i1
+fcmp gt i74 f8 f11
+if 40 i74
+next 39
+endif 40
+iadd i72 i72 i1
+endloop 39
+li i75 0
+loop 41 i76 i2 i1 i1
+fcmp ge i77 f8 f11
+if 42 i77
+next 41
+endif 42
+iadd i75 i75 i1
+endloop 41
+fcmp eq i78 f8 f11
+isel i79 i78 i1 i2
+fcmp ne i80 f8 f11
+isel i81 i80 i1 i2
+fcmp lt i82 f8 f11
+isel i83 i82 i1 i2
+fcmp le i84 f8 f11
+isel i85 i84 i1 i2
+fcmp gt i86 f8 f11
+isel i87 i86 i1 i2
+fcmp ge i88 f8 f11
+isel i89 i88 i1 i2
+fcmp eq i90 f8 f11
+fsel f91 i90 f4 f5
+fcmp ne i92 f8 f11
+fsel f93 i92 f4 f5
+fcmp lt i94 f8 f11
+fsel f95 i94 f4 f5
+fcmp le i96 f8 f11
+fsel f97 i96 f4 f5
+fcmp gt i98 f8 f11
+fsel f99 i98 f4 f5
+fcmp ge i100 f8 f11
+fsel f101 i100 f4 f5
+sa p102 s1
+sti i12 p102 - 0 0
+sti i13 p102 - 0 8
+sti i14 p102 - 0 16
+sti i15 p102 - 0 24
+sti i16 p102 - 0 32
+sti i17 p102 - 0 40
+sti i19 p102 - 0 48
+sti i21 p102 - 0 56
+sti i23 p102 - 0 64
+sti i25 p102 - 0 72
+sti i27 p102 - 0 80
+sti i29 p102 - 0 88
+sti i30 p102 - 0 96
+sti i32 p102 - 0 104
+sti i34 p102 - 0 112
+sti i36 p102 - 0 120
+sti i38 p102 - 0 128
+sti i40 p102 - 0 136
+sti i42 p102 - 0 144
+sti i45 p102 - 0 152
+sti i48 p102 - 0 160
+sti i51 p102 - 0 168
+sti i54 p102 - 0 176
+sti i57 p102 - 0 184
+sti i60 p102 - 0 192
+sti i63 p102 - 0 200
+sti i66 p102 - 0 208
+sti i69 p102 - 0 216
+sti i72 p102 - 0 224
+sti i75 p102 - 0 232
+sti i79 p102 - 0 240
+sti i81 p102 - 0 248
+sti i83 p102 - 0 256
+sti i85 p102 - 0 264
+sti i87 p102 - 0 272
+sti i89 p102 - 0 280
+stf f91 p102 - 0 288
+stf f93 p102 - 0 296
+stf f95 p102 - 0 304
+stf f97 p102 - 0 312
+stf f99 p102 - 0 320
+stf f101 p102 - 0 328
+la p103 d1
+rcall sea_printf 0:2 0 2 p103 p102
+lf f104 #3FF0000000000000
+lf f105 #8000000000000000
+fadd f106 f104 f105
+lf f107 #7FF8000000000000
+lf f108 #8000000000000000
+fadd f109 f107 f108
+fcmp eq i110 f106 f109
+fcmp ne i111 f106 f109
+fcmp lt i112 f106 f109
+fcmp le i113 f106 f109
+fcmp gt i114 f106 f109
+fcmp ge i115 f106 f109
+fcmp eq i116 f106 f109
+if 43 i116
+li i117 1
+else 43
+li i117 0
+endif 43
+fcmp ne i118 f106 f109
+if 44 i118
+li i119 1
+else 44
+li i119 0
+endif 44
+fcmp lt i120 f106 f109
+if 45 i120
+li i121 1
+else 45
+li i121 0
+endif 45
+fcmp le i122 f106 f109
+if 46 i122
+li i123 1
+else 46
+li i123 0
+endif 46
+fcmp gt i124 f106 f109
+if 47 i124
+li i125 1
+else 47
+li i125 0
+endif 47
+fcmp ge i126 f106 f109
+if 48 i126
+li i127 1
+else 48
+li i127 0
+endif 48
+li i128 5
+fcmp eq i129 f106 f109
+ifz 49 i129
+li i128 7
+endif 49
+li i130 5
+fcmp ne i131 f106 f109
+ifz 50 i131
+li i130 7
+endif 50
+li i132 5
+fcmp lt i133 f106 f109
+ifz 51 i133
+li i132 7
+endif 51
+li i134 5
+fcmp le i135 f106 f109
+ifz 52 i135
+li i134 7
+endif 52
+li i136 5
+fcmp gt i137 f106 f109
+ifz 53 i137
+li i136 7
+endif 53
+li i138 5
+fcmp ge i139 f106 f109
+ifz 54 i139
+li i138 7
+endif 54
+li i140 0
+do 55
+iadd i140 i140 i1
+fcmp eq i141 f106 f109
+if 56 i141
+exit 55
+endif 56
+icmp ge i142 i140 i3
+if 57 i142
+exit 55
+endif 57
+enddo 55
+li i143 0
+do 58
+iadd i143 i143 i1
+fcmp ne i144 f106 f109
+if 59 i144
+exit 58
+endif 59
+icmp ge i145 i143 i3
+if 60 i145
+exit 58
+endif 60
+enddo 58
+li i146 0
+do 61
+iadd i146 i146 i1
+fcmp lt i147 f106 f109
+if 62 i147
+exit 61
+endif 62
+icmp ge i148 i146 i3
+if 63 i148
+exit 61
+endif 63
+enddo 61
+li i149 0
+do 64
+iadd i149 i149 i1
+fcmp le i150 f106 f109
+if 65 i150
+exit 64
+endif 65
+icmp ge i151 i149 i3
+if 66 i151
+exit 64
+endif 66
+enddo 64
+li i152 0
+do 67
+iadd i152 i152 i1
+fcmp gt i153 f106 f109
+if 68 i153
+exit 67
+endif 68
+icmp ge i154 i152 i3
+if 69 i154
+exit 67
+endif 69
+enddo 67
+li i155 0
+do 70
+iadd i155 i155 i1
+fcmp ge i156 f106 f109
+if 71 i156
+exit 70
+endif 71
+icmp ge i157 i155 i3
+if 72 i157
+exit 70
+endif 72
+enddo 70
+li i158 0
+loop 73 i159 i2 i1 i1
+fcmp eq i160 f106 f109
+if 74 i160
+next 73
+endif 74
+iadd i158 i158 i1
+endloop 73
+li i161 0
+loop 75 i162 i2 i1 i1
+fcmp ne i163 f106 f109
+if 76 i163
+next 75
+endif 76
+iadd i161 i161 i1
+endloop 75
+li i164 0
+loop 77 i165 i2 i1 i1
+fcmp lt i166 f106 f109
+if 78 i166
+next 77
+endif 78
+iadd i164 i164 i1
+endloop 77
+li i167 0
+loop 79 i168 i2 i1 i1
+fcmp le i169 f106 f109
+if 80 i169
+next 79
+endif 80
+iadd i167 i167 i1
+endloop 79
+li i170 0
+loop 81 i171 i2 i1 i1
+fcmp gt i172 f106 f109
+if 82 i172
+next 81
+endif 82
+iadd i170 i170 i1
+endloop 81
+li i173 0
+loop 83 i174 i2 i1 i1
+fcmp ge i175 f106 f109
+if 84 i175
+next 83
+endif 84
+iadd i173 i173 i1
+endloop 83
+fcmp eq i176 f106 f109
+isel i177 i176 i1 i2
+fcmp ne i178 f106 f109
+isel i179 i178 i1 i2
+fcmp lt i180 f106 f109
+isel i181 i180 i1 i2
+fcmp le i182 f106 f109
+isel i183 i182 i1 i2
+fcmp gt i184 f106 f109
+isel i185 i184 i1 i2
+fcmp ge i186 f106 f109
+isel i187 i186 i1 i2
+fcmp eq i188 f106 f109
+fsel f189 i188 f4 f5
+fcmp ne i190 f106 f109
+fsel f191 i190 f4 f5
+fcmp lt i192 f106 f109
+fsel f193 i192 f4 f5
+fcmp le i194 f106 f109
+fsel f195 i194 f4 f5
+fcmp gt i196 f106 f109
+fsel f197 i196 f4 f5
+fcmp ge i198 f106 f109
+fsel f199 i198 f4 f5
+sa p200 s2
+sti i110 p200 - 0 0
+sti i111 p200 - 0 8
+sti i112 p200 - 0 16
+sti i113 p200 - 0 24
+sti i114 p200 - 0 32
+sti i115 p200 - 0 40
+sti i117 p200 - 0 48
+sti i119 p200 - 0 56
+sti i121 p200 - 0 64
+sti i123 p200 - 0 72
+sti i125 p200 - 0 80
+sti i127 p200 - 0 88
+sti i128 p200 - 0 96
+sti i130 p200 - 0 104
+sti i132 p200 - 0 112
+sti i134 p200 - 0 120
+sti i136 p200 - 0 128
+sti i138 p200 - 0 136
+sti i140 p200 - 0 144
+sti i143 p200 - 0 152
+sti i146 p200 - 0 160
+sti i149 p200 - 0 168
+sti i152 p200 - 0 176
+sti i155 p200 - 0 184
+sti i158 p200 - 0 192
+sti i161 p200 - 0 200
+sti i164 p200 - 0 208
+sti i167 p200 - 0 216
+sti i170 p200 - 0 224
+sti i173 p200 - 0 232
+sti i177 p200 - 0 240
+sti i179 p200 - 0 248
+sti i181 p200 - 0 256
+sti i183 p200 - 0 264
+sti i185 p200 - 0 272
+sti i187 p200 - 0 280
+stf f189 p200 - 0 288
+stf f191 p200 - 0 296
+stf f193 p200 - 0 304
+stf f195 p200 - 0 312
+stf f197 p200 - 0 320
+stf f199 p200 - 0 328
+la p201 d2
+rcall sea_printf 0:3 0 2 p201 p200
+lf f202 #7FF8000000000000
+lf f203 #8000000000000000
+fadd f204 f202 f203
+lf f205 #7FF8000000000000
+lf f206 #8000000000000000
+fadd f207 f205 f206
+fcmp eq i208 f204 f207
+fcmp ne i209 f204 f207
+fcmp lt i210 f204 f207
+fcmp le i211 f204 f207
+fcmp gt i212 f204 f207
+fcmp ge i213 f204 f207
+fcmp eq i214 f204 f207
+if 85 i214
+li i215 1
+else 85
+li i215 0
+endif 85
+fcmp ne i216 f204 f207
+if 86 i216
+li i217 1
+else 86
+li i217 0
+endif 86
+fcmp lt i218 f204 f207
+if 87 i218
+li i219 1
+else 87
+li i219 0
+endif 87
+fcmp le i220 f204 f207
+if 88 i220
+li i221 1
+else 88
+li i221 0
+endif 88
+fcmp gt i222 f204 f207
+if 89 i222
+li i223 1
+else 89
+li i223 0
+endif 89
+fcmp ge i224 f204 f207
+if 90 i224
+li i225 1
+else 90
+li i225 0
+endif 90
+li i226 5
+fcmp eq i227 f204 f207
+ifz 91 i227
+li i226 7
+endif 91
+li i228 5
+fcmp ne i229 f204 f207
+ifz 92 i229
+li i228 7
+endif 92
+li i230 5
+fcmp lt i231 f204 f207
+ifz 93 i231
+li i230 7
+endif 93
+li i232 5
+fcmp le i233 f204 f207
+ifz 94 i233
+li i232 7
+endif 94
+li i234 5
+fcmp gt i235 f204 f207
+ifz 95 i235
+li i234 7
+endif 95
+li i236 5
+fcmp ge i237 f204 f207
+ifz 96 i237
+li i236 7
+endif 96
+li i238 0
+do 97
+iadd i238 i238 i1
+fcmp eq i239 f204 f207
+if 98 i239
+exit 97
+endif 98
+icmp ge i240 i238 i3
+if 99 i240
+exit 97
+endif 99
+enddo 97
+li i241 0
+do 100
+iadd i241 i241 i1
+fcmp ne i242 f204 f207
+if 101 i242
+exit 100
+endif 101
+icmp ge i243 i241 i3
+if 102 i243
+exit 100
+endif 102
+enddo 100
+li i244 0
+do 103
+iadd i244 i244 i1
+fcmp lt i245 f204 f207
+if 104 i245
+exit 103
+endif 104
+icmp ge i246 i244 i3
+if 105 i246
+exit 103
+endif 105
+enddo 103
+li i247 0
+do 106
+iadd i247 i247 i1
+fcmp le i248 f204 f207
+if 107 i248
+exit 106
+endif 107
+icmp ge i249 i247 i3
+if 108 i249
+exit 106
+endif 108
+enddo 106
+li i250 0
+do 109
+iadd i250 i250 i1
+fcmp gt i251 f204 f207
+if 110 i251
+exit 109
+endif 110
+icmp ge i252 i250 i3
+if 111 i252
+exit 109
+endif 111
+enddo 109
+li i253 0
+do 112
+iadd i253 i253 i1
+fcmp ge i254 f204 f207
+if 113 i254
+exit 112
+endif 113
+icmp ge i255 i253 i3
+if 114 i255
+exit 112
+endif 114
+enddo 112
+li i256 0
+loop 115 i257 i2 i1 i1
+fcmp eq i258 f204 f207
+if 116 i258
+next 115
+endif 116
+iadd i256 i256 i1
+endloop 115
+li i259 0
+loop 117 i260 i2 i1 i1
+fcmp ne i261 f204 f207
+if 118 i261
+next 117
+endif 118
+iadd i259 i259 i1
+endloop 117
+li i262 0
+loop 119 i263 i2 i1 i1
+fcmp lt i264 f204 f207
+if 120 i264
+next 119
+endif 120
+iadd i262 i262 i1
+endloop 119
+li i265 0
+loop 121 i266 i2 i1 i1
+fcmp le i267 f204 f207
+if 122 i267
+next 121
+endif 122
+iadd i265 i265 i1
+endloop 121
+li i268 0
+loop 123 i269 i2 i1 i1
+fcmp gt i270 f204 f207
+if 124 i270
+next 123
+endif 124
+iadd i268 i268 i1
+endloop 123
+li i271 0
+loop 125 i272 i2 i1 i1
+fcmp ge i273 f204 f207
+if 126 i273
+next 125
+endif 126
+iadd i271 i271 i1
+endloop 125
+fcmp eq i274 f204 f207
+isel i275 i274 i1 i2
+fcmp ne i276 f204 f207
+isel i277 i276 i1 i2
+fcmp lt i278 f204 f207
+isel i279 i278 i1 i2
+fcmp le i280 f204 f207
+isel i281 i280 i1 i2
+fcmp gt i282 f204 f207
+isel i283 i282 i1 i2
+fcmp ge i284 f204 f207
+isel i285 i284 i1 i2
+fcmp eq i286 f204 f207
+fsel f287 i286 f4 f5
+fcmp ne i288 f204 f207
+fsel f289 i288 f4 f5
+fcmp lt i290 f204 f207
+fsel f291 i290 f4 f5
+fcmp le i292 f204 f207
+fsel f293 i292 f4 f5
+fcmp gt i294 f204 f207
+fsel f295 i294 f4 f5
+fcmp ge i296 f204 f207
+fsel f297 i296 f4 f5
+sa p298 s3
+sti i208 p298 - 0 0
+sti i209 p298 - 0 8
+sti i210 p298 - 0 16
+sti i211 p298 - 0 24
+sti i212 p298 - 0 32
+sti i213 p298 - 0 40
+sti i215 p298 - 0 48
+sti i217 p298 - 0 56
+sti i219 p298 - 0 64
+sti i221 p298 - 0 72
+sti i223 p298 - 0 80
+sti i225 p298 - 0 88
+sti i226 p298 - 0 96
+sti i228 p298 - 0 104
+sti i230 p298 - 0 112
+sti i232 p298 - 0 120
+sti i234 p298 - 0 128
+sti i236 p298 - 0 136
+sti i238 p298 - 0 144
+sti i241 p298 - 0 152
+sti i244 p298 - 0 160
+sti i247 p298 - 0 168
+sti i250 p298 - 0 176
+sti i253 p298 - 0 184
+sti i256 p298 - 0 192
+sti i259 p298 - 0 200
+sti i262 p298 - 0 208
+sti i265 p298 - 0 216
+sti i268 p298 - 0 224
+sti i271 p298 - 0 232
+sti i275 p298 - 0 240
+sti i277 p298 - 0 248
+sti i279 p298 - 0 256
+sti i281 p298 - 0 264
+sti i283 p298 - 0 272
+sti i285 p298 - 0 280
+stf f287 p298 - 0 288
+stf f289 p298 - 0 296
+stf f291 p298 - 0 304
+stf f293 p298 - 0 312
+stf f295 p298 - 0 320
+stf f297 p298 - 0 328
+la p299 d3
+rcall sea_printf 0:4 0 2 p299 p298
+lf f300 #3FF0000000000000
+lf f301 #8000000000000000
+fadd f302 f300 f301
+lf f303 #4000000000000000
+lf f304 #8000000000000000
+fadd f305 f303 f304
+fcmp eq i306 f302 f305
+fcmp ne i307 f302 f305
+fcmp lt i308 f302 f305
+fcmp le i309 f302 f305
+fcmp gt i310 f302 f305
+fcmp ge i311 f302 f305
+fcmp eq i312 f302 f305
+if 127 i312
+li i313 1
+else 127
+li i313 0
+endif 127
+fcmp ne i314 f302 f305
+if 128 i314
+li i315 1
+else 128
+li i315 0
+endif 128
+fcmp lt i316 f302 f305
+if 129 i316
+li i317 1
+else 129
+li i317 0
+endif 129
+fcmp le i318 f302 f305
+if 130 i318
+li i319 1
+else 130
+li i319 0
+endif 130
+fcmp gt i320 f302 f305
+if 131 i320
+li i321 1
+else 131
+li i321 0
+endif 131
+fcmp ge i322 f302 f305
+if 132 i322
+li i323 1
+else 132
+li i323 0
+endif 132
+li i324 5
+fcmp eq i325 f302 f305
+ifz 133 i325
+li i324 7
+endif 133
+li i326 5
+fcmp ne i327 f302 f305
+ifz 134 i327
+li i326 7
+endif 134
+li i328 5
+fcmp lt i329 f302 f305
+ifz 135 i329
+li i328 7
+endif 135
+li i330 5
+fcmp le i331 f302 f305
+ifz 136 i331
+li i330 7
+endif 136
+li i332 5
+fcmp gt i333 f302 f305
+ifz 137 i333
+li i332 7
+endif 137
+li i334 5
+fcmp ge i335 f302 f305
+ifz 138 i335
+li i334 7
+endif 138
+li i336 0
+do 139
+iadd i336 i336 i1
+fcmp eq i337 f302 f305
+if 140 i337
+exit 139
+endif 140
+icmp ge i338 i336 i3
+if 141 i338
+exit 139
+endif 141
+enddo 139
+li i339 0
+do 142
+iadd i339 i339 i1
+fcmp ne i340 f302 f305
+if 143 i340
+exit 142
+endif 143
+icmp ge i341 i339 i3
+if 144 i341
+exit 142
+endif 144
+enddo 142
+li i342 0
+do 145
+iadd i342 i342 i1
+fcmp lt i343 f302 f305
+if 146 i343
+exit 145
+endif 146
+icmp ge i344 i342 i3
+if 147 i344
+exit 145
+endif 147
+enddo 145
+li i345 0
+do 148
+iadd i345 i345 i1
+fcmp le i346 f302 f305
+if 149 i346
+exit 148
+endif 149
+icmp ge i347 i345 i3
+if 150 i347
+exit 148
+endif 150
+enddo 148
+li i348 0
+do 151
+iadd i348 i348 i1
+fcmp gt i349 f302 f305
+if 152 i349
+exit 151
+endif 152
+icmp ge i350 i348 i3
+if 153 i350
+exit 151
+endif 153
+enddo 151
+li i351 0
+do 154
+iadd i351 i351 i1
+fcmp ge i352 f302 f305
+if 155 i352
+exit 154
+endif 155
+icmp ge i353 i351 i3
+if 156 i353
+exit 154
+endif 156
+enddo 154
+li i354 0
+loop 157 i355 i2 i1 i1
+fcmp eq i356 f302 f305
+if 158 i356
+next 157
+endif 158
+iadd i354 i354 i1
+endloop 157
+li i357 0
+loop 159 i358 i2 i1 i1
+fcmp ne i359 f302 f305
+if 160 i359
+next 159
+endif 160
+iadd i357 i357 i1
+endloop 159
+li i360 0
+loop 161 i361 i2 i1 i1
+fcmp lt i362 f302 f305
+if 162 i362
+next 161
+endif 162
+iadd i360 i360 i1
+endloop 161
+li i363 0
+loop 163 i364 i2 i1 i1
+fcmp le i365 f302 f305
+if 164 i365
+next 163
+endif 164
+iadd i363 i363 i1
+endloop 163
+li i366 0
+loop 165 i367 i2 i1 i1
+fcmp gt i368 f302 f305
+if 166 i368
+next 165
+endif 166
+iadd i366 i366 i1
+endloop 165
+li i369 0
+loop 167 i370 i2 i1 i1
+fcmp ge i371 f302 f305
+if 168 i371
+next 167
+endif 168
+iadd i369 i369 i1
+endloop 167
+fcmp eq i372 f302 f305
+isel i373 i372 i1 i2
+fcmp ne i374 f302 f305
+isel i375 i374 i1 i2
+fcmp lt i376 f302 f305
+isel i377 i376 i1 i2
+fcmp le i378 f302 f305
+isel i379 i378 i1 i2
+fcmp gt i380 f302 f305
+isel i381 i380 i1 i2
+fcmp ge i382 f302 f305
+isel i383 i382 i1 i2
+fcmp eq i384 f302 f305
+fsel f385 i384 f4 f5
+fcmp ne i386 f302 f305
+fsel f387 i386 f4 f5
+fcmp lt i388 f302 f305
+fsel f389 i388 f4 f5
+fcmp le i390 f302 f305
+fsel f391 i390 f4 f5
+fcmp gt i392 f302 f305
+fsel f393 i392 f4 f5
+fcmp ge i394 f302 f305
+fsel f395 i394 f4 f5
+sa p396 s4
+sti i306 p396 - 0 0
+sti i307 p396 - 0 8
+sti i308 p396 - 0 16
+sti i309 p396 - 0 24
+sti i310 p396 - 0 32
+sti i311 p396 - 0 40
+sti i313 p396 - 0 48
+sti i315 p396 - 0 56
+sti i317 p396 - 0 64
+sti i319 p396 - 0 72
+sti i321 p396 - 0 80
+sti i323 p396 - 0 88
+sti i324 p396 - 0 96
+sti i326 p396 - 0 104
+sti i328 p396 - 0 112
+sti i330 p396 - 0 120
+sti i332 p396 - 0 128
+sti i334 p396 - 0 136
+sti i336 p396 - 0 144
+sti i339 p396 - 0 152
+sti i342 p396 - 0 160
+sti i345 p396 - 0 168
+sti i348 p396 - 0 176
+sti i351 p396 - 0 184
+sti i354 p396 - 0 192
+sti i357 p396 - 0 200
+sti i360 p396 - 0 208
+sti i363 p396 - 0 216
+sti i366 p396 - 0 224
+sti i369 p396 - 0 232
+sti i373 p396 - 0 240
+sti i375 p396 - 0 248
+sti i377 p396 - 0 256
+sti i379 p396 - 0 264
+sti i381 p396 - 0 272
+sti i383 p396 - 0 280
+stf f385 p396 - 0 288
+stf f387 p396 - 0 296
+stf f389 p396 - 0 304
+stf f391 p396 - 0 312
+stf f393 p396 - 0 320
+stf f395 p396 - 0 328
+la p397 d4
+rcall sea_printf 0:5 0 2 p397 p396
+lf f398 #4000000000000000
+lf f399 #8000000000000000
+fadd f400 f398 f399
+lf f401 #3FF0000000000000
+lf f402 #8000000000000000
+fadd f403 f401 f402
+fcmp eq i404 f400 f403
+fcmp ne i405 f400 f403
+fcmp lt i406 f400 f403
+fcmp le i407 f400 f403
+fcmp gt i408 f400 f403
+fcmp ge i409 f400 f403
+fcmp eq i410 f400 f403
+if 169 i410
+li i411 1
+else 169
+li i411 0
+endif 169
+fcmp ne i412 f400 f403
+if 170 i412
+li i413 1
+else 170
+li i413 0
+endif 170
+fcmp lt i414 f400 f403
+if 171 i414
+li i415 1
+else 171
+li i415 0
+endif 171
+fcmp le i416 f400 f403
+if 172 i416
+li i417 1
+else 172
+li i417 0
+endif 172
+fcmp gt i418 f400 f403
+if 173 i418
+li i419 1
+else 173
+li i419 0
+endif 173
+fcmp ge i420 f400 f403
+if 174 i420
+li i421 1
+else 174
+li i421 0
+endif 174
+li i422 5
+fcmp eq i423 f400 f403
+ifz 175 i423
+li i422 7
+endif 175
+li i424 5
+fcmp ne i425 f400 f403
+ifz 176 i425
+li i424 7
+endif 176
+li i426 5
+fcmp lt i427 f400 f403
+ifz 177 i427
+li i426 7
+endif 177
+li i428 5
+fcmp le i429 f400 f403
+ifz 178 i429
+li i428 7
+endif 178
+li i430 5
+fcmp gt i431 f400 f403
+ifz 179 i431
+li i430 7
+endif 179
+li i432 5
+fcmp ge i433 f400 f403
+ifz 180 i433
+li i432 7
+endif 180
+li i434 0
+do 181
+iadd i434 i434 i1
+fcmp eq i435 f400 f403
+if 182 i435
+exit 181
+endif 182
+icmp ge i436 i434 i3
+if 183 i436
+exit 181
+endif 183
+enddo 181
+li i437 0
+do 184
+iadd i437 i437 i1
+fcmp ne i438 f400 f403
+if 185 i438
+exit 184
+endif 185
+icmp ge i439 i437 i3
+if 186 i439
+exit 184
+endif 186
+enddo 184
+li i440 0
+do 187
+iadd i440 i440 i1
+fcmp lt i441 f400 f403
+if 188 i441
+exit 187
+endif 188
+icmp ge i442 i440 i3
+if 189 i442
+exit 187
+endif 189
+enddo 187
+li i443 0
+do 190
+iadd i443 i443 i1
+fcmp le i444 f400 f403
+if 191 i444
+exit 190
+endif 191
+icmp ge i445 i443 i3
+if 192 i445
+exit 190
+endif 192
+enddo 190
+li i446 0
+do 193
+iadd i446 i446 i1
+fcmp gt i447 f400 f403
+if 194 i447
+exit 193
+endif 194
+icmp ge i448 i446 i3
+if 195 i448
+exit 193
+endif 195
+enddo 193
+li i449 0
+do 196
+iadd i449 i449 i1
+fcmp ge i450 f400 f403
+if 197 i450
+exit 196
+endif 197
+icmp ge i451 i449 i3
+if 198 i451
+exit 196
+endif 198
+enddo 196
+li i452 0
+loop 199 i453 i2 i1 i1
+fcmp eq i454 f400 f403
+if 200 i454
+next 199
+endif 200
+iadd i452 i452 i1
+endloop 199
+li i455 0
+loop 201 i456 i2 i1 i1
+fcmp ne i457 f400 f403
+if 202 i457
+next 201
+endif 202
+iadd i455 i455 i1
+endloop 201
+li i458 0
+loop 203 i459 i2 i1 i1
+fcmp lt i460 f400 f403
+if 204 i460
+next 203
+endif 204
+iadd i458 i458 i1
+endloop 203
+li i461 0
+loop 205 i462 i2 i1 i1
+fcmp le i463 f400 f403
+if 206 i463
+next 205
+endif 206
+iadd i461 i461 i1
+endloop 205
+li i464 0
+loop 207 i465 i2 i1 i1
+fcmp gt i466 f400 f403
+if 208 i466
+next 207
+endif 208
+iadd i464 i464 i1
+endloop 207
+li i467 0
+loop 209 i468 i2 i1 i1
+fcmp ge i469 f400 f403
+if 210 i469
+next 209
+endif 210
+iadd i467 i467 i1
+endloop 209
+fcmp eq i470 f400 f403
+isel i471 i470 i1 i2
+fcmp ne i472 f400 f403
+isel i473 i472 i1 i2
+fcmp lt i474 f400 f403
+isel i475 i474 i1 i2
+fcmp le i476 f400 f403
+isel i477 i476 i1 i2
+fcmp gt i478 f400 f403
+isel i479 i478 i1 i2
+fcmp ge i480 f400 f403
+isel i481 i480 i1 i2
+fcmp eq i482 f400 f403
+fsel f483 i482 f4 f5
+fcmp ne i484 f400 f403
+fsel f485 i484 f4 f5
+fcmp lt i486 f400 f403
+fsel f487 i486 f4 f5
+fcmp le i488 f400 f403
+fsel f489 i488 f4 f5
+fcmp gt i490 f400 f403
+fsel f491 i490 f4 f5
+fcmp ge i492 f400 f403
+fsel f493 i492 f4 f5
+sa p494 s5
+sti i404 p494 - 0 0
+sti i405 p494 - 0 8
+sti i406 p494 - 0 16
+sti i407 p494 - 0 24
+sti i408 p494 - 0 32
+sti i409 p494 - 0 40
+sti i411 p494 - 0 48
+sti i413 p494 - 0 56
+sti i415 p494 - 0 64
+sti i417 p494 - 0 72
+sti i419 p494 - 0 80
+sti i421 p494 - 0 88
+sti i422 p494 - 0 96
+sti i424 p494 - 0 104
+sti i426 p494 - 0 112
+sti i428 p494 - 0 120
+sti i430 p494 - 0 128
+sti i432 p494 - 0 136
+sti i434 p494 - 0 144
+sti i437 p494 - 0 152
+sti i440 p494 - 0 160
+sti i443 p494 - 0 168
+sti i446 p494 - 0 176
+sti i449 p494 - 0 184
+sti i452 p494 - 0 192
+sti i455 p494 - 0 200
+sti i458 p494 - 0 208
+sti i461 p494 - 0 216
+sti i464 p494 - 0 224
+sti i467 p494 - 0 232
+sti i471 p494 - 0 240
+sti i473 p494 - 0 248
+sti i475 p494 - 0 256
+sti i477 p494 - 0 264
+sti i479 p494 - 0 272
+sti i481 p494 - 0 280
+stf f483 p494 - 0 288
+stf f485 p494 - 0 296
+stf f487 p494 - 0 304
+stf f489 p494 - 0 312
+stf f491 p494 - 0 320
+stf f493 p494 - 0 328
+la p495 d5
+rcall sea_printf 0:6 0 2 p495 p494
+lf f496 #3FF0000000000000
+lf f497 #8000000000000000
+fadd f498 f496 f497
+lf f499 #3FF0000000000000
+lf f500 #8000000000000000
+fadd f501 f499 f500
+fcmp eq i502 f498 f501
+fcmp ne i503 f498 f501
+fcmp lt i504 f498 f501
+fcmp le i505 f498 f501
+fcmp gt i506 f498 f501
+fcmp ge i507 f498 f501
+fcmp eq i508 f498 f501
+if 211 i508
+li i509 1
+else 211
+li i509 0
+endif 211
+fcmp ne i510 f498 f501
+if 212 i510
+li i511 1
+else 212
+li i511 0
+endif 212
+fcmp lt i512 f498 f501
+if 213 i512
+li i513 1
+else 213
+li i513 0
+endif 213
+fcmp le i514 f498 f501
+if 214 i514
+li i515 1
+else 214
+li i515 0
+endif 214
+fcmp gt i516 f498 f501
+if 215 i516
+li i517 1
+else 215
+li i517 0
+endif 215
+fcmp ge i518 f498 f501
+if 216 i518
+li i519 1
+else 216
+li i519 0
+endif 216
+li i520 5
+fcmp eq i521 f498 f501
+ifz 217 i521
+li i520 7
+endif 217
+li i522 5
+fcmp ne i523 f498 f501
+ifz 218 i523
+li i522 7
+endif 218
+li i524 5
+fcmp lt i525 f498 f501
+ifz 219 i525
+li i524 7
+endif 219
+li i526 5
+fcmp le i527 f498 f501
+ifz 220 i527
+li i526 7
+endif 220
+li i528 5
+fcmp gt i529 f498 f501
+ifz 221 i529
+li i528 7
+endif 221
+li i530 5
+fcmp ge i531 f498 f501
+ifz 222 i531
+li i530 7
+endif 222
+li i532 0
+do 223
+iadd i532 i532 i1
+fcmp eq i533 f498 f501
+if 224 i533
+exit 223
+endif 224
+icmp ge i534 i532 i3
+if 225 i534
+exit 223
+endif 225
+enddo 223
+li i535 0
+do 226
+iadd i535 i535 i1
+fcmp ne i536 f498 f501
+if 227 i536
+exit 226
+endif 227
+icmp ge i537 i535 i3
+if 228 i537
+exit 226
+endif 228
+enddo 226
+li i538 0
+do 229
+iadd i538 i538 i1
+fcmp lt i539 f498 f501
+if 230 i539
+exit 229
+endif 230
+icmp ge i540 i538 i3
+if 231 i540
+exit 229
+endif 231
+enddo 229
+li i541 0
+do 232
+iadd i541 i541 i1
+fcmp le i542 f498 f501
+if 233 i542
+exit 232
+endif 233
+icmp ge i543 i541 i3
+if 234 i543
+exit 232
+endif 234
+enddo 232
+li i544 0
+do 235
+iadd i544 i544 i1
+fcmp gt i545 f498 f501
+if 236 i545
+exit 235
+endif 236
+icmp ge i546 i544 i3
+if 237 i546
+exit 235
+endif 237
+enddo 235
+li i547 0
+do 238
+iadd i547 i547 i1
+fcmp ge i548 f498 f501
+if 239 i548
+exit 238
+endif 239
+icmp ge i549 i547 i3
+if 240 i549
+exit 238
+endif 240
+enddo 238
+li i550 0
+loop 241 i551 i2 i1 i1
+fcmp eq i552 f498 f501
+if 242 i552
+next 241
+endif 242
+iadd i550 i550 i1
+endloop 241
+li i553 0
+loop 243 i554 i2 i1 i1
+fcmp ne i555 f498 f501
+if 244 i555
+next 243
+endif 244
+iadd i553 i553 i1
+endloop 243
+li i556 0
+loop 245 i557 i2 i1 i1
+fcmp lt i558 f498 f501
+if 246 i558
+next 245
+endif 246
+iadd i556 i556 i1
+endloop 245
+li i559 0
+loop 247 i560 i2 i1 i1
+fcmp le i561 f498 f501
+if 248 i561
+next 247
+endif 248
+iadd i559 i559 i1
+endloop 247
+li i562 0
+loop 249 i563 i2 i1 i1
+fcmp gt i564 f498 f501
+if 250 i564
+next 249
+endif 250
+iadd i562 i562 i1
+endloop 249
+li i565 0
+loop 251 i566 i2 i1 i1
+fcmp ge i567 f498 f501
+if 252 i567
+next 251
+endif 252
+iadd i565 i565 i1
+endloop 251
+fcmp eq i568 f498 f501
+isel i569 i568 i1 i2
+fcmp ne i570 f498 f501
+isel i571 i570 i1 i2
+fcmp lt i572 f498 f501
+isel i573 i572 i1 i2
+fcmp le i574 f498 f501
+isel i575 i574 i1 i2
+fcmp gt i576 f498 f501
+isel i577 i576 i1 i2
+fcmp ge i578 f498 f501
+isel i579 i578 i1 i2
+fcmp eq i580 f498 f501
+fsel f581 i580 f4 f5
+fcmp ne i582 f498 f501
+fsel f583 i582 f4 f5
+fcmp lt i584 f498 f501
+fsel f585 i584 f4 f5
+fcmp le i586 f498 f501
+fsel f587 i586 f4 f5
+fcmp gt i588 f498 f501
+fsel f589 i588 f4 f5
+fcmp ge i590 f498 f501
+fsel f591 i590 f4 f5
+sa p592 s6
+sti i502 p592 - 0 0
+sti i503 p592 - 0 8
+sti i504 p592 - 0 16
+sti i505 p592 - 0 24
+sti i506 p592 - 0 32
+sti i507 p592 - 0 40
+sti i509 p592 - 0 48
+sti i511 p592 - 0 56
+sti i513 p592 - 0 64
+sti i515 p592 - 0 72
+sti i517 p592 - 0 80
+sti i519 p592 - 0 88
+sti i520 p592 - 0 96
+sti i522 p592 - 0 104
+sti i524 p592 - 0 112
+sti i526 p592 - 0 120
+sti i528 p592 - 0 128
+sti i530 p592 - 0 136
+sti i532 p592 - 0 144
+sti i535 p592 - 0 152
+sti i538 p592 - 0 160
+sti i541 p592 - 0 168
+sti i544 p592 - 0 176
+sti i547 p592 - 0 184
+sti i550 p592 - 0 192
+sti i553 p592 - 0 200
+sti i556 p592 - 0 208
+sti i559 p592 - 0 216
+sti i562 p592 - 0 224
+sti i565 p592 - 0 232
+sti i569 p592 - 0 240
+sti i571 p592 - 0 248
+sti i573 p592 - 0 256
+sti i575 p592 - 0 264
+sti i577 p592 - 0 272
+sti i579 p592 - 0 280
+stf f581 p592 - 0 288
+stf f583 p592 - 0 296
+stf f585 p592 - 0 304
+stf f587 p592 - 0 312
+stf f589 p592 - 0 320
+stf f591 p592 - 0 328
+la p593 d6
+rcall sea_printf 0:7 0 2 p593 p592
+lf f594 #8000000000000000
+lf f595 #8000000000000000
+fadd f596 f594 f595
+lf f597 #0000000000000000
+lf f598 #8000000000000000
+fadd f599 f597 f598
+fcmp eq i600 f596 f599
+fcmp ne i601 f596 f599
+fcmp lt i602 f596 f599
+fcmp le i603 f596 f599
+fcmp gt i604 f596 f599
+fcmp ge i605 f596 f599
+fcmp eq i606 f596 f599
+if 253 i606
+li i607 1
+else 253
+li i607 0
+endif 253
+fcmp ne i608 f596 f599
+if 254 i608
+li i609 1
+else 254
+li i609 0
+endif 254
+fcmp lt i610 f596 f599
+if 255 i610
+li i611 1
+else 255
+li i611 0
+endif 255
+fcmp le i612 f596 f599
+if 256 i612
+li i613 1
+else 256
+li i613 0
+endif 256
+fcmp gt i614 f596 f599
+if 257 i614
+li i615 1
+else 257
+li i615 0
+endif 257
+fcmp ge i616 f596 f599
+if 258 i616
+li i617 1
+else 258
+li i617 0
+endif 258
+li i618 5
+fcmp eq i619 f596 f599
+ifz 259 i619
+li i618 7
+endif 259
+li i620 5
+fcmp ne i621 f596 f599
+ifz 260 i621
+li i620 7
+endif 260
+li i622 5
+fcmp lt i623 f596 f599
+ifz 261 i623
+li i622 7
+endif 261
+li i624 5
+fcmp le i625 f596 f599
+ifz 262 i625
+li i624 7
+endif 262
+li i626 5
+fcmp gt i627 f596 f599
+ifz 263 i627
+li i626 7
+endif 263
+li i628 5
+fcmp ge i629 f596 f599
+ifz 264 i629
+li i628 7
+endif 264
+li i630 0
+do 265
+iadd i630 i630 i1
+fcmp eq i631 f596 f599
+if 266 i631
+exit 265
+endif 266
+icmp ge i632 i630 i3
+if 267 i632
+exit 265
+endif 267
+enddo 265
+li i633 0
+do 268
+iadd i633 i633 i1
+fcmp ne i634 f596 f599
+if 269 i634
+exit 268
+endif 269
+icmp ge i635 i633 i3
+if 270 i635
+exit 268
+endif 270
+enddo 268
+li i636 0
+do 271
+iadd i636 i636 i1
+fcmp lt i637 f596 f599
+if 272 i637
+exit 271
+endif 272
+icmp ge i638 i636 i3
+if 273 i638
+exit 271
+endif 273
+enddo 271
+li i639 0
+do 274
+iadd i639 i639 i1
+fcmp le i640 f596 f599
+if 275 i640
+exit 274
+endif 275
+icmp ge i641 i639 i3
+if 276 i641
+exit 274
+endif 276
+enddo 274
+li i642 0
+do 277
+iadd i642 i642 i1
+fcmp gt i643 f596 f599
+if 278 i643
+exit 277
+endif 278
+icmp ge i644 i642 i3
+if 279 i644
+exit 277
+endif 279
+enddo 277
+li i645 0
+do 280
+iadd i645 i645 i1
+fcmp ge i646 f596 f599
+if 281 i646
+exit 280
+endif 281
+icmp ge i647 i645 i3
+if 282 i647
+exit 280
+endif 282
+enddo 280
+li i648 0
+loop 283 i649 i2 i1 i1
+fcmp eq i650 f596 f599
+if 284 i650
+next 283
+endif 284
+iadd i648 i648 i1
+endloop 283
+li i651 0
+loop 285 i652 i2 i1 i1
+fcmp ne i653 f596 f599
+if 286 i653
+next 285
+endif 286
+iadd i651 i651 i1
+endloop 285
+li i654 0
+loop 287 i655 i2 i1 i1
+fcmp lt i656 f596 f599
+if 288 i656
+next 287
+endif 288
+iadd i654 i654 i1
+endloop 287
+li i657 0
+loop 289 i658 i2 i1 i1
+fcmp le i659 f596 f599
+if 290 i659
+next 289
+endif 290
+iadd i657 i657 i1
+endloop 289
+li i660 0
+loop 291 i661 i2 i1 i1
+fcmp gt i662 f596 f599
+if 292 i662
+next 291
+endif 292
+iadd i660 i660 i1
+endloop 291
+li i663 0
+loop 293 i664 i2 i1 i1
+fcmp ge i665 f596 f599
+if 294 i665
+next 293
+endif 294
+iadd i663 i663 i1
+endloop 293
+fcmp eq i666 f596 f599
+isel i667 i666 i1 i2
+fcmp ne i668 f596 f599
+isel i669 i668 i1 i2
+fcmp lt i670 f596 f599
+isel i671 i670 i1 i2
+fcmp le i672 f596 f599
+isel i673 i672 i1 i2
+fcmp gt i674 f596 f599
+isel i675 i674 i1 i2
+fcmp ge i676 f596 f599
+isel i677 i676 i1 i2
+fcmp eq i678 f596 f599
+fsel f679 i678 f4 f5
+fcmp ne i680 f596 f599
+fsel f681 i680 f4 f5
+fcmp lt i682 f596 f599
+fsel f683 i682 f4 f5
+fcmp le i684 f596 f599
+fsel f685 i684 f4 f5
+fcmp gt i686 f596 f599
+fsel f687 i686 f4 f5
+fcmp ge i688 f596 f599
+fsel f689 i688 f4 f5
+sa p690 s7
+sti i600 p690 - 0 0
+sti i601 p690 - 0 8
+sti i602 p690 - 0 16
+sti i603 p690 - 0 24
+sti i604 p690 - 0 32
+sti i605 p690 - 0 40
+sti i607 p690 - 0 48
+sti i609 p690 - 0 56
+sti i611 p690 - 0 64
+sti i613 p690 - 0 72
+sti i615 p690 - 0 80
+sti i617 p690 - 0 88
+sti i618 p690 - 0 96
+sti i620 p690 - 0 104
+sti i622 p690 - 0 112
+sti i624 p690 - 0 120
+sti i626 p690 - 0 128
+sti i628 p690 - 0 136
+sti i630 p690 - 0 144
+sti i633 p690 - 0 152
+sti i636 p690 - 0 160
+sti i639 p690 - 0 168
+sti i642 p690 - 0 176
+sti i645 p690 - 0 184
+sti i648 p690 - 0 192
+sti i651 p690 - 0 200
+sti i654 p690 - 0 208
+sti i657 p690 - 0 216
+sti i660 p690 - 0 224
+sti i663 p690 - 0 232
+sti i667 p690 - 0 240
+sti i669 p690 - 0 248
+sti i671 p690 - 0 256
+sti i673 p690 - 0 264
+sti i675 p690 - 0 272
+sti i677 p690 - 0 280
+stf f679 p690 - 0 288
+stf f681 p690 - 0 296
+stf f683 p690 - 0 304
+stf f685 p690 - 0 312
+stf f687 p690 - 0 320
+stf f689 p690 - 0 328
+la p691 d7
+rcall sea_printf 0:8 0 2 p691 p690
+lf f692 #7FF0000000000000
+lf f693 #8000000000000000
+fadd f694 f692 f693
+lf f695 #FFF0000000000000
+lf f696 #8000000000000000
+fadd f697 f695 f696
+fcmp eq i698 f694 f697
+fcmp ne i699 f694 f697
+fcmp lt i700 f694 f697
+fcmp le i701 f694 f697
+fcmp gt i702 f694 f697
+fcmp ge i703 f694 f697
+fcmp eq i704 f694 f697
+if 295 i704
+li i705 1
+else 295
+li i705 0
+endif 295
+fcmp ne i706 f694 f697
+if 296 i706
+li i707 1
+else 296
+li i707 0
+endif 296
+fcmp lt i708 f694 f697
+if 297 i708
+li i709 1
+else 297
+li i709 0
+endif 297
+fcmp le i710 f694 f697
+if 298 i710
+li i711 1
+else 298
+li i711 0
+endif 298
+fcmp gt i712 f694 f697
+if 299 i712
+li i713 1
+else 299
+li i713 0
+endif 299
+fcmp ge i714 f694 f697
+if 300 i714
+li i715 1
+else 300
+li i715 0
+endif 300
+li i716 5
+fcmp eq i717 f694 f697
+ifz 301 i717
+li i716 7
+endif 301
+li i718 5
+fcmp ne i719 f694 f697
+ifz 302 i719
+li i718 7
+endif 302
+li i720 5
+fcmp lt i721 f694 f697
+ifz 303 i721
+li i720 7
+endif 303
+li i722 5
+fcmp le i723 f694 f697
+ifz 304 i723
+li i722 7
+endif 304
+li i724 5
+fcmp gt i725 f694 f697
+ifz 305 i725
+li i724 7
+endif 305
+li i726 5
+fcmp ge i727 f694 f697
+ifz 306 i727
+li i726 7
+endif 306
+li i728 0
+do 307
+iadd i728 i728 i1
+fcmp eq i729 f694 f697
+if 308 i729
+exit 307
+endif 308
+icmp ge i730 i728 i3
+if 309 i730
+exit 307
+endif 309
+enddo 307
+li i731 0
+do 310
+iadd i731 i731 i1
+fcmp ne i732 f694 f697
+if 311 i732
+exit 310
+endif 311
+icmp ge i733 i731 i3
+if 312 i733
+exit 310
+endif 312
+enddo 310
+li i734 0
+do 313
+iadd i734 i734 i1
+fcmp lt i735 f694 f697
+if 314 i735
+exit 313
+endif 314
+icmp ge i736 i734 i3
+if 315 i736
+exit 313
+endif 315
+enddo 313
+li i737 0
+do 316
+iadd i737 i737 i1
+fcmp le i738 f694 f697
+if 317 i738
+exit 316
+endif 317
+icmp ge i739 i737 i3
+if 318 i739
+exit 316
+endif 318
+enddo 316
+li i740 0
+do 319
+iadd i740 i740 i1
+fcmp gt i741 f694 f697
+if 320 i741
+exit 319
+endif 320
+icmp ge i742 i740 i3
+if 321 i742
+exit 319
+endif 321
+enddo 319
+li i743 0
+do 322
+iadd i743 i743 i1
+fcmp ge i744 f694 f697
+if 323 i744
+exit 322
+endif 323
+icmp ge i745 i743 i3
+if 324 i745
+exit 322
+endif 324
+enddo 322
+li i746 0
+loop 325 i747 i2 i1 i1
+fcmp eq i748 f694 f697
+if 326 i748
+next 325
+endif 326
+iadd i746 i746 i1
+endloop 325
+li i749 0
+loop 327 i750 i2 i1 i1
+fcmp ne i751 f694 f697
+if 328 i751
+next 327
+endif 328
+iadd i749 i749 i1
+endloop 327
+li i752 0
+loop 329 i753 i2 i1 i1
+fcmp lt i754 f694 f697
+if 330 i754
+next 329
+endif 330
+iadd i752 i752 i1
+endloop 329
+li i755 0
+loop 331 i756 i2 i1 i1
+fcmp le i757 f694 f697
+if 332 i757
+next 331
+endif 332
+iadd i755 i755 i1
+endloop 331
+li i758 0
+loop 333 i759 i2 i1 i1
+fcmp gt i760 f694 f697
+if 334 i760
+next 333
+endif 334
+iadd i758 i758 i1
+endloop 333
+li i761 0
+loop 335 i762 i2 i1 i1
+fcmp ge i763 f694 f697
+if 336 i763
+next 335
+endif 336
+iadd i761 i761 i1
+endloop 335
+fcmp eq i764 f694 f697
+isel i765 i764 i1 i2
+fcmp ne i766 f694 f697
+isel i767 i766 i1 i2
+fcmp lt i768 f694 f697
+isel i769 i768 i1 i2
+fcmp le i770 f694 f697
+isel i771 i770 i1 i2
+fcmp gt i772 f694 f697
+isel i773 i772 i1 i2
+fcmp ge i774 f694 f697
+isel i775 i774 i1 i2
+fcmp eq i776 f694 f697
+fsel f777 i776 f4 f5
+fcmp ne i778 f694 f697
+fsel f779 i778 f4 f5
+fcmp lt i780 f694 f697
+fsel f781 i780 f4 f5
+fcmp le i782 f694 f697
+fsel f783 i782 f4 f5
+fcmp gt i784 f694 f697
+fsel f785 i784 f4 f5
+fcmp ge i786 f694 f697
+fsel f787 i786 f4 f5
+sa p788 s8
+sti i698 p788 - 0 0
+sti i699 p788 - 0 8
+sti i700 p788 - 0 16
+sti i701 p788 - 0 24
+sti i702 p788 - 0 32
+sti i703 p788 - 0 40
+sti i705 p788 - 0 48
+sti i707 p788 - 0 56
+sti i709 p788 - 0 64
+sti i711 p788 - 0 72
+sti i713 p788 - 0 80
+sti i715 p788 - 0 88
+sti i716 p788 - 0 96
+sti i718 p788 - 0 104
+sti i720 p788 - 0 112
+sti i722 p788 - 0 120
+sti i724 p788 - 0 128
+sti i726 p788 - 0 136
+sti i728 p788 - 0 144
+sti i731 p788 - 0 152
+sti i734 p788 - 0 160
+sti i737 p788 - 0 168
+sti i740 p788 - 0 176
+sti i743 p788 - 0 184
+sti i746 p788 - 0 192
+sti i749 p788 - 0 200
+sti i752 p788 - 0 208
+sti i755 p788 - 0 216
+sti i758 p788 - 0 224
+sti i761 p788 - 0 232
+sti i765 p788 - 0 240
+sti i767 p788 - 0 248
+sti i769 p788 - 0 256
+sti i771 p788 - 0 264
+sti i773 p788 - 0 272
+sti i775 p788 - 0 280
+stf f777 p788 - 0 288
+stf f779 p788 - 0 296
+stf f781 p788 - 0 304
+stf f783 p788 - 0 312
+stf f785 p788 - 0 320
+stf f787 p788 - 0 328
+la p789 d8
+rcall sea_printf 0:9 0 2 p789 p788
+lf f790 #7FF8000000000000
+lf f791 #8000000000000000
+fadd f792 f790 f791
+fcmp eq i793 f792 f792
+fcmp ne i794 f792 f792
+fcmp lt i795 f792 f792
+fcmp le i796 f792 f792
+fcmp gt i797 f792 f792
+fcmp ge i798 f792 f792
+fcmp eq i799 f792 f792
+if 337 i799
+li i800 1
+else 337
+li i800 0
+endif 337
+fcmp ne i801 f792 f792
+if 338 i801
+li i802 1
+else 338
+li i802 0
+endif 338
+fcmp lt i803 f792 f792
+if 339 i803
+li i804 1
+else 339
+li i804 0
+endif 339
+fcmp le i805 f792 f792
+if 340 i805
+li i806 1
+else 340
+li i806 0
+endif 340
+fcmp gt i807 f792 f792
+if 341 i807
+li i808 1
+else 341
+li i808 0
+endif 341
+fcmp ge i809 f792 f792
+if 342 i809
+li i810 1
+else 342
+li i810 0
+endif 342
+li i811 5
+fcmp eq i812 f792 f792
+ifz 343 i812
+li i811 7
+endif 343
+li i813 5
+fcmp ne i814 f792 f792
+ifz 344 i814
+li i813 7
+endif 344
+li i815 5
+fcmp lt i816 f792 f792
+ifz 345 i816
+li i815 7
+endif 345
+li i817 5
+fcmp le i818 f792 f792
+ifz 346 i818
+li i817 7
+endif 346
+li i819 5
+fcmp gt i820 f792 f792
+ifz 347 i820
+li i819 7
+endif 347
+li i821 5
+fcmp ge i822 f792 f792
+ifz 348 i822
+li i821 7
+endif 348
+li i823 0
+do 349
+iadd i823 i823 i1
+fcmp eq i824 f792 f792
+if 350 i824
+exit 349
+endif 350
+icmp ge i825 i823 i3
+if 351 i825
+exit 349
+endif 351
+enddo 349
+li i826 0
+do 352
+iadd i826 i826 i1
+fcmp ne i827 f792 f792
+if 353 i827
+exit 352
+endif 353
+icmp ge i828 i826 i3
+if 354 i828
+exit 352
+endif 354
+enddo 352
+li i829 0
+do 355
+iadd i829 i829 i1
+fcmp lt i830 f792 f792
+if 356 i830
+exit 355
+endif 356
+icmp ge i831 i829 i3
+if 357 i831
+exit 355
+endif 357
+enddo 355
+li i832 0
+do 358
+iadd i832 i832 i1
+fcmp le i833 f792 f792
+if 359 i833
+exit 358
+endif 359
+icmp ge i834 i832 i3
+if 360 i834
+exit 358
+endif 360
+enddo 358
+li i835 0
+do 361
+iadd i835 i835 i1
+fcmp gt i836 f792 f792
+if 362 i836
+exit 361
+endif 362
+icmp ge i837 i835 i3
+if 363 i837
+exit 361
+endif 363
+enddo 361
+li i838 0
+do 364
+iadd i838 i838 i1
+fcmp ge i839 f792 f792
+if 365 i839
+exit 364
+endif 365
+icmp ge i840 i838 i3
+if 366 i840
+exit 364
+endif 366
+enddo 364
+li i841 0
+loop 367 i842 i2 i1 i1
+fcmp eq i843 f792 f792
+if 368 i843
+next 367
+endif 368
+iadd i841 i841 i1
+endloop 367
+li i844 0
+loop 369 i845 i2 i1 i1
+fcmp ne i846 f792 f792
+if 370 i846
+next 369
+endif 370
+iadd i844 i844 i1
+endloop 369
+li i847 0
+loop 371 i848 i2 i1 i1
+fcmp lt i849 f792 f792
+if 372 i849
+next 371
+endif 372
+iadd i847 i847 i1
+endloop 371
+li i850 0
+loop 373 i851 i2 i1 i1
+fcmp le i852 f792 f792
+if 374 i852
+next 373
+endif 374
+iadd i850 i850 i1
+endloop 373
+li i853 0
+loop 375 i854 i2 i1 i1
+fcmp gt i855 f792 f792
+if 376 i855
+next 375
+endif 376
+iadd i853 i853 i1
+endloop 375
+li i856 0
+loop 377 i857 i2 i1 i1
+fcmp ge i858 f792 f792
+if 378 i858
+next 377
+endif 378
+iadd i856 i856 i1
+endloop 377
+fcmp eq i859 f792 f792
+isel i860 i859 i1 i2
+fcmp ne i861 f792 f792
+isel i862 i861 i1 i2
+fcmp lt i863 f792 f792
+isel i864 i863 i1 i2
+fcmp le i865 f792 f792
+isel i866 i865 i1 i2
+fcmp gt i867 f792 f792
+isel i868 i867 i1 i2
+fcmp ge i869 f792 f792
+isel i870 i869 i1 i2
+fcmp eq i871 f792 f792
+fsel f872 i871 f4 f5
+fcmp ne i873 f792 f792
+fsel f874 i873 f4 f5
+fcmp lt i875 f792 f792
+fsel f876 i875 f4 f5
+fcmp le i877 f792 f792
+fsel f878 i877 f4 f5
+fcmp gt i879 f792 f792
+fsel f880 i879 f4 f5
+fcmp ge i881 f792 f792
+fsel f882 i881 f4 f5
+sa p883 s9
+sti i793 p883 - 0 0
+sti i794 p883 - 0 8
+sti i795 p883 - 0 16
+sti i796 p883 - 0 24
+sti i797 p883 - 0 32
+sti i798 p883 - 0 40
+sti i800 p883 - 0 48
+sti i802 p883 - 0 56
+sti i804 p883 - 0 64
+sti i806 p883 - 0 72
+sti i808 p883 - 0 80
+sti i810 p883 - 0 88
+sti i811 p883 - 0 96
+sti i813 p883 - 0 104
+sti i815 p883 - 0 112
+sti i817 p883 - 0 120
+sti i819 p883 - 0 128
+sti i821 p883 - 0 136
+sti i823 p883 - 0 144
+sti i826 p883 - 0 152
+sti i829 p883 - 0 160
+sti i832 p883 - 0 168
+sti i835 p883 - 0 176
+sti i838 p883 - 0 184
+sti i841 p883 - 0 192
+sti i844 p883 - 0 200
+sti i847 p883 - 0 208
+sti i850 p883 - 0 216
+sti i853 p883 - 0 224
+sti i856 p883 - 0 232
+sti i860 p883 - 0 240
+sti i862 p883 - 0 248
+sti i864 p883 - 0 256
+sti i866 p883 - 0 264
+sti i868 p883 - 0 272
+sti i870 p883 - 0 280
+stf f872 p883 - 0 288
+stf f874 p883 - 0 296
+stf f876 p883 - 0 304
+stf f878 p883 - 0 312
+stf f880 p883 - 0 320
+stf f882 p883 - 0 328
+la p884 d9
+rcall sea_printf 0:10 0 2 p884 p883
+lf f885 #4008000000000000
+lf f886 #8000000000000000
+fadd f887 f885 f886
+fcmp eq i888 f887 f887
+fcmp ne i889 f887 f887
+fcmp lt i890 f887 f887
+fcmp le i891 f887 f887
+fcmp gt i892 f887 f887
+fcmp ge i893 f887 f887
+fcmp eq i894 f887 f887
+if 379 i894
+li i895 1
+else 379
+li i895 0
+endif 379
+fcmp ne i896 f887 f887
+if 380 i896
+li i897 1
+else 380
+li i897 0
+endif 380
+fcmp lt i898 f887 f887
+if 381 i898
+li i899 1
+else 381
+li i899 0
+endif 381
+fcmp le i900 f887 f887
+if 382 i900
+li i901 1
+else 382
+li i901 0
+endif 382
+fcmp gt i902 f887 f887
+if 383 i902
+li i903 1
+else 383
+li i903 0
+endif 383
+fcmp ge i904 f887 f887
+if 384 i904
+li i905 1
+else 384
+li i905 0
+endif 384
+li i906 5
+fcmp eq i907 f887 f887
+ifz 385 i907
+li i906 7
+endif 385
+li i908 5
+fcmp ne i909 f887 f887
+ifz 386 i909
+li i908 7
+endif 386
+li i910 5
+fcmp lt i911 f887 f887
+ifz 387 i911
+li i910 7
+endif 387
+li i912 5
+fcmp le i913 f887 f887
+ifz 388 i913
+li i912 7
+endif 388
+li i914 5
+fcmp gt i915 f887 f887
+ifz 389 i915
+li i914 7
+endif 389
+li i916 5
+fcmp ge i917 f887 f887
+ifz 390 i917
+li i916 7
+endif 390
+li i918 0
+do 391
+iadd i918 i918 i1
+fcmp eq i919 f887 f887
+if 392 i919
+exit 391
+endif 392
+icmp ge i920 i918 i3
+if 393 i920
+exit 391
+endif 393
+enddo 391
+li i921 0
+do 394
+iadd i921 i921 i1
+fcmp ne i922 f887 f887
+if 395 i922
+exit 394
+endif 395
+icmp ge i923 i921 i3
+if 396 i923
+exit 394
+endif 396
+enddo 394
+li i924 0
+do 397
+iadd i924 i924 i1
+fcmp lt i925 f887 f887
+if 398 i925
+exit 397
+endif 398
+icmp ge i926 i924 i3
+if 399 i926
+exit 397
+endif 399
+enddo 397
+li i927 0
+do 400
+iadd i927 i927 i1
+fcmp le i928 f887 f887
+if 401 i928
+exit 400
+endif 401
+icmp ge i929 i927 i3
+if 402 i929
+exit 400
+endif 402
+enddo 400
+li i930 0
+do 403
+iadd i930 i930 i1
+fcmp gt i931 f887 f887
+if 404 i931
+exit 403
+endif 404
+icmp ge i932 i930 i3
+if 405 i932
+exit 403
+endif 405
+enddo 403
+li i933 0
+do 406
+iadd i933 i933 i1
+fcmp ge i934 f887 f887
+if 407 i934
+exit 406
+endif 407
+icmp ge i935 i933 i3
+if 408 i935
+exit 406
+endif 408
+enddo 406
+li i936 0
+loop 409 i937 i2 i1 i1
+fcmp eq i938 f887 f887
+if 410 i938
+next 409
+endif 410
+iadd i936 i936 i1
+endloop 409
+li i939 0
+loop 411 i940 i2 i1 i1
+fcmp ne i941 f887 f887
+if 412 i941
+next 411
+endif 412
+iadd i939 i939 i1
+endloop 411
+li i942 0
+loop 413 i943 i2 i1 i1
+fcmp lt i944 f887 f887
+if 414 i944
+next 413
+endif 414
+iadd i942 i942 i1
+endloop 413
+li i945 0
+loop 415 i946 i2 i1 i1
+fcmp le i947 f887 f887
+if 416 i947
+next 415
+endif 416
+iadd i945 i945 i1
+endloop 415
+li i948 0
+loop 417 i949 i2 i1 i1
+fcmp gt i950 f887 f887
+if 418 i950
+next 417
+endif 418
+iadd i948 i948 i1
+endloop 417
+li i951 0
+loop 419 i952 i2 i1 i1
+fcmp ge i953 f887 f887
+if 420 i953
+next 419
+endif 420
+iadd i951 i951 i1
+endloop 419
+fcmp eq i954 f887 f887
+isel i955 i954 i1 i2
+fcmp ne i956 f887 f887
+isel i957 i956 i1 i2
+fcmp lt i958 f887 f887
+isel i959 i958 i1 i2
+fcmp le i960 f887 f887
+isel i961 i960 i1 i2
+fcmp gt i962 f887 f887
+isel i963 i962 i1 i2
+fcmp ge i964 f887 f887
+isel i965 i964 i1 i2
+fcmp eq i966 f887 f887
+fsel f967 i966 f4 f5
+fcmp ne i968 f887 f887
+fsel f969 i968 f4 f5
+fcmp lt i970 f887 f887
+fsel f971 i970 f4 f5
+fcmp le i972 f887 f887
+fsel f973 i972 f4 f5
+fcmp gt i974 f887 f887
+fsel f975 i974 f4 f5
+fcmp ge i976 f887 f887
+fsel f977 i976 f4 f5
+sa p978 s10
+sti i888 p978 - 0 0
+sti i889 p978 - 0 8
+sti i890 p978 - 0 16
+sti i891 p978 - 0 24
+sti i892 p978 - 0 32
+sti i893 p978 - 0 40
+sti i895 p978 - 0 48
+sti i897 p978 - 0 56
+sti i899 p978 - 0 64
+sti i901 p978 - 0 72
+sti i903 p978 - 0 80
+sti i905 p978 - 0 88
+sti i906 p978 - 0 96
+sti i908 p978 - 0 104
+sti i910 p978 - 0 112
+sti i912 p978 - 0 120
+sti i914 p978 - 0 128
+sti i916 p978 - 0 136
+sti i918 p978 - 0 144
+sti i921 p978 - 0 152
+sti i924 p978 - 0 160
+sti i927 p978 - 0 168
+sti i930 p978 - 0 176
+sti i933 p978 - 0 184
+sti i936 p978 - 0 192
+sti i939 p978 - 0 200
+sti i942 p978 - 0 208
+sti i945 p978 - 0 216
+sti i948 p978 - 0 224
+sti i951 p978 - 0 232
+sti i955 p978 - 0 240
+sti i957 p978 - 0 248
+sti i959 p978 - 0 256
+sti i961 p978 - 0 264
+sti i963 p978 - 0 272
+sti i965 p978 - 0 280
+stf f967 p978 - 0 288
+stf f969 p978 - 0 296
+stf f971 p978 - 0 304
+stf f973 p978 - 0 312
+stf f975 p978 - 0 320
+stf f977 p978 - 0 328
+la p979 d10
+rcall sea_printf 0:11 0 2 p979 p978
+ret 0
+endfunc
+fmt d1 86
+ftext pair0
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d2 86
+ftext pair1
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d3 86
+ftext pair2
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d4 86
+ftext pair3
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d5 86
+ftext pair4
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d6 86
+ftext pair5
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d7 86
+ftext pair6
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d8 86
+ftext pair7
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d9 86
+ftext pair8
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+fmt d10 86
+ftext pair9
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20|%20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %20
+fconv - - - d f
+ftext %0A
+#end

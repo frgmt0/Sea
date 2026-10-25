@@ -1,0 +1,5 @@
+// r_opt_step2_last -- for i in 0 ..= 6 step 2 over a 6-element vector: i = 6 fails (5.1, 5.4)
+let v = zeros(6)
+for i in 0..=6 step 2 {
+    printf("%d %g\n", i, v[i])
+}

@@ -1,0 +1,10 @@
+// r_opt_eq_or -- v[k] after k == 2 || k < 0 returned: k = 5 (5.4, 6.4 short circuit)
+fn orf(k: i64) -> f64 {
+    let v = zeros(3)
+    if k == 2 || k < 0 {
+        return -1.0
+    }
+    return v[k]
+}
+printf("%g %g %g\n", orf(1), orf(2), orf(-4))
+printf("%g\n", orf(5))

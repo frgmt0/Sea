@@ -1,0 +1,24 @@
+fn edges(v: f64[], n: i64) -> f64 {
+    var s = 0.0
+    for i in 1..n {
+        s = s + v[i + 1] - v[i - 1]
+    }
+    for i in 0..=n {
+        s = s + v[i]
+    }
+    return s
+}
+fn grow(ref u: f64[], k: i64) -> f64 {
+    var t = 0.0
+    for i in 0..k {
+        u[i] += 1.5
+        t = t + u[i]
+    }
+    return t
+}
+var x: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0]
+printf("%g %g\n", edges(x, 3), edges(x, 2))
+printf("%g %g\n", grow(ref x, 5), grow(ref x, 2))
+// opt5_bce_kept -- DESIGN.md 5.8 T1: checks that stay: v[i + 1] and v[i - 1] over 1..n (the
+// adds become wrapping, the checks stay), v[i] over 0..=n, and the repeated checks of a `ref`
+// array's element in a compound assignment (rule 19: no facts on a loaded extent)

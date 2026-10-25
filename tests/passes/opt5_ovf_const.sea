@@ -1,0 +1,24 @@
+fn big(k: i64, n: i64) -> i64 {
+    let m = 80000000000
+    let p = 4503599627370496
+    let q = 4503599627370497
+    let r = -4503599627370496
+    let t = -4503599627370497
+    var s = 0
+    for i in 0..n {
+        if k >= 0 {
+            if k < 10 {
+                s = s + (m + k)
+                s = s + (p + k)
+                s = s + (q + k)
+                s = s + (r + k)
+                s = s + (t + k)
+            }
+        }
+    }
+    return s
+}
+printf("%d %d\n", big(3, 1), big(9, 2))
+// opt5_ovf_const -- DESIGN.md 5.8 T1 and L-bb reading 6: under 0 <= k < 10 (U(k) = 9),
+// m + k becomes iadd for the constants 80000000000, 2^52 and -2^52 (each within -2^52 ... 2^52:
+// an interval [v, v]); 2^52 + 1 and -2^52 - 1 have an unknown interval: their adds stay checked

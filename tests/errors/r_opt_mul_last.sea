@@ -1,0 +1,4 @@
+// r_opt_mul_last -- i * i over 3037000498 ..= 3037000500: the last square exceeds 2^63 - 1 (6.5)
+for i in 3037000498..=3037000500 {
+    printf("%d\n", i * i)
+}

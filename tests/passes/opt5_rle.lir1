@@ -1,0 +1,113 @@
+#sea 1
+#target arm64-macos
+#file opt5_rle.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+slot s3 8 8
+slot s4 8 8
+slot s5 8 8
+slot s6 8 8
+li i1 1
+sa p2 s1
+sa p3 s2
+lf f4 #3FF0000000000000
+stf f4 p3 - 0 0
+lf f5 #4000000000000000
+stf f5 p3 - 0 8
+li i6 16
+mcopy p2 p3 i6
+li i7 2
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new_u 0:14 1 p11 4 i8 i9 i7 i10
+ldp p12 p11 - 0 40
+li i13 16
+mcopy p12 p2 i13
+sa p14 s3
+sti i1 p14 - 0 0
+li i15 2
+call rle 1 f16 3 p11 p14 i15
+ldi i1 p14 - 0 0
+release p11
+sa p17 s4
+stf f16 p17 - 0 0
+la p18 d1
+rcall sea_printf 0:14 0 2 p18 p17
+li i19 2
+li i20 1
+li i21 1
+li i22 1
+rcall sea_arr_new_u 0:15 1 p23 4 i20 i21 i19 i22
+ldp p24 p23 - 0 40
+li i25 16
+mcopy p24 p2 i25
+sa p26 s5
+sti i1 p26 - 0 0
+li i27 3
+call rle 1 f28 3 p23 p26 i27
+ldi i1 p26 - 0 0
+release p23
+sa p29 s6
+stf f28 p29 - 0 0
+la p30 d2
+rcall sea_printf 0:15 0 2 p30 p29
+ret 0
+endfunc
+func rle fn 0:1:1 3 p1 p2 i3 1 f
+slot s1 8 8
+lf f4 #0000000000000000
+li i5 0
+li i6 1
+rcount i7 i8 i5 i3 i6 0 0:3
+if 1 i8
+loop 2 i9 i5 i7 i6
+ldi i10 p1 - 0 16
+itof f11 i10
+fadd f12 f4 f11
+ldi i13 p1 - 0 16
+itof f14 i13
+fadd f15 f12 f14
+li i16 0
+ldi i17 p1 - 0 16
+chkb i16 i17 0 0:4
+ldp p18 p1 - 0 40
+ldf f19 p18 i16 8 0
+fadd f4 f15 f19
+ldi i20 p2 - 0 0
+iaddc i21 i20 i9 0:5
+sti i21 p2 - 0 0
+ldi i22 p2 - 0 0
+li i23 2
+imulc i24 i22 i23 0:6
+itof f25 i24
+fadd f4 f4 f25
+ldi i26 p2 - 0 0
+sa p27 s1
+sti i26 p27 - 0 0
+la p28 d3
+rcall sea_printf 0:7 0 2 p28 p27
+ldi i29 p2 - 0 0
+itof f30 i29
+fadd f31 f4 f30
+li i32 0
+ldi i33 p1 - 0 16
+chkb i32 i33 0 0:8
+ldp p34 p1 - 0 40
+ldf f35 p34 i32 8 0
+fadd f4 f31 f35
+endloop 2
+endif 1
+ret 1 f4
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+fmt d2 2
+fconv - - - g f
+ftext %0A
+fmt d3 2
+fconv - - - d i
+ftext %0A
+#end

@@ -1,0 +1,57 @@
+#sea 1
+#target arm64-macos
+#file opt5_vn.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 4
+lf f3 #3FE0000000000000
+li i4 2
+call vn 1 f5 4 i1 i2 f3 i4
+li i6 -1
+li i7 7
+lf f8 #4000000000000000
+call vn 1 f9 4 i6 i7 f8 i1
+sa p10 s1
+stf f5 p10 - 0 0
+stf f9 p10 - 0 8
+la p11 d1
+rcall sea_printf 0:14 0 2 p11 p10
+ret 0
+endfunc
+func vn fn 0:1:1 4 i1 i2 f3 i4 1 f
+lf f5 #0000000000000000
+li i6 0
+mov i7 i6
+li i8 1
+rcount i9 i10 i7 i4 i8 0 0:4
+if 1 i10
+loop 2 i11 i7 i9 i8
+imulc i12 i1 i2 0:5
+iaddc i13 i12 i11 0:5
+imulc i14 i13 i13 0:5
+iaddc i6 i6 i14 0:5
+fmul f15 f3 f3
+lf f16 #3FF0000000000000
+fadd f17 f15 f16
+fdiv f18 f15 f17
+fadd f5 f5 f18
+iaddc i19 i11 i1 0:8
+li i20 1
+iaddc i19 i19 i20 0:9
+iaddc i21 i11 i1 0:10
+iaddc i22 i6 i21 0:10
+iaddc i23 i22 i19 0:10
+iaddc i6 i23 i12 0:10
+endloop 2
+endif 1
+itof f24 i6
+fadd f25 f5 f24
+ret 1 f25
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

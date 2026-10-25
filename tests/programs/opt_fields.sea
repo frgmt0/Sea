@@ -1,0 +1,45 @@
+// opt_fields -- checked arithmetic on an i64 field of a struct parameter and on an element of a fixed-size
+// array parameter, in functions called for real and inlined, with results at the ends of the
+// i64 range but inside it: no error (LANGUAGE.md 6.5, 4.5, 4.6, 8.2; DESIGN.md 5.8 T1)
+struct S {
+    a: f64
+    c: i64
+}
+fn next(p: S, n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return p.c + 1 + t
+}
+fn nexta(v: i64[3], n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return v[2] + 1 + t
+}
+fn small(p: S) -> i64 {
+    return p.c + 1
+}
+fn ops(p: S, v: i64[3]) {
+    printf("%d %d %d %d\n", p.c - 1, -p.c, v[0] * 2, v[1] - 1)
+}
+fn sweep(p: S, v: i64[3], n: i64) {
+    for i in 0..n {
+        printf(" %d %d", p.c + i, v[2] + i)
+    }
+    printf("\n")
+}
+let s1 = S { a: 1.5, c: 41 }
+let s2 = S { a: 0.5, c: 9223372036854775806 }
+let s3 = S { a: 2.5, c: -9223372036854775807 }
+let v1 = [1, 2, 9223372036854775806]
+let v2 = [4611686018427387903, -9223372036854775807, -5]
+printf("%d %d %d\n", next(s1, 0), next(s1, 3), next(s2, 0))
+printf("%d %d %d\n", nexta(v1, 0), nexta(v2, 4), small(s2))
+printf("%d %d\n", small(s1), small(s3))
+ops(s3, v2)
+ops(s1, v1)
+sweep(s2, v1, 2)
+sweep(s1, v2, 3)

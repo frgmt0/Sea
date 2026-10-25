@@ -1,0 +1,28 @@
+fn sel(a: i64, b: i64, x: f64, y: f64, n: i64) -> f64 {
+    var s = 0.0
+    var t = 0
+    let p = a > 0
+    for i in 0..n {
+        let m = if a < b { a } else { b }
+        let z = if x > y { x } else { y }
+        var w = x
+        if i > a {
+            w = y
+        }
+        let q = i > 2 || p
+        let r = if x < y { x } else { 1.5 }
+        if i < b {
+            t = t + 1
+        }
+        s = s + z + w + r
+        t = t + m
+        if q {
+            t = t + 1
+        }
+    }
+    return s + t
+}
+printf("%g %g\n", sel(1, 2, 0.5, 1.5, 3), sel(4, 3, -1.0, -2.0, 2))
+// opt5_ifconv -- DESIGN.md 5.8 T4: an ifx of two locals (i64 and f64: isel, fsel), an `if` with
+// one mov (fsel), `||` with a local (ifz: isel); an arm that is not one mov (lf) and two ifs
+// whose part is an add stay

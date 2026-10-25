@@ -1,0 +1,91 @@
+#sea 1
+#target arm64-macos
+#file opt5_clean.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+li i4 8
+mcopy p1 p2 i4
+li i5 1
+li i6 1
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:17 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 8
+mcopy p10 p1 i11
+li i12 1
+lf f13 #3FE0000000000000
+li i14 2
+call clean 1 p15 4 p9 i12 f13 i14
+release p9
+li i16 1
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:18 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+li i22 8
+mcopy p21 p1 i22
+li i23 2
+lf f24 #3FF8000000000000
+li i25 3
+call clean 1 p26 4 p20 i23 f24 i25
+release p20
+ldi i27 p15 - 0 16
+ldi i28 p26 - 0 16
+sa p29 s3
+sti i27 p29 - 0 0
+sti i28 p29 - 0 8
+la p30 d1
+rcall sea_printf 0:19 0 2 p30 p29
+release p26
+release p15
+ret 0
+endfunc
+func clean fn 0:1:1 4 p1 i2 f3 i4 1 p
+li i5 1
+li i6 1
+li i7 1
+rcall sea_arr_new 0:2 1 p8 4 i5 i6 i4 i7
+mov f9 f3
+mov i10 i2
+li i11 0
+li i12 1
+rcount i13 i14 i11 i4 i12 0 0:5
+if 1 i14
+loop 2 i15 i11 i13 i12
+lf f16 #4000000000000000
+fmul f17 f3 f16
+li i18 0
+ldi i19 p1 - 0 16
+chkb i18 i19 0 0:6
+ldp p20 p1 - 0 40
+ldf f21 p20 i18 8 0
+fadd f22 f17 f21
+li i23 1
+iaddc i24 i2 i23 0:7
+mov i10 i10
+icmp gt i25 i2 i15
+if 3 i25
+lf f26 #3FF0000000000000
+fadd f27 f3 f26
+endif 3
+fadd f9 f9 f3
+endloop 2
+endif 1
+retain p8
+release p8
+ret 1 p8
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

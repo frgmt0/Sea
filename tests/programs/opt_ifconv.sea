@@ -1,0 +1,41 @@
+// opt_ifconv -- if statements with one assignment per arm and if expressions selecting a value, of
+// i64, f64, str and bool, with NaN, -0.0 and Inf conditions, an ifz-shaped !(f < 1.0), and a
+// variable selected against its own old value (LANGUAGE.md 6.4, 6.10, 7.4; DESIGN.md 5.8 T4)
+let vs = [3, -1, 7, 0, 5, 2]
+let fs = [2.5, -0.0, nan, 0.0, -3.5, inf]
+let ss = ["a", "bb", "ccc", "", "ee", "f"]
+let hundred = 100
+let gg = 9.5
+let hh = -0.0
+let other = "zz"
+var c = -4
+var flag = false
+for i in 0..6 {
+    let a = vs[i]
+    let f = fs[i]
+    let s = ss[i]
+    var m = a
+    if a > 2 {
+        m = hundred
+    }
+    let p = if f < 1.0 { f } else { gg }
+    let q = if !(f < 1.0) { f } else { gg }
+    var t = s
+    if len(s) == 2 {
+        t = other
+    }
+    var w = f
+    if f >= 0.0 {
+        w = hh
+    } else {
+        w = gg
+    }
+    if i % 2 == 0 {
+        c = a
+    }
+    if f != f {
+        flag = true
+    }
+    let z = if f == 0.0 { f } else { hh }
+    printf("%d %d %.17g %.17g %s %.17g %d %d %.17g\n", i, m, p, q, t, w, c, flag, z)
+}

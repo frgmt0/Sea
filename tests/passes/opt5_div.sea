@@ -1,0 +1,20 @@
+fn divs(a: i64, b: i64) -> i64 {
+    var s = 0
+    for i in 0..b {
+        s = s + a % 1 + idiv(a, 1)
+        s = s + a % 8 + idiv(a, 8)
+        s = s + a % 10 + idiv(a, 10)
+        s = s + a % 3 + idiv(a, 3)
+        s = s + a % 2147483647 + idiv(a, 2147483647)
+        s = s + a % -3 + idiv(a, -3)
+        s = s + a % b + idiv(a, i + 1)
+        if b < 0 {
+            s = s + a % 0 + idiv(a, 0)
+        }
+    }
+    return s
+}
+printf("%d %d\n", divs(-123456789, 2), divs(987654321, 3))
+// opt5_div -- DESIGN.md 5.8 T2: % and idiv by 1, by 8 (2^3), by 10 (M < 2^63, s = 2), by 3
+// (s = 0: no isar) and by 2147483647 (M >= 2^63: the iadd); by -3, by 0, by b and by i + 1
+// unchanged; T3 then shares the sequences' common instructions in the region

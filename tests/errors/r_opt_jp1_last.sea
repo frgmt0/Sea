@@ -1,0 +1,6 @@
+// r_opt_jp1_last -- v[j] + v[j + 1] over 0 .. n: j + 1 = n at the last iteration (5.4, 7.5)
+let n = 5
+let v = filled(2, n)
+for j in 0..n {
+    printf("%d\n", v[j] + v[j + 1])
+}

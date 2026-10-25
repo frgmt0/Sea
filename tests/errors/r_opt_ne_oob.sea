@@ -1,0 +1,13 @@
+// r_opt_ne_oob -- v[k] after k >= 3 and k != -1 returned: k is -1 there (5.4)
+fn get2(k: i64) -> f64 {
+    let v = zeros(3)
+    if k >= 3 {
+        return -1.0
+    }
+    if k != -1 {
+        return -2.0
+    }
+    return v[k]
+}
+printf("%g %g\n", get2(1), get2(5))
+printf("%g\n", get2(-1))

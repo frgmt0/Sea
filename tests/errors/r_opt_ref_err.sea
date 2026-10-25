@@ -1,0 +1,14 @@
+// r_opt_ref_err -- a ref scalar updated in a loop that prints it, with an index error part-way: the lines
+// before the error are what counts (8.3, 9.2; DESIGN.md 5.8 T5, L-ag)
+fn accum(ref s: i64, v: i64[], n: i64) {
+    for i in 0..n {
+        s += v[i]
+        printf("%d\n", s)
+    }
+}
+var t = 100
+let v = [1, 2, 3]
+accum(ref t, v, 2)
+printf("t %d\n", t)
+accum(ref t, v, 5)
+printf("t %d\n", t)

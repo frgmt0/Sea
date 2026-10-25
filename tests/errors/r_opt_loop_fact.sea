@@ -1,0 +1,8 @@
+// r_opt_loop_fact -- j = i inside a for over 0 .. len(v), then v[j + 1] after the loop with j = 4 (5.4)
+let v = filled(7, 5)
+var j = 0
+for i in 0..len(v) {
+    j = i
+    printf("%d\n", v[j])
+}
+printf("%d\n", v[j + 1])

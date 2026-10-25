@@ -1,0 +1,108 @@
+#sea 1
+#target arm64-macos
+#file opt5_div.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 -123456789
+li i2 2
+call divs 1 i3 2 i1 i2
+li i4 987654321
+li i5 3
+call divs 1 i6 2 i4 i5
+sa p7 s1
+sti i3 p7 - 0 0
+sti i6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:17 0 2 p8 p7
+ret 0
+endfunc
+func divs fn 0:1:1 2 i1 i2 1 i
+li i3 0
+mov i4 i3
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:3
+if 1 i7
+loop 2 i8 i4 i6 i5
+li i9 1
+li i10 0
+iaddc i11 i3 i10 0:4
+iaddc i3 i11 i1 0:4
+li i12 7
+iand i13 i1 i12
+iaddc i14 i3 i13 0:5
+li i15 3
+isar i16 i1 i15
+iaddc i3 i14 i16 0:5
+li i17 10
+li i18 #6666666666666667
+imulh i19 i1 i18
+li i20 2
+isar i21 i19 i20
+li i22 63
+isar i23 i1 i22
+isub i24 i21 i23
+imul i25 i24 i17
+isub i26 i1 i25
+iadd i27 i26 i17
+icmp lt i28 i26 i10
+isel i29 i28 i27 i26
+iaddc i30 i3 i29 0:6
+isub i31 i24 i9
+isel i32 i28 i31 i24
+iaddc i3 i30 i32 0:6
+li i33 #5555555555555556
+imulh i34 i1 i33
+isub i35 i34 i23
+imul i36 i35 i15
+isub i37 i1 i36
+iadd i38 i37 i15
+icmp lt i39 i37 i10
+isel i40 i39 i38 i37
+iaddc i41 i3 i40 0:7
+isub i42 i35 i9
+isel i43 i39 i42 i35
+iaddc i3 i41 i43 0:7
+li i44 #000000007FFFFFFF
+li i45 #8000000100000003
+imulh i46 i1 i45
+iadd i47 i46 i1
+li i48 30
+isar i49 i47 i48
+isub i50 i49 i23
+imul i51 i50 i44
+isub i52 i1 i51
+iadd i53 i52 i44
+icmp lt i54 i52 i10
+isel i55 i54 i53 i52
+iaddc i56 i3 i55 0:8
+isub i57 i50 i9
+isel i58 i54 i57 i50
+iaddc i3 i56 i58 0:8
+li i59 -3
+imodf i60 i1 i59 0:9
+iaddc i61 i3 i60 0:9
+idivf i62 i1 i59 0:9
+iaddc i3 i61 i62 0:9
+imodf i63 i1 i2 0:10
+iaddc i64 i3 i63 0:10
+iadd i65 i8 i9
+idivf i66 i1 i65 0:10
+iaddc i3 i64 i66 0:10
+icmp lt i67 i2 i10
+if 3 i67
+li i68 0
+imodf i69 i1 i68 0:12
+iaddc i70 i3 i69 0:12
+idivf i71 i1 i68 0:12
+iaddc i3 i70 i71 0:12
+endif 3
+endloop 2
+endif 1
+ret 1 i3
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

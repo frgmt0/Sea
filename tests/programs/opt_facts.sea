@@ -1,0 +1,45 @@
+// opt_facts -- indices proved by dominating guards on parameters (nested ifs, else if, early returns,
+// &&, || with continue), each guard followed by code its facts do not cover, with indices on
+// both sides of every bound (LANGUAGE.md 5.4, 6.4; DESIGN.md 5.8 F5, F6)
+fn at(v: i64[], k: i64) -> i64 {
+    if k >= 0 {
+        if k < len(v) {
+            return v[k]
+        }
+    }
+    return -1
+}
+fn clamp_at(v: i64[], k: i64) -> i64 {
+    var j = k
+    if k < 0 {
+        j = 0
+    } else if k > len(v) - 1 {
+        j = len(v) - 1
+    }
+    return v[j]
+}
+fn early(v: i64[], k: i64) -> i64 {
+    if k < 0 {
+        return -2
+    }
+    if k >= len(v) {
+        return -3
+    }
+    return v[k] * 2
+}
+let w = [10, 20, 30]
+for k in -2..=4 {
+    printf(" %d %d %d", at(w, k), clamp_at(w, k), early(w, k))
+}
+printf("\n")
+var m = 0
+for k in -3..6 {
+    if k >= 0 && k < 3 {
+        m += w[k]
+    }
+    if k < 0 || k > 2 {
+        continue
+    }
+    m += w[2 - k] * 1000
+}
+printf("%d\n", m)

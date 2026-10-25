@@ -1,0 +1,10 @@
+// r_opt_ne_ovf -- x - 1 in the else part of x != -2^63 (so x is -2^63 there): integer overflow (6.5)
+fn dec(x: i64) -> i64 {
+    if x != -9223372036854775808 {
+        return x
+    } else {
+        return x - 1
+    }
+}
+printf("%d\n", dec(5))
+printf("%d\n", dec(-9223372036854775808))

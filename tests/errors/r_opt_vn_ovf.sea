@@ -1,0 +1,12 @@
+// r_opt_vn_ovf -- two equal checked additions after the variable changed: the first overflowing one is
+// reported at its own line (6.5; DESIGN.md 5.8 T3)
+var big = 9223372036854775800
+printf("start\n")
+let p1 = big + 3
+printf("%d\n", p1)
+big = big + 4
+let p2 = big + 3
+printf("%d\n", p2)
+let p3 = big + 4
+let p4 = big + 4
+printf("%d %d\n", p3, p4)

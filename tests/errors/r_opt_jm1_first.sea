@@ -1,0 +1,11 @@
+// r_opt_jm1_first -- v[j] - v[j - 1] over 0 .. n in a function with a parameter n: j - 1 = -1 at the first
+// iteration, after the output of an earlier call with an empty range (5.4, 7.5)
+fn diffs(v: i64[], n: i64) {
+    for j in 0..n {
+        printf("%d\n", v[j] - v[j - 1])
+    }
+    printf("end %d\n", n)
+}
+let w = [5, 7, 9]
+diffs(w, 0)
+diffs(w, 3)

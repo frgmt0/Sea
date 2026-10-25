@@ -1,0 +1,83 @@
+#sea 1
+#target arm64-macos
+#file opt5_ovf.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 4
+call ovf 1 i2 1 i1
+li i3 7
+call ovf 1 i4 1 i3
+sa p5 s1
+sti i2 p5 - 0 0
+sti i4 p5 - 0 8
+la p6 d1
+rcall sea_printf 0:21 0 2 p6 p5
+ret 0
+endfunc
+func ovf fn 0:1:1 1 i1 1 i
+li i2 0
+mov i3 i2
+li i4 1
+rcount i5 i6 i3 i1 i4 0 0:3
+if 1 i6
+loop 2 i7 i3 i5 i4
+li i8 1
+iadd i9 i7 i8
+ineg i10 i7
+imulc i11 i9 i10 0:4
+iaddc i2 i2 i11 0:4
+endloop 2
+endif 1
+li i12 0
+li i13 10
+li i14 1
+rcount i15 i16 i12 i13 i14 0 0:6
+if 3 i16
+loop 4 i17 i12 i15 i14
+li i18 3
+imul i19 i17 i18
+iaddc i20 i2 i19 0:7
+li i21 1
+isub i22 i17 i21
+isubc i2 i20 i22 0:7
+endloop 4
+endif 3
+li i23 0
+li i24 1
+rcount i25 i26 i23 i1 i24 1 0:9
+if 5 i26
+loop 6 i27 i23 i25 i24
+li i28 1
+iaddc i29 i27 i28 0:10
+iaddc i2 i2 i29 0:10
+endloop 6
+endif 5
+li i30 #7FFFFFFFFFFFFFFF
+li i31 1
+rcount i32 i33 i1 i30 i31 1 0:12
+if 7 i33
+loop 8 i34 i1 i32 i31
+li i35 1
+iaddc i36 i34 i35 0:13
+iaddc i2 i2 i36 0:13
+exit 8
+endloop 8
+endif 7
+li i37 100
+icmp lt i38 i1 i37
+if 9 i38
+li i39 1
+iadd i40 i1 i39
+iaddc i2 i2 i40 0:17
+endif 9
+li i41 2
+imulc i42 i1 i41 0:19
+iaddc i43 i2 i42 0:19
+ret 1 i43
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

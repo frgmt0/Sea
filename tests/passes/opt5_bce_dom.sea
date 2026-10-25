@@ -1,0 +1,35 @@
+fn pick(k: i64, n: i64) -> f64 {
+    var v = zeros(8)
+    var s = 0.0
+    for i in 0..n {
+        if k >= 0 {
+            if k < 8 {
+                s = s + v[k]
+            }
+        }
+        if k < 0 {
+            s = 1.0
+        } else {
+            if k <= 7 {
+                s = s + v[k]
+            }
+        }
+        if k < 8 {
+            s = s + v[k]
+        }
+        let j = i * 3
+        if j < 8 {
+            if j >= 0 {
+                s = s + v[j]
+            }
+        }
+    }
+    return s
+}
+let a = pick(3, 2)
+let b = pick(5, 3)
+printf("%g %g\n", a, b)
+// opt5_bce_dom -- DESIGN.md 5.8 T1 with F5 (dominating comparisons): k >= 0 and k < 8 narrow
+// L(k), U(k) of the parameter k (deleted), the else part of `if k < 0` gives k >= 0 (deleted),
+// `k < 8` alone gives no lower bound (kept); j = i * 3 (not a symbol) narrowed by j < 8 and
+// j >= 0 (deleted). The accesses stand in a loop, where the extent register is not a symbol.

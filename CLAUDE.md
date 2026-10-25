@@ -62,9 +62,12 @@ the `sea.hirl` records `iblk`/`iret` (`passes.txt` HL 88–89), lowered by `seal
 **Phase 4 is complete.** **Phase 5** (scalar code quality) is specified and agreed (5a; Decisions
 58–73, lead decisions L-ac–L-at (L-an–L-at after a review of the text): `seaopt`'s T1–T10 of
 DESIGN.md §5.8, the shared allocator `passes/lib/ralloc.bas` of §4.9.2, the shape tests and
-micro-benchmarks of §6.2, §5.9). **Next: 5b
-(allocator and code selection, both targets) with 5c-1 (`seaopt` local transformations) in
-parallel** (DESIGN.md §8).
+micro-benchmarks of §6.2, §5.9). **5b** (allocator and code selection, both targets) and **5c-1**
+(`seaopt`'s T1–T4, T10) **are done**: `make test` and `make cross` (555) pass; `seaopt` 5 316 built
+lines, `seagen_a64` 4 958, `seagen_x64` 5 294 (DESIGN.md §2.7 "Measured after 5b and 5c-1", with the
+gate arithmetic that predicts `seaopt` fails the gate after 5c-2). **Next: the user's decision on
+`seaopt`'s size, then 5c-2** (loop transformations); the loop-extension spill issue (DESIGN.md §0
+"Open before 5d") must be settled before 5d.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

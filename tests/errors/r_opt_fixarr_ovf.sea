@@ -1,0 +1,25 @@
+// r_opt_fixarr_ovf -- v[2] + 1 on an element of a fixed-size i64[3] parameter holding 2^63 - 1: integer
+// overflow at that line, after a call that does not overflow (6.5, 4.5, 8.2)
+struct S {
+    a: f64
+    c: i64
+}
+fn next(p: S, n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return p.c + 1 + t
+}
+fn nexta(v: i64[3], n: i64) -> i64 {
+    var t = 0
+    for k in 0..n {
+        t += k
+    }
+    return v[2] + 1 + t
+}
+let ok = [1, 2, 3]
+printf("%d\n", nexta(ok, 3))
+let big = [1, 2, 9223372036854775807]
+printf("%d\n", nexta(big, 0))
+printf("never\n")

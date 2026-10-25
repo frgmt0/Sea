@@ -1,0 +1,29 @@
+fn sym(k: i64, n: i64, m: i64) -> f64 {
+    let v = zeros(8)
+    let w = zeros(n)
+    var s = 0.0
+    if k >= 0 {
+        if k < 8 {
+            s = s + v[k]
+        }
+    }
+    if k < 8 {
+        s = s + w[k]
+    }
+    if k >= 0 {
+        if k < 7 {
+            for i in 0..m {
+                if n >= 8 {
+                    s = s + w[k]
+                }
+                s = s + w[k]
+            }
+        }
+    }
+    return s
+}
+printf("%g %g\n", sym(3, 9, 2), sym(6, 10, 1))
+// opt5_bce_sym -- DESIGN.md 5.8 T1 with L-au (two symbols compared through their constant
+// bounds): v[k] under 0 <= k < 8 with v = zeros(8), its extent loaded outside every loop (a
+// symbol with L = 8): deleted; w[k] under k < 8 alone, w = zeros(n): kept; w[k] under
+// 0 <= k < 7 in a loop, inside `if n >= 8` (L(n) = 8 > U(k) = 6): deleted, after that if: kept

@@ -37,6 +37,10 @@
 # standard error NAME.err (else empty). A missing tool or library is a FAILURE. Name:
 # stage/seagen_a64/NAME.
 #
+# A NAME.sea test with a NAME.lir1 and a NAME.lir but no NAME.hirl (the opt5_* dumps: .sea +
+# .lir1 + .lir only, DESIGN.md 6.2) starts the chain at seaopt: the sealower pair skips it.
+# With neither NAME.hirl nor NAME.lir the missing NAME.hirl is a FAILURE.
+#
 # usage: sh tests/stage.sh [-v] [PATTERN...]      PATTERN: a substring of the test name
 #        (stage/<pass>/NAME). Environment: BUILD (default build/), SEA_TEST_TIMEOUT (10).
 # Exit status: 0 all passed, 1 a failure, 2 setup error.
@@ -135,6 +139,9 @@ stage() {
         if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.lir1 (no NAME.hirl, no NAME.sea) is a seaopt-only test: no sealower golden
         if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
+        # a NAME.lir1 with no NAME.hirl but a NAME.lir (the opt5_* dumps) starts at seaopt: no
+        # sealower golden. Without NAME.lir the missing NAME.hirl is a failure.
+        if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ -f "$ROOT/tests/passes/$nm.lir" ]; then continue; fi
         # 4h (DESIGN.md 6.2): a golden NAME.hir with no NAME.hir1 is a stage-only input of sealoop
         # (hand-written two-file sea.hir, no NAME.sea) or the start of a prelude test: no seaexpand
         # golden. A NAME.sea test without NAME.prelude still needs its NAME.hir1.

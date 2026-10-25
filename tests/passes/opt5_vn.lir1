@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file opt5_vn.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 4
+lf f3 #3FE0000000000000
+li i4 2
+call vn 1 f5 4 i1 i2 f3 i4
+li i6 -1
+li i7 7
+lf f8 #4000000000000000
+li i9 3
+call vn 1 f10 4 i6 i7 f8 i9
+sa p11 s1
+stf f5 p11 - 0 0
+stf f10 p11 - 0 8
+la p12 d1
+rcall sea_printf 0:14 0 2 p12 p11
+ret 0
+endfunc
+func vn fn 0:1:1 4 i1 i2 f3 i4 1 f
+lf f5 #0000000000000000
+li i6 0
+li i7 0
+li i8 1
+rcount i9 i10 i7 i4 i8 0 0:4
+if 1 i10
+loop 2 i11 i7 i9 i8
+imulc i12 i1 i2 0:5
+iaddc i13 i12 i11 0:5
+imulc i14 i1 i2 0:5
+iaddc i15 i14 i11 0:5
+imulc i16 i13 i15 0:5
+iaddc i6 i6 i16 0:5
+fmul f17 f3 f3
+fmul f18 f3 f3
+lf f19 #3FF0000000000000
+fadd f20 f18 f19
+fdiv f21 f17 f20
+fadd f5 f5 f21
+imulc i22 i1 i2 0:7
+iaddc i23 i11 i1 0:8
+li i24 1
+iaddc i23 i23 i24 0:9
+iaddc i25 i11 i1 0:10
+iaddc i26 i6 i25 0:10
+iaddc i27 i26 i23 0:10
+iaddc i6 i27 i22 0:10
+endloop 2
+endif 1
+itof f28 i6
+fadd f29 f5 f28
+ret 1 f29
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

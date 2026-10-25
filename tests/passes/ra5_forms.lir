@@ -1,0 +1,1762 @@
+#sea 1
+#target arm64-macos
+#file ra5_forms.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 32 8
+slot s4 32 8
+slot s5 32 8
+slot s6 32 8
+slot s7 32 8
+slot s8 32 8
+slot s9 32 8
+slot s10 32 8
+slot s11 24 8
+slot s12 24 8
+slot s13 24 8
+slot s14 24 8
+slot s15 120 8
+slot s16 64 8
+slot s17 16 8
+slot s18 48 8
+slot s19 224 8
+slot s20 32 8
+slot s21 32 8
+slot s22 32 8
+slot s23 32 8
+slot s24 16 8
+slot s25 8 8
+slot s26 8 8
+slot s27 360 8
+slot s28 8 8
+slot s29 8 8
+slot s30 360 8
+li i1 -123456790
+li i2 1
+iadd i3 i1 i2
+li i4 987653
+li i5 1
+iadd i6 i4 i5
+iadd i7 i3 i6
+mov i8 i3
+iadd i8 i8 i6
+mov i9 i6
+iadd i9 i3 i9
+li i10 -123456790
+li i11 1
+iadd i12 i10 i11
+mov i13 i12
+iadd i13 i13 i13
+sa p14 s1
+sti i7 p14 - 0 0
+sti i8 p14 - 0 8
+sti i9 p14 - 0 16
+sti i13 p14 - 0 24
+la p15 d1
+rcall sea_printf 0:2 0 2 p15 p14
+li i16 -123456790
+li i17 1
+iadd i18 i16 i17
+li i19 987653
+li i20 1
+iadd i21 i19 i20
+isub i22 i18 i21
+mov i23 i18
+isub i23 i23 i21
+mov i24 i21
+isub i24 i18 i24
+li i25 -123456790
+li i26 1
+iadd i27 i25 i26
+mov i28 i27
+isub i28 i28 i28
+sa p29 s2
+sti i22 p29 - 0 0
+sti i23 p29 - 0 8
+sti i24 p29 - 0 16
+sti i28 p29 - 0 24
+la p30 d2
+rcall sea_printf 0:2 0 2 p30 p29
+li i31 -123456790
+li i32 1
+iadd i33 i31 i32
+li i34 987653
+li i35 1
+iadd i36 i34 i35
+imul i37 i33 i36
+mov i38 i33
+imul i38 i38 i36
+mov i39 i36
+imul i39 i33 i39
+li i40 -123456790
+li i41 1
+iadd i42 i40 i41
+mov i43 i42
+imul i43 i43 i43
+sa p44 s3
+sti i37 p44 - 0 0
+sti i38 p44 - 0 8
+sti i39 p44 - 0 16
+sti i43 p44 - 0 24
+la p45 d3
+rcall sea_printf 0:2 0 2 p45 p44
+li i46 -123456790
+li i47 1
+iadd i48 i46 i47
+li i49 987653
+li i50 1
+iadd i51 i49 i50
+iand i52 i48 i51
+mov i53 i48
+iand i53 i53 i51
+mov i54 i51
+iand i54 i48 i54
+li i55 -123456790
+li i56 1
+iadd i57 i55 i56
+mov i58 i57
+iand i58 i58 i58
+sa p59 s4
+sti i52 p59 - 0 0
+sti i53 p59 - 0 8
+sti i54 p59 - 0 16
+sti i58 p59 - 0 24
+la p60 d4
+rcall sea_printf 0:2 0 2 p60 p59
+li i61 -123456790
+li i62 1
+iadd i63 i61 i62
+li i64 987653
+li i65 1
+iadd i66 i64 i65
+ior i67 i63 i66
+mov i68 i63
+ior i68 i68 i66
+mov i69 i66
+ior i69 i63 i69
+li i70 -123456790
+li i71 1
+iadd i72 i70 i71
+mov i73 i72
+ior i73 i73 i73
+sa p74 s5
+sti i67 p74 - 0 0
+sti i68 p74 - 0 8
+sti i69 p74 - 0 16
+sti i73 p74 - 0 24
+la p75 d5
+rcall sea_printf 0:2 0 2 p75 p74
+li i76 -123456790
+li i77 1
+iadd i78 i76 i77
+li i79 987653
+li i80 1
+iadd i81 i79 i80
+ixor i82 i78 i81
+mov i83 i78
+ixor i83 i83 i81
+mov i84 i81
+ixor i84 i78 i84
+li i85 -123456790
+li i86 1
+iadd i87 i85 i86
+mov i88 i87
+ixor i88 i88 i88
+sa p89 s6
+sti i82 p89 - 0 0
+sti i83 p89 - 0 8
+sti i84 p89 - 0 16
+sti i88 p89 - 0 24
+la p90 d6
+rcall sea_printf 0:2 0 2 p90 p89
+li i91 #FEDCBA9876543210
+li i92 1
+iadd i93 i91 i92
+li i94 4
+li i95 1
+iadd i96 i94 i95
+ishl i97 i93 i96
+mov i98 i93
+ishl i98 i98 i96
+mov i99 i96
+ishl i99 i93 i99
+li i100 6
+li i101 1
+iadd i102 i100 i101
+mov i103 i102
+ishl i103 i103 i103
+sa p104 s7
+sti i97 p104 - 0 0
+sti i98 p104 - 0 8
+sti i99 p104 - 0 16
+sti i103 p104 - 0 24
+la p105 d7
+rcall sea_printf 0:2 0 2 p105 p104
+li i106 #FEDCBA9876543210
+li i107 1
+iadd i108 i106 i107
+li i109 4
+li i110 1
+iadd i111 i109 i110
+ishr i112 i108 i111
+mov i113 i108
+ishr i113 i113 i111
+mov i114 i111
+ishr i114 i108 i114
+li i115 6
+li i116 1
+iadd i117 i115 i116
+mov i118 i117
+ishr i118 i118 i118
+sa p119 s8
+sti i112 p119 - 0 0
+sti i113 p119 - 0 8
+sti i114 p119 - 0 16
+sti i118 p119 - 0 24
+la p120 d8
+rcall sea_printf 0:2 0 2 p120 p119
+li i121 #FEDCBA9876543210
+li i122 1
+iadd i123 i121 i122
+li i124 4
+li i125 1
+iadd i126 i124 i125
+isar i127 i123 i126
+mov i128 i123
+isar i128 i128 i126
+mov i129 i126
+isar i129 i123 i129
+li i130 6
+li i131 1
+iadd i132 i130 i131
+mov i133 i132
+isar i133 i133 i133
+sa p134 s9
+sti i127 p134 - 0 0
+sti i128 p134 - 0 8
+sti i129 p134 - 0 16
+sti i133 p134 - 0 24
+la p135 d9
+rcall sea_printf 0:2 0 2 p135 p134
+li i136 -123456790
+li i137 1
+iadd i138 i136 i137
+li i139 987653
+li i140 1
+iadd i141 i139 i140
+imulh i142 i138 i141
+mov i143 i138
+imulh i143 i143 i141
+mov i144 i141
+imulh i144 i138 i144
+li i145 -123456790
+li i146 1
+iadd i147 i145 i146
+mov i148 i147
+imulh i148 i148 i148
+sa p149 s10
+sti i142 p149 - 0 0
+sti i143 p149 - 0 8
+sti i144 p149 - 0 16
+sti i148 p149 - 0 24
+la p150 d10
+rcall sea_printf 0:2 0 2 p150 p149
+li i151 #3FFFFFFFFFFFFFFF
+li i152 1
+iadd i153 i151 i152
+li i154 #3FFFFFFFFFFFFFFE
+li i155 1
+iadd i156 i154 i155
+mov i157 i153
+iaddc i157 i157 i156 0:3
+mov i158 i156
+iaddc i158 i153 i158 0:3
+iaddc i159 i153 i156 0:3
+sa p160 s11
+sti i157 p160 - 0 0
+sti i158 p160 - 0 8
+sti i159 p160 - 0 16
+la p161 d11
+rcall sea_printf 0:3 0 2 p161 p160
+li i162 #3FFFFFFFFFFFFFFF
+li i163 1
+iadd i164 i162 i163
+li i165 #3FFFFFFFFFFFFFFE
+li i166 1
+iadd i167 i165 i166
+mov i168 i164
+isubc i168 i168 i167 0:3
+mov i169 i167
+isubc i169 i164 i169 0:3
+isubc i170 i164 i167 0:3
+sa p171 s12
+sti i168 p171 - 0 0
+sti i169 p171 - 0 8
+sti i170 p171 - 0 16
+la p172 d12
+rcall sea_printf 0:3 0 2 p172 p171
+li i173 #00000000B504F332
+li i174 1
+iadd i175 i173 i174
+li i176 #00000000B504F332
+li i177 1
+iadd i178 i176 i177
+mov i179 i175
+imulc i179 i179 i178 0:3
+mov i180 i178
+imulc i180 i175 i180 0:3
+imulc i181 i175 i178 0:3
+sa p182 s13
+sti i179 p182 - 0 0
+sti i180 p182 - 0 8
+sti i181 p182 - 0 16
+la p183 d13
+rcall sea_printf 0:3 0 2 p183 p182
+li i184 #8000000000000000
+li i185 1
+iadd i186 i184 i185
+mov i187 i186
+inegc i187 i187 0:4
+ineg i188 i186
+li i189 #7FFFFFFFFFFFFFFF
+li i190 1
+iadd i191 i189 i190
+ineg i191 i191
+sa p192 s14
+sti i187 p192 - 0 0
+sti i188 p192 - 0 8
+sti i191 p192 - 0 16
+la p193 d14
+rcall sea_printf 0:4 0 2 p193 p192
+li i194 4999
+li i195 1
+iadd i196 i194 i195
+li i197 12
+iadd i198 i196 i197
+li i199 12
+imul i200 i196 i199
+li i201 12
+imulc i202 i196 i201 0:5
+li i203 -12
+iadd i204 i196 i203
+li i205 -12
+imul i206 i196 i205
+li i207 -12
+imulc i208 i196 i207 0:5
+li i209 #000000007FFFFFFF
+iadd i210 i196 i209
+li i211 #000000007FFFFFFF
+imul i212 i196 i211
+li i213 #000000007FFFFFFF
+imulc i214 i196 i213 0:5
+li i215 #FFFFFFFF80000000
+iadd i216 i196 i215
+li i217 #FFFFFFFF80000000
+imul i218 i196 i217
+li i219 #FFFFFFFF80000000
+imulc i220 i196 i219 0:5
+li i221 #0000000080000000
+iadd i222 i196 i221
+li i223 #0000000080000000
+imul i224 i196 i223
+li i225 #0000000080000000
+imulc i226 i196 i225 0:5
+sa p227 s15
+sti i198 p227 - 0 0
+sti i200 p227 - 0 8
+sti i202 p227 - 0 16
+sti i204 p227 - 0 24
+sti i206 p227 - 0 32
+sti i208 p227 - 0 40
+sti i210 p227 - 0 48
+sti i212 p227 - 0 56
+sti i214 p227 - 0 64
+sti i216 p227 - 0 72
+sti i218 p227 - 0 80
+sti i220 p227 - 0 88
+sti i222 p227 - 0 96
+sti i224 p227 - 0 104
+sti i226 p227 - 0 112
+la p228 d15
+rcall sea_printf 0:5 0 2 p228 p227
+sa p229 s16
+li i230 11
+sti i230 p229 - 0 0
+li i231 22
+sti i231 p229 - 0 8
+li i232 33
+sti i232 p229 - 0 16
+li i233 44
+sti i233 p229 - 0 24
+li i234 55
+sti i234 p229 - 0 32
+li i235 66
+sti i235 p229 - 0 40
+li i236 77
+sti i236 p229 - 0 48
+li i237 88
+sti i237 p229 - 0 56
+li i238 24
+padd p239 p229 i238
+li i240 8
+padd p239 p239 i240
+ldi i241 p239 - 0 0
+li i242 -16
+padd p243 p239 i242
+ldi i244 p243 - 0 8
+sa p245 s17
+sti i241 p245 - 0 0
+sti i244 p245 - 0 8
+la p246 d16
+rcall sea_printf 0:6 0 2 p246 p245
+li i247 -4
+li i248 1
+iadd i249 i247 i248
+lf f250 #4058C00000000000
+itof f250 i249
+li i251 #0020000000000000
+li i252 1
+iadd i253 i251 i252
+lf f254 #4058C00000000000
+itof f254 i253
+li i255 #7FFFFFFFFFFFFFFE
+li i256 1
+iadd i257 i255 i256
+lf f258 #4058C00000000000
+itof f258 i257
+li i259 #7FFFFFFFFFFFFFFF
+li i260 1
+iadd i261 i259 i260
+lf f262 #4058C00000000000
+itof f262 i261
+li i263 -1
+li i264 1
+iadd i265 i263 i264
+lf f266 #4058C00000000000
+itof f266 i265
+li i267 #0020000000000002
+li i268 1
+iadd i269 i267 i268
+lf f270 #4058C00000000000
+itof f270 i269
+sa p271 s18
+stf f250 p271 - 0 0
+stf f254 p271 - 0 8
+stf f258 p271 - 0 16
+stf f262 p271 - 0 24
+stf f266 p271 - 0 32
+stf f270 p271 - 0 40
+la p272 d17
+rcall sea_printf 0:7 0 2 p272 p271
+lf f273 #8000000000000000
+lf f274 #8000000000000000
+fadd f275 f273 f274
+fabs f276 f275
+fneg f277 f275
+mov f278 f275
+fneg f278 f278
+fabs f278 f278
+mov f279 f275
+fneg f279 f279
+lf f280 #0000000000000000
+lf f281 #8000000000000000
+fadd f282 f280 f281
+fabs f283 f282
+fneg f284 f282
+mov f285 f282
+fneg f285 f285
+fabs f285 f285
+mov f286 f282
+fneg f286 f286
+lf f287 #BFF8000000000000
+lf f288 #8000000000000000
+fadd f289 f287 f288
+fabs f290 f289
+fneg f291 f289
+mov f292 f289
+fneg f292 f292
+fabs f292 f292
+mov f293 f289
+fneg f293 f293
+lf f294 #4004000000000000
+lf f295 #8000000000000000
+fadd f296 f294 f295
+fabs f297 f296
+fneg f298 f296
+mov f299 f296
+fneg f299 f299
+fabs f299 f299
+mov f300 f296
+fneg f300 f300
+lf f301 #7FF0000000000000
+lf f302 #8000000000000000
+fadd f303 f301 f302
+fabs f304 f303
+fneg f305 f303
+mov f306 f303
+fneg f306 f306
+fabs f306 f306
+mov f307 f303
+fneg f307 f307
+lf f308 #FFF0000000000000
+lf f309 #8000000000000000
+fadd f310 f308 f309
+fabs f311 f310
+fneg f312 f310
+mov f313 f310
+fneg f313 f313
+fabs f313 f313
+mov f314 f310
+fneg f314 f314
+lf f315 #7FF8000000000000
+lf f316 #8000000000000000
+fadd f317 f315 f316
+fabs f318 f317
+fneg f319 f317
+mov f320 f317
+fneg f320 f320
+fabs f320 f320
+mov f321 f317
+fneg f321 f321
+sa p322 s19
+stf f276 p322 - 0 0
+stf f277 p322 - 0 8
+stf f278 p322 - 0 16
+stf f279 p322 - 0 24
+stf f283 p322 - 0 32
+stf f284 p322 - 0 40
+stf f285 p322 - 0 48
+stf f286 p322 - 0 56
+stf f290 p322 - 0 64
+stf f291 p322 - 0 72
+stf f292 p322 - 0 80
+stf f293 p322 - 0 88
+stf f297 p322 - 0 96
+stf f298 p322 - 0 104
+stf f299 p322 - 0 112
+stf f300 p322 - 0 120
+stf f304 p322 - 0 128
+stf f305 p322 - 0 136
+stf f306 p322 - 0 144
+stf f307 p322 - 0 152
+stf f311 p322 - 0 160
+stf f312 p322 - 0 168
+stf f313 p322 - 0 176
+stf f314 p322 - 0 184
+stf f318 p322 - 0 192
+stf f319 p322 - 0 200
+stf f320 p322 - 0 208
+stf f321 p322 - 0 216
+la p323 d18
+rcall sea_printf 0:8 0 2 p323 p322
+lf f324 #401E000000000000
+lf f325 #8000000000000000
+fadd f326 f324 f325
+lf f327 #C000000000000000
+lf f328 #8000000000000000
+fadd f329 f327 f328
+fadd f330 f326 f329
+mov f331 f326
+fadd f331 f331 f329
+mov f332 f329
+fadd f332 f326 f332
+mov f333 f326
+fadd f333 f333 f333
+sa p334 s20
+stf f330 p334 - 0 0
+stf f331 p334 - 0 8
+stf f332 p334 - 0 16
+stf f333 p334 - 0 24
+la p335 d19
+rcall sea_printf 0:9 0 2 p335 p334
+lf f336 #401E000000000000
+lf f337 #8000000000000000
+fadd f338 f336 f337
+lf f339 #C000000000000000
+lf f340 #8000000000000000
+fadd f341 f339 f340
+fsub f342 f338 f341
+mov f343 f338
+fsub f343 f343 f341
+mov f344 f341
+fsub f344 f338 f344
+mov f345 f338
+fsub f345 f345 f345
+sa p346 s21
+stf f342 p346 - 0 0
+stf f343 p346 - 0 8
+stf f344 p346 - 0 16
+stf f345 p346 - 0 24
+la p347 d20
+rcall sea_printf 0:9 0 2 p347 p346
+lf f348 #401E000000000000
+lf f349 #8000000000000000
+fadd f350 f348 f349
+lf f351 #C000000000000000
+lf f352 #8000000000000000
+fadd f353 f351 f352
+fmul f354 f350 f353
+mov f355 f350
+fmul f355 f355 f353
+mov f356 f353
+fmul f356 f350 f356
+mov f357 f350
+fmul f357 f357 f357
+sa p358 s22
+stf f354 p358 - 0 0
+stf f355 p358 - 0 8
+stf f356 p358 - 0 16
+stf f357 p358 - 0 24
+la p359 d21
+rcall sea_printf 0:9 0 2 p359 p358
+lf f360 #401E000000000000
+lf f361 #8000000000000000
+fadd f362 f360 f361
+lf f363 #C000000000000000
+lf f364 #8000000000000000
+fadd f365 f363 f364
+fdiv f366 f362 f365
+mov f367 f362
+fdiv f367 f367 f365
+mov f368 f365
+fdiv f368 f362 f368
+mov f369 f362
+fdiv f369 f369 f369
+sa p370 s23
+stf f366 p370 - 0 0
+stf f367 p370 - 0 8
+stf f368 p370 - 0 16
+stf f369 p370 - 0 24
+la p371 d22
+rcall sea_printf 0:9 0 2 p371 p370
+lf f372 #4002000000000000
+lf f373 #8000000000000000
+fadd f374 f372 f373
+fsqrt f375 f374
+fsqrt f374 f374
+sa p376 s24
+stf f375 p376 - 0 0
+stf f374 p376 - 0 8
+la p377 d23
+rcall sea_printf 0:9 0 2 p377 p376
+li i378 -1
+li i379 1
+iadd i380 i378 i379
+li i381 110
+li i382 1
+iadd i383 i381 i382
+li i384 221
+li i385 1
+iadd i386 i384 i385
+lf f387 #3FF4000000000000
+lf f388 #8000000000000000
+fadd f389 f387 f388
+lf f390 #C021000000000000
+lf f391 #8000000000000000
+fadd f392 f390 f391
+sa p393 s25
+sa p394 s26
+sti i383 p393 - 0 0
+sti i386 p394 - 0 0
+isel i395 i380 i383 i386
+fsel f396 i380 f389 f392
+psel p397 i380 p393 p394
+ldi i398 p397 - 0 0
+mov i399 i383
+isel i399 i380 i399 i386
+mov f400 f389
+fsel f400 i380 f400 f392
+mov p401 p393
+psel p401 i380 p401 p394
+ldi i402 p401 - 0 0
+mov i403 i386
+isel i403 i380 i383 i403
+mov f404 f392
+fsel f404 i380 f389 f404
+mov p405 p394
+psel p405 i380 p393 p405
+ldi i406 p405 - 0 0
+li i407 0
+icmp ne i408 i380 i407
+isel i409 i408 i383 i386
+li i410 0
+icmp ne i411 i380 i410
+fsel f412 i411 f389 f392
+li i413 0
+icmp ne i414 i380 i413
+psel p415 i414 p393 p394
+ldi i416 p415 - 0 0
+li i417 0
+icmp ne i418 i380 i417
+mov i419 i383
+isel i419 i418 i419 i386
+li i420 0
+icmp ne i421 i380 i420
+mov f422 f389
+fsel f422 i421 f422 f392
+li i423 0
+icmp ne i424 i380 i423
+mov p425 p393
+psel p425 i424 p425 p394
+ldi i426 p425 - 0 0
+li i427 0
+icmp ne i428 i380 i427
+mov i429 i386
+isel i429 i428 i383 i429
+li i430 0
+icmp ne i431 i380 i430
+mov f432 f392
+fsel f432 i431 f389 f432
+li i433 0
+icmp ne i434 i380 i433
+mov p435 p394
+psel p435 i434 p393 p435
+ldi i436 p435 - 0 0
+itof f437 i380
+lf f438 #3FE0000000000000
+lf f439 #8000000000000000
+fadd f440 f438 f439
+fcmp gt i441 f437 f440
+isel i442 i441 i383 i386
+itof f443 i380
+lf f444 #3FE0000000000000
+lf f445 #8000000000000000
+fadd f446 f444 f445
+fcmp gt i447 f443 f446
+fsel f448 i447 f389 f392
+itof f449 i380
+lf f450 #3FE0000000000000
+lf f451 #8000000000000000
+fadd f452 f450 f451
+fcmp gt i453 f449 f452
+psel p454 i453 p393 p394
+ldi i455 p454 - 0 0
+itof f456 i380
+lf f457 #3FE0000000000000
+lf f458 #8000000000000000
+fadd f459 f457 f458
+fcmp gt i460 f456 f459
+mov i461 i383
+isel i461 i460 i461 i386
+itof f462 i380
+lf f463 #3FE0000000000000
+lf f464 #8000000000000000
+fadd f465 f463 f464
+fcmp gt i466 f462 f465
+mov f467 f389
+fsel f467 i466 f467 f392
+itof f468 i380
+lf f469 #3FE0000000000000
+lf f470 #8000000000000000
+fadd f471 f469 f470
+fcmp gt i472 f468 f471
+mov p473 p393
+psel p473 i472 p473 p394
+ldi i474 p473 - 0 0
+itof f475 i380
+lf f476 #3FE0000000000000
+lf f477 #8000000000000000
+fadd f478 f476 f477
+fcmp gt i479 f475 f478
+mov i480 i386
+isel i480 i479 i383 i480
+itof f481 i380
+lf f482 #3FE0000000000000
+lf f483 #8000000000000000
+fadd f484 f482 f483
+fcmp gt i485 f481 f484
+mov f486 f392
+fsel f486 i485 f389 f486
+itof f487 i380
+lf f488 #3FE0000000000000
+lf f489 #8000000000000000
+fadd f490 f488 f489
+fcmp gt i491 f487 f490
+mov p492 p394
+psel p492 i491 p393 p492
+ldi i493 p492 - 0 0
+itof f494 i380
+lf f495 #3FF0000000000000
+lf f496 #8000000000000000
+fadd f497 f495 f496
+fcmp eq i498 f494 f497
+isel i499 i498 i383 i386
+itof f500 i380
+lf f501 #3FF0000000000000
+lf f502 #8000000000000000
+fadd f503 f501 f502
+fcmp eq i504 f500 f503
+fsel f505 i504 f389 f392
+itof f506 i380
+lf f507 #3FF0000000000000
+lf f508 #8000000000000000
+fadd f509 f507 f508
+fcmp eq i510 f506 f509
+psel p511 i510 p393 p394
+ldi i512 p511 - 0 0
+itof f513 i380
+lf f514 #3FF0000000000000
+lf f515 #8000000000000000
+fadd f516 f514 f515
+fcmp eq i517 f513 f516
+mov i518 i383
+isel i518 i517 i518 i386
+itof f519 i380
+lf f520 #3FF0000000000000
+lf f521 #8000000000000000
+fadd f522 f520 f521
+fcmp eq i523 f519 f522
+mov f524 f389
+fsel f524 i523 f524 f392
+itof f525 i380
+lf f526 #3FF0000000000000
+lf f527 #8000000000000000
+fadd f528 f526 f527
+fcmp eq i529 f525 f528
+mov p530 p393
+psel p530 i529 p530 p394
+ldi i531 p530 - 0 0
+itof f532 i380
+lf f533 #3FF0000000000000
+lf f534 #8000000000000000
+fadd f535 f533 f534
+fcmp eq i536 f532 f535
+mov i537 i386
+isel i537 i536 i383 i537
+itof f538 i380
+lf f539 #3FF0000000000000
+lf f540 #8000000000000000
+fadd f541 f539 f540
+fcmp eq i542 f538 f541
+mov f543 f392
+fsel f543 i542 f389 f543
+itof f544 i380
+lf f545 #3FF0000000000000
+lf f546 #8000000000000000
+fadd f547 f545 f546
+fcmp eq i548 f544 f547
+mov p549 p394
+psel p549 i548 p393 p549
+ldi i550 p549 - 0 0
+itof f551 i380
+lf f552 #0000000000000000
+lf f553 #8000000000000000
+fadd f554 f552 f553
+fcmp ne i555 f551 f554
+isel i556 i555 i383 i386
+itof f557 i380
+lf f558 #0000000000000000
+lf f559 #8000000000000000
+fadd f560 f558 f559
+fcmp ne i561 f557 f560
+fsel f562 i561 f389 f392
+itof f563 i380
+lf f564 #0000000000000000
+lf f565 #8000000000000000
+fadd f566 f564 f565
+fcmp ne i567 f563 f566
+psel p568 i567 p393 p394
+ldi i569 p568 - 0 0
+itof f570 i380
+lf f571 #0000000000000000
+lf f572 #8000000000000000
+fadd f573 f571 f572
+fcmp ne i574 f570 f573
+mov i575 i383
+isel i575 i574 i575 i386
+itof f576 i380
+lf f577 #0000000000000000
+lf f578 #8000000000000000
+fadd f579 f577 f578
+fcmp ne i580 f576 f579
+mov f581 f389
+fsel f581 i580 f581 f392
+itof f582 i380
+lf f583 #0000000000000000
+lf f584 #8000000000000000
+fadd f585 f583 f584
+fcmp ne i586 f582 f585
+mov p587 p393
+psel p587 i586 p587 p394
+ldi i588 p587 - 0 0
+itof f589 i380
+lf f590 #0000000000000000
+lf f591 #8000000000000000
+fadd f592 f590 f591
+fcmp ne i593 f589 f592
+mov i594 i386
+isel i594 i593 i383 i594
+itof f595 i380
+lf f596 #0000000000000000
+lf f597 #8000000000000000
+fadd f598 f596 f597
+fcmp ne i599 f595 f598
+mov f600 f392
+fsel f600 i599 f389 f600
+itof f601 i380
+lf f602 #0000000000000000
+lf f603 #8000000000000000
+fadd f604 f602 f603
+fcmp ne i605 f601 f604
+mov p606 p394
+psel p606 i605 p393 p606
+ldi i607 p606 - 0 0
+sa p608 s27
+sti i395 p608 - 0 0
+stf f396 p608 - 0 8
+sti i398 p608 - 0 16
+sti i399 p608 - 0 24
+stf f400 p608 - 0 32
+sti i402 p608 - 0 40
+sti i403 p608 - 0 48
+stf f404 p608 - 0 56
+sti i406 p608 - 0 64
+sti i409 p608 - 0 72
+stf f412 p608 - 0 80
+sti i416 p608 - 0 88
+sti i419 p608 - 0 96
+stf f422 p608 - 0 104
+sti i426 p608 - 0 112
+sti i429 p608 - 0 120
+stf f432 p608 - 0 128
+sti i436 p608 - 0 136
+sti i442 p608 - 0 144
+stf f448 p608 - 0 152
+sti i455 p608 - 0 160
+sti i461 p608 - 0 168
+stf f467 p608 - 0 176
+sti i474 p608 - 0 184
+sti i480 p608 - 0 192
+stf f486 p608 - 0 200
+sti i493 p608 - 0 208
+sti i499 p608 - 0 216
+stf f505 p608 - 0 224
+sti i512 p608 - 0 232
+sti i518 p608 - 0 240
+stf f524 p608 - 0 248
+sti i531 p608 - 0 256
+sti i537 p608 - 0 264
+stf f543 p608 - 0 272
+sti i550 p608 - 0 280
+sti i556 p608 - 0 288
+stf f562 p608 - 0 296
+sti i569 p608 - 0 304
+sti i575 p608 - 0 312
+stf f581 p608 - 0 320
+sti i588 p608 - 0 328
+sti i594 p608 - 0 336
+stf f600 p608 - 0 344
+sti i607 p608 - 0 352
+la p609 d24
+rcall sea_printf 0:10 0 2 p609 p608
+li i610 0
+li i611 1
+iadd i612 i610 i611
+li i613 110
+li i614 1
+iadd i615 i613 i614
+li i616 221
+li i617 1
+iadd i618 i616 i617
+lf f619 #3FF4000000000000
+lf f620 #8000000000000000
+fadd f621 f619 f620
+lf f622 #C021000000000000
+lf f623 #8000000000000000
+fadd f624 f622 f623
+sa p625 s28
+sa p626 s29
+sti i615 p625 - 0 0
+sti i618 p626 - 0 0
+isel i627 i612 i615 i618
+fsel f628 i612 f621 f624
+psel p629 i612 p625 p626
+ldi i630 p629 - 0 0
+mov i631 i615
+isel i631 i612 i631 i618
+mov f632 f621
+fsel f632 i612 f632 f624
+mov p633 p625
+psel p633 i612 p633 p626
+ldi i634 p633 - 0 0
+mov i635 i618
+isel i635 i612 i615 i635
+mov f636 f624
+fsel f636 i612 f621 f636
+mov p637 p626
+psel p637 i612 p625 p637
+ldi i638 p637 - 0 0
+li i639 0
+icmp ne i640 i612 i639
+isel i641 i640 i615 i618
+li i642 0
+icmp ne i643 i612 i642
+fsel f644 i643 f621 f624
+li i645 0
+icmp ne i646 i612 i645
+psel p647 i646 p625 p626
+ldi i648 p647 - 0 0
+li i649 0
+icmp ne i650 i612 i649
+mov i651 i615
+isel i651 i650 i651 i618
+li i652 0
+icmp ne i653 i612 i652
+mov f654 f621
+fsel f654 i653 f654 f624
+li i655 0
+icmp ne i656 i612 i655
+mov p657 p625
+psel p657 i656 p657 p626
+ldi i658 p657 - 0 0
+li i659 0
+icmp ne i660 i612 i659
+mov i661 i618
+isel i661 i660 i615 i661
+li i662 0
+icmp ne i663 i612 i662
+mov f664 f624
+fsel f664 i663 f621 f664
+li i665 0
+icmp ne i666 i612 i665
+mov p667 p626
+psel p667 i666 p625 p667
+ldi i668 p667 - 0 0
+itof f669 i612
+lf f670 #3FE0000000000000
+lf f671 #8000000000000000
+fadd f672 f670 f671
+fcmp gt i673 f669 f672
+isel i674 i673 i615 i618
+itof f675 i612
+lf f676 #3FE0000000000000
+lf f677 #8000000000000000
+fadd f678 f676 f677
+fcmp gt i679 f675 f678
+fsel f680 i679 f621 f624
+itof f681 i612
+lf f682 #3FE0000000000000
+lf f683 #8000000000000000
+fadd f684 f682 f683
+fcmp gt i685 f681 f684
+psel p686 i685 p625 p626
+ldi i687 p686 - 0 0
+itof f688 i612
+lf f689 #3FE0000000000000
+lf f690 #8000000000000000
+fadd f691 f689 f690
+fcmp gt i692 f688 f691
+mov i693 i615
+isel i693 i692 i693 i618
+itof f694 i612
+lf f695 #3FE0000000000000
+lf f696 #8000000000000000
+fadd f697 f695 f696
+fcmp gt i698 f694 f697
+mov f699 f621
+fsel f699 i698 f699 f624
+itof f700 i612
+lf f701 #3FE0000000000000
+lf f702 #8000000000000000
+fadd f703 f701 f702
+fcmp gt i704 f700 f703
+mov p705 p625
+psel p705 i704 p705 p626
+ldi i706 p705 - 0 0
+itof f707 i612
+lf f708 #3FE0000000000000
+lf f709 #8000000000000000
+fadd f710 f708 f709
+fcmp gt i711 f707 f710
+mov i712 i618
+isel i712 i711 i615 i712
+itof f713 i612
+lf f714 #3FE0000000000000
+lf f715 #8000000000000000
+fadd f716 f714 f715
+fcmp gt i717 f713 f716
+mov f718 f624
+fsel f718 i717 f621 f718
+itof f719 i612
+lf f720 #3FE0000000000000
+lf f721 #8000000000000000
+fadd f722 f720 f721
+fcmp gt i723 f719 f722
+mov p724 p626
+psel p724 i723 p625 p724
+ldi i725 p724 - 0 0
+itof f726 i612
+lf f727 #3FF0000000000000
+lf f728 #8000000000000000
+fadd f729 f727 f728
+fcmp eq i730 f726 f729
+isel i731 i730 i615 i618
+itof f732 i612
+lf f733 #3FF0000000000000
+lf f734 #8000000000000000
+fadd f735 f733 f734
+fcmp eq i736 f732 f735
+fsel f737 i736 f621 f624
+itof f738 i612
+lf f739 #3FF0000000000000
+lf f740 #8000000000000000
+fadd f741 f739 f740
+fcmp eq i742 f738 f741
+psel p743 i742 p625 p626
+ldi i744 p743 - 0 0
+itof f745 i612
+lf f746 #3FF0000000000000
+lf f747 #8000000000000000
+fadd f748 f746 f747
+fcmp eq i749 f745 f748
+mov i750 i615
+isel i750 i749 i750 i618
+itof f751 i612
+lf f752 #3FF0000000000000
+lf f753 #8000000000000000
+fadd f754 f752 f753
+fcmp eq i755 f751 f754
+mov f756 f621
+fsel f756 i755 f756 f624
+itof f757 i612
+lf f758 #3FF0000000000000
+lf f759 #8000000000000000
+fadd f760 f758 f759
+fcmp eq i761 f757 f760
+mov p762 p625
+psel p762 i761 p762 p626
+ldi i763 p762 - 0 0
+itof f764 i612
+lf f765 #3FF0000000000000
+lf f766 #8000000000000000
+fadd f767 f765 f766
+fcmp eq i768 f764 f767
+mov i769 i618
+isel i769 i768 i615 i769
+itof f770 i612
+lf f771 #3FF0000000000000
+lf f772 #8000000000000000
+fadd f773 f771 f772
+fcmp eq i774 f770 f773
+mov f775 f624
+fsel f775 i774 f621 f775
+itof f776 i612
+lf f777 #3FF0000000000000
+lf f778 #8000000000000000
+fadd f779 f777 f778
+fcmp eq i780 f776 f779
+mov p781 p626
+psel p781 i780 p625 p781
+ldi i782 p781 - 0 0
+itof f783 i612
+lf f784 #0000000000000000
+lf f785 #8000000000000000
+fadd f786 f784 f785
+fcmp ne i787 f783 f786
+isel i788 i787 i615 i618
+itof f789 i612
+lf f790 #0000000000000000
+lf f791 #8000000000000000
+fadd f792 f790 f791
+fcmp ne i793 f789 f792
+fsel f794 i793 f621 f624
+itof f795 i612
+lf f796 #0000000000000000
+lf f797 #8000000000000000
+fadd f798 f796 f797
+fcmp ne i799 f795 f798
+psel p800 i799 p625 p626
+ldi i801 p800 - 0 0
+itof f802 i612
+lf f803 #0000000000000000
+lf f804 #8000000000000000
+fadd f805 f803 f804
+fcmp ne i806 f802 f805
+mov i807 i615
+isel i807 i806 i807 i618
+itof f808 i612
+lf f809 #0000000000000000
+lf f810 #8000000000000000
+fadd f811 f809 f810
+fcmp ne i812 f808 f811
+mov f813 f621
+fsel f813 i812 f813 f624
+itof f814 i612
+lf f815 #0000000000000000
+lf f816 #8000000000000000
+fadd f817 f815 f816
+fcmp ne i818 f814 f817
+mov p819 p625
+psel p819 i818 p819 p626
+ldi i820 p819 - 0 0
+itof f821 i612
+lf f822 #0000000000000000
+lf f823 #8000000000000000
+fadd f824 f822 f823
+fcmp ne i825 f821 f824
+mov i826 i618
+isel i826 i825 i615 i826
+itof f827 i612
+lf f828 #0000000000000000
+lf f829 #8000000000000000
+fadd f830 f828 f829
+fcmp ne i831 f827 f830
+mov f832 f624
+fsel f832 i831 f621 f832
+itof f833 i612
+lf f834 #0000000000000000
+lf f835 #8000000000000000
+fadd f836 f834 f835
+fcmp ne i837 f833 f836
+mov p838 p626
+psel p838 i837 p625 p838
+ldi i839 p838 - 0 0
+sa p840 s30
+sti i627 p840 - 0 0
+stf f628 p840 - 0 8
+sti i630 p840 - 0 16
+sti i631 p840 - 0 24
+stf f632 p840 - 0 32
+sti i634 p840 - 0 40
+sti i635 p840 - 0 48
+stf f636 p840 - 0 56
+sti i638 p840 - 0 64
+sti i641 p840 - 0 72
+stf f644 p840 - 0 80
+sti i648 p840 - 0 88
+sti i651 p840 - 0 96
+stf f654 p840 - 0 104
+sti i658 p840 - 0 112
+sti i661 p840 - 0 120
+stf f664 p840 - 0 128
+sti i668 p840 - 0 136
+sti i674 p840 - 0 144
+stf f680 p840 - 0 152
+sti i687 p840 - 0 160
+sti i693 p840 - 0 168
+stf f699 p840 - 0 176
+sti i706 p840 - 0 184
+sti i712 p840 - 0 192
+stf f718 p840 - 0 200
+sti i725 p840 - 0 208
+sti i731 p840 - 0 216
+stf f737 p840 - 0 224
+sti i744 p840 - 0 232
+sti i750 p840 - 0 240
+stf f756 p840 - 0 248
+sti i763 p840 - 0 256
+sti i769 p840 - 0 264
+stf f775 p840 - 0 272
+sti i782 p840 - 0 280
+sti i788 p840 - 0 288
+stf f794 p840 - 0 296
+sti i801 p840 - 0 304
+sti i807 p840 - 0 312
+stf f813 p840 - 0 320
+sti i820 p840 - 0 328
+sti i826 p840 - 0 336
+stf f832 p840 - 0 344
+sti i839 p840 - 0 352
+la p841 d25
+rcall sea_printf 0:10 0 2 p841 p840
+ret 0
+endfunc
+fmt d1 10
+ftext iadd
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 10
+ftext isub
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 10
+ftext imul
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 10
+ftext iand
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d5 10
+ftext ior
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d6 10
+ftext ixor
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d7 10
+ftext ishl
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d8 10
+ftext ishr
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d9 10
+ftext isar
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d10 10
+ftext imulh
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d11 8
+ftext iaddc
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d12 8
+ftext isubc
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d13 8
+ftext imulc
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d14 8
+ftext neg
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d15 32
+ftext imm
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d16 6
+ftext padd
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d17 14
+ftext itof
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d18 58
+ftext fabs-fneg
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d19 10
+ftext fadd
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d20 10
+ftext fsub
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d21 10
+ftext fmul
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d22 10
+ftext fdiv
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d23 6
+ftext fsqrt
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d24 92
+ftext sel0
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d25 92
+ftext sel1
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

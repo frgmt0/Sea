@@ -1,0 +1,7 @@
+// r_opt_ovf_oob_expr -- (x + i) + v[i] in one expression: at i = 4 the left operand overflows before the
+// index is evaluated (6.8 rule 5)
+let v = filled(0, 4)
+let x = 9223372036854775804
+for i in 0..6 {
+    printf("%d\n", (x + i) + v[i])
+}

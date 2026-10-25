@@ -1,0 +1,119 @@
+// opt_nan_cmp -- the six f64 comparisons with a NaN operand (left, right, both), -0.0 against 0.0 and equal
+// values: in an if, as a selected value, as a bool, as a while condition and as a break test
+// (only != holds with NaN); !(a < b) against a >= b; i64 against f64 (LANGUAGE.md 6.4, 4.2)
+let xs = [nan, 1.0, nan, -0.0, 2.0]
+let ys = [1.0, nan, nan, 0.0, 2.0]
+for k in 0..5 {
+    let a = xs[k]
+    let b = ys[k]
+    if a == b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    if a != b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    if a < b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    if a <= b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    if a > b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    if a >= b {
+        printf(" T")
+    } else {
+        printf(" F")
+    }
+    printf(" |")
+    let s0 = if a == b { 1 } else { 0 }
+    let s1 = if a != b { 1 } else { 0 }
+    let s2 = if a < b { 1 } else { 0 }
+    let s3 = if a <= b { 1 } else { 0 }
+    let s4 = if a > b { 1 } else { 0 }
+    let s5 = if a >= b { 1 } else { 0 }
+    printf(" %d%d%d%d%d%d |", s0, s1, s2, s3, s4, s5)
+    printf(" %d%d%d%d%d%d |", a == b, a != b, a < b, a <= b, a > b, a >= b)
+    var w0 = 0
+    while a == b && w0 < 3 {
+        w0 += 1
+    }
+    var w1 = 0
+    while a != b && w1 < 3 {
+        w1 += 1
+    }
+    var w2 = 0
+    while a < b && w2 < 3 {
+        w2 += 1
+    }
+    var w3 = 0
+    while a <= b && w3 < 3 {
+        w3 += 1
+    }
+    var w4 = 0
+    while a > b && w4 < 3 {
+        w4 += 1
+    }
+    var w5 = 0
+    while a >= b && w5 < 3 {
+        w5 += 1
+    }
+    printf(" %d%d%d%d%d%d |", w0, w1, w2, w3, w4, w5)
+    var u0 = 0
+    while u0 < 3 {
+        if a == b {
+            break
+        }
+        u0 += 1
+    }
+    var u1 = 0
+    while u1 < 3 {
+        if a != b {
+            break
+        }
+        u1 += 1
+    }
+    var u2 = 0
+    while u2 < 3 {
+        if a < b {
+            break
+        }
+        u2 += 1
+    }
+    var u3 = 0
+    while u3 < 3 {
+        if a <= b {
+            break
+        }
+        u3 += 1
+    }
+    var u4 = 0
+    while u4 < 3 {
+        if a > b {
+            break
+        }
+        u4 += 1
+    }
+    var u5 = 0
+    while u5 < 3 {
+        if a >= b {
+            break
+        }
+        u5 += 1
+    }
+    printf(" %d%d%d%d%d%d |", u0, u1, u2, u3, u4, u5)
+    let nlt = if !(a < b) { 1 } else { 0 }
+    let ge = if a >= b { 1 } else { 0 }
+    printf(" %d%d %d%d%d\n", nlt, ge, k == a, k != a, k < b)
+}

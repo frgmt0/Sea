@@ -1,0 +1,13 @@
+// r_opt_eq_oob -- v[k] of a fixed [10, 20, 30] after the early returns k < 0 and k == 2: k = 7 (5.4)
+fn get(k: i64) -> i64 {
+    let v = [10, 20, 30]
+    if k < 0 {
+        return -1
+    }
+    if k == 2 {
+        return -2
+    }
+    return v[k]
+}
+printf("%d %d %d\n", get(1), get(2), get(-3))
+printf("%d\n", get(7))

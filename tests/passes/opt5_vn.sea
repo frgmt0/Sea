@@ -1,0 +1,16 @@
+fn vn(a: i64, b: i64, x: f64, n: i64) -> f64 {
+    var s = 0.0
+    var t = 0
+    for i in 0..n {
+        t = t + (a * b + i) * (a * b + i)
+        s = s + x * x / (x * x + 1.0)
+        let c = a * b
+        var e = i + a
+        e = e + 1
+        t = t + (i + a) + e + c
+    }
+    return s + t
+}
+printf("%g %g\n", vn(3, 4, 0.5, 2), vn(-1, 7, 2.0, 3))
+// opt5_vn -- DESIGN.md 5.8 T3 rule 1 and copy propagation: a * b three times, (a * b + i) twice
+// (a chain), x * x twice; i + a not shared when its first result e is written between

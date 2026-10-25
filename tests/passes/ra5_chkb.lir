@@ -1,0 +1,77 @@
+#sea 1
+#target arm64-macos
+#file ra5_chkb.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 16 8
+slot s3 8 8
+li i1 4095
+li i2 1
+iadd i3 i1 i2
+li i4 4096
+li i5 1
+iadd i6 i4 i5
+li i7 0
+li i8 1
+iadd i9 i7 i8
+li i10 4095
+li i11 4096
+li i12 0
+chkb i10 i3 0 0:2
+chkb i11 i6 1 0:2
+chkb i12 i9 0 0:2
+li i13 4095
+li i14 1
+iadd i15 i13 i14
+chkb i15 i6 0 0:2
+sa p16 s1
+sti i10 p16 - 0 0
+sti i11 p16 - 0 8
+sti i6 p16 - 0 16
+la p17 d1
+rcall sea_printf 0:3 0 2 p17 p16
+li i18 #000000007FFFFFFF
+li i19 1
+iadd i20 i18 i19
+li i21 #000000007FFFFFFF
+chkb i21 i20 0 0:4
+li i22 #0000000080000000
+li i23 1
+iadd i24 i22 i23
+li i25 #0000000080000000
+chkb i25 i24 1 0:4
+sa p26 s2
+sti i21 p26 - 0 0
+sti i25 p26 - 0 8
+la p27 d2
+rcall sea_printf 0:5 0 2 p27 p26
+li i28 4096
+chkb i28 i3 1 0:9
+sa p29 s3
+sti i28 p29 - 0 0
+la p30 d3
+rcall sea_printf 0:10 0 2 p30 p29
+ret 0
+endfunc
+fmt d1 8
+ftext ok
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 6
+ftext ok
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 4
+ftext unreached
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

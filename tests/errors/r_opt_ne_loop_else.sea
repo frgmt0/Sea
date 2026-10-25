@@ -1,0 +1,11 @@
+// r_opt_ne_loop_else -- while k < 3 reading v[k] in the else part of k != -1, k from -3: v[-1] (5.4)
+let v = zeros(3)
+var k = -3
+while k < 3 {
+    if k != -1 {
+        printf("%d skip\n", k)
+    } else {
+        printf("%g\n", v[k])
+    }
+    k += 1
+}

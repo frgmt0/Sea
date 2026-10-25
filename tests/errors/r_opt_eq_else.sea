@@ -1,0 +1,16 @@
+// r_opt_eq_else -- v[k] in the explicit else part of k == 2 (after k < 0 returned): k = 4 (5.4)
+fn sel(k: i64) -> f64 {
+    let v = filled(1.5, 3)
+    var r = 0.0
+    if k < 0 {
+        return -1.0
+    }
+    if k == 2 {
+        r = -2.0
+    } else {
+        r = v[k]
+    }
+    return r
+}
+printf("%g %g\n", sel(1), sel(2))
+printf("%g\n", sel(4))

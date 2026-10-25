@@ -1,0 +1,6 @@
+// r_opt_idiv_min -- x % -1 and idiv(x, -1) over 9, -2^63 + 1, -2^63: the % is 0, then idiv(-2^63, -1)
+// overflows (6.6)
+let xs = [9, -9223372036854775807, -9223372036854775808]
+for x in xs {
+    printf("%d %d\n", x % -1, idiv(x, -1))
+}

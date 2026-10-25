@@ -50,7 +50,7 @@
 # there first). The include check works in a temporary directory and leaves no files behind.
 #
 # Per-pass build list, passes/<pass>/build.list (one file per pass; '#' starts a comment):
-#   lib <module>...    shared modules of passes/lib/: io diag tables limb f64emu fltlit layout
+#   lib <module>...    shared modules of passes/lib/: io diag tables limb f64emu fltlit layout ralloc
 #   data <block>...    generated DATA blocks: errors errno exits consts entries records mtab
 # The parts are concatenated in the canonical order of DESIGN.md 2.6.3 whatever the order
 # written; an unknown name is a build error.
@@ -73,7 +73,7 @@ BUILD   := build
 BSK      := $(BAYSICK)/build/baysick
 BSKRT    := $(BAYSICK)/build/libbaysickrt.a
 PASSES   := seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64 seagen_x64
-LIBS_CANON := io diag tables limb f64emu fltlit layout
+LIBS_CANON := io diag tables limb f64emu fltlit layout ralloc
 DATA_CANON := errors errno exits consts entries records mtab
 RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock rt_math rt_mem rt_arr rt_str rt_args rt_sort
 

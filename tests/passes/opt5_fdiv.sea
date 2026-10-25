@@ -1,0 +1,15 @@
+fn fdivs(x: f64, n: i64) -> f64 {
+    var s = 0.0
+    var d = 2.0
+    for i in 0..n {
+        s = s + x / 4.0 + x / 0.5 + x / -2.0
+        s = s + x / 8.98846567431158e307 + x / 2.2250738585072014e-308 + x / 3.0
+        s = s + x / 4.9406564584124654e-324 + x / d
+        d = d * 2.0
+    }
+    return s
+}
+printf("%g %g\n", fdivs(3.0, 2), fdivs(-1.5, 3))
+// opt5_fdiv -- DESIGN.md 5.8 T2: f64 division by 4.0, 0.5, -2.0, 2^1023 (reciprocal the
+// subnormal 2^-1023) and 2^-1022 becomes a multiplication; by 3.0, by the subnormal 2^-1074 and
+// by a variable it stays

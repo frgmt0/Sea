@@ -1,0 +1,154 @@
+// opt_eq_guards -- == and != guards whose failing part is used: an early return after x == 0, k == 2 after
+// k < 0 (fixed and dynamic arrays), an explicit else, !(k == 2), k == 2 || k < 0, a != whose
+// else adds or reads, a function with two call sites and a loop, loops left by break after
+// == and continued after !=: every access in range (LANGUAGE.md 5.4, 6.4, 6.5; DESIGN.md 5.8 F5)
+fn inc(x: i64) -> i64 {
+    if x == 0 {
+        return -1
+    }
+    return x + 1
+}
+fn get(k: i64) -> i64 {
+    let v = [10, 20, 30]
+    if k < 0 {
+        return -1
+    }
+    if k == 2 {
+        return -2
+    }
+    return v[k]
+}
+fn getd(k: i64) -> i64 {
+    let v = filled(10, 3)
+    if k < 0 {
+        return -1
+    }
+    if k == 2 {
+        return -2
+    }
+    return v[k]
+}
+fn dec(x: i64) -> i64 {
+    if x != -9223372036854775808 {
+        return x
+    } else {
+        return x - 1
+    }
+}
+fn get2(k: i64) -> f64 {
+    let v = zeros(3)
+    if k >= 3 {
+        return -1.0
+    }
+    if k != -1 {
+        return -2.0
+    }
+    return v[k]
+}
+fn sel(k: i64) -> f64 {
+    let v = filled(1.5, 3)
+    var r = 0.0
+    if k < 0 {
+        return -1.0
+    }
+    if k == 2 {
+        r = -2.0
+    } else {
+        r = v[k]
+    }
+    return r
+}
+fn show(k: i64) {
+    let v = zeros(3)
+    if k >= 0 {
+        if !(k == 2) {
+            printf("%d %g\n", k, v[k])
+        }
+    }
+}
+fn orf(k: i64) -> f64 {
+    let v = zeros(3)
+    if k == 2 || k < 0 {
+        return -1.0
+    }
+    return v[k]
+}
+fn pick(k: i64, n: i64) -> f64 {
+    let v = zeros(3)
+    var t = 0.0
+    for i in 0..n {
+        t += 1.0
+    }
+    if k < 0 {
+        return -1.0
+    }
+    if k == 2 {
+        return -2.0
+    }
+    return v[k] + t
+}
+printf("%d %d %d %d\n", inc(5), inc(0), inc(-9223372036854775808), inc(9223372036854775806))
+for k in -2..=2 {
+    printf(" %d %d %g %g", get(k), getd(k), sel(k), orf(k))
+}
+printf("\n")
+let ks = [-2, 0, 1, 2, 3, 7]
+for k in ks {
+    printf(" %g", get2(k))
+}
+printf("\n")
+printf("%d %d %d\n", dec(5), dec(-9223372036854775807), dec(9223372036854775807))
+for k in -1..=2 {
+    show(k)
+    printf("%g\n", pick(k, k + 2))
+}
+{
+let v = zeros(3)
+var k = 0
+while true {
+    if k == 3 {
+        break
+    }
+    if k >= 0 {
+        printf("%d %g\n", k, v[k])
+    }
+    k += 1
+}
+}
+{
+let v = zeros(3)
+var k = -1
+while true {
+    if k == 3 {
+        break
+    } else {
+        if k >= 0 {
+            printf("%d %g\n", k, v[k])
+        }
+    }
+    k += 2
+}
+}
+{
+let v = zeros(3)
+var k = -2
+while k < 3 {
+    if k != 1 {
+        printf("%d skip\n", k)
+    } else {
+        printf("%g\n", v[k])
+    }
+    k += 1
+}
+}
+{
+let v = zeros(3)
+for i in 3..=0 step -1 {
+    let k = i - 1
+    if k != 1 {
+        printf("%d\n", k)
+        continue
+    }
+    printf("%g\n", v[k])
+}
+}

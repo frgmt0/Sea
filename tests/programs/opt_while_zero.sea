@@ -1,0 +1,56 @@
+// opt_while_zero -- loops that run zero times assigning a loop-invariant value to a variable printed after
+// them (the old value is printed): while loops in functions and in the main program, an
+// empty for range, a while whose body reads an element of an empty array, empty and
+// wrong-direction ranges (LANGUAGE.md 7.4, 7.5, 5.1; DESIGN.md 5.8 T8)
+fn trial(lim: i64, q: i64) -> i64 {
+    var x = 1
+    var i = 10
+    while i < lim {
+        x = q
+        i += 1
+    }
+    return x
+}
+fn ftrial(lim: f64) -> f64 {
+    var t = 2.5
+    let inv = lim * 4.0
+    while t > lim {
+        t = inv
+    }
+    return t
+}
+printf("%d %d\n", trial(3, 42), trial(12, 42))
+printf("%g %g\n", ftrial(10.0), ftrial(-1.0))
+let z = 0
+var y = 5
+var k = 0
+let inv = 7 * 3
+while k < z {
+    y = inv
+    k += 1
+}
+printf("%d %d\n", y, k)
+var y2 = 6
+for j in 0..z {
+    y2 = inv + j
+}
+printf("%d\n", y2)
+let empty = zeros(0)
+var y3 = 1.5
+var c = 0
+while c < len(empty) {
+    y3 = empty[0]
+    c += 1
+}
+printf("%g\n", y3)
+var y4 = -1
+for j in 3..3 {
+    y4 = j
+}
+for j in 3..=2 {
+    y4 = j
+}
+for j in 0..5 step -1 {
+    y4 = j
+}
+printf("%d\n", y4)

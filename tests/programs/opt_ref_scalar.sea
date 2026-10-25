@@ -1,0 +1,111 @@
+// opt_ref_scalar -- a ref scalar updated in a loop and read by the caller afterwards: in a for loop, with a
+// continue of the inner while and of the outer for, with a return inside the loop (taken
+// and not), a break, an f64, passed on as ref to another function inside the loop, a
+// return from a nested loop, and calls inside the caller's loops (LANGUAGE.md 8.3, 7.5)
+fn count_up(ref s: i64, n: i64) {
+    for i in 0..n {
+        s += i
+    }
+}
+fn skip_some(ref s: i64, n: i64) {
+    for i in 0..n {
+        var j = 0
+        while j < 4 {
+            j += 1
+            if j == 2 {
+                continue
+            }
+            s += j * 10 + i
+        }
+        if i % 2 == 1 {
+            continue
+        }
+        s += 1000
+    }
+}
+fn until(ref s: i64, lim: i64) -> i64 {
+    for i in 0..100 {
+        s += i
+        if s > lim {
+            return i
+        }
+    }
+    return -1
+}
+fn scale_loop(ref x: f64, n: i64) {
+    var k = 0
+    while k < n {
+        x = x * 1.5 - 0.25
+        k += 1
+        if x > 100.0 {
+            break
+        }
+    }
+}
+fn bump(ref s: i64) {
+    s += 1
+}
+fn with_call(ref s: i64, n: i64) {
+    for i in 0..n {
+        s += 2
+        bump(ref s)
+        printf("w %d\n", s)
+    }
+}
+fn nested(ref s: i64, n: i64) -> i64 {
+    var hits = 0
+    for i in 0..n {
+        for j in 0..n {
+            if j > i {
+                break
+            }
+            s += i * j
+            if s > 40 {
+                return hits
+            }
+            hits += 1
+        }
+    }
+    return hits
+}
+var t = 5
+count_up(ref t, 4)
+printf("%d\n", t)
+for k in 0..3 {
+    count_up(ref t, k)
+    printf("%d\n", t)
+}
+skip_some(ref t, 3)
+printf("%d\n", t)
+var u = 0
+let r = until(ref u, 20)
+printf("%d %d\n", r, u)
+var u2 = 0
+let r2 = until(ref u2, 100000)
+printf("%d %d\n", r2, u2)
+var y = 1.0
+scale_loop(ref y, 20)
+printf("%.17g\n", y)
+var y2 = 1.0
+scale_loop(ref y2, 3)
+printf("%.17g\n", y2)
+with_call(ref t, 3)
+printf("%d\n", t)
+var z = 0
+for i in 0..5 {
+    if i == 1 {
+        continue
+    }
+    count_up(ref z, i)
+    if i == 3 {
+        continue
+    }
+    z += 100
+}
+printf("%d\n", z)
+var hz = 0
+let h1 = nested(ref hz, 3)
+printf("%d %d\n", h1, hz)
+var hz2 = 30
+let h2 = nested(ref hz2, 4)
+printf("%d %d\n", h2, hz2)

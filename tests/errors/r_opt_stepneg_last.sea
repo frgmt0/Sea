@@ -1,0 +1,8 @@
+// r_opt_stepneg_last -- for i in 3 ..= -1 step -1 over a 4-element vector: i = -1 fails after four lines (5.1)
+var v = zeros(4)
+for i in 0..4 {
+    v[i] = f64(10 * (i + 1))
+}
+for i in 3..=-1 step -1 {
+    printf("%g\n", v[i])
+}

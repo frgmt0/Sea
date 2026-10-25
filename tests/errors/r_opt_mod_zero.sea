@@ -1,0 +1,8 @@
+// r_opt_mod_zero -- x % 0 with the constant 0 after x % 3 loops: integer division by zero at its line (6.6)
+let xs = [7, -7, 3]
+for x in xs {
+    printf("%d\n", x % 3)
+}
+for x in xs {
+    printf("%d\n", x % 0)
+}

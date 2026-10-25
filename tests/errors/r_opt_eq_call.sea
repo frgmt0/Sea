@@ -1,0 +1,19 @@
+// r_opt_eq_call -- the early returns k < 0 and k == 2 in a function with a loop and three call sites
+// (a real call, LANGUAGE.md 8.6): k = 5 (5.4)
+fn pick(k: i64, n: i64) -> f64 {
+    let v = zeros(3)
+    var t = 0.0
+    for i in 0..n {
+        t += 1.0
+    }
+    if k < 0 {
+        return -1.0
+    }
+    if k == 2 {
+        return -2.0
+    }
+    return v[k] + t
+}
+printf("%g\n", pick(1, 2))
+printf("%g\n", pick(2, 0))
+printf("%g\n", pick(5, 1))

@@ -1,0 +1,141 @@
+#sea 1
+#target arm64-macos
+#file opt5_bce_kept.sea
+func .main main 0:1:1 0 0
+slot s1 40 8
+slot s2 16 8
+slot s3 8 8
+slot s4 8 8
+slot s5 16 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+lf f5 #4010000000000000
+stf f5 p1 - 0 24
+lf f6 #4014000000000000
+stf f6 p1 - 0 32
+li i7 5
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new_u 0:19 1 p11 4 i8 i9 i7 i10
+ldp p12 p11 - 0 40
+li i13 40
+mcopy p12 p1 i13
+li i14 3
+call edges 1 f15 2 p11 i14
+li i16 2
+call edges 1 f17 2 p11 i16
+sa p18 s2
+stf f15 p18 - 0 0
+stf f17 p18 - 0 8
+la p19 d1
+rcall sea_printf 0:20 0 2 p19 p18
+sa p20 s3
+stp p11 p20 - 0 0
+li i21 5
+call grow 1 f22 2 p20 i21
+ldp p11 p20 - 0 0
+sa p23 s4
+stp p11 p23 - 0 0
+li i24 2
+call grow 1 f25 2 p23 i24
+ldp p11 p23 - 0 0
+sa p26 s5
+stf f22 p26 - 0 0
+stf f25 p26 - 0 8
+la p27 d2
+rcall sea_printf 0:21 0 2 p27 p26
+release p11
+ret 0
+endfunc
+func edges fn 0:1:1 2 p1 i2 1 f
+lf f3 #0000000000000000
+li i4 1
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:3
+if 1 i7
+loop 2 i8 i4 i6 i5
+li i9 1
+iaddc i10 i8 i9 0:4
+ldi i11 p1 - 0 16
+chkb i10 i11 0 0:4
+ldp p12 p1 - 0 40
+ldf f13 p12 i10 8 0
+fadd f14 f3 f13
+li i15 1
+isubc i16 i8 i15 0:4
+ldi i17 p1 - 0 16
+chkb i16 i17 0 0:4
+ldp p18 p1 - 0 40
+ldf f19 p18 i16 8 0
+fsub f3 f14 f19
+endloop 2
+endif 1
+li i20 0
+li i21 1
+rcount i22 i23 i20 i2 i21 1 0:6
+if 3 i23
+loop 4 i24 i20 i22 i21
+ldi i25 p1 - 0 16
+chkb i24 i25 0 0:7
+ldp p26 p1 - 0 40
+ldf f27 p26 i24 8 0
+fadd f3 f3 f27
+endloop 4
+endif 3
+ret 1 f3
+endfunc
+func grow fn 0:11:1 2 p1 i2 1 f
+lf f3 #0000000000000000
+li i4 0
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:13
+if 1 i7
+loop 2 i8 i4 i6 i5
+ldp p9 p1 - 0 0
+ldi i10 p9 - 0 16
+chkb i8 i10 0 0:14
+ldp p11 p9 - 0 40
+ldf f12 p11 i8 8 0
+lf f13 #3FF8000000000000
+fadd f14 f12 f13
+ldp p15 p1 - 0 0
+ldi i16 p15 - 0 16
+chkb i8 i16 0 0:14
+ldp p17 p1 - 0 0
+ldi i18 p17 - 0 0
+li i19 1
+icmp ne i20 i18 i19
+if 3 i20
+rcall sea_arr_unique 0:14 1 p21 1 p17
+stp p21 p1 - 0 0
+mov p17 p21
+endif 3
+ldp p22 p17 - 0 40
+stf f14 p22 i8 8 0
+ldp p23 p1 - 0 0
+ldi i24 p23 - 0 16
+chkb i8 i24 0 0:15
+ldp p25 p23 - 0 40
+ldf f26 p25 i8 8 0
+fadd f3 f3 f26
+endloop 2
+endif 1
+ret 1 f3
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

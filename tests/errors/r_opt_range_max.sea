@@ -1,0 +1,5 @@
+// r_opt_range_max -- for i in 2^63 - 3 ..= 2^63 - 1 printing i + 1: integer overflow at the last iteration
+// (5.1, 6.5; DESIGN.md 5.8 T1 must keep this check)
+for i in 9223372036854775805..=9223372036854775807 {
+    printf("%d\n", i + 1)
+}

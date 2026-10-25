@@ -1,0 +1,5 @@
+// r_opt_range_min -- a range counting down to -2^63 with step -1 printing i - 1: integer overflow at the
+// last iteration (5.1, 6.5)
+for i in -9223372036854775806..=-9223372036854775808 step -1 {
+    printf("%d\n", i - 1)
+}

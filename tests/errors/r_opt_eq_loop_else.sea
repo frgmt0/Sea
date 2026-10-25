@@ -1,0 +1,13 @@
+// r_opt_eq_loop_else -- the same with the read in the explicit else part of k == 2 (5.4)
+let v = zeros(3)
+var k = 1
+while true {
+    if k == 2 {
+        break
+    } else {
+        if k >= 0 {
+            printf("%d %g\n", k, v[k])
+        }
+    }
+    k += 2
+}

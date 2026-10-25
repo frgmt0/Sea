@@ -1,0 +1,27 @@
+fn fill(n: i64, m: i64) -> f64[] {
+    var u = zeros(n)
+    for i in 0..n {
+        u[i] = 1.5
+    }
+    for i in 0..=m {
+        u[i] = u[i] + 2.0
+    }
+    return u
+}
+fn back(k: f64) -> f64 {
+    var w = zeros(10)
+    for i in 9..=0 step -1 {
+        w[i] = k
+    }
+    for j in 0..10 step 3 {
+        w[j] = w[j] * k
+    }
+    return w[9]
+}
+let a = fill(4, 2)
+let b = fill(6, 5)
+printf("%g %g %g %g\n", a[0], b[5], back(2.0), back(0.5))
+// opt5_bce_range -- DESIGN.md 5.8 T1 with the facts F2 (rows of zeros(n)) and F3 (a loop's ind
+// in its range): deleted for 0..n over zeros(n), 9..=0 step -1, 0..10 step 3 and the constant
+// index 9 of zeros(10); kept for 0..=m (m is not n), and the repeated check of u[i] in that
+// loop (F4's candidate n - 1 is not comparable with m: the old bound stays)

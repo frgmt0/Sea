@@ -1,0 +1,9 @@
+// r_opt_ovf_then_oob -- x + i overflows and v[i] is out of bounds at the same iteration i = 4; the overflow
+// comes first in the body, so it is reported (5.4, 6.5, 6.8 rule 5)
+let v = filled(1, 4)
+let x = 9223372036854775804
+for i in 0..6 {
+    let t = x + i
+    let u = v[i]
+    printf("%d %d\n", t, u)
+}

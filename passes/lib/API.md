@@ -1,6 +1,6 @@
 # passes/lib -- API of the shared pass modules
 
-Reference for `io.bas`, `diag.bas`, `tables.bas` and `layout.bas` (DESIGN §2.6.3). The `.bas` files carry
+Reference for `io.bas`, `diag.bas`, `tables.bas`, `layout.bas` and `ralloc.bas` (DESIGN §2.6.3). The `.bas` files carry
 only a one-line summary per SUB. Every module has no `DATA`, no `END` and no globals; a SUB
 works on its parameters (at most 16 per SUB, Baysick limit). A pass is built as its own file,
 the modules of its `build.list`, the generated `DATA` blocks and `99999 END`.
@@ -218,3 +218,210 @@ read directly; the field rows through `ly_fld`. Every SUB below is cheap
   offset O, or a field of a struct or record field at that total offset, at any depth (R24's
   test: sc the size of S, off the offset of a field whose type is the value's); else 0 (also
   when S is not a struct or record). Fields inside fixed-size array fields are not field paths.
+
+## ralloc.bas (lines 87000-88999)
+
+Needs no other module. From sub-phase 5b, in the build lists of `seagen_a64` and `seagen_x64`
+(DESIGN §4.9.2, Decisions 59, 60, lead decisions L-ac, L-an, L-aq). The linear-scan register
+allocator of DESIGN §4.9.2, the same on both targets: positions and intervals, the loop
+extension, the hidden registers of `loop`s, call crossing, the scan with its hints and spill
+choice, the spill and save slots, the saves around calls, and the three-step parallel move. The
+templates, immediates, fusion and the machine code stay in the code generator; the target enters
+only through the register table the caller declares (`ra_tab`).
+
+**One table, no array of its own (L-ac).** The module keeps all its state in the code
+generator's register table `D`, widened from `D(99999)` to **`DIM D(111110,8)`** (999 999
+elements, under Baysick's 10^6); it has no SUB-local array, so it adds nothing to the activation
+words (a SUB's own arrays are allocated and zeroed at every activation and count one word per
+numeric element against Baysick's 2 097 152 words of activations, Baysick LANGUAGE §7.27) and
+no array letter. With `R9` = `SEA_LIM_LIR_REGS` and `B9` = `SEA_LIM_LIR_BLOCKS` (from the
+consts table, never written numbers) and `X` = `R9` + `B9`:
+
+| rows | use |
+|---|---|
+| 0 | the module's scalars |
+| 1 .. `R9` | register r (LIR registers 1 .. M, then the hidden registers M+1, ...): `D(r,0)` the class, **the caller's** (1 `i`, 2 `f`, 3 `p`, as the decoder sets it today; the module writes it only for the hidden registers); `D(r,1..7)` the module's; `D(r,8)` the location after `ra_end` (below) |
+| `R9`+1 .. `X` | block b at row `R9`+b: the module's |
+| `X`+1 .. `X`+546 | the module's: scalars, the register table (64 rows), the save list, the moves |
+
+The caller may read `D(r,0)` and, after `ra_end`, `D(r,8)`; every other cell is the module's.
+**Location** of register r (`D(r,8)`, fixed for the whole function: no interval is split):
+P >= 1 the machine register P of the caller's numbering (`ra_tab`); -s the spill slot s (s >= 1,
+8 bytes each; the caller places slot s at its spill area + 8(s-1), DESIGN §4.9.2 "Frame"); 0 the
+register has no reference the caller reported (no interval: e.g. an `li` all of whose uses are
+immediates, or the result of a fused comparison).
+
+**Machine registers** are numbered by the caller, 1 .. 64, one number per register of either
+class (arm64 x0-x30 and d0-d31; x86_64 the 16 general and 16 `xmm`); the same numbers name
+registers in the moves below, so the scratch registers, the §4.8 argument and result registers
+and the frame registers get numbers too, but only the registers declared with `ra_tab` are
+allocated. The caller keeps the names (its templates); the module never sees them.
+
+### Set-up (once per pass)
+
+* `ra_init D(), R9, B9, Z9, T` -- on a freshly DIMmed (all 0) `D`: records `R9`, `B9` and `Z9`
+  (the first bound of the caller's `DIM D(Z9,8)`, 111110). `T` = 1 if `X` + 546 > `Z9` (the table
+  is too small), else 0.
+* `ra_tab D(), P, C, N, K, S` -- declares machine register P (1 .. 64) allocatable: class C (1
+  general, for `i` and `p`; 2 floating point, for `f`), N its rank (1 = first) in its class's row
+  "crossing no call" of the DESIGN §4.9.2 register table, K its rank in the row "crossing a
+  call", S = 1 if it is callee-saved (the prologue saves it when it is used), else 0. One call per
+  allocatable register of the target (arm64 25 general and 29 floating-point registers, x86_64 10
+  and 14), after `ra_init` and before the first `ra_fn`; never changed afterwards. Ranks are
+  1 .. the class's count, each once per row.
+
+### Per function: the reference walk (during the analysis sweep)
+
+* `ra_fn D()` -- starts a function: clears every row the previous function used, **column 0
+  included** (the caller's own clearing loop of `D` becomes unnecessary; the module also clears
+  the hidden rows, whose class it wrote), the blocks and the per-function scalars. Call it before
+  the first register of the function is decoded.
+* `ra_par D(), R` -- parameter register R, written at position 0 (DESIGN §4.9.2). One call per
+  parameter, before any record's references.
+* Then, for each record k = 1, 2, ... of the function (the caller's record index: `func` is record
+  1, then the `slot` records, the instructions, `endfunc`; block and closing records included), in
+  increasing k, exactly in this order:
+  1. `ra_ref D(), K, R, 0` for each register the record reads (position 2K), any order;
+  2. `ra_call D(), K` if the record is a `call`, an `rcall` or a `release`;
+  3. `ra_ref D(), K, R, 1` for each register the record writes (position 2K+1);
+  4. `ra_hint D(), K, R, A, B` if the record is a `mov`, or (x86_64) a two-address instruction;
+  5. `ra_open D(), K, B, Y, I, S` if it opens a block; `ra_close D(), K, B` if it closes one
+     (`endloop`, `enddo`, `endif`; nothing for `else`, `exit`, `next`).
+
+  The registers written are the fields named `d` (every `d` of `call`/`rcall`), `e` (`rcount`) and
+  `ind` (`loop`); every other register field is read. Report each reference that will exist in a
+  register or a spill slot in the code: a use the caller writes as an immediate (DESIGN §4.9.2
+  "Immediates") is not reported, nor an `li` that is not emitted (then none of its register's
+  references is reported), nor the register of a comparison fused into its `if`/selection.
+  Duplicates are harmless.
+* `ra_ref D(), K, R, W` -- register R is read (W = 0, position 2K) or written (W = 1, 2K+1) by
+  record K. The module records the first and last reference, the loop extension of DESIGN §4.9.2
+  (a loop's opening record and its own reads and `ind` write are outside the loop, see
+  "Readings"), the loop depth of the deepest reference, and whether the interval crosses a call.
+* `ra_call D(), K` -- record K is a `call`, `rcall` or `release`: an interval crosses it when it
+  starts at or before 2K and ends after 2K+1.
+* `ra_hint D(), K, R, A, B` -- R, written by record K, prefers A's register, else B's (0: none):
+  `mov R A` gives `ra_hint K, R, A, 0`; an x86_64 two-address `d = a op b` gives `K, d, a, b` for
+  a commuting operation (`iadd imul iand ior ixor fadd fmul`) and `K, d, a, 0` otherwise. Kept only
+  when record K is R's first reference; applied by the scan when that register is free at R's
+  start (which is exactly when the operand's interval ends at record K).
+* `ra_open D(), K, B, Y, I, S` -- record K opens block B (blocks numbered 1, 2, ... by opening
+  record, as validated by the caller) of kind Y: 1 `loop`, 2 `do`, 3 `if` or `ifz`. For a `loop`:
+  I its `ind` register and S its step register, or S = 0 when the caller writes the step as an
+  immediate (DESIGN §4.9.2 "Loop closing"); I = S = 0 otherwise. Called after the record's own
+  references (the `loop` record reads start, last and step and writes `ind` before the loop
+  starts; `if` reads its condition outside its block).
+* `ra_close D(), K, B` -- record K closes block B, the innermost open one. For a `loop` the
+  module adds the references of its closing sequence itself: `ind` read at 2K and written at
+  2K+1, and the step register read at 2K unless the step is an immediate or has a hidden
+  register. The caller reports nothing for a closing record.
+
+### Per function: allocation
+
+* `ra_end D(), M, S8, T` -- after the last record: M = the number of LIR registers of the function
+  (the decoder's highest register number). Numbers the hidden registers (below), completes the
+  intervals, sorts them by start (ties: register number), runs the scan of DESIGN §4.9.2 and
+  gives the slots. Out: `D(r,8)` for r = 1 .. M (and the hidden registers), `S8` = the number of
+  spill slots of the function (the frame's spill area is 8·`S8` bytes), `T` = 1 if a block is
+  still open (a caller bug), else 0.
+* `ra_blk D(), B, C, S, F` -- for `loop` block B after `ra_end`: C = the location of its hidden
+  count register (P, or -s: either the hidden register was spilled, or it would have been
+  numbered above `SEA_LIM_LIR_REGS` and lives in a spill slot of its own, L-aq; the caller reads
+  and writes it through the scratch registers exactly as a spilled register); S = the location of
+  its hidden step register, or 0 when it has none (the step register, or the immediate, serves);
+  F = 1 if `ind` is referenced after the `endloop` (then the closing sequence is the `cbz`/`je`
+  form of DESIGN §4.9.2 "Loop closing"), else 0.
+* `ra_used D(), P, U` -- U = 1 if machine register P was given to an interval of this function
+  (for a callee-saved P: the prologue saves it, in the caller's table order), else 0.
+
+Interval rules (DESIGN §4.9.2, as the module applies them): an interval runs from the first to the
+last reported reference; for each loop (`loop`, `do`) a register referenced inside it is extended
+to cover the loop, from the opening record's write position 2o+1 to the closing record's 2c+1,
+when it is also referenced outside the loop or when its first reference inside the loop is not a
+write at the loop body's own block level. Each `loop` has a hidden count register (interval
+2o+1 .. 2c+1, class `i`), and a hidden step register (same interval) when its step register S is
+written inside the loop; hidden registers are numbered M+1, M+2, ... in the order of their
+loops' opening records, the count before the step; one numbered above `R9` is not created (L-aq).
+Their deepest reference has the loop's depth. The scan: intervals by start; before placing one,
+every active interval ending below its start is expired; the register is the hint's if free,
+else the first free register of the interval's row (its class; "crossing a call" if it crosses
+any call); with none free, the spill victim among the class's active intervals and the new one is
+the one whose deepest reference has the smallest loop depth, then the one ending last, then the
+highest register number; a victim that held a register gives it to the new interval.
+
+**Slots.** Spill slots are numbered 1 .. `S8` in order of first use (ties: register number): a
+spilled interval at its first reference, an interval in a caller-saved register that crosses a
+call (its **save slot**) at the first call it crosses; then the L-aq counts and steps, by block.
+A spilled interval's slot is `-D(r,8)`; save slots are returned by `ra_sv`.
+
+### Per function: the code sweeps
+
+* `ra_rew D()` -- at the start of every sweep that calls `ra_sv` (each of the caller's sweeps over
+  the records: the line count and the code).
+* `ra_sv D(), K, N, T` -- at the `call`/`rcall` K, or at the free path of the `release` K, records
+  K in increasing order within a sweep: N = the number of intervals in a caller-saved register
+  that cross K (start <= 2K, end > 2K+1), listed by `ra_svi` in increasing machine-register
+  number. **The caller skips the registers record K writes** (its results: their values before
+  the call are dead, and a reload would overwrite the result; with the loop extension a result's
+  interval can start before 2K): it stores the others to their save slots before the argument
+  move and loads them after the result move (DESIGN §4.9.2 "Calls"). Such a result (for instance
+  `call fswap 2 f8 f9 2 f8 f9`, whose arguments are its results) may be listed with save slot 0:
+  no value of it is live across the call. `T` = 1 if a listed interval has no save slot and is not
+  written by record K (K was not reported by `ra_call`: a caller bug); an interval written by two
+  or more calls is accepted at each of them without this check. Else `T` = 0.
+* `ra_svi D(), I, P, S, R` -- the I-th entry of the last `ra_sv` list (1 .. N): machine register
+  P, save slot S, register R.
+
+### Parallel moves (DESIGN §4.9.2 "Moves", L-an)
+
+Parameters into their locations, the arguments and results of a `call`/`rcall`, the values of a
+`ret`, the operands and results of a staged template and the entry of a `loop` (`ind` <- start,
+the hidden count <- last, the hidden step <- step) are each one parallel move. The caller lists
+its moves in **destination order** (the order of the §4.8 registers, of the operands, or of the
+parameters), then sequences them:
+
+* `ra_mv D(), S, E, C, T` -- appends the move S -> E of class C (1 general, 2 floating point;
+  it selects the cycle scratch). `T` = 1 if the list already holds 320 moves (nothing appended),
+  else 0.
+* `ra_pm D(), N` -- sequences the listed moves and empties the list: N steps, read by `ra_st`
+  until the next `ra_pm`. Moves with S = E are dropped (a `mov` between equal locations emits
+  nothing). The steps, in order: (1) every move to a memory destination, ordered by destination
+  (spill slots by number, then the outgoing stack slots upwards, then the results-area slots
+  upwards); (2) the register-to-register moves, repeatedly the first in destination order whose
+  destination is no remaining move's source; when every remaining one is in a cycle, a step
+  copies the first one's source to the cycle scratch (E = 0), and from then on every remaining
+  move from that source reads the scratch (S = 0); (3) every move from a memory or immediate
+  source to a register, in destination order.
+* `ra_st D(), I, S, E, C, J` -- step I (1 .. N): source S, destination E, class C, and J the
+  index (1 ..) of the listed move it belongs to (the cycle copy carries the index of the move
+  whose source it saves).
+
+Codes of S and E (the module only compares them, except for ordering memory destinations):
+
+| code | location | as |
+|---|---|---|
+| 1 .. 64 | machine register (the caller's numbering) | source, destination |
+| 0 | the cycle scratch of class C (arm64 `x17`/`d31`, x86_64 `%r11`/`%xmm15`) | only in `ra_st` output |
+| -s | spill slot s | source, destination |
+| 1000 + j | outgoing stack-argument slot j (j >= 0, at 8j from the stack pointer) | destination |
+| 2000 + j | results-area slot j (the results of a call; a `ret`'s results beyond the registers) | source, destination |
+| 3000 + j | any other source that is not a register (an immediate, an incoming stack parameter, the results-area address), j the caller's tag | source |
+
+Step (1) stores a register source directly and moves a memory or immediate source through the
+cycle scratch; step (3) loads straight into the destination; the cycle scratch is never a listed
+move's source or destination, so a staged template's scratch registers (arm64 `x15 x16 x17`,
+`d29 d30 d31`; x86_64 `%rax %rcx %rdx`, `%xmm14 %xmm15`), which are never sources of the moves
+into them, never form a cycle.
+
+### Readings (where DESIGN §4.9.2 leaves a choice)
+
+* Loop positions: a loop covers 2o+1 .. 2c+1 (o its opening record, c its closing record); the
+  opening record's reads (2o) and its `ind` write (2o+1) are outside the loop, the closing
+  record's references inside it. So `start`, `last` and a step read only by the `loop` record do
+  not stay live through the loop, and the entry move's destinations may reuse their registers.
+* `ind` and the step register are referenced by the closing sequence (added by `ra_close`), so
+  both keep their registers through the loop; `ra_blk`'s F is "referenced after `endloop`" (a
+  later write counts; the `cbz` form is then used, which is correct in every case).
+* A hint is recorded from the record that first references the destination; a call result whose
+  interval starts before its call (loop extension) is not saved around that call (`ra_sv`).
+* Spill slots of L-aq counts and steps come after all other slots, by block, count first.

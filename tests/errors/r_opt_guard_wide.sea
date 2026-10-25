@@ -1,0 +1,8 @@
+// r_opt_guard_wide -- a guard k >= 0 && k < 10 around v[k] for a 4-element v: the constant bound does not
+// cover the extent, so k = 4 fails inside the guard (5.4; DESIGN.md 5.8 F5)
+let v = zeros(4)
+for k in 2..8 {
+    if k >= 0 && k < 10 {
+        printf("%d %g\n", k, v[k])
+    }
+}

@@ -1,0 +1,18 @@
+fn rle(v: f64[], ref m: i64, n: i64) -> f64 {
+    var s = 0.0
+    for i in 0..n {
+        s = s + len(v) + len(v) + v[0]
+        m = m + i
+        s = s + m * 2
+        printf("%d\n", m)
+        s = s + m + v[0]
+    }
+    return s
+}
+var k = 1
+let w = [1.0, 2.0]
+printf("%g\n", rle(w, ref k, 2))
+printf("%g\n", rle(w, ref k, 3))
+// opt5_rle -- DESIGN.md 5.8 T3 rule 2: len(v) loaded once; m (a `ref` parameter, a private
+// location) read back from its store and across the printf call; v[0]'s element load is not
+// shared across the call (it may change it), its header and data address are

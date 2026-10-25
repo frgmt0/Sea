@@ -1,0 +1,8 @@
+// r_opt_oob_while -- a while loop storing v[i] and printing it: the store at i = 4 fails (5.4, 5.5)
+var v = zeros(4)
+var i = 0
+while i < 10 {
+    v[i] = f64(i) * 0.5
+    printf("%g\n", v[i])
+    i += 1
+}

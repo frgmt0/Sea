@@ -1,0 +1,20 @@
+// r_opt_break_fact -- an index narrowed by two break tests inside a while true loop (0 <= k < len(v) in the
+// body), used after the loop with the value k = len(v) that the tests excluded (5.4, 7.5)
+fn scan(v: i64[], start: i64) -> i64 {
+    var k = start
+    var acc = 0
+    while true {
+        if k < 0 {
+            break
+        }
+        if k >= len(v) {
+            break
+        }
+        acc += v[k]
+        k += 1
+    }
+    printf("acc %d\n", acc)
+    return v[k]
+}
+let w = [1, 2, 3]
+printf("%d\n", scan(w, 1))

@@ -1,0 +1,26 @@
+// r_opt_guard_fact -- a dominating comparison on a parameter: v[k] proved inside if k >= 0 { if k < len(v)
+// { ... } }, then read after both endifs with k = len(v); an early-return guard before
+// it works for every k (5.4, 6.4; DESIGN.md 5.8 F5, F6)
+fn safe(v: i64[], k: i64) -> i64 {
+    if k < 0 {
+        return -1
+    }
+    if k >= len(v) {
+        return -1
+    }
+    return v[k]
+}
+fn pick(v: i64[], k: i64) -> i64 {
+    var t = 0
+    if k >= 0 {
+        if k < len(v) {
+            t = v[k]
+        }
+    }
+    printf("t %d\n", t)
+    return t + v[k]
+}
+let w = [4, 5, 6]
+printf("%d %d %d\n", safe(w, 2), safe(w, 3), safe(w, -1))
+printf("%d\n", pick(w, 2))
+printf("%d\n", pick(w, 3))

@@ -1,0 +1,93 @@
+#sea 1
+#target arm64-macos
+#file opt5_bce_dom.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 2
+call pick 1 f3 2 i1 i2
+li i4 5
+li i5 3
+call pick 1 f6 2 i4 i5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:31 0 2 p8 p7
+ret 0
+endfunc
+func pick fn 0:1:1 2 i1 i2 1 f
+li i3 8
+li i4 1
+li i5 1
+li i6 1
+rcall sea_arr_new 0:2 1 p7 4 i4 i5 i3 i6
+lf f8 #0000000000000000
+li i9 0
+li i10 1
+rcount i11 i12 i9 i2 i10 0 0:4
+if 1 i12
+loop 2 i13 i9 i11 i10
+li i14 0
+icmp ge i15 i1 i14
+if 3 i15
+li i16 8
+icmp lt i17 i1 i16
+if 4 i17
+ldi i18 p7 - 0 16
+chkb i1 i18 0 0:7
+ldp p19 p7 - 0 40
+ldf f20 p19 i1 8 0
+fadd f8 f8 f20
+endif 4
+endif 3
+li i21 0
+icmp lt i22 i1 i21
+if 5 i22
+lf f8 #3FF0000000000000
+else 5
+li i23 7
+icmp le i24 i1 i23
+if 6 i24
+ldi i25 p7 - 0 16
+chkb i1 i25 0 0:14
+ldp p26 p7 - 0 40
+ldf f27 p26 i1 8 0
+fadd f8 f8 f27
+endif 6
+endif 5
+li i28 8
+icmp lt i29 i1 i28
+if 7 i29
+ldi i30 p7 - 0 16
+chkb i1 i30 0 0:18
+ldp p31 p7 - 0 40
+ldf f32 p31 i1 8 0
+fadd f8 f8 f32
+endif 7
+li i33 3
+imulc i34 i13 i33 0:20
+li i35 8
+icmp lt i36 i34 i35
+if 8 i36
+li i37 0
+icmp ge i38 i34 i37
+if 9 i38
+ldi i39 p7 - 0 16
+chkb i34 i39 0 0:23
+ldp p40 p7 - 0 40
+ldf f41 p40 i34 8 0
+fadd f8 f8 f41
+endif 9
+endif 8
+endloop 2
+endif 1
+release p7
+ret 1 f8
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

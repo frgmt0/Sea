@@ -1,0 +1,6 @@
+// r_opt_oob_ovf_expr -- v[i] + (x + i): at i = 4 the index of the left operand fails first (6.8 rule 5)
+let v = filled(0, 4)
+let x = 9223372036854775804
+for i in 0..6 {
+    printf("%d\n", v[i] + (x + i))
+}

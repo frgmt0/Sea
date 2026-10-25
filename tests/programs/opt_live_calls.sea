@@ -1,0 +1,54 @@
+// opt_live_calls -- values computed before a loop and read after calls inside it (printf and a user
+// function with a loop, so a real call): eight i64 and eight f64 values in the main
+// program, three in a function (LANGUAGE.md 6.5, 6.8, 8.1)
+fn note(k: i64) -> i64 {
+    var t = 0
+    for j in 0..k {
+        t += j
+    }
+    printf("note %d %d\n", k, t)
+    return t
+}
+fn mix(n: i64, s: f64) -> f64 {
+    let p = s * 3.0
+    let q = s + 1.0
+    let r = n * 5
+    var tot = 0.0
+    for i in 0..n {
+        let t = note(i)
+        tot = tot + p * f64(t) + q - f64(r)
+    }
+    return tot + p + q
+}
+let seed = 12345
+let a1 = seed * 3 + 1
+let a2 = seed - 77
+let a3 = a1 * a2 % 1000003
+let a4 = idiv(a3, 7)
+let a5 = a1 + a2 + a3 + a4
+let a6 = a5 % 11
+let a7 = -a6 + a1
+let a8 = a7 * 2
+let f1 = f64(seed) / 7.0
+let f2 = f1 * f1
+let f3 = f2 - 0.1
+let f4 = f3 / 3.0
+let f5 = f1 + f4
+let f6 = -f5
+let f7 = f6 * 0.5
+let f8 = f7 + f2
+var acc = 0
+var facc = 0.0
+for i in 0..4 {
+    printf("it %d\n", i)
+    let t = note(i)
+    acc = acc + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + t + i
+    facc = facc + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8
+    printf("%d %.17g\n", acc, facc)
+}
+note(5)
+printf("%d %d %d %d %d %d %d %d\n", a1, a2, a3, a4, a5, a6, a7, a8)
+printf("%.17g %.17g %.17g %.17g\n", f1, f2, f3, f4)
+printf("%.17g %.17g %.17g %.17g\n", f5, f6, f7, f8)
+printf("%.17g\n", mix(3, 0.5))
+printf("%.17g\n", mix(4, -2.25))

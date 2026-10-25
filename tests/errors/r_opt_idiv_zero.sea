@@ -1,0 +1,8 @@
+// r_opt_idiv_zero -- idiv(x, 0) with the constant 0 after idiv(x, 2): integer division by zero (6.6)
+let xs = [7, -7, 3]
+for x in xs {
+    printf("%d\n", idiv(x, 2))
+}
+for x in xs {
+    printf("%d\n", idiv(x, 0))
+}

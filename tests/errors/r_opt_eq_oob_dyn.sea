@@ -1,0 +1,13 @@
+// r_opt_eq_oob_dyn -- the same with filled(10, 3): k = 3 (5.4)
+fn getd(k: i64) -> i64 {
+    let v = filled(10, 3)
+    if k < 0 {
+        return -1
+    }
+    if k == 2 {
+        return -2
+    }
+    return v[k]
+}
+printf("%d %d %d\n", getd(1), getd(2), getd(-3))
+printf("%d\n", getd(3))

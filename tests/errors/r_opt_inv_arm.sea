@@ -1,0 +1,13 @@
+// r_opt_inv_arm -- a check in an if arm whose condition is loop-invariant and true: it fails at the first
+// iteration after that iteration's line, never before it (DESIGN.md 5.8 T8, T9)
+let v = zeros(3)
+let bad = len(v) + 2
+let flag = bad > 4
+var i = 0
+while i < 3 {
+    printf("iter %d\n", i)
+    if flag {
+        printf("%g\n", v[bad])
+    }
+    i += 1
+}

@@ -1,5 +1,5 @@
 #!/bin/sh
-# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables,layout}.bas and of the
+# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables,layout,ralloc}.bas and of the
 # intermediate-file validator tools/seaval.bas (docs/DESIGN.md 2.2, 2.6.2, 2.6.3, 3, 3.9).
 #
 #   sh tests/lib_check.sh [-v]            (make test-lib)
@@ -17,6 +17,7 @@
 #   tab    the loaders of tables.bas against counts taken from the contract files, tb_cval
 #   boot   a table that does not fit: BAD_DATA
 #   lay    layout.bas: the struct layout rule of DESIGN 4.8 (sizes, offsets, reference offsets)
+#   ra     ralloc.bas: the register allocator of DESIGN 4.9.2 (intervals, scan, slots, moves)
 # and the validator tools/seaval.bas is run on the dump examples of DESIGN 3.4, 3.5.8 and 3.6.7
 # (taken from the document itself) and on mutated copies, which it must reject with status 11.
 #
@@ -111,7 +112,7 @@ chk_range() { # FILE FIRST LAST
         $2 == "END" || $2 == "DATA" { print FILENAME ": line " NR ": a module has no END or DATA"; bad = 1 }
         END { exit bad }' "$1"
 }
-for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 85999" "passes/lib/layout.bas 86000 88999" "tools/seaval.bas 1 59999"; do
+for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 85999" "passes/lib/layout.bas 86000 86999" "passes/lib/ralloc.bas 87000 88999" "tools/seaval.bas 1 59999"; do
     set -- $spec
     if [ ! -f "$SEA/$1" ]; then bad "module $1 exists"; continue; fi
     if msg=$(chk_range "$SEA/$1" "$2" "$3"); then ok "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA"; else bad "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA" "$msg"; fi
@@ -122,7 +123,7 @@ n=$(grep -c "DIM W($rb)" "$SEA/passes/lib/io.bas")
 if [ "$n" -eq 3 ]; then ok "io.bas: the three long work lists are DIM W(SEA_LIM_RECORD_BYTES = $rb)"; else bad "io.bas: three DIM W($rb) expected, found $n"; fi
 # at most 16 parameters per SUB, one SUB name per SUB line (Baysick LANGUAGE 7.27)
 if awk '/^[0-9]+ SUB / { s = $0; sub(/^[0-9]+ SUB "[^"]*"(: )?/, "", s); k = (s == "") ? 0 : gsub(/, /, ", ", s) + 1; if (k > 16) { print "line " NR ": " k " parameters"; bad = 1 } } END { exit bad }' \
-    "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/limb.bas" "$SEA/passes/lib/f64emu.bas" "$SEA/passes/lib/fltlit.bas" "$SEA/passes/lib/layout.bas" > "$T/p16" 2>&1; then ok "modules: no SUB has more than 16 parameters"; else bad "modules: SUB with more than 16 parameters" "$(cat "$T/p16")"; fi
+    "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/limb.bas" "$SEA/passes/lib/f64emu.bas" "$SEA/passes/lib/fltlit.bas" "$SEA/passes/lib/layout.bas" "$SEA/passes/lib/ralloc.bas" > "$T/p16" 2>&1; then ok "modules: no SUB has more than 16 parameters"; else bad "modules: SUB with more than 16 parameters" "$(cat "$T/p16")"; fi
 
 # ==============================================================================================
 # 1. unit: field encodings and splitting (DESIGN 3.1)
@@ -1114,6 +1115,599 @@ expect "layout: sizes, alignments, field offsets, reference offsets and field pa
 echo "I 40 40" > "$T/lay2.in"
 printf 'lyh: ly_init: Q has no field rows, or a constant SEA_ESIZE_* is missing\n' > "$T/lay2.err"
 expect "layout: ly_init with no field rows -> <pass>: ly_init: ..., status 11" "$T/lay" "$T/lay2.in" 11 /dev/null "$T/lay2.err"
+
+# ==============================================================================================
+# 5c. ralloc: the linear-scan allocator of DESIGN 4.9.2 through passes/lib/ralloc.bas (Decisions 59,
+#     60, L-ac, L-an, L-aq): intervals, loop extension, call crossing, the scan with hints and the
+#     spill choice, slots, the saves around calls, hidden loop registers (L-aq with a small R9),
+#     the three-step parallel move with cycles. Each case is a hand-written walk of one function,
+#     its expected locations derived by hand from 4.9.2 (positions 2k / 2k+1, parameters at 0).
+# ==============================================================================================
+cat > "$T/h_ra.bas" <<'EOF'
+10 REM ralloc harness, one command per line: I r9 b9 z9 (ra_init), T p c n k s (ra_tab), F (ra_fn),
+11 REM K r c (the caller's class), P r, R k r w, C k, H k r a b, O k b y i s, X k b, E m (ra_end),
+12 REM L r... (locations), V r (start end, the module's columns 3 2), B b (ra_blk), U p (ra_used),
+13 REM W (ra_rew), S k (ra_sv, ra_svi), M s e c (ra_mv), Q (ra_pm, ra_st), Y n (n moves), G r (D(r,0))
+20 DIM D(111110,8), F$(20), V(20)
+30 IF END #0 THEN 990
+40 LINPUT #0, L$
+50 CALL "io_split": L$, F$(), 20, N
+60 FOR I = 2 TO N
+70 LET V(I) = VAL(F$(I))
+80 NEXT I
+90 LET K = POS("ITFKPRCHOXELVBUWSMQYG", F$(1))
+100 IF K = 0 THEN 980
+110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560
+200 CALL "ra_init": D(), V(2), V(3), V(4), T
+205 PRINT "I T=" & STR$(T)
+207 GOTO 30
+210 CALL "ra_tab": D(), V(2), V(3), V(4), V(5), V(6)
+215 GOTO 30
+220 CALL "ra_fn": D()
+225 GOTO 30
+230 LET D(V(2), 0) = V(3)
+235 GOTO 30
+240 CALL "ra_par": D(), V(2)
+245 GOTO 30
+250 CALL "ra_ref": D(), V(2), V(3), V(4)
+255 GOTO 30
+260 CALL "ra_call": D(), V(2)
+265 GOTO 30
+270 CALL "ra_hint": D(), V(2), V(3), V(4), V(5)
+275 GOTO 30
+280 CALL "ra_open": D(), V(2), V(3), V(4), V(5), V(6)
+285 GOTO 30
+290 CALL "ra_close": D(), V(2), V(3)
+295 GOTO 30
+300 CALL "ra_end": D(), V(2), S, T
+310 PRINT "E S8=" & STR$(S) & " T=" & STR$(T)
+315 GOTO 30
+320 LET R$ = "L"
+330 FOR I = 2 TO N
+340 LET R$ = R$ & " " & STR$(V(I)) & "=" & STR$(D(V(I), 8))
+345 NEXT I
+350 PRINT R$
+355 GOTO 30
+360 PRINT "V " & STR$(V(2)) & ": " & STR$(D(V(2), 3)) & " " & STR$(D(V(2), 2))
+370 GOTO 30
+380 CALL "ra_blk": D(), V(2), C, S, F
+390 PRINT "B " & STR$(V(2)) & ": " & STR$(C) & " " & STR$(S) & " " & STR$(F)
+395 GOTO 30
+400 CALL "ra_used": D(), V(2), U
+410 PRINT "U " & STR$(V(2)) & ": " & STR$(U)
+415 GOTO 30
+420 CALL "ra_rew": D()
+425 GOTO 30
+440 CALL "ra_sv": D(), V(2), M, T
+450 LET R$ = "S " & STR$(V(2)) & ": N=" & STR$(M) & " T=" & STR$(T)
+455 FOR I = 1 TO M
+460 CALL "ra_svi": D(), I, P, S, R
+465 LET R$ = R$ & " (" & STR$(P) & " " & STR$(S) & " " & STR$(R) & ")"
+470 NEXT I
+475 PRINT R$
+477 GOTO 30
+480 CALL "ra_mv": D(), V(2), V(3), V(4), T
+485 IF T = 0 THEN 30
+490 PRINT "M T=" & STR$(T)
+495 GOTO 30
+500 CALL "ra_pm": D(), M
+505 PRINT "Q N=" & STR$(M)
+510 FOR I = 1 TO M
+515 CALL "ra_st": D(), I, S, E, C, J
+520 PRINT "  " & STR$(S) & " " & STR$(E) & " " & STR$(C) & " " & STR$(J)
+525 NEXT I
+530 GOTO 30
+540 FOR I = 1 TO V(2)
+545 CALL "ra_mv": D(), I, -I, 1, T
+550 NEXT I
+553 PRINT "Y T=" & STR$(T)
+555 GOTO 30
+560 PRINT "G " & STR$(V(2)) & ": " & STR$(D(V(2), 0))
+565 GOTO 30
+980 PRINT "BAD COMMAND " & L$
+985 STOP 3
+990 STOP
+EOF
+cat "$T/h_ra.bas" "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/ralloc.bas" > "$T/ra.bas"
+printf '%s\n' errors | (cd "$T/gd" && "$GENDATA" 89000) >> "$T/ra.bas" || { echo "lib_check: gendata failed for ra" >&2; exit 2; }
+echo "99999 END" >> "$T/ra.bas"
+"$BSK" "$T/ra.bas" -o "$T/ra" || { echo "lib_check: cannot compile ra" >&2; exit 2; }
+
+# the limits ra_init is given come from limits.inc, as a code generator takes them from the consts table
+R9=$(limitof LIM_LIR_REGS)
+B9=$(limitof LIM_LIR_BLOCKS)
+# the table every case uses unless it says otherwise: general registers 1 and 2 caller-saved, 3
+# callee-saved (row "crossing no call" 1 2 3, row "crossing a call" 3 1 2, as arm64's x9.. then
+# x19..), 4 caller-saved and last in both rows; floating point 10 caller-saved, 11 callee-saved
+ratab() {
+    printf 'I %s %s 111110\nT 1 1 1 2 0\nT 2 1 2 3 0\nT 3 1 3 1 1\nT 4 1 4 4 0\nT 10 2 1 2 0\nT 11 2 2 1 1\n' "$R9" "$B9"
+}
+
+# a. scan and hints. Records: 1 func r1 r2 r3 (i); 2 iadd i4 i3 i3; 3 iadd i5 i4 i1 (x86_64
+#    commuting: hint r4, then r1); 4 iadd i6 i2 i5; 5 ret 1 i6; 6 endfunc. Intervals: r1 0-6, r2
+#    0-8, r3 0-4, r4 5-6, r5 7-8, r6 9-10. r1 1, r2 2, r3 3 (registers 1 2 taken); r4 at 5: r3
+#    expired, r1 not (6 >= 5): 3; r5 at 7: r1 and r4 expired, the hint r4's register 3 is free
+#    (without it, 1 would be chosen); r6 at 9: everything expired, the hint r2's register 2 is free
+#    (not 1). No slot. Then ra_sv at record 2, which is no call: r1 and r2 (caller-saved 1 and 2)
+#    cross it (start <= 4, end > 5) with no save slot: T=1.
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+P 1
+P 2
+P 3
+R 2 3 0
+R 2 4 1
+R 3 4 0
+R 3 1 0
+R 3 5 1
+H 3 5 4 1
+R 4 2 0
+R 4 5 0
+R 4 6 1
+H 4 6 2 5
+R 5 6 0
+E 6
+L 1 2 3 4 5 6
+V 1
+V 4
+V 6
+U 3
+U 4
+W
+S 2
+EOF
+} > "$T/ra_a.in"
+cat > "$T/ra_a.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+L 1=1 2=2 3=3 4=3 5=3 6=2
+V 1: 0 6
+V 4: 5 6
+V 6: 9 10
+U 3: 1
+U 4: 0
+S 2: N=2 T=1 (1 0 1) (2 0 2)
+EOF
+expect "ralloc: intervals, expiry before placement, the first free register of the row, the hint (DESIGN 4.9.2 'The scan'); ra_sv at an unreported call: T=1" "$T/ra" "$T/ra_a.in" 0 "$T/ra_a.exp" /dev/null
+
+# b. spills: the victim's loop depth, then its end, then its number; slots in order of first use.
+#    Records: 1 func; 2-5 li i1 .. li i4 (writes 5 7 9 11); 6 do 1; 7 iadd i5 i1 i2 (14, 15); 8
+#    exit 1; 9 enddo 1; 10 iadd i6 i3 i4 (20, 21); 11 ret 1 i6 (22); 12 endfunc. The do covers
+#    13-19. r1 5-19 and r2 7-19 (referenced inside and outside: extended), r5 15-15 (its first
+#    reference in the loop is a write at the loop's own level: not extended), r3 9-20, r4 11-20,
+#    r6 21-22. Depths: r1 r2 r5 1, r3 r4 0. Three general registers here (4 is not declared). r1 1,
+#    r2 2, r3 3; r4 at 11: none free, depth 0 are r3 r4, both end at 20, the higher number r4 is
+#    spilled; r5 at 15: none free, r3 has the smallest depth: spilled, r5 takes 3; r6 at 21: 1.
+#    Slots by first use: r3 (9) 1, r4 (11) 2.
+{ printf 'I %s %s 111110\nT 1 1 1 2 0\nT 2 1 2 3 0\nT 3 1 3 1 1\n' "$R9" "$B9"; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+R 2 1 1
+R 3 2 1
+R 4 3 1
+R 5 4 1
+O 6 1 2 0 0
+R 7 1 0
+R 7 2 0
+R 7 5 1
+X 9 1
+R 10 3 0
+R 10 4 0
+R 10 6 1
+R 11 6 0
+E 6
+L 1 2 3 4 5 6
+V 1
+V 2
+V 5
+V 3
+EOF
+} > "$T/ra_b.in"
+cat > "$T/ra_b.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=1 2=2 3=-1 4=-2 5=3 6=1
+V 1: 5 19
+V 2: 7 19
+V 5: 15 15
+V 3: 9 20
+EOF
+expect "ralloc: loop extension (referenced inside and outside; a first write at the loop's level is not extended), spill choice by depth, end, number; spill slots in order of first use" "$T/ra" "$T/ra_b.in" 0 "$T/ra_b.exp" /dev/null
+
+# c. a call inside a loop: crossing along the records and around the back edge, the call row,
+#    save slots, ra_sv. Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 i2 i2 (reads 6, ind
+#    7); 4 if 2 i1 (8); 5 mov i4 i3 (10, 11); 6 endif 2; 7 call g 0 0 (14, 15); 8 mov i5 i4 (16,
+#    17); 9 endloop 1 (ind read 18 and written 19, the step r2 read 18); 10 ret 1 i1 (20); 11
+#    endfunc. Loop 1 covers 7-19. r1 0-20, r2 5-19, r3 7-19, r4 7-19 (first referenced by a write
+#    inside the if: not at the loop's level, so carried: extended over the loop), r5 17-17, r6 the
+#    hidden count 7-19; all but r5 cross the call (start <= 14, end > 15), all have depth 1. Three
+#    general registers (as in b). Row "crossing a call": 3 1 2. r1 3, r2 1, r3 2; r4 at 7: none
+#    free, all depth 1, r1 ends last
+#    (20): spilled, r4 takes 3; r6 at 7: all end at 19, the highest number r6 is spilled; r5 at
+#    17: r4 (19, the highest number among those ending last) is spilled, r5 takes 3. Slots by
+#    first use: r1 (0) 1, r6 (7) 2, r4 (11) 3, then the save slots of r2 and r3 (in caller-saved
+#    1 and 2, first call 7: 14) 4 and 5. ra_sv 7: 1 holds r2 (save slot 4), 2 holds r3 (5).
+{ printf 'I %s %s 111110\nT 1 1 1 2 0\nT 2 1 2 3 0\nT 3 1 3 1 1\n' "$R9" "$B9"; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 1 0
+O 4 2 3 0 0
+R 5 3 0
+R 5 4 1
+H 5 4 3 0
+X 6 2
+C 7
+R 8 4 0
+R 8 5 1
+H 8 5 4 0
+X 9 1
+R 10 1 0
+E 5
+L 1 2 3 4 5 6
+V 4
+V 2
+V 6
+G 6
+B 1
+W
+S 7
+EOF
+} > "$T/ra_c.in"
+cat > "$T/ra_c.exp" <<'EOF'
+I T=0
+E S8=5 T=0
+L 1=-1 2=1 3=2 4=-3 5=3 6=-2
+V 4: 7 19
+V 2: 5 19
+V 6: 7 19
+G 6: 1
+B 1: -2 0 0
+S 7: N=2 T=0 (1 4 2) (2 5 3)
+EOF
+expect "ralloc: a call in a loop: crossing around the back edge, the call row, the hidden count register, save slots after spill slots by first use, ra_sv" "$T/ra" "$T/ra_c.in" 0 "$T/ra_c.exp" /dev/null
+
+# d. the loop span (reading: the loop record's reads and its ind write are outside the loop):
+#    start, last and a step read only by the loop record do not stay live through it. Records: 1
+#    func r1 r2 (i); 2 li i3 (5); 3 loop 1 i4 i1 i2 i3 (reads 6, ind 7); 4 iadd i5 i4 i4 (8, 9); 5
+#    endloop 1 (10, 11); 6 ret 0; 7 endfunc. r1 0-6, r2 0-6, r3 5-11 (the step, read again by the
+#    closing sequence), r4 7-11, r6 (count) 7-11, r5 9-9. r1 1, r2 2, r3 3; at 7 r1 and r2 have
+#    expired: r4 1, r6 2; r5 4. ra_blk: count in 2, no hidden step, ind not referenced after.
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+P 1
+P 2
+R 2 3 1
+R 3 1 0
+R 3 2 0
+R 3 3 0
+R 3 4 1
+O 3 1 1 4 3
+R 4 4 0
+R 4 5 1
+X 5 1
+E 5
+L 1 2 3 4 5 6
+V 1
+V 3
+B 1
+EOF
+} > "$T/ra_d.in"
+cat > "$T/ra_d.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+L 1=1 2=2 3=3 4=1 5=4 6=2
+V 1: 0 6
+V 3: 5 11
+B 1: 2 0 0
+EOF
+expect "ralloc: the loop span 2o+1..2c+1: the loop record's operands are outside the loop, the entry move's destinations reuse their registers (reading 2)" "$T/ra" "$T/ra_d.in" 0 "$T/ra_d.exp" /dev/null
+
+# e. the closing references (reading 3): ind, never read in the body, and the step register keep
+#    their registers through the loop, so a value of the body cannot take them. Records: 1 func r1
+#    (i); 2 li i2 (5); 3 li i3 (7); 4 loop 1 i4 i1 i3 i2 (8, ind 9); 5 li i5 (11); 6 endloop 1 (ind
+#    read 12, written 13, step r2 read 12); 7 ret 0; 8 endfunc. r1 0-8, r2 5-13, r3 7-8, r4 9-13,
+#    r6 (count) 9-13, r5 11-11. r1 1, r2 2, r3 3; at 9: r4 1, r6 3; r5 4 (not 1, 2 or 3).
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+P 1
+R 2 2 1
+R 3 3 1
+R 4 1 0
+R 4 3 0
+R 4 2 0
+R 4 4 1
+O 4 1 1 4 2
+R 5 5 1
+X 6 1
+E 5
+L 1 2 3 4 5 6
+V 4
+V 2
+B 1
+EOF
+} > "$T/ra_e.in"
+cat > "$T/ra_e.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+L 1=1 2=2 3=3 4=1 5=4 6=3
+V 4: 9 13
+V 2: 5 13
+B 1: 3 0 0
+EOF
+expect "ralloc: the closing sequence references ind and the step register at endloop (reading 3)" "$T/ra" "$T/ra_e.in" 0 "$T/ra_e.exp" /dev/null
+
+# f. a call result loop-extended before its own call (reading 4), ind referenced after its loop.
+#    Records: 1 func r1 (i); 2 do 1; 3 if 2 i1 (6); 4 call f 1 i2 0 (writes 9; first referenced
+#    inside the if: carried, so its interval starts at the do's 5); 5 endif 2; 6 exit 1; 7 enddo
+#    1; 8 ret 1 i2 (16); 9 endfunc. r1 0-15 (read inside the do: extended to its end 15), r2 5-16;
+#    both cross call 4 (start <= 8, end > 9). Row "crossing a call": r1 3, r2 1. r2's save slot 1
+#    (first call 4). ra_sv 4 lists r2, the record's own result, which the caller skips.
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+P 1
+O 2 1 2 0 0
+R 3 1 0
+O 3 2 3 0 0
+C 4
+R 4 2 1
+X 5 2
+X 7 1
+R 8 2 0
+E 2
+L 1 2
+V 1
+V 2
+W
+S 4
+EOF
+} > "$T/ra_f.in"
+cat > "$T/ra_f.exp" <<'EOF'
+I T=0
+E S8=1 T=0
+L 1=3 2=1
+V 1: 0 15
+V 2: 5 16
+S 4: N=1 T=0 (1 1 2)
+EOF
+expect "ralloc: a call result whose interval starts before its own call is listed by ra_sv with its register (the caller skips it, reading 4)" "$T/ra" "$T/ra_f.in" 0 "$T/ra_f.exp" /dev/null
+
+# g. ind referenced after the loop: ra_blk's F = 1. Records: 1 func r1 (i); 2 loop 1 i2 i1 i1 i1
+#    (4, ind 5); 3 endloop 1 (6, 7); 4 ret 1 i2 (8); 5 endfunc.
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+P 1
+R 2 1 0
+R 2 2 1
+O 2 1 1 2 1
+X 3 1
+R 4 2 0
+E 2
+B 1
+EOF
+} > "$T/ra_g.in"
+cat > "$T/ra_g.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+B 1: 3 0 1
+EOF
+expect "ralloc: ind referenced after endloop gives ra_blk F = 1 (the cbz form of 'Loop closing')" "$T/ra" "$T/ra_g.in" 0 "$T/ra_g.exp" /dev/null
+
+# h. L-aq with R9 = 5: a hidden register numbered above R9 lives in a spill slot of its own.
+#    Records: 1 func r1 r2 (i); 2 loop 1 i3 i1 i1 i2 (reads 4, ind 5); 3 mov i2 i3 (6, 7: the step
+#    r2 is written inside loop 1, which therefore has a hidden step); 4 endloop 1 (ind 8, 9); 5
+#    loop 2 i4 i2 i2 i2 (10, ind 11); 6 endloop 2 (12, 13); 7 ret 0; 8 endfunc. M = 4: loop 1's
+#    count is r5, its step would be 6 > 5 (a slot), loop 2's count would be 7 (a slot); loop 2's
+#    step r2 is not written inside it. r1 0-4, r2 0-13, r3 5-9, r5 5-9, r4 11-13: r1 1, r2 2, r3 1,
+#    r5 3, r4 1. No spill, no call: the L-aq slots 1 (loop 1's step) and 2 (loop 2's count).
+#    Then a new function: ra_fn clears every row used, the caller's class column included.
+cat > "$T/ra_h.in" <<'EOF'
+I 5 3 111110
+T 1 1 1 2 0
+T 2 1 2 3 0
+T 3 1 3 1 1
+T 4 1 4 4 0
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+P 1
+P 2
+R 2 1 0
+R 2 2 0
+R 2 3 1
+O 2 1 1 3 2
+R 3 3 0
+R 3 2 1
+X 4 1
+R 5 2 0
+R 5 4 1
+O 5 2 1 4 2
+X 6 2
+E 4
+L 1 2 3 4 5
+B 1
+B 2
+G 5
+F
+G 5
+G 4
+EOF
+cat > "$T/ra_h.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=1 2=2 3=1 4=1 5=3
+B 1: 3 -1 0
+B 2: -2 0 0
+G 5: 1
+G 5: 0
+G 4: 0
+EOF
+expect "ralloc: L-aq: hidden count and step registers above R9 get spill slots of their own (ra_blk), ra_fn clears the rows" "$T/ra" "$T/ra_h.in" 0 "$T/ra_h.exp" /dev/null
+
+# i. parallel moves (4.9.2 'Moves', L-an): memory destinations first by key (spill slots, stack
+#    slots 1000+j, then the results area 2000+j: a ret's results beyond the registers, reading
+#    9), then register moves with a cycle broken through the scratch (0), then memory and
+#    immediate sources into registers; a move between equal locations is dropped. Then a chain with
+#    a shared source, a 3-cycle in floating point, and the capacity of 320 moves.
+cat > "$T/ra_i.in" <<'EOF'
+I 99999 9999 111110
+M 5 1 1
+M 1 5 1
+M 3002 2 1
+M 2 2000 1
+M 4 1001 1
+M -2 -1 1
+M 6 -3 1
+M 7 7 1
+Q
+M 10 11 2
+M 11 12 2
+M 10 13 2
+Q
+M 10 11 2
+M 11 12 2
+M 12 10 2
+Q
+Q
+Y 320
+M 1 2 1
+Q
+EOF
+{ cat <<'EOF'
+I T=0
+Q N=8
+  -2 -1 1 6
+  6 -3 1 7
+  4 1001 1 5
+  2 2000 1 4
+  5 0 1 1
+  1 5 1 2
+  0 1 1 1
+  3002 2 1 3
+Q N=3
+  11 12 2 2
+  10 11 2 1
+  10 13 2 3
+Q N=4
+  10 0 2 1
+  12 10 2 3
+  11 12 2 2
+  0 11 2 1
+Q N=0
+Y T=0
+M T=1
+Q N=320
+EOF
+i=1; while [ $i -le 320 ]; do printf '  %d %d 1 %d\n' "$i" "-$i" "$i"; i=$((i + 1)); done; } > "$T/ra_i.exp"
+expect "ralloc: parallel moves in three steps, cycles through the scratch, results-area destinations after stack slots (reading 9), 320 moves" "$T/ra" "$T/ra_i.in" 0 "$T/ra_i.exp" /dev/null
+
+# j. misuse: a table too small for the limits; ra_end with a block still open
+cat > "$T/ra_j.in" <<'EOF'
+I 99999 9999 110000
+I 99999 9999 110544
+F
+O 2 1 2 0 0
+E 0
+EOF
+cat > "$T/ra_j.exp" <<'EOF'
+I T=1
+I T=0
+E S8=0 T=1
+EOF
+expect "ralloc: ra_init with D too small for R9 + B9 + 546 rows, ra_end with a block open: T=1" "$T/ra" "$T/ra_j.in" 0 "$T/ra_j.exp" /dev/null
+
+# k. a call's arguments that are also its results (tests/passes/ra5_pmove.lir's call fswap 2 f8 f9
+#    2 f8 f9): read at 2K and written at 2K+1, so by the definition their intervals cross K (start
+#    <= 2K, end > 2K+1), but no value is live across the call: no save slot, the "crossing no call"
+#    row. ra_sv lists them with slot 0 and T=0, since the caller skips record K's own results.
+#    Records: 1 func f1 f2; 2 call fswap 2 f1 f2 2 f1 f2 (4, 5); 3 fadd f3 f1 f2 (6, 7); 4 ret 1
+#    f3 (8). Two caller-saved f registers 10 and 11: f1 0-6 10, f2 0-6 11, f3 7-8 10. Then a
+#    register that is the result of two calls (2 and 3, call g 1 f1 1 f1 each), queried at both:
+#    f1 0-8, listed at 2 and at 3, T=0 at both (an interval written by two or more calls is not
+#    tracked further). Case a keeps T=1 for a record that was never reported as a call.
+{ printf 'I %s %s 111110\nT 10 2 1 1 0\nT 11 2 2 2 0\n' "$R9" "$B9"; cat <<'EOF'
+F
+K 1 2
+K 2 2
+K 3 2
+P 1
+P 2
+R 2 1 0
+R 2 2 0
+C 2
+R 2 1 1
+R 2 2 1
+R 3 1 0
+R 3 2 0
+R 3 3 1
+R 4 3 0
+E 3
+L 1 2 3
+W
+S 2
+F
+K 1 2
+P 1
+R 2 1 0
+C 2
+R 2 1 1
+R 3 1 0
+C 3
+R 3 1 1
+R 4 1 0
+E 1
+L 1
+W
+S 2
+S 3
+EOF
+} > "$T/ra_k.in"
+cat > "$T/ra_k.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+L 1=10 2=11 3=10
+S 2: N=2 T=0 (10 0 1) (11 0 2)
+E S8=0 T=0
+L 1=10
+S 2: N=1 T=0 (10 0 1)
+S 3: N=1 T=0 (10 0 1)
+EOF
+expect "ralloc: arguments that are also results of their call (fswap): no save slot, listed by ra_sv with slot 0 and T=0" "$T/ra" "$T/ra_k.in" 0 "$T/ra_k.exp" /dev/null
 
 # ==============================================================================================
 # 6. seaval: the dump examples of DESIGN 3.4, 3.5.8, 3.6.7 are valid; mutated copies are rejected

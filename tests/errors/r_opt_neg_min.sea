@@ -1,0 +1,5 @@
+// r_opt_neg_min -- -x over the elements 5, -2^63 + 1, -2^63, 7: unary minus of -2^63 overflows (6.5)
+let vals = [5, -9223372036854775807, -9223372036854775808, 7]
+for x in vals {
+    printf("%d\n", -x)
+}

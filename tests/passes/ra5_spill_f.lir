@@ -1,0 +1,837 @@
+#sea 1
+#target arm64-macos
+#file ra5_spill_f.sea
+func .main main 0:1:1 0 0
+slot s1 80 8
+slot s2 80 8
+slot s3 80 8
+slot s4 80 8
+slot s5 80 8
+slot s6 80 8
+slot s7 80 8
+slot s8 80 8
+slot s9 80 8
+slot s10 80 8
+slot s11 80 8
+slot s12 80 8
+slot s13 24 8
+lf f1 #C00C000000000000
+lf f2 #C002000000000000
+lf f3 #BFF0000000000000
+lf f4 #3FD0000000000000
+lf f5 #3FF8000000000000
+lf f6 #4006000000000000
+lf f7 #4010000000000000
+lf f8 #4015000000000000
+lf f9 #401A000000000000
+lf f10 #401F000000000000
+lf f11 #4022000000000000
+lf f12 #4024800000000000
+lf f13 #4027000000000000
+lf f14 #4029800000000000
+lf f15 #402C000000000000
+lf f16 #402E800000000000
+lf f17 #4030800000000000
+lf f18 #4031C00000000000
+lf f19 #4033000000000000
+lf f20 #4034400000000000
+lf f21 #4035800000000000
+lf f22 #4036C00000000000
+lf f23 #4038000000000000
+lf f24 #4039400000000000
+lf f25 #403A800000000000
+lf f26 #403BC00000000000
+lf f27 #403D000000000000
+lf f28 #403E400000000000
+lf f29 #403F800000000000
+lf f30 #4040600000000000
+lf f31 #4041000000000000
+lf f32 #4041A00000000000
+lf f33 #4042400000000000
+lf f34 #4042E00000000000
+lf f35 #4043800000000000
+lf f36 #4044200000000000
+lf f37 #4044C00000000000
+lf f38 #4045600000000000
+lf f39 #4046000000000000
+lf f40 #4046A00000000000
+lf f41 #3FE0000000000000
+lf f42 #4010000000000000
+li i43 0
+li i44 1
+li i45 2
+loop 1 i46 i43 i45 i44
+fmul f47 f2 f41
+fadd f1 f1 f47
+fmul f47 f3 f41
+fadd f2 f2 f47
+fmul f47 f4 f41
+fadd f3 f3 f47
+fmul f47 f5 f41
+fadd f4 f4 f47
+fmul f47 f6 f41
+fadd f5 f5 f47
+fmul f47 f7 f41
+fadd f6 f6 f47
+fmul f47 f8 f41
+fadd f7 f7 f47
+fmul f47 f9 f41
+fadd f8 f8 f47
+fmul f47 f10 f41
+fadd f9 f9 f47
+fmul f47 f11 f41
+fadd f10 f10 f47
+fmul f47 f12 f41
+fadd f11 f11 f47
+fmul f47 f13 f41
+fadd f12 f12 f47
+fmul f47 f14 f41
+fadd f13 f13 f47
+fmul f47 f15 f41
+fadd f14 f14 f47
+fmul f47 f16 f41
+fadd f15 f15 f47
+fmul f47 f17 f41
+fadd f16 f16 f47
+fmul f47 f18 f41
+fadd f17 f17 f47
+fmul f47 f19 f41
+fadd f18 f18 f47
+fmul f47 f20 f41
+fadd f19 f19 f47
+fmul f47 f21 f41
+fadd f20 f20 f47
+fmul f47 f22 f41
+fadd f21 f21 f47
+fmul f47 f23 f41
+fadd f22 f22 f47
+fmul f47 f24 f41
+fadd f23 f23 f47
+fmul f47 f25 f41
+fadd f24 f24 f47
+fmul f47 f26 f41
+fadd f25 f25 f47
+fmul f47 f27 f41
+fadd f26 f26 f47
+fmul f47 f28 f41
+fadd f27 f27 f47
+fmul f47 f29 f41
+fadd f28 f28 f47
+fmul f47 f30 f41
+fadd f29 f29 f47
+fmul f47 f31 f41
+fadd f30 f30 f47
+fmul f47 f32 f41
+fadd f31 f31 f47
+fmul f47 f33 f41
+fadd f32 f32 f47
+fmul f47 f34 f41
+fadd f33 f33 f47
+fmul f47 f35 f41
+fadd f34 f34 f47
+fmul f47 f36 f41
+fadd f35 f35 f47
+fmul f47 f37 f41
+fadd f36 f36 f47
+fmul f47 f38 f41
+fadd f37 f37 f47
+fmul f47 f39 f41
+fadd f38 f38 f47
+fmul f47 f40 f41
+fadd f39 f39 f47
+fmul f47 f1 f41
+fadd f40 f40 f47
+itof f48 i46
+fsub f1 f1 f48
+endloop 1
+sa p49 s1
+stf f1 p49 - 0 0
+stf f2 p49 - 0 8
+stf f3 p49 - 0 16
+stf f4 p49 - 0 24
+stf f5 p49 - 0 32
+stf f6 p49 - 0 40
+stf f7 p49 - 0 48
+stf f8 p49 - 0 56
+stf f9 p49 - 0 64
+stf f10 p49 - 0 72
+la p50 d1
+rcall sea_printf 0:2 0 2 p50 p49
+sa p51 s2
+stf f11 p51 - 0 0
+stf f12 p51 - 0 8
+stf f13 p51 - 0 16
+stf f14 p51 - 0 24
+stf f15 p51 - 0 32
+stf f16 p51 - 0 40
+stf f17 p51 - 0 48
+stf f18 p51 - 0 56
+stf f19 p51 - 0 64
+stf f20 p51 - 0 72
+la p52 d2
+rcall sea_printf 0:2 0 2 p52 p51
+sa p53 s3
+stf f21 p53 - 0 0
+stf f22 p53 - 0 8
+stf f23 p53 - 0 16
+stf f24 p53 - 0 24
+stf f25 p53 - 0 32
+stf f26 p53 - 0 40
+stf f27 p53 - 0 48
+stf f28 p53 - 0 56
+stf f29 p53 - 0 64
+stf f30 p53 - 0 72
+la p54 d3
+rcall sea_printf 0:2 0 2 p54 p53
+sa p55 s4
+stf f31 p55 - 0 0
+stf f32 p55 - 0 8
+stf f33 p55 - 0 16
+stf f34 p55 - 0 24
+stf f35 p55 - 0 32
+stf f36 p55 - 0 40
+stf f37 p55 - 0 48
+stf f38 p55 - 0 56
+stf f39 p55 - 0 64
+stf f40 p55 - 0 72
+la p56 d4
+rcall sea_printf 0:2 0 2 p56 p55
+fsub f1 f6 f1
+fsub f2 f7 f2
+fsub f3 f8 f3
+fsub f4 f9 f4
+fsub f5 f10 f5
+fsub f6 f11 f6
+fsub f7 f12 f7
+fsub f8 f13 f8
+fsub f9 f14 f9
+fsub f10 f15 f10
+fsub f11 f16 f11
+fsub f12 f17 f12
+fsub f13 f18 f13
+fsub f14 f19 f14
+fsub f15 f20 f15
+fsub f16 f21 f16
+fsub f17 f22 f17
+fsub f18 f23 f18
+fsub f19 f24 f19
+fsub f20 f25 f20
+fsub f21 f26 f21
+fsub f22 f27 f22
+fsub f23 f28 f23
+fsub f24 f29 f24
+fsub f25 f30 f25
+fsub f26 f31 f26
+fsub f27 f32 f27
+fsub f28 f33 f28
+fsub f29 f34 f29
+fsub f30 f35 f30
+fsub f31 f36 f31
+fsub f32 f37 f32
+fsub f33 f38 f33
+fsub f34 f39 f34
+fsub f35 f40 f35
+fsub f36 f1 f36
+fsub f37 f2 f37
+fsub f38 f3 f38
+fsub f39 f4 f39
+fsub f40 f5 f40
+fdiv f1 f1 f42
+fdiv f2 f2 f42
+fdiv f3 f3 f42
+fdiv f4 f4 f42
+fdiv f5 f5 f42
+fdiv f6 f6 f42
+fdiv f7 f7 f42
+fdiv f8 f8 f42
+fdiv f9 f9 f42
+fdiv f10 f10 f42
+fdiv f11 f11 f42
+fdiv f12 f12 f42
+fdiv f13 f13 f42
+fdiv f14 f14 f42
+fdiv f15 f15 f42
+fdiv f16 f16 f42
+fdiv f17 f17 f42
+fdiv f18 f18 f42
+fdiv f19 f19 f42
+fdiv f20 f20 f42
+fdiv f21 f21 f42
+fdiv f22 f22 f42
+fdiv f23 f23 f42
+fdiv f24 f24 f42
+fdiv f25 f25 f42
+fdiv f26 f26 f42
+fdiv f27 f27 f42
+fdiv f28 f28 f42
+fdiv f29 f29 f42
+fdiv f30 f30 f42
+fdiv f31 f31 f42
+fdiv f32 f32 f42
+fdiv f33 f33 f42
+fdiv f34 f34 f42
+fdiv f35 f35 f42
+fdiv f36 f36 f42
+fdiv f37 f37 f42
+fdiv f38 f38 f42
+fdiv f39 f39 f42
+fdiv f40 f40 f42
+li i57 0
+fcmp lt i58 f1 f2
+iadd i57 i57 i58
+fcmp lt i58 f2 f3
+iadd i57 i57 i58
+fcmp lt i58 f3 f4
+iadd i57 i57 i58
+fcmp lt i58 f4 f5
+iadd i57 i57 i58
+fcmp lt i58 f5 f6
+iadd i57 i57 i58
+fcmp lt i58 f6 f7
+iadd i57 i57 i58
+fcmp lt i58 f7 f8
+iadd i57 i57 i58
+fcmp lt i58 f8 f9
+iadd i57 i57 i58
+fcmp lt i58 f9 f10
+iadd i57 i57 i58
+fcmp lt i58 f10 f11
+iadd i57 i57 i58
+fcmp lt i58 f11 f12
+iadd i57 i57 i58
+fcmp lt i58 f12 f13
+iadd i57 i57 i58
+fcmp lt i58 f13 f14
+iadd i57 i57 i58
+fcmp lt i58 f14 f15
+iadd i57 i57 i58
+fcmp lt i58 f15 f16
+iadd i57 i57 i58
+fcmp lt i58 f16 f17
+iadd i57 i57 i58
+fcmp lt i58 f17 f18
+iadd i57 i57 i58
+fcmp lt i58 f18 f19
+iadd i57 i57 i58
+fcmp lt i58 f19 f20
+iadd i57 i57 i58
+fcmp lt i58 f20 f21
+iadd i57 i57 i58
+fcmp lt i58 f21 f22
+iadd i57 i57 i58
+fcmp lt i58 f22 f23
+iadd i57 i57 i58
+fcmp lt i58 f23 f24
+iadd i57 i57 i58
+fcmp lt i58 f24 f25
+iadd i57 i57 i58
+fcmp lt i58 f25 f26
+iadd i57 i57 i58
+fcmp lt i58 f26 f27
+iadd i57 i57 i58
+fcmp lt i58 f27 f28
+iadd i57 i57 i58
+fcmp lt i58 f28 f29
+iadd i57 i57 i58
+fcmp lt i58 f29 f30
+iadd i57 i57 i58
+fcmp lt i58 f30 f31
+iadd i57 i57 i58
+fcmp lt i58 f31 f32
+iadd i57 i57 i58
+fcmp lt i58 f32 f33
+iadd i57 i57 i58
+fcmp lt i58 f33 f34
+iadd i57 i57 i58
+fcmp lt i58 f34 f35
+iadd i57 i57 i58
+fcmp lt i58 f35 f36
+iadd i57 i57 i58
+fcmp lt i58 f36 f37
+iadd i57 i57 i58
+fcmp lt i58 f37 f38
+iadd i57 i57 i58
+fcmp lt i58 f38 f39
+iadd i57 i57 i58
+fcmp lt i58 f39 f40
+iadd i57 i57 i58
+fcmp lt i58 f40 f1
+iadd i57 i57 i58
+sa p59 s5
+stf f1 p59 - 0 0
+stf f2 p59 - 0 8
+stf f3 p59 - 0 16
+stf f4 p59 - 0 24
+stf f5 p59 - 0 32
+stf f6 p59 - 0 40
+stf f7 p59 - 0 48
+stf f8 p59 - 0 56
+stf f9 p59 - 0 64
+stf f10 p59 - 0 72
+la p60 d5
+rcall sea_printf 0:3 0 2 p60 p59
+sa p61 s6
+stf f11 p61 - 0 0
+stf f12 p61 - 0 8
+stf f13 p61 - 0 16
+stf f14 p61 - 0 24
+stf f15 p61 - 0 32
+stf f16 p61 - 0 40
+stf f17 p61 - 0 48
+stf f18 p61 - 0 56
+stf f19 p61 - 0 64
+stf f20 p61 - 0 72
+la p62 d6
+rcall sea_printf 0:3 0 2 p62 p61
+sa p63 s7
+stf f21 p63 - 0 0
+stf f22 p63 - 0 8
+stf f23 p63 - 0 16
+stf f24 p63 - 0 24
+stf f25 p63 - 0 32
+stf f26 p63 - 0 40
+stf f27 p63 - 0 48
+stf f28 p63 - 0 56
+stf f29 p63 - 0 64
+stf f30 p63 - 0 72
+la p64 d7
+rcall sea_printf 0:3 0 2 p64 p63
+sa p65 s8
+stf f31 p65 - 0 0
+stf f32 p65 - 0 8
+stf f33 p65 - 0 16
+stf f34 p65 - 0 24
+stf f35 p65 - 0 32
+stf f36 p65 - 0 40
+stf f37 p65 - 0 48
+stf f38 p65 - 0 56
+stf f39 p65 - 0 64
+stf f40 p65 - 0 72
+la p66 d8
+rcall sea_printf 0:3 0 2 p66 p65
+fmul f67 f1 f40
+fmul f68 f2 f39
+fmul f69 f3 f38
+fmul f70 f4 f37
+fmul f71 f5 f36
+fmul f72 f6 f35
+fmul f73 f7 f34
+fmul f74 f8 f33
+fmul f75 f9 f32
+fmul f76 f10 f31
+fmul f77 f11 f30
+fmul f78 f12 f29
+fmul f79 f13 f28
+fmul f80 f14 f27
+fmul f81 f15 f26
+fmul f82 f16 f25
+fmul f83 f17 f24
+fmul f84 f18 f23
+fmul f85 f19 f22
+fmul f86 f20 f21
+fmul f87 f21 f20
+fmul f88 f22 f19
+fmul f89 f23 f18
+fmul f90 f24 f17
+fmul f91 f25 f16
+fmul f92 f26 f15
+fmul f93 f27 f14
+fmul f94 f28 f13
+fmul f95 f29 f12
+fmul f96 f30 f11
+fmul f97 f31 f10
+fmul f98 f32 f9
+fmul f99 f33 f8
+fmul f100 f34 f7
+fmul f101 f35 f6
+fmul f102 f36 f5
+fmul f103 f37 f4
+fmul f104 f38 f3
+fmul f105 f39 f2
+fmul f106 f40 f1
+fadd f67 f67 f1
+fadd f68 f68 f2
+fadd f69 f69 f3
+fadd f70 f70 f4
+fadd f71 f71 f5
+fadd f72 f72 f6
+fadd f73 f73 f7
+fadd f74 f74 f8
+fadd f75 f75 f9
+fadd f76 f76 f10
+fadd f77 f77 f11
+fadd f78 f78 f12
+fadd f79 f79 f13
+fadd f80 f80 f14
+fadd f81 f81 f15
+fadd f82 f82 f16
+fadd f83 f83 f17
+fadd f84 f84 f18
+fadd f85 f85 f19
+fadd f86 f86 f20
+fadd f87 f87 f21
+fadd f88 f88 f22
+fadd f89 f89 f23
+fadd f90 f90 f24
+fadd f91 f91 f25
+fadd f92 f92 f26
+fadd f93 f93 f27
+fadd f94 f94 f28
+fadd f95 f95 f29
+fadd f96 f96 f30
+fadd f97 f97 f31
+fadd f98 f98 f32
+fadd f99 f99 f33
+fadd f100 f100 f34
+fadd f101 f101 f35
+fadd f102 f102 f36
+fadd f103 f103 f37
+fadd f104 f104 f38
+fadd f105 f105 f39
+fadd f106 f106 f40
+sa p107 s9
+stf f67 p107 - 0 0
+stf f68 p107 - 0 8
+stf f69 p107 - 0 16
+stf f70 p107 - 0 24
+stf f71 p107 - 0 32
+stf f72 p107 - 0 40
+stf f73 p107 - 0 48
+stf f74 p107 - 0 56
+stf f75 p107 - 0 64
+stf f76 p107 - 0 72
+la p108 d9
+rcall sea_printf 0:4 0 2 p108 p107
+sa p109 s10
+stf f77 p109 - 0 0
+stf f78 p109 - 0 8
+stf f79 p109 - 0 16
+stf f80 p109 - 0 24
+stf f81 p109 - 0 32
+stf f82 p109 - 0 40
+stf f83 p109 - 0 48
+stf f84 p109 - 0 56
+stf f85 p109 - 0 64
+stf f86 p109 - 0 72
+la p110 d10
+rcall sea_printf 0:4 0 2 p110 p109
+sa p111 s11
+stf f87 p111 - 0 0
+stf f88 p111 - 0 8
+stf f89 p111 - 0 16
+stf f90 p111 - 0 24
+stf f91 p111 - 0 32
+stf f92 p111 - 0 40
+stf f93 p111 - 0 48
+stf f94 p111 - 0 56
+stf f95 p111 - 0 64
+stf f96 p111 - 0 72
+la p112 d11
+rcall sea_printf 0:4 0 2 p112 p111
+sa p113 s12
+stf f97 p113 - 0 0
+stf f98 p113 - 0 8
+stf f99 p113 - 0 16
+stf f100 p113 - 0 24
+stf f101 p113 - 0 32
+stf f102 p113 - 0 40
+stf f103 p113 - 0 48
+stf f104 p113 - 0 56
+stf f105 p113 - 0 64
+stf f106 p113 - 0 72
+la p114 d12
+rcall sea_printf 0:4 0 2 p114 p113
+sa p115 s13
+sti i57 p115 - 0 0
+stf f1 p115 - 0 8
+stf f40 p115 - 0 16
+la p116 d13
+rcall sea_printf 0:5 0 2 p116 p115
+ret 0
+endfunc
+fmt d1 22
+ftext a0
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d2 22
+ftext a1
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d3 22
+ftext a2
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d4 22
+ftext a3
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d5 22
+ftext b0
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d6 22
+ftext b1
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d7 22
+ftext b2
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d8 22
+ftext b3
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d9 22
+ftext c0
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d10 22
+ftext c1
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d11 22
+ftext c2
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d12 22
+ftext c3
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+fmt d13 8
+ftext n
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+#end

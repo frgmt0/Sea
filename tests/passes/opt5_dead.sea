@@ -1,0 +1,21 @@
+fn dead(a: i64, x: f64, n: i64) -> f64 {
+    var t = 0.0
+    for i in 0..n {
+        t = t + x * 2.0
+        if t > 100.0 {
+            break
+            t = x * 3.0 + x * 3.0
+        }
+    }
+    if a > 5 {
+        return t
+        t = x * 4.0 + x * 4.0
+    }
+    return t + x * 2.0 + x * 2.0
+    let u = x * 5.0 + x * 5.0
+}
+printf("%g %g\n", dead(1, 0.5, 3), dead(9, 60.0, 4))
+// opt5_dead -- DESIGN.md 5.8 and L-bb reading 3: the records after `break` (exit), after a
+// `return` in an if and after the last `return` never run and stay as they are (duplicate
+// x * 3.0, x * 4.0, x * 5.0 and their unused results: no T3, no T10); the live x * 2.0 + x * 2.0
+// before the last return is shared by T3

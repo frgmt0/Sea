@@ -1,0 +1,13 @@
+// r_opt_eq_ifz -- v[k] under k >= 0 and !(k == 2): k = 4 (5.4)
+fn show(k: i64) {
+    let v = zeros(3)
+    if k >= 0 {
+        if !(k == 2) {
+            printf("%d %g\n", k, v[k])
+        }
+    }
+}
+show(1)
+show(2)
+show(4)
+printf("never\n")

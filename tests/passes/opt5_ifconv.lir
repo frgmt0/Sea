@@ -1,0 +1,76 @@
+#sea 1
+#target arm64-macos
+#file opt5_ifconv.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 1
+li i2 2
+lf f3 #3FE0000000000000
+lf f4 #3FF8000000000000
+li i5 3
+call sel 1 f6 5 i1 i2 f3 f4 i5
+li i7 4
+lf f8 #BFF0000000000000
+lf f9 #C000000000000000
+call sel 1 f10 5 i7 i5 f8 f9 i2
+sa p11 s1
+stf f6 p11 - 0 0
+stf f10 p11 - 0 8
+la p12 d1
+rcall sea_printf 0:25 0 2 p12 p11
+ret 0
+endfunc
+func sel fn 0:1:1 5 i1 i2 f3 f4 i5 1 f
+lf f6 #0000000000000000
+li i7 0
+icmp gt i8 i1 i7
+mov i9 i7
+li i10 1
+rcount i11 i12 i9 i5 i10 0 0:5
+if 1 i12
+loop 2 i13 i9 i11 i10
+icmp lt i14 i1 i2
+isel i15 i14 i1 i2
+mov i16 i15
+fcmp gt i17 f3 f4
+fsel f18 i17 f3 f4
+mov f19 f18
+mov f20 f3
+icmp gt i21 i13 i1
+fsel f20 i21 f4 f20
+li i22 2
+icmp gt i23 i13 i22
+isel i23 i23 i23 i8
+mov i24 i23
+fcmp lt i25 f3 f4
+if 3 i25
+mov f26 f3
+else 3
+lf f26 #3FF8000000000000
+endif 3
+mov f27 f26
+icmp lt i28 i13 i2
+if 4 i28
+li i29 1
+iaddc i7 i7 i29 0:15
+endif 4
+fadd f30 f6 f19
+fadd f31 f30 f20
+fadd f6 f31 f27
+iaddc i7 i7 i16 0:18
+if 5 i24
+li i32 1
+iaddc i7 i7 i32 0:20
+endif 5
+endloop 2
+endif 1
+itof f33 i7
+fadd f34 f6 f33
+ret 1 f34
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

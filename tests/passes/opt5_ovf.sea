@@ -1,0 +1,24 @@
+fn ovf(n: i64) -> i64 {
+    var s = 0
+    for i in 0..n {
+        s = s + (i + 1) * (-i)
+    }
+    for i in 0..10 {
+        s = s + i * 3 - (i - 1)
+    }
+    for i in 0..=n {
+        s = s + (i + 1)
+    }
+    for i in n..=9223372036854775807 {
+        s = s + (i + 1)
+        break
+    }
+    if n < 100 {
+        s = s + (n + 1)
+    }
+    return s + n * 2
+}
+printf("%d %d\n", ovf(4), ovf(7))
+// opt5_ovf -- DESIGN.md 5.8 T1: iaddc, inegc, isubc and imulc that become wrapping (i + 1 and
+// -i over 0..n, i * 3 and i - 1 over 0..10, n + 1 under n < 100) and those that stay (a product
+// with a symbolic bound, i + 1 over 0..=n and up to 2^63 - 1, n * 2, the sums of s)

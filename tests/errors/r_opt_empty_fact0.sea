@@ -1,0 +1,10 @@
+// r_opt_empty_fact0 -- the same in the main program with the constant n = 0: the loop never runs, then
+// a[n - 1] is index -1 of extent 0 (5.4)
+let n = 0
+let a = zeros(n)
+var t = 0.0
+for i in 0..n {
+    t += a[i]
+}
+printf("%g\n", t)
+printf("%g\n", a[n - 1])

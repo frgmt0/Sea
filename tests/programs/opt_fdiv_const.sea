@@ -1,0 +1,51 @@
+// opt_fdiv_const -- f64 division by the constants 4.0, 0.5, -2.0, 2^1023, 2^-1022, 3.0, 0.25, an untyped 4,
+// -2^1023 and a const 0.5 on values giving normal, subnormal, overflowing and signed-zero
+// results, Inf and NaN; i64 / 4; printed with %.17g and str() (LANGUAGE.md 6.5, 6.8 rule 2,
+// 10.9, 11.1; DESIGN.md 5.8 T2)
+let xs = [1.0, -1.0, 10.0, 0.0, -0.0, 4.9406564584124654e-324, -4.9406564584124654e-324, 1.4821969375237396e-323, 2.2250738585072014e-308, 1e+308, -1e+308, 1.7976931348623157e+308, 3.0, 0.10000000000000001, inf, -inf, nan]
+for x in xs {
+    let y = x / 4.0
+    printf("q0 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 0.5
+    printf("q1 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / -2.0
+    printf("q2 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 8.9884656743115795e+307
+    printf("q3 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 2.2250738585072014e-308
+    printf("q4 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 3.0
+    printf("q5 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 0.25
+    printf("q6 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / 4
+    printf("q7 %.17g %s\n", y, str(y))
+}
+for x in xs {
+    let y = x / -8.9884656743115795e+307
+    printf("q8 %.17g %s\n", y, str(y))
+}
+const Q = 0.5
+for x in xs {
+    let y = x / Q
+    printf("c %.17g %s\n", y, str(y))
+}
+let ns = [7, -9, 9007199254740993, -9223372036854775808, 9223372036854775807]
+for k in ns {
+    let y = k / 4
+    printf("i %.17g %s\n", y, str(y))
+}

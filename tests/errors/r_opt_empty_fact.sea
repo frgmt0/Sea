@@ -1,0 +1,12 @@
+// r_opt_empty_fact -- a[n - 1] after an empty for i in 0 .. n with n = 0 (in a function whose earlier call
+// with n = 3 succeeds): index -1 of extent 0 (5.4, 7.5; DESIGN.md 5.8 F3, F6)
+fn tail(n: i64) -> f64 {
+    let a = zeros(n)
+    var t = 0.0
+    for i in 0..n {
+        t += a[i]
+    }
+    return t + a[n - 1]
+}
+printf("%g\n", tail(3))
+printf("%g\n", tail(0))

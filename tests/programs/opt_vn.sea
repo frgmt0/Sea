@@ -1,0 +1,83 @@
+// opt_vn -- equal expressions and repeated loads around writes: a variable reassigned between two
+// equal expressions, equal operands in one call, a load after a store to its element, a
+// store into a shared array read through the other name, a ref array parameter and a value
+// parameter sharing one buffer, two ref scalars, a struct field stored, passed by ref and
+// reread, loads and stores of one element in a loop (LANGUAGE.md 4.5, 8.3; DESIGN.md 5.8 T3)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+struct P {
+    a: i64
+    b: f64
+}
+fn alias_rd(ref a: f64[], b: f64[]) {
+    let t = b[0]
+    a[0] = 9.0
+    let u = b[0]
+    let s = a[0]
+    printf("%g %g %g\n", t, u, s)
+}
+fn ref_two(ref s: i64, ref t: i64) {
+    s = 1
+    t = 2
+    let r1 = s + t
+    s = 10
+    let r2 = s + t
+    printf("%d %d\n", r1, r2)
+}
+fn setf(ref z: i64) {
+    z = 42
+}
+var x = 5
+let p = x * 3 + 1
+x = x + 1
+let q = x * 3 + 1
+printf("%d %d\n", p, q)
+printf("%d %d %d\n", x + 1, x + 1, (x + 1) * (x + 1))
+let d1 = idiv(x, 7) + x % 7
+x = x + 10
+let d2 = idiv(x, 7) + x % 7
+printf("%d %d\n", d1, d2)
+var v = zeros(3)
+v[1] = 2.5
+let a1 = v[1]
+v[1] = a1 * 2.0
+let a2 = v[1]
+let a3 = v[1] + v[1]
+printf("%g %g %g\n", a1, a2, a3)
+let w = v
+v[1] = -1.0
+printf("%g %g\n", w[1], v[1])
+var m = filled(4.0, 2)
+let m2 = m
+alias_rd(ref m, m2)
+pv(m)
+pv(m2)
+var s1 = 0
+var s2 = 0
+ref_two(ref s1, ref s2)
+printf("%d %d\n", s1, s2)
+var pt = P { a: 3, b: 1.5 }
+let pa = pt.a
+pt.a = pa + 4
+let pb = pt.a
+printf("%d %d\n", pa, pb)
+setf(ref pt.a)
+printf("%d %d %g\n", pt.a, pt.a + pt.a, pt.b)
+var v2 = filled(0.5, 3)
+let v3 = v2
+for i in 0..3 {
+    let r = v2[i]
+    v2[i] = r + 1.0
+    let r2 = v2[i]
+    printf("%g %g %g\n", r, r2, v3[i])
+}
+var n1 = 7
+let c1 = n1 + 1000
+n1 = -n1
+let c2 = n1 + 1000
+printf("%d %d\n", c1, c2)
