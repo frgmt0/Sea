@@ -46,7 +46,8 @@ the user's agreement. Phase 0 (§8) did:
    built lines, the gate after 4h-0 passed (§2.7); 4h (prelude inlining as the `sea.hirl` records
    `iblk` and `iret`, the four prelude functions, W5, the close-out; Decisions 53–57) is done, its
    gate passed (§2.7, "Measured after 4h"), so phase 4 is complete; phase 5 (scalar code quality,
-   §8) is next.
+   §8) is specified and agreed (Decisions 58–73, sub-phase 5a), and its build starts with 5b, with
+   5c-1 in parallel.
 
 **Agreed in phase 0 (2026-10-20).** The user agreed, as written, everything steps 1 and 2 added
 to the design:
@@ -431,6 +432,33 @@ std.sea`); LANGUAGE.md §3.3 already states L-s's rule, so only DESIGN changes f
 comment of `passes.txt` names no code range, so the two records get a comment line of their own
 instead.
 
+**Decided for phase 5 (2026-10-24).** Phase 5 (scalar code quality, §8) is
+specified in §2.7 ("Projected for phase 5", "The gate after phase 5"), §3.6.4 ("Properties of
+`sea.lir1` that passes 3b and 4 rely on"), §3.6.5 ("Pass 3b from phase 5"), §4.9.2 (the allocator
+and code selection of both code generators), §5.2 ("Measured before phase 5", "Targets for phase
+5"), §5.8 (the transformations T1–T10 of `seaopt`), §5.9 (the micro-benchmarks), §6.2 ("Phase-5
+tests") and §8 (rows 5a–5d). The user took Decisions 58–73 of §9, each the recommended option
+(a); the lead decisions L-ac–L-am (listed in §9) are part of the agreed text, and so are L-an–L-at,
+taken when an independent review of the text found defects (§9). No contract file changes
+(`passes.txt`, `errors.inc`, `rt.inc`, `limits.inc`), no intermediate format changes (pass 3b
+writes only existing LIR records), no rule of LANGUAGE.md changes (only §5.4's sentence on
+checks, below), and Baysick is unchanged.
+*Measured before phase 5* (the 4h build, §5.2): W5's `lcg_fill` loop is 90 arm64 instructions (53
+of them frame loads and stores) and 88 x86_64 ones; W4's SOR `j` loop is 626 arm64 instructions
+static, about 500 per interior point, with 24 `chkb`, 6 checked `±1` and a copy-on-write check per
+store. *Corrections made to the plan while writing this specification* (§5.2's counts were planning
+figures): the W5 target of "≈ 10 instructions" cannot hold with a floored modulo by 2147483647 and
+one overflow check, since the multiply-high sequence and its correction alone are 10 instructions;
+the derived counts are 20 on arm64 and 23 on x86_64 (Decision 67); W4 reads six `f64` values per
+point, not five (`T[j, i]` once, its four neighbours, `src[j, i]`), and reaches 24 arm64
+instructions per point only with the loop unswitched on its two boundary tests (Decision 63); the
+register counts of §5.2 (28 and 32; 14 and 16) become the allocatable counts of §4.9.2 (25 and 29;
+10 and 14) once scratch registers are reserved (Decision 60); `seagen_a64` and `seagen_x64` use all
+26 numeric array letters in their main programs, so the allocator may add none (L-ac), and
+`seaopt` has three free (`S V W`, L-ad); LANGUAGE.md §5.4 said the compiler "hoists the others out
+of loops", which Decision 61 does not do (a check that cannot be proven stays in place), so its
+sentence now says so, the error position and order exactly preserved (no rule of LANGUAGE.md changes).
+
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
@@ -557,8 +585,10 @@ The non-goals of v1, each with its reason, are LANGUAGE.md §1.3.
                                         into loop nests
        sealower    sea.hirl ─► sea.lir1 the canonical lowering (§3.6.6): registers, bounds
                                         checks, COW checks, reference counts, temporaries
-   3b  seaopt      sea.lir1 ─► sea.lir  bounds-check elimination and hoisting, invariant
-                                        hoisting, strength reduction, scalar replacement,
+   3b  seaopt      sea.lir1 ─► sea.lir  check and overflow elimination, magic division,
+                                        value numbering, promotion, copy-on-write
+                                        versioning, strength reduction, invariant
+                                        hoisting, unswitching (§5.8); scalar replacement,
                                         vectorization (width 2, plus width 4 for avx2)
    4   seagen_a64 | seagen_x64          sea.lir ─► sea.s: instruction selection, register
                                         allocation, frames, assembly text
@@ -1682,7 +1712,7 @@ time, plus the per-compilation tables:
 | `D` data items | `D(49999,3)` | 200 000 | 49 999 | kind, source HIR node, count | 3a |
 | `I` instructions | `I(199999,4)` | 1 000 000 | 199 999 | opcode, first operand in `O`, operand count, site in `X` | 3b, 4 |
 | `O` operands | `O(799999)` | 800 000 | — | the operand fields: register, immediate in `C`, label, slot, block or string number | 3b, 4 |
-| `R` registers | `R(99999,7)` | 800 000 | 99 999 | class, first definition, last use, interval start, interval end, machine register, spill slot | 3b, 4 |
+| `R` registers | `R(99999,7)`; in `seaopt` from phase 5 `R(99999,9)` (L-ad) | 800 000; 1 000 000 | 99 999 | class, first definition, last use; the remaining columns (four, six in `seaopt`) hold `seaopt`'s facts of §5.8 from phase 5 and are unused in pass 4, whose allocator keeps its per-register state in its own widened `D` (§4.9.2, L-ac) | 3b, 4 |
 | `K` blocks and slots | `K(19999,4)` | 100 000 | 19 999 | rows 1–9 999 blocks: kind, opening, `else`, closing instruction; rows 10 000–19 999 slots: size, alignment, frame offset | 3b, 4 |
 | `C` immediates | `C(199999,4)` | 1 000 000 | 199 999 | four 16-bit limbs of an `li`/`lf` value | 3b, 4 |
 | `X` sites | `X(49999,1)` | 100 000 | 49 999 | file index, line (`_sea_sites`, §4.8) | 4 |
@@ -2419,6 +2449,54 @@ Decision 56); `seacheck` 6 426 ≤ 7 000, 14 free letters (`A B D F G I L P Q R 
   handed to rule 2 (d)'s step. An `iret` releases the scope entries down to the scope height
   recorded at the `iblk`'s entry. The rule-12 pre-pass does not visit `iblk` bodies. R30's parent
   inline `xblk` is found as "last sibling + 1".
+
+**Projected for phase 5** (the phase-5 specification, Decisions 58–73; estimates of own lines
+from the sizes measured after 4h, ±30 %). Phase 5 changes `seaopt`, `seagen_a64` and `seagen_x64`
+and adds the shared module `passes/lib/ralloc.bas` (§4.9.2), built into both code generators; no
+other pass changes, and no `DATA` line is added (no contract change).
+
+* `seaopt` (§5.8): the analyses (loops, definitions, array registers, private bases) 150–250; the
+  fact walk with check and overflow elimination (T1) 450–700; division by constants and `f64`
+  division by powers of two, with its own 128-by-64-bit limb division for the magic numbers (T2, L-am:
+  loading `limb` would cost 801 lines) 150–250; value numbering, redundant loads and copy
+  propagation (T3) 150–250; if-conversion (T4) 40–70; promotion (T5) 120–200; copy-on-write
+  versioning with the block copier (T6) 200–320; strength reduction (T7) 150–250; hoisting and
+  constant commoning (T8) 200–320; unswitching (T9) 100–180; clean-up, renumbering and the table
+  rebuild (T10) 150–250; fixes 100–200: **1 960–3 240**. Its facts live in the six phase-5 columns
+  of `R` (§2.7's table: reserved for phase 5 and unused by a pass that does not allocate), `R`
+  widened to `R(99999,9)` (10⁶ elements, Baysick's limit), and its instruction links in one new
+  array `W` (L-ad).
+* `passes/lib/ralloc.bas` (§4.9.2): positions and intervals, the scan, hints, spills and call saves,
+  450–750, counted in both code generators; its per-register state in the code generator's `D`,
+  widened (L-ac), and SUB-local arrays of at most a few thousand elements (a SUB's arrays live in
+  the 2 097 152 words of activations, §2.7's table).
+* `seagen_a64`: operands in allocated registers (operand placeholders in the templates, scratch
+  reloads) 300–500; immediates, compare and branch fusion 150–250; loop closing 40–80; parameters,
+  results, calls, the prologue and epilogue 150–250; fixes 80–150: 720–1 230 own, **1 170–1 980**
+  with the module. `seagen_x64`: the same plus the two-address forms and the `itof`, `fabs`, `fneg`,
+  `leaq` and immediate-multiply forms, 80–150: **1 250–2 130**.
+
+Remaining after phase 5 (the upper ends of §2.7's re-estimate): `seaopt` phase 7, 2 000;
+`seagen_a64`, `seagen_x64` phase 7, 1 000, and phase 8, 200.
+
+| Program | After 4h (measured) | Phase 5 | After phase 5 | ≤ 7 000 built | Projected v1 (≤ 9 000) | Stress v1 (remaining × 1.5) | Free numeric letters |
+|---------|------:|------:|------:|:---:|------:|------:|------|
+| `seaopt` | 2 444 | 1 960–3 240 | 4 404–5 684 | yes | 6 404–7 684 | 7 404–8 684 | 3 (`S V W`); phase 5 takes `W`, leaving 2 (L-ad) |
+| `seagen_a64` | 3 502 | 1 170–1 980 | 4 672–5 482 | yes | 5 872–6 682 | 6 472–7 282 | 0; phase 5 adds none (L-ac) |
+| `seagen_x64` | 3 517 | 1 250–2 130 | 4 767–5 647 | yes | 5 967–6 847 | 6 567–7 447 | 0; phase 5 adds none (L-ac) |
+
+`seaopt` passes 7 000 built lines at v1 when its phase-5 size exceeds 5 000: then phase 7's
+vectorization cannot join it under the cap, and the gate below hands that question to the gate after
+phase 6, where Decision 56 already weighs phase 7's fusion seam.
+
+**The gate after phase 5** (Decision 71). After 5d, `make check-limits` and the free numeric array
+letters of the main programs of `seaopt`, `seagen_a64` and `seagen_x64` are measured and recorded
+here. `seaopt` passes when built ≤ 7 000, built + 2 000 ≤ 9 000 and built + 3 000 ≤ 9 000, with at
+least 2 free letters; when built + 2 000 > 7 000 the result is recorded as "phase 7's vectorization
+needs a pass of its own", decided at the gate after phase 6. `seagen_a64` and `seagen_x64` pass when
+built ≤ 7 000, built + 1 200 ≤ 9 000 and built + 1 800 ≤ 9 000 (they have no letters to count, and
+take none, L-ac). A program that fails gets a relief specified and agreed with the user before phase
+6's code.
 
 ### 2.8 Numbers inside the compiler
 
@@ -4869,6 +4947,19 @@ constants that the immediates limit counts, §2.7), so no 2⁵³ bound applies t
 Blocks (`loop`, `do`, `if`, `ifz`) are numbered per function from 1 in the order of their opening
 records and nest properly; `exit`/`next` name an enclosing `loop` or `do`.
 
+**Properties of `sea.lir1` that passes 3b and 4 rely on** (from phase 5, §5.8; L-ae). Pass
+3a's rules guarantee them; no pass checks them. (1) No `sti`, `stb`, `stf`, `stp` or `mcopy` writes a
+byte of an array's header or of a string's header: a header changes only inside runtime entries
+and, for the count, by `retain` and `release`; an array's element kind, rank, rows, cols and data
+address (`SEA_ARR_EK` … `SEA_ARR_DATA`, §4.8) never change after the entry that created it returns.
+(2) Every register is written on every path before it is read (rules 1 and 2: every local has an
+initializer, every temporary is computed before its use). (3) The memory a `ref` parameter's address
+reaches is reached in the callee only through that parameter and the calls it is passed to: Sea has
+no global variables (LANGUAGE.md §7.2), a `ref` argument shares no root with another argument of
+its call (LANGUAGE.md §8.3), and the arrays on an element or field argument's path are made unique
+before its address is taken (rule 31). (4) A slot of a function is reached only through the `sa`
+registers of that slot and what those registers are passed to or copied into.
+
 **Sites.** An instruction's site is the file index and line of the position of the
 HIR node whose check or call it implements. **Code from the prelude** never reports a prelude
 line: pass 3a inlines every call of a prelude function, at every call site and recursively (the
@@ -4892,8 +4983,9 @@ Both use the records above. `sea.lir1` (pass 3a) uses only the classes `i`, `f`,
 stack slot pass 3a emits. `sea.lir` (pass 3b) may in addition contain the vector classes and
 instructions (vectorized loops, §5.1; on `x86_64-linux` each vectorized loop in an `if` on
 `vfeat` with the 4-lane form first and the 2-lane form in the `else` part, §4.4), and it has
-fewer or hoisted checks, fewer slots (scalar replacement) and hoisted or strength-reduced
-instructions (§5.2–§5.3).
+fewer checks (those §5.8's T1 proves; a check that stays is never moved), fewer copy-on-write
+checks in the copy of a loop that runs when the counts are 1 (T6), fewer slots (scalar replacement)
+and hoisted or strength-reduced instructions (§5.2, §5.3, §5.8).
 
 **Pass 3b in phase 1** (§8). Pass 3b reads `sea.lir1` completely and validates it (the header
 records and `#end`, every record against `passes.txt`, register classes and the numbering of
@@ -4923,6 +5015,19 @@ against the `entries` table (§2.6.3): the entry exists, its `site` field is pre
 the entry's site is `S`, nr is the entry's result count or 0, and the argument and result
 registers have the entry's classes in order (a `la` of a `slay` label is valid like one of any
 data label; no use of its register is tracked). Any violation is `BAD_RECORD`.
+
+**Pass 3b from phase 5** (sub-phases 5c-1 and 5c-2, §8). Pass 3b validates each function
+exactly as above, then applies the transformations T1–T10 of §5.8 in the order §5.8 gives, and writes the
+result renumbered as §3.6.1 and §3.6.4 require (registers by first appearance, blocks by opening
+record); slots, data labels and data records are unchanged, and it writes no record that `sea.lir1`
+may not hold (no vector class before phase 7). Its output is a function of `sea.lir1` alone and the
+same for both targets. A transformation whose result would exceed a LIR capacity limit of the
+function (§2.6.1: instructions, operands, registers, blocks, immediates) is not applied (Decision
+72), so optimization never makes a compilation fail. The phase-1 and phase-4 `.lir` goldens that
+the transformations change are re-derived from §5.8 (L-ak), in the sub-phase that adds the
+transformation changing them: those T1–T4 and T10 change in 5c-1, those T5–T9 change in 5c-2
+(`gen_arith`, two `li` inside a `loop`, which T8 hoists, is one of these); the rest are checked
+against §5.8 by the same work package (§6.2).
 
 #### 3.6.6 Canonical lowering of scalar code
 
@@ -5395,8 +5500,8 @@ hoists, §5.2), so a dump shows every load.
     variable's count on the old array (§4.8). For a compound `asg op` (op ≠ `set`) to a scalar
     element: (2), the read by rule 18 (checks included) into T, the value, the operation into R
     (rule 1, checked `i64` operations with the node's site), then (3)–(5) storing R (the checks
-    repeated: the value may have changed the array through a `ref` argument; phase 5 removes the
-    repetition). *Paths through several arrays* (`a[i].v[k] = x`, `a` a `var` array of structs
+    repeated: the value may have changed the array through a `ref` argument; §5.8's T1 deletes a
+    repeated `chkb` only when its facts prove it, which they do not for a `ref` root). *Paths through several arrays* (`a[i].v[k] = x`, `a` a `var` array of structs
     whose field `v` is a dynamic array): (3) checks the outermost index against ext(a), then loads
     the next array through the path as it is (`ldp V E - 0 off`, E = data(a) + i·s by rule 18's
     address) and checks the next index against ext(V), and so on inward; (4) cows outermost first:
@@ -6288,8 +6393,8 @@ rule 17's introduction.
 Slots are numbered `s1`, `s2`, … in the order of their `sa` (rules 8, 12, 23, 27 and 31), and their
 `slot` records come at the start of the function in that order (§3.6.3).
 
-**Phase-4 dump tests** (G13). An array access carries a bounds check and a copy-on-write check that
-phase 5 may remove or hoist, and phase 7 fuses the loops of a statement with several operations,
+**Phase-4 dump tests** (G13). An array access carries a bounds check that phase 5 may remove (§5.8 T1)
+and a copy-on-write check that phase 5 may version out of a loop (T6), and phase 7 fuses the loops of a statement with several operations,
 so phase-4 dump tests are `.res`, `.hir1` and `.lir1` dumps (no `.lir`, §3.6.5) of programs whose
 statements each hold at most one array operation (one loop nest), as the examples above do.
 
@@ -6461,8 +6566,9 @@ symbols `_sea_alloc` and `_sea_free_block` of §4.5, not contract):
   temporaries consumed by one operation are moved, not counted.
 * **Copy-on-write**: before the first write to an array through a variable (an element store or
   a `ref` parameter write), the code checks that the count is 1 and otherwise copies the buffer
-  and drops one reference. Pass 3 hoists this check out of loops when the variable is not
-  reassigned or shared inside the loop, so an element store in a hot loop is a plain store.
+  and drops one reference. Pass 3b versions a loop on this check (§5.8 T6): when the variable is
+  not reassigned, shared or passed on inside the loop, a test of the count in front of it chooses a
+  copy of the loop without the check, so an element store in a hot loop is a plain store.
 * **Cost model** for the programmer: assignment, argument passing, returning and field storage
   of arrays are O(1); the first write after sharing copies once; element access is a load or
   store (plus a bounds check where not eliminated); fixed-size arrays never allocate.
@@ -6488,7 +6594,8 @@ symbols `_sea_alloc` and `_sea_free_block` of §4.5, not contract):
   compare it with 1, and only when it differs call `sea_arr_unique`, which returns an array with
   count 1 and the same contents and gives up the variable's count on the old one; a static
   object (count 0) is always copied. W4's scalar SOR thus makes one compare and one never-taken
-  branch per store until phase 5 hoists it.
+  branch per store until phase 5's loop versioning (§5.8 T6) leaves the check out of the copy that
+  runs when the count is 1.
 ### 4.3 Kernels, and what is shared with Baysick
 
 **Linking.** Sea programs link Baysick's own `libbaysickrt.a`. Its kernel files (`rt_kinit.s`,
@@ -7059,7 +7166,7 @@ including `la` labels and `chk` argument counts), because it is the last pass be
 assembler and an unchecked record would become wrong machine code; any violation is
 `BAD_RECORD`.
 
-**The phase-1 allocator** (§8; linear-scan allocation replaces it in phase 5, §5.2). Every virtual
+**The phase-1 allocator** (§8; from sub-phase 5b the allocator of §4.9.2 replaces it). Every virtual
 register of a function has its own 8-byte slot in the frame; the frame holds the frame record,
 the LIR `slot`s (§3.6.3) and the register slots, and its size is a multiple of 16. When the
 largest alignment A of the function's `slot`s exceeds 16, the prologue rounds the stack pointer
@@ -7274,6 +7381,217 @@ meaning; operands are in the scratch registers in operand order, the result in t
 
 `sea_str_f64` takes x in `%xmm0` and the site in `%rdi`. The vector, mask and `vfeat`
 instructions are `BAD_RECORD` until phase 7, as on arm64 (§4.9).
+
+#### 4.9.2 The phase-5 allocator and code selection (both targets)
+
+*(Agreed 2026-10-24: Decisions 59, 60 and lead decisions L-ac, L-ah, L-ai, L-an, L-aq, L-as of
+§9.)* From sub-phase 5b both code generators allocate registers by the linear scan below, written
+once in the shared module `passes/lib/ralloc.bas` (its interface in `passes/lib/API.md`; in the
+`build.list` of `seagen_a64` and `seagen_x64`) and the same on both targets except for the register
+tables. What §4.9 and §4.9.1 say stays valid except the phase-1 allocator and what this section
+replaces: the register slots, the scratch-register table, the 16 bytes per loop block and the rule
+that no callee-saved register is used. The sequences of §4.9 and §4.9.1 keep their meaning; how
+their operands reach them, and which registers they may use besides, is given under "Templates"
+below (L-an).
+
+**Register tables** (Decision 60). Reserved as scratch and never allocated: arm64 `x15 x16 x17` and
+`d29 d30 d31`; x86_64 `%rax %rcx %rdx %r11` and `%xmm14 %xmm15` (the operands and temporaries of the
+staged templates below, the fixed registers of the one-operand `imulq`, of `idivq`, `divq` and
+`cqto` and of a shift count in `%cl`, addresses, and the breaking of move cycles). The frame
+registers (`x29 x30`; `%rbp`), the stack pointer and `x18` are never allocated. A register is taken
+from the row of its class and of whether its interval crosses a call, first free in the order
+written:
+
+| Class, interval | arm64-macos | x86_64-linux |
+|-----------------|-------------|--------------|
+| `i`, `p`, crossing no call | `x9`–`x14`, `x8`, `x0`–`x7`, then `x19`–`x28` | `%rsi %rdi %r8 %r9 %r10`, then `%rbx %r12`–`%r15` |
+| `i`, `p`, crossing a call | `x19`–`x28`, then `x9`–`x14`, `x8`, `x0`–`x7` | `%rbx %r12`–`%r15`, then `%rsi %rdi %r8 %r9 %r10` |
+| `f`, crossing no call | `d16`–`d28`, `d0`–`d7`, then `d8`–`d15` | `%xmm0`–`%xmm13` |
+| `f`, crossing a call | `d8`–`d15`, then `d16`–`d28`, `d0`–`d7` | `%xmm0`–`%xmm13` |
+
+So 25 general and 29 floating-point registers are allocatable on arm64, 10 and 14 on x86_64. The
+prologue's stack check and realignment (§4.6, §4.9) keep using `x16 x17` (`%r10 %r11`): no allocated
+value is live before the parameters are moved.
+
+**Positions and intervals.** The function's records are numbered 1, 2, … in order, block records
+included; record k reads its operands at position 2k and writes its destinations at 2k + 1, and the
+parameters are written at position 0. A register's interval runs from its first to its last
+reference. Then, for each loop (`loop`…`endloop`, `do`…`enddo`) from the innermost outwards, a
+register referenced inside the loop has its interval extended to cover the whole loop (the opening
+record's position to the closing record's) when it is also referenced outside the loop, or when its
+first reference inside the loop is not a write at the loop body's own block level (a value carried
+from one iteration to the next keeps its register through the loop). Every rule below that speaks
+of an interval means this extended one. Each `loop` has a hidden register for its remaining count,
+whose interval is the loop; and a hidden register for its step when the step register is written
+inside the loop (otherwise the step register, or its immediate, serves). Hidden registers are
+numbered after the LIR registers, in the order of their loops' opening records. A hidden register
+that would be numbered above `SEA_LIM_LIR_REGS` is not created: that loop's count (and step) lives
+in a spill slot of its own for the whole loop, read and written through the scratch registers as a
+spilled interval is, so the register limit never makes pass 4 fail (L-aq, in the spirit of
+Decision 72).
+
+**The scan.** Intervals are placed in order of their start (ties: by register number). Before one is
+placed, every active interval that ends below its start is expired and frees its register (so an
+operand's last read at position 2k frees its register for a destination written at 2k + 1). An
+interval *crosses* record k, a `call`, an `rcall` or a `release`, when it starts at or before 2k
+and ends after 2k + 1: it holds a value from before the record that is read after it, along the
+records or around a loop's back edge (a value of an outer loop that a call inside the loop
+precedes is thus saved around that call). An interval *crosses a call* when it crosses any such
+record. The register chosen is the *hint* if it is free, else the first free one of the interval's
+row. Hints: the destination of `mov D S` prefers S's register when S's interval ends at that `mov`;
+on x86_64 the destination of a two-address instruction prefers its first operand's register when
+that interval ends at the instruction, and for a commuting operation (`iadd imul iand ior ixor fadd
+fmul`) its second operand's otherwise. When no register is free, the interval to spill is chosen
+among the active intervals of the class and the new one: the one whose deepest reference has the
+smallest loop depth; among those, the one that ends last; among those, the highest register number.
+A spilled interval lives in its own 8-byte spill slot for its whole length (no splitting): each read
+loads it into a scratch register, each write stores it from one (*Operands* below).
+
+**Calls.** Around a `call` or an `rcall` k, and on the free path of a `release` k (after its
+`b.ne`/`jne`, around the call of `sea_free`), every interval in a caller-saved register that crosses
+k is stored to its spill slot (given at the first such store) before the call and loaded back after
+it; the results, whose intervals start at 2k + 1, are not. The order is: those stores, the argument
+move, the call, the result move, those loads. The callee-saved registers the function allocates are
+saved by the prologue after the frame record is set up and restored before the epilogue. The cold
+call of `_sea_err` saves nothing: it never returns.
+
+**Moves.** Parameters arrive in the §4.8 registers and are moved to their locations after the
+prologue; the arguments of a `call` or `rcall`, its results, the values of a `ret`, the operands of
+a staged template and the entry of a `loop` (`ind` ← start, its hidden count ← `last`, and its
+hidden step, if it has one, ← step) are each one *parallel move*: every source is read before any
+destination it overlaps is written. A source is a register, a spill slot or results-area slot, or an
+immediate; a destination is a register, a spill slot or an outgoing stack-argument slot. It is
+emitted in three steps (L-an):
+
+1. every move to a memory destination, in the order of the destinations (spill slots by slot
+   number, then the stack slots upwards): a register source stored directly; a memory or immediate
+   source through the cycle scratch (`x17`; `%r11`; an `f` value moves as its bits through the same
+   general register);
+2. the register-to-register moves: repeatedly, the first (in destination order: the order of the
+   §4.8 registers, or of the operands, or of the parameters) whose destination is no remaining
+   move's source; when every remaining move is in a cycle, the first one's source is copied to the
+   cycle scratch (`x17`, `d31`; `%r11`, `%xmm15`), which then stands for it;
+3. every move from a memory or immediate source to a register destination, in destination order,
+   loaded straight into the destination (`ldr`, `mov`/`movz`/`movk`; `movq`, `movsd`, `movabsq`),
+   last, so that no register still to be read is overwritten.
+
+On x86_64 `%rdx` and `%rcx` are both argument registers and scratch registers, and the sources of
+some moves are scratch or §4.8 registers (the results of a call, the results of a staged template);
+that is safe because the three steps order every move by the rule above whatever its registers are,
+and the cycle scratch register (`x17`, `d31`; `%r11`, `%xmm15`) is never a move's source or
+destination outside step 2's cycle breaking, so it never holds a value a move still has to read.
+
+**Frame** (replacing the phase-1 layout; from the stack pointer upwards): the outgoing stack
+arguments and the `_sea_err` argument slots at offset 0; the results area of calls; the LIR slots;
+the spill slots, 8 bytes each in order of first use; the saved callee-saved registers, 8 bytes each
+in table order; the saved address of the function's own results area; then the frame record (arm64)
+or the saved `%rbp`. The body B stays a multiple of 16, and S and the stack check of §4.6 and §4.9
+are computed from it as before.
+
+**Code selection** (both targets unless stated):
+
+* *Operands.* An instruction uses its operands' registers directly. A spilled operand in operand
+  position n (n = 1, 2, 3, the destination not counted) is loaded into scratch register n of its
+  class (`x15 x16 x17`, `d29 d30 d31`; `%rax %rcx %rdx`, `%xmm14 %xmm15`; no direct instruction has
+  three `f` operands), and a spilled destination is computed into scratch register 1 and stored.
+  Loads and stores take their scratch registers by role instead (below). A `mov` between equal
+  locations emits nothing.
+* *Templates* (L-an). Every LIR instruction is *direct* or *staged*. **Direct** are `li lf la sa
+  mov`, the wrapping integer and bit instructions, `iaddc isubc inegc imulc` (with their branch to
+  the cold block), `imulh`, `ishl ishr isar`, `icmp fcmp bnot fnan`, `isel psel fsel`, `fadd fsub
+  fmul fdiv fsqrt fneg fabs itof padd`, the loads and stores, `chkb chk`, `retain` and `release`:
+  they use the allocated registers in place, as one machine instruction where the target has one,
+  and otherwise as follows, each written so that a destination sharing a register with an operand
+  is read correctly:
+  * arm64 `imulc d a b`: `smulh x17, a, b`, `mul d, a, b`, `cmp x17, d, asr #63`, `b.ne` to the cold
+    block (the high half first, so d may be a's or b's register). x86_64 `imulh d a b`: `movq a,
+    %rax` (omitted when a is spilled: it is then in `%rax`), `imulq b` (b's register, `%rcx` when
+    spilled), `movq %rdx, d`. x86_64 `ishl ishr isar d a b` with a register count: `movq b, %rcx`
+    (omitted when b is spilled), then `movq a, d` (omitted when d = a) and `shlq`/`shrq`/`sarq %cl,
+    d`; with an immediate count, the two-address form with `$v`.
+  * Materialized comparisons: arm64 `cmp`/`fcmp` and `cset d, cc` (`fnan`: `fcmp a, a`, `cset d,
+    vs`); x86_64 the comparison of §4.9.1 on the operands' registers, `set<cc> %al` (`fcmp` `eq`/`ne`
+    with `setnp`/`setp %cl` and `andb`/`orb %cl, %al`), then `movzbl %al` into d.
+  * x86_64 `isel`/`psel d c a b` after the flags of condition cc are set (fused below, or `testq c,
+    c` with cc `ne`): when d = a, `cmov<¬cc> b, d`; otherwise `movq b, d` (omitted when d = b) and
+    `cmov<cc> a, d`. `fsel`: when d = a, `j<cc> 1f`, `movapd b, d`, `1:`; otherwise `movapd b, d`
+    (omitted when d = b), `j<¬cc> 1f`, `movapd a, d`, `1:`. `movq`, `movapd` and `leaq` leave the
+    flags alone. arm64: `csel`/`fcsel d, a, b, cc`.
+  * `retain a` and `release a`: §4.9's and §4.9.1's sequences with a's register (`x15`/`%rax` when
+    spilled) for `x9`/`%rax` and the count in `x16` (`%rcx`); the free path's argument is `mov x0, a`
+    (`movq a, %rdi`), with the saves of *Calls* around `bl _sea_free` (`call sea_free`).
+  * Loads and stores: a spilled base is loaded into `x16` (`%rcx`), a spilled `idx` into `x17`
+    (`%rdx`). When the address has no addressing form (arm64: `[base, idx, lsl #s]` with the scale
+    1 or the access size and offset 0, or `[base, #off]` with an encodable offset; x86_64: `off(base, idx, scale)`
+    with the scale 1, 2, 4 or 8 and −2³¹ ≤ off < 2³¹), it is formed in `x16` (`%r11`): arm64 `add
+    x16, base, idx, lsl #s` for a power-of-two scale, else `mov x15, #z` (with `movk`) and `madd x16,
+    idx, x15, base`, then the offset by `add x16, x16, #off` or through `x17` (`mov`/`movk`, `add
+    x16, x16, x17`), where x16 stands for the base itself when there is no `idx`; x86_64 `imulq $z, idx, %r11` and `addq base, %r11` (without `idx`: `movq base,
+    %r11`), then `addq $off, %r11` or `movabsq $off, %rcx` and `addq %rcx, %r11`. A spilled stored
+    value is loaded after the address is formed, into `x15` or `d29` (`%rax` or `%xmm14`).
+
+  **Staged** are the rest: `idivf imodf rcount ftoi fmin fmax ffloor fceil ftrunc fround mcopy`.
+  Their operands are moved into the scratch registers in operand order by one parallel move, the
+  sequence of §4.9 or §4.9.1 runs on them with its registers renamed (arm64 `x9 x10 x11` → `x15
+  x16 x17` and `d16 d17 d18` → `d29 d30 d31`; x86_64 `%rax %rcx %rdx` unchanged, `%xmm8 %xmm9` →
+  `%xmm14 %xmm15`, `%r10` → `%r11`), and its results are moved from the registers the sequence
+  leaves them in (renamed) to their destinations. Where a sequence needs a register beyond these:
+  arm64 `mcopy` moves its data through `d29` (`ldr d29, [x16], #8`, `str d29, [x15], #8`; `ldr b29,
+  [x16], #1`, `str b29, [x15], #1`) instead of `x16`; x86_64 `ffloor`, `fceil` and `fround` keep t
+  as an integer in `%rax` and change it there (`ffloor`: `decq %rax` when t > x; `fceil`: `incq
+  %rax` when t < x; `fround`: |x − t| formed as `subsd %xmm14, %xmm15` (t − x, exact), then `movq
+  %xmm15, %rcx`, `btrq $63, %rcx` (the bits of |x − t|), `movabsq $0x3FE0000000000000, %rdx` (the
+  bits of 0.5), `cmpq %rdx, %rcx`, `jb 2f` (both are non-negative doubles, so their bits compare as
+  integers), and when not below, `movq %xmm14, %rcx`, `sarq $63, %rcx`, `leaq 1(%rax,%rcx,2), %rax`,
+  `2:`), then convert it again (`xorpd %xmm15, %xmm15`,
+  `cvtsi2sdq %rax, %xmm15`) instead of adding or subtracting a 1.0 held in `%xmm10`: the same values,
+  since |t| < 2⁵². No staged sequence needs anything else, and none is ever applied to allocated
+  registers, so no early-clobber question arises.
+* *Immediates.* An operand whose only definition is one `li` of a value v that the instruction can
+  encode is written as an immediate: arm64 `add`/`sub`/`cmp`/`cmn` with a 12-bit value, optionally
+  shifted by 12 (a negative v by the opposite instruction), the logical immediates, shift amounts
+  0–63; x86_64 a sign-extended 32-bit immediate and shift amounts. The `li` is emitted only if some
+  use needs the register. A comparison with the constant 0 is `testq a, a` on x86_64 (it sets the
+  flags of every condition as `cmpq $0, a` does) and `cmp a, #0` on arm64.
+* *Compare and branch fusion.* An `icmp`, `fcmp` or `bnot` whose result is read only by the next
+  `if`/`ifz`, or by the condition of the next `isel`/`fsel`/`psel` with nothing between them whose
+  emitted form sets the flags, sets the flags and is not materialized: `if B c` becomes one
+  conditional branch to B's `else` or end on the inverse condition; `isel`/`psel` becomes `csel`
+  (arm64) or the `cmov` form above (x86_64); `fsel` becomes `fcsel` (arm64) or the branch form above
+  (x86_64). An `if`/`ifz` without `else` whose first part is exactly one `next B′` or `exit B′` is
+  one conditional branch to that label. An `if`/`ifz` on a register (a condition not fused) is
+  `cbz`/`cbnz` (arm64; an `icmp eq`/`ne` with the constant 0 read only by it becomes the same) and
+  `testq c, c` with `je`/`jne` (x86_64). **Conditions** (L-as): `icmp` `eq ne lt le gt ge` are arm64
+  `eq ne lt le gt ge`, x86_64 `e ne l le g ge`; `fcmp` `gt ge lt le` are arm64 `gt ge mi ls` after
+  `fcmp a, b`, x86_64 `a ae` after `ucomisd b, a` and after `ucomisd a, b` for `lt le`; `fcmp eq ne`
+  are arm64 `eq ne`. The inverse of each (arm64 `le lt pl hi ne eq`; x86_64 `be b be b`) holds when
+  the operands are unordered, so a comparison with a NaN operand is false except `ne`, as LANGUAGE.md
+  §6.8 requires. x86_64 `fcmp eq`/`ne` need ZF and PF: fused into an `if`, `eq` is `jp` and `jne` to
+  the `else` (or end) and `ne` is `jp 1f`, `je` to the `else`, `1:`; as the one branch to `next
+  B′`/`exit B′`, `eq` is `jp 1f`, `je` to the label, `1:` and `ne` is `jp` and `jne` to the label;
+  they are never fused into a selection (the comparison is materialized and the selection tests it).
+  A `chkb` whose index is an immediate compares the extent with it when 0 ≤ idx ≤ 4095 on arm64
+  (`cmp ext, #idx`, `b.ls` to the cold block) and 0 ≤ idx < 2³¹ on x86_64 (`cmpq $idx, ext`, `jbe`);
+  any other index, a negative one included, is in a register (`cmp idx, ext`, `b.hs`; `cmpq ext,
+  idx`, `jae`), never turned into `cmn`: the comparison is unsigned.
+* *Loop closing* (L-ai). The remaining count lives in the loop's hidden register, set by the entry
+  move. When `ind` is not read after `endloop`, `endloop` is `add ind, ind, step` (an immediate when
+  the step is a constant), `subs cnt, cnt, #1`, `b.hs` to the top (x86_64 `addq`, `subq $1`, `jae`),
+  which runs last + 1 times for every last up to 2⁶⁴ − 1; otherwise `cbz cnt` to the exit, `sub cnt,
+  cnt, #1`, the `add`, a `b` to the top (x86_64 `testq`, `je`, `decq`, `addq`, `jmp`). `next`
+  branches to the closing sequence.
+* *x86_64 forms* (L-ah). For `d = a op b`: with d = a, `op b, d`; with d = b and a commuting operation
+  (`iadd imul iand ior ixor fadd fmul`; never `fmin`/`fmax`), `op a, d`; with d = b otherwise, the
+  result is computed in a scratch register and moved; else `movq`/`movapd a, d`, then `op b, d`. An
+  `iadd` or `padd` with an immediate and d ≠ a is `leaq v(a), d` (it leaves the flags alone); an
+  `i64` multiplication by an immediate is `imulq $v, a, d`, a checked one followed by `jo`. `itof` is
+  `xorpd d, d` and then `cvtsi2sdq a, d`, so that the conversion does not depend on d's old value.
+  `fabs` and `fneg` are `andpd` and `xorpd` with the function's 16-byte constants `.L<f>_abs` (two
+  quads `0x7FFFFFFFFFFFFFFF`) and `.L<f>_neg` (two quads `0x8000000000000000`), placed after its
+  `f64` constants with `.p2align 4`: the same bit operations as §4.9.1's, in one instruction.
+
+The `-S` text of a given `sea.lir` is the same on every run (the allocation is a function of the
+LIR alone), which the shape tests of §6.2 rely on.
 
 ### 4.10 Elementary functions
 
@@ -7842,7 +8160,7 @@ The scalar hot loops of the workloads must compile to tight register code. Requi
 passes 3 and 4:
 
 * every scalar local of an inner loop lives in a register when the loop's live values fit
-  (arm64: 28 usable general and 32 FP registers; x86_64: 14 and 16);
+  (arm64: 25 allocatable general and 29 FP registers; x86_64: 10 and 14; §4.9.2);
 * loop-invariant loads (array headers, data pointers, extents, struct fields) are hoisted;
 * 2-D addressing is strength-reduced (`T[j, i]` → pointer increments of 8 and `8·ld`);
 * bounds checks are removed for induction variables ranging within `0..extent` of the indexed
@@ -7857,22 +8175,59 @@ passes 3 and 4:
 **What the hot loops must become** (instruction counts are design targets, checked by
 inspecting the `-S` output in phase 5 of §8; not measurements):
 
-* **W5 `lcg_fill`**: one loop of ≈ 10 instructions: the multiply, the modulo by 2147483647 via
-  multiply-high and shifts, one overflow check (`s < 2³¹` is not provable), `scvtf`/`cvtsi2sd`,
-  one `fdiv`/`divsd` by the constant, one store, the loop branch. The dependency chain per step
-  is the integer multiply and modulo only.
+* **W5 `lcg_fill`**: one loop whose dependency chain per step is the integer multiply and the
+  modulo only; its exact instruction counts are under "Targets for phase 5" below.
 * **W4 scalar SOR**: the inner `j` loop keeps `dMax`, `omega`, the column pointers and the loop
-  bounds in registers; per point ≈ 20–25 instructions: one byte load of `fixed`, five `f64`
-  loads, the additions in source order, `×0.25`, one subtraction, one multiplication, one
-  addition, `fabs`, compare-and-select for `dMax`, one store. The loop is latency-bound by the
-  dependency on `T[j-1, i]` written in the previous iteration; that is inherent in the
-  lexicographic SOR the workload specifies, and Sea must not reorder it.
+  bounds in registers and makes the additions in source order; its exact counts are under "Targets
+  for phase 5" below. The loop is latency-bound by the dependency on `T[j-1, i]` written in the
+  previous iteration; that is inherent in the lexicographic SOR the workload specifies, and Sea must
+  not reorder it.
 * **W3 RK4**: `qc_deriv` inlined four times (it satisfies LANGUAGE.md §8.6's inlining rule); the state `x`,
   `k1`…`k4` (16 doubles) in FP registers; no calls and no memory traffic except the road samples
   and the output stores.
 * **W1 scalar bisection**: `shaft_safety` inlined into the bisection loop; `pow` is the only call.
-* **W2 assembly**: `ke` and `idx` in registers, the 4 index checks hoisted per element, 16
-  load-add-store updates.
+* **W2 assembly**: `ke` and `idx` in registers, the 4 index checks per element removed where
+  §5.8's T1 proves them and otherwise kept in place (Decision 61), 16 load-add-store updates.
+
+**Measured before phase 5** (the 4h build, sea commit a6bfeb9: `build/sea build -S` and `--emit
+lir` of `tests/accept/w5_stats.sea` and `tests/accept/w4_sor.sea`, with `--target x86_64-linux` for
+the x86_64 text; instructions counted from the loop's top label `L<f>_<b>_top` to its closing
+branch, labels excluded):
+
+| Loop | arm64 | of which frame loads and stores | x86_64 | Its LIR (`sea.lir`, identical to `sea.lir1`) |
+|------|------:|------:|------:|------|
+| W5 `lcg_fill`, block 2 of function 2 | 90 | 53 | 88 | 28 records: `s` loaded through its `ref` address twice and stored once per step, `imulc`, `imodf` (an `sdiv`/`idivq` with its zero test and floored correction), `itof`, `fdiv` by the constant, one `chkb`, the copy-on-write check with its call, the store |
+| W4 SOR `j` loop, block 46 of `.main` | 626 static; about 500 per interior point | 369 static | 508 static | 147 records: 24 `chkb`, 6 checked `±1`, every access's header loads repeated, 8 linear-index computations, `T[j, i]` loaded three times, the copy-on-write check and call |
+
+Every virtual register lives in a frame slot (the phase-1 allocator of §4.9), so each LIR
+instruction costs two to four loads and stores: that, not the arithmetic, dominates both loops.
+
+**Targets for phase 5** (Decisions 63 and 67; derived from §5.8 and §4.9.2; checked on `-S` output
+of both targets by the shape tests of §6.2; for W5 and W4 they replace the planning figures "≈ 10"
+and "≈ 20–25" of this section's first version, §0):
+
+* **W5 `lcg_fill`**, the fast copy of its versioned loop (§5.8 T6), `s` promoted to a register (T5),
+  no `chkb` (T1), no division instruction (T2). arm64, **20 instructions**: `smulh`, `mul`, `cmp …,
+  asr #63`, `b.ne` (the overflow check: the loop's one branch to a cold block); `smulh`, `add`, `asr
+  #30`, `asr #63`, `sub`, `mul`, `sub` (the truncated remainder by 2147483647); `cmp`, `add`, `csel`
+  (the floored correction); `scvtf`, `fdiv`, `str`; `add`, `subs`, `b.hs` (the loop). x86_64, **23
+  instructions**: `imulq $16807`, `jo`; `movq`, `imulq` (one-operand, by the magic number), `movq
+  %rdx`, `addq`, `sarq $30`, `movq`, `sarq $63`, `subq`, `imulq $2147483647`, `subq`; `leaq`, `testq`,
+  `movq`, `cmovlq`; `xorpd`, `cvtsi2sdq`, `divsd`, `movsd` (the store); `addq`, `subq`, `jae`. No frame
+  access and no call in either. The dependency chain per step is the integer multiply, the
+  multiply-high and the correction (an estimate of about 15 cycles, to be measured by §5.9).
+* **W4 SOR**, the copy of the `j` loop for an interior column (unswitched on `i == 0` and `i == nx −
+  1`, T9) inside the fast copy of the versioned `while` loop: every check proven (T1: `j ∈ 1 … ny −
+  2` against the rows, `i` and `i ± 1` against the columns through the dominating comparisons), the
+  column pointers of `fixed`, `src` and of `T`'s columns `i − 1`, `i`, `i + 1` (with `j ± 1` folded,
+  T7) and `omega`, `0.25`, `dMax` in registers. arm64, **24 instructions** per point: `ldrb`, `cbnz`
+  (the `fixed` test and its `continue`); six `ldr` (`T[j, i−1]`, `T[j, i+1]`, `T[j−1, i]`, `T[j+1,
+  i]`, `src[j, i]`, `T[j, i]` once, T3); five `fadd`, two `fmul` (`× 0.25`, `× omega`), two `fsub`,
+  `fabs`, `fcmp` and `fcsel` (`dMax`, T4), one `str`; `add`, `subs`, `b.hs`. x86_64, **27**: `movzbl`,
+  `testq`, `jne`; six `movsd` loads, five `addsd`, two `mulsd`, two `subsd`, one `movapd`, `andpd`
+  (`fabs`), `ucomisd`, `jbe`, `movapd` (`dMax`), one `movsd` store; `addq`, `subq`, `jae`. No frame
+  access, no call, no cold branch. The loop stays latency-bound by the dependency on `T[j − 1, i]`
+  stored by the previous iteration, as above.
 
 ### 5.3 Small fixed-size values
 
@@ -7943,6 +8298,405 @@ are stated rather than hidden:
   neither is used for the pass/fail.
 * **Same machine**: the comparison is valid only on the machine that produced the baseline,
   which must be recorded (§6.5).
+
+### 5.8 Phase 5: the transformations of pass 3b
+
+*(Agreed 2026-10-24: Decisions 58–73 and lead decisions L-ac–L-am, L-ao, L-ap, L-at of §9.)* From
+sub-phase 5c-1 `seaopt` transforms each function of `sea.lir1` by the transformations below in this
+order: T1, T2, T3, T4, T5, T6, T8, T7, T8 a second time, T9, T10 (L-ao: T7 needs the bases and the
+invariant index terms that T8 moves out of the loop, and T8's second pass moves out what T7 adds),
+and writes the result renumbered (§3.6.5). It reads nothing but the function and the `entries`
+table; its output does not depend on the `#target` record, so both targets get the same `sea.lir`
+(Decision 58). Pass 4 then allocates registers and selects instructions (§4.9.2).
+
+**What every transformation preserves.** A program's observable behaviour as LANGUAGE.md defines
+it: the bytes it writes to standard output, standard error and files, the run-time error it reports
+(message, line) or its normal end, its exit status, and the order of all of these; every class-E
+value bit for bit (LANGUAGE.md §6.8: no `f64` operation is added, removed, reordered against its
+operands or contracted, except the division of T2 that LANGUAGE.md §6.8 itself allows). In
+particular no transformation changes which run-time error a program reports, or what it has
+written before it. The one freedom used is L-ag: a run-time error ends the process and releases
+nothing (§4.2, LANGUAGE.md §9.2), so a value that T5 keeps in a register need not be stored back on
+a path that ends in a run-time error.
+
+**Terms.**
+
+* A *loop* is a `loop`…`endloop` or `do`…`enddo` block. The *guard* of a `loop` is the `if` block
+  that directly encloses it in the patterns of rule 4 (`rcount C E lo hi st incl site`, `if B E`,
+  `loop B+1 J lo C st`) and of rule 17's loop(N; K) (`li Z 0`, `icmp gt E N Z`, `if B E`, `li O 1`,
+  `isub L N O`, `loop B+1 K Z L O`); a `do` has none. *Before L* means immediately before L's
+  opening record, inside its guard. A `loop` runs its body at least once when it is entered (its
+  guard has tested that), and so does a `do`.
+* A *region* is a maximal sequence of consecutive instructions at one block level containing no
+  block record (`loop endloop do enddo if ifz else endif`) and no `exit`, `next` or `ret`.
+* *Failing* instructions are those with a `site` field (`iaddc isubc imulc inegc idivf imodf ftoi
+  rcount chkb chk`, an `rcall` with a site) and `call`. *Effects* are `sti stb stf stp mcopy retain
+  release call rcall`. *Pure* instructions are all others except the loads (`li lf la sa mov`, the
+  wrapping integer, bit, comparison, selection and `f64` instructions, `imulh itof fnan padd`).
+* *Invariant in L*: a register no instruction of L writes; a `loop` record writes its `ind` inside
+  that loop (at the entry and at each closing), so an `ind` is never invariant in its own loop.
+  **Scoping invariant:** every register that L reads, invariant in L or not, is written on every path
+  from the function's entry to L's entry. This is §3.6.4 property 2 together with the lexical scoping
+  of pass 3a's lowering: a local's register is written at its binding (rules 1 and 2), which lexically
+  encloses every block that reads it, and a temporary is written before its use in the same
+  statement; a register first written inside L and read only there needs no such path, and a register
+  L reads before writing it in an iteration is written before L by the same rule. T5's pre-load and
+  T6's count test, which run at L's entry whether or not the body reaches its own reads, rely on this:
+  an invariant register therefore holds one defined value at L's entry.
+* The *definitions* of a register are the instructions that write it (the `loop` record for its
+  `ind`), and for a parameter its `func` record. A *symbol* is a register of class `i` that has exactly one definition, outside
+  every loop (a parameter that is never written counts); an `ind` is never a symbol, its definition
+  being inside its loop; a *constant* is a register whose only
+  definition is one `li`.
+* An *array register* is a `p` register every definition of which is the result of an `rcall` of
+  `sea_arr_new`, `sea_arr_new_u`, `sea_arr_new_s`, `sea_sort`, `sea_argsort` or `sea_args`, the
+  result of `rcall sea_arr_unique` of an array register, or a `mov` from an array register (entries
+  named through the `entries` table, never by a written number). It is *shape-stable* when exactly
+  one of its definitions is not of the form `mov A N` with N the result of `rcall sea_arr_unique …
+  N 1 A` (the copy on write of rule 19 on A itself). For a shape-stable A whose other definition
+  is `sea_arr_new`, `sea_arr_new_u` or `sea_arr_new_s` with symbol or constant operands R and C,
+  rows(A) is R and cols(A) is C; for any other shape-stable A, and for a parameter never written,
+  never the base of a store and never an operand of `call` or `mcopy`, rows(A) and cols(A) are the
+  pseudo-symbols ⟨A, rows⟩ and ⟨A, cols⟩: the values of its header fields, which never change
+  (§3.6.4, property 1).
+* A *private base* is a `p` register that is a parameter never written, or whose every definition
+  is an `sa` of one slot, and every use of which is as the base of a load or store without an
+  `idx` (at any offset): never an argument, never a stored value, never an operand of `mov`,
+  `padd`, `psel` or `mcopy`. A *private location* (P, off, size) is the 8 (or, for `ldb`/`stb`, 1)
+  bytes at P + off. By §3.6.4 (properties 3 and 4) it is read and written in the function only by
+  the loads and stores with base P (L-af).
+* *Kinds* of memory access: `ldi`/`sti` (i64), `ldf`/`stf` (f64), `ldb`/`stb` (byte), `ldp`/`stp`
+  (address). A load *may be changed* by an instruction X when: the load reads a header field
+  (base an array register, offset `SEA_ARR_ROWS`, `SEA_ARR_COLS` or `SEA_ARR_DATA`): never; the
+  load reads the count (`SEA_ARR_RC` of an array register): X is `retain`, `release`, `call` or
+  `rcall`; the load reads a private location: X is a store with the same base whose bytes overlap
+  it; any other load: X is a store of the same kind whose base is not a private base, an `mcopy`,
+  a `call` or an `rcall`.
+
+**Facts** (used by T1; L-ap). The walk carries a *state*: for each register of class `i` an
+interval [lo, hi] whose bounds are each unknown, a constant k, or s + k with s a symbol or
+pseudo-symbol, and for each symbol and pseudo-symbol s a constant lower bound L(s) and upper bound
+U(s), each possibly unknown. Every constant in a fact lies in −2⁵² … 2⁵² (exact in a Baysick number,
+§2.8); a bound that would leave that range becomes unknown. Bound s + k ≤ bound t + m holds when s =
+t and k ≤ m, or s is a constant and t a symbol with s ≤ L(t) + m, or s a symbol and t a constant with
+U(s) + k ≤ t, L and U taken from the current state; two bounds are *comparable* when one ≤ the other.
+To *narrow* a bound by a candidate: an unknown bound becomes the candidate; a bound comparable with
+the candidate becomes the tighter of the two (the smaller for an upper bound, the larger for a lower
+one); a bound not comparable with it stays as it is. At the function's entry every interval and
+every L, U is unknown, except L(⟨A, ·⟩) = 0 and U(⟨A, ·⟩) = `SEA_LIM_EXTENT` for each pseudo-symbol
+(header fields of an array that exists wherever they are read). A symbol s defined by `li s v` is a
+constant with the interval [v, v]; every other symbol s has the interval [s, s] wherever it is read
+(a parameter from the entry on), whatever its definition computes; what that definition gives in
+constants goes to L(s) and U(s) (F1). The walk visits the records in order once (no iteration to a
+fixed point) and changes the state as follows:
+
+* (F1) `li r v`: [v, v]. `mov r a`: a's interval. `iadd`/`iaddc`/`isub`/`isubc r a b` with a or b
+  constant: the other's bounds moved by ± the constant: after a checked one always (it did not
+  fail, so the result is exact), after a wrapping `iadd`/`isub` only when T1's no-overflow condition
+  below holds for it, else unknown. When r is a symbol, r keeps [r, r], and the bounds just computed,
+  where they are constants, become L(r) and U(r).
+* (F2) `ldi E A - 0 SEA_ARR_ROWS` (or `SEA_ARR_COLS`) with rows(A) (cols(A)) defined: E = [x, x],
+  x being rows(A) (cols(A)). After the `rcall` of `sea_arr_new`, `sea_arr_new_u` or `sea_arr_new_s`
+  that defines a shape-stable A whose rows(A) (cols(A)) is a symbol R: L(R) is narrowed by 0 and U(R)
+  by `SEA_LIM_EXTENT` (the entry fails otherwise), in the state from that point on only.
+* (F3) `loop B J S C T` with T a constant t > 0 in the pattern of rule 4 (S = lo, C the `rcount`'s
+  d, T its st): J ∈ [lo.lo, hi.hi − 1 + incl], where lo.lo and hi.hi are the interval bounds of the
+  `rcount`'s lo and hi registers at the `rcount`; with t < 0: J ∈ [hi.lo + 1 − incl, lo.hi]. In
+  rule 17's pattern: K ∈ [0, N.hi − 1]. The guard's first part also records the non-emptiness on
+  symbols: J's lower bound ≤ its upper bound gives, when one side is a constant c and the other s +
+  k, a narrowing of L(s) by c − k or of U(s) by c − k. Like every change made inside a part, it is
+  undone at the guard's `endif` by the join (F6).
+* (F4) after `chkb I E d` (which passed): I.lo narrowed by 0 and I.hi by x − 1, x being E's upper
+  bound.
+* (F5) an `icmp cc C A B` followed, in the same region with A, B and C not written between, by `if
+  B′ C` or `ifz B′ C`: in the part where the comparison holds, A and B are narrowed by it (`lt`: A.hi
+  by B.hi − 1 and B.lo by A.lo + 1; `le`, `gt`, `ge` alike; `eq`: each by the other's bounds; `ne`:
+  when B is a single bound b and A.lo = b, A.lo becomes b + 1, when A.hi = b, A.hi becomes b − 1); in
+  the other part, by the negation. When A (or B) is a symbol s, whose interval stays [s, s], and the
+  candidate bound for it is a constant, the narrowing is applied to L(s) (a lower bound) or U(s) (an
+  upper bound) instead, in that part's state, so it ends at the `endif` like every other narrowing
+  (`if k >= 0` gives L(k) ≥ 0 in its first part; a dominating `0 <= k < n` with a constant n thus
+  proves `v[k]` for an extent at least n).
+* (F6) Joins. At `if`/`ifz` both parts start from the state there (F5 then narrows each). After
+  `endif`, the state is the join of the two parts' states at their ends: a part whose last record is
+  `exit`, `next` or `ret` contributes nothing (the join is the other part's state), a missing `else`
+  part contributes the state at the `if` with F5's negation, and when both parts end so, the state
+  after `endif` is the one at the `if` (that code never runs). The join of two states: for each
+  register, lo is the lower of the two lower bounds and hi the higher of the two upper bounds when
+  they are comparable, else unknown; for each symbol, L(s) the smaller and U(s) the larger, unknown
+  when either is unknown. Records after an `exit`, `next` or `ret` in the same block never run. On
+  entering a loop, the state just before its opening record is kept as its *entry state*, and every
+  register written in the loop becomes unknown (then F3 sets J). After the loop's closing record, the
+  state is its entry state with every register written in the loop unknown: the intervals and the L,
+  U narrowed inside the loop are dropped, since the loop may be left by an `exit` from any point.
+* Any other write of a register makes its interval unknown.
+
+**T1. Checks and overflow.**
+
+* A `chkb I E d` is deleted when I.lo ≥ 0 and I.hi ≤ x − 1, x being E's lower bound, before F4
+  applies (Decision 61). A check that is not deleted stays exactly where it is: no check is ever
+  moved, merged with another or reordered against any failing instruction or effect.
+* An `iaddc`, `isubc` or `inegc` becomes `iadd`, `isub` or `ineg` (its `site` dropped) when the
+  exact result's bounds, computed from the operands' intervals, lie in −2⁶³ … 2⁶³ − 1 (for a constant
+  k added to s + c: the upper side holds when c + k ≤ 0 or U(s) + c + k ≤ 2⁶³ − 1, the lower side
+  when c + k ≥ 0 or L(s) + c + k ≥ −2⁶³; this is also the no-overflow condition F1 asks of a wrapping
+  `iadd`/`isub`); an `imulc` becomes `imul` when both operands have constant bounds whose products
+  lie in −2⁵² … 2⁵².
+* Nothing else changes (`idivf imodf ftoi rcount chk` and every `rcall` keep their checks; T2
+  removes some divisions).
+
+**T2. Division by constants** (Decision 65).
+
+* `imodf d a b` and `idivf d a b` whose b is a constant c ≥ 1 (a negative or zero c leaves the
+  instruction unchanged, with its zero-divisor and overflow checks): for c = 1, `li d 0` and `mov d
+  a`; for c = 2ᵏ (k ≥ 1), `li m c−1`, `iand d a m` and `li m k`, `isar d a m` (exact for every a:
+  the floored modulo and quotient by a positive power of two); otherwise the sequence
+
+  ```
+  li     M  <M>             the magic number below, as #hex
+  imulh  H  a M
+  iadd   H2 H a             only when M ≥ 2⁶³ (then H is H2)
+  li     S  <s>
+  isar   Q  H2 S            omitted when s = 0 (then Q is H2)
+  li     K  63
+  isar   N  a K
+  isub   Q2 Q N             Q2 = the truncated quotient of a by c
+  imul   P  Q2 b
+  isub   R  a P             R = the truncated remainder, |R| < c
+  iadd   A  R b             imodf; idivf: li O 1 / isub A Q2 O
+  li     Z  0
+  icmp   lt L R Z
+  isel   d  L A R           imodf: R + c when R < 0; idivf: isel d L A Q2
+  ```
+
+  with every register new except a, b and d. The magic number is that of Hacker's Delight §10-1
+  for 64-bit signed division: with nc = 2⁶³ − 1 − (2⁶³ mod c), p is the least integer ≥ 64 with 2ᵖ >
+  nc · (c − 2ᵖ mod c), M = (2ᵖ + c − 2ᵖ mod c) / c (so M < 2⁶⁴) and s = p − 64. For c = 2147483647,
+  M = #8000000100000003 and s = 30; for c = 10, M = #6666666666666667 and s = 2. Every
+  instruction of the sequence is exact (no wrap occurs: |Q2 · c| ≤ |a|), so the result equals the
+  floored `%` or `idiv` of LANGUAGE.md §6.6 for every a, −2⁶³ included, and the sequence cannot fail.
+  The 128-bit arithmetic for M is a routine of `seaopt` on 16-bit limbs (L-am; it does not load
+  `limb`, §2.7).
+* `fdiv d a b` whose b's only definition is one `lf` of ±2ᵉ with −1022 ≤ e ≤ 1023 (a normal power of
+  two: mantissa bits 0, exponent field 1 … 2046) becomes `lf R ±2⁻ᵉ` (a new register R, placed just
+  before it; for e = 1023 the subnormal 2⁻¹⁰²³) and `fmul d a R`. LANGUAGE.md §6.8 allows exactly
+  this: x · 2⁻ᵉ and x / 2ᵉ are the same correctly rounded value for every x, because 2⁻ᵉ is exact
+  (L-al). No other `f64` division changes, and `%` on `f64` never does.
+
+**T3. Value numbering in regions.** Two instructions are *equal* when every field but the
+destination and the `site` is equal: the opcode, the condition code, the operand registers, the
+immediates, slots, labels, the `idx`, scale and offset. T3 makes one forward pass over each region;
+at each instruction in turn it applies the first of the first two rules below that holds and then,
+when the instruction is (now) a `mov`, the third; the operands it compares are those already
+rewritten by the copy propagations made earlier in the pass (so a chain of equal instructions
+collapses in the one pass):
+
+* an instruction that is pure, or one of `iaddc isubc imulc inegc`, and is equal to an earlier one of
+  the region, with none of its operands and not the earlier one's destination D0 written between
+  them, becomes `mov D D0`: the earlier one computed the same value, or failed;
+* a load (with or without `idx`) of the same kind, base, `idx`, scale and offset as an earlier load
+  or store of the region, with its base and `idx` not written between, no instruction between that
+  may change it, and V not written between, becomes `mov D V` (V the earlier load's destination or
+  the stored value);
+* *copy propagation*: a `mov D S` (one of the region's own or one the two rules above have just made)
+  where D has exactly one definition in the function (this one), every read of D lies later in the
+  same region, and S is not written between the `mov` and the last of those reads: the reads of D
+  read S, and the `mov` is deleted.
+
+**T4. If-conversion.** `if B c` / `mov R S` / `endif B` becomes `isel`/`fsel`/`psel R c S R` (by R's
+class); `ifz` swaps the last two operands; `if B c` / `mov R S1` / `else B` / `mov R S2` / `endif
+B` becomes the selection of S1 and S2. Only these shapes (one `mov` per part, nothing else).
+
+**T5. Promotion of private locations.** For each loop L, outermost first, and each private location
+ℓ = (P, off) read or written in L by `ldi`/`ldf`/`sti`/`stf` with base P, offset off and no `idx`,
+where P is invariant in L (a parameter never written, or an `sa` register none of whose definitions
+lies in L), L has no other access with base P whose bytes overlap ℓ, and ℓ was not promoted in a
+loop enclosing L: a new register X of the access's class; `ldi`/`ldf X P - 0 off` before L; each load
+of ℓ in L becomes `mov D X`, each store `st V P - 0 off` becomes `mov X V`; if ℓ is stored in L, the
+store `st X P - 0 off` is placed immediately after L's closing record (where an `exit` naming L
+also arrives), and immediately before every `exit` or `next` in L that names a loop enclosing L and
+every `ret` in L. The locations promoted for one L are taken in the order of their first access in L
+(ties: by offset): their pre-loads stand before L in that order, and at each place where post-stores
+go, they stand in that order. Then: copy propagation (T3) of the `mov D X`; and *destination
+rewriting* of each `mov X V`: when V has exactly one definition, earlier in the same region, X is
+neither read nor written between that definition and the `mov`, and every read of V lies in that
+region, the definition writes X, the reads of V read X, and the `mov` is deleted. (W5's `ref s` in
+`lcg_fill` becomes one register for the loop, loaded before it and stored once after it.)
+
+**T6. Copy-on-write versioning** (Decision 62). A *cow* is rule 19's sequence on an array held in a
+register A (`ldi C A - 0 SEA_ARR_RC`, a register holding the constant 1, `icmp ne S C O`, `if B
+S`, `rcall sea_arr_unique site 1 N 1 A`, `mov A N`, `endif B`) or its memory form at a private
+location (P, off) (the same after `ldp A P - 0 off`, with `stp N P - 0 off` before `mov A N`). The
+*copy set* of an array A is A, the registers loaded in L from its location (memory form) and,
+repeatedly, every register that a `mov` anywhere in the function copies from or into a member, and
+every register that a `psel` writes when one of its selected operands is a member, together with both
+selected operands of a `psel` that writes a member. For
+each loop L that contains a cow and is not inside a loop already versioned, take the outermost such
+L for which, for every array A (or location (P, off), with P invariant in L as in T5) cowed in L: A
+is written in L only by its cows' `mov A N` (the location only by their `stp`), and every member of
+A's copy set is used in L only as the base of loads and stores and as an operand of A's cows (so no
+alias of A, whether made in L or before it, is retained, stored as a value, passed to a `call` or
+`rcall` or returned in L). Taking the cowed arrays in the order of their first cow in L, L is then
+replaced, at its place, by
+
+```
+ldp    A1 P - 0 off                (memory form only)
+ldi    C1 A1 - 0 SEA_ARR_RC        (these two for each cowed array in turn: A1, A2, …)
+li     O  1
+icmp   eq U1 C1 O                  (one for each cowed array in turn)
+iand   V2 U1 U2                    (for a third array iand V3 V2 U3, …; none for one array)
+if     B  V                        (V the last iand's destination; U1 for one array)
+<L with every cow on those arrays deleted>      the fast copy
+else   B
+<L unchanged>                                   the slow copy
+endif  B
+```
+
+A cow is deleted by removing its `ldi C`, its `icmp` and its `if`…`endif` block with everything in
+it; the register holding 1 that it compared with is not part of the cow and stays (T10 removes it
+when nothing reads it), and so does the `ldp` of the memory form, which also gives the stores their
+base. Exactness: when the counts are 1 at the entry of L, nothing in L can raise them (no member of a
+copy set is retained, stored, passed or returned in L), so every deleted cow would have found a count
+of 1 and called nothing; otherwise the original runs. The copies share their registers (only one
+runs). A slow copy is never versioned again, and T9 does not unswitch inside it. (W4's `while` loop
+is versioned once, on `T`; W5's `lcg_fill` loop on `u`.)
+
+**T7. Strength reduction of addresses** (Decision 64). T7 runs after T8's first pass, so the header
+loads and the invariant parts of the indices already stand before their loops (L-ao). For each loop
+L, innermost first, whose `ind` J has a constant step st, and each load or store in L in record
+order, those in loops nested in L included, whose base D is invariant in L, with `idx` X, scale z
+and offset o. An access T7 has already reduced (for a loop nested in L) is not reduced again; an
+access of a nested loop may be given an invariant-stride Q of L, whose `padd Q Q Δ` then stands at
+the top of L's body, outside the nested loop:
+
+* *unit stride*: when X is J, or is computed in L from J, constants and invariant registers by
+  wrapping `iadd`/`isub` with J's coefficient 1 (X = J + c + σt: c a constant, t an invariant
+  register with the sign σ = ±1, or absent), the access becomes `D′ J z 0`, where D′ = D + (σt · z
+  + e) with e = c · z + o. The new pure instructions stand just before the access, in this order:
+  when t is present, `li Z σz` and `imul T1 t Z` (both omitted when σz = 1: then T1 is t) and `padd
+  D1 D T1`; when e ≠ 0, `li E e` and `padd D′ D1 E` (D1 being D when t is absent; D′ being D1 when e
+  = 0). With t absent and e = 0, the access only takes J as its `idx`, and when X is J and o = 0
+  nothing changes.
+* *invariant stride*: when X = J · k + c + σt with k a constant ≠ 1 or an invariant register, the
+  access becomes `Q - 0 o` with a new `p` register Q: before L, Q = D + ((start − st) · k + c + σt) ·
+  z and Δ = st · k · z (start the `loop`'s operand, read before L as the `loop` reads it), and `padd
+  Q Q Δ` as the first instruction of L's body (so `next` keeps it right). Accesses with equal D, k, c,
+  σ and t share one Q and its Δ. The instructions before L stand after whatever T5, T6 and T8's
+  first pass put there, each Q's (in the order of its first access) followed by its Δ's:
+  * the term in start: when k is a constant and start a constant, it is folded into the constant
+    term; when k is a constant, `li G kz` (the constant k · z) and `imul A start G`; when k is a
+    register and start a constant, `li G f` with f = (start − st) · z and `imul A k G`; otherwise
+    `li G st`, `isub A0 start G`, `imul A1 A0 k` and, when z ≠ 1, `li G2 z` and `imul A A1 G2`
+    (A1 being A when z = 1);
+  * the term in t, when present: `li Z σz` and `imul T1 t Z` (omitted when σz = 1);
+  * the constant term e: (c − st · k) · z, plus start · k · z when it was folded, for a constant k;
+    c · z for a register k;
+  * Q: `padd Q1 D A` (when the term in start is not folded), `padd Q2 Q1 T1` (when t is present),
+    `li E e` and `padd Q Q2 E` (when e ≠ 0), each operand being the previous one when a step is
+    absent;
+  * Δ: for a constant k, `li Δ v` with v = st · k · z; for a register k, `li G3 v` with v = st · z
+    and `imul Δ k G3`.
+
+Every constant T7 folds must lie in −2⁵² … 2⁵² (§2.8), else that access is not reduced. All of
+these instructions wrap, as the address computation they replace does. The linear-index instructions
+left unread are removed by T10. A chain that contains a checked instruction is not reduced.
+
+**T8. Hoisting** (Decision 63). T8 runs twice, after T6 and after T7 (L-ao), each time from the
+innermost loop outwards. An instruction I of loop L moves to before L when: I is pure, or is a load
+without `idx` (L-aj) that no instruction of L may change; each operand of I is invariant in L or
+written in L only by instructions already moved out of L; I is the only definition of its
+destination D in L; every read of D in L lies after I and in I's block or a block nested in it; D is
+not read outside L unless I is anticipated; and, for a load, one of: (a) I is anticipated; (b) its
+base is an array register and its offset is `SEA_ARR_RC`, `SEA_ARR_ROWS`, `SEA_ARR_COLS` or
+`SEA_ARR_DATA` (a header is always readable); (c) its base P is a private base and its bytes lie
+inside the memory P reaches: 0 ≤ off and, for P an `sa` register, off + size ≤ the slot's size, for
+P a parameter, off + size ≤ off′ + size′ for some load or store with base P at offset off′ in the
+function (a `ref` parameter reaches an object as long as every access the function makes to it,
+whether or not that access runs). I is *anticipated* when it lies at the top block level of L's body
+and no record of L's body before it, at any depth, is a `ret`, an `exit` or `next` naming L or a
+loop enclosing L, a `release` or a `call`: every iteration that begins then reaches I (an `exit` or
+`next` of a loop nested in L does not skip it), and the first iteration always runs. A load is
+hoisted by (a) only when its base is an *object pointer*: every definition of it is a parameter, the
+result of a `call` or `rcall`, an `ldp`, an `sa`, or a `mov` from an object pointer (never a `padd`,
+`psel` or `la`). Such a pointer is non-null and points to a live object wherever it is read (§4.2
+"Null", §3.6.4 property 2, and no `release` lies before I in L), and the offset of a load lowered
+from a field of its type lies inside that object; so the load, moved in front of a failing
+instruction of L (a `chkb` that fails, say), reads valid memory, and its value is simply unused when
+that instruction ends the program. The instructions moved before one opening record keep their
+original order, after whatever already stands there (what T5, T6 and T7 placed, and in the second
+pass everything the first pass moved); then, among all the instructions standing there (the first
+pass's included when the second runs), an `li`/`lf` of a value an earlier one there already loads, or an
+instruction or load equal (T3) to an earlier one there whose operands are not written between, has
+its reads replaced by the earlier register when both destinations have exactly one definition in the
+function (*constant commoning*), and is deleted.
+
+**T9. Unswitching** (Decision 63). For each innermost loop L of the function as T8's second pass
+leaves it (the copies T9 makes are not visited again), outside slow copies: the condition registers
+of the `if`/`ifz` blocks in L that are invariant in L, in order of first use, the first two distinct
+ones c₁, c₂ (no more): L is replaced by `if B c₁`, L[c₁ ≠ 0], `else B`, L[c₁ = 0], `endif B`, where
+L[c₁ ≠ 0] is L with each `if` on c₁ replaced by its first part and each `ifz` on c₁ by its `else`
+part (and L[c₁ = 0] the opposite); then the same for c₂ inside each copy. So one loop becomes at most
+four. The copies share their registers. (W4's `j` loop gets four copies on `i == 0` and `i == nx −
+1`; the copy for an interior column has no branch but the `fixed` test.)
+
+**T10. Clean-up.** Repeatedly until nothing changes: a pure instruction or load whose destination is
+never read is deleted; `mov R R` is deleted; an `if`/`ifz` whose parts are empty is deleted with its
+`else`; a `retain R` immediately followed by `release R` is deleted (the count is unchanged and
+nothing is freed). Then the function is renumbered (§3.6.1, §3.6.4).
+
+**The W5 loop after T1–T10** (`lcg_fill`, the fast copy; registers named, not numbered: S the
+promoted `s`, J the `ind`, U the data address of `u`, K1, M, W, K63, C, F, Z0 the hoisted constants
+16807, #8000000100000003, 30, 63, 2147483647, 2147483647.0 and 0):
+
+```
+loop   B J Start Last Step
+imulc  T K1 S site              the one remaining check (s < 2³¹ is not provable)
+imulh  H T M
+iadd   H2 H T
+isar   Q H2 W
+isar   N T K63
+isub   Q2 Q N
+imul   P Q2 C
+isub   R T P
+iadd   A R C
+icmp   lt L R Z0
+isel   S L A R                  the new s, written straight into S (T5)
+itof   X S
+fdiv   Y X F
+stf    Y U J 8 0
+endloop B
+```
+
+before which stand, in the fast copy's arm, the hoisted `li`/`lf` constants and `ldp U u - 0 40`,
+and after which the single `sti S p1 - 0 0`. Its exact text, with the whole function, is the
+golden `opt5_lcg.lir` (§6.2).
+
+### 5.9 Phase-5 micro-benchmarks
+
+*(Decision 68.)* `sea/bench/micro/` holds two Sea programs and their C references;
+`bench/micro.sh` builds and runs them on the Mac, and `bench/micro.sh --cross [-H host]` packs them
+for the Linux host as `cross_pack.sh` packs tests. The methodology is Baysick's (BENCH.md; §5.7):
+single thread, monotonic clock, untimed warm-up, at least 5 repetitions and 1 s per measurement,
+the median with min and max, validation before timing, and the machine model, OS version, load
+average and kernel variant recorded.
+
+* `lcg.sea`: `lcg_fill` of `tests/accept/w5_stats.sea` verbatim, called once with 11 000 000
+  steps from W5's seed 7 340 117, timed by `now()` around the call; it prints `lcg_final`, which
+  must be 2145635252 (§8, row 1), and the seconds. Rate: ns per step.
+* `sor.sea`: the scalar SOR of `tests/accept/w4_sor.sea` verbatim, timed around the `while` loop;
+  it prints `it_sor` (832 ± 1, §6.3), `T_max` and the seconds, and the number of points updated per
+  sweep (the non-`fixed` interior nodes, counted once before the loop, so the timed loop is W4's
+  unchanged). Rate: ns per point update.
+* `lcg_ref.c`, `sor_ref.c`: the same computations with the same operation order in C, built with
+  `xcrun cc -O2 -ffp-contract=off` on the Mac and `gcc -O2 -ffp-contract=off` on the host, validated
+  and timed the same way: the native bar, as Accelerate and OpenBLAS are for the kernels (§5.7);
+  measuring tools, never part of Sea.
+* Each Sea program is measured as compiled by the phase-5 compiler and by the phase-4 compiler (sea
+  commit a6bfeb9, built in a scratch worktree that is not committed), so the record shows the change
+  phase 5 made.
+* The rows go to `bench/results/micro-<target>.tsv` (tab-separated, header `target cpu bench
+  compiler reps median_s min_s max_s unit rate`, unit `ns/step` or `ns/point`), committed with
+  sub-phase 5d, and 5d writes the measured table into this section with the machine it ran on.
 
 ## 6. Testing and conformance
 
@@ -8556,6 +9310,79 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
       loop, `uTop` and `Top`, `stack_gap`, `lcg_fill`, the cold statistics, `bin`, `inRange` and
       `counts`), followed by the `printf` JSON of §6.3 and nothing else on standard output;
       `make test-accept` on the Mac and the cross case on the host.
+* **Phase-5 tests** (sub-phases 5b–5d, §8; Decisions 66 and 69). Phase 5 changes no program's
+  behaviour, so the first test is the whole corpus: every `programs/`, `errors/`, `passes/` and `rt/`
+  case, the acceptance programs and `make cross` pass unchanged after each sub-phase. Expected outputs
+  of the new tests are derived from LANGUAGE.md and, for dumps, from §5.8 by hand. New name prefixes:
+  `opt_*` (programs whose output would change if a transformation were inexact), `opt5_*` (dumps of
+  pass 3b), `ra5_*` (hand-written LIR for pass 4).
+  * **`opt_*` programs** (T1 of 5c-1 and 5c-2, `tests/programs/opt_*`, `tests/errors/r_opt_*`):
+    a loop that prints a line per iteration and then indexes out of bounds at a known iteration (the
+    lines before, then the error with the exact index, dimension, extent and line); an overflow and
+    an out-of-bounds index in the same iteration, in both orders; a check inside an `if` arm that never
+    runs (no error), and inside an arm whose condition is loop-invariant and false (T8 and T9 must not
+    move it); `j ± 1` over `1..n-1` and over `0..n` (the second fails at its last iteration); a range
+    ending at `2^63 - 1` with `i + 1` in the body (`integer overflow` at the last iteration: T1 must
+    keep that check); negative steps and `step 2`; facts that hold only inside a guard or a loop and
+    must not be used after it (`a[n - 1]` after an empty `for i in 0..n` with `n = 0`, and an index
+    narrowed by two `break` tests inside a `do` loop, used after the loop with a value the tests
+    excluded: both report their errors); a `while` loop assigning an invariant value to a variable
+    printed after it, run zero times (the old value is printed); a `ref` scalar updated in a loop,
+    read by the caller afterwards, and the same with a run-time error part-way (the output before the
+    error is what counts) and with a `continue` of an enclosing loop and a `return` inside the loop; a
+    `ref` to an element (`f(ref v[3], v2)`) with both arrays printed afterwards; copy on write in
+    loops: a loop storing into an array that another variable shares (the other one keeps its values),
+    a loop whose stores are all skipped, a `ref` array parameter updated in a loop, a loop that stores
+    into an array it also passes to a function (no versioning: the cow stays), and a loop that stores
+    into an array after a copy made before the loop is passed to a function inside it; `%` and `idiv`
+    by the constants 1, 2, 3, 6, 7, 10, 11, 2147483647, 2^62 and 2^62 + 1 on −2⁶³, −2⁶³ + 1, −1, 0, 1,
+    2⁶³ − 1 and multiples of the divisor ± 1; `% 0` and `idiv(x, 0)` with a constant 0
+    and `idiv(x, -1)` with x = −2⁶³ (the errors unchanged, at their lines); a negative constant divisor;
+    `f64` division by 4.0, 0.5, −2.0, 2^1023, 2^-1022 and 3.0 on values giving normal, subnormal,
+    overflowing and signed-zero results, printed with `%.17g` (which round-trips) and as their
+    `str()` text; an `if` with one `mov` per arm, as a value (T4); `f64` comparisons `==`, `!=`, `<`,
+    `<=`, `>`, `>=` with a NaN operand in an `if`, as a selected value and as a loop exit (only `!=`
+    holds); values live across calls inside loops (a value computed before a loop and read after a
+    `printf` in it). Each has a hand-derived `.out` (and `.err`, `.status`); the cross runner runs
+    them on the host.
+  * **`opt5_*` dumps** (T2 of 5c-1 and 5c-2, `tests/passes/opt5_*.sea` with `.lir1` and `.lir`, and
+    the generator `tests/vectors/dump5_cases.py`): for each transformation at least one program whose
+    `sea.lir` shows it and one where its condition fails (the instruction stays). 5c-1's T2 writes
+    `opt5_bce_range`, `opt5_bce_dom`, `opt5_bce_passed`, `opt5_bce_kept`, `opt5_bce_scope` (facts of a
+    guard and of a loop not used after them), `opt5_ovf`, `opt5_div` (each divisor kind), `opt5_fdiv`,
+    `opt5_vn`, `opt5_rle`, `opt5_ifconv` and `opt5_clean`, their `.lir` as T1–T4 and T10 make it
+    (5c-1's `seaopt` has no T5–T9), and re-derives the earlier `.lir` goldens those change. 5c-2's T2
+    adds `opt5_promote`, `opt5_promote_exit` (a `break`, a `return` and a `continue` of an enclosing
+    loop inside the loop), `opt5_cow` (register form), `opt5_cow_ref` (memory form), `opt5_cow_kept`,
+    `opt5_sr_unit`, `opt5_sr_stride`, `opt5_licm_hdr` (an array register, hoisted from an arm),
+    `opt5_licm_param` (a parameter base: hoisted only when anticipated), `opt5_unswitch`, `opt5_lcg`
+    (W5's `lcg_fill` with a two-line main) and `opt5_sor` (W4's SOR loop over a 5 × 6 grid), and
+    re-derives every `.lir` golden that T5–T9 change, 5c-1's and `gen_arith` among them (L-ak). The
+    stage pair `seaopt lir1 lir` checks each; `run.sh` checks `--emit lir`.
+  * **`ra5_*` pass-4 tests** (5b, `tests/passes/ra5_*.lir` with `.out`): hand-written LIR that
+    `stage.sh` assembles, links and runs (§6.2's pass-4 kind): more live values than registers in
+    each class (spills), values live across `call`, `rcall` and the free path of `release` in
+    caller-saved registers, among them values carried around a loop that contains the call,
+    callee-saved registers in a function with calls, parallel moves with cycles (arguments and results
+    swapped, spilled arguments together with register ones on `%rdx` and `%rcx`), every compare and
+    branch fusion (`fcmp` with NaN operands for each condition, x86_64 `eq` and `ne` among them), every
+    staged template with its destination sharing a register with an operand, immediates at their
+    encoding limits (arm64 4095, 4096, 4097, −4095; x86_64 2³¹ − 1 and 2³¹; a `chkb` with the
+    immediate indices 4095, 4096 and −1), both loop-closing forms (`ind` read after the loop or not, a
+    loop of 2⁶⁴ iterations exited by `exit`), the x86_64 two-address cases (d = a, d = b commuting and
+    not), `itof`, `fabs`, `fneg`. The `.out` shows the values; which interval is spilled is not
+    visible in it and is not tested.
+  * **Shape tests** (5d, `tests/shape.sh`, the `make test` group `test-shape`, on the Mac for both
+    targets): `tests/shape/NAME.shape` names a program (`tests/accept/w5_stats.sea`,
+    `tests/accept/w4_sor.sea`) and, per line, a target, a function name (as its `func` record writes
+    it, `.main` for the main program), the largest number of instructions between `L<f>_<b>_top:`
+    (`.L<f>_<b>_top:`) and the loop's closing branch, and exact counts of named mnemonics, from §5.2's
+    targets; every line also requires no frame access in that range (arm64 `[sp`, `[x29`; x86_64
+    `(%rsp)`, `(%rbp)`), no `bl` or `call`, and the stated number of branches to cold blocks
+    (`L<f>_e<k>`). The loop is identified by those properties (L-ar): `shape.sh` takes, from `--emit
+    lir` of the program, the function's number f and the block numbers b of its innermost `loop` and
+    `do` blocks, measures each of them in the `-S` text, and the line passes when at least one of them
+    meets every requirement; it prints the block that did. The output format is `run.sh`'s.
 
 ### 6.3 Workload acceptance
 
@@ -8973,7 +9800,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()`, and the exact math functions, `ind2sub`, `sub2ind`, `lower`, `str(x)`, `meshgrid`, `setdiff` (Decision 23); built in the serial sub-phases 4a–4h below (Decisions 17–24) | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D; checked by `compare.py --keys` on the Mac and byte identity on the Linux host (Decision 19) |
-| 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output); a micro-benchmark of each is recorded |
+| 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9) |
 | 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) | W1 and W5 complete (without figures): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
@@ -8999,6 +9826,11 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 4g-2 | **Structs, records, projection** (the second sub-step of 4g, Decision 47, after the gate): §3.4.2's `rtst`/`rtfd`, `rslit` and the struct declaration checks; struct items, types, literals, fields, projection (L15), struct arrays and their literals, records (Decision 48), fixed-size arrays of `str`, struct and record elements (types, locals, parameters, `ref` parameters, results, tuple components, `dyn`/`fix`), the phase-rule row 4g-2 with its errors (§2.6.2, "Readings fixed by 4g"); rules 15 (g), (j) and 16 for structs, 18 (field folding, whole struct elements), 19 (paths through fields, L17), 26 (struct literals), 27 for structs, records, fields and fixed-size arrays of `str` and struct elements (its fixed-size numeric part is 4e's, Decision 32), 29 (L15), 30 (struct elements), 31 (field paths), 38 (`slay`, also of records, lead decision L-m); R18, R19, R21, R23, R24 and the struct cases of L2–L14. Work packages, as in 4g-1: **WP-LAYOUT** (first) `passes/lib/layout.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3), and the `passes/lib` module list of `sea/CLAUDE.md` (`io diag tables limb f64emu fltlit`, plus `layout`); **T1b**, **T2b** (`tests/programs/{struct_,str_fixed,records,heap_struct_,manualD_part1}*`, `tests/errors/manualD_part1_badopt.*`, `tests/errors/r_str_fix.*` and the other 4g-2 errors, the retired and re-derived goldens of §6.2, `tests/vectors/manualD_part1.py`; the dumps of rules 18, 27 and 29, L15, L17, R19, the `.res` of §3.4.2); **front end b**, **sealoop b** (its `build.list` gains `layout`; L15, L17's field paths and aggregates, L12's routing of field targets, the aggregate cases), **sealower b** (its `build.list` gains `layout`; rules 18, 27, 31, 38, 15 (g)/(j), 16, R18, R19, R21, R23, R24): the same files as in 4g-1; **WP-RT** `tests/rt/arm64_macos/rt_arr_new_s_empty.*` and `tests/rt/x86_64_linux/rt_arr_new_s_empty.*` (and that target's `runtime/*/rt_arr.s` or `rt_mem.s` only if the test fails) | the 4g-2 tests of §6.2 pass on both targets, with no leak under the heap check; every stage pair of the 4g-2 dumps holds, the agreed examples of rules 18 (the second), 27 and 29 byte for byte; `make test-lib` passes `layout`; `manualD_part1` (§6.2: Appendix D from `struct Dim {` through `let rssSigma = sqrt(rssVar)` without its `linspace` line, plus the nine lines listed there) prints its hand-derived 12 lines with `--figures`, and `manualD_part1_badopt` its error at line 16; `make test-rt` and the host's `make -f Makefile.linux test-rt` pass `rt_arr_new_s_empty`; every earlier test passes (the changed goldens re-derived); `make test` and `make cross` pass; `make check-limits` reports the sizes, recorded in §2.7 |
 | 4h-0 | **The `sealower` relief: a compaction with no change of behaviour** (Decisions 49–52 and lead decisions L-o–L-r, agreed 2026-10-23; before the 4h specification's code): the patterns C1–C6 of §2.7 (fall-through entries and tail calls, merged `REM`s with every comment's text kept, the constant and entry lookups and the register text as multi-line `DEF` functions, validation predicates, one shared child-evaluation loop), about 600 lines freed; every part file keeps its line range, new lines are numbered between existing ones, each new `DEF FN` gets a header comment in `sl0main`'s table of helpers, and no array letter is added (L-q); only `passes/sealower/*` and the docs text change: no contract file, intermediate format, `sealoop`, driver or test script (L-r). Work packages, by one `sealower` implementer owning `passes/sealower/*`, in sequence: **WP-0** (first, scratch only, in the session scratchpad and not committed) a Baysick prototype of the multi-line string `DEF` of C4 and the lookup `DEF` of C3 (reading and writing the global register table and its counter, the consts table, the overflow flag) confirming their semantics and speed, and if it fails C3 and C4 become C1-style entry lines; **WP-1** C1, C2, C3, C5, C6; **WP-2** C4 | L-p's proof holds: `--emit lir1` of every `tests/programs` program, every run-phase `tests/errors` program and `tests/accept/w4_sor.sea` byte-identical before and after (a scratch harness, not committed), every stage pair `sealower hirl lir1`, `make test` and `make cross`; `make check-limits` measured and recorded in §2.7 ("Measured after 4h-0", with the free letters); the gate after 4h-0 applied (§2.7): if the saving came in short, the gate decides on reserve V, specified and agreed with the user before any 4h code |
 | 4h | **Prelude and W5; close-out** (after 4h-0 and its gate; specified 2026-10-24, Decisions 53–57 and lead decisions L-s–L-ab: rule 37 as the `sea.hirl` records `iblk` and `iret`, `sealoop`'s rewrite L18 and the refinements R26–R30 of §3.5.9, §3.6.6's LIR unchanged; `passes.txt` HL 88–89): prelude inlining (Decision 18, rule 37, recursive, Decision 55), `linspace`, `bincount`, `meshgrid`, `setdiff` in `std.sea` with the signatures of LANGUAGE.md §10 (Decision 54; §2.5), the readings of §2.6.2 ("Readings fixed by 4h"), `tests/accept/w5_stats.*` (§6.3), the phase-rule table in its after-phase-4 form (§2.6.2) with the close-out tests, the sizes of §2.7 measured. Work packages, each owning its files: **WP-FE** `passes/seaname/*` (L-s), `passes/seacheck/*` only if a prelude body exposes a defect, and their `build.list`s; **WP-STD** (in parallel) `std/std.sea` only: the four functions with LANGUAGE.md's parameter names, written as §2.5 and L-t, L-x, L-y say (each result allocated first in `linspace` and `bincount`; `meshgrid` by loops; `setdiff` by `sort`, a merge and a mask selection; `bincount` by `filled(0, n)` and `c[v] += 1` over `for v in idx`), frozen when WP-FE and WP-STD are done; then **T1** `tests/programs/{prel_,heap_prel_}*`, `tests/errors/{err_prel_,r_prel_,err_ns_matmul,err_ns_lib_}*`, `tests/accept/w5_stats.*`, `tests/vectors/prel4h_cases.py`, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump4h_cases.py`, `tests/vectors/res_gen.py` (the prelude names), the dump goldens of §6.2's 4h list in `tests/passes/`, `inl_half` first (T2 reports its CORPUS rows to T1); **WP-LOOP** `passes/sealoop/*` (L18, the `.i` locals, dropping and renumbering, validation, capacity; a new file in its own line range) and its `build.list`; **WP-LOWER** `passes/sealower/*` (`iblk`, `iret`, R26–R30, validation, the scope searches of T2, R8, R11 and R22 stopped at an `iblk`, so its frame scan for an enclosing `xblk` stops there; no new array letter, L-ab) and its `build.list`; **WP-TOOLS** `tests/run.sh` and `tests/cross_pack.sh` (`NAME.prelude`: such dumps and `.out` built without `--no-prelude`, the kinds `.hir`, `.hirl`, `.lir1` and `.out` only, the file-0 `#file` record compared as `#file std.sea`, Decision 57), `tests/cross_run.sh` if its comparison needs the same, `tests/stage.sh` (the two skips of §6.2: the pair `hir1 → hir` when `NAME.hir1` is absent, the pair `hir → hirl` when `NAME.hir` is absent and `NAME.prelude` exists) and `tests/driver_check.sh` (§6.2's case). WP-LOOP and WP-LOWER work against T2's goldens through `stage.sh`. Then the gate after 4h (§2.7) and the close-out | the phase-4 "done when" above holds on both targets (W4 since 4d; W5's `first_dev`, `mean_cold`, `std_cold` and `hist_counts` by `compare.py --keys` on the Mac and byte identity on the host); the 4h tests of §6.2 pass on both targets with no leak under the heap check; every stage pair holds, `inl_half.lir1` equal to rule 37's example text; `run.sh` runs the `NAME.prelude` cases and rejects a `NAME.prelude` beside another kind; `driver_check.sh` passes; every earlier test passes; `make check-contracts`, `make test` and `make cross` pass; the measured sizes and free letters are recorded in §2.7 and the gate after 4h applied (`sealower` and, by Decision 56, `sealoop` and `seacheck`), a failing program getting a relief agreed with the user before phase 5's code |
+| 5a | **Phase-5 specification** (documents only; agreed 2026-10-24, Decisions 58–73 and lead decisions L-ac–L-at, of which L-an–L-at followed an independent review of the text): §0, §2.7 ("Projected for phase 5", "The gate after phase 5"), §3.6.4 (the properties of `sea.lir1` relied on), §3.6.5 ("Pass 3b from phase 5"), §4.9.2, §5.2 (measured; targets), §5.8 (T1–T10), §5.9, §6.2 ("Phase-5 tests"), this table, §9, and LANGUAGE.md §5.4's sentence on checks (Decision 61); no contract file, intermediate format, rule of LANGUAGE.md or Baysick change; done when committed, then 5b with 5c-1 in parallel | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 58–73 (2026-10-24) |
+| 5b | **Pass 4: allocator and code selection, both targets** (§4.9.2; `seaopt` unchanged, so every `sea.lir` is as in phase 4). Work packages, each owning its files: **WP-RA** `passes/lib/ralloc.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3); **WP-A64** `passes/seagen_a64/*` (its `build.list` gains `ralloc`; `D` widened, no new array letter, L-ac); **WP-X64** `passes/seagen_x64/*` (the same, and L-ah's forms); **T-RA** `tests/passes/ra5_*.lir` and their `.out` (§6.2); T-RA reports its `tests/CORPUS.md` rows to 5c-1's T1, which alone edits that file. WP-A64 and WP-X64 start from WP-RA's interface, frozen first | every test of the corpus passes unchanged on both targets (`make test`, `make cross`), and so do the `ra5_*` tests; `make check-limits` measured |
+| 5c-1 | **`seaopt`: analysis and the local transformations** T1 (checks and overflow), T2 (division), T3 (value numbering), T4 (if-conversion) and T10 (clean-up, renumbering) of §5.8; may run in parallel with 5b (disjoint files). Work packages: **WP-OPT** `passes/seaopt/*` (`R` widened, at most the one new letter `W`, L-ad); **T1** `tests/programs/opt_*`, `tests/errors/r_opt_*` and their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump5_cases.py`, 5c-1's `opt5_*` goldens (§6.2's list) and the `.lir` goldens that T1–T4 and T10 change, re-derived (L-ak), in `tests/passes/` (T2 and 5b's T-RA report their CORPUS rows to T1) | the 5c-1 tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test` and `make cross` pass |
+| 5c-2 | **`seaopt`: the loop transformations** T5 (promotion), T6 (copy-on-write versioning), T7 (strength reduction), T8 (hoisting, constant commoning) and T9 (unswitching) of §5.8, after 5c-1; the same work packages and files (T2: 5c-2's `opt5_*` goldens and every `.lir` golden that T5–T9 change, 5c-1's and `gen_arith` among them, re-derived, §6.2, L-ak) | the 5c-2 tests of §6.2 pass on both targets, `opt5_lcg.lir` equal to §5.8's W5 loop; every earlier test passes; `make test` and `make cross` pass |
+| 5d | **Shapes, benchmarks, gate; close-out** (after 5b and 5c-2). Work packages: **WP-SHAPE** `tests/shape.sh`, `tests/shape/*.shape` (from §5.2's targets, by hand; each loop identified by its properties, §6.2, L-ar), the `Makefile` group `test-shape` in `make test` and its entry in the `make test` group list of `sea/CLAUDE.md`; **WP-BENCH** `bench/micro/*`, `bench/micro.sh`, `bench/results/micro-*.tsv` (§5.9), the phase-4 compiler built in a scratch worktree; then the gate after phase 5 (§2.7) | `make test-shape` passes for both targets (the phase's "done when", row 5); the micro-benchmarks are recorded in §5.9 for both targets with their machines; `make test` and `make cross` pass; the sizes and letters are recorded in §2.7 and the gate applied, a failing program getting a relief agreed with the user before phase 6's code |
 
 ## 9. Decisions (agreed)
 
@@ -9620,3 +10452,206 @@ followed by the `printf` JSON of §6.3 and nothing else on standard output (§6.
 living in its existing block tables; `sealoop` at most one, leaving at least 2) (§2.7, §8).
 *For the user's information:* by LANGUAGE.md §10.3 rule 2, `linspace(0.0, 0.0, 4)` is `[0, -0, 0,
 0]`; the reference `common.mlinspace` agrees, and a test pins it.
+
+58. **Where the optimizations live.** Options: (a) **every LIR-to-LIR transformation in `seaopt`
+    (T1–T10 of §5.8), target-independent; register allocation and instruction selection in pass 4**;
+    (b) the loop transformations (T5–T9) in a new pass between `seaopt` and pass 4 (a new program,
+    driver step and dump kind, the size of 4e-0's split); (c) check elimination in `sealower`, which
+    knows shapes from the HIR (it has 527 lines left under its cap and phases 6–9 still to come).
+    **Decided: (a)** (the user, 2026-10-24); (a) keeps one program per concern and `seaopt`, the
+    pass §2.7 sized for this work (2 444 lines), at 4 404–5 684; (b) only pays if `seaopt` cannot
+    hold phase 7 too, which the gate after phase 5 measures (Decision 71); (c) spends `sealower`'s
+    scarce margin. Affects §2.7, §3.6.5, §5.8, §8.
+59. **The allocator.** Options: (a) **one linear-scan allocator in a shared module
+    `passes/lib/ralloc.bas`, built into both code generators with per-target register tables**; (b)
+    the allocator in `seaopt`, its assignment carried to pass 4 in new `sea.lir` records (set `LF`),
+    the code generators only mapping numbers to names; (c) a separate allocator written in each code
+    generator; (d) a new pass `seareg` between `seaopt` and pass 4. **Decided: (a)** (the user,
+    2026-10-24); (a) is written once, needs no contract change, and costs its 450–750 lines in each
+    code generator (both stay ≤ 5 650); (b) also writes it once, but changes `passes.txt`, `seaval`
+    and every LIR dump, and adds 600–900 lines to `seaopt`, which then cannot take phase 7 under the
+    7 000-line cap; (c) doubles the work and the bugs; (d) adds a program and a dump kind for no
+    gain over (a). Affects §2.7, §4.9.2, §8.
+60. **Allocator policy.** Options: (a) **fixed scratch registers (arm64 `x15 x16 x17`, `d29 d30
+    d31`; x86_64 `%rax %rcx %rdx %r11`, `%xmm14 %xmm15`), so 25/29 and 10/14 allocatable; values
+    that cross a call kept in their registers and saved and reloaded around the call (callee-saved
+    registers first on arm64); the spill victim chosen by the loop depth of its deepest use, then
+    the farthest end; no interval splitting**; (b) the same, but x86_64's fixed operands handled by
+    pre-coloured intervals instead of reserved registers (13 allocatable, about 150 more lines in
+    the module and more cases to test); (c) values that cross a call only in callee-saved registers,
+    otherwise spilled whole (simpler, but x86_64 has no callee-saved `xmm` register: W4's `omega`
+    and `dMax`, which cross the slow copy's `sea_arr_unique` call, would live in memory in the hot
+    loop). **Decided: (a)** (the user, 2026-10-24); (a) meets both §5.2 targets with registers to
+    spare (W4's interior loop needs 9 general registers on x86_64), and saves cost only on the paths
+    that call. Affects §4.9.2, §5.2.
+61. **Bounds-check elimination, and the checks it cannot prove.** Options: (a) **a check is deleted
+    only when §5.8's facts prove it (loop ranges from `rcount` and rule 17, creation extents of
+    shape-stable arrays, the extents of unchanged parameters, dominating comparisons, checks already
+    passed); every other check stays exactly where it is, as a compare and a branch to a cold block,
+    never moved or merged; LANGUAGE.md §5.4's "hoists the others out of loops" becomes "keeps the
+    others as a compare and a never-taken branch"**; (b) (a), plus loop versioning on a range test
+    in front of a loop whose unproven checks are affine in its index (a check-free copy when the
+    whole range fits, the original otherwise; exact, but up to twice the code and 200–300 more
+    lines); (c) (a), plus hoisting an invariant check when it would run first in the first iteration
+    (exact only under conditions that W4's boundary checks do not meet). **Decided: (a)** (the user,
+    2026-10-24); (a) proves every check of W4 and W5 and keeps LANGUAGE.md's error order trivially;
+    (b) helps loops over arrays whose extents are unrelated to the range, which no workload has in a
+    hot loop; (c) adds subtle conditions for little. Affects §5.8, LANGUAGE.md §5.4 (one sentence,
+    not a rule).
+62. **Copy on write in loops.** Options: (a) **versioning (T6): a test of the counts in front of the
+    outermost qualifying loop chooses a copy of the loop without the cows (counts 1) or the
+    original; register and `ref`-parameter (memory) forms; one level, at most twice the loop's
+    code**; (b) the cow hoisted in front of the loop (`sea_arr_unique` called before the loop even
+    when no store would run: exact in values, but an `out of memory` can then come earlier, or where
+    the program would not have copied, which LANGUAGE.md §9.2 would have to allow); (c) the cow kept
+    in the loop (3 instructions per store, and the data address of the array cannot be hoisted, so
+    W4's column pointers are reloaded each point: the W4 target is missed). **Decided: (a)** (the
+    user, 2026-10-24); (a) is exact and makes the hot copy a plain store; it costs 200–320 lines and
+    code size. Affects §4.2 (its copy-on-write paragraphs name the versioning), §5.8.
+63. **What is hoisted, how memory is disambiguated, and unswitching.** Options: (a) **hoisting of
+    pure instructions, of checked arithmetic once T1 has made it unchecked, of header loads (also
+    from inside `if` arms, for array registers), of loads from private locations (unaliased `ref`
+    parameters and private slots, L-af) and of anticipated loads; never of a failing instruction, an
+    effect, or a load with an index (L-aj); memory disambiguated by the location classes of §5.8
+    (header fields, private locations, then by access kind); promotion of private `i64`/`f64`
+    locations to registers in loops (W5's `ref s`); value numbering within regions; if-conversion of
+    one-`mov` arms; unswitching of innermost loops on at most two invariant conditions (T9)**; (b)
+    (a) without unswitching (W4's two boundary tests stay as two well-predicted branches per point;
+    arm64 26 instructions instead of 24, and on x86_64 the boundary arms' registers no longer fit
+    the 10 allocatable ones, so the loop body gets spill loads); (c) (a) without promotion (W5's `s`
+    is loaded and stored through memory each step: two memory operations and a store-to-load
+    forwarding delay on the dependency chain). **Decided: (a)** (the user, 2026-10-24); unswitching
+    costs 100–180 lines and up to four copies of an innermost loop. Affects §5.2, §5.8.
+64. **Strength reduction.** Options: (a) **both forms: unit stride (the index register with a
+    hoisted base, constant offsets folded into the base) and invariant stride (a pointer advanced at
+    the top of the body, so `next` stays right)**; (b) unit stride only now, invariant stride with
+    phase 7's vectorization (W4 and W5 need only unit stride; W2's row access and any `A[i, j]` with
+    `j` inner then keep a multiply per access until phase 7); (c) none: scaled addressing only, the
+    linear index computed per access. **Decided: (a)** (the user, 2026-10-24); (a) meets §5.2's
+    wording ("pointer increments of 8 and 8·ld") for 150–250 lines; (b) saves about 80 of them.
+    Affects §5.2, §5.8.
+65. **Division by constants.** Options: (a) **`%` and `idiv` on `i64` by a constant c ≥ 1: c = 1,
+    powers of two (`iand`, `isar`), every other c by the signed multiply-high sequence of §5.8 with
+    the floored correction (Hacker's Delight's magic numbers, computed by `seaopt` itself, L-am); a
+    zero or negative constant unchanged; `f64` `/` by a normal power of two as a multiplication
+    (L-al)**; (b) also negative constant divisors (by negation, the −2⁶³ and −1 cases kept checked;
+    no workload divides by a negative constant); (c) powers of two only (W5's `% 2147483647` keeps
+    its `sdiv`/`idivq`, hardware division on the dependency chain of every step). **Decided: (a)**
+    (the user, 2026-10-24); (a) covers every workload use (`mod(16807*s, 2147483647)`, `mod(I + J,
+    2)`, `mod(nPanel, 2)`); the sequence was checked against floored `%` and `idiv` on the edge
+    dividends and 2 000 random ones for each of about 300 divisors (a scratch check while writing
+    this; the `opt_*` tests of §6.2 make it permanent). Affects §5.8, LANGUAGE.md (none: §6.6 and
+    §6.8 already allow it).
+66. **How "meets the §5.2 shapes" is tested.** Options: (a) **two layers: hand-derived `opt5_*`
+    `.lir` goldens of pass 3b (the W5 function and a small W4 loop among them), and `tests/shape.sh`
+    on `-S` of the acceptance programs for both targets (instruction count bound, exact mnemonic
+    counts, no frame access, no call, the number of cold branches), run on the Mac by `make test`**;
+    (b) golden `-S` fragments for each target (brittle: any allocator or template change rewrites
+    them, and they pin details §4.9.2 does not fix); (c) dynamic counts from performance counters or
+    a simulator (not reproducible across machines, no simulator in the toolchain). **Decided: (a)**
+    (the user, 2026-10-24); (a) tests the LIR exactly (it is specified exactly) and the machine code
+    by its properties. Affects §6.2, §8.
+67. **The corrected §5.2 targets.** Options: (a) **W5: 20 arm64 and 23 x86_64 instructions per step;
+    W4: 24 arm64 and 27 x86_64 per interior point (§5.2 "Targets for phase 5"), derived from §5.8
+    and §4.9.2; six `f64` loads per W4 point**; (b) keep "≈ 10" for W5 and add peepholes (arm64
+    `msub`, shifted-operand `sub`, a Mersenne-specific remainder for 2³¹ − 1): about 16–18, still
+    not 10, for more templates; (c) forward `T[j − 1, i]` from the previous iteration's store to
+    reach five loads (needs a value carried across iterations through the `continue` path; not in
+    phase 5's scope). **Decided: (a)** (the user, 2026-10-24); (a) states what the design produces;
+    §5.5's time estimates do not change (they were made from latency, not counts). Affects §5.2,
+    §6.2's shape files.
+68. **The micro-benchmarks.** Options: (a) **`bench/micro/` with `lcg.sea` and `sor.sea` (the
+    acceptance programs' loops verbatim, validated by `lcg_final` and `it_sor`), C references built
+    `-O2 -ffp-contract=off`, `bench/micro.sh` on the Mac and the host, BENCH.md's methodology, each
+    measured with the phase-4 and the phase-5 compiler; TSV committed under `bench/results/`, the
+    table in §5.9**; (b) whole-program timings of `tests/accept/w4_sor.sea` and `w5_stats.sea` only
+    (mixes in start-up, allocation and the other phases of W5); (c) numbers written into §5.9 only,
+    no harness kept. **Decided: (a)** (the user, 2026-10-24); (a) isolates the two loops phase 5 is
+    judged by and leaves a harness phase 10's `bench/` reuses. Affects §5.9, §8.
+69. **Is `seaopt`'s output canonical?** Options: (a) **yes: §5.8 fixes the order, the conditions and
+    the placement of every transformation, so `sea.lir` is derivable by hand and its dumps are
+    golden tests, as for every other pass**; (b) only properties are specified (behaviour, and
+    pattern checks on `.lir`), no goldens. **Decided: (a)** (the user, 2026-10-24); (a) follows the
+    house rule that expected outputs come from the spec and catches a missed or misplaced
+    transformation directly; it makes §5.8 longer and every golden slower to derive. Affects §5.8,
+    §6.2.
+70. **Sub-phases and gates.** Options: (a) **5a the specification; 5b pass 4's allocator and
+    selection on both targets (no `seaopt` change, so the whole corpus checks it); 5c-1 `seaopt`'s
+    analysis and local transformations, in parallel with 5b; 5c-2 the loop transformations; 5d the
+    shape tests, the benchmarks and the size gate**; (b) one step after the specification; (c)
+    `seaopt` first, the allocator last. **Decided: (a)** (the user, 2026-10-24); (a) proves the
+    allocator against unchanged LIR before the LIR starts changing, and lets two teams work on
+    disjoint files; (c) would leave the shapes unmeasurable until the end. Affects §8.
+71. **`seaopt`'s size and phase 7.** Options: (a) **a gate after phase 5 records `seaopt`,
+    `seagen_a64` and `seagen_x64` (§2.7); when `seaopt` + 2 000 exceeds 7 000, phase 7's
+    vectorization is decided as a pass of its own at the gate after phase 6, with Decision 56's
+    fusion seam**; (b) decide now that phase 7's vectorization is its own pass; (c) no gate until
+    phase 7. **Decided: (a)** (the user, 2026-10-24); (a) decides with the measured size (the
+    projection spans 4 404–5 684); (b) may create a pass that turns out unnecessary. Affects §2.7,
+    §8.
+72. **Optimization against the capacity limits.** Options: (a) **a transformation whose result would
+    exceed a LIR limit of the function is skipped, so optimization never causes `program too
+    large`**; (b) the limit is reported as for any other pass. **Decided: (a)** (the user,
+    2026-10-24); (a) keeps the compile errors a property of the program, not of the optimizer
+    (versioning and unswitching can multiply a loop's size by up to eight). Affects §3.6.5, §5.8.
+73. **A switch to turn the optimizations off.** Options: (a) **none: `seaopt` and the allocator
+    always run; the corpus, whose expected outputs come from the spec, is the exactness test**; (b)
+    a driver option (`-O0`) under which `seaopt` copies its input and pass 4 keeps the allocator,
+    used by a differential test over the corpus and by the benchmarks (a change of §2.2's usage line
+    and of `driver_check.sh`). **Decided: (a)** (the user, 2026-10-24); (b) adds a mode that must
+    itself be tested; §5.9 gets its "before" numbers from the phase-4 compiler instead. Affects §2.2
+    (only under (b)), §5.9, §6.2.
+
+**Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
+clearly right, reported to the user and agreed with the phase-5 text; each is written into its
+normative section): L-ac,
+`seagen_a64` and `seagen_x64` use all 26 numeric array letters, so the allocator adds none: its
+per-register state widens the code generator's `D` and the module keeps small SUB-local arrays
+(§2.7, §4.9.2); L-ad, `seaopt` keeps its facts in the six phase-5 columns of `R`, widened to
+`R(99999,9)`, and takes one new letter, `W`, leaving `S` and `V` (§2.7); L-ae, §3.6.4 states the
+four properties of `sea.lir1` that phase 5 relies on (headers never stored to, definite assignment,
+`ref` memory reached only through the parameter, slots only through their `sa` registers); L-af,
+`ref` parameters and private slots are unaliased within a function, which follows from LANGUAGE.md
+§7.2 (no global variables) and §8.3 (no shared roots) with rule 31's copy on write (§5.8); L-ag, a
+value kept in a register need not be stored back on a path that ends in a run-time error, because
+the process ends and releases nothing (LANGUAGE.md §9.2, §4.2; §5.8); L-ah, the x86_64 forms of
+§4.9.2 (two-address rules, `leaq` for an add of an immediate, `imulq $v`, `xorpd` before `cvtsi2sdq`,
+`andpd`/`xorpd` for `fabs`/`fneg`); L-ai, the loop-closing sequences of §4.9.2; L-aj, only loads
+without an index are hoisted, since an indexed load is valid only after its check (§5.8 T8);
+L-ak, the `.lir` goldens a transformation changes (`gen_arith` among them) are re-derived from §5.8,
+as L-i did for 4g-1 (§3.6.5); L-al, `f64` division by a normal power of two only (−1022 ≤ e ≤ 1023;
+for e = 1023 the reciprocal is the exact subnormal 2⁻¹⁰²³), never `%` on `f64` (§5.8 T2); L-am,
+`seaopt` computes the magic numbers with its own 128-by-64-bit division on 16-bit limbs instead of
+loading `limb` (801 lines, of which it needs none) (§2.7, §5.8).
+
+**Lead decisions of phase 5 after the review of its text** (2026-10-24; an independent review of
+the agreed text found defects that the text could not leave open; none changes a user decision, and
+each is written into its normative section): L-an, pass 4's templates (§4.9.2): every LIR
+instruction is *direct* (allocated registers in place, with the multi-instruction forms written so
+that a destination may share an operand's register: arm64 `imulc` computes the high half first, the
+x86_64 `isel`/`psel`/`fsel` forms depend on whether d is a or b, `imulh` and variable shifts go
+through `%rax`/`%rdx` and `%rcx`, addresses are formed in `x16` or `%r11`, `retain`/`release`
+count in `x16` or `%rcx`) or *staged* (`idivf imodf rcount ftoi fmin fmax ffloor fceil ftrunc fround
+mcopy`: §4.9's and §4.9.1's sequences on the scratch registers, renamed, with operands moved in and
+results out; arm64 `mcopy`'s data through `d29`; x86_64 `ffloor`/`fceil`/`fround` adjusting t as an
+integer instead of using `%xmm10`), and every parallel move is emitted in three steps (memory
+destinations, then register moves with cycles broken through `x17`/`d31`, `%r11`/`%xmm15`, then
+memory and immediate sources straight into their destinations); L-ao, `seaopt` runs T8 before T7
+and again after it (T1–T6, T8, T7, T8, T9, T10), because T7 needs invariant bases and index terms
+that only T8 moves out of the loop (§5.8); L-ap, T1's facts are a state that the walk carries and
+joins: the symbol bounds L, U and every narrowing hold only in the part or loop that made them (a
+guard's facts end at its `endif`, a loop's at its closing record, which restores the loop's entry
+state with what the loop writes unknown), a symbol other than a constant has the interval [s, s]
+with what its definition computes in L(s), U(s), the bounds rows ≥ 0 hold from the `rcall` that
+creates the array, a dominating comparison of a symbol with a constant narrows its L(s) or U(s) in
+that part, and a narrowing between incomparable bounds keeps the old bound (§5.8); L-aq, a
+loop whose hidden count register would be numbered above `SEA_LIM_LIR_REGS` keeps its count in a
+spill slot, so pass 4 never fails on the register limit (§4.9.2, as Decision 72 does for `seaopt`);
+L-ar, a shape test identifies its loop by its properties: the line passes when one of the named
+function's innermost loops, found from `--emit lir`, meets all of them, so no block number is
+derived by hand (§6.2); L-as, the condition codes of fused comparisons, whose inverses hold for
+unordered operands on both targets, and x86_64 `fcmp eq`/`ne` as two branches (`jp` with `jne` or
+`je`) and never fused into a selection (§4.9.2); L-at, an anticipated load is hoisted only through
+an object pointer (a parameter, a `call`/`rcall` result, an `ldp`, an `sa`, or a `mov` of one), which
+is non-null and points to a live object wherever it is read, so running it before a failing
+instruction of the loop reads valid memory (§5.8 T8).

@@ -805,9 +805,10 @@ reports `index 9 out of bounds for dimension 0 of extent 5`, and `v[7..9]` repor
 range, and `:`, never fail.
 
 Checks are **always on** (Decision 12 in DESIGN.md §9). They cost almost nothing where it matters
-because the compiler removes the checks it can prove (loop induction variables over
-`0..len(v)`, `0..rows(A)`, and the like) and hoists the others out of loops (DESIGN.md §5.2); what
-remains is a compare and a never-taken branch off the latency chain.
+because the compiler removes the checks it can prove can never fail (loop induction variables over
+`0..len(v)`, `0..rows(A)`, and the like; DESIGN.md §5.2, §5.8) and keeps every other check where
+it is, as a compare and a never-taken branch off the latency chain. Removing or keeping checks never
+changes which error a program reports, at which line, or what it has written before it.
 
 ### 5.5 Indexed assignment
 

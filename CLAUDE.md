@@ -59,7 +59,12 @@ the `sea.hirl` records `iblk`/`iret` (`passes.txt` HL 88–89), lowered by `seal
 `std.sea`'s `linspace`, `meshgrid`, `setdiff`, `bincount`; W5 accepted). The gate after 4h passed:
 `sealower` 6 473 built lines (v1 7 573, stress 8 123; free letters `C S X`), `sealoop` 5 829 (v1
 8 429; `B X Y`), `seacheck` 6 426 (14 free), `seaname` 5 281 (DESIGN.md §2.7 "Measured after 4h").
-**Phase 4 is complete. Next is phase 5 (scalar code quality, DESIGN.md §8).**
+**Phase 4 is complete.** **Phase 5** (scalar code quality) is specified and agreed (5a; Decisions
+58–73, lead decisions L-ac–L-at (L-an–L-at after a review of the text): `seaopt`'s T1–T10 of
+DESIGN.md §5.8, the shared allocator `passes/lib/ralloc.bas` of §4.9.2, the shape tests and
+micro-benchmarks of §6.2, §5.9). **Next: 5b
+(allocator and code selection, both targets) with 5c-1 (`seaopt` local transformations) in
+parallel** (DESIGN.md §8).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
