@@ -1,0 +1,39 @@
+struct Acc {
+    sum: f64
+    n: i64
+}
+fn tally(ref m: i64, v: f64[], k: i64) -> f64 {
+    var a = Acc { sum: 0.0, n: 0 }
+    for i in 0..k {
+        m = m + i
+        a.sum = a.sum + v[i]
+        a.n = a.n + 1
+    }
+    var t = 0
+    for i in 0..k {
+        t = t + m * a.n
+    }
+    return a.sum + f64(t)
+}
+fn twice(ref x: i64, k: i64) -> i64 {
+    for i in 0..k {
+        x = x + 2
+    }
+    return x
+}
+fn kept(ref m: i64, k: i64) -> i64 {
+    var r = 0
+    for i in 0..k {
+        m = m + 1
+        r = r + twice(ref m, i)
+    }
+    return r
+}
+var m = 3
+let v = [0.5, 1.5, 2.5]
+printf("%g %g %d\n", tally(ref m, v, 3), tally(ref m, v, 2), m)
+printf("%d %d %d %d\n", kept(ref m, 2), kept(ref m, 3), twice(ref m, 1), m)
+// opt5_promote -- DESIGN.md 5.8 T5: the `ref` scalar m and the struct fields a.sum (f64) and
+// a.n of a slot promoted in tally's first loop (pre-loads, the updates written straight into
+// the registers by destination rewriting, post-stores after the loop), read-only locations in
+// its second loop (pre-loads only); in kept, m is passed to a call (not a private base): stays

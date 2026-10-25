@@ -1,0 +1,40 @@
+fn diff(v: f64[], k: i64, n: i64) -> f64 {
+    var s = 0.0
+    for i in 1..n-1 {
+        s = s + v[i + 1] - v[i - 1] + v[i] + v[i + k]
+    }
+    if k >= 0 {
+        if k < 4 {
+            for i in 4..8 {
+                s = s + v[i + k] - v[i - k] + v[i + k + 1]
+            }
+        }
+    }
+    return s
+}
+fn plane(a: f64[,], b: bool[,]) -> f64 {
+    var s = 0.0
+    for i in 0..cols(a) {
+        for j in 0..rows(a) - 1 {
+            if b[j, i] {
+                s = s + a[j, i] * a[j + 1, i]
+            }
+        }
+    }
+    return s
+}
+var v = zeros(12)
+for i in 0..12 {
+    v[i] = f64(i * i)
+}
+var a = zeros(3, 2)
+var b = filled(true, 3, 2)
+a[1, 1] = 2.0
+a[2, 1] = 3.0
+printf("%g %g\n", diff(v, 2, 6), diff(v, 3, 9))
+printf("%g %g\n", plane(a, b), plane(a, filled(false, 3, 2)))
+// opt5_sr_unit -- DESIGN.md 5.8 T7, unit stride: v[i + 1] and v[i - 1] (the offset folded into
+// the address, J the index), v[i] unchanged, v[i + k] with its checked add kept; under 0 <= k < 4
+// v[i + k] and v[i - k] (an invariant term with the scale 8 and -8), v[i + k + 1] kept (a
+// checked add in the chain); the bool and f64 columns of plane (the term i * rows, scale 1 and
+// 8, and the row j + 1); T8's second pass hoists what T7 adds and commons its constants

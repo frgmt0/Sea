@@ -1,0 +1,21 @@
+fn fill(ref v: f64[], k: f64) {
+    for i in 0..len(v) {
+        v[i] = k
+    }
+}
+fn scale(ref v: f64[], k: f64) {
+    for i in 0..len(v) {
+        v[i] = v[i] * k
+    }
+}
+var a = zeros(3)
+let b = a
+fill(ref a, 0.5)
+scale(ref a, 4.0)
+var c = zeros(2)
+fill(ref c, 1.5)
+scale(ref c, 3.0)
+printf("%g %g %g %g\n", a[2], b[2], c[0], c[1])
+// opt5_cow_ref -- DESIGN.md 5.8 T6, memory form at the private location (p1, 0) of a `ref`
+// array: T3 has made the cow's load of v a `mov` of the load before the bounds check, part of
+// the cow (L-bs); both loops are versioned, the fast copies' loads of v hoisted (T8)

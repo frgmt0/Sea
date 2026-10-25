@@ -1,0 +1,15 @@
+// opt_destrew_ref_later_store -- T5 destination rewriting: the promoted location is stored again before the value it first received is
+// read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)
+fn upd2(ref s: i64, a: i64, b: i64, n: i64) -> i64 {
+    var w = 0
+    for i in 0..n {
+        s = a + b
+        let t = s
+        s = 0
+        w += t
+    }
+    return w
+}
+var s = 9
+let w = upd2(ref s, 3, 4, 5)
+printf("%d %d\n", w, s)

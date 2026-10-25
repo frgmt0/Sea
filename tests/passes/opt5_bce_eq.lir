@@ -62,27 +62,25 @@ li i28 0
 li i29 1
 rcount i30 i31 i28 i2 i29 0 0:18
 if 5 i31
-loop 6 i32 i28 i30 i29
-li i33 7
-iand i34 i32 i33
-li i35 0
-icmp lt i36 i34 i35
-if 7 i36
+li i32 7
+li i33 0
+ldp p34 p7 - 0 40
+loop 6 i35 i28 i30 i29
+iand i36 i35 i32
+icmp lt i37 i36 i33
+if 7 i37
 exit 6
 endif 7
-li i37 7
-icmp gt i38 i34 i37
+icmp gt i38 i36 i32
 if 8 i38
 exit 6
 endif 8
-li i39 7
-icmp eq i40 i34 i39
-if 9 i40
+icmp eq i39 i36 i32
+if 9 i39
 exit 6
 endif 9
-ldp p41 p7 - 0 40
-ldf f42 p41 i34 8 0
-fadd f8 f8 f42
+ldf f40 p34 i36 8 0
+fadd f8 f8 f40
 endloop 6
 endif 5
 release p7

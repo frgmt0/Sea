@@ -1,0 +1,94 @@
+// opt_unswitch_nan -- loop-invariant conditions (DESIGN.md 5.8 T9): two bool conditions, one negated, and a
+// third invariant comparison in one loop, with NaN, signed-zero and infinite operands (only
+// != holds with NaN); an if expression selecting on an invariant == ; an invariant self-
+// comparison lim <= lim (false for NaN) around a nested if; a stencil whose column tests
+// i == 0 and i == nx - 1 are invariant in the inner loop and guard index arms that would
+// fail if evaluated (one column: both hold); empty matrices (LANGUAGE.md 6.4, 6.10, 4.5)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn classify(v: f64[], a: f64, b: f64) -> f64 {
+    var t = 0.0
+    let c1 = a < b
+    let c2 = a != b
+    for i in 0..len(v) {
+        if c1 {
+            t += v[i]
+        } else {
+            t -= v[i] * 0.5
+        }
+        if !c2 {
+            t += 100.0
+        }
+        if a >= b {
+            t *= 2.0
+        }
+    }
+    return t
+}
+fn stencil(T: f64[,]) -> f64[,] {
+    let nx = cols(T)
+    let ny = rows(T)
+    var R = zeros(ny, nx)
+    for i in 0..nx {
+        for j in 0..ny {
+            let w = if i == 0 { T[j, i] } else { T[j, i - 1] }
+            let e = if i == nx - 1 { T[j, i] } else { T[j, i + 1] }
+            R[j, i] = (w + e) * 0.5 + T[j, i]
+        }
+    }
+    return R
+}
+fn pick(v: f64[], a: f64, b: f64) -> f64 {
+    var t = 0.0
+    for i in 0..len(v) {
+        t += if a == b { v[i] } else { v[i] * 2.0 }
+    }
+    return t
+}
+fn count_above(v: f64[], lim: f64) -> i64 {
+    var n = 0
+    for x in v {
+        if lim <= lim {
+            if x > lim {
+                n += 1
+            }
+        } else {
+            n += 100
+        }
+    }
+    return n
+}
+let v = [1.0, 2.0, 4.0]
+printf("%.17g\n", classify(v, 1.0, 2.0))
+printf("%.17g\n", classify(v, 2.0, 1.0))
+printf("%.17g\n", classify(v, 1.0, 1.0))
+printf("%.17g\n", classify(v, nan, 1.0))
+printf("%.17g\n", classify(v, 1.0, nan))
+printf("%.17g\n", classify(v, nan, nan))
+printf("%.17g\n", classify(v, -0.0, 0.0))
+printf("%.17g\n", classify(v, inf, inf))
+printf("%.17g\n", classify(zeros(0), nan, 1.0))
+printf("%g %g %g %g\n", pick(v, 1.0, 1.0), pick(v, nan, nan), pick(v, 0.0, -0.0), pick(v, inf, -inf))
+printf("%d %d %d\n", count_above(v, 1.5), count_above(v, nan), count_above(zeros(0), nan))
+var T1 = zeros(3, 4)
+for i in 0..4 {
+    for j in 0..3 {
+        T1[j, i] = f64(j) * 1.5 + f64(i * i)
+    }
+}
+pv(stencil(T1).flat)
+var T2 = zeros(2, 1)
+T2[0, 0] = 3.0
+T2[1, 0] = -1.0
+pv(stencil(T2).flat)
+var T3 = zeros(1, 3)
+for i in 0..3 {
+    T3[0, i] = f64(i) + 0.5
+}
+pv(stencil(T3).flat)
+pv(stencil(zeros(0, 3)).flat)

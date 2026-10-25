@@ -1,0 +1,35 @@
+struct Pt {
+    x: f64
+    y: f64
+}
+fn norm1(p: Pt) -> f64 {
+    var s = 0.0
+    for i in 0..2 {
+        s = s + abs(p.x) + abs(p.y)
+    }
+    return s
+}
+fn scan(p: Pt, n: i64, lim: f64) -> f64 {
+    var s = 0.0
+    for i in 0..n {
+        s = s + p.x
+    }
+    for i in 0..n {
+        if i > 1 {
+            s = s + p.y
+        }
+    }
+    for i in 0..n {
+        if s > lim {
+            break
+        }
+        s = s + p.x * p.y
+    }
+    return s + norm1(p)
+}
+let q = Pt { x: 1.5, y: -2.0 }
+printf("%g %g %g\n", scan(q, 3, 100.0), scan(q, 4, 1.0), norm1(q))
+// opt5_licm_param -- DESIGN.md 5.8 T8 (a): the struct parameter p is passed to a call, so it is
+// no private base; p.x is hoisted from the first loop (anticipated, p an object pointer), p.y
+// in an if part and p.x, p.y after the `break` test are not anticipated and stay; in norm1 p
+// is a private base and T5 pre-loads its fields

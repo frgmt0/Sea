@@ -1,0 +1,178 @@
+// opt_cow_alias -- copy on write in loops with aliases (DESIGN.md 5.8 T6): a var copy of a parameter stored in
+// a loop (the caller keeps its values), a parameter shadowed by var, a ref array and a value
+// parameter sharing one buffer, a copy retained inside the loop at every iteration and at one,
+// the array stored into a struct field inside the loop, returned inside the loop, loops run
+// zero times, two arrays stored in one loop with either or neither shared, a ref array shared
+// only at the second call, an array field shared by filled() elements, a ref struct's array
+// field, a matrix stored column by column (LANGUAGE.md 4.5, 4.6, 8.2, 8.3)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+struct Holder {
+    data: f64[]
+    tag: i64
+}
+fn modify_copy(a: f64[]) -> f64 {
+    var w = a
+    for i in 0..len(w) {
+        w[i] = w[i] * 10.0 + 1.0
+    }
+    return w[0] + w[len(w) - 1]
+}
+fn negate(a: f64[]) -> f64[] {
+    var a = a
+    for i in 0..len(a) {
+        a[i] = -a[i]
+    }
+    return a
+}
+fn ref_and_val(ref d: f64[], e: f64[]) {
+    let n = len(d)
+    for i in 0..n {
+        d[i] = e[(i + 1) % n] + 100.0
+    }
+}
+fn ret_inside(a: f64[], stop: i64) -> f64[] {
+    var b = a
+    for i in 0..len(b) {
+        b[i] = f64(i) + 0.5
+        if i == stop {
+            return b
+        }
+    }
+    return b
+}
+fn bump_all(ref v: f64[], k: f64) {
+    for i in 0..len(v) {
+        v[i] += k
+    }
+}
+fn fill_holder(ref h: Holder) {
+    for i in 0..len(h.data) {
+        h.data[i] = f64(h.tag + i)
+    }
+}
+fn two(ref p: f64[], ref q: f64[]) {
+    for i in 0..len(p) {
+        p[i] = f64(i) + 1.0
+        q[i] = f64(i) * 2.0 + 0.5
+    }
+}
+var base = zeros(4)
+for i in 0..4 {
+    base[i] = f64(i + 1)
+}
+printf("%g\n", modify_copy(base))
+pv(base)
+let neg = negate(base)
+pv(neg)
+pv(base)
+var d = base
+let e = d
+ref_and_val(ref d, e)
+pv(d)
+pv(e)
+pv(base)
+var d2 = zeros(3)
+let e2 = ones(3)
+ref_and_val(ref d2, e2)
+pv(d2)
+var ra = zeros(4)
+var snap = ra
+for i in 0..4 {
+    snap = ra
+    ra[i] = f64(i) * 3.0 + 1.0
+    printf("%g %g\n", snap[i], ra[i])
+}
+pv(snap)
+pv(ra)
+var a2 = zeros(4)
+var keep = zeros(0)
+for i in 0..4 {
+    a2[i] = f64(i) + 0.5
+    if i == 1 {
+        keep = a2
+    }
+}
+pv(keep)
+pv(a2)
+var h = Holder { data: zeros(0), tag: 0 }
+var c = zeros(3)
+for i in 0..3 {
+    c[i] = f64(i) + 7.0
+    if i == 0 {
+        h.data = c
+        h.tag = 9
+    }
+}
+pv(h.data)
+pv(c)
+printf("%d\n", h.tag)
+pv(ret_inside(base, 1))
+pv(ret_inside(base, 10))
+pv(base)
+var z = base
+let nz = 0
+for i in 0..nz {
+    z[i] = 9.0
+}
+var kz = 5
+while kz < 3 {
+    z[kz] = 1.0
+    kz += 1
+}
+z[0] = 42.0
+pv(z)
+pv(base)
+var p = zeros(3)
+var q = zeros(3)
+let pkeep = p
+two(ref p, ref q)
+pv(p)
+pv(q)
+pv(pkeep)
+var p2 = zeros(2)
+var q2 = zeros(2)
+let qkeep = q2
+two(ref p2, ref q2)
+pv(p2)
+pv(q2)
+pv(qkeep)
+var p3 = zeros(2)
+var q3 = zeros(2)
+two(ref p3, ref q3)
+pv(p3)
+pv(q3)
+var u1 = zeros(3)
+bump_all(ref u1, 1.0)
+let u1save = u1
+bump_all(ref u1, 2.0)
+pv(u1)
+pv(u1save)
+var hs = filled(Holder { data: zeros(3), tag: 1 }, 2)
+for i in 0..3 {
+    hs[0].data[i] = f64(i) + 0.25
+}
+pv(hs[0].data)
+pv(hs[1].data)
+var h2 = Holder { data: zeros(3), tag: 5 }
+let h2save = h2
+fill_holder(ref h2)
+pv(h2.data)
+pv(h2save.data)
+var h3 = Holder { data: zeros(2), tag: -3 }
+fill_holder(ref h3)
+pv(h3.data)
+var M = zeros(2, 3)
+let M0 = M
+for j in 0..3 {
+    for i in 0..2 {
+        M[i, j] = f64(i * 10 + j)
+    }
+}
+pv(M.flat)
+pv(M0.flat)

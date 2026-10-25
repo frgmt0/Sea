@@ -1,0 +1,137 @@
+#sea 1
+#target arm64-macos
+#file opt5_bce_range.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+li i1 4
+li i2 2
+call fill 1 p3 2 i1 i2
+li i4 6
+li i5 5
+call fill 1 p6 2 i4 i5
+li i7 0
+ldi i8 p3 - 0 16
+chkb i7 i8 0 0:23
+ldp p9 p3 - 0 40
+ldf f10 p9 i7 8 0
+ldi i11 p6 - 0 16
+chkb i5 i11 0 0:23
+ldp p12 p6 - 0 40
+ldf f13 p12 i5 8 0
+lf f14 #4000000000000000
+call back 1 f15 1 f14
+lf f16 #3FE0000000000000
+call back 1 f17 1 f16
+sa p18 s1
+stf f10 p18 - 0 0
+stf f13 p18 - 0 8
+stf f15 p18 - 0 16
+stf f17 p18 - 0 24
+la p19 d1
+rcall sea_printf 0:23 0 2 p19 p18
+release p6
+release p3
+ret 0
+endfunc
+func fill fn 0:1:1 2 i1 i2 1 p
+li i3 1
+rcall sea_arr_new 0:2 1 p4 4 i3 i3 i1 i3
+li i5 0
+mov i6 i3
+rcount i7 i8 i5 i1 i6 0 0:3
+if 1 i8
+loop 2 i9 i5 i7 i6
+lf f10 #3FF8000000000000
+ldi i11 p4 - 0 0
+li i12 1
+icmp ne i13 i11 i12
+if 3 i13
+rcall sea_arr_unique 0:4 1 p14 1 p4
+mov p4 p14
+endif 3
+ldp p15 p4 - 0 40
+stf f10 p15 i9 8 0
+endloop 2
+endif 1
+li i16 0
+li i17 1
+rcount i18 i19 i16 i2 i17 1 0:6
+if 4 i19
+loop 5 i20 i16 i18 i17
+ldi i21 p4 - 0 16
+chkb i20 i21 0 0:7
+ldp p22 p4 - 0 40
+ldf f23 p22 i20 8 0
+lf f24 #4000000000000000
+fadd f25 f23 f24
+chkb i20 i21 0 0:7
+ldi i26 p4 - 0 0
+li i27 1
+icmp ne i28 i26 i27
+if 6 i28
+rcall sea_arr_unique 0:7 1 p29 1 p4
+mov p4 p29
+endif 6
+ldp p30 p4 - 0 40
+stf f25 p30 i20 8 0
+endloop 5
+endif 4
+ret 1 p4
+endfunc
+func back fn 0:11:1 1 f1 1 f
+li i2 10
+li i3 1
+rcall sea_arr_new 0:12 1 p4 4 i3 i3 i2 i3
+li i5 9
+li i6 0
+li i7 -1
+rcount i8 i9 i5 i6 i7 1 0:13
+if 1 i9
+loop 2 i10 i5 i8 i7
+ldi i11 p4 - 0 0
+li i12 1
+icmp ne i13 i11 i12
+if 3 i13
+rcall sea_arr_unique 0:14 1 p14 1 p4
+mov p4 p14
+endif 3
+ldp p15 p4 - 0 40
+stf f1 p15 i10 8 0
+endloop 2
+endif 1
+li i16 0
+li i17 10
+li i18 3
+rcount i19 i20 i16 i17 i18 0 0:16
+if 4 i20
+loop 5 i21 i16 i19 i18
+ldp p22 p4 - 0 40
+ldf f23 p22 i21 8 0
+fmul f24 f23 f1
+ldi i25 p4 - 0 0
+li i26 1
+icmp ne i27 i25 i26
+if 6 i27
+rcall sea_arr_unique 0:17 1 p28 1 p4
+mov p4 p28
+endif 6
+ldp p29 p4 - 0 40
+stf f24 p29 i21 8 0
+endloop 5
+endif 4
+li i30 9
+ldp p31 p4 - 0 40
+ldf f32 p31 i30 8 0
+release p4
+ret 1 f32
+endfunc
+fmt d1 8
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

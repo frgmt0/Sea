@@ -1,0 +1,45 @@
+struct Acc {
+    sum: f64
+    n: i64
+}
+fn walk(ref s: i64, n: i64, lim: i64) -> i64 {
+    for i in 0..n {
+        for j in 0..n {
+            s = s + j
+            if s > lim {
+                return -1
+            }
+        }
+    }
+    return s
+}
+fn runs(n: i64, lim: f64) -> f64 {
+    var t = 0.0
+    for i in 0..n {
+        var a = Acc { sum: 0.0, n: i }
+        for j in 0..n {
+            a.sum = a.sum + f64(j)
+            if a.sum > lim {
+                break
+            }
+            if j == i {
+                continue
+            }
+            a.n = a.n + 1
+        }
+        if a.n > 2 {
+            continue
+        }
+        t = t + a.sum + f64(a.n)
+    }
+    return t
+}
+var s = 0
+printf("%d %d %d\n", walk(ref s, 3, 100), walk(ref s, 4, 20), s)
+printf("%g %g\n", runs(3, 2.5), runs(4, 100.0))
+// opt5_promote_exit -- DESIGN.md 5.8 T5 with exits: walk's s promoted in the outer loop, its
+// post-store before the `return` inside the inner loop and after the outer loop (the inner loop,
+// which then stores s, does not promote it again); runs's struct a (a slot whose `sa` stands in
+// the outer loop) promoted in the inner loop only: a `break` (exit of that loop) arrives after
+// its closing record with the post-stores, its `continue` stays inside it, and the outer
+// loop's `continue` follows them

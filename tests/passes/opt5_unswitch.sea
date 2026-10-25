@@ -1,0 +1,41 @@
+fn mix(v: f64[], a: i64, b: i64, w: f64) -> f64 {
+    var s = 0.0
+    for i in 0..len(v) {
+        if a > 0 {
+            s = s + v[i] * (w * 2.0)
+        } else {
+            s = s - v[i]
+        }
+        if b > 0 {
+            s = s + 1.0
+        }
+        if a > 5 {
+            s = s * 0.5
+        }
+        if v[i] > w {
+            s = s + w
+        }
+    }
+    return s
+}
+fn one(v: f64[], a: i64) -> f64 {
+    var s = 0.0
+    let h = f64(a) * 0.25
+    for i in 0..len(v) {
+        if a > 2 {
+            s = s + h
+        } else {
+            s = s + v[i] * h
+        }
+    }
+    return s + h
+}
+var v = zeros(3)
+v[1] = 2.0
+v[2] = 3.0
+printf("%g %g %g\n", mix(v, 1, 1, 1.5), mix(v, 0, 0, 1.5), mix(v, 6, 0, 0.5))
+printf("%g %g\n", one(v, 3), one(v, 1))
+// opt5_unswitch -- DESIGN.md 5.8 T9: mix's loop split on a > 0 and b > 0 into four copies (the
+// third invariant test a > 5 and the test of v[i] stay in each), the copies' own registers
+// renumbered (L-bl) and the hoisted w * 2.0, 1.0, a > 5 and 0.5 placed into the arms of the
+// copies that read them (L-bm); one splits once and places nothing (h is read after the loop)

@@ -1,0 +1,14 @@
+// r_opt_hoist_empty -- e[k] with an invariant k in a loop, on a 4-element parameter and then on an empty one:
+// the empty array fails at the first iteration, after its line (5.4; T8 L-at)
+fn sum_at(e: f64[], k: i64, n: i64) -> f64 {
+    var s = 0.0
+    for i in 0..n {
+        printf("i %d\n", i)
+        s += e[k]
+    }
+    return s
+}
+let full = ones(4)
+printf("%g\n", sum_at(full, 3, 2))
+let e = zeros(0)
+printf("%g\n", sum_at(e, 2, 3))

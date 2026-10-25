@@ -1,0 +1,13 @@
+// r_opt_sr_row -- A[j + 1, i] in nested loops over a 4 x 3 matrix: row 4 at j = 3 of the first column
+// (dimension 0), after three lines (5.4)
+var A = zeros(4, 3)
+for i in 0..3 {
+    for j in 0..4 {
+        A[j, i] = f64(j * 10 + i)
+    }
+}
+for i in 0..3 {
+    for j in 0..4 {
+        printf("%g\n", A[j + 1, i])
+    }
+}

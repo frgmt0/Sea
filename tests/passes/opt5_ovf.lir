@@ -20,10 +20,10 @@ mov i3 i2
 li i4 1
 rcount i5 i6 i3 i1 i4 0 0:3
 if 1 i6
-loop 2 i7 i3 i5 i4
-li i8 1
-iadd i9 i7 i8
-ineg i10 i7
+li i7 1
+loop 2 i8 i3 i5 i4
+iadd i9 i8 i7
+ineg i10 i8
 imulc i11 i9 i10 0:4
 iaddc i2 i2 i11 0:4
 endloop 2
@@ -33,22 +33,22 @@ li i13 10
 li i14 1
 rcount i15 i16 i12 i13 i14 0 0:6
 if 3 i16
-loop 4 i17 i12 i15 i14
-li i18 3
-imul i19 i17 i18
-iaddc i20 i2 i19 0:7
-li i21 1
-isub i22 i17 i21
-isubc i2 i20 i22 0:7
+li i17 3
+li i18 1
+loop 4 i19 i12 i15 i14
+imul i20 i19 i17
+iaddc i21 i2 i20 0:7
+isub i22 i19 i18
+isubc i2 i21 i22 0:7
 endloop 4
 endif 3
 li i23 0
 li i24 1
 rcount i25 i26 i23 i1 i24 1 0:9
 if 5 i26
-loop 6 i27 i23 i25 i24
-li i28 1
-iaddc i29 i27 i28 0:10
+li i27 1
+loop 6 i28 i23 i25 i24
+iaddc i29 i28 i27 0:10
 iaddc i2 i2 i29 0:10
 endloop 6
 endif 5
@@ -56,9 +56,9 @@ li i30 #7FFFFFFFFFFFFFFF
 li i31 1
 rcount i32 i33 i1 i30 i31 1 0:12
 if 7 i33
-loop 8 i34 i1 i32 i31
-li i35 1
-iaddc i36 i34 i35 0:13
+li i34 1
+loop 8 i35 i1 i32 i31
+iaddc i36 i35 i34 0:13
 iaddc i2 i2 i36 0:13
 exit 8
 endloop 8

@@ -22,81 +22,147 @@ mov i4 i3
 li i5 1
 rcount i6 i7 i4 i2 i5 0 0:3
 if 1 i7
-loop 2 i8 i4 i6 i5
-li i9 1
-li i10 0
-iaddc i11 i3 i10 0:4
-iaddc i3 i11 i1 0:4
-li i12 7
-iand i13 i1 i12
-iaddc i14 i3 i13 0:5
-li i15 3
-isar i16 i1 i15
-iaddc i3 i14 i16 0:5
-li i17 10
-li i18 #6666666666666667
-imulh i19 i1 i18
-li i20 2
-isar i21 i19 i20
-li i22 63
-isar i23 i1 i22
-isub i24 i21 i23
-imul i25 i24 i17
-isub i26 i1 i25
-iadd i27 i26 i17
-icmp lt i28 i26 i10
-isel i29 i28 i27 i26
-iaddc i30 i3 i29 0:6
-isub i31 i24 i9
-isel i32 i28 i31 i24
-iaddc i3 i30 i32 0:6
-li i33 #5555555555555556
-imulh i34 i1 i33
-isub i35 i34 i23
-imul i36 i35 i15
-isub i37 i1 i36
-iadd i38 i37 i15
-icmp lt i39 i37 i10
-isel i40 i39 i38 i37
-iaddc i41 i3 i40 0:7
-isub i42 i35 i9
-isel i43 i39 i42 i35
-iaddc i3 i41 i43 0:7
-li i44 #000000007FFFFFFF
-li i45 #8000000100000003
-imulh i46 i1 i45
-iadd i47 i46 i1
-li i48 30
-isar i49 i47 i48
-isub i50 i49 i23
-imul i51 i50 i44
-isub i52 i1 i51
-iadd i53 i52 i44
-icmp lt i54 i52 i10
-isel i55 i54 i53 i52
-iaddc i56 i3 i55 0:8
-isub i57 i50 i9
-isel i58 i54 i57 i50
-iaddc i3 i56 i58 0:8
-li i59 -3
-imodf i60 i1 i59 0:9
-iaddc i61 i3 i60 0:9
-idivf i62 i1 i59 0:9
-iaddc i3 i61 i62 0:9
-imodf i63 i1 i2 0:10
-iaddc i64 i3 i63 0:10
-iadd i65 i8 i9
-idivf i66 i1 i65 0:10
-iaddc i3 i64 i66 0:10
-icmp lt i67 i2 i10
-if 3 i67
-li i68 0
-imodf i69 i1 i68 0:12
-iaddc i70 i3 i69 0:12
-idivf i71 i1 i68 0:12
-iaddc i3 i70 i71 0:12
-endif 3
-endloop 2
+li i8 0
+icmp lt i9 i2 i8
+if 2 i9
+li i10 1
+li i11 7
+iand i12 i1 i11
+li i13 3
+isar i14 i1 i13
+li i15 10
+li i16 #6666666666666667
+imulh i17 i1 i16
+li i18 2
+isar i19 i17 i18
+li i20 63
+isar i21 i1 i20
+isub i22 i19 i21
+imul i23 i22 i15
+isub i24 i1 i23
+iadd i25 i24 i15
+icmp lt i26 i24 i8
+isel i27 i26 i25 i24
+isub i28 i22 i10
+isel i29 i26 i28 i22
+li i30 #5555555555555556
+imulh i31 i1 i30
+isub i32 i31 i21
+imul i33 i32 i13
+isub i34 i1 i33
+iadd i35 i34 i13
+icmp lt i36 i34 i8
+isel i37 i36 i35 i34
+isub i38 i32 i10
+isel i39 i36 i38 i32
+li i40 #000000007FFFFFFF
+li i41 #8000000100000003
+imulh i42 i1 i41
+iadd i43 i42 i1
+li i44 30
+isar i45 i43 i44
+isub i46 i45 i21
+imul i47 i46 i40
+isub i48 i1 i47
+iadd i49 i48 i40
+icmp lt i50 i48 i8
+isel i51 i50 i49 i48
+isub i52 i46 i10
+isel i53 i50 i52 i46
+li i54 -3
+loop 3 i55 i4 i6 i5
+iaddc i56 i3 i8 0:4
+iaddc i3 i56 i1 0:4
+iaddc i57 i3 i12 0:5
+iaddc i3 i57 i14 0:5
+iaddc i58 i3 i27 0:6
+iaddc i3 i58 i29 0:6
+iaddc i59 i3 i37 0:7
+iaddc i3 i59 i39 0:7
+iaddc i60 i3 i51 0:8
+iaddc i3 i60 i53 0:8
+imodf i61 i1 i54 0:9
+iaddc i62 i3 i61 0:9
+idivf i63 i1 i54 0:9
+iaddc i3 i62 i63 0:9
+imodf i64 i1 i2 0:10
+iaddc i65 i3 i64 0:10
+iadd i66 i55 i10
+idivf i67 i1 i66 0:10
+iaddc i3 i65 i67 0:10
+imodf i68 i1 i8 0:12
+iaddc i69 i3 i68 0:12
+idivf i70 i1 i8 0:12
+iaddc i3 i69 i70 0:12
+endloop 3
+else 2
+li i71 1
+li i72 7
+iand i73 i1 i72
+li i74 3
+isar i75 i1 i74
+li i76 10
+li i77 #6666666666666667
+imulh i78 i1 i77
+li i79 2
+isar i80 i78 i79
+li i81 63
+isar i82 i1 i81
+isub i83 i80 i82
+imul i84 i83 i76
+isub i85 i1 i84
+iadd i86 i85 i76
+icmp lt i87 i85 i8
+isel i88 i87 i86 i85
+isub i89 i83 i71
+isel i90 i87 i89 i83
+li i91 #5555555555555556
+imulh i92 i1 i91
+isub i93 i92 i82
+imul i94 i93 i74
+isub i95 i1 i94
+iadd i96 i95 i74
+icmp lt i97 i95 i8
+isel i98 i97 i96 i95
+isub i99 i93 i71
+isel i100 i97 i99 i93
+li i101 #000000007FFFFFFF
+li i102 #8000000100000003
+imulh i103 i1 i102
+iadd i104 i103 i1
+li i105 30
+isar i106 i104 i105
+isub i107 i106 i82
+imul i108 i107 i101
+isub i109 i1 i108
+iadd i110 i109 i101
+icmp lt i111 i109 i8
+isel i112 i111 i110 i109
+isub i113 i107 i71
+isel i114 i111 i113 i107
+li i115 -3
+loop 4 i116 i4 i6 i5
+iaddc i117 i3 i8 0:4
+iaddc i3 i117 i1 0:4
+iaddc i118 i3 i73 0:5
+iaddc i3 i118 i75 0:5
+iaddc i119 i3 i88 0:6
+iaddc i3 i119 i90 0:6
+iaddc i120 i3 i98 0:7
+iaddc i3 i120 i100 0:7
+iaddc i121 i3 i112 0:8
+iaddc i3 i121 i114 0:8
+imodf i122 i1 i115 0:9
+iaddc i123 i3 i122 0:9
+idivf i124 i1 i115 0:9
+iaddc i3 i123 i124 0:9
+imodf i125 i1 i2 0:10
+iaddc i126 i3 i125 0:10
+iadd i127 i116 i71
+idivf i128 i1 i127 0:10
+iaddc i3 i126 i128 0:10
+endloop 4
+endif 2
 endif 1
 ret 1 i3
 endfunc

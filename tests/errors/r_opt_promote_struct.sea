@@ -1,0 +1,17 @@
+// r_opt_promote_struct -- ref struct fields updated and printed in a loop, the second call failing at i = 2 on
+// v[i]: every line before it, the fields as stored (8.3, 9.2; DESIGN.md 5.8 T5, L-ag)
+struct Acc {
+    total: i64
+    count: i64
+}
+fn run(ref a: Acc, v: i64[], n: i64) {
+    for i in 0..n {
+        a.total += v[i]
+        a.count += 1
+        printf("%d %d\n", a.total, a.count)
+    }
+}
+var a = Acc { total: 0, count: 0 }
+run(ref a, [4, 5, 6], 3)
+printf("after %d %d\n", a.total, a.count)
+run(ref a, [1, 2], 4)

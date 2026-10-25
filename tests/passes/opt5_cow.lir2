@@ -1,0 +1,143 @@
+#sea 1
+#target arm64-macos
+#file opt5_cow.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+li i1 3
+lf f2 #3FE0000000000000
+call pair 1 f3 2 i1 f2
+li i4 4
+lf f5 #4000000000000000
+call pair 1 f6 2 i4 f5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:20 0 2 p8 p7
+li i9 2
+call table 1 f10 2 i9 i1
+call table 1 f11 2 i1 i4
+sa p12 s2
+stf f10 p12 - 0 0
+stf f11 p12 - 0 8
+la p13 d2
+rcall sea_printf 0:21 0 2 p13 p12
+ret 0
+endfunc
+func pair fn 0:1:1 2 i1 f2 1 f
+li i3 1
+rcall sea_arr_new 0:2 1 p4 4 i3 i3 i1 i3
+rcall sea_arr_new 0:3 1 p5 4 i3 i3 i1 i3
+mov p6 p4
+retain p6
+li i7 0
+mov i8 i3
+rcount i9 i10 i7 i1 i8 0 0:5
+if 1 i10
+loop 2 i11 i7 i9 i8
+itof f12 i11
+fmul f13 f2 f12
+ldi i14 p4 - 0 0
+li i15 1
+icmp ne i16 i14 i15
+if 3 i16
+rcall sea_arr_unique 0:6 1 p17 1 p4
+mov p4 p17
+endif 3
+ldp p18 p4 - 0 40
+stf f13 p18 i11 8 0
+ldi i19 p6 - 0 16
+chkb i11 i19 0 0:7
+ldp p20 p6 - 0 40
+ldf f21 p20 i11 8 0
+fadd f22 f13 f21
+ldi i23 p5 - 0 0
+li i24 1
+icmp ne i25 i23 i24
+if 4 i25
+rcall sea_arr_unique 0:7 1 p26 1 p5
+mov p5 p26
+endif 4
+ldp p27 p5 - 0 40
+stf f22 p27 i11 8 0
+endloop 2
+endif 1
+li i28 1
+isub i29 i1 i28
+ldi i30 p4 - 0 16
+chkb i29 i30 0 0:9
+ldp p31 p4 - 0 40
+ldf f32 p31 i29 8 0
+ldi i33 p5 - 0 16
+chkb i29 i33 0 0:9
+ldp p34 p5 - 0 40
+ldf f35 p34 i29 8 0
+fadd f36 f32 f35
+ldi i37 p6 - 0 16
+chkb i29 i37 0 0:9
+ldp p38 p6 - 0 40
+ldf f39 p38 i29 8 0
+fadd f40 f36 f39
+release p6
+release p5
+release p4
+ret 1 f40
+endfunc
+func table fn 0:11:1 2 i1 i2 1 f
+li i3 1
+li i4 2
+rcall sea_arr_new 0:12 1 p5 4 i3 i4 i1 i2
+li i6 0
+mov i7 i3
+rcount i8 i9 i6 i2 i7 0 0:13
+if 1 i9
+loop 2 i10 i6 i8 i7
+li i11 0
+li i12 1
+rcount i13 i14 i11 i1 i12 0 0:14
+if 3 i14
+loop 4 i15 i11 i13 i12
+iadd i16 i15 i10
+itof f17 i16
+ldi i18 p5 - 0 16
+ldi i19 p5 - 0 0
+li i20 1
+icmp ne i21 i19 i20
+if 5 i21
+rcall sea_arr_unique 0:15 1 p22 1 p5
+mov p5 p22
+endif 5
+ldp p23 p5 - 0 40
+imul i24 i10 i18
+iadd i25 i15 i24
+stf f17 p23 i25 8 0
+endloop 4
+endif 3
+endloop 2
+endif 1
+li i26 1
+isub i27 i1 i26
+isub i28 i2 i26
+ldi i29 p5 - 0 16
+chkb i27 i29 0 0:18
+ldi i30 p5 - 0 24
+chkb i28 i30 1 0:18
+ldp p31 p5 - 0 40
+imul i32 i28 i29
+iadd i33 i27 i32
+ldf f34 p31 i33 8 0
+release p5
+ret 1 f34
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

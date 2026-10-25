@@ -1,0 +1,146 @@
+#sea 1
+#target arm64-macos
+#file opt5_unswitch.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 16 8
+li i1 3
+li i2 1
+rcall sea_arr_new 0:33 1 p3 4 i2 i2 i1 i2
+lf f4 #4000000000000000
+mov i5 i2
+ldi i6 p3 - 0 0
+icmp ne i7 i6 i2
+if 1 i7
+rcall sea_arr_unique 0:34 1 p8 1 p3
+mov p3 p8
+endif 1
+ldp p9 p3 - 0 40
+stf f4 p9 i5 8 0
+lf f10 #4008000000000000
+li i11 2
+ldi i12 p3 - 0 0
+li i13 1
+icmp ne i14 i12 i13
+if 2 i14
+rcall sea_arr_unique 0:35 1 p15 1 p3
+mov p3 p15
+endif 2
+ldp p16 p3 - 0 40
+stf f10 p16 i11 8 0
+li i17 1
+lf f18 #3FF8000000000000
+call mix 1 f19 4 p3 i17 i17 f18
+li i20 0
+call mix 1 f21 4 p3 i20 i20 f18
+li i22 6
+lf f23 #3FE0000000000000
+call mix 1 f24 4 p3 i22 i20 f23
+sa p25 s1
+stf f19 p25 - 0 0
+stf f21 p25 - 0 8
+stf f24 p25 - 0 16
+la p26 d1
+rcall sea_printf 0:36 0 2 p26 p25
+li i27 3
+call one 1 f28 2 p3 i27
+call one 1 f29 2 p3 i17
+sa p30 s2
+stf f28 p30 - 0 0
+stf f29 p30 - 0 8
+la p31 d2
+rcall sea_printf 0:37 0 2 p31 p30
+release p3
+ret 0
+endfunc
+func mix fn 0:1:1 4 p1 i2 i3 f4 1 f
+lf f5 #0000000000000000
+li i6 0
+ldi i7 p1 - 0 16
+li i8 1
+rcount i9 i10 i6 i7 i8 0 0:3
+if 1 i10
+loop 2 i11 i6 i9 i8
+li i12 0
+icmp gt i13 i2 i12
+if 3 i13
+ldi i14 p1 - 0 16
+chkb i11 i14 0 0:5
+ldp p15 p1 - 0 40
+ldf f16 p15 i11 8 0
+lf f17 #4000000000000000
+fmul f18 f4 f17
+fmul f19 f16 f18
+fadd f5 f5 f19
+else 3
+ldi i20 p1 - 0 16
+chkb i11 i20 0 0:7
+ldp p21 p1 - 0 40
+ldf f22 p21 i11 8 0
+fsub f5 f5 f22
+endif 3
+li i23 0
+icmp gt i24 i3 i23
+if 4 i24
+lf f25 #3FF0000000000000
+fadd f5 f5 f25
+endif 4
+li i26 5
+icmp gt i27 i2 i26
+if 5 i27
+lf f28 #3FE0000000000000
+fmul f5 f5 f28
+endif 5
+ldi i29 p1 - 0 16
+chkb i11 i29 0 0:15
+ldp p30 p1 - 0 40
+ldf f31 p30 i11 8 0
+fcmp gt i32 f31 f4
+if 6 i32
+fadd f5 f5 f4
+endif 6
+endloop 2
+endif 1
+ret 1 f5
+endfunc
+func one fn 0:21:1 2 p1 i2 1 f
+lf f3 #0000000000000000
+itof f4 i2
+lf f5 #3FD0000000000000
+fmul f6 f4 f5
+li i7 0
+ldi i8 p1 - 0 16
+li i9 1
+rcount i10 i11 i7 i8 i9 0 0:24
+if 1 i11
+loop 2 i12 i7 i10 i9
+li i13 2
+icmp gt i14 i2 i13
+if 3 i14
+fadd f3 f3 f6
+else 3
+ldi i15 p1 - 0 16
+chkb i12 i15 0 0:28
+ldp p16 p1 - 0 40
+ldf f17 p16 i12 8 0
+fmul f18 f17 f6
+fadd f3 f3 f18
+endif 3
+endloop 2
+endif 1
+fadd f19 f3 f6
+ret 1 f19
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

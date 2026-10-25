@@ -1324,6 +1324,167 @@ def ra5_ovf():
     return t
 
 
+# ------------------------------------------------------------------ Decision 75: loop liveness
+# The ra5_live_* tests (DESIGN.md 6.2, from 5c-2): loops whose values are live only inside one
+# iteration (temporaries of if parts, values written in both parts of an if, the temporaries of
+# sibling copies of a loop) and values carried around a loop inside an if part. Each has more
+# such values than x86_64's 10 allocatable general registers would hold if they were extended
+# over the loop (4.9.2's first rule), and its measured loop must have no frame access in the -S
+# text of both targets; the .out checks the values.
+LIVE_N = 200
+
+
+def live_chain(f, seed, k, n, tag):
+    """n temporaries of one if part, computed from k and each read soon after it is written
+    (at most three live at once); returns the last one."""
+    prev = seed
+    for j in range(n):
+        r = 'i.%s%d' % (tag, j)
+        m = j % 4
+        if m == 0:
+            f.e('imul %s %s %s' % (r, prev, f.li(3 + 2 * j)))
+        elif m == 1:
+            f.e('iadd %s %s %s' % (r, prev, k))
+        elif m == 2:
+            f.e('ixor %s %s %s' % (r, prev, f.li(0x5A5A + 97 * j)))
+        else:
+            f.e('isar %s %s %s' % (r, prev, f.li(1 + j % 5)))
+        prev = r
+    return prev
+
+
+@test
+def ra5_live_ifs():
+    """a loop whose if parts compute temporaries: 12 in the first part, 12 in the else part."""
+    t = Test('ra5_live_ifs')
+    f = t.func('.main', 'main', line=1)
+    f.li(0, 'i.zero')
+    f.li(1, 'i.one')
+    f.li(LIVE_N - 1, 'i.last')
+    f.li(0, 'i.acc')
+    b = f.blk()
+    c = f.blk()
+    f.e('loop %s i.k i.zero i.last i.one' % b)
+    f.e('iand i.c i.k i.one')
+    f.e('if %s i.c' % c)
+    r = live_chain(f, 'i.k', 'i.k', 12, 'a')
+    f.e('iadd i.acc i.acc %s' % r)
+    f.e('else %s' % c)
+    r = live_chain(f, 'i.k', 'i.k', 12, 'b')
+    f.e('ixor i.acc i.acc %s' % r)
+    f.e('endif %s' % c)
+    f.e('endloop %s' % b)
+    f.show('acc', ['i.acc'], 2)
+    f.e('ret 0')
+    return t
+
+
+@test
+def ra5_live_carry():
+    """values carried around the loop inside if parts (m, p, read before they are written in
+    the iteration), among 20 temporaries of the same parts."""
+    t = Test('ra5_live_carry')
+    f = t.func('.main', 'main', line=1)
+    f.li(0, 'i.zero')
+    f.li(1, 'i.one')
+    f.li(LIVE_N - 1, 'i.last')
+    f.li(7, 'i.m')
+    f.li(-3, 'i.p')
+    f.li(0, 'i.acc')
+    b = f.blk()
+    c1 = f.blk()
+    c2 = f.blk()
+    f.e('loop %s i.k i.zero i.last i.one' % b)
+    f.e('iand i.c i.k %s' % f.li(3))
+    f.e('ifz %s i.c' % c1)
+    r = live_chain(f, 'i.m', 'i.k', 10, 'a')
+    f.e('iadd i.m i.m %s' % r)
+    f.e('endif %s' % c1)
+    f.e('iand i.d i.k i.one')
+    f.e('if %s i.d' % c2)
+    r = live_chain(f, 'i.p', 'i.k', 10, 'b')
+    f.e('ixor i.p i.p %s' % r)
+    f.e('endif %s' % c2)
+    f.e('iadd i.acc i.acc i.c')
+    f.e('endloop %s' % b)
+    f.show('carry', ['i.m', 'i.p', 'i.acc'], 2)
+    f.e('ret 0')
+    return t
+
+
+@test
+def ra5_live_both():
+    """12 values each written in both parts of an if and read after its endif (L-bh)."""
+    t = Test('ra5_live_both')
+    f = t.func('.main', 'main', line=1)
+    f.li(0, 'i.zero')
+    f.li(1, 'i.one')
+    f.li(LIVE_N - 1, 'i.last')
+    f.li(0, 'i.acc')
+    b = f.blk()
+    f.e('loop %s i.k i.zero i.last i.one' % b)
+    for j in range(12):
+        c = f.blk()
+        x = 'i.x%d' % j
+        f.e('ishr i.s%d i.k %s' % (j, f.li(j % 6)))
+        f.e('iand i.c%d i.s%d i.one' % (j, j))
+        f.e('%s %s i.c%d' % ('if' if j % 2 == 0 else 'ifz', c, j))
+        f.e('iadd %s i.k %s' % (x, f.li(11 * j + 5)))
+        f.e('else %s' % c)
+        f.e('imul %s i.k %s' % (x, f.li(j + 2)))
+        f.e('endif %s' % c)
+        f.e('%s i.acc i.acc %s' % ('iadd' if j % 3 else 'ixor', x))
+    f.e('endloop %s' % b)
+    f.show('both', ['i.acc'], 2)
+    f.e('ret 0')
+    return t
+
+
+@test
+def ra5_live_copies():
+    """two sibling copies of an inner loop inside an outer loop, as T6 and T9 make them (L-bl:
+    each copy's local registers numbered apart; the values written before the copies shared;
+    each copy's pointer computed in its own arm, L-bm)."""
+    t = Test('ra5_live_copies')
+    f = t.func('.main', 'main', line=1)
+    n = 16
+    s = f.slot(8 * (n + 1))
+    f.e('sa p.base %s' % s)
+    for j in range(n + 1):
+        f.e('sti %s p.base - 0 %d' % (f.li(1000 * j + 37 * j * j - 500), 8 * j))
+    f.li(0, 'i.zero')
+    f.li(1, 'i.one')
+    f.li(n - 1, 'i.nl')
+    f.li(9, 'i.rl')
+    f.li(0, 'i.acc')
+    bo = f.blk()
+    bc = f.blk()
+    f.e('loop %s i.r i.zero i.rl i.one' % bo)
+    f.e('iand i.f i.r i.one')
+    f.e('if %s i.f' % bc)
+    f.e('sa p.a1 %s' % s)
+    b1 = f.blk()
+    f.e('loop %s i.j1 i.zero i.nl i.one' % b1)
+    f.e('ldi i.v1 p.a1 i.j1 8 0')
+    r = live_chain(f, 'i.v1', 'i.j1', 12, 'a')
+    f.e('iadd i.acc i.acc %s' % r)
+    f.e('endloop %s' % b1)
+    f.e('else %s' % bc)
+    f.e('sa p.a2 %s' % s)
+    f.e('padd p.a3 p.a2 %s' % f.li(8))
+    b2 = f.blk()
+    f.e('loop %s i.j2 i.zero i.nl i.one' % b2)
+    f.e('ldi i.v2 p.a3 i.j2 8 0')
+    r = live_chain(f, 'i.v2', 'i.j2', 12, 'b')
+    f.e('ixor i.acc i.acc %s' % r)
+    f.e('endloop %s' % b2)
+    f.e('endif %s' % bc)
+    f.e('endloop %s' % bo)
+    f.show('copies', ['i.acc'], 2)
+    f.e('ret 0')
+    return t
+
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 PASSES = os.path.join(os.path.dirname(HERE), 'passes')
 

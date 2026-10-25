@@ -1,0 +1,9 @@
+// r_opt_hoist_far -- a loop-invariant constant index 10^9 into a 3-element vector, after the iteration's line:
+// the first iteration prints, then the index error (the load is never made before its check)
+let v = zeros(3)
+var t = 0.0
+for i in 0..4 {
+    printf("iter %d\n", i)
+    t += v[1000000000]
+}
+printf("%g\n", t)

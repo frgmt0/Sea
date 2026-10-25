@@ -1,0 +1,25 @@
+fn pair(n: i64, k: f64) -> f64 {
+    var u = zeros(n)
+    var w = zeros(n)
+    let keep = u
+    for i in 0..n {
+        u[i] = k * f64(i)
+        w[i] = u[i] + keep[i]
+    }
+    return u[n - 1] + w[n - 1] + keep[n - 1]
+}
+fn table(n: i64, m: i64) -> f64 {
+    var g = zeros(n, m)
+    for j in 0..m {
+        for i in 0..n {
+            g[i, j] = f64(i + j)
+        }
+    }
+    return g[n - 1, m - 1]
+}
+printf("%g %g\n", pair(3, 0.5), pair(4, 2.0))
+printf("%g %g\n", table(2, 3), table(3, 4))
+// opt5_cow -- DESIGN.md 5.8 T6, register form: pair's loop versioned on u and w (two counts
+// tested, iand); keep shares u's buffer and is used only as a base in the loop, so the copy
+// is made but the slow copy runs; table's outer loop is the outermost containing the cow and
+// is versioned, its fast copy's header loads hoisted (T8) and g's column address reduced (T7)

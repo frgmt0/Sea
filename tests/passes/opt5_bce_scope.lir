@@ -26,11 +26,11 @@ li i8 8
 li i9 1
 rcount i10 i11 i1 i8 i9 0 0:5
 if 2 i11
-loop 3 i12 i1 i10 i9
-ldp p13 p4 - 0 40
-ldf f14 p13 i1 8 0
+ldp p12 p4 - 0 40
+loop 3 i13 i1 i10 i9
+ldf f14 p12 i1 8 0
 fadd f15 f5 f14
-ldf f16 p13 i12 8 0
+ldf f16 p12 i13 8 0
 fadd f5 f15 f16
 endloop 3
 endif 2
@@ -41,26 +41,26 @@ ldf f19 p18 i1 8 0
 fadd f5 f5 f19
 endif 1
 li i20 0
-do 4
 li i21 100
-icmp lt i22 i20 i21
-ifz 5 i22
+li i22 1
+li i23 5
+li i24 0
+ldp p25 p4 - 0 40
+do 4
+icmp lt i26 i20 i21
+ifz 5 i26
 exit 4
 endif 5
-li i23 1
-iaddc i20 i20 i23 0:12
-li i24 5
-icmp ge i25 i20 i24
-if 6 i25
+iaddc i20 i20 i22 0:12
+icmp ge i27 i20 i23
+if 6 i27
 exit 4
 endif 6
-li i26 0
-icmp lt i27 i20 i26
-if 7 i27
+icmp lt i28 i20 i24
+if 7 i28
 exit 4
 endif 7
-ldp p28 p4 - 0 40
-ldf f29 p28 i20 8 0
+ldf f29 p25 i20 8 0
 fadd f5 f5 f29
 enddo 4
 ldi i30 p4 - 0 16

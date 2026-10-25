@@ -1,0 +1,18 @@
+// r_opt_unswitch_ne -- an if on an invariant a != b with a nested invariant flag: NaN != NaN holds, so the arm
+// with w[i + k] runs and fails at i = 1 after the iteration's line (6.4)
+fn walk(w: i64[], a: f64, b: f64, k: i64, flag: bool) {
+    for i in 0..len(w) {
+        printf("i %d\n", i)
+        if a != b {
+            if flag {
+                printf("%d\n", w[i + k])
+            }
+        } else {
+            printf("%d\n", w[i])
+        }
+    }
+}
+let w = [7, 8, 9]
+walk(w, 1.0, 1.0, 5, true)
+walk(w, nan, nan, 5, false)
+walk(w, nan, nan, 1, true)

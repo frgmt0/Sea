@@ -1,0 +1,43 @@
+fn total(v: f64[]) -> f64 {
+    var s = 0.0
+    for i in 0..len(v) {
+        s = s + v[i]
+    }
+    return s
+}
+fn passed(n: i64) -> f64 {
+    var v = zeros(n)
+    var s = 0.0
+    for i in 0..n {
+        v[i] = 1.5
+        s = s + total(v)
+    }
+    return s
+}
+fn shared(n: i64) -> f64 {
+    var v = zeros(n)
+    let c = v
+    var s = 0.0
+    for i in 0..n {
+        v[i] = 2.5
+        s = s + total(c)
+    }
+    return s + v[0]
+}
+fn outer(n: i64) -> f64 {
+    var v = zeros(n)
+    var s = 0.0
+    for i in 0..n {
+        for j in 0..n {
+            v[j] = f64(i + j)
+        }
+        s = s + total(v)
+    }
+    return s
+}
+printf("%g %g %g\n", passed(2), shared(2), outer(2))
+printf("%g %g %g\n", passed(3), shared(3), outer(3))
+// opt5_cow_kept -- DESIGN.md 5.8 T6's conditions: a loop that passes the array it stores into
+// to a call, and one that passes a copy made before the loop, are not versioned (the cows
+// stay); in outer the outer loop passes v to a call, so the inner loop is the outermost one
+// that can be versioned

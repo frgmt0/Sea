@@ -64,20 +64,20 @@ li i5 0
 li i6 1
 rcount i7 i8 i5 i3 i6 0 0:3
 if 1 i8
-loop 2 i9 i5 i7 i6
-li i10 5
-imulc i11 i9 i10 0:4
-ldi i12 p1 - 0 16
-imodf i13 i11 i12 0:4
-chkb i13 i12 0 0:5
-ldp p14 p1 - 0 40
-ldf f15 p14 i13 8 0
-fmul f16 f15 f15
-fadd f4 f4 f16
-ldi i17 p2 - 0 16
-chkb i13 i17 0 0:6
-ldp p18 p2 - 0 40
-ldf f19 p18 i13 8 0
+ldi i9 p1 - 0 16
+ldi i10 p2 - 0 16
+li i11 5
+ldp p12 p1 - 0 40
+ldp p13 p2 - 0 40
+loop 2 i14 i5 i7 i6
+imulc i15 i14 i11 0:4
+imodf i16 i15 i9 0:4
+chkb i16 i9 0 0:5
+ldf f17 p12 i16 8 0
+fmul f18 f17 f17
+fadd f4 f4 f18
+chkb i16 i10 0 0:6
+ldf f19 p13 i16 8 0
 fadd f4 f4 f19
 endloop 2
 endif 1

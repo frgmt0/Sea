@@ -1,0 +1,155 @@
+#sea 1
+#target arm64-macos
+#file ra5_live_both.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 0
+li i2 1
+li i3 199
+li i4 0
+loop 1 i5 i1 i3 i2
+li i6 0
+ishr i7 i5 i6
+iand i8 i7 i2
+if 2 i8
+li i9 5
+iadd i10 i5 i9
+else 2
+li i11 2
+imul i10 i5 i11
+endif 2
+ixor i4 i4 i10
+li i12 1
+ishr i13 i5 i12
+iand i14 i13 i2
+ifz 3 i14
+li i15 16
+iadd i16 i5 i15
+else 3
+li i17 3
+imul i16 i5 i17
+endif 3
+iadd i4 i4 i16
+li i18 2
+ishr i19 i5 i18
+iand i20 i19 i2
+if 4 i20
+li i21 27
+iadd i22 i5 i21
+else 4
+li i23 4
+imul i22 i5 i23
+endif 4
+iadd i4 i4 i22
+li i24 3
+ishr i25 i5 i24
+iand i26 i25 i2
+ifz 5 i26
+li i27 38
+iadd i28 i5 i27
+else 5
+li i29 5
+imul i28 i5 i29
+endif 5
+ixor i4 i4 i28
+li i30 4
+ishr i31 i5 i30
+iand i32 i31 i2
+if 6 i32
+li i33 49
+iadd i34 i5 i33
+else 6
+li i35 6
+imul i34 i5 i35
+endif 6
+iadd i4 i4 i34
+li i36 5
+ishr i37 i5 i36
+iand i38 i37 i2
+ifz 7 i38
+li i39 60
+iadd i40 i5 i39
+else 7
+li i41 7
+imul i40 i5 i41
+endif 7
+iadd i4 i4 i40
+li i42 0
+ishr i43 i5 i42
+iand i44 i43 i2
+if 8 i44
+li i45 71
+iadd i46 i5 i45
+else 8
+li i47 8
+imul i46 i5 i47
+endif 8
+ixor i4 i4 i46
+li i48 1
+ishr i49 i5 i48
+iand i50 i49 i2
+ifz 9 i50
+li i51 82
+iadd i52 i5 i51
+else 9
+li i53 9
+imul i52 i5 i53
+endif 9
+iadd i4 i4 i52
+li i54 2
+ishr i55 i5 i54
+iand i56 i55 i2
+if 10 i56
+li i57 93
+iadd i58 i5 i57
+else 10
+li i59 10
+imul i58 i5 i59
+endif 10
+iadd i4 i4 i58
+li i60 3
+ishr i61 i5 i60
+iand i62 i61 i2
+ifz 11 i62
+li i63 104
+iadd i64 i5 i63
+else 11
+li i65 11
+imul i64 i5 i65
+endif 11
+ixor i4 i4 i64
+li i66 4
+ishr i67 i5 i66
+iand i68 i67 i2
+if 12 i68
+li i69 115
+iadd i70 i5 i69
+else 12
+li i71 12
+imul i70 i5 i71
+endif 12
+iadd i4 i4 i70
+li i72 5
+ishr i73 i5 i72
+iand i74 i73 i2
+ifz 13 i74
+li i75 126
+iadd i76 i5 i75
+else 13
+li i77 13
+imul i76 i5 i77
+endif 13
+iadd i4 i4 i76
+endloop 1
+sa p78 s1
+sti i4 p78 - 0 0
+la p79 d1
+rcall sea_printf 0:2 0 2 p79 p78
+ret 0
+endfunc
+fmt d1 4
+ftext both
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

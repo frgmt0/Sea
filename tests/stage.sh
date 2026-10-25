@@ -9,7 +9,8 @@
 #     pass 2b  seaexpand   NAME.hir1 -> NAME.hir
 #     pass 3a  sealoop     NAME.hir  -> NAME.hirl
 #     pass 3a  sealower    NAME.hirl -> NAME.lir1
-#     pass 3b  seaopt      NAME.lir1 -> NAME.lir
+#     pass 3b  seaopt      NAME.lir1 -> NAME.lir2
+#     pass 3c  sealopt     NAME.lir2 -> NAME.lir      (skipped when NAME.lir is absent)
 #     pass 4   seagen_a64  NAME.lir  -> NAME.s     (golden assembly, optional)
 # the golden previous file is copied as sea.<prev> into a fresh directory, the pass runs there
 # (standard input /dev/null), must exit 0, and the sea.<next> it wrote must be byte-identical
@@ -37,10 +38,21 @@
 # standard error NAME.err (else empty). A missing tool or library is a FAILURE. Name:
 # stage/seagen_a64/NAME.
 #
-# A NAME.sea test with a NAME.lir1 and a NAME.lir but no NAME.hirl (the opt5_* dumps: .sea +
-# .lir1 + .lir only, DESIGN.md 6.2) starts the chain at seaopt: the sealower pair skips it.
-# With neither NAME.hirl nor NAME.lir the missing NAME.hirl is a FAILURE.
+# A NAME.sea test with a NAME.lir1 and a NAME.lir2 but no NAME.hirl (the opt5_* dumps: .sea +
+# .lir1 + .lir2 [+ .lir], DESIGN.md 6.2) starts the chain at seaopt: the sealower pair skips it
+# (keyed on NAME.lir2, L-aw). With neither NAME.hirl nor NAME.lir2 the missing NAME.hirl is a
+# FAILURE. A hand-written seaopt test (NAME.lir1 + NAME.lir2, no NAME.sea, no NAME.lir) has no
+# sealopt golden: the pair sealopt lir2 lir is skipped whenever NAME.lir is absent (L-bj). A
+# NAME.lir2 with neither NAME.lir1 nor NAME.sea is a hand-written sealopt input: the seaopt pair
+# skips it. A NAME.lir that has a NAME.lir2 is a sealopt golden, never a pass-4 test.
+# A NAME.lir with a NAME.lir1 but neither NAME.lir2 nor NAME.sea is neither: a setup FAILURE.
 #
+# The ra5_live_* tests (Decision 75, DESIGN.md 6.2) also check the shape rule on the -S output of both
+# targets: seagen_a64 on the LIR, seagen_x64 on a copy retargeted as tests/cross_pack.sh does. Every
+# innermost loop (the range from a `L<f>_<b>_top:` label / `.L<f>_<b>_top:` to the last branch back
+# to it that contains no other loop top label) must contain no frame access (arm64 `[sp`, `[x29`;
+# x86_64 `(%rsp)`, `(%rbp)`), and there must be at least one such loop. Outer loops are not checked.
+
 # usage: sh tests/stage.sh [-v] [PATTERN...]      PATTERN: a substring of the test name
 #        (stage/<pass>/NAME). Environment: BUILD (default build/), SEA_TEST_TIMEOUT (10).
 # Exit status: 0 all passed, 1 a failure, 2 setup error.
@@ -133,15 +145,17 @@ stage() {
         nm=$(basename "$g" ".$_next")
         in=$ROOT/tests/passes/$nm.$_prev
         name=stage/$_p/$nm
+        # a hand-written NAME.lir2 (no NAME.lir1, no NAME.sea) is a sealopt-only test: no seaopt golden
+        if [ "$_next" = lir2 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.lir (no NAME.lir1, no NAME.sea) is a pass-4 test, not a golden
         if [ "$_next" = lir ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.hirl (no NAME.hir, no NAME.sea) is a sealower test: no sealoop golden
         if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.lir1 (no NAME.hirl, no NAME.sea) is a seaopt-only test: no sealower golden
         if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
-        # a NAME.lir1 with no NAME.hirl but a NAME.lir (the opt5_* dumps) starts at seaopt: no
-        # sealower golden. Without NAME.lir the missing NAME.hirl is a failure.
-        if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ -f "$ROOT/tests/passes/$nm.lir" ]; then continue; fi
+        # a NAME.lir1 with no NAME.hirl but a NAME.lir2 (the opt5_* dumps) starts at seaopt: no
+        # sealower golden. Without NAME.lir2 the missing NAME.hirl is a failure.
+        if [ "$_next" = lir1 ] && [ ! -f "$in" ] && [ -f "$ROOT/tests/passes/$nm.lir2" ]; then continue; fi
         # 4h (DESIGN.md 6.2): a golden NAME.hir with no NAME.hir1 is a stage-only input of sealoop
         # (hand-written two-file sea.hir, no NAME.sea) or the start of a prelude test: no seaexpand
         # golden. A NAME.sea test without NAME.prelude still needs its NAME.hir1.
@@ -188,11 +202,41 @@ for g in "$ROOT"/tests/passes/*.ast; do
     [ $ok = 1 ] && pass
 done
 
+# loop_frames FILE.s : the number of frame accesses summed over the innermost loops of FILE.s, then
+# the number of innermost loops (two numbers on one line)
+loop_frames() {
+    awk '
+    { L[NR] = $0 }
+    END {
+        loops = 0; bad = 0
+        for (i = 1; i <= NR; i++) if (L[i] ~ /_top:$/) {
+            lab = L[i]; sub(/:$/, "", lab); sub(/^[ \t]+/, "", lab); last = 0
+            for (j = i + 1; j <= NR; j++) { n = split(L[j], w, /[ \t,]+/); if (w[n] == lab) last = j }
+            if (!last) continue
+            inner = 1; fr = 0
+            for (j = i + 1; j <= last; j++) {
+                s = L[j]
+                if (s ~ /_top:$/) { inner = 0; break }
+                if (s ~ /^[ \t]*$/ || s ~ /^[ \t]*[.A-Za-z0-9_]+:/ || s ~ /^[ \t]*(\/\/|#)/ || s ~ /^[ \t]*\./) continue
+                if (s ~ /\[sp|\[x29|\(%rsp\)|\(%rbp\)/) fr++
+            }
+            if (inner) { loops++; bad += fr }
+        }
+        print bad, loops
+    }' "$1"
+}
+
 # pass 4 on hand-written LIR: build, run and compare the output
 for g in "$ROOT"/tests/passes/*.lir; do
     [ -e "$g" ] || continue
     nm=$(basename "$g" .lir)
+    if [ -f "$ROOT/tests/passes/$nm.lir1" ] && [ ! -f "$ROOT/tests/passes/$nm.lir2" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then
+        # neither a pass-4 test (it has a NAME.lir1) nor a sealopt golden (no NAME.lir2, no NAME.sea): a setup failure
+        selected "stage/sealopt/$nm" && fail "stage/sealopt/$nm" "$nm.lir has $nm.lir1 but neither $nm.lir2 nor $nm.sea (setup error)"
+        continue
+    fi
     [ -f "$ROOT/tests/passes/$nm.lir1" ] && continue
+    [ -f "$ROOT/tests/passes/$nm.lir2" ] && continue
     [ -f "$ROOT/tests/passes/$nm.sea" ] && continue
     name=stage/seagen_a64/$nm
     selected "$name" || continue
@@ -211,6 +255,29 @@ for g in "$ROOT"/tests/passes/*.lir; do
     st=$?
     [ $st -eq 0 ] || { fail "$name" "seagen_a64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
     [ $ok = 1 ] && [ ! -f "$w/sea.s" ] && { fail "$name" "no sea.s written"; ok=0; }
+    # ra5_live_*: the loops must have no frame access in the -S output of both targets (DESIGN.md 6.2)
+    case $nm in ra5_live_*)
+        if [ $ok = 1 ]; then
+            set -- $(loop_frames "$w/sea.s")
+            if [ "$2" -lt 1 ]; then fail "$name" "arm64: no innermost loop found in sea.s"; ok=0
+            elif [ "$1" != 0 ]; then fail "$name" "arm64: $1 frame accesses in the innermost loops"; ok=0; fi
+        fi
+        if [ $ok = 1 ]; then
+            if [ ! -x "$BUILD/seagen_x64" ]; then fail "$name" "pass 'seagen_x64' not built ($BUILD/seagen_x64)"; ok=0; else
+                wx=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
+                awk '!d && $1 == "#target" { print "#target x86_64-linux"; d = 1; next } { print }' "$g" > "$wx/sea.lir"
+                run_limited "$TIMEOUT" "$wx" "$BUILD/seagen_x64" >"$TMP/p.out" 2>"$TMP/p.err"
+                st=$?
+                if [ $st -ne 0 ] || [ ! -f "$wx/sea.s" ]; then fail "$name" "seagen_x64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0
+                else
+                    set -- $(loop_frames "$wx/sea.s")
+                    if [ "$2" -lt 1 ]; then fail "$name" "x86_64: no innermost loop found in sea.s"; ok=0
+                    elif [ "$1" != 0 ]; then fail "$name" "x86_64: $1 frame accesses in the innermost loops"; ok=0; fi
+                fi
+                rm -rf "$wx"
+            fi
+        fi ;;
+    esac
     if [ $ok = 1 ]; then
         SDK=$(env -u SDKROOT xcrun --show-sdk-path 2>/dev/null | sed -n 1p)
         if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then fail "$name" "cannot determine macOS SDK path"; ok=0; fi
@@ -245,7 +312,8 @@ stage seacheck res hir1
 stage seaexpand hir1 hir
 stage sealoop hir hirl
 stage sealower hirl lir1
-stage seaopt lir1 lir
+stage seaopt lir1 lir2
+stage sealopt lir2 lir
 stage seagen_a64 lir s
 
 echo "----"

@@ -1,0 +1,58 @@
+#sea 1
+#target arm64-macos
+#file opt5_ovf_const.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 1
+call big 1 i3 2 i1 i2
+li i4 9
+li i5 2
+call big 1 i6 2 i4 i5
+sa p7 s1
+sti i3 p7 - 0 0
+sti i6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:21 0 2 p8 p7
+ret 0
+endfunc
+func big fn 0:1:1 2 i1 i2 1 i
+li i3 #00000012A05F2000
+li i4 #0010000000000000
+li i5 #0010000000000001
+li i6 #FFF0000000000000
+li i7 #FFEFFFFFFFFFFFFF
+li i8 0
+mov i9 i8
+li i10 1
+rcount i11 i12 i9 i2 i10 0 0:8
+if 1 i12
+loop 2 i13 i9 i11 i10
+li i14 0
+icmp ge i15 i1 i14
+if 3 i15
+li i16 10
+icmp lt i17 i1 i16
+if 4 i17
+iadd i18 i3 i1
+iaddc i8 i8 i18 0:11
+iadd i19 i4 i1
+iaddc i8 i8 i19 0:12
+iaddc i20 i5 i1 0:13
+iaddc i8 i8 i20 0:13
+iadd i21 i6 i1
+iaddc i8 i8 i21 0:14
+iaddc i22 i7 i1 0:15
+iaddc i8 i8 i22 0:15
+endif 4
+endif 3
+endloop 2
+endif 1
+ret 1 i8
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

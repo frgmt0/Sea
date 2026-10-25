@@ -1,0 +1,13 @@
+// r_opt_hoist_ftoi -- a loop-invariant i64(x): 4.0 converts, 2.5 in a loop run zero times does not fail, 2.5 in
+// a loop of three fails at the first iteration after its line (LANGUAGE.md 9.2)
+fn conv(x: f64, n: i64) -> i64 {
+    var t = 0
+    for i in 0..n {
+        printf("c %d\n", i)
+        t += i64(x) * i
+    }
+    return t
+}
+printf("%d\n", conv(4.0, 3))
+printf("%d\n", conv(2.5, 0))
+printf("%d\n", conv(2.5, 3))

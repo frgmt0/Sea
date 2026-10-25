@@ -5,7 +5,7 @@
 50 REM consts records, and the line 99999 END.
 60 REM
 70 REM USAGE   the file to check is read on standard input. Its FIRST line (not part of the file)
-80 REM         names the format: ast, res, hir1, hir, hirl, lir1 or lir. The rest is the file, verbatim.
+80 REM         names the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir. The rest is the file, verbatim.
 90 REM         (Baysick has no command-line arguments: the options travel on standard input,
 100 REM         DESIGN 2.2 step 4.) Example: ( echo hir1; cat sea.hir1 ) | seaval
 110 REM EXIT    0 the file is valid (nothing is printed); 11 it is not (DESIGN 2.2: an internal
@@ -19,7 +19,7 @@
 190 REM         limit, or a wrong format name, is also reported with status 11.
 200 REM CHECKED header records (order, version = SEA_FILE_VERSION, target in enum target, #file
 210 REM         paths); every body byte in 0x20-0x7E; every record: opcode of the file's sets (ast:
-220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; hirl: H HF HL; lir1: L; lir: L LF), field count including the repeated
+220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; hirl: H HF HL; lir1: L; lir2: L, checked as lir1 except the two lir1-only label rules (L-bu); lir: L LF), field count including the repeated
 230 REM         fields, each field's type (u i f s pos site fl, enumerations, references, registers
 240 REM         with their class); the tree stack of DESIGN 3.3 (pops from the pops column; a
 250 REM         section end - prog, cn, end - leaves the stack empty; end pops a block); in the
@@ -42,7 +42,7 @@
 420 REM            current line; U values of the u-like fields of the record; L limb scratch;
 430 REM            S tree stack (record rows); Q register class by number; K block stack
 440 REM            (number, kind); H$ #file paths; A allowed record sets of this format
-450 REM   P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir and hirl 4 lir1 5 lir
+450 REM   K7 1 in lir1 only (label rules)  P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir and hirl 4 lir1 and lir2 5 lir
 460 REM   L$ current line  L0 its number  C0 its field count  I0 its record row  Y0 its special code
 470 REM   M$ what is wrong  D$ error name for the final message
 480 REM   S0 tree stack depth  H8 HIR section (1 types, 2 constants / instances, 3 functions)
@@ -130,14 +130,16 @@
 1130 IF SEG$(K$, LEN(K$), LEN(K$)) = " " THEN 1210
 1140 REM the allowed record sets A(s) of each format; sets 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF, 7 HL
 1150 LET K0 = 0
+1155 LET K7 = 0
 1160 IF K$ = "ast" THEN 1220
 1165 IF K$ = "res" THEN 1226
 1170 IF K$ = "hir1" THEN 1250
 1180 IF K$ = "hir" THEN 1290
 1185 IF K$ = "hirl" THEN 1322
 1190 IF K$ = "lir1" THEN 1330
+1195 IF K$ = "lir2" THEN 1330
 1200 IF K$ = "lir" THEN 1360
-1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir"
+1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir"
 1220 LET K0 = 1
 1221 LET R6 = 0
 1222 GOTO 1230
@@ -159,6 +161,9 @@
 1328 LET A(7) = 1
 1329 GOTO 1390
 1330 LET K0 = 4
+1332 REM lir1 alone: data labels numbered by first use, every defined label used (K7 = 1; DESIGN 3.6.2)
+1334 IF K$ <> "lir1" THEN 1340
+1336 LET K7 = 1
 1340 LET A(5) = 1
 1350 GOTO 1390
 1360 LET K0 = 5
@@ -524,9 +529,9 @@
 4770 IF X9 > 0 THEN 4910
 4780 LET M$ = "data label d" & STR$(R8) & " is used but only " & STR$(D8) & " are defined"
 4790 IF R8 > D8 THEN 4910
-4800 REM lir1 numbers data labels by first reference: a label that no instruction uses cannot occur (DESIGN 3.6.2)
+4800 REM only lir1 (K7 = 1) numbers data labels by first reference: a label that no instruction uses cannot occur (DESIGN 3.6.2)
 4810 LET M$ = "data label d" & STR$(D8) & " is defined but no instruction uses it (lir1 numbers labels by first use; " & STR$(R8) & " are used)"
-4820 IF K0 <> 4 THEN 4840
+4820 IF K7 = 0 THEN 4840
 4830 IF R8 < D8 THEN 4910
 4840 IF END #0 THEN 4860
 4850 CALL "dg_note": P$, "records follow #end"
@@ -652,7 +657,7 @@
 5980 IF Y0 = 31 THEN 6050
 5990 IF Y0 = 34 THEN 6050
 5995 IF Y0 = 25 THEN 6050
-6000 IF K0 <> 4 THEN 6030
+6000 IF K7 = 0 THEN 6030
 6010 LET M$ = B$ & " is used before d" & STR$(R8 + 1) & " (lir1 numbers labels by first use)"
 6020 IF V > R8 + 1 THEN 4910
 6030 IF V <= R8 THEN 6050

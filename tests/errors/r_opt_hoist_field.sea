@@ -1,0 +1,16 @@
+// r_opt_hoist_field -- b.vals[k] with an invariant k through a ref struct parameter whose scale field the loop
+// writes: k = 2 works, k = 5 fails at the first iteration after its line (5.4; T8 L-at)
+struct Box {
+    vals: f64[]
+    scale: f64
+}
+fn probe(ref b: Box, k: i64, n: i64) {
+    for i in 0..n {
+        printf("b %d %g\n", i, b.scale)
+        b.scale = b.vals[k] + 1.0
+    }
+}
+var bx = Box { vals: ones(3), scale: 0.5 }
+probe(ref bx, 2, 2)
+printf("%g\n", bx.scale)
+probe(ref bx, 5, 3)

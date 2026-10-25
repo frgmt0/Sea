@@ -23,50 +23,78 @@ endfunc
 func sel fn 0:1:1 5 i1 i2 f3 f4 i5 1 f
 lf f6 #0000000000000000
 li i7 0
-icmp gt i8 i1 i7
-mov i9 i7
-li i10 1
-rcount i11 i12 i9 i5 i10 0 0:5
-if 1 i12
-loop 2 i13 i9 i11 i10
+mov i8 i7
+li i9 1
+rcount i10 i11 i8 i5 i9 0 0:5
+if 1 i11
+fcmp lt i12 f3 f4
+if 2 i12
+icmp gt i13 i1 i7
 icmp lt i14 i1 i2
 isel i15 i14 i1 i2
 mov i16 i15
 fcmp gt i17 f3 f4
 fsel f18 i17 f3 f4
 mov f19 f18
-mov f20 f3
-icmp gt i21 i13 i1
-fsel f20 i21 f4 f20
-li i22 2
-icmp gt i23 i13 i22
-isel i23 i23 i23 i8
-mov i24 i23
-fcmp lt i25 f3 f4
-if 3 i25
-mov f26 f3
-else 3
-lf f26 #3FF8000000000000
-endif 3
-mov f27 f26
-icmp lt i28 i13 i2
-if 4 i28
-li i29 1
-iaddc i7 i7 i29 0:15
+li i20 2
+li i21 1
+loop 3 i22 i8 i10 i9
+mov f23 f3
+icmp gt i24 i22 i1
+fsel f23 i24 f4 f23
+icmp gt i25 i22 i20
+isel i25 i25 i25 i13
+mov i26 i25
+mov f27 f3
+mov f28 f27
+icmp lt i29 i22 i2
+if 4 i29
+iaddc i7 i7 i21 0:15
 endif 4
 fadd f30 f6 f19
-fadd f31 f30 f20
-fadd f6 f31 f27
+fadd f31 f30 f23
+fadd f6 f31 f28
 iaddc i7 i7 i16 0:18
-if 5 i24
-li i32 1
-iaddc i7 i7 i32 0:20
+if 5 i26
+iaddc i7 i7 i21 0:20
 endif 5
-endloop 2
+endloop 3
+else 2
+icmp gt i32 i1 i7
+icmp lt i33 i1 i2
+isel i34 i33 i1 i2
+mov i35 i34
+fcmp gt i36 f3 f4
+fsel f37 i36 f3 f4
+mov f38 f37
+li i39 2
+li i40 1
+loop 6 i41 i8 i10 i9
+mov f42 f3
+icmp gt i43 i41 i1
+fsel f42 i43 f4 f42
+icmp gt i44 i41 i39
+isel i44 i44 i44 i32
+mov i45 i44
+lf f46 #3FF8000000000000
+mov f47 f46
+icmp lt i48 i41 i2
+if 7 i48
+iaddc i7 i7 i40 0:15
+endif 7
+fadd f49 f6 f38
+fadd f50 f49 f42
+fadd f6 f50 f47
+iaddc i7 i7 i35 0:18
+if 8 i45
+iaddc i7 i7 i40 0:20
+endif 8
+endloop 6
+endif 2
 endif 1
-itof f33 i7
-fadd f34 f6 f33
-ret 1 f34
+itof f51 i7
+fadd f52 f6 f51
+ret 1 f52
 endfunc
 fmt d1 4
 fconv - - - g f

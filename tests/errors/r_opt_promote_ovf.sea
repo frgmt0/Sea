@@ -1,0 +1,14 @@
+// r_opt_promote_ovf -- a ref scalar doubled in a nested loop and printed after each inner loop: the second call
+// overflows part-way; the lines before it (6.5, 8.3; DESIGN.md 5.8 T5)
+fn grow(ref s: i64, n: i64) {
+    for i in 0..n {
+        for j in 0..n {
+            s = s * 2 + j
+        }
+        printf("%d\n", s)
+    }
+}
+var s = 1
+grow(ref s, 3)
+printf("s %d\n", s)
+grow(ref s, 40)

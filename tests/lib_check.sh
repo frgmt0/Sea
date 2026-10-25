@@ -112,11 +112,13 @@ chk_range() { # FILE FIRST LAST
         $2 == "END" || $2 == "DATA" { print FILENAME ": line " NR ": a module has no END or DATA"; bad = 1 }
         END { exit bad }' "$1"
 }
-for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 85999" "passes/lib/layout.bas 86000 86999" "passes/lib/ralloc.bas 87000 88999" "tools/seaval.bas 1 59999"; do
+for spec in "passes/lib/io.bas 60000 62999" "passes/lib/diag.bas 63000 65999" "passes/lib/tables.bas 66000 68999" "passes/lib/lirrw.bas 69000 81999" "passes/lib/limb.bas 69000 74999" "passes/lib/f64emu.bas 75000 81999" "passes/lib/fltlit.bas 82000 85999" "passes/lib/layout.bas 86000 86999" "passes/lib/ralloc.bas 87000 88999" "tools/seaval.bas 1 59999"; do
     set -- $spec
     if [ ! -f "$SEA/$1" ]; then bad "module $1 exists"; continue; fi
     if msg=$(chk_range "$SEA/$1" "$2" "$3"); then ok "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA"; else bad "$1: line numbers $2-$3 ascending, lines <= 255 bytes, no END or DATA" "$msg"; fi
 done
+# lirrw.bas is a main-program part (DESIGN 2.6.3, L-bi): it holds no SUB
+if grep -n '^[0-9]* SUB ' "$SEA/passes/lib/lirrw.bas" > "$T/lrsub"; then bad "passes/lib/lirrw.bas: a main-program part holds no SUB" "$(cat "$T/lrsub")"; else ok "passes/lib/lirrw.bas: holds no SUB"; fi
 # the long-string work lists are sized by SEA_LIM_RECORD_BYTES
 rb=$(limitof LIM_RECORD_BYTES)
 n=$(grep -c "DIM W($rb)" "$SEA/passes/lib/io.bas")
@@ -1127,7 +1129,8 @@ cat > "$T/h_ra.bas" <<'EOF'
 10 REM ralloc harness, one command per line: I r9 b9 z9 (ra_init), T p c n k s (ra_tab), F (ra_fn),
 11 REM K r c (the caller's class), P r, R k r w, C k, H k r a b, O k b y i s, X k b, E m (ra_end),
 12 REM L r... (locations), V r (start end, the module's columns 3 2), B b (ra_blk), U p (ra_used),
-13 REM W (ra_rew), S k (ra_sv, ra_svi), M s e c (ra_mv), Q (ra_pm, ra_st), Y n (n moves), G r (D(r,0))
+13 REM W (ra_rew), S k (ra_sv, ra_svi), M s e c (ra_mv), Q (ra_pm, ra_st), Y n (n moves), G r (D(r,0)),
+14 REM Z k b (ra_else)
 20 DIM D(111110,8), F$(20), V(20)
 30 IF END #0 THEN 990
 40 LINPUT #0, L$
@@ -1135,9 +1138,9 @@ cat > "$T/h_ra.bas" <<'EOF'
 60 FOR I = 2 TO N
 70 LET V(I) = VAL(F$(I))
 80 NEXT I
-90 LET K = POS("ITFKPRCHOXELVBUWSMQYG", F$(1))
+90 LET K = POS("ITFKPRCHOXELVBUWSMQYGZ", F$(1))
 100 IF K = 0 THEN 980
-110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560
+110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560,570
 200 CALL "ra_init": D(), V(2), V(3), V(4), T
 205 PRINT "I T=" & STR$(T)
 207 GOTO 30
@@ -1204,6 +1207,8 @@ cat > "$T/h_ra.bas" <<'EOF'
 555 GOTO 30
 560 PRINT "G " & STR$(V(2)) & ": " & STR$(D(V(2), 0))
 565 GOTO 30
+570 CALL "ra_else": D(), V(2), V(3)
+575 GOTO 30
 980 PRINT "BAD COMMAND " & L$
 985 STOP 3
 990 STOP
@@ -1279,8 +1284,8 @@ expect "ralloc: intervals, expiry before placement, the first free register of t
 # b. spills: the victim's loop depth, then its end, then its number; slots in order of first use.
 #    Records: 1 func; 2-5 li i1 .. li i4 (writes 5 7 9 11); 6 do 1; 7 iadd i5 i1 i2 (14, 15); 8
 #    exit 1; 9 enddo 1; 10 iadd i6 i3 i4 (20, 21); 11 ret 1 i6 (22); 12 endfunc. The do covers
-#    13-19. r1 5-19 and r2 7-19 (referenced inside and outside: extended), r5 15-15 (its first
-#    reference in the loop is a write at the loop's own level: not extended), r3 9-20, r4 11-20,
+#    13-19. r1 5-19 and r2 7-19 (defined before the loop and read in it: uncovered, extended), r5 15-15
+#    (written in the loop and never read: not live at its top, not extended), r3 9-20, r4 11-20,
 #    r6 21-22. Depths: r1 r2 r5 1, r3 r4 0. Three general registers here (4 is not declared). r1 1,
 #    r2 2, r3 3; r4 at 11: none free, depth 0 are r3 r4, both end at 20, the higher number r4 is
 #    spilled; r5 at 15: none free, r3 has the smallest depth: spilled, r5 takes 3; r6 at 21: 1.
@@ -1323,14 +1328,14 @@ V 2: 7 19
 V 5: 15 15
 V 3: 9 20
 EOF
-expect "ralloc: loop extension (referenced inside and outside; a first write at the loop's level is not extended), spill choice by depth, end, number; spill slots in order of first use" "$T/ra" "$T/ra_b.in" 0 "$T/ra_b.exp" /dev/null
+expect "ralloc: loop extension (a value read in the loop that was defined before it is extended; a value never read is not), spill choice by depth, end, number; spill slots in order of first use" "$T/ra" "$T/ra_b.in" 0 "$T/ra_b.exp" /dev/null
 
 # c. a call inside a loop: crossing along the records and around the back edge, the call row,
 #    save slots, ra_sv. Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 i2 i2 (reads 6, ind
 #    7); 4 if 2 i1 (8); 5 mov i4 i3 (10, 11); 6 endif 2; 7 call g 0 0 (14, 15); 8 mov i5 i4 (16,
 #    17); 9 endloop 1 (ind read 18 and written 19, the step r2 read 18); 10 ret 1 i1 (20); 11
-#    endfunc. Loop 1 covers 7-19. r1 0-20, r2 5-19, r3 7-19, r4 7-19 (first referenced by a write
-#    inside the if: not at the loop's level, so carried: extended over the loop), r5 17-17, r6 the
+#    endfunc. Loop 1 covers 7-19. r1 0-20, r2 5-19, r3 7-19, r4 7-19 (written inside the if and read
+#    at 16 after its endif: the write's part has closed, so the read is uncovered: extended), r5 17-17, r6 the
 #    hidden count 7-19; all but r5 cross the call (start <= 14, end > 15), all have depth 1. Three
 #    general registers (as in b). Row "crossing a call": 3 1 2. r1 3, r2 1, r3 2; r4 at 7: none
 #    free, all depth 1, r1 ends last
@@ -1468,7 +1473,7 @@ expect "ralloc: the closing sequence references ind and the step register at end
 
 # f. a call result loop-extended before its own call (reading 4), ind referenced after its loop.
 #    Records: 1 func r1 (i); 2 do 1; 3 if 2 i1 (6); 4 call f 1 i2 0 (writes 9; first referenced
-#    inside the if: carried, so its interval starts at the do's 5); 5 endif 2; 6 exit 1; 7 enddo
+#    inside the if, read at 16 after the do: uncovered after it, so its interval starts at the do's 5); 5 endif 2; 6 exit 1; 7 enddo
 #    1; 8 ret 1 i2 (16); 9 endfunc. r1 0-15 (read inside the do: extended to its end 15), r2 5-16;
 #    both cross call 4 (start <= 8, end > 9). Row "crossing a call": r1 3, r2 1. r2's save slot 1
 #    (first call 4). ra_sv 4 lists r2, the record's own result, which the caller skips.
@@ -1708,6 +1713,499 @@ S 2: N=1 T=0 (10 0 1)
 S 3: N=1 T=0 (10 0 1)
 EOF
 expect "ralloc: arguments that are also results of their call (fswap): no save slot, listed by ra_sv with slot 0 and T=0" "$T/ra" "$T/ra_k.in" 0 "$T/ra_k.exp" /dev/null
+
+# Decision 75 (L-bf, L-bg, L-bh; 4.9.2 "Positions and intervals"): an interval is extended over a
+# loop only when its register may be live at the loop's top: some read inside the loop is uncovered
+# in it, or some read after it is uncovered after it (then back over the outermost closed loop
+# that contains the first reference). The parts are announced by ra_open, ra_else (the else of an
+# if) and ra_close. The cases l-p use twelve general registers, so nothing is spilled and only
+# the intervals (V r: start end) are compared.
+ratab12() {
+    printf 'I %s %s 111110\n' "$R9" "$B9"
+    p=1; while [ $p -le 12 ]; do printf 'T %d 1 %d %d 0\n' $p $p $p; p=$((p + 1)); done
+}
+
+# l. temporaries of if parts are not extended; a loop-carried value read inside an if part is.
+#    Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 r1 i2 (reads 6, ind 7); 4 if 2 i3 (8);
+#    5 iadd i4 i3 i3 (10, 11); 6 iadd i2 i2 i4 (12, 13); 7 else 2; 8 iadd i5 i3 i3 (16, 17); 9
+#    iadd i6 i5 i5 (18, 19); 10 endif 2; 11 endloop 1 (ind and the step r2 read 22, ind written
+#    23); 12 ret 1 i2 (24). Loop 1 covers 7-23. r2: its read at 12 (and the closing one at 22) has
+#    its latest write at record 2, before the loop: uncovered, extended: 5-24. r3 (ind): its
+#    latest write is the loop record itself, which is outside the loop: 7-23. r4: written at 11 in
+#    the if's first part and read at 12 in it: covered, 11-12. r5 17-18 likewise in the else
+#    part, r6 19-19 never read. r1 0-6 (read only by the loop record), r7 the hidden count 7-23.
+{ ratab12; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 1 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 3 0
+O 4 2 3 0 0
+R 5 3 0
+R 5 4 1
+R 6 2 0
+R 6 4 0
+R 6 2 1
+Z 7 2
+R 8 3 0
+R 8 5 1
+R 9 5 0
+R 9 6 1
+X 10 2
+X 11 1
+R 12 2 0
+E 6
+V 1
+V 2
+V 3
+V 4
+V 5
+V 6
+V 7
+EOF
+} > "$T/ra_l.in"
+cat > "$T/ra_l.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+V 1: 0 6
+V 2: 5 24
+V 3: 7 23
+V 4: 11 12
+V 5: 17 18
+V 6: 19 19
+V 7: 7 23
+EOF
+expect "ralloc: Decision 75: temporaries of if parts are not extended, a loop-carried value read in an if part is" "$T/ra" "$T/ra_l.in" 0 "$T/ra_l.exp" /dev/null
+
+# m. effective parts (L-bh): a value written in both parts of an if and read after it is covered;
+#    one written only in the first part is not; nested ifs; a write in a loop read after it.
+#    Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 r1 i2 (6, ind 7); 4 if 2 i3 (8); 5 mov
+#    i4 i3 (10, 11); 6 mov i5 i3 (12, 13); 7 else 2; 8 mov i4 i2 (16, 17); 9 endif 2; 10 iadd
+#    i6 i4 i5 (20, 21); 11 if 3 i6 (22); 12 if 4 i6 (24); 13 mov i7 i6 (26, 27); 14 else 4; 15 mov
+#    i7 i3 (30, 31); 16 endif 4; 17 else 3; 18 mov i7 i2 (36, 37); 19 endif 3; 20 iadd i8 i7 i7
+#    (40, 41); 21 endloop 1 (42, 43); 22 ret 1 i8 (44). Loop 1 covers 7-43.
+#    r4: its else write (record 8) follows a write in the first part of if 2 whose effective part is
+#    that part, so its effective part is the loop body, which contains the read at 20: covered,
+#    11-20. r5: written only in the first part, which has closed at 20: uncovered, extended:
+#    7-43. r7: the write at 15 (else of if 4, after record 13 in its first part) has as effective
+#    part the first part of if 3, so the write at 18 (else of if 3) has the loop body: the read at
+#    40 is covered, 27-40 (implementer reading: a write in a nested if's else part whose effective
+#    part is B's first part "stood in B's first part"). r8: written at 41 in the loop and read at
+#    44 after it: the loop body has closed, uncovered after the loop, which contains r8's first
+#    reference: back to 7, 7-44. r6 21-26 (covered reads), r2 5-43, r3 7-43, r9 (count) 7-43.
+{ ratab12; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+K 7 1
+K 8 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 1 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 3 0
+O 4 2 3 0 0
+R 5 3 0
+R 5 4 1
+H 5 4 3 0
+R 6 3 0
+R 6 5 1
+H 6 5 3 0
+Z 7 2
+R 8 2 0
+R 8 4 1
+H 8 4 2 0
+X 9 2
+R 10 4 0
+R 10 5 0
+R 10 6 1
+R 11 6 0
+O 11 3 3 0 0
+R 12 6 0
+O 12 4 3 0 0
+R 13 6 0
+R 13 7 1
+H 13 7 6 0
+Z 14 4
+R 15 3 0
+R 15 7 1
+X 16 4
+Z 17 3
+R 18 2 0
+R 18 7 1
+X 19 3
+R 20 7 0
+R 20 8 1
+X 21 1
+R 22 8 0
+E 8
+V 1
+V 2
+V 3
+V 4
+V 5
+V 6
+V 7
+V 8
+V 9
+EOF
+} > "$T/ra_m.in"
+cat > "$T/ra_m.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+V 1: 0 6
+V 2: 5 43
+V 3: 7 43
+V 4: 11 20
+V 5: 7 43
+V 6: 21 26
+V 7: 27 40
+V 8: 7 44
+V 9: 7 43
+EOF
+expect "ralloc: Decision 75, L-bh: a value written in both parts of an if is covered after it (nested ifs too), one written in the first part only is extended; a loop's value read after it goes back to the loop's start" "$T/ra" "$T/ra_m.in" 0 "$T/ra_m.exp" /dev/null
+
+# n. sibling copies of a loop (T6/T9, L-bl, L-bg), next and exit. Records: 1 func r1 r2 (i); 2 li
+#    i3 (5); 3 li i4 (7); 4 if 1 r1 (8); 5 li i5 (11); 6 loop 2 i6 i3 r2 i3 (12, ind 13); 7 iadd
+#    i7 i5 i6 (14, 15); 8 iadd i4 i4 i7 (16, 17); 9 if 3 i7 (18); 10 next 2; 11 endif 3; 12 iadd
+#    i8 i7 i7 (24, 25); 13 iadd i4 i4 i8 (26, 27); 14 endloop 2 (28, 29); 15 else 1; 16 li i9
+#    (33); 17 loop 4 i10 i3 r2 i3 (34, ind 35); 18 iadd i11 i9 i10 (36, 37); 19 iadd i8 i11 i11
+#    (38, 39); 20 if 5 i8 (40); 21 exit 4; 22 endif 5; 23 iadd i4 i4 i8 (46, 47); 24 endloop 4
+#    (48, 49); 25 endif 1; 26 ret 1 i4 (52). Loop 2 covers 13-29, loop 4 35-49.
+#    r3 (written before the copies, the step of both): 5-49. r4 (the accumulator, carried in both
+#    copies, read after them): its read at 46 has its latest write at record 13 in loop 2's
+#    closed body: uncovered in loop 4: 7-52. r5, r9 (each copy's pointer, set in its arm): 11-29,
+#    33-49. r7 (copy 1's temporary, read after the next): 15-24; r11 (copy 2's): 37-38. r8, one
+#    register written and read in both copies (not renamed): every read is covered, and the reads
+#    in loop 4 are covered after loop 2 (latest write after its end, L-bg): its base interval
+#    25-46, not extended over either loop. r2 0-34 (read by the loop records only), r6 13-29, r10
+#    35-49, the counts r12 13-29 and r13 35-49.
+{ ratab12; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+K 7 1
+K 8 1
+K 9 1
+K 10 1
+K 11 1
+P 1
+P 2
+R 2 3 1
+R 3 4 1
+R 4 1 0
+O 4 1 3 0 0
+R 5 5 1
+R 6 3 0
+R 6 2 0
+R 6 6 1
+O 6 2 1 6 3
+R 7 5 0
+R 7 6 0
+R 7 7 1
+R 8 4 0
+R 8 7 0
+R 8 4 1
+R 9 7 0
+O 9 3 3 0 0
+X 11 3
+R 12 7 0
+R 12 8 1
+R 13 4 0
+R 13 8 0
+R 13 4 1
+X 14 2
+Z 15 1
+R 16 9 1
+R 17 3 0
+R 17 2 0
+R 17 10 1
+O 17 4 1 10 3
+R 18 9 0
+R 18 10 0
+R 18 11 1
+R 19 11 0
+R 19 8 1
+R 20 8 0
+O 20 5 3 0 0
+X 22 5
+R 23 4 0
+R 23 8 0
+R 23 4 1
+X 24 4
+X 25 1
+R 26 4 0
+E 11
+V 2
+V 3
+V 4
+V 5
+V 6
+V 7
+V 8
+V 9
+V 10
+V 11
+V 12
+V 13
+EOF
+} > "$T/ra_n.in"
+cat > "$T/ra_n.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+V 2: 0 34
+V 3: 5 49
+V 4: 7 52
+V 5: 11 29
+V 6: 13 29
+V 7: 15 24
+V 8: 25 46
+V 9: 33 49
+V 10: 35 49
+V 11: 37 38
+V 12: 13 29
+V 13: 35 49
+EOF
+expect "ralloc: Decision 75, L-bg: sibling copies of a loop: shared values extended, each copy's temporaries not, a register reused by both copies keeps its base interval; next and exit" "$T/ra" "$T/ra_n.in" 0 "$T/ra_n.exp" /dev/null
+
+# o. nested loops (L-bf). Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 r1 i2 (6, ind 7);
+#    4 iadd i4 i3 i3 (8, 9); 5 loop 2 i5 i2 r1 i2 (10, ind 11); 6 iadd i6 i4 i5 (12, 13); 7 iadd
+#    i7 i6 i6 (14, 15); 8 if 3 i7 (16); 9 exit 2; 10 endif 3; 11 endloop 2 (22, 23); 12 iadd i8
+#    i7 i4 (24, 25); 13 endloop 1 (26, 27); 14 ret 1 i8 (28). Loop 1 covers 7-27, loop 2 11-23.
+#    r4, written in loop 1's body and read in loop 2: uncovered in loop 2 (written before it),
+#    covered in loop 1: extended over loop 2 only, then read at 24: 9-24. r6, loop 2's temporary:
+#    13-14 (not extended over the outer loop). r7, written in loop 2 and read at 24 after it: a
+#    write inside a nested loop never covers a read after that loop (L-bf), so the read is
+#    uncovered in loop 1 too: 7-27. r8, written at 25 in loop 1 and read after it: back over
+#    loop 1, 7-28. r1 0-27 (loop 2's record reads it inside loop 1), r2 5-27, r3 7-27, r5 11-23,
+#    the counts r9 7-27 and r10 11-23.
+{ ratab12; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+K 7 1
+K 8 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 1 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 3 0
+R 4 4 1
+R 5 2 0
+R 5 1 0
+R 5 5 1
+O 5 2 1 5 2
+R 6 4 0
+R 6 5 0
+R 6 6 1
+R 7 6 0
+R 7 7 1
+R 8 7 0
+O 8 3 3 0 0
+X 10 3
+X 11 2
+R 12 7 0
+R 12 4 0
+R 12 8 1
+X 13 1
+R 14 8 0
+E 8
+V 1
+V 2
+V 3
+V 4
+V 5
+V 6
+V 7
+V 8
+V 9
+V 10
+EOF
+} > "$T/ra_o.in"
+cat > "$T/ra_o.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+V 1: 0 27
+V 2: 5 27
+V 3: 7 27
+V 4: 9 24
+V 5: 11 23
+V 6: 13 14
+V 7: 7 27
+V 8: 7 28
+V 9: 7 27
+V 10: 11 23
+EOF
+expect "ralloc: Decision 75, L-bf: nested loops: a value of the outer body extended over the inner loop only, the inner loop's temporary not at all, an inner loop's value read after it uncovered in the outer loop" "$T/ra" "$T/ra_o.in" 0 "$T/ra_o.exp" /dev/null
+
+# p. back-extension: over the outermost closed loop that contains the first reference and not the
+#    read; a loop lying between them needs none; a write after a loop covers the reads after it.
+#    Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 r1 i2 (6, ind 7); 4 loop 2 i4 i2 r1 i2 (8,
+#    ind 9); 5 iadd i5 i4 i4 (10, 11); 6 endloop 2 (12, 13); 7 endloop 1 (14, 15); 8 loop 3 i6 i2
+#    r1 i2 (16, ind 17); 9 mov i7 i6 (18, 19); 10 endloop 3 (20, 21); 11 mov i7 r1 (22, 23); 12
+#    iadd i8 i5 i7 (24, 25); 13 ret 1 i8 (26). r5, first written in loop 2 inside loop 1, read at
+#    24: uncovered after both, back over the outer one: 7-24 (loop 3 lies inside that interval).
+#    r7, first written in loop 3, written again at 23 after it: the read at 24 is covered after
+#    loop 3, 19-24. r1 0-22, r2 5-21, r3 7-15, r4 9-13, r6 17-21, r8 25-26, the counts r9 7-15,
+#    r10 9-13, r11 17-21.
+{ ratab12; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+K 6 1
+K 7 1
+K 8 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 1 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 2 0
+R 4 1 0
+R 4 4 1
+O 4 2 1 4 2
+R 5 4 0
+R 5 5 1
+X 6 2
+X 7 1
+R 8 2 0
+R 8 1 0
+R 8 6 1
+O 8 3 1 6 2
+R 9 6 0
+R 9 7 1
+H 9 7 6 0
+X 10 3
+R 11 1 0
+R 11 7 1
+H 11 7 1 0
+R 12 5 0
+R 12 7 0
+R 12 8 1
+R 13 8 0
+E 8
+V 1
+V 2
+V 3
+V 4
+V 5
+V 6
+V 7
+V 8
+V 9
+V 10
+V 11
+EOF
+} > "$T/ra_p.in"
+cat > "$T/ra_p.exp" <<'EOF'
+I T=0
+E S8=0 T=0
+V 1: 0 22
+V 2: 5 21
+V 3: 7 15
+V 4: 9 13
+V 5: 7 24
+V 6: 17 21
+V 7: 19 24
+V 8: 25 26
+V 9: 7 15
+V 10: 9 13
+V 11: 17 21
+EOF
+expect "ralloc: Decision 75: back over the outermost closed loop containing the first reference; a write after a loop covers the reads after it" "$T/ra" "$T/ra_p.in" 0 "$T/ra_p.exp" /dev/null
+
+# q. call crossing is decided on the new intervals: an if part's temporaries in a loop with a call
+#    do not cross it. Records: 1 func r1 (i); 2 li i2 (5); 3 loop 1 i3 i2 r1 i2 (6, ind 7); 4 if 2
+#    i3 (8); 5 iadd i4 i3 i3 (10, 11); 6 iadd i5 i4 i4 (12, 13); 7 endif 2; 8 call g 0 0 (16, 17);
+#    9 endloop 1 (18, 19); 10 ret 0. r1 0-6, r2 5-19, r3 7-19, r6 (count) 7-19 cross call 8; r4
+#    11-12 and r5 13-13 do not. The standard table: r1 1 (row "crossing no call"); r2 3, r3 1, r6 2
+#    (row "crossing a call" 3 1 2, r1 expired at 7); r4 4 (row "crossing no call", 1 2 3 taken),
+#    r5 4 (r4 expired). Save slots of r3 (register 1) and r6 (2), both first at call 8: 1 and 2.
+{ ratab; cat <<'EOF'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+K 5 1
+P 1
+R 2 2 1
+R 3 2 0
+R 3 1 0
+R 3 3 1
+O 3 1 1 3 2
+R 4 3 0
+O 4 2 3 0 0
+R 5 3 0
+R 5 4 1
+R 6 4 0
+R 6 5 1
+X 7 2
+C 8
+X 9 1
+E 5
+L 1 2 3 4 5 6
+V 4
+V 5
+W
+S 8
+EOF
+} > "$T/ra_q.in"
+cat > "$T/ra_q.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=1 2=3 3=1 4=4 5=4 6=2
+V 4: 11 12
+V 5: 13 13
+S 8: N=2 T=0 (1 1 3) (2 2 6)
+EOF
+expect "ralloc: Decision 75: call crossing on the new intervals: an if part's temporaries do not cross the loop's call" "$T/ra" "$T/ra_q.in" 0 "$T/ra_q.exp" /dev/null
+
+# r. ra_else's precondition (L-bv, API.md): B must be the innermost open block, of kind if, with its
+#    first part current; any other call is a caller bug reported by dg_bug (internal error, status 11,
+#    "ralloc: <message>" on standard error, nothing more on standard output), before anything changes.
+ra_else_bug() { # DESC NAME BLOCK  (the records of the case are in $T/ra_NAME.in)
+    printf 'I T=0\n' > "$T/ra_$2.exp"
+    printf 'ralloc: ra_else: block %s is not the innermost open if block with its first part current\n' "$3" > "$T/ra_$2.err"
+    expect "$1" "$T/ra" "$T/ra_$2.in" 11 "$T/ra_$2.exp" "$T/ra_$2.err"
+}
+{ ratab; printf 'F\nO 3 1 1 3 2\nZ 7 1\n'; } > "$T/ra_r1.in"
+ra_else_bug "ralloc: ra_else on a loop block is reported through dg_bug (status 11)" r1 1
+{ ratab; printf 'F\nO 3 1 3 0 0\nO 4 2 3 0 0\nZ 7 1\n'; } > "$T/ra_r2.in"
+ra_else_bug "ralloc: ra_else on an if block that is not the innermost open block is reported through dg_bug" r2 1
+{ ratab; printf 'F\nO 3 1 3 0 0\nZ 7 1\nZ 8 1\n'; } > "$T/ra_r3.in"
+ra_else_bug "ralloc: a second ra_else for the same if block is reported through dg_bug" r3 1
+{ ratab; printf 'F\nZ 7 1\n'; } > "$T/ra_r4.in"
+ra_else_bug "ralloc: ra_else with no open block is reported through dg_bug" r4 1
 
 # ==============================================================================================
 # 6. seaval: the dump examples of DESIGN 3.4, 3.5.8, 3.6.7 are valid; mutated copies are rejected
@@ -2019,6 +2517,8 @@ ND=$(grep -c '^str d\|^fmt d\|^dat d' "$T/ex/lir1")
 rejects "a lir1 data label that no instruction uses" lir1 "$T/mut/l9" BAD_RECORD "$(lineof "$T/mut/l9" '^#end$')" "is defined but no instruction uses it"
 (echo lir; cat "$T/mut/l9") > "$T/v.in"
 expect "seaval accepts the same unreferenced label as lir (no first-reference numbering)" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
+(echo lir2; cat "$T/mut/l9") > "$T/v.in"
+expect "seaval accepts the same unreferenced label as lir2 (T10 may delete the la that used it, L-bu)" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
 # the format line is compared with its length (Baysick: trailing blanks are ignored by =)
 for f in "lir1 " "lir1  " "ast " ; do
     (printf '%s\n' "$f"; cat "$T/ex/lir1") > "$T/v.in"
@@ -2134,7 +2634,7 @@ rejects "a type table record after the tree began" res "$T/mut/t9" BAD_TREE "$(l
 rejects "an rtvec record in sea.ast (codes 64-72 are sea.res only)" ast "$T/ex/res4" BAD_RECORD "$(lineof "$T/ex/res4" '^rtst ')" "unknown opcode"
 
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
-printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir\n' > "$T/fmt.err"
+printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir\n' > "$T/fmt.err"
 expect "seaval: an unknown format name is reported (status 11)" "$T/seaval" "$T/v.in" 11 /dev/null "$T/fmt.err"
 
 echo

@@ -1,0 +1,13 @@
+// r_opt_cow_ver_err -- a ref array filled in a loop, unshared at the first call and shared with a let at the
+// second, which prints both arrays and fails at i = 3 (4.5, 8.3; DESIGN.md 5.8 T6)
+fn fill(ref v: f64[], e: f64[], n: i64) {
+    for i in 0..n {
+        v[i] = f64(i) * 2.0 + 1.0
+        printf("%g %g\n", v[i], e[i])
+    }
+}
+var a = zeros(3)
+let z = zeros(3)
+fill(ref a, z, 2)
+let keep = a
+fill(ref a, keep, 5)

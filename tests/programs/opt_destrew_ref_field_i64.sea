@@ -1,0 +1,18 @@
+// opt_destrew_ref_field_i64 -- T5 destination rewriting: the promoted location is stored again before the value it first received is
+// read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)
+struct P {
+    x: f64
+    n: i64
+}
+fn bump(ref p: P, a: i64, b: i64, k: i64) -> i64 {
+    var w = 0
+    for i in 0..k {
+        p.n = a + b
+        p.n = p.n * 2
+        w += a + b
+    }
+    return w
+}
+var p = P { x: 0.0, n: 0 }
+let w = bump(ref p, 3, 4, 4)
+printf("%d %d\n", w, p.n)

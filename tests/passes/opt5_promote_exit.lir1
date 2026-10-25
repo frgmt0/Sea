@@ -1,0 +1,131 @@
+#sea 1
+#target arm64-macos
+#file opt5_promote_exit.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 24 8
+slot s4 16 8
+li i1 0
+sa p2 s1
+sti i1 p2 - 0 0
+li i3 3
+li i4 100
+call walk 1 i5 3 p2 i3 i4
+ldi i1 p2 - 0 0
+sa p6 s2
+sti i1 p6 - 0 0
+li i7 4
+li i8 20
+call walk 1 i9 3 p6 i7 i8
+ldi i1 p6 - 0 0
+sa p10 s3
+sti i5 p10 - 0 0
+sti i9 p10 - 0 8
+sti i1 p10 - 0 16
+la p11 d1
+rcall sea_printf 0:38 0 2 p11 p10
+li i12 3
+lf f13 #4004000000000000
+call runs 1 f14 2 i12 f13
+li i15 4
+lf f16 #4059000000000000
+call runs 1 f17 2 i15 f16
+sa p18 s4
+stf f14 p18 - 0 0
+stf f17 p18 - 0 8
+la p19 d2
+rcall sea_printf 0:39 0 2 p19 p18
+ret 0
+endfunc
+func walk fn 0:5:1 3 p1 i2 i3 1 i
+li i4 0
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:6
+if 1 i7
+loop 2 i8 i4 i6 i5
+li i9 0
+li i10 1
+rcount i11 i12 i9 i2 i10 0 0:7
+if 3 i12
+loop 4 i13 i9 i11 i10
+ldi i14 p1 - 0 0
+iaddc i15 i14 i13 0:8
+sti i15 p1 - 0 0
+ldi i16 p1 - 0 0
+icmp gt i17 i16 i3
+if 5 i17
+li i18 -1
+ret 1 i18
+endif 5
+endloop 4
+endif 3
+endloop 2
+endif 1
+ldi i19 p1 - 0 0
+ret 1 i19
+endfunc
+func runs fn 0:16:1 2 i1 f2 1 f
+slot s1 16 8
+lf f3 #0000000000000000
+li i4 0
+li i5 1
+rcount i6 i7 i4 i1 i5 0 0:18
+if 1 i7
+loop 2 i8 i4 i6 i5
+sa p9 s1
+lf f10 #0000000000000000
+stf f10 p9 - 0 0
+sti i8 p9 - 0 8
+li i11 0
+li i12 1
+rcount i13 i14 i11 i1 i12 0 0:20
+if 3 i14
+loop 4 i15 i11 i13 i12
+ldf f16 p9 - 0 0
+itof f17 i15
+fadd f18 f16 f17
+stf f18 p9 - 0 0
+ldf f19 p9 - 0 0
+fcmp gt i20 f19 f2
+if 5 i20
+exit 4
+endif 5
+icmp eq i21 i15 i8
+if 6 i21
+next 4
+endif 6
+ldi i22 p9 - 0 8
+li i23 1
+iaddc i24 i22 i23 0:28
+sti i24 p9 - 0 8
+endloop 4
+endif 3
+ldi i25 p9 - 0 8
+li i26 2
+icmp gt i27 i25 i26
+if 7 i27
+next 2
+endif 7
+ldf f28 p9 - 0 0
+fadd f29 f3 f28
+ldi i30 p9 - 0 8
+itof f31 i30
+fadd f3 f29 f31
+endloop 2
+endif 1
+ret 1 f3
+endfunc
+fmt d1 6
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

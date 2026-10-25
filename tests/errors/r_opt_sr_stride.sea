@@ -1,0 +1,6 @@
+// r_opt_sr_stride -- A[2, 2 * j + 1] over a 3 x 6 matrix: the column 7 at j = 3 (dimension 1), after the lines
+// of j = 0, 1, 2 (DESIGN.md 5.8 T7; LANGUAGE.md 5.4)
+let A = zeros(3, 6)
+for j in 0..5 {
+    printf("%d %g\n", j, A[2, 2 * j + 1])
+}

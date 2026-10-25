@@ -1,0 +1,17 @@
+// opt_destrew_intervening_use -- T5 destination rewriting: the promoted location is stored again before the value it first received is
+// read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)
+fn g(ref s: i64, t: i64, n: i64) -> i64 {
+    var u = 0
+    var acc = 0
+    for i in 0..n {
+        s = t * 3
+        s = s + 1
+        acc += s
+        u = t * 3
+        acc += u
+    }
+    return acc
+}
+var s = 0
+let acc = g(ref s, 5, 3)
+printf("%d %d\n", acc, s)

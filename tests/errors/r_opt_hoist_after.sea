@@ -1,0 +1,13 @@
+// r_opt_hoist_after -- v[bad] inside a loop run zero times and again after it: the error is the one after the
+// loop, at its line, after the loop's output (DESIGN.md 5.8 T8; LANGUAGE.md 5.4, 9.2)
+fn tailread(v: f64[], bad: i64, n: i64) -> f64 {
+    var t = 0.0
+    for i in 0..n {
+        t += v[bad]
+    }
+    printf("loop done %g\n", t)
+    return t + v[bad]
+}
+let v = zeros(3)
+printf("%g\n", tailread(v, 1, 2))
+printf("%g\n", tailread(v, 7, 0))

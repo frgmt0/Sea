@@ -19,4 +19,5 @@ let q = clean(w, 2, 1.5, 3)
 printf("%d %d\n", len(p), len(q))
 // opt5_clean -- DESIGN.md 5.8 T10: unused pure values and loads deleted (the check and the
 // checked add stay), `k = k` (mov R R) and then k's mov, an if whose part becomes empty, and
-// the retain/release pair of `return u`; s, read only by its own add, stays
+// the retain/release pair of `return u`; s, read only by its own add, is deleted with its
+// initial mov (L-bn: an instruction's read of its own destination does not count)

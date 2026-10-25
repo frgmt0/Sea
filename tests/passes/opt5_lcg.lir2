@@ -1,0 +1,88 @@
+#sea 1
+#target arm64-macos
+#file opt5_lcg.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 24 8
+li i1 42
+sa p2 s1
+sti i1 p2 - 0 0
+li i3 3
+call lcg_fill 1 p4 2 p2 i3
+ldi i1 p2 - 0 0
+li i5 2
+ldi i6 p4 - 0 16
+chkb i5 i6 0 0:10
+ldp p7 p4 - 0 40
+ldf f8 p7 i5 8 0
+release p4
+sa p9 s2
+sti i1 p9 - 0 0
+call lcg_fill 1 p10 2 p9 i5
+ldi i1 p9 - 0 0
+li i11 1
+ldi i12 p10 - 0 16
+chkb i11 i12 0 0:10
+ldp p13 p10 - 0 40
+ldf f14 p13 i11 8 0
+release p10
+sa p15 s3
+stf f8 p15 - 0 0
+stf f14 p15 - 0 8
+sti i1 p15 - 0 16
+la p16 d1
+rcall sea_printf 0:10 0 2 p16 p15
+ret 0
+endfunc
+func lcg_fill fn 0:1:1 2 p1 i2 1 p
+li i3 1
+rcall sea_arr_new 0:2 1 p4 4 i3 i3 i2 i3
+li i5 0
+mov i6 i3
+rcount i7 i8 i5 i2 i6 0 0:3
+if 1 i8
+loop 2 i9 i5 i7 i6
+li i10 16807
+ldi i11 p1 - 0 0
+imulc i12 i10 i11 0:4
+li i13 #000000007FFFFFFF
+li i14 #8000000100000003
+imulh i15 i12 i14
+iadd i16 i15 i12
+li i17 30
+isar i18 i16 i17
+li i19 63
+isar i20 i12 i19
+isub i21 i18 i20
+imul i22 i21 i13
+isub i23 i12 i22
+iadd i24 i23 i13
+li i25 0
+icmp lt i26 i23 i25
+isel i27 i26 i24 i23
+sti i27 p1 - 0 0
+itof f28 i27
+lf f29 #41DFFFFFFFC00000
+fdiv f30 f28 f29
+ldi i31 p4 - 0 0
+li i32 1
+icmp ne i33 i31 i32
+if 3 i33
+rcall sea_arr_unique 0:5 1 p34 1 p4
+mov p4 p34
+endif 3
+ldp p35 p4 - 0 40
+stf f30 p35 i9 8 0
+endloop 2
+endif 1
+ret 1 p4
+endfunc
+fmt d1 6
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

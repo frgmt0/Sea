@@ -1,0 +1,11 @@
+// r_opt_ifexpr_arm -- an if expression in a loop selecting v[(i + 1) % n] or v[i + 1] on an invariant bool: the
+// wrapping arm runs for every i, the other fails at the last i (6.10)
+fn nb(v: f64[], wrap: bool) {
+    for i in 0..len(v) {
+        let x = if wrap { v[(i + 1) % len(v)] } else { v[i + 1] }
+        printf("%g\n", x)
+    }
+}
+let v = [1.0, 2.0, 3.0]
+nb(v, true)
+nb(v, false)

@@ -1,0 +1,11 @@
+// r_opt_hoist_order2 -- the same with big + 1 before v[bad]: the overflow is reported (6.8 rule 5)
+fn both(v: f64[], bad: i64, big: i64) {
+    for i in 0..3 {
+        printf("o %d\n", i)
+        let b = big + 1
+        let a = v[bad]
+        printf("%g %d\n", a, b)
+    }
+}
+both(ones(2), 1, 5)
+both(ones(2), 2, 9223372036854775807)

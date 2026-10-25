@@ -1,6 +1,7 @@
 # passes/lib -- API of the shared pass modules
 
-Reference for `io.bas`, `diag.bas`, `tables.bas`, `layout.bas` and `ralloc.bas` (DESIGN §2.6.3). The `.bas` files carry
+Reference for `io.bas`, `diag.bas`, `tables.bas`, `layout.bas` and `ralloc.bas` (DESIGN §2.6.3), and for the
+shared main-program part `lirrw.bas` (not a module of SUBs: its section below). The `.bas` files carry
 only a one-line summary per SUB. Every module has no `DATA`, no `END` and no globals; a SUB
 works on its parameters (at most 16 per SUB, Baysick limit). A pass is built as its own file,
 the modules of its `build.list`, the generated `DATA` blocks and `99999 END`.
@@ -157,6 +158,136 @@ Lookups (no error context: a miss is a result):
 
 Internal SUBs (not part of the API): `tb_fail`, `tb_dec`, `tb_fspec`, `tb_type`.
 
+## lirrw.bas (lines 69000-81999)
+
+Not a module of SUBs: the **shared main-program part** of the LIR passes (DESIGN §2.6.3, §2.7,
+lead decisions L-bd, L-bi, L-bp; from sub-phase 5c-2, in the build lists of `seaopt` and
+`sealopt`). It holds pass 3b's LIR reader, validator and writer (DESIGN §3.6.5: the whole
+validation list, the capacity limits, the header records, the renumbering writer) and T10 of
+DESIGN §5.8 (clean-up and renumbering), moved out of `seaopt` unchanged, so that both passes
+read, check, clean and write LIR identically. Its lines are main-program lines, concatenated by
+the build after `tables` like a module (Baysick passes control around the `SUB` blocks before
+them); they work on the pass's own arrays and scalars, which a SUB could not share. It has no
+`DATA`, no `END` and no `SUB`; it reaches `io`, `diag` and `tables` by `CALL` (it needs all three)
+and never jumps to a line of the pass. Its lines overlap those of `limb` and `f64emu`: a
+`build.list` naming `lirrw` with either is a build error (`make`: `lirrw cannot be loaded with
+...`). **Line 69000 is a guard**: control falling into the part (a pass whose last line is not a
+`STOP`, `GOTO` or `RETURN`) ends the pass with `dg_bug` (`<P$>: control fell into lirrw.bas,
+which is entered only by GOSUB`, status 11).
+
+### The contract: arrays
+
+The pass `DIM`s exactly these 38 arrays with these bounds (`seaopt`'s, DESIGN §2.7), and gives
+up their letters: the numeric arrays `A B C D E F G H I J K L M N O P Q R T U W X Y Z` (24) and
+the string arrays `A$ D$ E$ F$ G$ H$ J$ N$ Q$ S$ U$ V$ W$ Y$` (14).
+
+    DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), Q(399,9), Q$(399), F(1499,3), F$(1499), Z(8)
+    DIM J(299,4), J$(299), Y(399), Y$(399,5), D(39), D$(39), B(399), A(399)
+    DIM I(199999,4), O(799999), R(99999,9), K(19999,4), C(199999,4), S$(199999)
+    DIM X(131071), T(10000), G$(300), U(40), L(4), H$(100), A$(2)
+    DIM M(301), P(262143), H(199999), V$(49999), U$(131071), G(199999,3), W(199999,4)
+
+| array | use |
+|---|---|
+| `E E$` `D D$` `J J$` `Y Y$` | the tables of the `errors`, `exits`, `consts` and `entries` blocks (`tb_*`; counts `E0 N5 N6 N7`) |
+| `Q Q$ F F$ N N$ W$ Z` | `passes.txt` (`tb_records`); the part adds `Q(row,6)` the internal opcode code (`li` 1 … `release` 72, the table at line 76115), `Q(row,7)` the category (1 pure, 2 `iaddc isubc imulc inegc`, 3 load, 4 store), `Q(row,8)` the memory kind of a load or store (1 i64, 2 byte, 3 f64, 4 address), `F(field,0)` the field's role (0 site, no operand; 1 register read; 2 register written; 3 an `i`/`f` immediate, a row of `C`; 4 an `off` field, a row of `G`; 5 a `u` count; 6 any other one-operand field; 7 a `pos`, two operands) |
+| `A B` | the rows of set L (`A(1..A8)`) and the special code of each record row (`B`) |
+| `I O M` | instruction n (1..`A0`, row 0 the func record): `I(n,1)` its row of `Q` (0: deleted until the next compaction), `I(n,2)` the index in `O` of its first operand, `I(n,3)` the operand count, `I(n,4)` the site (F·1E9+L, 0 none); `I(n,0)` the pass's between entries, but entries 69440 (T10) and 69460 (dead records) overwrite it for every record 1..`A0` (-1 dead, else 0). `O(1..A1)` the operands in record order; the func record's fields in `M(1..A5)` |
+| `R` | register r (1..`M7`): `R(r,1)` the class (1 `i`, 2 `f`, 3 `p`), owned by the reader; `R(r,2)` T10's read count (entry 69440 resets it to 0 for registers 1..`M7` and recounts it, under the numbers before its renumbering, so after the entry it holds no meaning for the pass, which never keeps anything there); the reader zeroes columns 2..7 of a new register; every other column the pass's (entry 69440 and 69465 renumber the registers and move only column 1, so a pass column is stale after either) |
+| `K` | block b (1..`B2`): `K(b,1)` kind (1 `loop`, 2 `do`, 3 `if`, 4 `ifz`), `K(b,2)` opening, `K(b,3)` `else` (0 none), `K(b,4)` closing instruction; `K(10000+s,1..2)` slot s (1..`S6`): size, alignment |
+| `C G` | `C(r,1..4)` the limbs of an `i`/`f` immediate (1..`A2`); `G(r,0..3)` those of an `off` field (1..`A6`) |
+| `S$ P` | the distinct strings of the compilation (1..`A3`), interned through the hash table `P` |
+| `X H V$ U$` | per compilation: the site hash set (`A4` sites), the func of each name and its signature, the forward calls checked at `#end` |
+| `T U L G$ H$ A$` | open blocks, the `u` fields of a record, four limbs, the fields of a line, the `#file` paths, the capacity word |
+| `W` | scratch: entries 69440 and 69465 overwrite it; the pass may use it between entries |
+
+Free for the pass: the numeric arrays `S` and `V` (2), the columns of `R` other than 1 and 2, `W`
+between entries, string arrays outside the 14.
+
+### The contract: scalars
+
+The part reserves 173 scalar names, 149 numeric and 24 string (`V8` added by L-bu); any entry may change any of them,
+so the pass keeps nothing of its own in them across an entry (it may use them as scratch between
+entries, and reads or updates the state ones below as documented), except the reader's own state
+below (`L$ L0`, the data-record state `M8 D8 X9 Z8`, and `A3 A4 F6 M6 Q6 R8`), which the pass
+never writes, not even as scratch between entries (L-bv):
+
+    A0 A1 A2 A3 A4 A5 A6 A8 A9 B0 B1 B2 B3 B4 B5 B7 B9 C0 C1 C3 C4 C5 C6 C7 C8 C9 D7 D8 E0 E2 E3
+    E4 E5 E6 E7 E8 E9 F1 F6 F7 F8 F9 G2 G3 G4 G5 G6 G7 G8 H1 H2 H5 H8 H9 I0 I1 I2 I3 I9 J0 J1 J2
+    J8 J9 K0 K1 K4 K5 K6 K7 K8 K9 L0 L1 M6 M7 M8 M9 N0 N1 N2 N3 N5 N6 N7 N8 N9 O1 O2 O9 P0 P1 P2
+    P3 P4 Q0 Q1 Q2 Q3 Q4 Q5 Q6 Q9 R0 R2 R8 R9 S6 S8 S9 T T0 T1 T2 U9 V V0 V1 V9 W0 W1 W2 W3 W4 W5
+    W6 W7 W8 W9 X0 X1 X2 X3 X4 X6 X9 Y0 Y2 Y3 Y4 Y5 Y6 Y7 Y8 Y9 Z6 Z7 Z8 V8
+    B$ C0$ C1$ C2$ C3$ C4$ C5$ D$ E1$ G1$ K1$ K2$ K3$ L$ M$ P$ R1$ R2$ R3$ S1$ T$ Y1$ Y2$ Z$
+
+(`H5` is reserved as DESIGN §2.7 measured it, though the part's lines do not use it now:
+`seaopt` keeps its constant compaction, which writes `H5`.)
+
+State carried between the pass and the part:
+
+* set by the pass before entry 69400: `P$` (its name, in every message) and `V8`, the kind of its
+  input (L-bu): 1 for `sea.lir1` (`seaopt`), which keeps the two `sea.lir1`-only label rules of
+  DESIGN §3.6.2 (data labels numbered by first reference; no defined label unused), 2 for
+  `sea.lir2` or `sea.lir` (`sealopt`), which drops them (T10 may have deleted an `la`, and pass 3b
+  keeps labels no instruction refers to any more); a label used but not defined is an error for
+  both. A data label number above `Q9` (`SEA_LIM_LIR_LABELS`), defined or referenced, is the
+  compile error `TOO_LARGE` (`labels`) only when `V8` = 1; when `V8` = 2 it is `BAD_RECORD` (no
+  `sea.lir2` or `sea.lir` can hold one, since pass 3b keeps every label; DESIGN §3.6.2, L-bv). Any
+  other value at entry 69400 is a `dg_bug`;
+* set by entry 69400, read-only for the pass: the limits `I9 O9 R9 B9 S9 M9 Q9 S8`
+  (`SEA_LIM_LIR_INSTRS OPERANDS REGS BLOCKS SLOTS IMMS LABELS SITES`) and `V9`
+  (`SEA_FILE_VERSION`); `T$` the target; `N1` the number of `#file` records; `E0 N5 N6 N7 A8`
+  the table counts; the opcode rows `E2` li, `E3` lf, `E4` mov, `E5` iadd, `E6` isub, `E7` imul,
+  `E8` ineg, `E9` iand, `G2` isar, `G3` imulh, `G4` icmp, `G5` isel, `G6` fsel, `G7` psel, `G8`
+  fmul; the `cc` words `C4 C5 C6 C7 C8 C9` (eq ne lt le gt ge); `K6 K7 K8 K9` the header offsets
+  `SEA_ARR_ROWS COLS DATA RC`, `K0` `SEA_LIM_EXTENT`; `Y3 … Y9` the rows of `S$` holding the
+  symbols of the entries `ARR_NEW ARR_NEW_U ARR_NEW_S SORT ARGSORT ARGS ARR_UNIQUE`; `N8` = 1E30
+  (an unknown bound), `U9` = 2^52;
+* `Y2`: 0 after entry 69400; the pass may count its functions in it (`seaopt` does);
+* the current function after entry 69410 returns with `Y0` = 39: `A0` instructions, `A1`
+  operands, `A2` immediates, `A5` func-record fields, `A6` `off` rows, `M7` registers, `B2`
+  blocks, `S6` slots, `F7 F8 F9` the func record's position; a transformation keeps `A0 A1 A2
+  M7` up to date (entries 69440, 69450 and 69465 update them themselves);
+* the reader's own state (file position `L$ L0`; the data-record state `M8` (where the input
+  stands: 0 between functions, 1 after a `func`, 2 in its instructions, 3 in the data records), `D8` (the last data label defined), `X9` (the sub-records still due)
+  and `Z8` (their kind); the per-compilation counts `A3 A4 F6 M6 Q6 R8`): the pass never writes any
+  of them, at any time, although they are among the reserved scalars (L-bv);
+
+### Entries
+
+Each is a `GOSUB` target ending in `RETURN`. A malformed input ends the pass inside the part:
+the internal error `BAD_RECORD` (`dg_internal`, status 11), a capacity limit the compile error
+`TOO_LARGE` at the func record (`dg_compile`, status 10), an inconsistency between the contract
+files and the part `dg_bug` (status 11); a truncated input `TRUNCATED` (`io_read`).
+
+* `69400` **header**, once, first (after `P$` and `V8` are set): loads the contract tables (`tb_errors tb_exits tb_consts
+  tb_entries tb_records`), the limits (a limit above the bounds above is a `dg_bug`), the rows
+  of set L and their codes, the opcode codes, categories and field roles and the scalars listed
+  above; reads the header records of file 1 (`io_hdr`), writes them to file 2 (`SCRATCH #2`,
+  `io_hdr_put`); `L$` = the first record after them, `Y0` = 0.
+* `69410` **read**: validates records until a function is complete: returns with `Y0` = 39 and
+  the function in the tables (its `endfunc` validated, not yet written); or until `#end`: returns
+  with `Y0` = -1. Data records (`str fmt dat slay` and their sub-records) are validated and copied
+  to file 2 as read. Called again only after `Y0` = 39 (and the write).
+* `69420` **end of input**, after `Y0` = -1: the checks of `#end` (nothing open, every data label
+  used and defined, one `main`, every forward call matched), nothing after it (`io_end`), `#end`
+  written (`io_fin`). The pass then stops (`STOP`).
+* `69430` **write** the function held in the tables: the func record, its slots, instructions
+  1..`A0` in record order, `endfunc`, every field rebuilt from the tables (call 69440 first).
+* `69440` **T10** (DESIGN §5.8): clean-up repeated until nothing changes (a pure instruction or
+  load whose destination nothing but itself reads is deleted, L-bn), then the registers
+  renumbered by first appearance (parameters first) and the blocks in order of their opening
+  records (`K` rebuilt). It overwrites `I(n,0)` for every record (entry 69460's dead-record marking, line 79510, which T10 runs first), resets and recounts `R(r,2)`, and overwrites `W` (L-bv).
+* `69450` **compaction**: the deleted instructions (`I(n,1)` = 0) dropped, the operands kept in
+  record order (`A0 A1` updated), then 69455. `69455` **blocks**: `K(b,1..4)` of every block
+  from the records. `69460` **dead records**: `I(n,0)` = -1 for every record after an `exit`,
+  `next` or `ret` up to the end of its part (L-bb reading 3), else 0. `69465` **registers
+  renumbered** by first appearance, parameters first (`M7` updated, `W` overwritten).
+
+The part's operand visitor (lines 77160-77290) has only T10's modes and the renumbering's
+(9 count a read, 10 uncount it, 11 renumber, 12 count an instruction's reads of its own
+destination, which T10 does not count, L-bn); a pass's visitor, with its own modes, stays in the
+pass (`seaopt`: line 7175).
+
 ## layout.bas (lines 86000-88999)
 
 Needs `diag.bas` (`dg_bug`) and `tables.bas` (`tb_cval`). From sub-step 4g-2, in the build lists
@@ -221,10 +352,11 @@ read directly; the field rows through `ly_fld`. Every SUB below is cheap
 
 ## ralloc.bas (lines 87000-88999)
 
-Needs no other module. From sub-phase 5b, in the build lists of `seagen_a64` and `seagen_x64`
-(DESIGN §4.9.2, Decisions 59, 60, lead decisions L-ac, L-an, L-aq). The linear-scan register
-allocator of DESIGN §4.9.2, the same on both targets: positions and intervals, the loop
-extension, the hidden registers of `loop`s, call crossing, the scan with its hints and spill
+Needs `diag.bas` (`dg_bug`, for `ra_else`'s precondition only, L-bv; both code generators load
+it already; since no `ralloc` SUB receives the pass name, it passes `"ralloc"` as `P$`). From sub-phase 5b, in the build lists of `seagen_a64` and `seagen_x64`
+(DESIGN §4.9.2, Decisions 59, 60, lead decisions L-ac, L-an, L-aq; from 5c-2 Decision 75, L-bf,
+L-bg, L-bh). The linear-scan register allocator of DESIGN §4.9.2, the same on both targets:
+positions and intervals, the loop extension by liveness, the hidden registers of `loop`s, call crossing, the scan with its hints and spill
 choice, the spill and save slots, the saves around calls, and the three-step parallel move. The
 templates, immediates, fusion and the machine code stay in the code generator; the target enters
 only through the register table the caller declares (`ra_tab`).
@@ -285,8 +417,9 @@ allocated. The caller keeps the names (its templates); the module never sees the
   2. `ra_call D(), K` if the record is a `call`, an `rcall` or a `release`;
   3. `ra_ref D(), K, R, 1` for each register the record writes (position 2K+1);
   4. `ra_hint D(), K, R, A, B` if the record is a `mov`, or (x86_64) a two-address instruction;
-  5. `ra_open D(), K, B, Y, I, S` if it opens a block; `ra_close D(), K, B` if it closes one
-     (`endloop`, `enddo`, `endif`; nothing for `else`, `exit`, `next`).
+  5. `ra_open D(), K, B, Y, I, S` if it opens a block; `ra_else D(), K, B` if it is the `else`
+     of block B; `ra_close D(), K, B` if it closes one (`endloop`, `enddo`, `endif`; nothing for
+     `exit`, `next`).
 
   The registers written are the fields named `d` (every `d` of `call`/`rcall`), `e` (`rcount`) and
   `ind` (`loop`); every other register field is read. Report each reference that will exist in a
@@ -310,7 +443,16 @@ allocated. The caller keeps the names (its templates); the module never sees the
   I its `ind` register and S its step register, or S = 0 when the caller writes the step as an
   immediate (DESIGN §4.9.2 "Loop closing"); I = S = 0 otherwise. Called after the record's own
   references (the `loop` record reads start, last and step and writes `ind` before the loop
-  starts; `if` reads its condition outside its block).
+  starts; `if` reads its condition outside its block). For an `if`/`ifz` it opens the block's
+  first part; for a `loop`/`do`, its body.
+* `ra_else D(), K, B` -- record K is the `else` of the `if`/`ifz` block B, the innermost open
+  one (5c-2, Decision 75): closes B's first part and opens its `else` part. Precondition (L-bv):
+  B is the innermost open block, of kind 3 (`if`/`ifz`, as given to `ra_open`), with its first
+  part current, which is exactly `D(0,7)` = B (after `ra_else` it is -B); any other call (B not
+  the innermost open block, B a `loop` or `do`, or a second `ra_else` for B) is a caller bug that
+  `ra_else` reports through `dg_bug` (internal error, status 11) before changing anything, never
+  leaving the part state silently corrupted. The record has no references; `ra_close` of the `endif` then closes the `else` part. Without it the module would
+  treat the whole block as its first part, which is not the rule: every `else` must be reported.
 * `ra_close D(), K, B` -- record K closes block B, the innermost open one. For a `loop` the
   module adds the references of its closing sequence itself: `ind` read at 2K and written at
   2K+1, and the step register read at 2K unless the step is an immediate or has a hidden
@@ -337,8 +479,19 @@ allocated. The caller keeps the names (its templates); the module never sees the
 Interval rules (DESIGN §4.9.2, as the module applies them): an interval runs from the first to the
 last reported reference; for each loop (`loop`, `do`) a register referenced inside it is extended
 to cover the loop, from the opening record's write position 2o+1 to the closing record's 2c+1,
-when it is also referenced outside the loop or when its first reference inside the loop is not a
-write at the loop body's own block level. Each `loop` has a hidden count register (interval
+when it may be live at the loop's top (Decision 75): some read of it inside the loop is
+*uncovered in the loop*, or some read after the loop's closing record is *uncovered after the
+loop*. Parts are the function body, each loop's body and each `if`'s first and `else` parts
+(announced by `ra_open`, `ra_else`, `ra_close`); a write's *effective part* is the part it stands
+in, except that a write in B's `else` part (directly) whose register's previous write has B's
+first part as its effective part has the part containing B (L-bh). A read at record k is covered
+in loop L when the latest write before it lies after L's opening record and its effective part
+is still open at k; covered after L when that write lies after L's closing record and its
+effective part is still open. The module keeps per register the record and effective part of
+its latest write, the block of its first reference and the outermost open loop over which it
+must be extended (its end applied by `ra_end`, its start at once); a read uncovered after closed
+loops extends the interval back to 2o+1 of the outermost closed loop that contains the first
+reference (a write inside a nested loop thus never covers a read after it, L-bf). Each `loop` has a hidden count register (interval
 2o+1 .. 2c+1, class `i`), and a hidden step register (same interval) when its step register S is
 written inside the loop; hidden registers are numbered M+1, M+2, ... in the order of their
 loops' opening records, the count before the step; one numbered above `R9` is not created (L-aq).
@@ -425,3 +578,7 @@ into them, never form a cycle.
 * A hint is recorded from the record that first references the destination; a call result whose
   interval starts before its call (loop extension) is not saved around that call (`ra_sv`).
 * Spill slots of L-aq counts and steps come after all other slots, by block, count first.
+* Effective parts (L-bh): "the previous write stood in B's first part" is read as "its effective
+  part is B's first part", so a write that is itself promoted by this rule in a nested `if`'s
+  `else` part counts (the same reading as `seaopt`'s T4, L-bq). A register read before any
+  write counts as written at record 0 in the function body, as a parameter is.

@@ -40,18 +40,16 @@ endfunc
 func clean fn 0:1:1 4 p1 i2 f3 i4 1 p
 li i5 1
 rcall sea_arr_new 0:2 1 p6 4 i5 i5 i4 i5
-mov f7 f3
-li i8 0
-mov i9 i5
-rcount i10 i11 i8 i4 i9 0 0:5
-if 1 i11
-loop 2 i12 i8 i10 i9
-li i13 0
-ldi i14 p1 - 0 16
-chkb i13 i14 0 0:6
-li i15 1
-iaddc i16 i2 i15 0:7
-fadd f7 f7 f3
+li i7 0
+mov i8 i5
+rcount i9 i10 i7 i4 i8 0 0:5
+if 1 i10
+ldi i11 p1 - 0 16
+li i12 0
+li i13 1
+loop 2 i14 i7 i9 i8
+chkb i12 i11 0 0:6
+iaddc i15 i2 i13 0:7
 endloop 2
 endif 1
 ret 1 p6

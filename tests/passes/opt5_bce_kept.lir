@@ -55,30 +55,34 @@ li i4 1
 mov i5 i4
 rcount i6 i7 i4 i2 i5 0 0:3
 if 1 i7
-loop 2 i8 i4 i6 i5
+ldi i8 p1 - 0 16
 li i9 1
-iadd i10 i8 i9
-ldi i11 p1 - 0 16
-chkb i10 i11 0 0:4
-ldp p12 p1 - 0 40
-ldf f13 p12 i10 8 0
-fadd f14 f3 f13
-isub i15 i8 i9
-chkb i15 i11 0 0:4
-ldf f16 p12 i15 8 0
-fsub f3 f14 f16
+ldp p10 p1 - 0 40
+li i11 8
+padd p12 p10 i11
+li i13 -8
+padd p14 p10 i13
+loop 2 i15 i4 i6 i5
+iadd i16 i15 i9
+chkb i16 i8 0 0:4
+ldf f17 p12 i15 8 0
+fadd f18 f3 f17
+isub i19 i15 i9
+chkb i19 i8 0 0:4
+ldf f20 p14 i15 8 0
+fsub f3 f18 f20
 endloop 2
 endif 1
-li i17 0
-li i18 1
-rcount i19 i20 i17 i2 i18 1 0:6
-if 3 i20
-loop 4 i21 i17 i19 i18
-ldi i22 p1 - 0 16
-chkb i21 i22 0 0:7
-ldp p23 p1 - 0 40
-ldf f24 p23 i21 8 0
-fadd f3 f3 f24
+li i21 0
+li i22 1
+rcount i23 i24 i21 i2 i22 1 0:6
+if 3 i24
+ldi i25 p1 - 0 16
+ldp p26 p1 - 0 40
+loop 4 i27 i21 i23 i22
+chkb i27 i25 0 0:7
+ldf f28 p26 i27 8 0
+fadd f3 f3 f28
 endloop 4
 endif 3
 ret 1 f3
@@ -89,33 +93,56 @@ li i4 0
 li i5 1
 rcount i6 i7 i4 i2 i5 0 0:13
 if 1 i7
-loop 2 i8 i4 i6 i5
-ldp p9 p1 - 0 0
-ldi i10 p9 - 0 16
-chkb i8 i10 0 0:14
-ldp p11 p9 - 0 40
-ldf f12 p11 i8 8 0
-lf f13 #3FF8000000000000
-fadd f14 f12 f13
-chkb i8 i10 0 0:14
-mov p15 p9
-ldi i16 p15 - 0 0
-li i17 1
-icmp ne i18 i16 i17
-if 3 i18
-rcall sea_arr_unique 0:14 1 p19 1 p15
-stp p19 p1 - 0 0
-mov p15 p19
-endif 3
-ldp p20 p15 - 0 40
-stf f14 p20 i8 8 0
-ldp p21 p1 - 0 0
-ldi i22 p21 - 0 16
-chkb i8 i22 0 0:15
-ldp p23 p21 - 0 40
-ldf f24 p23 i8 8 0
-fadd f3 f3 f24
-endloop 2
+ldp p8 p1 - 0 0
+ldi i9 p8 - 0 0
+li i10 1
+icmp eq i11 i9 i10
+if 2 i11
+ldp p12 p1 - 0 0
+ldi i13 p12 - 0 16
+ldp p14 p12 - 0 40
+lf f15 #3FF8000000000000
+mov p16 p12
+ldp p17 p16 - 0 40
+loop 3 i18 i4 i6 i5
+chkb i18 i13 0 0:14
+ldf f19 p14 i18 8 0
+fadd f20 f19 f15
+chkb i18 i13 0 0:14
+stf f20 p17 i18 8 0
+chkb i18 i13 0 0:15
+ldf f21 p14 i18 8 0
+fadd f3 f3 f21
+endloop 3
+else 2
+lf f22 #3FF8000000000000
+li i23 1
+loop 4 i24 i4 i6 i5
+ldp p25 p1 - 0 0
+ldi i26 p25 - 0 16
+chkb i24 i26 0 0:14
+ldp p27 p25 - 0 40
+ldf f28 p27 i24 8 0
+fadd f29 f28 f22
+chkb i24 i26 0 0:14
+mov p30 p25
+ldi i31 p30 - 0 0
+icmp ne i32 i31 i23
+if 5 i32
+rcall sea_arr_unique 0:14 1 p33 1 p30
+stp p33 p1 - 0 0
+mov p30 p33
+endif 5
+ldp p34 p30 - 0 40
+stf f29 p34 i24 8 0
+ldp p35 p1 - 0 0
+ldi i36 p35 - 0 16
+chkb i24 i36 0 0:15
+ldp p37 p35 - 0 40
+ldf f38 p37 i24 8 0
+fadd f3 f3 f38
+endloop 4
+endif 2
 endif 1
 ret 1 f3
 endfunc

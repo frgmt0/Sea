@@ -1,0 +1,12 @@
+// r_opt_sr_kstride -- v[j * k + 1] with an invariant register k = 3 over an 8-element vector: index 10 at j = 3
+// (5.4)
+fn every(v: i64[], k: i64) {
+    for j in 0..10 {
+        printf("%d\n", v[j * k + 1])
+    }
+}
+var v = filled(0, 8)
+for i in 0..8 {
+    v[i] = i * 11
+}
+every(v, 3)

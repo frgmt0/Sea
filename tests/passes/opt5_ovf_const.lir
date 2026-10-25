@@ -17,38 +17,44 @@ rcall sea_printf 0:21 0 2 p8 p7
 ret 0
 endfunc
 func big fn 0:1:1 2 i1 i2 1 i
-li i3 #00000012A05F2000
-li i4 #0010000000000000
-li i5 #0010000000000001
-li i6 #FFF0000000000000
-li i7 #FFEFFFFFFFFFFFFF
+li i3 0
+mov i4 i3
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:8
+if 1 i7
 li i8 0
-mov i9 i8
-li i10 1
-rcount i11 i12 i9 i2 i10 0 0:8
-if 1 i12
-loop 2 i13 i9 i11 i10
-li i14 0
-icmp ge i15 i1 i14
-if 3 i15
-li i16 10
-icmp lt i17 i1 i16
-if 4 i17
-iadd i18 i3 i1
-iaddc i8 i8 i18 0:11
-iadd i19 i4 i1
-iaddc i8 i8 i19 0:12
-iaddc i20 i5 i1 0:13
-iaddc i8 i8 i20 0:13
-iadd i21 i6 i1
-iaddc i8 i8 i21 0:14
-iaddc i22 i7 i1 0:15
-iaddc i8 i8 i22 0:15
-endif 4
+icmp ge i9 i1 i8
+li i10 10
+icmp lt i11 i1 i10
+if 2 i9
+if 3 i11
+li i12 #00000012A05F2000
+li i13 #0010000000000000
+li i14 #0010000000000001
+li i15 #FFF0000000000000
+li i16 #FFEFFFFFFFFFFFFF
+iadd i17 i12 i1
+iadd i18 i13 i1
+iadd i19 i15 i1
+loop 4 i20 i4 i6 i5
+iaddc i3 i3 i17 0:11
+iaddc i3 i3 i18 0:12
+iaddc i21 i14 i1 0:13
+iaddc i3 i3 i21 0:13
+iaddc i3 i3 i19 0:14
+iaddc i22 i16 i1 0:15
+iaddc i3 i3 i22 0:15
+endloop 4
+else 3
+loop 5 i23 i4 i6 i5
+endloop 5
 endif 3
-endloop 2
+else 2
+loop 6 i24 i4 i6 i5
+endloop 6
+endif 2
 endif 1
-ret 1 i8
+ret 1 i3
 endfunc
 fmt d1 4
 fconv - - - d i

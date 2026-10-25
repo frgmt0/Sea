@@ -1,0 +1,24 @@
+fn hdr(n: i64, k: i64) -> f64 {
+    let u = zeros(n)
+    var s = 0.0
+    for i in 0..n {
+        if i > k {
+            s = s + u[i] + f64(len(u))
+        }
+    }
+    return s
+}
+fn moving(n: i64) -> f64 {
+    var u = zeros(1)
+    var s = 0.0
+    for i in 1..n {
+        u = zeros(i)
+        s = s + f64(len(u)) + u[i - 1]
+    }
+    return s
+}
+printf("%g %g\n", hdr(3, 0), hdr(4, 1))
+printf("%g %g\n", moving(3), moving(4))
+// opt5_licm_hdr -- DESIGN.md 5.8 T8 (b): the extent and data address of the array register u,
+// loaded in an if part, hoisted (a header is always readable), with the conversion of len(u);
+// in moving u is written in the loop: its header loads stay

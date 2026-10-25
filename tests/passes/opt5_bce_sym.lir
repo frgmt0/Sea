@@ -54,20 +54,25 @@ li i24 0
 li i25 1
 rcount i26 i27 i24 i3 i25 0 0:15
 if 6 i27
-loop 7 i28 i24 i26 i25
-li i29 8
-icmp ge i30 i2 i29
-if 8 i30
-ldp p31 p7 - 0 40
-ldf f32 p31 i1 8 0
-fadd f8 f8 f32
-endif 8
-ldi i33 p7 - 0 16
-chkb i1 i33 0 0:19
-ldp p34 p7 - 0 40
-ldf f35 p34 i1 8 0
-fadd f8 f8 f35
-endloop 7
+li i28 8
+icmp ge i29 i2 i28
+ldp p30 p7 - 0 40
+ldi i31 p7 - 0 16
+if 7 i29
+loop 8 i32 i24 i26 i25
+ldf f33 p30 i1 8 0
+fadd f8 f8 f33
+chkb i1 i31 0 0:19
+ldf f34 p30 i1 8 0
+fadd f8 f8 f34
+endloop 8
+else 7
+loop 9 i35 i24 i26 i25
+chkb i1 i31 0 0:19
+ldf f36 p30 i1 8 0
+fadd f8 f8 f36
+endloop 9
+endif 7
 endif 6
 endif 5
 endif 4

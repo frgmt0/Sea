@@ -1,0 +1,99 @@
+// opt_hoist_guard -- loop-invariant failing operations that must not run (DESIGN.md 5.8 T8): an index far out
+// of bounds, an overflow, a zero divisor and a conversion of 2.5 in loops run zero times
+// (for, while, an element loop over an empty slice), after a break taken at once, after a
+// continue taken at every iteration, after a return; struct fields read through a parameter
+// in loops run zero times with a count field the array does not cover, a ref struct whose
+// fields change in the loop, an element read under an invariant guard on an empty array
+// (LANGUAGE.md 5.4, 6.5, 6.6, 7.4, 7.5, 9.2)
+struct Box {
+    vals: f64[]
+    scale: f64
+    n: i64
+}
+fn zero_trip(v: f64[], bad: i64, big: i64, z: i64, n: i64, f: f64) -> i64 {
+    var t = 0
+    for i in 0..n {
+        t += i64(v[bad]) + (big + 100) + idiv(7, z) + i64(f)
+    }
+    var k = 0
+    while k < n {
+        t += idiv(big, z) + i64(v[bad + 1])
+        k += 1
+    }
+    for x in v[0..n] {
+        t += i64(x) + (big + 100)
+    }
+    return t
+}
+fn early(v: f64[], bad: i64, big: i64, z: i64) -> i64 {
+    var t = 0
+    for i in 0..5 {
+        if i >= 0 {
+            break
+        }
+        t += i64(v[bad]) + big * 2 + idiv(1, z)
+    }
+    for i in 0..5 {
+        t += i
+        if i < 10 {
+            continue
+        }
+        t += i64(v[bad]) + (big + 1) + idiv(1, z)
+    }
+    var j = 0
+    while j < 4 {
+        j += 1
+        if j > 0 {
+            return t * 100 + j
+        }
+        t += i64(v[bad])
+    }
+    return -1
+}
+fn box_sum(b: Box, reps: i64) -> f64 {
+    var t = 0.0
+    for r in 0..reps {
+        for i in 0..b.n {
+            t += b.vals[i] * b.scale
+        }
+    }
+    return t
+}
+fn box_grow(ref b: Box, reps: i64) {
+    for r in 0..reps {
+        b.scale = b.scale * 2.0
+        b.n = b.n + 1
+        printf("%g %d %d\n", b.scale, b.n, len(b.vals))
+    }
+}
+fn guarded(v: f64[], k: i64, n: i64) -> f64 {
+    var t = 0.0
+    for i in 0..n {
+        if k < len(v) {
+            t += v[k]
+        } else {
+            t -= 1.0
+        }
+    }
+    return t
+}
+let v = [1.0, 2.0, 3.0]
+printf("%d\n", zero_trip(v, 0, 5, 1, 2, 3.0))
+printf("%d\n", zero_trip(v, 1000000000, 9223372036854775807, 0, 0, 2.5))
+printf("%d\n", early(v, 99, 9223372036854775807, 0))
+let b1 = Box { vals: [1.0, 2.0, 3.0], scale: 0.5, n: 3 }
+printf("%g\n", box_sum(b1, 2))
+let b2 = Box { vals: zeros(0), scale: nan, n: 99 }
+printf("%g\n", box_sum(b2, 0))
+let b3 = Box { vals: zeros(0), scale: 2.0, n: 0 }
+printf("%g\n", box_sum(b3, 4))
+let b4 = Box { vals: [4.0, 8.0, 16.0], scale: 0.25, n: 2 }
+printf("%g\n", box_sum(b4, 3))
+var bx = Box { vals: ones(2), scale: 1.5, n: 0 }
+box_grow(ref bx, 3)
+box_grow(ref bx, 0)
+printf("%g %d\n", bx.scale, bx.n)
+printf("%g\n", guarded(zeros(0), 5, 3))
+printf("%g\n", guarded(v, 2, 4))
+printf("%g\n", guarded(zeros(0), 0, 2))
+printf("%g\n", guarded(v, 3, 0))

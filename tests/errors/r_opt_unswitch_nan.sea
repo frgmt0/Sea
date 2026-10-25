@@ -1,0 +1,11 @@
+// r_opt_unswitch_nan -- an if expression on an invariant a == b in a loop: with a = b = 1 the first arm runs,
+// with a = b = NaN (== false) the second, whose v[i + 2] fails at i = 2 (6.4, 6.10)
+fn pick(v: f64[], a: f64, b: f64) {
+    for i in 0..len(v) {
+        let x = if a == b { v[i] } else { v[i + 2] }
+        printf("%g\n", x)
+    }
+}
+let v = [1.0, 2.0, 3.0, 4.0]
+pick(v, 1.0, 1.0)
+pick(v, nan, nan)

@@ -1,0 +1,71 @@
+#sea 1
+#target arm64-macos
+#file ra5_live_ifs.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 0
+li i2 1
+li i3 199
+li i4 0
+loop 1 i5 i1 i3 i2
+iand i6 i5 i2
+if 2 i6
+li i7 3
+imul i8 i5 i7
+iadd i9 i8 i5
+li i10 23324
+ixor i11 i9 i10
+li i12 4
+isar i13 i11 i12
+li i14 11
+imul i15 i13 i14
+iadd i16 i15 i5
+li i17 23712
+ixor i18 i16 i17
+li i19 3
+isar i20 i18 i19
+li i21 19
+imul i22 i20 i21
+iadd i23 i22 i5
+li i24 24100
+ixor i25 i23 i24
+li i26 2
+isar i27 i25 i26
+iadd i4 i4 i27
+else 2
+li i28 3
+imul i29 i5 i28
+iadd i30 i29 i5
+li i31 23324
+ixor i32 i30 i31
+li i33 4
+isar i34 i32 i33
+li i35 11
+imul i36 i34 i35
+iadd i37 i36 i5
+li i38 23712
+ixor i39 i37 i38
+li i40 3
+isar i41 i39 i40
+li i42 19
+imul i43 i41 i42
+iadd i44 i43 i5
+li i45 24100
+ixor i46 i44 i45
+li i47 2
+isar i48 i46 i47
+ixor i4 i4 i48
+endif 2
+endloop 1
+sa p49 s1
+sti i4 p49 - 0 0
+la p50 d1
+rcall sea_printf 0:2 0 2 p50 p49
+ret 0
+endfunc
+fmt d1 4
+ftext acc
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

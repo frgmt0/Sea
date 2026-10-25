@@ -1,0 +1,75 @@
+#sea 1
+#target arm64-macos
+#file ra5_live_carry.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+li i1 0
+li i2 1
+li i3 199
+li i4 7
+li i5 -3
+li i6 0
+loop 1 i7 i1 i3 i2
+li i8 3
+iand i9 i7 i8
+ifz 2 i9
+li i10 3
+imul i11 i4 i10
+iadd i12 i11 i7
+li i13 23324
+ixor i14 i12 i13
+li i15 4
+isar i16 i14 i15
+li i17 11
+imul i18 i16 i17
+iadd i19 i18 i7
+li i20 23712
+ixor i21 i19 i20
+li i22 3
+isar i23 i21 i22
+li i24 19
+imul i25 i23 i24
+iadd i26 i25 i7
+iadd i4 i4 i26
+endif 2
+iand i27 i7 i2
+if 3 i27
+li i28 3
+imul i29 i5 i28
+iadd i30 i29 i7
+li i31 23324
+ixor i32 i30 i31
+li i33 4
+isar i34 i32 i33
+li i35 11
+imul i36 i34 i35
+iadd i37 i36 i7
+li i38 23712
+ixor i39 i37 i38
+li i40 3
+isar i41 i39 i40
+li i42 19
+imul i43 i41 i42
+iadd i44 i43 i7
+ixor i5 i5 i44
+endif 3
+iadd i6 i6 i9
+endloop 1
+sa p45 s1
+sti i4 p45 - 0 0
+sti i5 p45 - 0 8
+sti i6 p45 - 0 16
+la p46 d1
+rcall sea_printf 0:2 0 2 p46 p45
+ret 0
+endfunc
+fmt d1 8
+ftext carry
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

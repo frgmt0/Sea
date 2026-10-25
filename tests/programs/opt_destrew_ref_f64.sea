@@ -1,0 +1,14 @@
+// opt_destrew_ref_f64 -- T5 destination rewriting: the promoted location is stored again before the value it first received is
+// read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)
+fn h(ref s: f64, t: f64, n: i64) -> f64 {
+    var u = 0.0
+    for i in 0..n {
+        s = t * 3.0
+        s = s + 1.0
+        u = t * 3.0
+    }
+    return u
+}
+var s = 0.0
+let u = h(ref s, 2.5, 2)
+printf("%g %g\n", s, u)

@@ -7,7 +7,7 @@
 #                         and does not stop the parts that exist.
 #   make runtime          build/libsea.a from runtime/arm64_macos/*.s
 #   make tools            build/tools/gendata, build/tools/seaval from tools/*.bas
-#   make passes           build/<pass> for each of seaparse seaname seacheck seaexpand sealoop sealower seaopt
+#   make passes           build/<pass> for each of seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt
 #                         seagen_a64: build/gen/<pass>.bas (passes/<pass>/*.bas, then the modules
 #                         and DATA blocks of passes/<pass>/build.list, then 99999 END; DESIGN.md
 #                         2.6.3), compiled with $(BAYSICK)/build/baysick
@@ -50,7 +50,9 @@
 # there first). The include check works in a temporary directory and leaves no files behind.
 #
 # Per-pass build list, passes/<pass>/build.list (one file per pass; '#' starts a comment):
-#   lib <module>...    shared modules of passes/lib/: io diag tables limb f64emu fltlit layout ralloc
+#   lib <module>...    shared modules of passes/lib/: io diag tables lirrw limb f64emu fltlit layout ralloc
+#                      (lirrw, the shared main-program part of the LIR passes, overlaps the lines of limb
+#                      and f64emu: a list naming it with either is a build error, DESIGN.md 2.6.3, L-bi)
 #   data <block>...    generated DATA blocks: errors errno exits consts entries records mtab
 # The parts are concatenated in the canonical order of DESIGN.md 2.6.3 whatever the order
 # written; an unknown name is a build error.
@@ -72,8 +74,8 @@ BUILD   := build
 
 BSK      := $(BAYSICK)/build/baysick
 BSKRT    := $(BAYSICK)/build/libbaysickrt.a
-PASSES   := seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64 seagen_x64
-LIBS_CANON := io diag tables limb f64emu fltlit layout ralloc
+PASSES   := seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64 seagen_x64
+LIBS_CANON := io diag tables lirrw limb f64emu fltlit layout ralloc
 DATA_CANON := errors errno exits consts entries records mtab
 RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock rt_math rt_mem rt_arr rt_str rt_args rt_sort
 
@@ -189,6 +191,7 @@ libs=$$(awk '$$1 == "lib" { for (i = 2; i <= NF; i++) print $$i }' $$list)
 data=$$(awk '$$1 == "data" { for (i = 2; i <= NF; i++) print $$i }' $$list)
 for w in $$libs; do case " $(LIBS_CANON) " in *" $$w "*) ;; *) echo "make: $$list: unknown module '$$w'" >&2; exit 1 ;; esac; done
 for w in $$data; do case " $(DATA_CANON) " in *" $$w "*) ;; *) echo "make: $$list: unknown DATA block '$$w'" >&2; exit 1 ;; esac; done
+case " $$(echo $$libs) " in *" lirrw "*) for w in $$libs; do case $$w in limb|f64emu) echo "make: $$list: lirrw cannot be loaded with $$w (their lines overlap, DESIGN.md 2.6.3)" >&2; exit 1 ;; esac; done ;; esac
 mkdir -p $(BUILD)/gen; t=$$(mktemp -d "$${TMPDIR:-/tmp}/sea-gen.XXXXXX") || exit 1
 trap 'rm -rf "$$t"' EXIT
 : > $$t/prog.bas

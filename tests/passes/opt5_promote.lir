@@ -1,0 +1,164 @@
+#sea 1
+#target arm64-macos
+#file opt5_promote.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+slot s4 8 8
+slot s5 24 8
+slot s6 8 8
+slot s7 8 8
+slot s8 8 8
+slot s9 32 8
+li i1 3
+sa p2 s1
+sa p3 s2
+lf f4 #3FE0000000000000
+stf f4 p3 - 0 0
+lf f5 #3FF8000000000000
+stf f5 p3 - 0 8
+lf f6 #4004000000000000
+stf f6 p3 - 0 16
+li i7 24
+mcopy p2 p3 i7
+sa p8 s3
+sti i1 p8 - 0 0
+li i9 1
+rcall sea_arr_new_u 0:34 1 p10 4 i9 i9 i1 i9
+ldp p11 p10 - 0 40
+mcopy p11 p2 i7
+call tally 1 f12 3 p8 p10 i1
+ldi i1 p8 - 0 0
+release p10
+sa p13 s4
+sti i1 p13 - 0 0
+li i14 3
+rcall sea_arr_new_u 0:34 1 p15 4 i9 i9 i14 i9
+ldp p16 p15 - 0 40
+mcopy p16 p2 i7
+li i17 2
+call tally 1 f18 3 p13 p15 i17
+ldi i1 p13 - 0 0
+release p15
+sa p19 s5
+stf f12 p19 - 0 0
+stf f18 p19 - 0 8
+sti i1 p19 - 0 16
+la p20 d1
+rcall sea_printf 0:34 0 2 p20 p19
+sa p21 s6
+sti i1 p21 - 0 0
+call kept 1 i22 2 p21 i17
+ldi i1 p21 - 0 0
+sa p23 s7
+sti i1 p23 - 0 0
+call kept 1 i24 2 p23 i14
+ldi i1 p23 - 0 0
+sa p25 s8
+sti i1 p25 - 0 0
+call twice 1 i26 2 p25 i9
+ldi i1 p25 - 0 0
+sa p27 s9
+sti i22 p27 - 0 0
+sti i24 p27 - 0 8
+sti i26 p27 - 0 16
+sti i1 p27 - 0 24
+la p28 d2
+rcall sea_printf 0:35 0 2 p28 p27
+ret 0
+endfunc
+func tally fn 0:5:1 3 p1 p2 i3 1 f
+slot s1 16 8
+sa p4 s1
+lf f5 #0000000000000000
+stf f5 p4 - 0 0
+li i6 0
+sti i6 p4 - 0 8
+mov i7 i6
+li i8 1
+rcount i9 i10 i7 i3 i8 0 0:7
+if 1 i10
+ldi i11 p1 - 0 0
+ldf f12 p4 - 0 0
+ldi i13 p2 - 0 16
+ldi i14 p4 - 0 8
+ldp p15 p2 - 0 40
+li i16 1
+loop 2 i17 i7 i9 i8
+iaddc i11 i11 i17 0:8
+chkb i17 i13 0 0:9
+ldf f18 p15 i17 8 0
+fadd f12 f12 f18
+iaddc i14 i14 i16 0:10
+endloop 2
+sti i11 p1 - 0 0
+stf f12 p4 - 0 0
+sti i14 p4 - 0 8
+endif 1
+li i19 0
+mov i20 i19
+li i21 1
+rcount i22 i23 i20 i3 i21 0 0:13
+if 3 i23
+ldi i24 p1 - 0 0
+ldi i25 p4 - 0 8
+loop 4 i26 i20 i22 i21
+imulc i27 i24 i25 0:14
+iaddc i19 i19 i27 0:14
+endloop 4
+endif 3
+ldf f28 p4 - 0 0
+itof f29 i19
+fadd f30 f28 f29
+ret 1 f30
+endfunc
+func twice fn 0:18:1 2 p1 i2 1 i
+li i3 0
+li i4 1
+rcount i5 i6 i3 i2 i4 0 0:19
+if 1 i6
+ldi i7 p1 - 0 0
+li i8 2
+loop 2 i9 i3 i5 i4
+iaddc i7 i7 i8 0:20
+endloop 2
+sti i7 p1 - 0 0
+endif 1
+ldi i10 p1 - 0 0
+ret 1 i10
+endfunc
+func kept fn 0:24:1 2 p1 i2 1 i
+li i3 0
+mov i4 i3
+li i5 1
+rcount i6 i7 i4 i2 i5 0 0:26
+if 1 i7
+li i8 1
+loop 2 i9 i4 i6 i5
+ldi i10 p1 - 0 0
+iaddc i11 i10 i8 0:27
+sti i11 p1 - 0 0
+call twice 1 i12 2 p1 i9
+iaddc i3 i3 i12 0:28
+endloop 2
+endif 1
+ret 1 i3
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 8
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

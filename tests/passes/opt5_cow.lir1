@@ -1,0 +1,167 @@
+#sea 1
+#target arm64-macos
+#file opt5_cow.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+li i1 3
+lf f2 #3FE0000000000000
+call pair 1 f3 2 i1 f2
+li i4 4
+lf f5 #4000000000000000
+call pair 1 f6 2 i4 f5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:20 0 2 p8 p7
+li i9 2
+li i10 3
+call table 1 f11 2 i9 i10
+li i12 3
+li i13 4
+call table 1 f14 2 i12 i13
+sa p15 s2
+stf f11 p15 - 0 0
+stf f14 p15 - 0 8
+la p16 d2
+rcall sea_printf 0:21 0 2 p16 p15
+ret 0
+endfunc
+func pair fn 0:1:1 2 i1 f2 1 f
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new 0:2 1 p6 4 i3 i4 i1 i5
+li i7 1
+li i8 1
+li i9 1
+rcall sea_arr_new 0:3 1 p10 4 i7 i8 i1 i9
+mov p11 p6
+retain p11
+li i12 0
+li i13 1
+rcount i14 i15 i12 i1 i13 0 0:5
+if 1 i15
+loop 2 i16 i12 i14 i13
+itof f17 i16
+fmul f18 f2 f17
+ldi i19 p6 - 0 16
+chkb i16 i19 0 0:6
+ldi i20 p6 - 0 0
+li i21 1
+icmp ne i22 i20 i21
+if 3 i22
+rcall sea_arr_unique 0:6 1 p23 1 p6
+mov p6 p23
+endif 3
+ldp p24 p6 - 0 40
+stf f18 p24 i16 8 0
+ldi i25 p6 - 0 16
+chkb i16 i25 0 0:7
+ldp p26 p6 - 0 40
+ldf f27 p26 i16 8 0
+ldi i28 p11 - 0 16
+chkb i16 i28 0 0:7
+ldp p29 p11 - 0 40
+ldf f30 p29 i16 8 0
+fadd f31 f27 f30
+ldi i32 p10 - 0 16
+chkb i16 i32 0 0:7
+ldi i33 p10 - 0 0
+li i34 1
+icmp ne i35 i33 i34
+if 4 i35
+rcall sea_arr_unique 0:7 1 p36 1 p10
+mov p10 p36
+endif 4
+ldp p37 p10 - 0 40
+stf f31 p37 i16 8 0
+endloop 2
+endif 1
+li i38 1
+isubc i39 i1 i38 0:9
+ldi i40 p6 - 0 16
+chkb i39 i40 0 0:9
+ldp p41 p6 - 0 40
+ldf f42 p41 i39 8 0
+li i43 1
+isubc i44 i1 i43 0:9
+ldi i45 p10 - 0 16
+chkb i44 i45 0 0:9
+ldp p46 p10 - 0 40
+ldf f47 p46 i44 8 0
+fadd f48 f42 f47
+li i49 1
+isubc i50 i1 i49 0:9
+ldi i51 p11 - 0 16
+chkb i50 i51 0 0:9
+ldp p52 p11 - 0 40
+ldf f53 p52 i50 8 0
+fadd f54 f48 f53
+release p11
+release p10
+release p6
+ret 1 f54
+endfunc
+func table fn 0:11:1 2 i1 i2 1 f
+li i3 1
+li i4 2
+rcall sea_arr_new 0:12 1 p5 4 i3 i4 i1 i2
+li i6 0
+li i7 1
+rcount i8 i9 i6 i2 i7 0 0:13
+if 1 i9
+loop 2 i10 i6 i8 i7
+li i11 0
+li i12 1
+rcount i13 i14 i11 i1 i12 0 0:14
+if 3 i14
+loop 4 i15 i11 i13 i12
+iaddc i16 i15 i10 0:15
+itof f17 i16
+ldi i18 p5 - 0 16
+chkb i15 i18 0 0:15
+ldi i19 p5 - 0 24
+chkb i10 i19 1 0:15
+ldi i20 p5 - 0 0
+li i21 1
+icmp ne i22 i20 i21
+if 5 i22
+rcall sea_arr_unique 0:15 1 p23 1 p5
+mov p5 p23
+endif 5
+ldp p24 p5 - 0 40
+imul i25 i10 i18
+iadd i26 i15 i25
+stf f17 p24 i26 8 0
+endloop 4
+endif 3
+endloop 2
+endif 1
+li i27 1
+isubc i28 i1 i27 0:18
+li i29 1
+isubc i30 i2 i29 0:18
+ldi i31 p5 - 0 16
+chkb i28 i31 0 0:18
+ldi i32 p5 - 0 24
+chkb i30 i32 1 0:18
+ldp p33 p5 - 0 40
+imul i34 i30 i31
+iadd i35 i28 i34
+ldf f36 p33 i35 8 0
+release p5
+ret 1 f36
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

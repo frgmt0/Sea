@@ -1,0 +1,129 @@
+#sea 1
+#target arm64-macos
+#file opt5_cow_ref.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 8 8
+slot s4 8 8
+slot s5 32 8
+li i1 3
+li i2 1
+rcall sea_arr_new 0:11 1 p3 4 i2 i2 i1 i2
+mov p4 p3
+retain p4
+sa p5 s1
+stp p3 p5 - 0 0
+lf f6 #3FE0000000000000
+call fill 0 2 p5 f6
+ldp p3 p5 - 0 0
+sa p7 s2
+stp p3 p7 - 0 0
+lf f8 #4010000000000000
+call scale 0 2 p7 f8
+ldp p3 p7 - 0 0
+li i9 2
+rcall sea_arr_new 0:15 1 p10 4 i2 i2 i9 i2
+sa p11 s3
+stp p10 p11 - 0 0
+lf f12 #3FF8000000000000
+call fill 0 2 p11 f12
+ldp p10 p11 - 0 0
+sa p13 s4
+stp p10 p13 - 0 0
+lf f14 #4008000000000000
+call scale 0 2 p13 f14
+ldp p10 p13 - 0 0
+ldi i15 p3 - 0 16
+chkb i9 i15 0 0:18
+ldp p16 p3 - 0 40
+ldf f17 p16 i9 8 0
+ldi i18 p4 - 0 16
+chkb i9 i18 0 0:18
+ldp p19 p4 - 0 40
+ldf f20 p19 i9 8 0
+li i21 0
+ldi i22 p10 - 0 16
+chkb i21 i22 0 0:18
+ldp p23 p10 - 0 40
+ldf f24 p23 i21 8 0
+chkb i2 i22 0 0:18
+ldf f25 p23 i2 8 0
+sa p26 s5
+stf f17 p26 - 0 0
+stf f20 p26 - 0 8
+stf f24 p26 - 0 16
+stf f25 p26 - 0 24
+la p27 d1
+rcall sea_printf 0:18 0 2 p27 p26
+release p10
+release p4
+release p3
+ret 0
+endfunc
+func fill fn 0:1:1 2 p1 f2 0
+li i3 0
+ldp p4 p1 - 0 0
+ldi i5 p4 - 0 16
+li i6 1
+rcount i7 i8 i3 i5 i6 0 0:2
+if 1 i8
+loop 2 i9 i3 i7 i6
+ldp p10 p1 - 0 0
+ldi i11 p10 - 0 16
+chkb i9 i11 0 0:3
+mov p12 p10
+ldi i13 p12 - 0 0
+li i14 1
+icmp ne i15 i13 i14
+if 3 i15
+rcall sea_arr_unique 0:3 1 p16 1 p12
+stp p16 p1 - 0 0
+mov p12 p16
+endif 3
+ldp p17 p12 - 0 40
+stf f2 p17 i9 8 0
+endloop 2
+endif 1
+ret 0
+endfunc
+func scale fn 0:6:1 2 p1 f2 0
+li i3 0
+ldp p4 p1 - 0 0
+ldi i5 p4 - 0 16
+li i6 1
+rcount i7 i8 i3 i5 i6 0 0:7
+if 1 i8
+loop 2 i9 i3 i7 i6
+ldp p10 p1 - 0 0
+ldi i11 p10 - 0 16
+chkb i9 i11 0 0:8
+ldp p12 p10 - 0 40
+ldf f13 p12 i9 8 0
+fmul f14 f13 f2
+chkb i9 i11 0 0:8
+mov p15 p10
+ldi i16 p15 - 0 0
+li i17 1
+icmp ne i18 i16 i17
+if 3 i18
+rcall sea_arr_unique 0:8 1 p19 1 p15
+stp p19 p1 - 0 0
+mov p15 p19
+endif 3
+ldp p20 p15 - 0 40
+stf f14 p20 i9 8 0
+endloop 2
+endif 1
+ret 0
+endfunc
+fmt d1 8
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

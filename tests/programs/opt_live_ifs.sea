@@ -1,0 +1,102 @@
+// opt_live_ifs -- values live across calls in loops whose if parts compute temporaries (DESIGN.md 4.9.2,
+// Decision 75): twelve i64 and two f64 variables carried around a loop with a printf in some
+// iterations, temporaries local to each part of an if, a value written in both parts and read
+// after them, two values computed before the loop and read after it; a value carried around a
+// while loop inside one part only (NaN elements take the else part); an inner while in a for
+// whose invariant values are printed in every outer iteration (LANGUAGE.md 6.5, 7.4, 7.5)
+fn churn(n: i64) -> i64 {
+    var a0 = 1
+    var a1 = 2
+    var a2 = 3
+    var a3 = 4
+    var a4 = 5
+    var a5 = 6
+    var a6 = 7
+    var a7 = 8
+    var a8 = 9
+    var a9 = 10
+    var a10 = 11
+    var a11 = 12
+    let k0 = n * 3 + 1
+    let k1 = n * 5 + 2
+    var f0 = 0.5
+    var f1 = 1.25
+    for i in 0..n {
+        if i % 2 == 0 {
+            let t1 = a0 + a1
+            let t2 = a2 * 2 + a3
+            let t3 = a4 + a5 + a6
+            a0 = t1 % 1000
+            a2 = (t2 + t3) % 997
+            a4 = (t3 * 3) % 991
+            f0 = f0 * 1.5 + f64(t1)
+        } else {
+            let u1 = a7 + a8
+            let u2 = a9 + a10 + a11
+            a7 = u1 % 983
+            a9 = (u1 + u2) % 977
+            f1 = f1 * 0.5 + f64(u2)
+        }
+        if i % 3 == 0 {
+            printf("c %d %d %d %d\n", i, a0, a2, a9)
+        }
+        var both = 0
+        if a5 > a6 {
+            both = a5 - a6
+        } else {
+            both = a6 - a5
+        }
+        a5 = (a5 + both + i) % 971
+        a6 = (a6 * 2 + 1) % 967
+        a1 = (a1 + a3 + k0) % 953
+        a3 = (a3 + a10 + k1) % 947
+        a8 = (a8 + a11 + i) % 941
+        a10 = (a10 + a0) % 937
+        a11 = (a11 + a2 + a4) % 929
+    }
+    printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+    printf("%.17g %.17g\n", f0, f1)
+    return k0 + k1
+}
+fn carry(v: f64[]) -> f64 {
+    var acc = 0.0
+    var last = -1.0
+    var i = 0
+    while i < len(v) {
+        if v[i] > 0.0 {
+            last = v[i]
+            acc += last
+        } else {
+            acc -= last
+        }
+        printf("%g %g\n", acc, last)
+        i += 1
+    }
+    return acc + last
+}
+fn nest_calls(n: i64) -> i64 {
+    let base = n * 7 + 3
+    let off = n - 2
+    var s = 0
+    for i in 0..n {
+        var j = 0
+        while j < i {
+            if (i + j) % 2 == 0 {
+                s += base - j
+            } else {
+                s -= off + j
+            }
+            j += 1
+        }
+        printf("n %d %d %d %d\n", i, s, base, off)
+    }
+    return s + base + off
+}
+printf("%d\n", churn(0))
+printf("%d\n", churn(1))
+printf("%d\n", churn(7))
+printf("%d\n", churn(20))
+printf("%g\n", carry([2.0, -1.0, 0.0, 3.5, nan, -4.0]))
+printf("%g\n", carry(zeros(0)))
+printf("%d\n", nest_calls(5))
+printf("%d\n", nest_calls(0))

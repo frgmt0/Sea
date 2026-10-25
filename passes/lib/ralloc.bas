@@ -2,13 +2,13 @@
 87003 REM L-aq); lines 87000-88999. API: API.md. Needs no module. All state lives in the caller's
 87006 REM D(Z9,8): rows 1..R9 registers (col 0 the caller's class, col 8 the location), R9+b block b,
 87009 REM X+1.. (X = R9+B9) scalars, 64 machine-register rows, moves. Row 0: R9 B9 Z9, highest row
-87012 REM used, blocks, -, open block, loop depth. Row X+1: last call, W list, M, slots, start chain,
-87015 REM save cursor, moves, steps. Register walk columns: 1 first+1, 2 last, 3 block at last,
+87012 REM used, blocks, -, open part (b; -b else part), loop depth. Row X+1: last call, W list, M, slots, start chain,
+87015 REM save cursor, moves, steps. Register walk columns: 1 first+1, 2 last, 3 latest write (ra_ref),
 87018 REM 4 pend*(B9+1)+depth, 5 hint A*(R9+1)+B, 6 W link / next call, 7 first call crossed (or, with
 87021 REM none, -(3K+n): a result of call K, n results counted up to 2), 8 start;
 87024 REM after ra_end: 1 first, 2 end, 3 start, 4 depth, 5 hint, 6 start chain, 7 save slot, 8 loc.
-87027 REM Block row: 0 kind (1 loop 2 do 3 if), 1 parent, 2 open, 3 close, 4 first call, 5 ind (then
-87030 REM ind referenced after), 6 step, 7 depth (then count location), 8 hidden step (then location).
+87027 REM Block row: 0 kind (1 loop 2 do 3 if), 1 parent part, 2 open, 3 close, 4 first call, 5 ind (then
+87030 REM ind referenced after; if: else), 6 step, 7 depth (then count location), 8 hidden step (location).
 87033 SUB "ra_init": D(), R9, B9, Z9, T ' records the limits; T = 1 if D(Z9,8) is too small
 87036 LET T = 1
 87039 IF R9 + B9 + 546 > Z9 THEN 87057
@@ -54,91 +54,104 @@
 87159 LET G1 = D(0, 2) + 1
 87162 LET X = R9 + G1 - 1
 87165 LET P = 2 * K + W
-87168 LET B = D(0, 7)
-87171 IF D(R, 1) <> 0 THEN 87267
-87174 REM the first reference: first = last = start = P
-87177 LET D(R, 1) = P + 1
-87180 LET D(R, 2) = P
-87183 LET D(R, 3) = B
-87186 LET D(R, 4) = D(0, 8)
+87168 LET C = D(0, 7)
+87171 IF D(R, 1) <> 0 THEN 87207
+87174 REM the first reference: first = last = start = P; column 3: no write yet (record 0, the body)
+87177 REM and the block of the part at P
+87180 LET D(R, 1) = P + 1
+87183 LET D(R, 3) = G1 * G1 + ABS(C)
+87186 LET D(R, 4) = 0
 87189 LET D(R, 5) = 0
 87192 LET D(R, 7) = 0
 87195 LET D(R, 8) = P
-87198 IF R <= D(0, 4) THEN 87207
+87198 IF R <= D(0, 4) THEN 87222
 87201 LET D(0, 4) = R
-87204 REM Z = the outermost open loop: the interval covers it unless P is a write at its body level
-87207 LET Z = 0
-87210 LET Y = B
-87213 IF Y = 0 THEN 87228
-87216 IF D(R9 + Y, 0) = 3 THEN 87222
-87219 LET Z = Y
-87222 LET Y = D(R9 + Y, 1)
-87225 GOTO 87213
-87228 IF Z = 0 THEN 87255
-87231 IF W = 0 THEN 87237
-87234 IF Z = B THEN 87255
-87237 LET D(R, 8) = 2 * D(R9 + Z, 2) + 1
-87240 LET D(R, 4) = Z * G1 + D(0, 8)
-87243 REM a call already seen in Z lies between the extended start and P: crossed
-87246 IF D(R9 + Z, 4) = 0 THEN 87255
-87249 LET D(R, 7) = D(R9 + Z, 4)
-87252 REM into the W list (registers referenced since the last call)
-87255 LET D(R, 6) = D(X + 1, 2)
-87258 LET D(X + 1, 2) = R
-87261 GOTO 87420
-87264 REM a later reference; Q the previous one. Not in W: a call came after Q (the first is D(R,6))
-87267 LET Q = D(R, 2)
-87270 IF Q > 2 * D(X + 1, 1) THEN 87294
-87273 LET N = D(R, 6)
-87276 IF 2 * N + 1 >= P THEN 87285
-87279 IF D(R, 7) > 0 THEN 87285
-87282 LET D(R, 7) = N
-87285 LET D(R, 6) = D(X + 1, 2)
-87288 LET D(X + 1, 2) = R
-87291 REM loops that closed since Q and contain Q: the outermost one Z is covered from its start
-87294 LET Z = 0
-87297 LET Y = D(R, 3)
-87300 IF Y = 0 THEN 87318
-87303 IF D(R9 + Y, 3) = 0 THEN 87318
-87306 IF D(R9 + Y, 0) = 3 THEN 87312
-87309 LET Z = Y
-87312 LET Y = D(R9 + Y, 1)
-87315 GOTO 87300
-87318 IF Z = 0 THEN 87354
-87321 LET O = 2 * D(R9 + Z, 2) + 1
-87324 IF D(R, 8) <= O THEN 87333
-87327 LET D(R, 8) = O
-87330 REM every call in Z lies inside the interval: the first one is a candidate first crossing
-87333 LET F = D(R9 + Z, 4)
-87336 IF F = 0 THEN 87354
-87339 IF D(R, 7) <= 0 THEN 87345
-87342 IF F >= D(R, 7) THEN 87354
-87345 LET D(R, 7) = F
-87348 REM open loops opened after Q: the outermost one Z is covered to its end (pend), unless an
-87351 REM open pend encloses it already
-87354 LET Z = 0
-87357 LET Y = B
-87360 IF Y = 0 THEN 87378
-87363 IF 2 * D(R9 + Y, 2) + 1 < Q THEN 87378
-87366 IF D(R9 + Y, 0) = 3 THEN 87372
-87369 LET Z = Y
-87372 LET Y = D(R9 + Y, 1)
-87375 GOTO 87360
-87378 LET E = INT(D(R, 4) / G1)
-87381 LET G = D(R, 4) - E * G1
-87384 IF Z = 0 THEN 87399
-87387 IF E = 0 THEN 87393
-87390 IF D(R9 + E, 3) = 0 THEN 87399
-87393 LET E = Z
-87396 REM last reference, its block, the deepest loop depth
-87399 LET D(R, 2) = P
-87402 LET D(R, 3) = B
-87405 IF D(0, 8) <= G THEN 87411
-87408 LET G = D(0, 8)
-87411 LET D(R, 4) = E * G1 + G
-87414 REM a result of the call K while nothing is crossed: column 7 = -(3 * K + n), n the results counted
-87417 REM up to 2 (ra_sv accepts a listed interval with no save slot when it is a result of its record)
-87420 IF W = 0 THEN 87474
+87204 GOTO 87222
+87207 REM a later reference; Q the previous one. Not in W: a call came after Q (the first is D(R,6))
+87210 LET Q = D(R, 2)
+87213 IF Q > 2 * D(X + 1, 1) THEN 87228
+87216 LET N = D(R, 6)
+87218 IF 2 * N + 1 >= P THEN 87222
+87219 IF D(R, 7) > 0 THEN 87222
+87220 LET D(R, 7) = N
+87221 REM into the W list (registers referenced since the last call)
+87222 LET D(R, 6) = D(X + 1, 2)
+87225 LET D(X + 1, 2) = R
+87228 REM last reference, the deepest loop depth (column 4: pending loop * G1 + depth)
+87231 LET D(R, 2) = P
+87234 LET E = INT(D(R, 4) / G1)
+87237 IF D(0, 8) <= D(R, 4) - E * G1 THEN 87243
+87240 LET D(R, 4) = E * G1 + D(0, 8)
+87243 REM column 3 = (U * 2 * G1 + V + G1) * G1 + F: U the record of the latest write, V its
+87246 REM effective part (0 the body, b a loop body or the first part of if b, -b its else part), F
+87249 REM the block of the part at the first reference
+87252 LET V = INT(D(R, 3) / G1)
+87255 LET F = D(R, 3) - V * G1
+87258 LET U = INT(V / (2 * G1))
+87261 LET V = V - U * 2 * G1 - G1
+87264 IF W = 1 THEN 87390
+87267 REM a read. O = 1 if part V has closed (its block, or the first part of an if at its else)
+87270 LET O = 0
+87273 IF V = 0 THEN 87288
+87276 IF D(R9 + ABS(V), 3) <> 0 THEN 87285
+87279 IF V < 0 THEN 87288
+87280 IF D(R9 + V, 0) <> 3 THEN 87288
+87282 IF D(R9 + V, 5) = 0 THEN 87288
+87285 LET O = 1
+87288 REM uncovered in each open loop L the latest write is not inside (U <= L's opening record) or
+87291 REM all when O = 1: the outermost such Z is pending (extended to its end by ra_end) and from now
+87294 REM on from its start
+87297 LET Z = 0
+87300 LET Y = ABS(C)
+87303 IF Y = 0 THEN 87324
+87306 IF D(R9 + Y, 0) = 3 THEN 87318
+87309 IF O = 1 THEN 87315
+87312 IF D(R9 + Y, 2) < U THEN 87318
+87315 LET Z = Y
+87318 LET Y = ABS(D(R9 + Y, 1))
+87321 GOTO 87303
+87324 IF Z = 0 THEN 87345
+87327 REM an open pending loop that encloses Z stays (a closed one is superseded)
+87330 LET E = INT(D(R, 4) / G1)
+87333 IF E = 0 THEN 87339
+87335 IF D(R9 + E, 3) <> 0 THEN 87339
+87336 IF D(R9 + E, 2) <= D(R9 + Z, 2) THEN 87342
+87339 LET D(R, 4) = D(R, 4) + (Z - E) * G1
+87342 GOSUB 87369
+87345 REM uncovered after the closed loops that contain the first reference (all when O = 1, else
+87348 REM those closed at or after the latest write): back over the outermost one Z
+87351 LET Z = 0
+87352 LET Y = F
+87353 IF Y = 0 THEN 87360
+87354 IF D(R9 + Y, 3) = 0 THEN 87360
+87355 IF D(R9 + Y, 0) = 3 THEN 87357
+87356 LET Z = Y
+87357 LET Y = ABS(D(R9 + Y, 1))
+87358 GOTO 87353
+87360 IF Z = 0 THEN 87474
+87361 IF O = 1 THEN 87363
+87362 IF D(R9 + Z, 3) < U THEN 87474
+87363 GOSUB 87369
+87366 GOTO 87474
+87369 REM extend back over loop Z: the start at its 2o+1; its first call is a candidate first crossing
+87372 LET Q = 2 * D(R9 + Z, 2) + 1
+87375 IF D(R, 8) <= Q THEN 87378
+87376 LET D(R, 8) = Q
+87378 LET N = D(R9 + Z, 4)
+87380 IF N = 0 THEN 87387
+87381 IF D(R, 7) <= 0 THEN 87384
+87382 IF N >= D(R, 7) THEN 87387
+87384 LET D(R, 7) = N
+87387 RETURN
+87390 REM a write: its effective part E is the current part, except in the else part of block -C
+87393 REM after a write whose effective part is that block's first part: the part containing it (L-bh)
+87396 LET E = C
+87399 IF C >= 0 THEN 87408
+87402 IF V <> -C THEN 87408
+87405 LET E = D(R9 - C, 1)
+87408 LET D(R, 3) = (K * 2 * G1 + E + G1) * G1 + F
+87411 REM a result of the call K while nothing is crossed: column 7 = -(3 * K + n), n the results counted
+87414 REM up to 2 (ra_sv accepts a listed interval with no save slot when it is a result of its record)
 87423 IF K <> D(X + 1, 1) THEN 87453
 87426 IF D(R, 7) > 0 THEN 87453
 87429 LET N = -D(R, 7)
@@ -149,12 +162,12 @@
 87444 LET N = 2
 87447 LET D(R, 7) = -(3 * K + N)
 87450 REM a write of an open loop's step register: that loop gets a hidden step register
-87453 LET Y = B
+87453 LET Y = ABS(C)
 87456 IF Y = 0 THEN 87474
 87459 IF D(R9 + Y, 0) <> 1 THEN 87468
 87462 IF D(R9 + Y, 6) <> R THEN 87468
 87465 LET D(R9 + Y, 8) = 1
-87468 LET Y = D(R9 + Y, 1)
+87468 LET Y = ABS(D(R9 + Y, 1))
 87471 GOTO 87456
 87474 SUBEND
 87477 SUB "ra_call": D(), K ' record K is a call, rcall or release (after its reads, before its writes)
@@ -170,11 +183,11 @@
 87507 GOTO 87495
 87510 LET D(X + 1, 2) = 0
 87513 REM the first call inside each open block (an outer block with one has all of them)
-87516 LET Y = D(0, 7)
+87516 LET Y = ABS(D(0, 7))
 87519 IF Y = 0 THEN 87534
 87522 IF D(R9 + Y, 4) <> 0 THEN 87534
 87525 LET D(R9 + Y, 4) = K
-87528 LET Y = D(R9 + Y, 1)
+87528 LET Y = ABS(D(R9 + Y, 1))
 87531 GOTO 87519
 87534 SUBEND
 87537 SUB "ra_hint": D(), K, R, A, B ' R written by record K prefers A's register, then B's
@@ -618,3 +631,12 @@
 88851 LET C = D(X, 5)
 88854 LET J = D(X, 6)
 88857 SUBEND
+88860 SUB "ra_else": D(), K, B ' record K is the else of if block B: closes its first part, opens the else part
+88861 REM precondition (L-bv): B is the innermost open block (D(0,7) = B), of kind if (3), first part current
+88862 IF D(0, 7) <> B THEN 88866
+88863 IF B < 1 THEN 88866
+88864 IF D(D(0, 1) + B, 0) = 3 THEN 88868
+88866 CALL "dg_bug": "ralloc", "ra_else: block " & STR$(B) & " is not the innermost open if block with its first part current"
+88868 LET D(D(0, 1) + B, 5) = K
+88869 LET D(0, 7) = -B
+88870 SUBEND

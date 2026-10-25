@@ -858,7 +858,7 @@
 4442 GOSUB 9010
 4443 RETURN
 4500 REM ---- sweep R (W0 = 4): every register reference of the code the sweeps write, in record
-4501 REM order (ralloc API: reads, ra_call, writes, ra_hint, ra_open / ra_close); an immediate
+4501 REM order (ralloc API: reads, ra_call, writes, ra_hint, ra_open / ra_else / ra_close); an immediate
 4502 REM use, an li not emitted and a fused comparison are not references (DESIGN 4.9.2)
 4503 LET W0 = 4
 4504 FOR I5 = 1 TO LEN(F6$)
@@ -945,7 +945,7 @@
 4585 IF Y0 < 8 THEN 4601
 4586 IF Y0 > 15 THEN 4601
 4587 LET Y7 = VAL(G$(2))
-4588 ON Y0 - 7 GOTO 4589,4600,4596,4600,4598,4598,4601,4600
+4588 ON Y0 - 7 GOTO 4589,4600,4596,4600,4598,4598,4606,4600
 4589 LET K6 = 4
 4590 GOSUB 8282
 4591 LET W5 = 0
@@ -963,6 +963,8 @@
 4603 LET M$ = "ralloc: a block still open at ra_end"
 4604 IF T <> 0 THEN 9975
 4605 RETURN
+4606 CALL "ra_else": D(), J, Y7
+4607 GOTO 4601
 4700 REM ---- sweep V bookkeeping of record J: T(r,1) writes, T(r,2) the li record of a first
 4701 REM write by li and T(r,5..8) its limbs, T(r,3) the reads that need the register, T(r,4)
 4702 REM the reads; O(J-1,1) a fusion candidate (DESIGN 4.9.2 Immediates, fusion); C3 C4

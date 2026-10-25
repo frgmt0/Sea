@@ -1,0 +1,99 @@
+#sea 1
+#target arm64-macos
+#file opt5_licm_hdr.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+li i1 3
+li i2 0
+call hdr 1 f3 2 i1 i2
+li i4 4
+li i5 1
+call hdr 1 f6 2 i4 i5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:20 0 2 p8 p7
+li i9 3
+call moving 1 f10 1 i9
+li i11 4
+call moving 1 f12 1 i11
+sa p13 s2
+stf f10 p13 - 0 0
+stf f12 p13 - 0 8
+la p14 d2
+rcall sea_printf 0:21 0 2 p14 p13
+ret 0
+endfunc
+func hdr fn 0:1:1 2 i1 i2 1 f
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new 0:2 1 p6 4 i3 i4 i1 i5
+lf f7 #0000000000000000
+li i8 0
+li i9 1
+rcount i10 i11 i8 i1 i9 0 0:4
+if 1 i11
+loop 2 i12 i8 i10 i9
+icmp gt i13 i12 i2
+if 3 i13
+ldi i14 p6 - 0 16
+chkb i12 i14 0 0:6
+ldp p15 p6 - 0 40
+ldf f16 p15 i12 8 0
+fadd f17 f7 f16
+ldi i18 p6 - 0 16
+itof f19 i18
+fadd f7 f17 f19
+endif 3
+endloop 2
+endif 1
+release p6
+ret 1 f7
+endfunc
+func moving fn 0:11:1 1 i1 1 f
+li i2 1
+li i3 1
+li i4 1
+li i5 1
+rcall sea_arr_new 0:12 1 p6 4 i3 i4 i2 i5
+lf f7 #0000000000000000
+li i8 1
+li i9 1
+rcount i10 i11 i8 i1 i9 0 0:14
+if 1 i11
+loop 2 i12 i8 i10 i9
+li i13 1
+li i14 1
+li i15 1
+rcall sea_arr_new 0:15 1 p16 4 i13 i14 i12 i15
+release p6
+mov p6 p16
+ldi i17 p6 - 0 16
+itof f18 i17
+fadd f19 f7 f18
+li i20 1
+isubc i21 i12 i20 0:16
+ldi i22 p6 - 0 16
+chkb i21 i22 0 0:16
+ldp p23 p6 - 0 40
+ldf f24 p23 i21 8 0
+fadd f7 f19 f24
+endloop 2
+endif 1
+release p6
+ret 1 f7
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

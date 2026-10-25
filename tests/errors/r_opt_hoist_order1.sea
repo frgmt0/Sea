@@ -1,0 +1,12 @@
+// r_opt_hoist_order1 -- two loop-invariant failing operations, v[bad] before big + 1: when both fail the index
+// error is reported, at the first iteration after its line (6.8 rule 5)
+fn both(v: f64[], bad: i64, big: i64) {
+    for i in 0..3 {
+        printf("o %d\n", i)
+        let a = v[bad]
+        let b = big + 1
+        printf("%g %d\n", a, b)
+    }
+}
+both(ones(2), 1, 5)
+both(ones(2), 2, 9223372036854775807)

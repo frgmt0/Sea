@@ -1,7 +1,11 @@
 """Sub-phase 5c-1 corpus: the `opt_*` run tests of DESIGN.md 6.2 "Phase-5 tests" (work package T1 of
 DESIGN.md 8 row 5c-1): programs whose output, error, error line or exit status would change if a
 transformation of pass 3b (T1 checks and overflow, T2 division by constants, T3 value numbering, T4
-if-conversion, T10 clean-up; and the loop transformations T5-T9 of 5c-2) were inexact.
+if-conversion, T10 clean-up; and the loop transformations T5-T9 of 5c-2) were inexact. The section "5c-2
+additions" (work package T1 of DESIGN.md 8 row 5c-2) adds adversarial cases for pass 3c `sealopt`: T5
+promotion with exits, returns and calls, T6 versioning with shared and aliased arrays, T7 addresses near the
+extents, T8 hoisting of failing or guarded work (error order and line, loops run zero times, L-at object
+pointers), T9 unswitching on NaN comparisons, T4's L-bq/L-bn selections, and Decision 75's loop liveness.
 
 Run with `timeout 120 uv run --no-project python tests/vectors/opt5c1_cases.py`. It writes
 programs/opt_*.{sea,out} and errors/r_opt_*.{sea,err,status[,out]}.
@@ -1689,6 +1693,1635 @@ def errors():
            'let p3 = big + 4', 'integer overflow', out)
 
 
+# ============================================================================ 5c-2 additions
+# Adversarial run tests for the loop transformations of pass 3c (DESIGN.md 5.8 T5 promotion, T6 copy-on-write
+# versioning, T7 strength reduction, T8 hoisting with anticipation and object pointers (L-at), T9 unswitching
+# with the placement of L-bm, T10's deletion of dead selections (L-bn), T4's self-reading selection (L-bq)) and
+# the allocator's loop liveness (Decision 75). Every expected byte comes from the model below (LANGUAGE.md
+# semantics), never from a run of the compiler.
+
+class Acc:
+    def __init__(self, total, count, hist):
+        self.total, self.count, self.hist = total, count, list(hist)
+
+    def copy(self):
+        return Acc(self.total, self.count, self.hist)
+
+
+# ============================================================ opt_promote_exits (T5)
+def opt_promote_exits():
+    body = '''struct Acc {
+    total: i64
+    count: i64
+    hist: i64[4]
+}
+fn tally(ref a: Acc, v: i64[]) -> i64 {
+    for i in 0..len(v) {
+        if v[i] < 0 {
+            return i
+        }
+        a.total += v[i]
+        a.count += 1
+        a.hist[v[i] % 4] += 1
+    }
+    return -1
+}
+fn pacc(a: Acc) {
+    printf("%d %d [%d %d %d %d]\\n", a.total, a.count, a.hist[0], a.hist[1], a.hist[2], a.hist[3])
+}
+fn inner_ret(ref s: i64, n: i64) -> i64 {
+    var rounds = 0
+    for i in 0..n {
+        var j = 0
+        while true {
+            if j >= i {
+                break
+            }
+            s += j
+            j += 1
+            if s > 50 {
+                return rounds
+            }
+        }
+        rounds += 1
+        if i % 3 == 0 {
+            continue
+        }
+        s = s * 2 - 1
+    }
+    return rounds
+}
+fn mix(ref q: i64[3], ks: i64[]) {
+    for k in ks {
+        q[1] += 10
+        q[k] += 1
+        q[2] = q[1] + q[k]
+    }
+}
+fn local_acc(v: i64[]) -> i64 {
+    var acc = [0, 0, 0]
+    for i in 0..len(v) {
+        acc[0] += v[i]
+        acc[i % 3] += 1
+        acc[2] = acc[0] - acc[1]
+    }
+    return acc[0] * 10000 + acc[1] * 100 + acc[2]
+}
+fn peek(x: i64) -> i64 {
+    return x * 3
+}
+fn with_peek(ref s: i64, n: i64) {
+    for i in 0..n {
+        s += i
+        printf("p %d %d\\n", s, peek(s))
+    }
+}
+fn relax(ref x: f64, lim: f64) -> i64 {
+    var k = 0
+    while x < lim {
+        x = x * 2.0 + 1.0
+        k += 1
+    }
+    return k
+}
+fn grid_sum(ref s: i64, m: i64[,]) -> i64 {
+    for j in 0..cols(m) {
+        for i in 0..rows(m) {
+            if m[i, j] == 0 {
+                break
+            }
+            s += m[i, j]
+        }
+        s *= 2
+        if s > 1000 {
+            return j
+        }
+    }
+    return -1
+}
+fn twice_ref(ref s: i64, ref t: i64, n: i64) {
+    for i in 0..n {
+        s += 1
+        t += s
+        if t > 20 {
+            s = 0
+        }
+    }
+}
+var a = Acc { total: 0, count: 0, hist: [0, 0, 0, 0] }
+let r1 = tally(ref a, [3, 5, 2, 7, 8])
+printf("%d\\n", r1)
+pacc(a)
+let r2 = tally(ref a, [1, 6, -4, 9])
+printf("%d\\n", r2)
+pacc(a)
+var accs = filled(a, 3)
+let r3 = tally(ref accs[1], [10, 11, -1])
+printf("%d\\n", r3)
+for k in 0..3 {
+    pacc(accs[k])
+}
+var s = 0
+let k1 = inner_ret(ref s, 10)
+printf("%d %d\\n", k1, s)
+var s2 = 0
+let k2 = inner_ret(ref s2, 4)
+printf("%d %d\\n", k2, s2)
+var q = [1, 2, 3]
+mix(ref q, [0, 1, 2, 1, 1, 0])
+printf("%d %d %d\\n", q[0], q[1], q[2])
+printf("%d\\n", local_acc([5, 7, 9, 11, 13]))
+var s3 = 7
+with_peek(ref s3, 4)
+printf("%d\\n", s3)
+var x1 = 1.0
+let n1 = relax(ref x1, 100.0)
+printf("%d %g\\n", n1, x1)
+var x2 = 1.0
+let n2 = relax(ref x2, nan)
+printf("%d %g\\n", n2, x2)
+var x3 = nan
+let n3 = relax(ref x3, 5.0)
+printf("%d %g\\n", n3, x3)
+var m = filled(0, 3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        m[i, j] = i + 2 * j + 1
+    }
+}
+m[1, 2] = 0
+var gs = 0
+let g1 = grid_sum(ref gs, m)
+printf("%d %d\\n", g1, gs)
+var gs2 = 300
+let g2 = grid_sum(ref gs2, m)
+printf("%d %d\\n", g2, gs2)
+var p1 = 0
+var p2 = 0
+twice_ref(ref p1, ref p2, 8)
+printf("%d %d\\n", p1, p2)
+'''
+    out = []
+
+    def tally(a, v):
+        for i, x in enumerate(v):
+            if x < 0:
+                return i
+            a.total = ck(a.total + x)
+            a.count += 1
+            a.hist[x % 4] += 1
+        return -1
+
+    def pacc(a):
+        out.append('%d %d [%d %d %d %d]\n' % ((a.total, a.count) + tuple(a.hist)))
+
+    def inner_ret(s, n):
+        rounds = 0
+        for i in range(n):
+            j = 0
+            while True:
+                if j >= i:
+                    break
+                s += j
+                j += 1
+                if s > 50:
+                    return rounds, s
+            rounds += 1
+            if i % 3 == 0:
+                continue
+            s = s * 2 - 1
+        return rounds, s
+
+    a = Acc(0, 0, [0, 0, 0, 0])
+    out.append('%d\n' % tally(a, [3, 5, 2, 7, 8]))
+    pacc(a)
+    out.append('%d\n' % tally(a, [1, 6, -4, 9]))
+    pacc(a)
+    accs = [a.copy() for _ in range(3)]
+    out.append('%d\n' % tally(accs[1], [10, 11, -1]))
+    for k in range(3):
+        pacc(accs[k])
+    out.append('%d %d\n' % inner_ret(0, 10))
+    out.append('%d %d\n' % inner_ret(0, 4))
+    q = [1, 2, 3]
+    for k in [0, 1, 2, 1, 1, 0]:
+        q[1] += 10
+        q[k] += 1
+        q[2] = q[1] + q[k]
+    out.append('%d %d %d\n' % tuple(q))
+    acc = [0, 0, 0]
+    v = [5, 7, 9, 11, 13]
+    for i in range(len(v)):
+        acc[0] += v[i]
+        acc[i % 3] += 1
+        acc[2] = acc[0] - acc[1]
+    out.append('%d\n' % (acc[0] * 10000 + acc[1] * 100 + acc[2]))
+    s3 = 7
+    for i in range(4):
+        s3 += i
+        out.append('p %d %d\n' % (s3, s3 * 3))
+    out.append('%d\n' % s3)
+    for x, lim in ((1.0, 100.0), (1.0, NAN), (NAN, 5.0)):
+        k = 0
+        while x < lim:
+            x = x * 2.0 + 1.0
+            k += 1
+        out.append('%d %s\n' % (k, g(x)))
+    mm = [[i + 2 * j + 1 for j in range(4)] for i in range(3)]
+    mm[1][2] = 0
+
+    def grid_sum(s):
+        for j in range(4):
+            for i in range(3):
+                if mm[i][j] == 0:
+                    break
+                s += mm[i][j]
+            s *= 2
+            if s > 1000:
+                return j, s
+        return -1, s
+    out.append('%d %d\n' % grid_sum(0))
+    out.append('%d %d\n' % grid_sum(300))
+    s, t = 0, 0
+    for i in range(8):
+        s += 1
+        t += s
+        if t > 20:
+            s = 0
+    out.append('%d %d\n' % (s, t))
+    prog('opt_promote_exits', ['ref scalars, ref struct fields and fixed-size array elements updated in loops (DESIGN.md',
+                               '5.8 T5): a return inside the loop taken and not, a ref element of a struct array, a',
+                               'return from an inner while, continue of the outer loop, a ref fixed-size array updated at',
+                               'a constant and a variable index that meet, a local fixed-size array, a value passed to a',
+                               'call inside the loop, a while left at once by a NaN bound, a ref read after a nested',
+                               'loop with break, two ref parameters (LANGUAGE.md 8.3, 7.5, 4.5, 4.6)'],
+         body, ''.join(out))
+
+
+# ============================================================ opt_cow_alias (T6)
+def opt_cow_alias():
+    body = PV + '''struct Holder {
+    data: f64[]
+    tag: i64
+}
+fn modify_copy(a: f64[]) -> f64 {
+    var w = a
+    for i in 0..len(w) {
+        w[i] = w[i] * 10.0 + 1.0
+    }
+    return w[0] + w[len(w) - 1]
+}
+fn negate(a: f64[]) -> f64[] {
+    var a = a
+    for i in 0..len(a) {
+        a[i] = -a[i]
+    }
+    return a
+}
+fn ref_and_val(ref d: f64[], e: f64[]) {
+    let n = len(d)
+    for i in 0..n {
+        d[i] = e[(i + 1) % n] + 100.0
+    }
+}
+fn ret_inside(a: f64[], stop: i64) -> f64[] {
+    var b = a
+    for i in 0..len(b) {
+        b[i] = f64(i) + 0.5
+        if i == stop {
+            return b
+        }
+    }
+    return b
+}
+fn bump_all(ref v: f64[], k: f64) {
+    for i in 0..len(v) {
+        v[i] += k
+    }
+}
+fn fill_holder(ref h: Holder) {
+    for i in 0..len(h.data) {
+        h.data[i] = f64(h.tag + i)
+    }
+}
+fn two(ref p: f64[], ref q: f64[]) {
+    for i in 0..len(p) {
+        p[i] = f64(i) + 1.0
+        q[i] = f64(i) * 2.0 + 0.5
+    }
+}
+var base = zeros(4)
+for i in 0..4 {
+    base[i] = f64(i + 1)
+}
+printf("%g\\n", modify_copy(base))
+pv(base)
+let neg = negate(base)
+pv(neg)
+pv(base)
+var d = base
+let e = d
+ref_and_val(ref d, e)
+pv(d)
+pv(e)
+pv(base)
+var d2 = zeros(3)
+let e2 = ones(3)
+ref_and_val(ref d2, e2)
+pv(d2)
+var ra = zeros(4)
+var snap = ra
+for i in 0..4 {
+    snap = ra
+    ra[i] = f64(i) * 3.0 + 1.0
+    printf("%g %g\\n", snap[i], ra[i])
+}
+pv(snap)
+pv(ra)
+var a2 = zeros(4)
+var keep = zeros(0)
+for i in 0..4 {
+    a2[i] = f64(i) + 0.5
+    if i == 1 {
+        keep = a2
+    }
+}
+pv(keep)
+pv(a2)
+var h = Holder { data: zeros(0), tag: 0 }
+var c = zeros(3)
+for i in 0..3 {
+    c[i] = f64(i) + 7.0
+    if i == 0 {
+        h.data = c
+        h.tag = 9
+    }
+}
+pv(h.data)
+pv(c)
+printf("%d\\n", h.tag)
+pv(ret_inside(base, 1))
+pv(ret_inside(base, 10))
+pv(base)
+var z = base
+let nz = 0
+for i in 0..nz {
+    z[i] = 9.0
+}
+var kz = 5
+while kz < 3 {
+    z[kz] = 1.0
+    kz += 1
+}
+z[0] = 42.0
+pv(z)
+pv(base)
+var p = zeros(3)
+var q = zeros(3)
+let pkeep = p
+two(ref p, ref q)
+pv(p)
+pv(q)
+pv(pkeep)
+var p2 = zeros(2)
+var q2 = zeros(2)
+let qkeep = q2
+two(ref p2, ref q2)
+pv(p2)
+pv(q2)
+pv(qkeep)
+var p3 = zeros(2)
+var q3 = zeros(2)
+two(ref p3, ref q3)
+pv(p3)
+pv(q3)
+var u1 = zeros(3)
+bump_all(ref u1, 1.0)
+let u1save = u1
+bump_all(ref u1, 2.0)
+pv(u1)
+pv(u1save)
+var hs = filled(Holder { data: zeros(3), tag: 1 }, 2)
+for i in 0..3 {
+    hs[0].data[i] = f64(i) + 0.25
+}
+pv(hs[0].data)
+pv(hs[1].data)
+var h2 = Holder { data: zeros(3), tag: 5 }
+let h2save = h2
+fill_holder(ref h2)
+pv(h2.data)
+pv(h2save.data)
+var h3 = Holder { data: zeros(2), tag: -3 }
+fill_holder(ref h3)
+pv(h3.data)
+var M = zeros(2, 3)
+let M0 = M
+for j in 0..3 {
+    for i in 0..2 {
+        M[i, j] = f64(i * 10 + j)
+    }
+}
+pv(M.flat)
+pv(M0.flat)
+'''
+    out = ''
+    base = [float(i + 1) for i in range(4)]
+    w = [x * 10.0 + 1.0 for x in base]
+    out += g(w[0] + w[-1]) + '\n' + pvf(base)
+    out += pvf([-x for x in base]) + pvf(base)
+    e = list(base)
+    d = [e[(i + 1) % 4] + 100.0 for i in range(4)]
+    out += pvf(d) + pvf(e) + pvf(base)
+    out += pvf([1.0 + 100.0] * 3)
+    ra = [0.0] * 4
+    snap = list(ra)
+    for i in range(4):
+        snap = list(ra)
+        ra[i] = float(i) * 3.0 + 1.0
+        out += '%s %s\n' % (g(snap[i]), g(ra[i]))
+    out += pvf(snap) + pvf(ra)
+    a2 = [0.0] * 4
+    keep = []
+    for i in range(4):
+        a2[i] = float(i) + 0.5
+        if i == 1:
+            keep = list(a2)
+    out += pvf(keep) + pvf(a2)
+    c = [0.0] * 3
+    hdata, htag = [], 0
+    for i in range(3):
+        c[i] = float(i) + 7.0
+        if i == 0:
+            hdata, htag = list(c), 9
+    out += pvf(hdata) + pvf(c) + '%d\n' % htag
+    for stop in (1, 10):
+        b = list(base)
+        for i in range(4):
+            b[i] = float(i) + 0.5
+            if i == stop:
+                break
+        out += pvf(b)
+    out += pvf(base)
+    z = list(base)
+    z[0] = 42.0
+    out += pvf(z) + pvf(base)
+
+    def two(n):
+        return [float(i) + 1.0 for i in range(n)], [float(i) * 2.0 + 0.5 for i in range(n)]
+    p, q = two(3)
+    out += pvf(p) + pvf(q) + pvf([0.0] * 3)
+    p, q = two(2)
+    out += pvf(p) + pvf(q) + pvf([0.0] * 2)
+    out += pvf(p) + pvf(q)
+    out += pvf([3.0] * 3) + pvf([1.0] * 3)
+    out += pvf([float(i) + 0.25 for i in range(3)]) + pvf([0.0] * 3)
+    out += pvf([float(5 + i) for i in range(3)]) + pvf([0.0] * 3)
+    out += pvf([float(-3 + i) for i in range(2)])
+    Mf = [0.0] * 6
+    for j in range(3):
+        for i in range(2):
+            Mf[i + 2 * j] = float(i * 10 + j)
+    out += pvf(Mf) + pvf([0.0] * 6)
+    prog('opt_cow_alias', ['copy on write in loops with aliases (DESIGN.md 5.8 T6): a var copy of a parameter stored in',
+                           'a loop (the caller keeps its values), a parameter shadowed by var, a ref array and a value',
+                           'parameter sharing one buffer, a copy retained inside the loop at every iteration and at one,',
+                           'the array stored into a struct field inside the loop, returned inside the loop, loops run',
+                           'zero times, two arrays stored in one loop with either or neither shared, a ref array shared',
+                           'only at the second call, an array field shared by filled() elements, a ref struct\'s array',
+                           'field, a matrix stored column by column (LANGUAGE.md 4.5, 4.6, 8.2, 8.3)'], body, out)
+
+
+# ============================================================ opt_hoist_guard (T8)
+def opt_hoist_guard():
+    body = '''struct Box {
+    vals: f64[]
+    scale: f64
+    n: i64
+}
+fn zero_trip(v: f64[], bad: i64, big: i64, z: i64, n: i64, f: f64) -> i64 {
+    var t = 0
+    for i in 0..n {
+        t += i64(v[bad]) + (big + 100) + idiv(7, z) + i64(f)
+    }
+    var k = 0
+    while k < n {
+        t += idiv(big, z) + i64(v[bad + 1])
+        k += 1
+    }
+    for x in v[0..n] {
+        t += i64(x) + (big + 100)
+    }
+    return t
+}
+fn early(v: f64[], bad: i64, big: i64, z: i64) -> i64 {
+    var t = 0
+    for i in 0..5 {
+        if i >= 0 {
+            break
+        }
+        t += i64(v[bad]) + big * 2 + idiv(1, z)
+    }
+    for i in 0..5 {
+        t += i
+        if i < 10 {
+            continue
+        }
+        t += i64(v[bad]) + (big + 1) + idiv(1, z)
+    }
+    var j = 0
+    while j < 4 {
+        j += 1
+        if j > 0 {
+            return t * 100 + j
+        }
+        t += i64(v[bad])
+    }
+    return -1
+}
+fn box_sum(b: Box, reps: i64) -> f64 {
+    var t = 0.0
+    for r in 0..reps {
+        for i in 0..b.n {
+            t += b.vals[i] * b.scale
+        }
+    }
+    return t
+}
+fn box_grow(ref b: Box, reps: i64) {
+    for r in 0..reps {
+        b.scale = b.scale * 2.0
+        b.n = b.n + 1
+        printf("%g %d %d\\n", b.scale, b.n, len(b.vals))
+    }
+}
+fn guarded(v: f64[], k: i64, n: i64) -> f64 {
+    var t = 0.0
+    for i in 0..n {
+        if k < len(v) {
+            t += v[k]
+        } else {
+            t -= 1.0
+        }
+    }
+    return t
+}
+let v = [1.0, 2.0, 3.0]
+printf("%d\\n", zero_trip(v, 0, 5, 1, 2, 3.0))
+printf("%d\\n", zero_trip(v, 1000000000, 9223372036854775807, 0, 0, 2.5))
+printf("%d\\n", early(v, 99, 9223372036854775807, 0))
+let b1 = Box { vals: [1.0, 2.0, 3.0], scale: 0.5, n: 3 }
+printf("%g\\n", box_sum(b1, 2))
+let b2 = Box { vals: zeros(0), scale: nan, n: 99 }
+printf("%g\\n", box_sum(b2, 0))
+let b3 = Box { vals: zeros(0), scale: 2.0, n: 0 }
+printf("%g\\n", box_sum(b3, 4))
+let b4 = Box { vals: [4.0, 8.0, 16.0], scale: 0.25, n: 2 }
+printf("%g\\n", box_sum(b4, 3))
+var bx = Box { vals: ones(2), scale: 1.5, n: 0 }
+box_grow(ref bx, 3)
+box_grow(ref bx, 0)
+printf("%g %d\\n", bx.scale, bx.n)
+printf("%g\\n", guarded(zeros(0), 5, 3))
+printf("%g\\n", guarded(v, 2, 4))
+printf("%g\\n", guarded(zeros(0), 0, 2))
+printf("%g\\n", guarded(v, 3, 0))
+'''
+    out = ''
+    vv = [1.0, 2.0, 3.0]
+    t = 0
+    for i in range(2):
+        t += int(vv[0]) + (5 + 100) + 7 // 1 + 3
+    for k in range(2):
+        t += 5 // 1 + int(vv[1])
+    for x in vv[0:2]:
+        t += int(x) + 105
+    out += '%d\n' % t
+    out += '0\n'
+    t = sum(range(5))
+    out += '%d\n' % (t * 100 + 1)
+    out += g(2 * sum(x * 0.5 for x in vv)) + '\n'
+    out += g(0.0) + '\n' + g(0.0) + '\n'
+    tt = 0.0
+    for r in range(3):
+        for i in range(2):
+            tt += [4.0, 8.0, 16.0][i] * 0.25
+    out += g(tt) + '\n'
+    sc, n = 1.5, 0
+    for r in range(3):
+        sc *= 2.0
+        n += 1
+        out += '%s %d %d\n' % (g(sc), n, 2)
+    out += '%s %d\n' % (g(sc), n)
+    out += g(-3.0) + '\n'
+    out += g(3.0 * 4) + '\n'
+    out += g(-2.0) + '\n'
+    out += g(0.0) + '\n'
+    prog('opt_hoist_guard', ['loop-invariant failing operations that must not run (DESIGN.md 5.8 T8): an index far out',
+                             'of bounds, an overflow, a zero divisor and a conversion of 2.5 in loops run zero times',
+                             '(for, while, an element loop over an empty slice), after a break taken at once, after a',
+                             'continue taken at every iteration, after a return; struct fields read through a parameter',
+                             'in loops run zero times with a count field the array does not cover, a ref struct whose',
+                             'fields change in the loop, an element read under an invariant guard on an empty array',
+                             '(LANGUAGE.md 5.4, 6.5, 6.6, 7.4, 7.5, 9.2)'], body, out)
+
+
+def hoist_errors():
+    err_rt('r_opt_hoist_after', ['v[bad] inside a loop run zero times and again after it: the error is the one after the',
+                                 'loop, at its line, after the loop\'s output (DESIGN.md 5.8 T8; LANGUAGE.md 5.4, 9.2)'],
+           'fn tailread(v: f64[], bad: i64, n: i64) -> f64 {\n    var t = 0.0\n    for i in 0..n {\n        t += v[bad]\n'
+           '    }\n    printf("loop done %g\\n", t)\n    return t + v[bad]\n}\nlet v = zeros(3)\n'
+           'printf("%g\\n", tailread(v, 1, 2))\nprintf("%g\\n", tailread(v, 7, 0))\n',
+           'return t + v[bad]', oob(7, 0, 3), 'loop done 0\n0\nloop done 0\n')
+    err_rt('r_opt_hoist_far', ['a loop-invariant constant index 10^9 into a 3-element vector, after the iteration\'s line:',
+                               'the first iteration prints, then the index error (the load is never made before its check)'],
+           'let v = zeros(3)\nvar t = 0.0\nfor i in 0..4 {\n    printf("iter %d\\n", i)\n    t += v[1000000000]\n}\n'
+           'printf("%g\\n", t)\n', 't += v[1000000000]', oob(1000000000, 0, 3), 'iter 0\n')
+    err_rt('r_opt_hoist_empty', ['e[k] with an invariant k in a loop, on a 4-element parameter and then on an empty one:',
+                                 'the empty array fails at the first iteration, after its line (5.4; T8 L-at)'],
+           'fn sum_at(e: f64[], k: i64, n: i64) -> f64 {\n    var s = 0.0\n    for i in 0..n {\n        printf("i %d\\n", i)\n'
+           '        s += e[k]\n    }\n    return s\n}\nlet full = ones(4)\nprintf("%g\\n", sum_at(full, 3, 2))\n'
+           'let e = zeros(0)\nprintf("%g\\n", sum_at(e, 2, 3))\n',
+           's += e[k]', oob(2, 0, 0), 'i 0\ni 1\n2\ni 0\n')
+    err_rt('r_opt_hoist_ovf', ['a loop-invariant big + 100 overflowing in a while loop after the iteration\'s line (6.5)'],
+           'let big = 9223372036854775800\nvar t = 0\nvar i = 0\nwhile i < 3 {\n    printf("w %d\\n", i)\n'
+           '    t = big + 100\n    i += 1\n}\nprintf("%d\\n", t)\n', 't = big + 100', 'integer overflow', 'w 0\n')
+    err_rt('r_opt_hoist_div', ['loop-invariant idiv(a, z) and a % z, with z = 5 and then z = 0: the second call fails at its',
+                               'first iteration, after the iteration\'s line (6.6)'],
+           'fn ratio(a: i64, z: i64, n: i64) -> i64 {\n    var t = 0\n    for i in 0..n {\n        printf("r %d\\n", i)\n'
+           '        t += idiv(a, z) + a % z\n    }\n    return t\n}\nprintf("%d\\n", ratio(17, 5, 2))\n'
+           'printf("%d\\n", ratio(17, 0, 2))\n', 't += idiv(a, z)', 'integer division by zero',
+           'r 0\nr 1\n%d\n' % (2 * (17 // 5 + 17 % 5)) + 'r 0\n')
+    err_rt('r_opt_hoist_ftoi', ['a loop-invariant i64(x): 4.0 converts, 2.5 in a loop run zero times does not fail, 2.5 in',
+                                'a loop of three fails at the first iteration after its line (LANGUAGE.md 9.2)'],
+           'fn conv(x: f64, n: i64) -> i64 {\n    var t = 0\n    for i in 0..n {\n        printf("c %d\\n", i)\n'
+           '        t += i64(x) * i\n    }\n    return t\n}\nprintf("%d\\n", conv(4.0, 3))\nprintf("%d\\n", conv(2.5, 0))\n'
+           'printf("%d\\n", conv(2.5, 3))\n', 't += i64(x) * i', 'conversion to i64: 2.5 is not an integer',
+           'c 0\nc 1\nc 2\n12\n0\nc 0\n')
+    err_rt('r_opt_hoist_field', ['b.vals[k] with an invariant k through a ref struct parameter whose scale field the loop',
+                                 'writes: k = 2 works, k = 5 fails at the first iteration after its line (5.4; T8 L-at)'],
+           'struct Box {\n    vals: f64[]\n    scale: f64\n}\nfn probe(ref b: Box, k: i64, n: i64) {\n    for i in 0..n {\n'
+           '        printf("b %d %g\\n", i, b.scale)\n        b.scale = b.vals[k] + 1.0\n    }\n}\n'
+           'var bx = Box { vals: ones(3), scale: 0.5 }\nprobe(ref bx, 2, 2)\nprintf("%g\\n", bx.scale)\nprobe(ref bx, 5, 3)\n',
+           'b.scale = b.vals[k]', oob(5, 0, 3), 'b 0 0.5\nb 1 2\n2\nb 0 2\n')
+    err_rt('r_opt_hoist_order1', ['two loop-invariant failing operations, v[bad] before big + 1: when both fail the index',
+                                  'error is reported, at the first iteration after its line (6.8 rule 5)'],
+           'fn both(v: f64[], bad: i64, big: i64) {\n    for i in 0..3 {\n        printf("o %d\\n", i)\n'
+           '        let a = v[bad]\n        let b = big + 1\n        printf("%g %d\\n", a, b)\n    }\n}\n'
+           'both(ones(2), 1, 5)\nboth(ones(2), 2, 9223372036854775807)\n',
+           'let a = v[bad]', oob(2, 0, 2), 'o 0\n1 6\no 1\n1 6\no 2\n1 6\no 0\n')
+    err_rt('r_opt_hoist_order2', ['the same with big + 1 before v[bad]: the overflow is reported (6.8 rule 5)'],
+           'fn both(v: f64[], bad: i64, big: i64) {\n    for i in 0..3 {\n        printf("o %d\\n", i)\n'
+           '        let b = big + 1\n        let a = v[bad]\n        printf("%g %d\\n", a, b)\n    }\n}\n'
+           'both(ones(2), 1, 5)\nboth(ones(2), 2, 9223372036854775807)\n',
+           'let b = big + 1', 'integer overflow', 'o 0\n1 6\no 1\n1 6\no 2\n1 6\no 0\n')
+
+
+# ============================================================ opt_unswitch_nan (T9)
+def opt_unswitch_nan():
+    body = PV + '''fn classify(v: f64[], a: f64, b: f64) -> f64 {
+    var t = 0.0
+    let c1 = a < b
+    let c2 = a != b
+    for i in 0..len(v) {
+        if c1 {
+            t += v[i]
+        } else {
+            t -= v[i] * 0.5
+        }
+        if !c2 {
+            t += 100.0
+        }
+        if a >= b {
+            t *= 2.0
+        }
+    }
+    return t
+}
+fn stencil(T: f64[,]) -> f64[,] {
+    let nx = cols(T)
+    let ny = rows(T)
+    var R = zeros(ny, nx)
+    for i in 0..nx {
+        for j in 0..ny {
+            let w = if i == 0 { T[j, i] } else { T[j, i - 1] }
+            let e = if i == nx - 1 { T[j, i] } else { T[j, i + 1] }
+            R[j, i] = (w + e) * 0.5 + T[j, i]
+        }
+    }
+    return R
+}
+fn pick(v: f64[], a: f64, b: f64) -> f64 {
+    var t = 0.0
+    for i in 0..len(v) {
+        t += if a == b { v[i] } else { v[i] * 2.0 }
+    }
+    return t
+}
+fn count_above(v: f64[], lim: f64) -> i64 {
+    var n = 0
+    for x in v {
+        if lim <= lim {
+            if x > lim {
+                n += 1
+            }
+        } else {
+            n += 100
+        }
+    }
+    return n
+}
+let v = [1.0, 2.0, 4.0]
+printf("%.17g\\n", classify(v, 1.0, 2.0))
+printf("%.17g\\n", classify(v, 2.0, 1.0))
+printf("%.17g\\n", classify(v, 1.0, 1.0))
+printf("%.17g\\n", classify(v, nan, 1.0))
+printf("%.17g\\n", classify(v, 1.0, nan))
+printf("%.17g\\n", classify(v, nan, nan))
+printf("%.17g\\n", classify(v, -0.0, 0.0))
+printf("%.17g\\n", classify(v, inf, inf))
+printf("%.17g\\n", classify(zeros(0), nan, 1.0))
+printf("%g %g %g %g\\n", pick(v, 1.0, 1.0), pick(v, nan, nan), pick(v, 0.0, -0.0), pick(v, inf, -inf))
+printf("%d %d %d\\n", count_above(v, 1.5), count_above(v, nan), count_above(zeros(0), nan))
+var T1 = zeros(3, 4)
+for i in 0..4 {
+    for j in 0..3 {
+        T1[j, i] = f64(j) * 1.5 + f64(i * i)
+    }
+}
+pv(stencil(T1).flat)
+var T2 = zeros(2, 1)
+T2[0, 0] = 3.0
+T2[1, 0] = -1.0
+pv(stencil(T2).flat)
+var T3 = zeros(1, 3)
+for i in 0..3 {
+    T3[0, i] = f64(i) + 0.5
+}
+pv(stencil(T3).flat)
+pv(stencil(zeros(0, 3)).flat)
+'''
+    out = ''
+    vv = [1.0, 2.0, 4.0]
+
+    def classify(v, a, b):
+        t = 0.0
+        c1 = a < b
+        c2 = a != b
+        for x in v:
+            if c1:
+                t += x
+            else:
+                t -= x * 0.5
+            if not c2:
+                t += 100.0
+            if a >= b:
+                t *= 2.0
+        return t
+    for a, b in ((1.0, 2.0), (2.0, 1.0), (1.0, 1.0), (NAN, 1.0), (1.0, NAN), (NAN, NAN), (-0.0, 0.0), (INF, INF)):
+        out += e17(classify(vv, a, b)) + '\n'
+    out += e17(classify([], NAN, 1.0)) + '\n'
+
+    def pick(v, a, b):
+        t = 0.0
+        for x in v:
+            t += x if a == b else x * 2.0
+        return t
+    out += ' '.join(g(pick(vv, a, b)) for a, b in ((1.0, 1.0), (NAN, NAN), (0.0, -0.0), (INF, -INF))) + '\n'
+
+    def count_above(v, lim):
+        n = 0
+        for x in v:
+            if lim <= lim:
+                if x > lim:
+                    n += 1
+            else:
+                n += 100
+        return n
+    out += '%d %d %d\n' % (count_above(vv, 1.5), count_above(vv, NAN), count_above([], NAN))
+
+    def stencil(T, ny, nx):
+        R = [0.0] * (ny * nx)
+        for i in range(nx):
+            for j in range(ny):
+                w = T[j + ny * i] if i == 0 else T[j + ny * (i - 1)]
+                e = T[j + ny * i] if i == nx - 1 else T[j + ny * (i + 1)]
+                R[j + ny * i] = (w + e) * 0.5 + T[j + ny * i]
+        return R
+    T1 = [0.0] * 12
+    for i in range(4):
+        for j in range(3):
+            T1[j + 3 * i] = float(j) * 1.5 + float(i * i)
+    out += pvf(stencil(T1, 3, 4))
+    out += pvf(stencil([3.0, -1.0], 2, 1))
+    out += pvf(stencil([float(i) + 0.5 for i in range(3)], 1, 3))
+    out += pvf([])
+    prog('opt_unswitch_nan', ['loop-invariant conditions (DESIGN.md 5.8 T9): two bool conditions, one negated, and a',
+                              'third invariant comparison in one loop, with NaN, signed-zero and infinite operands (only',
+                              '!= holds with NaN); an if expression selecting on an invariant == ; an invariant self-',
+                              'comparison lim <= lim (false for NaN) around a nested if; a stencil whose column tests',
+                              'i == 0 and i == nx - 1 are invariant in the inner loop and guard index arms that would',
+                              'fail if evaluated (one column: both hold); empty matrices (LANGUAGE.md 6.4, 6.10, 4.5)'],
+         body, out)
+
+
+def unswitch_errors():
+    err_rt('r_opt_unswitch_nan', ['an if expression on an invariant a == b in a loop: with a = b = 1 the first arm runs,',
+                                  'with a = b = NaN (== false) the second, whose v[i + 2] fails at i = 2 (6.4, 6.10)'],
+           'fn pick(v: f64[], a: f64, b: f64) {\n    for i in 0..len(v) {\n'
+           '        let x = if a == b { v[i] } else { v[i + 2] }\n        printf("%g\\n", x)\n    }\n}\n'
+           'let v = [1.0, 2.0, 3.0, 4.0]\npick(v, 1.0, 1.0)\npick(v, nan, nan)\n',
+           'v[i + 2] }', oob(4, 0, 4), '1\n2\n3\n4\n3\n4\n')
+    err_rt('r_opt_unswitch_ne', ['an if on an invariant a != b with a nested invariant flag: NaN != NaN holds, so the arm',
+                                 'with w[i + k] runs and fails at i = 1 after the iteration\'s line (6.4)'],
+           'fn walk(w: i64[], a: f64, b: f64, k: i64, flag: bool) {\n    for i in 0..len(w) {\n        printf("i %d\\n", i)\n'
+           '        if a != b {\n            if flag {\n                printf("%d\\n", w[i + k])\n            }\n'
+           '        } else {\n            printf("%d\\n", w[i])\n        }\n    }\n}\nlet w = [7, 8, 9]\n'
+           'walk(w, 1.0, 1.0, 5, true)\nwalk(w, nan, nan, 5, false)\nwalk(w, nan, nan, 1, true)\n',
+           'w[i + k]', oob(3, 0, 3), 'i 0\n7\ni 1\n8\ni 2\n9\ni 0\ni 1\ni 2\ni 0\n8\ni 1\n9\ni 2\n')
+    err_rt('r_opt_ifexpr_arm', ['an if expression in a loop selecting v[(i + 1) % n] or v[i + 1] on an invariant bool: the',
+                                'wrapping arm runs for every i, the other fails at the last i (6.10)'],
+           'fn nb(v: f64[], wrap: bool) {\n    for i in 0..len(v) {\n'
+           '        let x = if wrap { v[(i + 1) % len(v)] } else { v[i + 1] }\n        printf("%g\\n", x)\n    }\n}\n'
+           'let v = [1.0, 2.0, 3.0]\nnb(v, true)\nnb(v, false)\n',
+           'v[i + 1] }', oob(3, 0, 3), '2\n3\n1\n2\n3\n')
+
+
+# ============================================================ opt_sr_extents (T7)
+def opt_sr_extents():
+    body = PV + PVI + '''fn rowdot(A: f64[,], i: i64) -> f64 {
+    var t = 0.0
+    for j in 0..cols(A) {
+        t += A[i, j] * f64(j + 1)
+    }
+    return t
+}
+fn coldot(A: f64[,], j: i64) -> f64 {
+    var t = 0.0
+    for i in 0..rows(A) {
+        t += A[i, j] * f64(i + 1)
+    }
+    return t
+}
+fn odd_sum(v: i64[]) -> i64 {
+    var t = 0
+    for j in 0..idiv(len(v), 2) {
+        t += v[2 * j + 1] * (j + 1)
+    }
+    return t
+}
+fn rev_dot(v: i64[]) -> i64 {
+    let n = len(v)
+    var t = 0
+    for j in 0..n {
+        t += v[n - 1 - j] * (j + 1)
+    }
+    return t
+}
+fn shifted(v: i64[], t: i64) -> i64 {
+    var s = 0
+    for j in 0..len(v) - t {
+        s += v[j + t] * (j + 1)
+    }
+    for j in t..len(v) {
+        s += v[j - t] * 1000
+    }
+    return s
+}
+fn down(A: f64[,]) -> f64 {
+    var s = 0.0
+    for j in cols(A) - 1..=0 step -3 {
+        s += A[rows(A) - 1, j] * f64(j)
+        s += A[0, j]
+    }
+    return s
+}
+fn kth(v: i64[], k: i64, c: i64) -> i64 {
+    var s = 0
+    var j = 0
+    while j * k + c < len(v) {
+        s += v[j * k + c]
+        j += 1
+    }
+    for m in 0..3 {
+        s += v[m * k + c] * 100
+    }
+    return s
+}
+fn transpose(A: f64[,]) -> f64[,] {
+    var B = zeros(cols(A), rows(A))
+    for i in 0..rows(A) {
+        for j in 0..cols(A) {
+            B[j, i] = A[i, j]
+        }
+    }
+    return B
+}
+fn diag(A: f64[,]) -> f64 {
+    var s = 0.0
+    for j in 0..min(rows(A), cols(A)) {
+        s += A[j, j] * f64(j + 1)
+    }
+    return s
+}
+fn stores(n: i64) -> i64[] {
+    var v = filled(0, 3 * n + 2)
+    for j in 0..n {
+        v[3 * j + 2] = j + 1
+        v[3 * j] = -(j + 1)
+    }
+    for j in 0..=n step 2 {
+        v[j + 1] += 100
+    }
+    return v
+}
+fn show(A: f64[,]) {
+    printf("%d %d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\\n")
+}
+var A = zeros(3, 5)
+for j in 0..5 {
+    for i in 0..3 {
+        A[i, j] = f64(i * 10 + j) + 0.5
+    }
+}
+for i in 0..3 {
+    printf("%g\\n", rowdot(A, i))
+}
+for j in 0..5 {
+    printf("%g\\n", coldot(A, j))
+}
+printf("%g %g\\n", down(A), diag(A))
+show(transpose(A))
+pv(transpose(A).flat)
+var R1 = zeros(1, 4)
+for j in 0..4 {
+    R1[0, j] = f64(j) - 1.5
+}
+var C1 = zeros(4, 1)
+for i in 0..4 {
+    C1[i, 0] = f64(i * i)
+}
+printf("%g %g %g %g\\n", rowdot(R1, 0), coldot(C1, 0), down(R1), diag(C1))
+show(transpose(R1))
+show(transpose(C1))
+printf("%g %g\\n", down(zeros(2, 1)), diag(zeros(0, 0)))
+var w = filled(0, 7)
+for i in 0..7 {
+    w[i] = i * i + 1
+}
+printf("%d %d\\n", odd_sum(w), rev_dot(w))
+printf("%d %d %d\\n", shifted(w, 2), shifted(w, 0), shifted(w, 7))
+printf("%d %d\\n", kth(w, 2, 1), kth(w, 3, 0))
+pvi(stores(3))
+pvi(stores(0))
+pvi(stores(4))
+'''
+    out = ''
+    A = [[float(i * 10 + j) + 0.5 for j in range(5)] for i in range(3)]
+
+    def rowdot(M, i):
+        t = 0.0
+        for j in range(len(M[0])):
+            t += M[i][j] * float(j + 1)
+        return t
+
+    def coldot(M, j):
+        t = 0.0
+        for i in range(len(M)):
+            t += M[i][j] * float(i + 1)
+        return t
+
+    def down(M, r, c):
+        s = 0.0
+        for j in range(c - 1, -1, -3):
+            s += M[r - 1][j] * float(j)
+            s += M[0][j]
+        return s
+
+    def diag(M, r, c):
+        s = 0.0
+        for j in range(min(r, c)):
+            s += M[j][j] * float(j + 1)
+        return s
+
+    def show(M, r, c):
+        s = '%d %d' % (r, c)
+        for i in range(r):
+            s += ' |' + ''.join(' ' + g(M[i][j]) for j in range(c))
+        return s + '\n'
+
+    def tr(M, r, c):
+        return [[M[i][j] for i in range(r)] for j in range(c)]
+    for i in range(3):
+        out += g(rowdot(A, i)) + '\n'
+    for j in range(5):
+        out += g(coldot(A, j)) + '\n'
+    out += '%s %s\n' % (g(down(A, 3, 5)), g(diag(A, 3, 5)))
+    At = tr(A, 3, 5)
+    out += show(At, 5, 3)
+    out += pvf([At[i][j] for j in range(3) for i in range(5)])
+    R1 = [[float(j) - 1.5 for j in range(4)]]
+    C1 = [[float(i * i)] for i in range(4)]
+    out += '%s %s %s %s\n' % (g(rowdot(R1, 0)), g(coldot(C1, 0)), g(down(R1, 1, 4)), g(diag(C1, 4, 1)))
+    out += show(tr(R1, 1, 4), 4, 1) + show(tr(C1, 4, 1), 1, 4)
+    out += '%s %s\n' % (g(0.0), g(0.0))
+    w = [i * i + 1 for i in range(7)]
+    out += '%d %d\n' % (sum(w[2 * j + 1] * (j + 1) for j in range(len(w) // 2)),
+                        sum(w[len(w) - 1 - j] * (j + 1) for j in range(len(w))))
+
+    def shifted(v, t):
+        s = 0
+        for j in range(0, len(v) - t):
+            s += v[j + t] * (j + 1)
+        for j in range(t, len(v)):
+            s += v[j - t] * 1000
+        return s
+    out += '%d %d %d\n' % (shifted(w, 2), shifted(w, 0), shifted(w, 7))
+
+    def kth(v, k, c):
+        s = 0
+        j = 0
+        while j * k + c < len(v):
+            s += v[j * k + c]
+            j += 1
+        for m in range(3):
+            s += v[m * k + c] * 100
+        return s
+    out += '%d %d\n' % (kth(w, 2, 1), kth(w, 3, 0))
+
+    def stores(n):
+        v = [0] * (3 * n + 2)
+        for j in range(n):
+            v[3 * j + 2] = j + 1
+            v[3 * j] = -(j + 1)
+        for j in range(0, n + 1, 2):
+            v[j + 1] += 100
+        return v
+    out += pvi(stores(3)) + pvi(stores(0)) + pvi(stores(4))
+    prog('opt_sr_extents', ['addresses of loop accesses near the extents (DESIGN.md 5.8 T7): a matrix row with the',
+                            'column stride rows(A) and a column with unit stride, 2j + 1, n - 1 - j, j + t and j - t',
+                            'with an invariant t (0 and the whole length included), a range counting down by 3 to 0,',
+                            'an invariant register stride j * k + c in a while and a for, a transpose stored column',
+                            'by column, the diagonal, stores at 3j + 2, 3j and j + 1 with step 2 reaching the last',
+                            'element, 1 x n, n x 1 and empty matrices (LANGUAGE.md 4.5, 5.1, 5.4)'], body, out)
+
+
+def sr_errors():
+    err_rt('r_opt_sr_stride', ['A[2, 2 * j + 1] over a 3 x 6 matrix: the column 7 at j = 3 (dimension 1), after the lines',
+                               'of j = 0, 1, 2 (DESIGN.md 5.8 T7; LANGUAGE.md 5.4)'],
+           'let A = zeros(3, 6)\nfor j in 0..5 {\n    printf("%d %g\\n", j, A[2, 2 * j + 1])\n}\n',
+           'A[2, 2 * j + 1]', oob(7, 1, 6), '0 0\n1 0\n2 0\n')
+    err_rt('r_opt_sr_rev', ['v[n - 1 - j] over 0 ..= n: index -1 at the last iteration, after the four elements (5.4)'],
+           'fn back(v: i64[]) {\n    let n = len(v)\n    for j in 0..=n {\n        printf("%d\\n", v[n - 1 - j])\n    }\n}\n'
+           'back([4, 3, 2, 1])\n', 'v[n - 1 - j]', oob(-1, 0, 4), '1\n2\n3\n4\n')
+    err_rt('r_opt_sr_wrap', ['w[j + t - t] with t = 2^63 - 3: j + t overflows at j = 3 although the index would be 3;',
+                             'the lines of j = 0, 1, 2 first (6.5, 6.8 rule 5; a checked chain is not reduced)'],
+           'let t = 9223372036854775805\nvar w = filled(0, 4)\nfor i in 0..4 {\n    w[i] = 10 * i\n}\n'
+           'for j in 0..4 {\n    printf("%d\\n", w[j + t - t])\n}\n', 'w[j + t - t]', 'integer overflow', '0\n10\n20\n')
+    err_rt('r_opt_sr_kstride', ['v[j * k + 1] with an invariant register k = 3 over an 8-element vector: index 10 at j = 3',
+                                '(5.4)'],
+           'fn every(v: i64[], k: i64) {\n    for j in 0..10 {\n        printf("%d\\n", v[j * k + 1])\n    }\n}\n'
+           'var v = filled(0, 8)\nfor i in 0..8 {\n    v[i] = i * 11\n}\nevery(v, 3)\n', 'v[j * k + 1]', oob(10, 0, 8),
+           '11\n44\n77\n')
+    err_rt('r_opt_sr_step_neg', ['A[1, j] for j in 10 ..= -2 step -3 over 11 columns: j = -2 fails after 10, 7, 4, 1 (5.1)'],
+           'var A = zeros(2, 11)\nfor j in 0..11 {\n    A[1, j] = f64(j)\n}\nfor j in 10..=-2 step -3 {\n'
+           '    printf("%g\\n", A[1, j])\n}\n', 'printf("%g\\n", A[1, j])', oob(-2, 1, 11), '10\n7\n4\n1\n')
+    err_rt('r_opt_sr_row', ['A[j + 1, i] in nested loops over a 4 x 3 matrix: row 4 at j = 3 of the first column',
+                            '(dimension 0), after three lines (5.4)'],
+           'var A = zeros(4, 3)\nfor i in 0..3 {\n    for j in 0..4 {\n        A[j, i] = f64(j * 10 + i)\n    }\n}\n'
+           'for i in 0..3 {\n    for j in 0..4 {\n        printf("%g\\n", A[j + 1, i])\n    }\n}\n',
+           'A[j + 1, i])', oob(4, 0, 4), '10\n20\n30\n')
+    err_rt('r_opt_sr_store', ['v[2 * j] = j over a 5-element vector: the store at j = 3 (index 6) fails after the line',
+                              'of that iteration; the elements stored before are printed first (5.5)'],
+           'var v = filled(-1, 5)\nfor j in 0..4 {\n    printf("j %d %d %d\\n", j, v[0], v[4])\n    v[2 * j] = j\n}\n',
+           'v[2 * j] = j', oob(6, 0, 5), 'j 0 -1 -1\nj 1 0 -1\nj 2 0 -1\nj 3 0 2\n')
+
+
+# ============================================================ opt_live_ifs (Decision 75), opt_ifexpr_loops (T4)
+def opt_live_ifs():
+    body = '''fn churn(n: i64) -> i64 {
+    var a0 = 1
+    var a1 = 2
+    var a2 = 3
+    var a3 = 4
+    var a4 = 5
+    var a5 = 6
+    var a6 = 7
+    var a7 = 8
+    var a8 = 9
+    var a9 = 10
+    var a10 = 11
+    var a11 = 12
+    let k0 = n * 3 + 1
+    let k1 = n * 5 + 2
+    var f0 = 0.5
+    var f1 = 1.25
+    for i in 0..n {
+        if i % 2 == 0 {
+            let t1 = a0 + a1
+            let t2 = a2 * 2 + a3
+            let t3 = a4 + a5 + a6
+            a0 = t1 % 1000
+            a2 = (t2 + t3) % 997
+            a4 = (t3 * 3) % 991
+            f0 = f0 * 1.5 + f64(t1)
+        } else {
+            let u1 = a7 + a8
+            let u2 = a9 + a10 + a11
+            a7 = u1 % 983
+            a9 = (u1 + u2) % 977
+            f1 = f1 * 0.5 + f64(u2)
+        }
+        if i % 3 == 0 {
+            printf("c %d %d %d %d\\n", i, a0, a2, a9)
+        }
+        var both = 0
+        if a5 > a6 {
+            both = a5 - a6
+        } else {
+            both = a6 - a5
+        }
+        a5 = (a5 + both + i) % 971
+        a6 = (a6 * 2 + 1) % 967
+        a1 = (a1 + a3 + k0) % 953
+        a3 = (a3 + a10 + k1) % 947
+        a8 = (a8 + a11 + i) % 941
+        a10 = (a10 + a0) % 937
+        a11 = (a11 + a2 + a4) % 929
+    }
+    printf("%d %d %d %d %d %d %d %d %d %d %d %d\\n", a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+    printf("%.17g %.17g\\n", f0, f1)
+    return k0 + k1
+}
+fn carry(v: f64[]) -> f64 {
+    var acc = 0.0
+    var last = -1.0
+    var i = 0
+    while i < len(v) {
+        if v[i] > 0.0 {
+            last = v[i]
+            acc += last
+        } else {
+            acc -= last
+        }
+        printf("%g %g\\n", acc, last)
+        i += 1
+    }
+    return acc + last
+}
+fn nest_calls(n: i64) -> i64 {
+    let base = n * 7 + 3
+    let off = n - 2
+    var s = 0
+    for i in 0..n {
+        var j = 0
+        while j < i {
+            if (i + j) % 2 == 0 {
+                s += base - j
+            } else {
+                s -= off + j
+            }
+            j += 1
+        }
+        printf("n %d %d %d %d\\n", i, s, base, off)
+    }
+    return s + base + off
+}
+printf("%d\\n", churn(0))
+printf("%d\\n", churn(1))
+printf("%d\\n", churn(7))
+printf("%d\\n", churn(20))
+printf("%g\\n", carry([2.0, -1.0, 0.0, 3.5, nan, -4.0]))
+printf("%g\\n", carry(zeros(0)))
+printf("%d\\n", nest_calls(5))
+printf("%d\\n", nest_calls(0))
+'''
+    out = []
+
+    def churn(n):
+        a = list(range(1, 13))
+        k0 = n * 3 + 1
+        k1 = n * 5 + 2
+        f0, f1 = 0.5, 1.25
+        for i in range(n):
+            if i % 2 == 0:
+                t1 = a[0] + a[1]
+                t2 = a[2] * 2 + a[3]
+                t3 = a[4] + a[5] + a[6]
+                a[0] = t1 % 1000
+                a[2] = (t2 + t3) % 997
+                a[4] = (t3 * 3) % 991
+                f0 = f0 * 1.5 + float(t1)
+            else:
+                u1 = a[7] + a[8]
+                u2 = a[9] + a[10] + a[11]
+                a[7] = u1 % 983
+                a[9] = (u1 + u2) % 977
+                f1 = f1 * 0.5 + float(u2)
+            if i % 3 == 0:
+                out.append('c %d %d %d %d\n' % (i, a[0], a[2], a[9]))
+            both = a[5] - a[6] if a[5] > a[6] else a[6] - a[5]
+            a[5] = (a[5] + both + i) % 971
+            a[6] = (a[6] * 2 + 1) % 967
+            a[1] = (a[1] + a[3] + k0) % 953
+            a[3] = (a[3] + a[10] + k1) % 947
+            a[8] = (a[8] + a[11] + i) % 941
+            a[10] = (a[10] + a[0]) % 937
+            a[11] = (a[11] + a[2] + a[4]) % 929
+        out.append(' '.join('%d' % x for x in a) + '\n')
+        out.append('%s %s\n' % (e17(f0), e17(f1)))
+        return k0 + k1
+    for n in (0, 1, 7, 20):
+        r = churn(n)
+        out.append('%d\n' % r)
+
+    def carry(v):
+        acc, last = 0.0, -1.0
+        for x in v:
+            if x > 0.0:
+                last = x
+                acc += last
+            else:
+                acc -= last
+            out.append('%s %s\n' % (g(acc), g(last)))
+        return acc + last
+    r = carry([2.0, -1.0, 0.0, 3.5, NAN, -4.0])
+    out.append(g(r) + '\n')
+    r = carry([])
+    out.append(g(r) + '\n')
+
+    def nest_calls(n):
+        base, off, s = n * 7 + 3, n - 2, 0
+        for i in range(n):
+            for j in range(i):
+                if (i + j) % 2 == 0:
+                    s += base - j
+                else:
+                    s -= off + j
+            out.append('n %d %d %d %d\n' % (i, s, base, off))
+        return s + base + off
+    r = nest_calls(5)
+    out.append('%d\n' % r)
+    r = nest_calls(0)
+    out.append('%d\n' % r)
+    prog('opt_live_ifs', ['values live across calls in loops whose if parts compute temporaries (DESIGN.md 4.9.2,',
+                          'Decision 75): twelve i64 and two f64 variables carried around a loop with a printf in some',
+                          'iterations, temporaries local to each part of an if, a value written in both parts and read',
+                          'after them, two values computed before the loop and read after it; a value carried around a',
+                          'while loop inside one part only (NaN elements take the else part); an inner while in a for',
+                          'whose invariant values are printed in every outer iteration (LANGUAGE.md 6.5, 7.4, 7.5)'],
+         body, ''.join(out))
+
+
+def opt_ifexpr_loops():
+    body = '''fn track(v: f64[]) -> f64 {
+    var m = -inf
+    var neg = 0.0
+    for x in v {
+        var r = 0.0
+        if x > m {
+            m = x
+        }
+        if x < 0.0 {
+            r = x
+        }
+        neg += r
+    }
+    printf("%g %g\\n", m, neg)
+    return m
+}
+fn best_at(v: i64[], n: i64) -> i64 {
+    var best = -7
+    for i in 0..n {
+        if v[i] > 3 {
+            best = i
+        }
+    }
+    return best
+}
+fn absdiff(a: i64[], b: i64[]) -> i64 {
+    var s = 0
+    for i in 0..len(a) {
+        let d = if a[i] > b[i] { a[i] - b[i] } else { b[i] - a[i] }
+        s += d * (if i % 2 == 0 { 1 } else { -1 })
+    }
+    return s
+}
+fn nexts(v: f64[]) -> f64 {
+    var t = 0.0
+    for i in 0..len(v) {
+        t += if i + 1 < len(v) { v[i + 1] } else { v[0] }
+    }
+    return t
+}
+fn clampsum(v: i64[], lo: i64, hi: i64) -> i64 {
+    var s = 0
+    var i = 0
+    while i < len(v) {
+        let c = if v[i] < lo { lo } else if v[i] > hi { hi } else { v[i] }
+        s = s * 3 + c
+        i += 1
+    }
+    return s
+}
+fn sel_f(v: f64[], w: f64) -> f64 {
+    var t = 1.0
+    for x in v {
+        let y = if x != x { w } else if x < w { x } else { w - x }
+        t = t * 0.5 + y
+    }
+    return t
+}
+printf("%g\\n", track([nan, 3.0, -2.0, nan, 5.0, -7.0]))
+printf("%g\\n", track(zeros(0)))
+printf("%g\\n", track([nan, nan]))
+let iv = [1, 5, 2, 9, 0, 4]
+printf("%d %d %d %d\\n", best_at(iv, 6), best_at(iv, 2), best_at(iv, 0), best_at(iv, 1))
+printf("%d\\n", absdiff([5, 1, 7, 7, -3], [2, 4, 7, 9, 3]))
+printf("%g %g\\n", nexts([1.0, 10.0, 100.0]), nexts([2.5]))
+printf("%d %d\\n", clampsum([-5, 0, 3, 8, 12, 2], 0, 9), clampsum([1, 2], 5, 4))
+printf("%.17g %.17g\\n", sel_f([0.5, nan, 3.0, -1.0, inf], 2.0), sel_f([1.0, 2.0], nan))
+'''
+    out = ''
+
+    def track(v):
+        m, neg = -INF, 0.0
+        o = ''
+        for x in v:
+            r = 0.0
+            if x > m:
+                m = x
+            if x < 0.0:
+                r = x
+            neg += r
+        return m, '%s %s\n' % (g(m), g(neg))
+    for v in ([NAN, 3.0, -2.0, NAN, 5.0, -7.0], [], [NAN, NAN]):
+        m, o = track(v)
+        out += o + g(m) + '\n'
+    iv = [1, 5, 2, 9, 0, 4]
+
+    def best_at(n):
+        best = -7
+        for i in range(n):
+            if iv[i] > 3:
+                best = i
+        return best
+    out += '%d %d %d %d\n' % (best_at(6), best_at(2), best_at(0), best_at(1))
+    a, b = [5, 1, 7, 7, -3], [2, 4, 7, 9, 3]
+    out += '%d\n' % sum(abs(a[i] - b[i]) * (1 if i % 2 == 0 else -1) for i in range(5))
+
+    def nexts(v):
+        t = 0.0
+        for i in range(len(v)):
+            t += v[i + 1] if i + 1 < len(v) else v[0]
+        return t
+    out += '%s %s\n' % (g(nexts([1.0, 10.0, 100.0])), g(nexts([2.5])))
+
+    def clampsum(v, lo, hi):
+        s = 0
+        for x in v:
+            c = lo if x < lo else (hi if x > hi else x)
+            s = s * 3 + c
+        return s
+    out += '%d %d\n' % (clampsum([-5, 0, 3, 8, 12, 2], 0, 9), clampsum([1, 2], 5, 4))
+
+    def sel_f(v, w):
+        t = 1.0
+        for x in v:
+            y = w if x != x else (x if x < w else w - x)
+            t = t * 0.5 + y
+        return t
+    out += '%s %s\n' % (e17(sel_f([0.5, NAN, 3.0, -1.0, INF], 2.0)), e17(sel_f([1.0, 2.0], NAN)))
+    prog('opt_ifexpr_loops', ['if statements with one assignment and if expressions inside loops (DESIGN.md 5.8 T4, L-bq,',
+                              'L-bn): a running maximum from -inf over NaN elements, a variable declared in the body and',
+                              'assigned in an if, a variable written only in an if and read after a loop run zero times,',
+                              'if expressions whose arms index (never speculated: the unselected arm would fail), an else',
+                              'if chain in a while, f64 selections on NaN, < and infinities (LANGUAGE.md 6.4, 6.10, 7.4)'],
+         body, out)
+
+
+def promote_errors():
+    err_rt('r_opt_promote_struct', ['ref struct fields updated and printed in a loop, the second call failing at i = 2 on',
+                                    'v[i]: every line before it, the fields as stored (8.3, 9.2; DESIGN.md 5.8 T5, L-ag)'],
+           'struct Acc {\n    total: i64\n    count: i64\n}\nfn run(ref a: Acc, v: i64[], n: i64) {\n    for i in 0..n {\n'
+           '        a.total += v[i]\n        a.count += 1\n        printf("%d %d\\n", a.total, a.count)\n    }\n}\n'
+           'var a = Acc { total: 0, count: 0 }\nrun(ref a, [4, 5, 6], 3)\nprintf("after %d %d\\n", a.total, a.count)\n'
+           'run(ref a, [1, 2], 4)\n', 'a.total += v[i]', oob(2, 0, 2),
+           '4 1\n9 2\n15 3\nafter 15 3\n16 4\n18 5\n')
+    out, s, fail = '', 1, False
+    lines = []
+    for n in (3, 40):
+        try:
+            for i in range(n):
+                for j in range(n):
+                    s = ck(ck(s * 2) + j)
+                lines.append('%d\n' % s)
+        except Ovf:
+            fail = True
+            break
+        if n == 3:
+            lines.append('s %d\n' % s)
+    assert fail
+    err_rt('r_opt_promote_ovf', ['a ref scalar doubled in a nested loop and printed after each inner loop: the second call',
+                                 'overflows part-way; the lines before it (6.5, 8.3; DESIGN.md 5.8 T5)'],
+           'fn grow(ref s: i64, n: i64) {\n    for i in 0..n {\n        for j in 0..n {\n            s = s * 2 + j\n'
+           '        }\n        printf("%d\\n", s)\n    }\n}\nvar s = 1\ngrow(ref s, 3)\nprintf("s %d\\n", s)\ngrow(ref s, 40)\n',
+           's = s * 2 + j', 'integer overflow', ''.join(lines))
+    err_rt('r_opt_cow_ver_err', ['a ref array filled in a loop, unshared at the first call and shared with a let at the',
+                                 'second, which prints both arrays and fails at i = 3 (4.5, 8.3; DESIGN.md 5.8 T6)'],
+           'fn fill(ref v: f64[], e: f64[], n: i64) {\n    for i in 0..n {\n        v[i] = f64(i) * 2.0 + 1.0\n'
+           '        printf("%g %g\\n", v[i], e[i])\n    }\n}\nvar a = zeros(3)\nlet z = zeros(3)\nfill(ref a, z, 2)\n'
+           'let keep = a\nfill(ref a, keep, 5)\n', 'v[i] = f64(i)', oob(3, 0, 3),
+           '1 0\n3 0\n1 1\n3 3\n5 0\n')
+
+# ============================================================ opt_dead_label (regression)
+def opt_dead_label():
+    """Unused str bindings at the end of their scope (a loop body, an if part, a block, the main program, as
+    tests/passes/lex_string.sea and lex_column.sea do): seaopt's T10 deletes the adjacent retain/release pairs
+    and then each `la` of a string label, so sea.lir2 holds `str` labels nothing references; sealopt must read
+    and write them (a regression: it reported `internal error: bad record`)."""
+    body = """fn weigh(n: i64) -> i64 {
+    var total = 0
+    for i in 0..n {
+        total += i * i
+        let tag = "loop tag"
+        let tag2 = "second\\ttag"
+    }
+    if total > 10 {
+        let big = "big"
+    }
+    return total
+}
+let label = "unused label"
+printf("%d %d\\n", weigh(4), weigh(0))
+{
+    let inner = "inner block"
+}
+printf("%s\\n", "done")
+let trailing = "trailing"
+let empty = ""
+"""
+    def weigh(n):
+        return sum(i * i for i in range(n))
+    out = '%d %d\n' % (weigh(4), weigh(0)) + 'done\n'
+    prog('opt_dead_label', ['unused str bindings at the end of a loop body, an if part, a block and the main program,',
+                            'built with the prelude: their labels are left unreferenced once their loads are deleted',
+                            '(DESIGN.md 5.8 T10; regression for sealopt reading an unused label; LANGUAGE.md 7.2, 7.7)'],
+         body, out)
+
+
+
+# ============================================================ opt_destrew_* (regression: T5 destination rewrite)
+def opt_destrew():
+    """T5 (promotion) destination rewriting: a value computed into a temporary and copied to a promoted
+    location must still be what the later reads see when the location is stored again in between.  A later
+    store to the location (or its field) must not make an earlier read of the old value, or a recomputation
+    of the same expression, observe the later value (LANGUAGE.md 6.8 rule 5, 7.1, 8.3 `ref` parameters)."""
+    cm = ['T5 destination rewriting: the promoted location is stored again before the value it first received is',
+          'read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)']
+    # s = t*3; s = s+1; u = t*3 : the store of s+1 must not change u
+    prog('opt_destrew_ref_i64', cm, """fn f(ref s: i64, t: i64, n: i64) -> i64 {
+    var u = 0
+    for i in 0..n {
+        s = t * 3
+        s = s + 1
+        u = t * 3
+    }
+    return u
+}
+var s = 0
+let u = f(ref s, 5, 2)
+printf("%d %d\\n", s, u)
+""", '%d %d\n' % (5 * 3 + 1, 5 * 3))
+    # s = a+b; let t = s; s = 0; w += t : t must be 7 each iteration, s ends 0
+    prog('opt_destrew_ref_later_store', cm, """fn upd2(ref s: i64, a: i64, b: i64, n: i64) -> i64 {
+    var w = 0
+    for i in 0..n {
+        s = a + b
+        let t = s
+        s = 0
+        w += t
+    }
+    return w
+}
+var s = 9
+let w = upd2(ref s, 3, 4, 5)
+printf("%d %d\\n", w, s)
+""", '%d %d\n' % (5 * (3 + 4), 0))
+    # f64 field of a ref struct: out sums v*2; st.x ends as the last v*2+1
+    v = [1.0, 2.0, 3.0]
+    x = 0.0
+    out = 0.0
+    for e in v:
+        x = e * 2.0
+        x = x + 1.0
+        out += e * 2.0
+    prog('opt_destrew_ref_field_f64', cm, """struct St {
+    x: f64
+    n: i64
+}
+fn upd(ref st: St, v: f64[]) -> f64 {
+    var out = 0.0
+    for i in 0..len(v) {
+        st.x = v[i] * 2.0
+        st.x = st.x + 1.0
+        out += v[i] * 2.0
+    }
+    return out
+}
+var st = St { x: 0.0, n: 0 }
+let o = upd(ref st, [1.0, 2.0, 3.0])
+printf("%g %g\\n", o, st.x)
+""", '%g %g\n' % (out, x))
+    # intervening use between the stores and the recomputation
+    acc = 0
+    for i in range(3):
+        s = 5 * 3 + 1
+        acc += s
+        u = 5 * 3
+        acc += u
+    prog('opt_destrew_intervening_use', cm, """fn g(ref s: i64, t: i64, n: i64) -> i64 {
+    var u = 0
+    var acc = 0
+    for i in 0..n {
+        s = t * 3
+        s = s + 1
+        acc += s
+        u = t * 3
+        acc += u
+    }
+    return acc
+}
+var s = 0
+let acc = g(ref s, 5, 3)
+printf("%d %d\\n", acc, s)
+""", '%d %d\n' % (acc, 5 * 3 + 1))
+    # f64 scalar through ref
+    prog('opt_destrew_ref_f64', cm, """fn h(ref s: f64, t: f64, n: i64) -> f64 {
+    var u = 0.0
+    for i in 0..n {
+        s = t * 3.0
+        s = s + 1.0
+        u = t * 3.0
+    }
+    return u
+}
+var s = 0.0
+let u = h(ref s, 2.5, 2)
+printf("%g %g\\n", s, u)
+""", '%g %g\n' % (2.5 * 3.0 + 1.0, 2.5 * 3.0))
+    # i64 field of a ref struct, with a use of the recomputed value after the second store
+    prog('opt_destrew_ref_field_i64', cm, """struct P {
+    x: f64
+    n: i64
+}
+fn bump(ref p: P, a: i64, b: i64, k: i64) -> i64 {
+    var w = 0
+    for i in 0..k {
+        p.n = a + b
+        p.n = p.n * 2
+        w += a + b
+    }
+    return w
+}
+var p = P { x: 0.0, n: 0 }
+let w = bump(ref p, 3, 4, 4)
+printf("%d %d\\n", w, p.n)
+""", '%d %d\n' % (4 * 7, 14))
+
+
+# ============================================================ opt_many_stores (regression: scratch tables)
+def opt_many_stores():
+    """More than 1700 element stores `a[k] = a[k] + f64(i + k)` in one loop body over a dynamic array: sealopt's
+    per-function scratch tables (copy-on-write sites, promoted locations) must not overlap or overflow.
+    a[k] receives sum(i + k for i in 0..n) = n*(n-1)/2 + n*k, exact in f64 (LANGUAGE.md 5.5, 6.4, 7.3)."""
+    cm = ['1700 stores of one loop body into a dynamic array whose buffer a second binding shares (every store',
+          'is a copy-on-write candidate): the scratch tables of the optimiser are not overrun (LANGUAGE.md 4.5, 5.5, 7.3)']
+    K = 1700
+    n = 3
+    a = [0.0] * 1800
+    for i in range(n):
+        for k in range(K):
+            a[k] = a[k] + float(i + k)
+    stores = ''.join('        a[%d] = a[%d] + f64(i + %d)\n' % (k, k, k) for k in range(K))
+    t = 0.0
+    for k in range(1800):
+        t = t * 0.5 + a[k]
+    # keep shares a's buffer before the loop, so every store is a copy-on-write candidate; keep stays all zero
+    body = ('fn f(n: i64) -> f64 {\n    var a = zeros(1800)\n    let keep = a\n    for i in 0..n {\n' + stores
+            + '    }\n    var t = 0.0\n    var z = 0.0\n    for k in 0..1800 {\n        t = t * 0.5 + a[k]\n'
+            '        z += keep[k]\n    }\n    return t + z\n}\n')
+    prog('opt_many_stores', cm, body + 'printf("%.17g\\n", f(3))\n', '%.17g\n' % t)
+
+
+
 opt_div_const()
 opt_fdiv_const()
 opt_ifconv()
@@ -1707,4 +3340,18 @@ opt_eq_guards()
 errors()
 field_errors()
 eq_errors()
+opt_promote_exits()
+opt_cow_alias()
+opt_hoist_guard()
+opt_unswitch_nan()
+opt_sr_extents()
+opt_live_ifs()
+opt_ifexpr_loops()
+hoist_errors()
+unswitch_errors()
+sr_errors()
+promote_errors()
+opt_dead_label()
+opt_destrew()
+opt_many_stores()
 print('opt5c1_cases: %d programs, %d errors' % (COUNT['programs'], COUNT['errors']))

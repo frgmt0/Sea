@@ -1,0 +1,13 @@
+fn lcg_fill(ref s: i64, n: i64) -> f64[] {
+    var u = zeros(n)
+    for i in 0..n {
+        s = 16807 * s % 2147483647
+        u[i] = s / 2147483647
+    }
+    return u
+}
+var s = 42
+printf("%.17g %.17g %d\n", lcg_fill(ref s, 3)[2], lcg_fill(ref s, 2)[1], s)
+// opt5_lcg -- DESIGN.md 5.8, "The W5 loop after T1-T10": W5's lcg_fill (tests/accept/w5_stats.sea)
+// with a two-line main; the fast copy of its loop is the text of 5.8 (s promoted, the % by
+// 2147483647 a magic sequence, u's count tested once, the constants and u's data hoisted)

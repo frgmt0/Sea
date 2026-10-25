@@ -1,0 +1,12 @@
+// r_opt_hoist_div -- loop-invariant idiv(a, z) and a % z, with z = 5 and then z = 0: the second call fails at its
+// first iteration, after the iteration's line (6.6)
+fn ratio(a: i64, z: i64, n: i64) -> i64 {
+    var t = 0
+    for i in 0..n {
+        printf("r %d\n", i)
+        t += idiv(a, z) + a % z
+    }
+    return t
+}
+printf("%d\n", ratio(17, 5, 2))
+printf("%d\n", ratio(17, 0, 2))

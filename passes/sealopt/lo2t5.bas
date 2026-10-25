@@ -1,0 +1,293 @@
+10000 REM ====================================================================================
+10005 REM T5: promotion of private locations (DESIGN 5.8 T5). For each loop L, outermost first (the
+10010 REM loops in record order of their opening records, ids of IDS), the locations (P, off) of the
+10015 REM ldi ldf sti stf with no idx in L whose P is a private base not written in L, with no other
+10020 REM overlapping access with base P in L (an access of the other class at the same offset counts
+10025 REM as one) and not promoted in an enclosing loop: a new register X per location; the pre-loads
+10030 REM before L, loads become mov D X, stores mov X V, post-stores after L's closing record and
+10035 REM before every ret and every exit or next of an enclosing loop in L; then T3's copy propagation
+10040 REM of the mov D X and the destination rewriting of the mov X V. Tables: S(840000+3e+0..2) the
+10045 REM promoted locations (loop id, P, off; D2 of them), S(900000+6m+0..5) those of L (P, off,
+10050 REM class, G row, X, stored; D4 of them). Regions (L-bv): D2 <= 19999, D4 <= 16665; a loop that
+10052 REM would need more is left alone, as is one inside more than 4999 loops (ANC).
+10055 REM ====================================================================================
+10060 LET Q8 = 1
+10065 GOSUB 3000
+10070 LET D2 = 0
+10075 FOR L = 1 TO L9
+10080 LET I8 = S(820000 + L)
+10085 GOSUB 3100
+10090 IF L6 = 0 THEN 10690
+10095 GOSUB 1515
+10100 GOSUB 2700
+10105 GOSUB 2850
+10110 GOSUB 4600
+10112 IF W2 = 1 THEN 10690
+10115 LET D4 = 0
+10120 FOR N4 = L6 + 1 TO L7 - 1
+10125 LET X3 = Q(I(N4, 1), 6)
+10130 LET O8 = 1
+10135 IF X3 = 47 THEN 10160
+10140 IF X3 = 51 THEN 10160
+10145 LET O8 = 2
+10150 IF X3 = 49 THEN 10160
+10155 IF X3 <> 53 THEN 10395
+10160 LET P8 = I(N4, 2)
+10165 IF O(P8 + 2) <> 0 THEN 10395
+10170 LET P9 = O(P8 + 1)
+10175 LET G9 = O(P8 + 4)
+10180 GOSUB 3240
+10185 IF V5 = N8 THEN 10395
+10190 LET O0 = V5
+10195 REM a location already taken in L, or promoted in an enclosing loop
+10200 FOR M4 = 1 TO D4
+10205 IF S(900000 + 6 * M4) <> P9 THEN 10215
+10210 IF S(900001 + 6 * M4) = O0 THEN 10395
+10215 NEXT M4
+10220 FOR M4 = 1 TO D2
+10225 IF S(840001 + 3 * M4) <> P9 THEN 10250
+10230 IF S(840002 + 3 * M4) <> O0 THEN 10250
+10235 FOR M5 = 1 TO A7
+10240 IF INT(I(S(830000 + M5), 0) / 4096) = S(840000 + 3 * M4) THEN 10395
+10245 NEXT M5
+10250 NEXT M4
+10255 REM P a private base not written in L
+10260 IF R(P9, 7) <> 1 THEN 10395
+10265 LET X7 = P9
+10270 LET J3 = L6
+10275 LET J4 = L7
+10280 GOSUB 3400
+10285 IF F0 > 0 THEN 10395
+10290 REM no other access with base P in L overlaps (P, off)
+10295 FOR M4 = L6 + 1 TO L7 - 1
+10300 IF Q(I(M4, 1), 7) < 3 THEN 10365
+10305 IF O(I(M4, 2) + 1) <> P9 THEN 10365
+10310 LET X3 = Q(I(M4, 1), 6)
+10315 LET X4 = 8
+10320 IF X3 = 48 THEN 10330
+10325 IF X3 <> 52 THEN 10335
+10330 LET X4 = 1
+10335 LET G9 = O(I(M4, 2) + 4)
+10340 GOSUB 3240
+10345 IF V5 = N8 THEN 10395
+10350 IF V5 >= O0 + 8 THEN 10365
+10352 IF O0 >= V5 + X4 THEN 10365
+10355 IF V5 <> O0 THEN 10395
+10357 IF O8 = 2 THEN 10362
+10358 IF X3 = 47 THEN 10365
+10360 IF X3 = 51 THEN 10365
+10361 GOTO 10395
+10362 IF X3 = 49 THEN 10365
+10363 IF X3 <> 53 THEN 10395
+10365 NEXT M4
+10367 IF D4 >= 16665 THEN 10690
+10370 LET D4 = D4 + 1
+10375 LET S(900000 + 6 * D4) = P9
+10380 LET S(900001 + 6 * D4) = O0
+10385 LET S(900002 + 6 * D4) = O8
+10390 LET S(900003 + 6 * D4) = O(I(N4, 2) + 4)
+10392 LET S(900005 + 6 * D4) = 0
+10395 NEXT N4
+10400 IF D4 = 0 THEN 10690
+10405 REM Decision 72: the places of the post-stores, then the capacity
+10410 LET F2 = 0
+10415 LET O7 = 1
+10420 FOR N4 = L6 + 1 TO L7 - 1
+10425 IF FNB(I(N4, 0), 16) = 1 THEN 10440
+10428 LET Y = N4
+10430 GOSUB 4700
+10435 LET O7 = O7 + F0
+10440 NEXT N4
+10445 GOSUB 2005
+10450 LET U0 = D4 * (O7 + 1)
+10455 LET U1 = 5 * U0
+10460 LET U2 = D4
+10465 LET U3 = 0
+10470 LET U4 = 0
+10475 LET U5 = U0
+10480 LET U6 = U1
+10485 GOSUB 3700
+10490 IF F0 = 0 THEN 10690
+10492 IF D2 + D4 > 19999 THEN 10690
+10495 FOR M4 = 1 TO D4
+10500 LET D2 = D2 + 1
+10505 LET S(840000 + 3 * D2) = I8
+10510 LET S(840001 + 3 * D2) = S(900000 + 6 * M4)
+10515 LET S(840002 + 3 * D2) = S(900001 + 6 * M4)
+10520 LET Z4 = S(900002 + 6 * M4)
+10525 GOSUB 3360
+10530 LET S(900004 + 6 * M4) = Z5
+10535 NEXT M4
+10540 REM the accesses of the locations in the snapshot: loads mov D X (flag 32), stores mov X V (64)
+10545 FOR N4 = L6 + 1 TO L7 - 1
+10550 IF FNB(I(N4, 0), 16) = 1 THEN 10620
+10555 LET X3 = Q(I(N4, 1), 6)
+10560 IF X3 < 47 THEN 10620
+10565 IF X3 > 53 THEN 10620
+10570 IF X3 = 48 THEN 10620
+10572 IF X3 = 50 THEN 10620
+10574 IF X3 = 52 THEN 10620
+10576 LET P8 = I(N4, 2)
+10578 IF O(P8 + 2) <> 0 THEN 10620
+10580 LET G9 = O(P8 + 4)
+10582 GOSUB 3240
+10584 FOR M4 = 1 TO D4
+10586 IF S(900000 + 6 * M4) <> O(P8 + 1) THEN 10618
+10588 IF S(900001 + 6 * M4) <> V5 THEN 10618
+10590 LET W(N4, 1) = E4
+10592 LET W(N4, 3) = 2
+10594 IF X3 > 50 THEN 10604
+10596 LET V(P8 + 1) = S(900004 + 6 * M4)
+10598 LET W(N4, 0) = W(N4, 0) + 32
+10600 GOTO 10620
+10604 LET V(P8 + 1) = O(P8)
+10606 LET V(P8) = S(900004 + 6 * M4)
+10608 LET W(N4, 0) = W(N4, 0) + 64
+10610 LET S(900005 + 6 * M4) = 1
+10612 GOTO 10620
+10618 NEXT M4
+10620 NEXT N4
+10625 REM the pre-loads before L (placed), in the order of the locations' first accesses
+10630 FOR M4 = 1 TO D4
+10632 LET H3 = R3
+10634 IF S(900002 + 6 * M4) = 1 THEN 10638
+10636 LET H3 = R4
+10638 LET H4 = L6
+10640 GOSUB 10800
+10642 LET W(H7, 0) = 1
+10644 GOSUB 2300
+10646 NEXT M4
+10648 REM the post-stores before each ret, exit or next of an enclosing loop in L, and after L
+10650 FOR N4 = L6 + 1 TO L7 - 1
+10652 IF FNB(I(N4, 0), 16) = 1 THEN 10660
+10653 LET Y = N4
+10654 GOSUB 4700
+10656 LET H4 = N4
+10658 IF F0 = 1 THEN 10850
+10660 NEXT N4
+10662 LET H4 = L7
+10664 LET O8 = 1
+10666 GOSUB 10855
+10668 GOSUB 2400
+10670 REM T3's copy propagation of the mov D X, then the destination rewriting of the mov X V
+10672 FOR N4 = 1 TO A0
+10674 IF FNB(I(N4, 0), 32) = 0 THEN 10680
+10676 LET I(N4, 0) = I(N4, 0) - 32
+10678 LET J5 = N4
+10679 GOSUB 12000
+10680 NEXT N4
+10682 FOR N4 = 1 TO A0
+10683 IF FNB(I(N4, 0), 64) = 0 THEN 10687
+10684 LET I(N4, 0) = I(N4, 0) - 64
+10685 LET J5 = N4
+10686 GOSUB 12115
+10687 NEXT N4
+10688 GOSUB 69450
+10690 NEXT L
+10695 RETURN
+10795 REM MKACC: NEWI of the access of row H3 to location M4 (X P - 0 off)
+10800 LET O3 = S(900004 + 6 * M4)
+10805 LET O4 = S(900000 + 6 * M4)
+10810 LET O5 = 0
+10815 LET O6 = 0
+10820 LET O7 = S(900003 + 6 * M4)
+10825 GOTO 2100
+10845 REM POSTS: the post-stores of the stored locations before (O8 = 0) or after (1) record H4
+10850 LET O8 = 0
+10855 FOR M4 = 1 TO D4
+10860 IF S(900005 + 6 * M4) = 0 THEN 10895
+10865 LET H3 = R6
+10870 IF S(900002 + 6 * M4) = 1 THEN 10880
+10875 LET H3 = R7
+10880 GOSUB 10800
+10885 IF O8 = 1 THEN 10892
+10888 GOSUB 2300
+10890 GOTO 10895
+10892 GOSUB 2310
+10895 NEXT M4
+10898 IF O8 = 1 THEN 1095
+10899 GOTO 10660
+12000 REM ---- COPYPROP (T3's third rule): the mov D S at record J5; D's reads read S and the mov goes
+12002 REM when D has one definition, every read of D lies later in J5's region and S is not written
+12004 REM between the mov and the last read (that read itself may write it, L-bb 2)
+12005 LET P8 = I(J5, 2)
+12010 LET D3 = O(P8)
+12015 LET S3 = O(P8 + 1)
+12020 LET X7 = D3
+12025 GOSUB 3435
+12030 IF F0 <> 1 THEN 1095
+12035 GOSUB 3505
+12040 LET P9 = J5
+12045 LET X7 = D3
+12050 FOR M4 = 1 TO A0
+12055 LET N0 = M4
+12060 GOSUB 3476
+12065 IF F0 = 0 THEN 12085
+12070 IF M4 <= J5 THEN 1095
+12075 IF M4 >= J7 THEN 1095
+12080 LET P9 = M4
+12085 NEXT M4
+12090 LET X7 = S3
+12091 LET J3 = J5 + 1
+12092 LET J4 = P9 - 1
+12093 GOSUB 3400
+12094 IF F0 > 0 THEN 1095
+12095 LET V0 = 6
+12096 FOR N0 = J5 + 1 TO P9
+12097 GOSUB 1105
+12098 NEXT N0
+12099 LET I(J5, 1) = 0
+12100 RETURN
+12105 REM ---- DESTREW (T5): the mov X V at record J5; V's only definition, earlier in the region, writes
+12110 REM X and V's reads (all in the region) read X, when X is neither read nor written between them
+12112 REM and no record strictly between the mov and V's last read M5 writes X (L-bv)
+12115 LET P8 = I(J5, 2)
+12120 LET S3 = O(P8)
+12125 LET D3 = O(P8 + 1)
+12130 IF D3 <= M(5) THEN 1095
+12135 LET O0 = 0
+12140 LET X7 = D3
+12145 FOR M4 = 1 TO A0
+12150 LET N0 = M4
+12155 GOSUB 3470
+12160 IF F0 = 0 THEN 12175
+12165 LET O0 = O0 + F0
+12170 LET P9 = M4
+12175 NEXT M4
+12180 IF O0 <> 1 THEN 1095
+12185 GOSUB 3505
+12190 IF P9 < J6 THEN 1095
+12195 IF P9 >= J5 THEN 1095
+12200 LET X7 = S3
+12205 FOR M4 = P9 + 1 TO J5 - 1
+12210 LET N0 = M4
+12215 GOSUB 3470
+12220 IF F0 > 0 THEN 1095
+12225 GOSUB 3476
+12230 IF F0 > 0 THEN 1095
+12235 NEXT M4
+12240 LET X7 = D3
+12242 LET M5 = J5
+12245 FOR M4 = 1 TO A0
+12250 LET N0 = M4
+12255 GOSUB 3476
+12260 IF F0 = 0 THEN 12275
+12262 IF M4 <= P9 THEN 1095
+12265 IF M4 < J6 THEN 1095
+12270 IF M4 >= J7 THEN 1095
+12272 LET M5 = M4
+12275 NEXT M4
+12276 LET X7 = S3
+12277 LET J3 = J5 + 1
+12278 LET J4 = M5 - 1
+12279 GOSUB 3400
+12280 IF F0 > 0 THEN 1095
+12282 LET V0 = 10
+12285 LET N0 = P9
+12290 GOSUB 1105
+12295 LET V0 = 6
+12300 FOR N0 = J6 TO J7 - 1
+12305 GOSUB 1105
+12310 NEXT N0
+12315 LET I(J5, 1) = 0
+12320 RETURN

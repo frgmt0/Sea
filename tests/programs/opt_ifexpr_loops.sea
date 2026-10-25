@@ -1,0 +1,72 @@
+// opt_ifexpr_loops -- if statements with one assignment and if expressions inside loops (DESIGN.md 5.8 T4, L-bq,
+// L-bn): a running maximum from -inf over NaN elements, a variable declared in the body and
+// assigned in an if, a variable written only in an if and read after a loop run zero times,
+// if expressions whose arms index (never speculated: the unselected arm would fail), an else
+// if chain in a while, f64 selections on NaN, < and infinities (LANGUAGE.md 6.4, 6.10, 7.4)
+fn track(v: f64[]) -> f64 {
+    var m = -inf
+    var neg = 0.0
+    for x in v {
+        var r = 0.0
+        if x > m {
+            m = x
+        }
+        if x < 0.0 {
+            r = x
+        }
+        neg += r
+    }
+    printf("%g %g\n", m, neg)
+    return m
+}
+fn best_at(v: i64[], n: i64) -> i64 {
+    var best = -7
+    for i in 0..n {
+        if v[i] > 3 {
+            best = i
+        }
+    }
+    return best
+}
+fn absdiff(a: i64[], b: i64[]) -> i64 {
+    var s = 0
+    for i in 0..len(a) {
+        let d = if a[i] > b[i] { a[i] - b[i] } else { b[i] - a[i] }
+        s += d * (if i % 2 == 0 { 1 } else { -1 })
+    }
+    return s
+}
+fn nexts(v: f64[]) -> f64 {
+    var t = 0.0
+    for i in 0..len(v) {
+        t += if i + 1 < len(v) { v[i + 1] } else { v[0] }
+    }
+    return t
+}
+fn clampsum(v: i64[], lo: i64, hi: i64) -> i64 {
+    var s = 0
+    var i = 0
+    while i < len(v) {
+        let c = if v[i] < lo { lo } else if v[i] > hi { hi } else { v[i] }
+        s = s * 3 + c
+        i += 1
+    }
+    return s
+}
+fn sel_f(v: f64[], w: f64) -> f64 {
+    var t = 1.0
+    for x in v {
+        let y = if x != x { w } else if x < w { x } else { w - x }
+        t = t * 0.5 + y
+    }
+    return t
+}
+printf("%g\n", track([nan, 3.0, -2.0, nan, 5.0, -7.0]))
+printf("%g\n", track(zeros(0)))
+printf("%g\n", track([nan, nan]))
+let iv = [1, 5, 2, 9, 0, 4]
+printf("%d %d %d %d\n", best_at(iv, 6), best_at(iv, 2), best_at(iv, 0), best_at(iv, 1))
+printf("%d\n", absdiff([5, 1, 7, 7, -3], [2, 4, 7, 9, 3]))
+printf("%g %g\n", nexts([1.0, 10.0, 100.0]), nexts([2.5]))
+printf("%d %d\n", clampsum([-5, 0, 3, 8, 12, 2], 0, 9), clampsum([1, 2], 5, 4))
+printf("%.17g %.17g\n", sel_f([0.5, nan, 3.0, -1.0, inf], 2.0), sel_f([1.0, 2.0], nan))

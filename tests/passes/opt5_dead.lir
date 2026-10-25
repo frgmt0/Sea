@@ -24,12 +24,12 @@ li i5 0
 li i6 1
 rcount i7 i8 i5 i3 i6 0 0:3
 if 1 i8
-loop 2 i9 i5 i7 i6
-lf f10 #4000000000000000
-fmul f11 f2 f10
-fadd f4 f4 f11
-lf f12 #4059000000000000
-fcmp gt i13 f4 f12
+lf f9 #4000000000000000
+fmul f10 f2 f9
+lf f11 #4059000000000000
+loop 2 i12 i5 i7 i6
+fadd f4 f4 f10
+fcmp gt i13 f4 f11
 if 3 i13
 exit 2
 lf f14 #4008000000000000

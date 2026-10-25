@@ -1,0 +1,1 @@
+r_opt_hoist_ftoi.sea:7: error: conversion to i64: 2.5 is not an integer

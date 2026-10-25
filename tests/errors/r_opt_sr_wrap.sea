@@ -1,0 +1,10 @@
+// r_opt_sr_wrap -- w[j + t - t] with t = 2^63 - 3: j + t overflows at j = 3 although the index would be 3;
+// the lines of j = 0, 1, 2 first (6.5, 6.8 rule 5; a checked chain is not reduced)
+let t = 9223372036854775805
+var w = filled(0, 4)
+for i in 0..4 {
+    w[i] = 10 * i
+}
+for j in 0..4 {
+    printf("%d\n", w[j + t - t])
+}

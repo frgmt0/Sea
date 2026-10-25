@@ -1,0 +1,8 @@
+// r_opt_sr_step_neg -- A[1, j] for j in 10 ..= -2 step -3 over 11 columns: j = -2 fails after 10, 7, 4, 1 (5.1)
+var A = zeros(2, 11)
+for j in 0..11 {
+    A[1, j] = f64(j)
+}
+for j in 10..=-2 step -3 {
+    printf("%g\n", A[1, j])
+}

@@ -74,8 +74,9 @@ inside it, coverage by effective part, `lirrw` as a main-program part, golden li
 L-bl–L-bp (fresh registers for each copy of a versioned or unswitched loop, T9 placing copy-only
 values back into each copy's arm, T10 deleting dead selections, §5.2's register counts re-derived,
 `lirrw`'s reserved names: 2 free array letters in `seaopt` and `sealopt`) and L-bq (T4's
-self-reading selection only where its register is written on every path or dead). **Next: the 5c-2 build** per DESIGN.md
-§8's revised row (WP-LIRRW first, then WP-LOPT, WP-PIPE, WP-RA2, T1, T2), then 5d.
+self-reading selection only where its register is written on every path or dead). **5c-2 is done** (`sealopt` 5 411 built
+lines, `seaopt` 5 491; `make test` and `make cross` (596) pass; lead decisions L-br–L-bv, DESIGN.md
+§2.7 "Measured after 5c-2"). **Next: 5d** (shape tests, micro-benchmarks, the gate after phase 5).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -93,7 +94,7 @@ self-reading selection only where its register is written on every path or dead)
   `build/gen/<pass>.bas` (its own files, the modules and `DATA` blocks of its `build.list`,
   `99999 END`; DESIGN.md §2.6.3) and compiled with Baysick (`BAYSICK=<dir>`, default `..`; run
   `make` there first). `build/` is the installation directory (DESIGN.md §2.10).
-- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|hirl|lir1|lir]
+- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|hirl|lir1|lir2|lir]
   [--no-prelude] [--keep-temps]`, `build/sea run <file.sea> [-- args…]` (DESIGN.md §2.2).
 - Tests: `make test` runs, after `make all` and `make check-contracts`, every group even if one
   fails: `test-driver` (`tests/driver_check.sh`), `check-data` (`tests/check_data.sh`, the DATA
@@ -126,9 +127,9 @@ self-reading selection only where its register is written on every path or dead)
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
-- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealoop sealower seaopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
-  (`io diag tables limb f64emu fltlit layout`), interfaces in `passes/lib/API.md`, `API-arith.md`.
-- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirl lir1 lir`),
+- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
+  (`io diag tables lirrw limb f64emu fltlit layout ralloc`), interfaces in `passes/lib/API.md`, `API-arith.md`.
+- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirl lir1 lir2 lir`; `lir2` checked as `lir1` except its two lir1-only label rules, L-bu),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.

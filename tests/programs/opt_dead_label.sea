@@ -1,0 +1,23 @@
+// opt_dead_label -- unused str bindings at the end of a loop body, an if part, a block and the main program,
+// built with the prelude: their labels are left unreferenced once their loads are deleted
+// (DESIGN.md 5.8 T10; regression for sealopt reading an unused label; LANGUAGE.md 7.2, 7.7)
+fn weigh(n: i64) -> i64 {
+    var total = 0
+    for i in 0..n {
+        total += i * i
+        let tag = "loop tag"
+        let tag2 = "second\ttag"
+    }
+    if total > 10 {
+        let big = "big"
+    }
+    return total
+}
+let label = "unused label"
+printf("%d %d\n", weigh(4), weigh(0))
+{
+    let inner = "inner block"
+}
+printf("%s\n", "done")
+let trailing = "trailing"
+let empty = ""

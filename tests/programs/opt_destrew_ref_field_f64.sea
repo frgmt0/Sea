@@ -1,0 +1,18 @@
+// opt_destrew_ref_field_f64 -- T5 destination rewriting: the promoted location is stored again before the value it first received is
+// read; each read sees the most recent store in program order (LANGUAGE.md 6.8, 7.1, 8.3)
+struct St {
+    x: f64
+    n: i64
+}
+fn upd(ref st: St, v: f64[]) -> f64 {
+    var out = 0.0
+    for i in 0..len(v) {
+        st.x = v[i] * 2.0
+        st.x = st.x + 1.0
+        out += v[i] * 2.0
+    }
+    return out
+}
+var st = St { x: 0.0, n: 0 }
+let o = upd(ref st, [1.0, 2.0, 3.0])
+printf("%g %g\n", o, st.x)

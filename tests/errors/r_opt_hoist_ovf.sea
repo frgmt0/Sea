@@ -1,0 +1,10 @@
+// r_opt_hoist_ovf -- a loop-invariant big + 100 overflowing in a while loop after the iteration's line (6.5)
+let big = 9223372036854775800
+var t = 0
+var i = 0
+while i < 3 {
+    printf("w %d\n", i)
+    t = big + 100
+    i += 1
+}
+printf("%d\n", t)

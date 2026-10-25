@@ -1,0 +1,156 @@
+// opt_promote_exits -- ref scalars, ref struct fields and fixed-size array elements updated in loops (DESIGN.md
+// 5.8 T5): a return inside the loop taken and not, a ref element of a struct array, a
+// return from an inner while, continue of the outer loop, a ref fixed-size array updated at
+// a constant and a variable index that meet, a local fixed-size array, a value passed to a
+// call inside the loop, a while left at once by a NaN bound, a ref read after a nested
+// loop with break, two ref parameters (LANGUAGE.md 8.3, 7.5, 4.5, 4.6)
+struct Acc {
+    total: i64
+    count: i64
+    hist: i64[4]
+}
+fn tally(ref a: Acc, v: i64[]) -> i64 {
+    for i in 0..len(v) {
+        if v[i] < 0 {
+            return i
+        }
+        a.total += v[i]
+        a.count += 1
+        a.hist[v[i] % 4] += 1
+    }
+    return -1
+}
+fn pacc(a: Acc) {
+    printf("%d %d [%d %d %d %d]\n", a.total, a.count, a.hist[0], a.hist[1], a.hist[2], a.hist[3])
+}
+fn inner_ret(ref s: i64, n: i64) -> i64 {
+    var rounds = 0
+    for i in 0..n {
+        var j = 0
+        while true {
+            if j >= i {
+                break
+            }
+            s += j
+            j += 1
+            if s > 50 {
+                return rounds
+            }
+        }
+        rounds += 1
+        if i % 3 == 0 {
+            continue
+        }
+        s = s * 2 - 1
+    }
+    return rounds
+}
+fn mix(ref q: i64[3], ks: i64[]) {
+    for k in ks {
+        q[1] += 10
+        q[k] += 1
+        q[2] = q[1] + q[k]
+    }
+}
+fn local_acc(v: i64[]) -> i64 {
+    var acc = [0, 0, 0]
+    for i in 0..len(v) {
+        acc[0] += v[i]
+        acc[i % 3] += 1
+        acc[2] = acc[0] - acc[1]
+    }
+    return acc[0] * 10000 + acc[1] * 100 + acc[2]
+}
+fn peek(x: i64) -> i64 {
+    return x * 3
+}
+fn with_peek(ref s: i64, n: i64) {
+    for i in 0..n {
+        s += i
+        printf("p %d %d\n", s, peek(s))
+    }
+}
+fn relax(ref x: f64, lim: f64) -> i64 {
+    var k = 0
+    while x < lim {
+        x = x * 2.0 + 1.0
+        k += 1
+    }
+    return k
+}
+fn grid_sum(ref s: i64, m: i64[,]) -> i64 {
+    for j in 0..cols(m) {
+        for i in 0..rows(m) {
+            if m[i, j] == 0 {
+                break
+            }
+            s += m[i, j]
+        }
+        s *= 2
+        if s > 1000 {
+            return j
+        }
+    }
+    return -1
+}
+fn twice_ref(ref s: i64, ref t: i64, n: i64) {
+    for i in 0..n {
+        s += 1
+        t += s
+        if t > 20 {
+            s = 0
+        }
+    }
+}
+var a = Acc { total: 0, count: 0, hist: [0, 0, 0, 0] }
+let r1 = tally(ref a, [3, 5, 2, 7, 8])
+printf("%d\n", r1)
+pacc(a)
+let r2 = tally(ref a, [1, 6, -4, 9])
+printf("%d\n", r2)
+pacc(a)
+var accs = filled(a, 3)
+let r3 = tally(ref accs[1], [10, 11, -1])
+printf("%d\n", r3)
+for k in 0..3 {
+    pacc(accs[k])
+}
+var s = 0
+let k1 = inner_ret(ref s, 10)
+printf("%d %d\n", k1, s)
+var s2 = 0
+let k2 = inner_ret(ref s2, 4)
+printf("%d %d\n", k2, s2)
+var q = [1, 2, 3]
+mix(ref q, [0, 1, 2, 1, 1, 0])
+printf("%d %d %d\n", q[0], q[1], q[2])
+printf("%d\n", local_acc([5, 7, 9, 11, 13]))
+var s3 = 7
+with_peek(ref s3, 4)
+printf("%d\n", s3)
+var x1 = 1.0
+let n1 = relax(ref x1, 100.0)
+printf("%d %g\n", n1, x1)
+var x2 = 1.0
+let n2 = relax(ref x2, nan)
+printf("%d %g\n", n2, x2)
+var x3 = nan
+let n3 = relax(ref x3, 5.0)
+printf("%d %g\n", n3, x3)
+var m = filled(0, 3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        m[i, j] = i + 2 * j + 1
+    }
+}
+m[1, 2] = 0
+var gs = 0
+let g1 = grid_sum(ref gs, m)
+printf("%d %d\n", g1, gs)
+var gs2 = 300
+let g2 = grid_sum(ref gs2, m)
+printf("%d %d\n", g2, gs2)
+var p1 = 0
+var p2 = 0
+twice_ref(ref p1, ref p2, 8)
+printf("%d %d\n", p1, p2)

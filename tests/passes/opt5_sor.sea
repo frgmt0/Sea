@@ -1,0 +1,40 @@
+let h = 0.05
+let nx = i64(round(0.25 / h)) + 1
+let ny = i64(round(0.2 / h)) + 1
+let omega = 1.5
+let tol = 1e-8
+let maxIt = 200
+var fixed = filled(false, ny, nx)
+var src = zeros(ny, nx)
+var T = filled(20.0, ny, nx)
+for i in 0..nx {
+    for j in 0..ny {
+        fixed[j, i] = j == 0 || j == ny - 1 || (i == 3 && j == 2)
+        src[j, i] = 0.125 * f64(i + j)
+    }
+    T[0, i] = 40.0 + 5.0 * f64(i)
+}
+var itSor = 0
+var dMax = inf
+while dMax > tol && itSor < maxIt {
+    itSor += 1
+    dMax = 0.0
+    for i in 0..nx {
+        for j in 1..ny-1 {
+            if fixed[j, i] { continue }
+            let tw = if i == 0 { T[j, 1] } else { T[j, i-1] }
+            let te = if i == nx - 1 { T[j, nx-2] } else { T[j, i+1] }
+            let tgs = (tw + te + T[j-1, i] + T[j+1, i] + src[j, i]) / 4.0
+            let tn = T[j, i] + omega * (tgs - T[j, i])
+            let d = abs(tn - T[j, i])
+            if d > dMax { dMax = d }
+            T[j, i] = tn
+        }
+    }
+}
+printf("%d %.17g %.17g\n", itSor, T[1, 2], T[3, 5])
+// opt5_sor -- DESIGN.md 5.8 on W4's scalar SOR loop (tests/accept/w4_sor.sea, here over a 5 x 6
+// grid): the while loop versioned on T (T6), the bases and index terms hoisted (T8), the
+// accesses of the j loop reduced to pointers (T7), the j loop split on i == 0 and i == nx - 1
+// into four copies (T9), each copy's pointers placed in its own arm: the interior copy holds
+// its seven and no branch but the fixed test (L-bm)

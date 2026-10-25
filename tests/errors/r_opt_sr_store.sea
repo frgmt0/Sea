@@ -1,0 +1,7 @@
+// r_opt_sr_store -- v[2 * j] = j over a 5-element vector: the store at j = 3 (index 6) fails after the line
+// of that iteration; the elements stored before are printed first (5.5)
+var v = filled(-1, 5)
+for j in 0..4 {
+    printf("j %d %d %d\n", j, v[0], v[4])
+    v[2 * j] = j
+}

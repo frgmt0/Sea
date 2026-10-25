@@ -1,0 +1,352 @@
+#sea 1
+#target arm64-macos
+#file opt5_sor.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+lf f1 #3FA999999999999A
+lf f2 #3FD0000000000000
+fdiv f3 f2 f1
+fround f4 f3
+ftoi i5 f4 0:2
+li i6 1
+iaddc i7 i5 i6 0:2
+lf f8 #3FC999999999999A
+fdiv f9 f8 f1
+fround f10 f9
+ftoi i11 f10 0:3
+li i12 1
+iaddc i13 i11 i12 0:3
+lf f14 #3FF8000000000000
+lf f15 #3E45798EE2308C3A
+li i16 200
+li i17 0
+li i18 3
+li i19 2
+rcall sea_arr_new_u 0:7 1 p20 4 i18 i19 i13 i7
+imul i21 i13 i7
+ldp p22 p20 - 0 40
+li i23 0
+icmp gt i24 i21 i23
+if 1 i24
+li i25 1
+isub i26 i21 i25
+loop 2 i27 i23 i26 i25
+stb i17 p22 i27 1 0
+endloop 2
+endif 1
+li i28 1
+li i29 2
+rcall sea_arr_new 0:8 1 p30 4 i28 i29 i13 i7
+lf f31 #4034000000000000
+li i32 1
+li i33 2
+rcall sea_arr_new_u 0:9 1 p34 4 i32 i33 i13 i7
+imul i35 i13 i7
+ldp p36 p34 - 0 40
+li i37 0
+icmp gt i38 i35 i37
+if 3 i38
+li i39 1
+isub i40 i35 i39
+loop 4 i41 i37 i40 i39
+stf f31 p36 i41 8 0
+endloop 4
+endif 3
+li i42 0
+li i43 1
+rcount i44 i45 i42 i7 i43 0 0:10
+if 5 i45
+loop 6 i46 i42 i44 i43
+li i47 0
+li i48 1
+rcount i49 i50 i47 i13 i48 0 0:11
+if 7 i50
+loop 8 i51 i47 i49 i48
+li i52 0
+icmp eq i53 i51 i52
+ifz 9 i53
+li i54 1
+isubc i55 i13 i54 0:12
+icmp eq i53 i51 i55
+endif 9
+ifz 10 i53
+li i56 3
+icmp eq i53 i46 i56
+if 11 i53
+li i57 2
+icmp eq i53 i51 i57
+endif 11
+endif 10
+ldi i58 p20 - 0 16
+chkb i51 i58 0 0:12
+ldi i59 p20 - 0 24
+chkb i46 i59 1 0:12
+ldi i60 p20 - 0 0
+li i61 1
+icmp ne i62 i60 i61
+if 12 i62
+rcall sea_arr_unique 0:12 1 p63 1 p20
+mov p20 p63
+endif 12
+ldp p64 p20 - 0 40
+imul i65 i46 i58
+iadd i66 i51 i65
+stb i53 p64 i66 1 0
+lf f67 #3FC0000000000000
+iaddc i68 i46 i51 0:13
+itof f69 i68
+fmul f70 f67 f69
+ldi i71 p30 - 0 16
+chkb i51 i71 0 0:13
+ldi i72 p30 - 0 24
+chkb i46 i72 1 0:13
+ldi i73 p30 - 0 0
+li i74 1
+icmp ne i75 i73 i74
+if 13 i75
+rcall sea_arr_unique 0:13 1 p76 1 p30
+mov p30 p76
+endif 13
+ldp p77 p30 - 0 40
+imul i78 i46 i71
+iadd i79 i51 i78
+stf f70 p77 i79 8 0
+endloop 8
+endif 7
+lf f80 #4044000000000000
+lf f81 #4014000000000000
+itof f82 i46
+fmul f83 f81 f82
+fadd f84 f80 f83
+li i85 0
+ldi i86 p34 - 0 16
+chkb i85 i86 0 0:15
+ldi i87 p34 - 0 24
+chkb i46 i87 1 0:15
+ldi i88 p34 - 0 0
+li i89 1
+icmp ne i90 i88 i89
+if 14 i90
+rcall sea_arr_unique 0:15 1 p91 1 p34
+mov p34 p91
+endif 14
+ldp p92 p34 - 0 40
+imul i93 i46 i86
+iadd i94 i85 i93
+stf f84 p92 i94 8 0
+endloop 6
+endif 5
+li i95 0
+lf f96 #7FF0000000000000
+do 15
+fcmp gt i97 f96 f15
+if 16 i97
+icmp lt i97 i95 i16
+endif 16
+ifz 17 i97
+exit 15
+endif 17
+li i98 1
+iaddc i95 i95 i98 0:20
+lf f96 #0000000000000000
+li i99 0
+li i100 1
+rcount i101 i102 i99 i7 i100 0 0:22
+if 18 i102
+loop 19 i103 i99 i101 i100
+li i104 1
+li i105 1
+isubc i106 i13 i105 0:23
+li i107 1
+rcount i108 i109 i104 i106 i107 0 0:23
+if 20 i109
+loop 21 i110 i104 i108 i107
+ldi i111 p20 - 0 16
+chkb i110 i111 0 0:24
+ldi i112 p20 - 0 24
+chkb i103 i112 1 0:24
+ldp p113 p20 - 0 40
+imul i114 i103 i111
+iadd i115 i110 i114
+ldb i116 p113 i115 1 0
+if 22 i116
+next 21
+endif 22
+li i117 0
+icmp eq i118 i103 i117
+if 23 i118
+li i119 1
+ldi i120 p34 - 0 16
+chkb i110 i120 0 0:25
+ldi i121 p34 - 0 24
+chkb i119 i121 1 0:25
+ldp p122 p34 - 0 40
+imul i123 i119 i120
+iadd i124 i110 i123
+ldf f125 p122 i124 8 0
+else 23
+li i126 1
+isubc i127 i103 i126 0:25
+ldi i128 p34 - 0 16
+chkb i110 i128 0 0:25
+ldi i129 p34 - 0 24
+chkb i127 i129 1 0:25
+ldp p130 p34 - 0 40
+imul i131 i127 i128
+iadd i132 i110 i131
+ldf f125 p130 i132 8 0
+endif 23
+mov f133 f125
+li i134 1
+isubc i135 i7 i134 0:26
+icmp eq i136 i103 i135
+if 24 i136
+li i137 2
+isubc i138 i7 i137 0:26
+ldi i139 p34 - 0 16
+chkb i110 i139 0 0:26
+ldi i140 p34 - 0 24
+chkb i138 i140 1 0:26
+ldp p141 p34 - 0 40
+imul i142 i138 i139
+iadd i143 i110 i142
+ldf f144 p141 i143 8 0
+else 24
+li i145 1
+iaddc i146 i103 i145 0:26
+ldi i147 p34 - 0 16
+chkb i110 i147 0 0:26
+ldi i148 p34 - 0 24
+chkb i146 i148 1 0:26
+ldp p149 p34 - 0 40
+imul i150 i146 i147
+iadd i151 i110 i150
+ldf f144 p149 i151 8 0
+endif 24
+mov f152 f144
+fadd f153 f133 f152
+li i154 1
+isubc i155 i110 i154 0:27
+ldi i156 p34 - 0 16
+chkb i155 i156 0 0:27
+ldi i157 p34 - 0 24
+chkb i103 i157 1 0:27
+ldp p158 p34 - 0 40
+imul i159 i103 i156
+iadd i160 i155 i159
+ldf f161 p158 i160 8 0
+fadd f162 f153 f161
+li i163 1
+iaddc i164 i110 i163 0:27
+ldi i165 p34 - 0 16
+chkb i164 i165 0 0:27
+ldi i166 p34 - 0 24
+chkb i103 i166 1 0:27
+ldp p167 p34 - 0 40
+imul i168 i103 i165
+iadd i169 i164 i168
+ldf f170 p167 i169 8 0
+fadd f171 f162 f170
+ldi i172 p30 - 0 16
+chkb i110 i172 0 0:27
+ldi i173 p30 - 0 24
+chkb i103 i173 1 0:27
+ldp p174 p30 - 0 40
+imul i175 i103 i172
+iadd i176 i110 i175
+ldf f177 p174 i176 8 0
+fadd f178 f171 f177
+lf f179 #4010000000000000
+fdiv f180 f178 f179
+ldi i181 p34 - 0 16
+chkb i110 i181 0 0:28
+ldi i182 p34 - 0 24
+chkb i103 i182 1 0:28
+ldp p183 p34 - 0 40
+imul i184 i103 i181
+iadd i185 i110 i184
+ldf f186 p183 i185 8 0
+ldi i187 p34 - 0 16
+chkb i110 i187 0 0:28
+ldi i188 p34 - 0 24
+chkb i103 i188 1 0:28
+ldp p189 p34 - 0 40
+imul i190 i103 i187
+iadd i191 i110 i190
+ldf f192 p189 i191 8 0
+fsub f193 f180 f192
+fmul f194 f14 f193
+fadd f195 f186 f194
+ldi i196 p34 - 0 16
+chkb i110 i196 0 0:29
+ldi i197 p34 - 0 24
+chkb i103 i197 1 0:29
+ldp p198 p34 - 0 40
+imul i199 i103 i196
+iadd i200 i110 i199
+ldf f201 p198 i200 8 0
+fsub f202 f195 f201
+fabs f203 f202
+fcmp gt i204 f203 f96
+if 25 i204
+mov f96 f203
+endif 25
+ldi i205 p34 - 0 16
+chkb i110 i205 0 0:31
+ldi i206 p34 - 0 24
+chkb i103 i206 1 0:31
+ldi i207 p34 - 0 0
+li i208 1
+icmp ne i209 i207 i208
+if 26 i209
+rcall sea_arr_unique 0:31 1 p210 1 p34
+mov p34 p210
+endif 26
+ldp p211 p34 - 0 40
+imul i212 i103 i205
+iadd i213 i110 i212
+stf f195 p211 i213 8 0
+endloop 21
+endif 20
+endloop 19
+endif 18
+enddo 15
+li i214 1
+li i215 2
+ldi i216 p34 - 0 16
+chkb i214 i216 0 0:35
+ldi i217 p34 - 0 24
+chkb i215 i217 1 0:35
+ldp p218 p34 - 0 40
+imul i219 i215 i216
+iadd i220 i214 i219
+ldf f221 p218 i220 8 0
+li i222 3
+li i223 5
+ldi i224 p34 - 0 16
+chkb i222 i224 0 0:35
+ldi i225 p34 - 0 24
+chkb i223 i225 1 0:35
+ldp p226 p34 - 0 40
+imul i227 i223 i224
+iadd i228 i222 i227
+ldf f229 p226 i228 8 0
+sa p230 s1
+sti i95 p230 - 0 0
+stf f221 p230 - 0 8
+stf f229 p230 - 0 16
+la p231 d1
+rcall sea_printf 0:35 0 2 p231 p230
+release p34
+release p30
+release p20
+ret 0
+endfunc
+fmt d1 6
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+#end

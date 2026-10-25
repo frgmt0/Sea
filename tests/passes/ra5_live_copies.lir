@@ -1,0 +1,118 @@
+#sea 1
+#target arm64-macos
+#file ra5_live_copies.sea
+func .main main 0:1:1 0 0
+slot s1 136 8
+slot s2 8 8
+sa p1 s1
+li i2 -500
+sti i2 p1 - 0 0
+li i3 537
+sti i3 p1 - 0 8
+li i4 1648
+sti i4 p1 - 0 16
+li i5 2833
+sti i5 p1 - 0 24
+li i6 4092
+sti i6 p1 - 0 32
+li i7 5425
+sti i7 p1 - 0 40
+li i8 6832
+sti i8 p1 - 0 48
+li i9 8313
+sti i9 p1 - 0 56
+li i10 9868
+sti i10 p1 - 0 64
+li i11 11497
+sti i11 p1 - 0 72
+li i12 13200
+sti i12 p1 - 0 80
+li i13 14977
+sti i13 p1 - 0 88
+li i14 16828
+sti i14 p1 - 0 96
+li i15 18753
+sti i15 p1 - 0 104
+li i16 20752
+sti i16 p1 - 0 112
+li i17 22825
+sti i17 p1 - 0 120
+li i18 24972
+sti i18 p1 - 0 128
+li i19 0
+li i20 1
+li i21 15
+li i22 9
+li i23 0
+loop 1 i24 i19 i22 i20
+iand i25 i24 i20
+if 2 i25
+sa p26 s1
+loop 3 i27 i19 i21 i20
+ldi i28 p26 i27 8 0
+li i29 3
+imul i30 i28 i29
+iadd i31 i30 i27
+li i32 23324
+ixor i33 i31 i32
+li i34 4
+isar i35 i33 i34
+li i36 11
+imul i37 i35 i36
+iadd i38 i37 i27
+li i39 23712
+ixor i40 i38 i39
+li i41 3
+isar i42 i40 i41
+li i43 19
+imul i44 i42 i43
+iadd i45 i44 i27
+li i46 24100
+ixor i47 i45 i46
+li i48 2
+isar i49 i47 i48
+iadd i23 i23 i49
+endloop 3
+else 2
+sa p50 s1
+li i51 8
+padd p52 p50 i51
+loop 4 i53 i19 i21 i20
+ldi i54 p52 i53 8 0
+li i55 3
+imul i56 i54 i55
+iadd i57 i56 i53
+li i58 23324
+ixor i59 i57 i58
+li i60 4
+isar i61 i59 i60
+li i62 11
+imul i63 i61 i62
+iadd i64 i63 i53
+li i65 23712
+ixor i66 i64 i65
+li i67 3
+isar i68 i66 i67
+li i69 19
+imul i70 i68 i69
+iadd i71 i70 i53
+li i72 24100
+ixor i73 i71 i72
+li i74 2
+isar i75 i73 i74
+ixor i23 i23 i75
+endloop 4
+endif 2
+endloop 1
+sa p76 s2
+sti i23 p76 - 0 0
+la p77 d1
+rcall sea_printf 0:2 0 2 p77 p76
+ret 0
+endfunc
+fmt d1 4
+ftext copies
+ftext %20
+fconv - - - d i
+ftext %0A
+#end
