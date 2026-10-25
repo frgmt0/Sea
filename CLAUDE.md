@@ -65,9 +65,17 @@ DESIGN.md §5.8, the shared allocator `passes/lib/ralloc.bas` of §4.9.2, the sh
 micro-benchmarks of §6.2, §5.9). **5b** (allocator and code selection, both targets) and **5c-1**
 (`seaopt`'s T1–T4, T10) **are done**: `make test` and `make cross` (555) pass; `seaopt` 5 316 built
 lines, `seagen_a64` 4 958, `seagen_x64` 5 294 (DESIGN.md §2.7 "Measured after 5b and 5c-1", with the
-gate arithmetic that predicts `seaopt` fails the gate after 5c-2). **Next: the user's decision on
-`seaopt`'s size, then 5c-2** (loop transformations); the loop-extension spill issue (DESIGN.md §0
-"Open before 5d") must be settled before 5d.
+gate arithmetic that showed `seaopt` could not take T5–T9). The user then decided Decision 74 (the
+loop transformations T5–T9 move to a new pass 3c `sealopt`, `sea.lir2` → `sea.lir`, sharing
+`seaopt`'s reader, validator, writer and T10 through the shared main-program part `passes/lib/lirrw.bas`, L-bi; phase 7's
+vectorizer goes there too) and Decision 75 (the allocator extends an interval over a loop only when
+it may be live at the loop's top), lead decisions L-bc–L-bf; after their review, L-bg–L-bk (liveness tested after a loop as
+inside it, coverage by effective part, `lirrw` as a main-program part, golden lists, sizes) and
+L-bl–L-bp (fresh registers for each copy of a versioned or unswitched loop, T9 placing copy-only
+values back into each copy's arm, T10 deleting dead selections, §5.2's register counts re-derived,
+`lirrw`'s reserved names: 2 free array letters in `seaopt` and `sealopt`) and L-bq (T4's
+self-reading selection only where its register is written on every path or dead). **Next: the 5c-2 build** per DESIGN.md
+§8's revised row (WP-LIRRW first, then WP-LOPT, WP-PIPE, WP-RA2, T1, T2), then 5d.
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
