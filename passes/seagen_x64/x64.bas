@@ -326,7 +326,7 @@
 3000 REM ---- one function: analysis (W0 = 3), layout, sweeps ---------------------------------
 3005 LET F0 = F0 + 1
 3010 FOR I5 = 1 TO M0
-3015 FOR I6 = 1 TO 4
+3015 FOR I6 = 0 TO 4
 3016 LET T(I5,I6) = 0
 3017 NEXT I6
 3020 NEXT I5
@@ -923,7 +923,7 @@
 4563 GOTO 4601
 4564 LET W5 = 0
 4565 IF H6 = 1 THEN 4568
-4566 IF POS(G5$, "c") = 0 THEN 4568
+4566 IF POS(G5$, "c") = 0 THEN 8665
 4567 LET W5 = Q(2)
 4568 CALL "ra_hint": D(), J, D1, Q(1), W5
 4569 GOTO 4601
@@ -966,7 +966,7 @@
 4606 CALL "ra_else": D(), J, Y7
 4607 GOTO 4601
 4700 REM ---- sweep V bookkeeping of record J: T(r,1) writes, T(r,2) the li record of a first
-4701 REM write by li and T(r,5..8) its limbs, T(r,3) the reads that need the register, T(r,4)
+4701 REM write by li and T(r,5..8) its limbs, T(r,0) the source of a first write by mov, T(r,3) the reads that need the register, T(r,4)
 4702 REM the reads; O(J-1,1) a fusion candidate (DESIGN 4.9.2 Immediates, fusion); C3 C4
 4703 LET O(J,1) = 0
 4704 IF J = 1 THEN 4767
@@ -1040,7 +1040,7 @@
 4772 IF R0 = 0 THEN 4780
 4773 LET T(R0,1) = T(R0,1) + 1
 4774 IF T(R0,1) <> 1 THEN 4780
-4775 IF Y0 <> 4 THEN 4780
+4775 IF Y0 <> 4 THEN 8640
 4776 LET T(R0,2) = J
 4777 FOR I5 = 1 TO 4
 4778 LET T(R0,4 + I5) = L(I5)
@@ -1178,13 +1178,13 @@
 5398 LET X$ = Y6$ & "exit:"
 5399 GOSUB 9000
 5400 GOTO 5290
-5401 REM ind + step: the step's hidden register, its immediate or its register (in %rcx when
-5402 REM spilled); ind in place, or through %rax when spilled
+5401 REM ind + step: the step's hidden register, its immediate (an li, or a mov of one: 8655) or
+5402 REM its register (in %rcx when spilled); ind in place, or through %rax when spilled
 5403 IF L6 = 0 THEN 5406
 5404 LET W1 = L6
 5405 GOTO 5413
 5406 LET R0 = B(Y7,3)
-5407 GOSUB 8270
+5407 GOSUB 8655
 5408 IF W2 = 0 THEN 5412
 5409 IF V9 = 0 THEN 5412
 5410 LET H6$ = Z2$
@@ -1597,7 +1597,7 @@
 5817 LET X$ = "cvtsi2sdq " & Z2$ & ", " & Z3$
 5818 GOTO 5761
 5819 REM ---- imulh: a into %rax (omitted when spilled: it is there), imulq b (b's register, or
-5820 REM %rcx), the high half from %rdx (L-an)
+5820 REM %rcx when spilled: 8302 loads it there), the high half from %rdx (L-an)
 5821 LET K6 = 1
 5822 GOSUB 8302
 5823 LET H5$ = Z2$
@@ -1607,19 +1607,14 @@
 5827 LET H6$ = Z2$
 5828 LET H6 = W3
 5829 GOSUB 8219
-5830 IF H5$ = "%rax" THEN 5838
+5830 IF H5$ = "%rax" THEN 5843
 5831 IF H5 = 0 THEN 5836
 5832 LET Z2$ = H5$
 5833 LET R6$ = "%rax"
 5834 GOSUB 8547
-5835 GOTO 5838
+5835 GOTO 5843
 5836 LET X$ = "movq " & H5$ & ", %rax"
 5837 GOSUB 9010
-5838 IF H6 = 0 THEN 5843
-5839 LET Z2$ = H6$
-5840 LET R6$ = "%rcx"
-5841 GOSUB 8547
-5842 LET H6$ = "%rcx"
 5843 LET X$ = "imulq " & H6$
 5844 GOSUB 9010
 5845 LET X$ = "movq %rdx, " & Z3$
@@ -2383,7 +2378,7 @@
 8286 GOSUB 8552
 8287 IF G6 = 9 THEN 8301
 8288 LET R0 = Q(K6)
-8289 GOSUB 8270
+8289 GOSUB 8645
 8290 IF W2 = 0 THEN 8301
 8291 IF G6 = 0 THEN 8300
 8292 IF V9 = 0 THEN 8301
@@ -2401,7 +2396,7 @@
 8304 GOSUB 8282
 8305 IF W3 = 0 THEN 8309
 8306 LET R0 = Q(K6)
-8307 GOSUB 8270
+8307 GOSUB 8645
 8308 RETURN
 8309 LET N5 = 0
 8310 FOR I7 = 1 TO K6
@@ -2647,7 +2642,7 @@
 8550 LET X$ = "movabsq " & Z2$ & ", " & R6$
 8551 GOTO 9010
 8552 REM ---- G6 = the immediate context of operand K6 of record J (see 8355): moves take any
-8553 REM value (call, rcall, ret, chk arguments, loop start and last, staged operands, imulh); the
+8553 REM value (call, rcall, ret, chk arguments, loop start and last, staged operands, imulh a); the
 8554 REM loop step, binary operations, icmp, sti, mov 32 bits; shifts 0-63; chkb; stb a byte
 8555 LET G6 = 9
 8556 IF Y0 = 0 THEN 8569
@@ -2664,7 +2659,7 @@
 8567 LET G6 = 1
 8568 RETURN
 8569 IF W4 = 0 THEN 8561
-8570 IF W4 = 8 THEN 8561
+8570 IF W4 = 8 THEN 8635
 8571 IF W4 = 1 THEN 8578
 8572 IF W4 = 3 THEN 8590
 8573 IF W4 = 9 THEN 8593
@@ -2729,6 +2724,34 @@
 8632 GOSUB 9029
 8633 LET X$ = "popq " & R5$
 8634 GOTO 9010
+8635 REM imulh: a takes any value (moved into %rax); b none, the one-operand imulq has no
+8636 REM immediate form, so b is in its register (DESIGN 4.9.2 Immediates, Templates)
+8637 IF K6 = 1 THEN 8561
+8638 RETURN
+8640 REM ---- (4772) a first write by a mov: its source in T(r,0), for a loop's step (8655)
+8641 IF Y0 <> 0 THEN 4780
+8642 IF W4 <> 21 THEN 4780
+8643 LET T(R0,0) = Q(1)
+8644 GOTO 4780
+8645 REM ---- W2 as 8270 for register R0, operand K6 of record J: a loop's step through 8655
+8646 IF Y0 <> 8 THEN 8270
+8647 IF K6 <> 4 THEN 8270
+8655 REM ---- W2 as 8270 for the step R0 of a loop, which is also a constant when its only
+8656 REM definition is a mov of an li register (DESIGN 4.9.2 Loop closing, Decision 76): R0 then
+8657 REM that li register, its value as 8270 gives it
+8658 GOSUB 8270
+8659 IF W2 = 1 THEN 8664
+8660 IF T(R0,1) <> 1 THEN 8664
+8661 IF T(R0,0) < 1 THEN 8664
+8662 LET R0 = T(R0,0)
+8663 GOTO 8270
+8664 RETURN
+8665 REM ---- (4566) d = a op b not commuting: the hint a; d avoids b's register when b is a
+8666 REM register other than a (DESIGN 4.9.2 The scan, Decision 77)
+8667 CALL "ra_hint": D(), J, D1, Q(1), 0
+8668 IF Q(2) = Q(1) THEN 4601
+8669 CALL "ra_avoid": D(), J, D1, Q(2)
+8670 GOTO 4601
 9000 REM ---- emit X$; 9010: indented ---------------------------------------------------------------
 9004 PRINT #2, X$
 9005 RETURN

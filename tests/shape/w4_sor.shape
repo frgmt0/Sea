@@ -1,0 +1,13 @@
+# w4_sor.shape -- the shape of W4's SOR inner loop (docs/DESIGN.md 5.2 "Targets for phase 5", 6.2).
+# Written by hand from 5.2's targets, never from the compiler's output. Format: see w5_stats.shape.
+program tests/accept/w4_sor.sea
+
+# 5.2: the copy of the j loop for an interior column (T9), inside the fast copy of the versioned
+# while loop; every check proven (T1), the column pointers and omega, 0.25, dMax in registers.
+# arm64, 24 instructions per point: ldrb, cbnz (the fixed test and its continue); six ldr; five fadd,
+# two fmul, two fsub, fabs, fcmp, fcsel (dMax), one str; add, subs, b.hs. No cold branch.
+arm64 .main max=24 cold=0 ldrb=1 cbnz=1 ldr=6 fadd=5 fmul=2 fsub=2 fabs=1 fcmp=1 fcsel=1 str=1 add=1 subs=1 b.hs=1
+
+# 5.2: x86_64, 27 instructions: movzbl, testq, jne; six movsd loads, five addsd, two mulsd, two
+# subsd, one movapd, andpd (fabs), ucomisd, jbe, movapd (dMax), one movsd store; addq, subq, jae.
+x86_64 .main max=27 cold=0 movzbl=1 testq=1 jne=1 movsd=7 addsd=5 mulsd=2 subsd=2 movapd=2 andpd=1 ucomisd=1 jbe=1 addq=1 subq=1 jae=1

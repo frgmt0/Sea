@@ -1130,7 +1130,7 @@ cat > "$T/h_ra.bas" <<'EOF'
 11 REM K r c (the caller's class), P r, R k r w, C k, H k r a b, O k b y i s, X k b, E m (ra_end),
 12 REM L r... (locations), V r (start end, the module's columns 3 2), B b (ra_blk), U p (ra_used),
 13 REM W (ra_rew), S k (ra_sv, ra_svi), M s e c (ra_mv), Q (ra_pm, ra_st), Y n (n moves), G r (D(r,0)),
-14 REM Z k b (ra_else)
+14 REM Z k b (ra_else), A k r v (ra_avoid)
 20 DIM D(111110,8), F$(20), V(20)
 30 IF END #0 THEN 990
 40 LINPUT #0, L$
@@ -1138,9 +1138,9 @@ cat > "$T/h_ra.bas" <<'EOF'
 60 FOR I = 2 TO N
 70 LET V(I) = VAL(F$(I))
 80 NEXT I
-90 LET K = POS("ITFKPRCHOXELVBUWSMQYGZ", F$(1))
+90 LET K = POS("ITFKPRCHOXELVBUWSMQYGZA", F$(1))
 100 IF K = 0 THEN 980
-110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560,570
+110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560,570,580
 200 CALL "ra_init": D(), V(2), V(3), V(4), T
 205 PRINT "I T=" & STR$(T)
 207 GOTO 30
@@ -1209,6 +1209,8 @@ cat > "$T/h_ra.bas" <<'EOF'
 565 GOTO 30
 570 CALL "ra_else": D(), V(2), V(3)
 575 GOTO 30
+580 CALL "ra_avoid": D(), V(2), V(3), V(4)
+585 GOTO 30
 980 PRINT "BAD COMMAND " & L$
 985 STOP 3
 990 STOP
@@ -1280,6 +1282,68 @@ U 4: 0
 S 2: N=2 T=1 (1 0 1) (2 0 2)
 EOF
 expect "ralloc: intervals, expiry before placement, the first free register of the row, the hint (DESIGN 4.9.2 'The scan'); ra_sv at an unreported call: T=1" "$T/ra" "$T/ra_a.in" 0 "$T/ra_a.exp" /dev/null
+
+# a2. the avoided register (DESIGN 4.9.2 'The scan', Decision 77). Records: 1 func r1 r2 (i); 2 isub
+#    i3 i1 i2 (x86_64, not commuting: hint r1, avoid r2); 3 iadd i4 i3 i1; 4 ret 1 i4; 5 endfunc.
+#    Intervals: r1 0-6, r2 0-4, r3 5-6, r4 7-8. r1 1, r2 2; r3 at 5: r2 expired, the hint r1's
+#    register 1 is not free (r1 ends at 6); free are 2 3 4 and 2 is r2's, avoided: 3 (without the
+#    avoidance the first free one, 2). r4 at 7: everything expired, no hint: 1. With only the
+#    registers 1 and 2 declared, r3's one free register is the avoided 2, which it takes (no
+#    spill); there ra_avoid comes before ra_hint, and neither call clears the other's field.
+{ ratab; cat <<'EOF2'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+P 1
+P 2
+R 2 1 0
+R 2 2 0
+R 2 3 1
+H 2 3 1 0
+A 2 3 2
+R 3 3 0
+R 3 1 0
+R 3 4 1
+R 4 4 0
+E 4
+L 1 2 3 4
+EOF2
+} > "$T/ra_a2.in"
+cat > "$T/ra_a2.exp" <<'EOF2'
+I T=0
+E S8=0 T=0
+L 1=1 2=2 3=3 4=1
+EOF2
+expect "ralloc: ra_avoid, the destination of a non-commuting two-address instruction avoids its dying second operand's register when another is free (DESIGN 4.9.2 'The scan', Decision 77)" "$T/ra" "$T/ra_a2.in" 0 "$T/ra_a2.exp" /dev/null
+{ printf 'I %s %s 111110\nT 1 1 1 1 0\nT 2 1 2 2 0\n' "$R9" "$B9"; cat <<'EOF2'
+F
+K 1 1
+K 2 1
+K 3 1
+K 4 1
+P 1
+P 2
+R 2 1 0
+R 2 2 0
+R 2 3 1
+A 2 3 2
+H 2 3 1 0
+R 3 3 0
+R 3 1 0
+R 3 4 1
+R 4 4 0
+E 4
+L 1 2 3 4
+EOF2
+} > "$T/ra_a3.in"
+cat > "$T/ra_a3.exp" <<'EOF2'
+I T=0
+E S8=0 T=0
+L 1=1 2=2 3=2 4=1
+EOF2
+expect "ralloc: ra_avoid, the avoided register taken when it is the only free one, no spill; ra_avoid before ra_hint keeps both (DESIGN 4.9.2 'The scan', Decision 77)" "$T/ra" "$T/ra_a3.in" 0 "$T/ra_a3.exp" /dev/null
 
 # b. spills: the victim's loop depth, then its end, then its number; slots in order of first use.
 #    Records: 1 func; 2-5 li i1 .. li i4 (writes 5 7 9 11); 6 do 1; 7 iadd i5 i1 i2 (14, 15); 8

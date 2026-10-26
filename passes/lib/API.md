@@ -417,6 +417,8 @@ allocated. The caller keeps the names (its templates); the module never sees the
   2. `ra_call D(), K` if the record is a `call`, an `rcall` or a `release`;
   3. `ra_ref D(), K, R, 1` for each register the record writes (position 2K+1);
   4. `ra_hint D(), K, R, A, B` if the record is a `mov`, or (x86_64) a two-address instruction;
+     then (x86_64) `ra_avoid D(), K, R, V` if it is a two-address instruction of a non-commuting
+     operation whose second operand is a register other than its first;
   5. `ra_open D(), K, B, Y, I, S` if it opens a block; `ra_else D(), K, B` if it is the `else`
      of block B; `ra_close D(), K, B` if it closes one (`endloop`, `enddo`, `endif`; nothing for
      `exit`, `next`).
@@ -437,11 +439,21 @@ allocated. The caller keeps the names (its templates); the module never sees the
   `mov R A` gives `ra_hint K, R, A, 0`; an x86_64 two-address `d = a op b` gives `K, d, a, b` for
   a commuting operation (`iadd imul iand ior ixor fadd fmul`) and `K, d, a, 0` otherwise. Kept only
   when record K is R's first reference; applied by the scan when that register is free at R's
-  start (which is exactly when the operand's interval ends at record K).
+  start (which is exactly when the operand's interval ends at record K). Independent of
+  `ra_avoid`: neither call changes what the other recorded.
+* `ra_avoid D(), K, R, V` -- R, written by record K, *avoids* V's register (DESIGN §4.9.2 "The
+  scan", Decision 77): when R's hint is not free, the scan gives R the first free register of its
+  row other than the one V holds, and V's register only when no other register of R's class is
+  free (V's interval has then ended at record K, or the register would not be free). x86_64 calls
+  it with `K, d, b` for a two-address `d = a op b` of an operation that is not commuting (`isub
+  isubc iaddc imulc padd fsub fdiv`) when b is a register (no immediate) other than a; arm64 never
+  calls it. V = 0 records nothing. Kept only when record K is R's first reference, like a hint; a
+  spilled V (no register) avoids nothing.
 * `ra_open D(), K, B, Y, I, S` -- record K opens block B (blocks numbered 1, 2, ... by opening
   record, as validated by the caller) of kind Y: 1 `loop`, 2 `do`, 3 `if` or `ifz`. For a `loop`:
   I its `ind` register and S its step register, or S = 0 when the caller writes the step as an
-  immediate (DESIGN §4.9.2 "Loop closing"); I = S = 0 otherwise. Called after the record's own
+  immediate (DESIGN §4.9.2 "Loop closing": a step whose only definition is an `li`, or a `mov` from
+  a register whose only definition is an `li`, Decision 76, that the closing `add` encodes); I = S = 0 otherwise. Called after the record's own
   references (the `loop` record reads start, last and step and writes `ind` before the loop
   starts; `if` reads its condition outside its block). For an `if`/`ifz` it opens the block's
   first part; for a `loop`/`do`, its body.

@@ -1,0 +1,23 @@
+# w5_stats.shape -- the shape of W5's lcg_fill hot loop (docs/DESIGN.md 5.2 "Targets for phase 5", 6.2).
+# Written by hand from 5.2's targets, never from the compiler's output.
+#
+# program PATH          the Sea program (relative to the sea/ directory)
+# TARGET FUNC KEY=N...  TARGET: arm64 | x86_64; FUNC: the function's name as its `func` record writes
+#                       it (.main for the main program). max=N: the most instructions between the
+#                       loop's top label and its closing branch (inclusive of the branch); cold=N:
+#                       exactly N branches to cold blocks (L<f>_e<k>); any other KEY is a mnemonic and
+#                       N its exact count in that range. Every line also requires no frame access and
+#                       no call in that range. A line passes when at least one innermost loop of FUNC
+#                       meets every requirement.
+program tests/accept/w5_stats.sea
+
+# 5.2: the fast copy of the versioned loop (T6), s in a register (T5), no chkb (T1), no division
+# instruction (T2): 20 instructions on arm64. smulh, mul, cmp ..., asr #63, b.ne (the overflow check,
+# the one branch to a cold block); smulh, add, asr #30, asr #63, sub, mul, sub (the truncated
+# remainder by 2147483647); cmp, add, csel (the floored correction); scvtf, fdiv, str; add, subs, b.hs.
+arm64 lcg_fill max=20 cold=1 smulh=2 mul=2 cmp=2 b.ne=1 add=3 asr=2 sub=2 csel=1 scvtf=1 fdiv=1 str=1 subs=1 b.hs=1
+
+# 5.2: 23 instructions on x86_64. imulq $16807, jo; movq, imulq (one operand), movq %rdx, addq,
+# sarq $30, movq, sarq $63, subq, imulq $2147483647, subq; leaq, testq, movq, cmovlq; xorpd,
+# cvtsi2sdq, divsd, movsd (the store); addq, subq, jae.
+x86_64 lcg_fill max=23 cold=1 imulq=3 jo=1 movq=4 addq=2 sarq=2 subq=3 leaq=1 testq=1 cmovlq=1 xorpd=1 cvtsi2sdq=1 divsd=1 movsd=1 jae=1

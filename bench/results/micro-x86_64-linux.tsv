@@ -1,0 +1,7 @@
+target	cpu	bench	compiler	reps	median_s	min_s	max_s	unit	rate
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	lcg	sea-phase5	17	0.060619	0.060207	0.061800	ns/step	5.511
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	lcg	sea-phase4	5	0.210053	0.208156	0.210601	ns/step	19.096
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	lcg	c-O2	23	0.044823	0.044482	0.045586	ns/step	4.075
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	sor	sea-phase5	5	0.245521	0.244351	0.247674	ns/point	7.835
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	sor	sea-phase4	5	1.647170	1.638369	1.659565	ns/point	52.567
+x86_64-linux	Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz	sor	c-O2	5	0.244099	0.243798	0.247248	ns/point	7.790

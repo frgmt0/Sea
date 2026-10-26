@@ -328,6 +328,22 @@
 1474 LET R7 = 1
 1476 LET FNI = R7
 1478 FNEND
+1480 REM ---- FNC(R) = the li register whose value a loop's step R is (DESIGN 4.9.2 Loop closing,
+1481 REM Decision 76): R when FNI(R); the source of R's only definition when that is a mov of an li
+1482 REM register; else 0
+1484 DEF FNC(R8)
+1486 LET K8 = 0
+1488 IF FNI(R8) = 0 THEN 1492
+1490 LET K8 = R8
+1491 GOTO 1502
+1492 IF T(R8) <= 0 THEN 1502
+1494 IF R$(O(T(R8))) <> "mov" THEN 1502
+1496 LET R8$ = B$(T(R8))
+1498 LET K8 = VAL(SEG$(R8$, POS(R8$, " ", 5) + 2, LEN(R8$)))
+1500 IF FNI(K8) = 1 THEN 1502
+1501 LET K8 = 0
+1502 LET FNC = K8
+1504 FNEND
 2000 REM ---- analysis: the definitions (T) and reads (W) of the record's registers (DESIGN 4.9.2
 2001 REM "Immediates", fusion): T(r) the record of r's only definition, -1 for several (or a
 2002 REM parameter); W(r) its reads
@@ -608,19 +624,24 @@
 2630 IF POS(S7$, "|" & R$(I0) & "|") = 0 THEN 2628
 2632 RETURN
 2650 REM ---- V9 = 1 if operand K2 of a move record (N2 = 1) is an immediate source: its only
-2651 REM definition is an li; never a loop's ind, its step only when the closing add encodes it
-2652 LET V9 = 0
-2653 IF N2 = 0 THEN 2665
-2654 IF FNI(Q(K2)) = 0 THEN 2665
-2655 IF Y0 <> 8 THEN 2664
-2656 IF K2 = 1 THEN 2665
-2657 IF K2 < 4 THEN 2664
-2658 LET R4 = Q(4)
-2659 GOSUB 2500
-2660 GOSUB 2520
-2661 IF Q9 = 0 THEN 2665
+2651 REM definition is an li; never a loop's ind, its step (an li or a mov of one, FNC) only when
+2652 REM the closing add encodes it
+2653 LET V9 = 0
+2654 IF N2 = 0 THEN 2665
+2655 IF FNI(Q(K2)) = 0 THEN 2666
+2656 IF Y0 <> 8 THEN 2664
+2657 IF K2 = 1 THEN 2665
+2658 IF K2 < 4 THEN 2664
+2659 LET R4 = FNC(Q(4))
+2660 GOSUB 2500
+2661 GOSUB 2520
+2662 IF Q9 = 0 THEN 2665
 2664 LET V9 = 1
 2665 RETURN
+2666 IF Y0 <> 8 THEN 2665
+2667 IF K2 <> 4 THEN 2665
+2668 IF FNC(Q(4)) = 0 THEN 2665
+2669 GOTO 2659
 2700 REM ---- a fused comparison (G(J) = 1): C5 = 2 when the next record is an if/ifz and the
 2701 REM comparison tests against 0 (bnot, icmp eq / ne with the immediate 0): cbz / cbnz on
 2702 REM register C6, C7$ = eq (true when it is 0) or ne; otherwise C5 = 1, C7$ the condition
@@ -1310,7 +1331,7 @@
 5484 IF D(Q(K2),0) <> 2 THEN 5486
 5485 LET M4 = 2
 5486 IF V9 = 0 THEN 5492
-5487 LET R4 = Q(K2)
+5487 LET R4 = FNC(Q(K2))
 5488 GOSUB 2500
 5489 LET M8 = M8 + 1
 5490 LET J$(M8) = "v" & H2$
@@ -1371,16 +1392,16 @@
 5558 GOSUB 9000
 5559 GOTO 5290
 5560 REM ---- ind + step of loop Y7 (ind in x15 when spilled, stored back): the step's hidden
-5561 REM register S3 (x16 when spilled), the immediate, or the step register (x16 when spilled)
+5561 REM register S3 (x16 when spilled), the immediate (FNC), or the step register (x16 when spilled)
 5562 LET R3 = B(Y7,4)
 5563 LET K4 = 1
 5564 GOSUB 9720
 5565 LET G7$ = Z2$
 5566 LET G9$ = "add"
 5567 IF S3 <> 0 THEN 5582
-5568 LET R4 = B(Y7,3)
+5568 LET R4 = FNC(B(Y7,3))
 5569 LET Q9 = 0
-5570 IF FNI(R4) = 0 THEN 5573
+5570 IF R4 = 0 THEN 5573
 5571 GOSUB 2500
 5572 GOSUB 2520
 5573 IF Q9 = 0 THEN 5578
@@ -1388,7 +1409,7 @@
 5575 IF N8 = 0 THEN 5590
 5576 LET G9$ = "sub"
 5577 GOTO 5590
-5578 LET R3 = R4
+5578 LET R3 = B(Y7,3)
 5579 LET K4 = 2
 5580 GOSUB 9720
 5581 GOTO 5589

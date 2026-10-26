@@ -1,0 +1,7 @@
+target	cpu	bench	compiler	reps	median_s	min_s	max_s	unit	rate
+arm64-macos	Apple M2 Pro	lcg	sea-phase5	18	0.057961	0.056951	0.062560	ns/step	5.269
+arm64-macos	Apple M2 Pro	lcg	sea-phase4	9	0.116253	0.114389	0.130122	ns/step	10.568
+arm64-macos	Apple M2 Pro	lcg	c-O2	21	0.048605	0.047381	0.057863	ns/step	4.419
+arm64-macos	Apple M2 Pro	sor	sea-phase5	5	0.262436	0.262205	0.263430	ns/point	8.375
+arm64-macos	Apple M2 Pro	sor	sea-phase4	5	1.424302	1.422641	1.442721	ns/point	45.454
+arm64-macos	Apple M2 Pro	sor	c-O2	5	0.261219	0.260290	0.261398	ns/point	8.336

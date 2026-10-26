@@ -1,0 +1,129 @@
+// sor -- phase-5 micro-benchmark (DESIGN.md 5.9): tests/accept/w4_sor.sea verbatim, plus the
+// number of points updated per sweep (the non-fixed interior nodes, counted once before the loop),
+// the seconds of the `while` loop (now() around it) and the extra output lines. Prints it_sor
+// (832 +- 1), T_max, npts and seconds. Rate: ns per point update = seconds / (it_sor * npts).
+// bench/micro.sh runs it; sor_ref.c is the C reference. The text below is w4_sor's:
+// w4_sor -- the phase-4 acceptance program of sub-phase 4d (DESIGN.md 6.3, Decision 19): W4's
+// scalar SOR solve, ported from workloads/w4_heat_plate.m ("inputs" and "solver 1: scalar
+// SOR") with scalar loops over f64[,] and bool[,] arrays, 0-based (LANGUAGE.md 5.1). MATLAB's
+// meshgrid X(j, i) = x(i), Y(j, i) = y(j) is written out per node. Each value is computed with
+// the operations of the MATLAB source in its order (LANGUAGE.md 6.8). The two configuration
+// checks of the MATLAB script (source and channel overlap, channel at an edge) stop with an
+// error that this grid never raises; they are not ported (error is a sub-phase-4g function).
+// The largest temperature over the unknown nodes (MATLAB's max(Thot(:)) with the fixed nodes
+// at -Inf) is found by a scalar loop. Writes the JSON subset of DESIGN.md 6.3: it_sor, T_max.
+
+// inputs
+let W = 0.30            // plate width [m]
+let H = 0.20            // plate height [m]
+let h = 0.00125         // grid spacing [m]
+let kCond = 167.0       // thermal conductivity [W/(m K)]
+let Tbot0 = 40.0        // bottom edge temperature at x = 0 [degC]
+let Tbot1 = 65.0        // bottom edge temperature at x = W [degC]
+let Ttop = 20.0         // top edge temperature [degC]
+let Thole = 12.0        // coolant channel temperature [degC]
+let holeCx = 0.215      // coolant channel center [m]
+let holeCy = 0.105
+let holeR = 0.018       // coolant channel radius [m]
+let srcX0 = 0.06        // heat source box x0 x1 y0 y1 [m]
+let srcX1 = 0.11
+let srcY0 = 0.07
+let srcY1 = 0.12
+let qSrc = 2.5e7        // volumetric heat generation [W/m^3]
+let tol = 1e-8          // convergence: max temperature change per sweep [K]
+let maxIt = 20000       // iteration cap
+
+let nx = i64(round(W / h)) + 1
+let ny = i64(round(H / h)) + 1
+var x = zeros(nx)
+for i in 0..nx {
+    x[i] = f64(i) * h
+}
+var y = zeros(ny)
+for j in 0..ny {
+    y[j] = f64(j) * h
+}
+
+// the coolant channel, the heat source term and the Dirichlet nodes
+let holeR2 = holeR ^ 2
+let srcVal = h ^ 2 * qSrc / kCond
+var hole = filled(false, ny, nx)
+var src = zeros(ny, nx)
+for i in 0..nx {
+    for j in 0..ny {
+        hole[j, i] = (x[i] - holeCx) ^ 2 + (y[j] - holeCy) ^ 2 <= holeR2
+        if x[i] >= srcX0 && x[i] <= srcX1 && y[j] >= srcY0 && y[j] <= srcY1 {
+            src[j, i] = srcVal
+        }
+    }
+}
+var fixed = filled(false, ny, nx)
+for i in 0..nx {
+    for j in 0..ny {
+        fixed[j, i] = hole[j, i] || j == 0 || j == ny - 1
+    }
+}
+
+// the initial temperatures
+var T = filled(Ttop, ny, nx)
+for i in 0..nx {
+    T[0, i] = Tbot0 + (Tbot1 - Tbot0) * x[i] / W
+    T[ny - 1, i] = Ttop
+}
+for i in 0..nx {
+    for j in 0..ny {
+        if hole[j, i] {
+            T[j, i] = Thole
+        }
+    }
+}
+
+// relaxation factor from the Jacobi spectral radius of the rectangle (insulated sides)
+let rhoJ = (1.0 + cos(pi / f64(ny - 1))) / 2.0
+let omega = 2.0 / (1.0 + sqrt(1.0 - rhoJ ^ 2))
+
+// points updated per sweep (counted once, outside the timed loop)
+var npts = 0
+for i in 0..nx {
+    for j in 1..ny-1 {
+        if !fixed[j, i] { npts += 1 }
+    }
+}
+
+// solver 1: scalar SOR in lexicographic order
+var itSor = 0
+var dMax = inf
+let t0 = now()
+while dMax > tol && itSor < maxIt {
+    itSor += 1
+    dMax = 0.0
+    for i in 0..nx {
+        for j in 1..ny-1 {
+            if fixed[j, i] { continue }
+            let tw = if i == 0 { T[j, 1] } else { T[j, i-1] }
+            let te = if i == nx - 1 { T[j, nx-2] } else { T[j, i+1] }
+            let tgs = (tw + te + T[j-1, i] + T[j+1, i] + src[j, i]) / 4.0
+            let tn = T[j, i] + omega * (tgs - T[j, i])
+            let d = abs(tn - T[j, i])
+            if d > dMax { dMax = d }
+            T[j, i] = tn
+        }
+    }
+}
+
+let secs = now() - t0
+
+// the hot spot over the solved (non-Dirichlet) nodes, first maximum in column-major order
+var Tmax = -inf
+for i in 0..nx {
+    for j in 0..ny {
+        if !fixed[j, i] && T[j, i] > Tmax {
+            Tmax = T[j, i]
+        }
+    }
+}
+
+printf("it_sor %d\n", itSor)
+printf("T_max %.17g\n", Tmax)
+printf("npts %d\n", npts)
+printf("seconds %.9f\n", secs)

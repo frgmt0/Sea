@@ -4,7 +4,7 @@
 87009 REM X+1.. (X = R9+B9) scalars, 64 machine-register rows, moves. Row 0: R9 B9 Z9, highest row
 87012 REM used, blocks, -, open part (b; -b else part), loop depth. Row X+1: last call, W list, M, slots, start chain,
 87015 REM save cursor, moves, steps. Register walk columns: 1 first+1, 2 last, 3 latest write (ra_ref),
-87018 REM 4 pend*(B9+1)+depth, 5 hint A*(R9+1)+B, 6 W link / next call, 7 first call crossed (or, with
+87018 REM 4 pend*(B9+1)+depth, 5 hints (A*(R9+1)+B)*(R9+1)+V (V avoided), 6 W link / next call, 7 first call crossed (or, with
 87021 REM none, -(3K+n): a result of call K, n results counted up to 2), 8 start;
 87024 REM after ra_end: 1 first, 2 end, 3 start, 4 depth, 5 hint, 6 start chain, 7 save slot, 8 loc.
 87027 REM Block row: 0 kind (1 loop 2 do 3 if), 1 parent part, 2 open, 3 close, 4 first call, 5 ind (then
@@ -192,7 +192,9 @@
 87534 SUBEND
 87537 SUB "ra_hint": D(), K, R, A, B ' R written by record K prefers A's register, then B's
 87540 IF D(R, 1) <> 2 * K + 2 THEN 87546
-87543 LET D(R, 5) = A * (D(0, 1) + 1) + B
+87541 LET N = D(0, 1) + 1
+87542 REM keeps the avoided register of ra_avoid (the lowest field)
+87543 LET D(R, 5) = (A * N + B) * N + D(R, 5) - INT(D(R, 5) / N) * N
 87546 SUBEND
 87549 SUB "ra_open": D(), K, B, Y, I, S ' record K opens block B of kind Y; a loop's ind I and step S
 87552 LET Z = D(0, 1) + B
@@ -375,9 +377,15 @@
 88083 IF D(D(X + P, 5), 2) >= S THEN 88089
 88086 LET D(X + P, 5) = 0
 88089 NEXT P
-88092 REM the hint: A's register, then B's, if free
-88095 LET A = INT(D(R, 5) / (R9 + 1))
-88098 LET B = D(R, 5) - A * (R9 + 1)
+88092 REM the hint: A's register, then B's, if free; Y the register of the avoided V (Decision 77)
+88093 LET N = R9 + 1
+88094 LET H = INT(D(R, 5) / N)
+88095 LET A = INT(H / N)
+88096 LET B = H - A * N
+88097 LET Y = 0
+88098 LET W = D(R, 5) - H * N
+88099 IF W = 0 THEN 88101
+88100 LET Y = D(W, 8)
 88101 FOR I = 1 TO 2
 88104 IF A = 0 THEN 88119
 88107 LET P = D(A, 8)
@@ -394,14 +402,20 @@
 88140 FOR P = 1 TO 64
 88143 IF D(X + P, 0) <> C THEN 88158
 88146 IF D(X + P, 5) <> 0 THEN 88158
+88147 IF P = Y THEN 88158
 88149 IF Q = 0 THEN 88155
 88152 IF D(X + P, K) >= D(X + Q, K) THEN 88158
 88155 LET Q = P
 88158 NEXT P
 88161 LET P = Q
 88164 IF P <> 0 THEN 88218
-88167 REM none free: the victim has the smallest depth, then the last end, then the highest number
-88170 LET V = R
+88165 REM only the avoided register free: it is taken
+88166 LET P = Y
+88167 IF P < 1 THEN 88170
+88168 IF D(X + P, 0) <> C THEN 88170
+88169 IF D(X + P, 5) = 0 THEN 88218
+88170 REM none free: the victim has the smallest depth, then the last end, then the highest number
+88171 LET V = R
 88173 FOR P = 1 TO 64
 88176 IF D(X + P, 0) <> C THEN 88200
 88179 LET O = D(X + P, 5)
@@ -640,3 +654,8 @@
 88868 LET D(D(0, 1) + B, 5) = K
 88869 LET D(0, 7) = -B
 88870 SUBEND
+88872 SUB "ra_avoid": D(), K, R, V ' R written by record K avoids V's register unless no other is free
+88875 IF D(R, 1) <> 2 * K + 2 THEN 88884
+88878 LET N = D(0, 1) + 1
+88881 LET D(R, 5) = INT(D(R, 5) / N) * N + V
+88884 SUBEND

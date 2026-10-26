@@ -1,0 +1,26 @@
+// lcg -- phase-5 micro-benchmark (DESIGN.md 5.9): W5's Park-Miller LCG fill. `lcg_fill` is copied
+// verbatim from tests/accept/w5_stats.sea; it is called once with 11 000 000 steps from W5's seed
+// 7 340 117, timed by now() around the call. Prints lcg_final (must be 2145635252, DESIGN.md 8,
+// row 1), the sum of the filled vector (a check that the loop's stores are real) and the seconds.
+// Rate: ns per step. bench/micro.sh runs it; lcg_ref.c is the C reference.
+
+let seed = 7_340_117         // LCG seed [-]
+let nStep = 11_000_000       // LCG steps [-]
+
+var s = seed
+let t0 = now()
+let u = lcg_fill(ref s, nStep)
+let secs = now() - t0
+printf("lcg_final %d\n", s)
+printf("u_last %.17g\n", u[nStep - 1])
+printf("seconds %.9f\n", secs)
+
+// n uniforms in (0,1) from the Park-Miller minimal-standard LCG (exact in i64).
+fn lcg_fill(ref s: i64, n: i64) -> f64[] {
+    var u = zeros(n)
+    for i in 0..n {
+        s = 16807 * s % 2147483647
+        u[i] = s / 2147483647
+    }
+    return u
+}

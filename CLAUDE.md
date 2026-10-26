@@ -76,7 +76,13 @@ values back into each copy's arm, T10 deleting dead selections, §5.2's register
 `lirrw`'s reserved names: 2 free array letters in `seaopt` and `sealopt`) and L-bq (T4's
 self-reading selection only where its register is written on every path or dead). **5c-2 is done** (`sealopt` 5 411 built
 lines, `seaopt` 5 491; `make test` and `make cross` (596) pass; lead decisions L-br–L-bv, DESIGN.md
-§2.7 "Measured after 5c-2"). **Next: 5d** (shape tests, micro-benchmarks, the gate after phase 5).
+§2.7 "Measured after 5c-2"). **5d is done** (Decisions 76–77, the `seagen_x64` `imulh` fix): the
+W5 and W4 loops meet DESIGN.md §5.2's shapes on both targets (20/23 and 24/27 instructions, no
+frame access); micro-benchmarks (§5.9): `sor` ≈ C on both targets, `lcg` 1.19× (M2 Pro) and 1.35×
+(i7-4790) C. The gate after phase 5 (§2.7 "Measured after 5d") passes `seaopt`, `seagen_a64`,
+`seagen_x64` but **fails `sealopt`: 0 free array letters, 2 required**. **Next:** a relief for
+`sealopt` agreed with the user (row 5d; phase 5 closes with it), then **phase 6** (functions and
+output).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,
@@ -100,7 +106,8 @@ lines, `seaopt` 5 491; `make test` and `make cross` (596) pass; lead decisions L
   fails: `test-driver` (`tests/driver_check.sh`), `check-data` (`tests/check_data.sh`, the DATA
   generator), `test-lib` (`tests/lib_check.sh`), `test-arith` (`tests/arith_check.sh`, the exact
   arithmetic modules), `test-rt` (`tests/rt/`, runtime tests against `libsea.a`), `test-stage`
-  (`tests/stage.sh`, each pass on the previous pass's golden), `test-protocol`
+  (`tests/stage.sh`, each pass on the previous pass's golden), `test-shape` (`tests/shape.sh`, the
+  instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
   (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`),
   `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps). Each group is also its own target.
