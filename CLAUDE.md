@@ -68,7 +68,7 @@ lines, `seagen_a64` 4 958, `seagen_x64` 5 294 (DESIGN.md §2.7 "Measured after 5
 gate arithmetic that showed `seaopt` could not take T5–T9). The user then decided Decision 74 (the
 loop transformations T5–T9 move to a new pass 3c `sealopt`, `sea.lir2` → `sea.lir`, sharing
 `seaopt`'s reader, validator, writer and T10 through the shared main-program part `passes/lib/lirrw.bas`, L-bi; phase 7's
-vectorizer goes there too) and Decision 75 (the allocator extends an interval over a loop only when
+vectorizer goes there too, revised by Decision 78) and Decision 75 (the allocator extends an interval over a loop only when
 it may be live at the loop's top), lead decisions L-bc–L-bf; after their review, L-bg–L-bk (liveness tested after a loop as
 inside it, coverage by effective part, `lirrw` as a main-program part, golden lists, sizes) and
 L-bl–L-bp (fresh registers for each copy of a versioned or unswitched loop, T9 placing copy-only
@@ -79,10 +79,12 @@ lines, `seaopt` 5 491; `make test` and `make cross` (596) pass; lead decisions L
 §2.7 "Measured after 5c-2"). **5d is done** (Decisions 76–77, the `seagen_x64` `imulh` fix): the
 W5 and W4 loops meet DESIGN.md §5.2's shapes on both targets (20/23 and 24/27 instructions, no
 frame access); micro-benchmarks (§5.9): `sor` ≈ C on both targets, `lcg` 1.19× (M2 Pro) and 1.35×
-(i7-4790) C. The gate after phase 5 (§2.7 "Measured after 5d") passes `seaopt`, `seagen_a64`,
-`seagen_x64` but **fails `sealopt`: 0 free array letters, 2 required**. **Next:** a relief for
-`sealopt` agreed with the user (row 5d; phase 5 closes with it), then **phase 6** (functions and
-output).
+(i7-4790) C. **Phase 5 is complete** (shapes met on both targets, `sor` ≈ C, `lcg` 1.19/1.35× C;
+Decisions 76–78): the gate after phase 5 passed with Decision 78 (phase 7's scalar replacement
+and vectorization get their own pass 3d after `sealopt`, sharing `lirrw`, name and files at phase
+7's spec; `sealopt` takes fixes only, its letter condition waived; DESIGN.md §2.7 "Measured after
+5d"). **Next:** **phase 6** (functions and output). Versions 0.y.z are alpha; 1.0.0 = v1
+(Decision 79).
 
 ## Read first
 - `docs/LANGUAGE.md` — what Sea programs mean (syntax, types, library, output bytes, errors,

@@ -58,8 +58,13 @@ the user's agreement. Phase 0 (§8) did:
    the gate after phase 5) is done: the W5 and W4 loops meet §5.2's shapes on both targets (§5.2,
    "Measured after 5d"), the micro-benchmarks are recorded (§5.9), and the gate after phase 5 passes
    `seaopt`, `seagen_a64` and `seagen_x64` but fails `sealopt` on its free array letters (0 of the 2
-   required; §2.7, "Measured after 5d"), so a relief for `sealopt` is to be agreed with the user
-   before phase 6's code (§8, row 5d).
+   required; §2.7, "Measured after 5d"); the user chose the relief as Decision 78 (phase 7's
+   scalar replacement and vectorization get a pass 3d of their own after `sealopt`, sharing
+   `lirrw`, their name, files and `--emit` kind settled by phase 7's specification; `sealopt`
+   receives fixes only and its letter condition is waived), with which the gate passes all four
+   programs (§2.7, "The gate after phase 5 with Decision 78's relief"), so phase 5 is complete;
+   next is phase 6 (functions and output). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
+   §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
 §4.9.2's first loop-extension rule a temporary first written inside an `if` part of a loop (not at the loop body's
@@ -531,6 +536,10 @@ Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc`, a Sea 
    baseline;
 4. **writes its figures** as SVG files (LANGUAGE.md §12) when asked to.
 
+**Versions** (Decision 79): every Sea version 0.y.z is an alpha; 1.0.0 is the general-availability
+version and means v1 is done by the definition above (all five workloads, phase 10 of §8). No git
+tag or release procedure is required, so the driver's `sea 0.1.0` (§2.2) already denotes an alpha.
+
 **The MATLAB baseline.** `reference/baseline_timings_matlab.json` (Decision 7, sea commit
 c1736f7) was written by `run_all.m` with MATLAB `26.1.0.3346908 (R2026a) Update 5`, `arch` =
 `maca64`, on an Apple M2 Pro (`Mac14,9`), with MATLAB's default thread count
@@ -611,8 +620,12 @@ The non-goals of v1, each with its reason, are LANGUAGE.md §1.3.
    3c  sealopt     sea.lir2 ─► sea.lir  promotion, copy-on-write versioning, strength
                                         reduction, invariant hoisting, unswitching, clean-up
                                         (§5.8; from sub-phase 5c-2, Decision 74); from phase
-                                        7 scalar replacement and vectorization (width 2,
-                                        plus width 4 for avx2)
+                                        7 fixes only (Decision 78)
+   3d  (phase 7)   sea.lir format       scalar replacement and vectorization (width 2,
+                                        plus width 4 for avx2),
+                                        a pass of its own after sealopt sharing lirrw
+                                        (Decision 78; its name, files and --emit kind
+                                        are settled by phase 7's specification)
    4   seagen_a64 | seagen_x64          sea.lir ─► sea.s: instruction selection, register
                                         allocation, frames, assembly text
                   │
@@ -2601,7 +2614,8 @@ and 5c-2 does not change them.
 **Projected after Decision 74** (the loop transformations in pass 3c, `sealopt`; estimates ±30 %,
 with 5c-1's measured overrun as a stress view, L-bk, L-bp). `seaopt` keeps T1–T4 and T10 and takes no
 further phase work: phase 7's scalar replacement and vectorization go to `sealopt` (Decision 74,
-which settles the question Decision 71 left to the gate after phase 6). WP-LIRRW moves `seaopt`'s
+which settles the question Decision 71 left to the gate after phase 6; Decision 78 later gives phase 7's
+scalar replacement and vectorization a pass of its own, "Measured after 5d"). WP-LIRRW moves `seaopt`'s
 reader, validator, writer and T10 into the shared main-program part `lirrw` (L-bi) without a change
 of behaviour; `seaopt` loads it, so the moved lines stay counted in it.
 
@@ -2631,7 +2645,7 @@ of behaviour; `seaopt` loads it, so the moved lines stay counted in it.
   columns of `R`, the scratch `W` between entries, and the unreserved string arrays and scalars.
   Phase 7's vectorizer in `sealopt` would have to live in those; whether it fits, or needs a packed
   table or a pass of its own, is decided at the gate after phase 6 with the measured letters and
-  lines.
+  lines. (Decided earlier, at the gate after phase 5, by Decision 78: a pass of its own.)
 
 | Program | Measured now | After phase 5 (projected; stress view) | ≤ 7 000 | Remaining (v1) | Projected v1 (≤ 9 000) | Stress (+ remaining × 1.5) | Free letters |
 |---------|------:|------:|:---:|------:|------:|------:|------|
@@ -2643,6 +2657,7 @@ of behaviour; `seaopt` loads it, so the moved lines stay counted in it.
 So `sealopt` with phase 7 may pass 7 000 built (6 069–7 059, at the stress view 6 667–8 043), its
 stress figure at the stress view reaches 9 043, above 9 000, and it has 2 free array letters: all
 three are inputs to the gate after phase 6, which may move phase 7's vectorizer to a pass of its own.
+(Decision 78 moved it, with phase 7's scalar replacement, to a pass of its own at the gate after phase 5; see "Measured after 5d".)
 
 **The gate after phase 5, as Decision 74 revises it** (L-be, L-bk; it supersedes the paragraph "The
 gate after phase 5" above and the line "Remaining after phase 5" for `seaopt`). After 5d, `make
@@ -2677,7 +2692,8 @@ remaining conditions need the remaining work of 5d and phase 6 to be projected (
 phase 7, `seaopt` 1 000 for fixes), and this record does not compute them. Two inputs to the gate
 after phase 6 and to phase 7 follow from the measured tree: `sealopt` has 0 free array letters, so
 the vectorizer, which goes into `sealopt`, must take its tables from the free columns of `R`, packed
-tables, the unreserved string arrays and scalars, or a pass of its own; and `sealopt`'s 5 411
+tables, the unreserved string arrays and scalars, or a pass of its own (Decision 78 chose a pass
+of its own, "Measured after 5d"); and `sealopt`'s 5 411
 built lines plus phase 7's 2 000 is 7 411, above 7 000 (a sum of the two figures given, not a
 projection of phase 7's real size). The gate itself is applied after 5d: see "Measured after 5d"
 below.
@@ -2724,11 +2740,32 @@ remaining ≤ 9 000, built + 1.5 × remaining ≤ 9 000, and the letter conditio
 free numeric array letters where the gate requires at least 2** (its lines pass all three
 conditions). By the gate's rule, `sealopt` needs a relief specified and agreed with the user before
 phase 6's code (§8, row 5d); no relief is chosen here. The facts it starts from: phase 7's
-vectorizer goes into `sealopt` (Decision 74), whose own scratch tables took `S` and `V`, the two
+vectorizer goes into `sealopt` (Decision 74; revised by Decision 78, below), whose own scratch tables took `S` and `V`, the two
 letters L-bp left it; its other room is the free columns of `R`, the scratch `W` between entries,
 packed tables, and the unreserved string arrays and scalars ("Measured after 5c-2"). Separately, and
 not a failing condition (the 7 000 cap applies to the measured size), `sealopt` + phase 7's 2 000
 is 7 411, above 7 000: an input to the gate after phase 6, as recorded after 5c-2.
+
+*The gate after phase 5 with Decision 78's relief* (2026-10-25; the same measured tree, the same
+conditions). Decision 78 gives phase 7's scalar replacement and vectorization a pass 3d of their
+own after `sealopt`, which takes its own budget at phase 7's specification and is not gated here,
+so `sealopt` receives fixes only. Its remaining work is therefore **1 000**, the figure this
+section gives `seaopt` for a pass with "fixes only; no phase work remains in it" (the gate as
+Decision 74 revises it, and "Projected after Decision 74"); the section defines no other figure
+for fixes. Decision 78 (decided further) also waives `sealopt`'s letter condition: the gate as
+written set it even for a pass with fixes only (as for `seaopt`), and `sealopt`, which takes no new
+tables, has 0 free letters.
+
+| Program | Built ≤ 7 000 | + remaining ≤ 9 000 | + 1.5 × remaining ≤ 9 000 | Free letters | Verdict |
+|---------|------|------|------|------|------|
+| `seaopt` (remaining 1 000) | 5 491: yes | 6 491: yes | 6 991: yes | 2 ≥ 2: yes | **pass** |
+| `sealopt` (remaining 1 000, fixes) | 5 411: yes | 5 411 + 1 000 = 6 411: yes | 5 411 + 1 500 = 6 911: yes | 0; waived (Decision 78) | **pass** |
+| `seagen_a64` (remaining 1 200) | 5 022: yes | 6 222: yes | 6 822: yes | none set (L-ac) | **pass** |
+| `seagen_x64` (remaining 1 200) | 5 360: yes | 6 560: yes | 7 160: yes | none set (L-ac) | **pass** |
+
+**The gate after phase 5 passes all four programs**, and phase 5 is complete (§8, rows 5 and 5d).
+The 7 411 > 7 000 projection recorded after 5c-2 no longer applies to `sealopt`: phase 7's lines
+are the new pass's.
 
 ### 2.8 Numbers inside the compiler
 
@@ -2832,7 +2869,7 @@ passes' generated `DATA` blocks are made from (§2.6), and the two change only t
 | `sea.hirl` | 3a `sealoop` | 3a `sealower` | the same with the array constructs made explicit as scalar loops over element accesses (§3.5.9; from sub-phase 4e-0) |
 | `sea.lir1` | 3a `sealower` | 3b | loop-level code over virtual registers (§3.6) |
 | `sea.lir2` | 3b `seaopt` | 3c `sealopt` | the same after T1–T4 and T10 of §5.8 (§3.6; from sub-phase 5c-2, Decision 74; before it `seaopt` wrote `sea.lir`) |
-| `sea.lir` | 3c `sealopt` | 4 | the same after T5–T10 of §5.8 and, from phase 7, scalar replacement and vectorization (§3.6) |
+| `sea.lir` | 3c `sealopt` | 4 | the same after T5–T10 of §5.8 and, from phase 7, scalar replacement and vectorization (§3.6); from phase 7 those two run in a pass 3d of their own after `sealopt` instead, whose file names (and which file pass 4 reads) phase 7's specification settles (Decision 78) |
 
 The pass-1 input stream (§2.2) uses the header records of §3.2; pass 4 writes `sea.s`, which is
 assembly text and has no records. `sea build --emit X` copies `sea.X` unchanged (§2.2), so a
@@ -10460,9 +10497,9 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 2 | **x86_64 target.** `seagen_x64`, the x86_64 runtime for the same subset, `cross*.sh` | the phase-1 tests pass byte-identically on the Linux host |
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()`, and the exact math functions, `ind2sub`, `sub2ind`, `lower`, `str(x)`, `meshgrid`, `setdiff` (Decision 23); built in the serial sub-phases 4a–4h below (Decisions 17–24) | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D; checked by `compare.py --keys` on the Mac and byte identity on the Linux host (Decision 19) |
-| 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9) |
+| 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9). **Complete** (2026-10-25): 5a–5d done, the shapes met on both targets, the gate after phase 5 passed with Decision 78 (§2.7, "Measured after 5d") |
 | 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) | W1 and W5 complete (without figures): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
-| 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
+| 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
 | 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all five workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
@@ -10490,7 +10527,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 5b | **Pass 4: allocator and code selection, both targets** (§4.9.2; `seaopt` unchanged, so every `sea.lir` is as in phase 4). Work packages, each owning its files: **WP-RA** `passes/lib/ralloc.bas`, its section of `passes/lib/API.md`, its cases in `tests/lib_check.sh`, `LIBS_CANON` and the module list of `Makefile` (§2.6.3); **WP-A64** `passes/seagen_a64/*` (its `build.list` gains `ralloc`; `D` widened, no new array letter, L-ac); **WP-X64** `passes/seagen_x64/*` (the same, and L-ah's forms); **T-RA** `tests/passes/ra5_*.lir` and their `.out` (§6.2); T-RA reports its `tests/CORPUS.md` rows to 5c-1's T1, which alone edits that file. WP-A64 and WP-X64 start from WP-RA's interface, frozen first | every test of the corpus passes unchanged on both targets (`make test`, `make cross`), and so do the `ra5_*` tests; `make check-limits` measured. **Done** (2026-10-24): `make test` and `make cross` pass on the integrated tree, sizes in §2.7 ("Measured after 5b and 5c-1") |
 | 5c-1 | **`seaopt`: analysis and the local transformations** T1 (checks and overflow), T2 (division), T3 (value numbering), T4 (if-conversion) and T10 (clean-up, renumbering) of §5.8; may run in parallel with 5b (disjoint files). Work packages: **WP-OPT** `passes/seaopt/*` (`R` widened, at most the one new letter `W`, L-ad); **T1** `tests/programs/opt_*`, `tests/errors/r_opt_*` and their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump5_cases.py`, 5c-1's `opt5_*` goldens (§6.2's list) and the `.lir` goldens that T1–T4 and T10 change, re-derived (L-ak), in `tests/passes/` (T2 and 5b's T-RA report their CORPUS rows to T1) | the 5c-1 tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test` and `make cross` pass. **Done** (2026-10-24): `make test` (programs 1 292, stage 589, lib 207) and `make cross` (555 cases) pass; `seaopt` 5 316 built lines, the gate arithmetic and the decision it calls for in §2.7 |
 | 5c-2 | **Pass 3c `sealopt`: the loop transformations** T5 (promotion), T6 (copy-on-write versioning), T7 (strength reduction), T8 (hoisting, constant commoning) and T9 (unswitching), with T10, of §5.8, in a new pass (Decision 74), and the liveness rule of §4.9.2 (Decision 75); after 5c-1. Work packages, each owning its files; **WP-LIRRW** first and alone: `passes/lib/lirrw.bas` (new: `seaopt`'s reader, validator, writer and T10 moved out unchanged as a shared main-program part with its contract of names and entry lines, L-bd, L-bi), its section of `passes/lib/API.md`, `LIBS_CANON`, the module list and the overlap check of `Makefile` (§2.6.3), `passes/seaopt/*` and its `build.list`; proved neutral by byte-identical `sea.lir` and diagnostics over the corpus (as L-p) and `make test`; then, as its own step, L-bn's reading of T10 in `lirrw` (an instruction's read of its own destination does not count) and L-bq's condition of T4 in `passes/seaopt/*`, with the `.lir` goldens it changes listed for T2 to re-derive from §5.8. Then in parallel: **WP-LOPT** `passes/sealopt/*` and its `build.list` (prefix `lo_`, own lines 100 – 59 999, L-bc; T6's and T9's renaming of the copies' local registers, L-bl, and T9's placement into the copies, L-bm); **WP-PIPE** `driver/sea` (`seaopt` writes `sea.lir2`, then `sealopt`; `--emit lir2`; the usage text), `tests/driver_check.sh` (`--emit lir2`, the usage text, a missing `sealopt` executable), `tests/stage.sh` (the pairs `seaopt lir1 lir2` and `sealopt lir2 lir`, the skips of §6.2), `tests/run.sh` (`--emit lir2`), `tests/cross_pack.sh` and `tests/cross_run.sh` if they need it, `tools/seaval.bas` (the format `lir2`, checked as `lir1`), `tools/passlines.sh` (the pass list), `Makefile` (the program `sealopt`, its installation), and the lists of passes, `--emit` kinds, modules and `seaval` formats in `sea/CLAUDE.md`; **WP-RA2** (Decision 75) `passes/lib/ralloc.bas`, its section of `passes/lib/API.md` (after WP-LIRRW), its cases in `tests/lib_check.sh`, the `ra_else` calls in `passes/seagen_a64/*` and `passes/seagen_x64/*`, and the `tests/passes/ra5_live_*` tests of §6.2; **T1** `tests/programs/opt_*`, `tests/errors/r_opt_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump5_cases.py`, `tests/passes/`: every `NAME.lir` with a `NAME.lir1` renamed to `NAME.lir2` and, for the tests with a `NAME.sea`, its new `NAME.lir` derived (`lir4_seaopt` gets none; `gen_arith` and `ra5_*` are pass-4 tests and stay, L-bj), 5c-2's `opt5_*` goldens (`.lir1`, `.lir2`, `.lir`) (L-ak; T2 reports its CORPUS rows to T1). WP-LOPT and WP-PIPE work against T2's goldens through `stage.sh` | `seaopt`'s extraction proved neutral; the 5c-2 tests of §6.2 pass on both targets, `opt5_lcg.lir` equal to §5.8's W5 loop; every stage pair holds; the `ra5_*` tests pass under Decision 75; every earlier test passes; `make test` and `make cross` pass; `make check-limits` measured and recorded in §2.7. **Done** (2026-10-25): `make test` (driver 112, check_data 114, lib_check 220, arith 94, stage 634, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596 on the Linux host) pass; `sealopt` 5 411 built lines and `seaopt` 5 491, sizes and letters in §2.7 ("Measured after 5c-2"); lead decisions L-br–L-bv, the last from the independent review round of the working tree, which found one T5 miscompile (L-bv, (1)) and fixed it with the six regression tests `opt_destrew_*`; the implementers' readings are recorded after L-bv |
-| 5d | **Shapes, benchmarks, gate; close-out** (after 5b and 5c-2, under Decision 75's liveness rule; the gate as L-be revises it). Work packages: **WP-SHAPE** `tests/shape.sh`, `tests/shape/*.shape` (from §5.2's targets, by hand; each loop identified by its properties, §6.2, L-ar), the `Makefile` group `test-shape` in `make test` and its entry in the `make test` group list of `sea/CLAUDE.md`; **WP-BENCH** `bench/micro/*`, `bench/micro.sh`, `bench/results/micro-*.tsv` (§5.9), the phase-4 compiler built in a scratch worktree; then the gate after phase 5 (§2.7) | `make test-shape` passes for both targets (the phase's "done when", row 5); the micro-benchmarks are recorded in §5.9 for both targets with their machines; `make test` and `make cross` pass; the sizes and letters are recorded in §2.7 and the gate applied, a failing program getting a relief agreed with the user before phase 6's code. **Done** (2026-10-25), with the gate's one open item below: `make test-shape` passes on both targets, W5 `lcg_fill`'s fast copy (`L2_3`) 20 instructions on arm64 and 23 on x86_64, W4's interior `j` copy (`L1_81`) 24 and 27, no frame access, no call, cold branches 1 and 0, exactly §5.2's targets (§5.2, "Measured after 5d"); reaching x86_64 needed the `imulh` fix of `seagen_x64` (operand b always in a register, as §4.9.2's template says) and Decisions 76 (a step that is a `mov` of an `li` register is a loop-closing constant, both targets) and 77 (an x86_64 non-commuting two-address destination avoids its second operand's register, `ra_avoid`); the micro-benchmarks are in §5.9 (Apple M2 Pro and Intel i7-4790: `sor` phase 5 within 1 % of C on both, 5.43 and 6.71 times faster than phase 4; `lcg` 1.19 and 1.35 times C, 2.01 and 3.46 times faster than phase 4); `make test` (driver 112, check_data 114, lib_check 222, arith 94, stage 634, shape 4, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596) pass; the gate after phase 5 (§2.7, "Measured after 5d"): `seaopt`, `seagen_a64` and `seagen_x64` pass, **`sealopt` fails** on its letters (0 free numeric array letters, at least 2 required; its lines pass), so **a relief for `sealopt` is to be specified and agreed with the user before phase 6's code**, and phase 5 is closed when it is |
+| 5d | **Shapes, benchmarks, gate; close-out** (after 5b and 5c-2, under Decision 75's liveness rule; the gate as L-be revises it). Work packages: **WP-SHAPE** `tests/shape.sh`, `tests/shape/*.shape` (from §5.2's targets, by hand; each loop identified by its properties, §6.2, L-ar), the `Makefile` group `test-shape` in `make test` and its entry in the `make test` group list of `sea/CLAUDE.md`; **WP-BENCH** `bench/micro/*`, `bench/micro.sh`, `bench/results/micro-*.tsv` (§5.9), the phase-4 compiler built in a scratch worktree; then the gate after phase 5 (§2.7) | `make test-shape` passes for both targets (the phase's "done when", row 5); the micro-benchmarks are recorded in §5.9 for both targets with their machines; `make test` and `make cross` pass; the sizes and letters are recorded in §2.7 and the gate applied, a failing program getting a relief agreed with the user before phase 6's code. **Done** (2026-10-25), with the gate's one open item below: `make test-shape` passes on both targets, W5 `lcg_fill`'s fast copy (`L2_3`) 20 instructions on arm64 and 23 on x86_64, W4's interior `j` copy (`L1_81`) 24 and 27, no frame access, no call, cold branches 1 and 0, exactly §5.2's targets (§5.2, "Measured after 5d"); reaching x86_64 needed the `imulh` fix of `seagen_x64` (operand b always in a register, as §4.9.2's template says) and Decisions 76 (a step that is a `mov` of an `li` register is a loop-closing constant, both targets) and 77 (an x86_64 non-commuting two-address destination avoids its second operand's register, `ra_avoid`); the micro-benchmarks are in §5.9 (Apple M2 Pro and Intel i7-4790: `sor` phase 5 within 1 % of C on both, 5.43 and 6.71 times faster than phase 4; `lcg` 1.19 and 1.35 times C, 2.01 and 3.46 times faster than phase 4); `make test` (driver 112, check_data 114, lib_check 222, arith 94, stage 634, shape 4, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596) pass; the gate after phase 5 (§2.7, "Measured after 5d"): `seaopt`, `seagen_a64` and `seagen_x64` pass, **`sealopt` fails** on its letters (0 free numeric array letters, at least 2 required; its lines pass), so **a relief for `sealopt` is to be specified and agreed with the user before phase 6's code**, and phase 5 is closed when it is. **Relief agreed and gate passed** (2026-10-25): Decision 78, phase 7's scalar replacement and vectorization in a pass 3d of their own after `sealopt`, which receives fixes only, and its letter condition waived; the gate re-applied (§2.7, "The gate after phase 5 with Decision 78's relief") passes all four programs (`sealopt` 6 411 and 6 911 ≤ 9 000 with 1 000 remaining), so phase 5 is complete |
 
 ## 9. Decisions (agreed)
 
@@ -11250,7 +11287,9 @@ living in its existing block tables; `sealoop` at most one, leaving at least 2) 
     phase 7. **Decided: (a)** (the user, 2026-10-24); (a) decides with the measured size (the
     projection spans 4 404–5 684); (b) may create a pass that turns out unnecessary. Affects §2.7,
     §8. *Settled by Decision 74* (2026-10-24): phase 7's scalar replacement and vectorization go
-    into pass 3c, `sealopt`, and the gate after phase 5 is revised (L-be, §2.7).
+    into pass 3c, `sealopt`, and the gate after phase 5 is revised (L-be, §2.7). *Revised by
+    Decision 78* (2026-10-25): phase 7's scalar replacement and vectorization get a pass of their own
+    after `sealopt`.
 72. **Optimization against the capacity limits.** Options: (a) **a transformation whose result would
     exceed a LIR limit of the function is skipped, so optimization never causes `program too
     large`**; (b) the limit is reported as for any other pass. **Decided: (a)** (the user,
@@ -11278,6 +11317,8 @@ living in its existing block tables; `sealoop` at most one, leaving at least 2) 
     leaves `seaopt` with no further phase work; (b) costs a sub-phase and still leaves `seaopt` too
     full for phase 7; (c) gives up the stress margin the gates exist for. Affects §0, §2 (the pass
     table), §2.2, §2.6.3, §2.7, §2.10, §3.6.5, §5.8, §6.2, §8; lead decisions L-bc–L-be, L-bi–L-bk, L-bl, L-bm, L-bp.
+    *Revised by Decision 78* (2026-10-25, at the gate after phase 5): phase 7's scalar replacement
+    and vectorization get a pass of their own after `sealopt` instead of going into `sealopt`.
 75. **Which intervals the allocator extends over a loop.** Options: (a) **only a register that may
     be live at the loop's top: read inside the loop, or after it, without a covering write earlier
     in the same iteration, or after the loop (§4.9.2, "Positions and intervals"), computed in `ralloc`'s
@@ -11316,6 +11357,48 @@ living in its existing block tables; `sealoop` at most one, leaving at least 2) 
     more, since b's register is still taken when it is the only one; (b) would break LANGUAGE.md
     §6.8's exactness. Affects §0, §4.9.2 ("The scan"), §5.2, `passes/lib/API.md` (`ra_avoid`),
     `passes/lib/ralloc.bas`, `passes/seagen_x64/*`.
+78. **Where phase 7's vectorizer lives, after the gate after phase 5** (taken at §2.7, "Measured
+    after 5d": `sealopt` at 5 411 built lines passes the gate's three line conditions but has 0 free
+    numeric array letters where the gate requires at least 2, its scratch tables having taken `S`
+    and `V`, the 2 letters L-bp left it; and `sealopt` + phase 7's 2 000 is 7 411, above 7 000).
+    Options: (a) **phase 7's vectorizer gets a pass of its own, a new pass 3d after `sealopt`,
+    reading and writing the `sea.lir` format and sharing `seaopt`'s and `sealopt`'s reader,
+    validator, writer and T10 through the shared main-program part `passes/lib/lirrw.bas` (L-bi),
+    as `sealopt` does; `sealopt` stays as built**; (b) a compaction of `sealopt`'s tables with no
+    change of behaviour, freeing 2 letters; (c) waive `sealopt`'s letter condition. **Decided: (a)**
+    (the user, 2026-10-25); (a) takes the vectorizer's tables and lines out of `sealopt`, which
+    addresses both the letter shortfall and the 7 411 > 7 000 projection, and leaves `sealopt` as
+    built and tested; (b) costs a sub-phase and leaves `sealopt` + 2 000 = 7 411 > 7 000 for phase
+    7; (c) the same, and gives up the headroom the letter condition keeps. Settled by phase 7's
+    specification, not here: the pass's name, its input and output file names (and so which file
+    is the final LIR that pass 4 reads and `--emit lir` dumps), its place in the driver's sequence
+    and its `--emit` kind, its `SUB` prefix and line range, its budget at the gates (whether phase 7's scalar replacement,
+    which Decision 74 put into `sealopt` together with the vectorization, stays there or joins the
+    new pass was first left to it too, and is decided further below: it joins the new pass). No contract file changes with this decision
+    (`include/*.inc`, `include/passes.txt`), and no code. Phase 7's specification starts from the
+    room L-bp leaves a pass that loads `lirrw`: exactly 2 free numeric array letters (`S V`), the
+    free columns of `R`, the scratch `W` between entries, and the unreserved string arrays and
+    scalars. Affects §2 (the pass table), §2.7 (the gate after phase 5 re-applied, "Measured after
+    5d"), §3.6 (the file table), §8 (rows 5d and 7), and the forward notes on Decisions 71 and 74
+    and L-bp. *Decided further* (the user, 2026-10-25, after the gate was re-applied with (a): the
+    gate as written still asked `sealopt` for 2 free letters, which it sets even for a pass with
+    fixes only, and phase 7's scalar replacement had no home yet): options (a) **waive the letter
+    condition for `sealopt`, and move phase 7's scalar replacement to the new pass 3d too, so
+    `sealopt` receives fixes only**; (b) waive the condition, scalar replacement stays in
+    `sealopt`; (c) keep the condition and compact `sealopt` to free 2 letters. **Decided: (a)**;
+    `sealopt` then takes no new tables, so its letters guard nothing, and phase 7's LIR work
+    (scalar replacement and vectorization) is specified and sized together in one pass; (b) would
+    put new tables into a pass with 0 free letters; (c) costs a sub-phase for letters that only
+    fixes would use. With it the gate after phase 5 passes all four programs (§2.7, "The gate after
+    phase 5 with Decision 78's relief"), and phase 5 is complete (§8).
+79. **What is an alpha, and what is GA.** Options: (a) an alpha release after phase 6 (W1 and W5
+    end to end) plus release work (license, README, release notes, a version suffix, tags); (b)
+    an alpha after phase 8; (c) **version-based: every Sea version 0.y.z is an alpha, and 1.0.0
+    is GA, given when v1 is done (§1.2: all five workloads, phase 10); no git tag or release
+    procedure is required**. **Decided: (c)** (the user, 2026-10-25); (c) needs no milestone or
+    release step of its own, and the driver's `sea 0.1.0` (§2.2) already denotes an alpha; (a)
+    and (b) add a release step and a version suffix to maintain. Affects §1.2 (one sentence); no
+    row of §8, no contract file, no code.
 
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
