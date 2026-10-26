@@ -83,7 +83,13 @@ frame access); micro-benchmarks (§5.9): `sor` ≈ C on both targets, `lcg` 1.19
 Decisions 76–78): the gate after phase 5 passed with Decision 78 (phase 7's scalar replacement
 and vectorization get their own pass 3d after `sealopt`, sharing `lirrw`, name and files at phase
 7's spec; `sealopt` takes fixes only, its letter condition waived; DESIGN.md §2.7 "Measured after
-5d"). **Next:** **phase 6** (functions and output). Versions 0.y.z are alpha; 1.0.0 = v1
+5d"). **Phase 6** (functions and output) **is specified** (6a, agreed 2026-10-26: Decisions 80–93,
+lead decisions L-bw–L-cx; DESIGN.md §2.11, §2.7, §6.2, §6.3, §8): named and default arguments,
+§8.6 inlining (`sealoop` L20, `sealower` R31/R32), elemental functions (L19), `format`, `print`,
+`make_dir`, `f64 %`, `write_json` (rule 39, runtime entries 23–38), the W1 and W5 ports without
+figures; `seacheck` gated as `sealower` is (Decision 82). **Next:** **6b** (calls and output;
+WP-CONTRACT first); 6b-0, the conditional `seacheck` compaction, only if the measurement after 6c
+triggers it (Decision 87). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first

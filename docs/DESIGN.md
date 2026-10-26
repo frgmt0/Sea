@@ -63,7 +63,9 @@ the user's agreement. Phase 0 (§8) did:
    `lirrw`, their name, files and `--emit` kind settled by phase 7's specification; `sealopt`
    receives fixes only and its letter condition is waived), with which the gate passes all four
    programs (§2.7, "The gate after phase 5 with Decision 78's relief"), so phase 5 is complete;
-   next is phase 6 (functions and output). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
+   phase 6 (functions and output) is specified (sub-phase 6a, §2.11; Decisions 80–93, agreed
+   2026-10-26); next is 6b (6b-0, the conditional `seacheck` compaction, only if the measurement
+   after 6c triggers it, Decisions 82 and 87). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
    §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -484,6 +486,28 @@ register counts of §5.2 (28 and 32; 14 and 16) become the allocatable counts of
 `seaopt` has three free (`S V W`, L-ad); LANGUAGE.md §5.4 said the compiler "hoists the others out
 of loops", which Decision 61 does not do (a check that cannot be proven stays in place), so its
 sentence now says so, the error position and order exactly preserved (no rule of LANGUAGE.md changes).
+
+**Decided for phase 6 (agreed 2026-10-26).** Phase 6 (functions and output, §8 row 6)
+is specified as sub-phase 6a in §2.11 (scope, the phase rule in phase 6, the front end and pass 2b,
+`sealoop`'s rewrites L19 and L20, `sealower`'s rule 39 and refinements R31 and R32, the runtime
+entries 23–38, the ports), §2.7 ("Projected for phase 6", "The measurement after 6c", "The gate
+after phase 6"), §6.2 ("Phase-6 tests"), §6.3 ("Phase-6 acceptance") and §8 (rows 6a–6e). Its open
+questions are Decisions 80–93 of §9, which the user decided on 2026-10-26, each as option (a); its
+smaller readings are the lead decisions L-bw – L-cx, agreed with it. The text was revised after two independent reviews (2026-10-25), which
+added Decisions 90–93. Contract changes (made in 6b by WP-CONTRACT, each with its table): `rt.inc`
+gains the entries 23–38 (`SEA_ENT_COUNT` 38) and the `entries` capacities of `sealower` (22),
+`seagen_a64` and `seagen_x64` (29) rise to 64; `passes.txt`'s `fkind` gains the word `inl`, and
+`sea.res`'s `rfn` field `el` the value 2 (no record format changes); `errors.inc` and `limits.inc`
+are unchanged. LANGUAGE.md gains clarifying sentences where it was silent or ambiguous: §8.1 (a
+`ref` parameter has no default and is given positionally; arguments are evaluated in source order,
+named ones included), §8.5 (an elemental function may have no result, Decision 92; what "in or
+through" means for recursion), §8.6 (what a call site and a statement are, for the inlining
+guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creates one directory) and
+§11.4 (the JSON escapes, empty objects and matrices, `-0`). The size projection finds `seacheck`
+above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
+allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
+`sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Next: sub-phase 6b (6b-0, the conditional `seacheck` compaction, runs only if the measurement after 6c triggers it, Decisions 82 and 87).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -962,11 +986,11 @@ to this table. A code is never reused or renumbered; a new message is appended i
 | `stmt` | the first token of the statement |
 | `here` | pass 1 (which enforces `nodes`, `strings`, `nesting`, `parameters`, `results` and `fields`, §2.7): the token whose addition exceeds the limit (the token that opens the 65th nesting level, starts the 65th parameter, result type or field); passes 2a (`seaname`: `symbols`, the types of signatures, and while reading `nodes`, `strings` and the `constants` of literals; `seacheck`: the other types and the `constants` of the values of constants), 2b and 3a: the position of the record being read, created or lowered when the limit is exceeded, if it has a `pos` field anywhere among its fields (a node, or a `cn`, `fn` or `loc` record; for the `symbols` limit, the position of the declaration being entered: an item (`fn`, `const`, `struct`) at its keyword node, a local at its name, a loop variable at its `npos`, a parameter at its `param` node; for the `constants` limit, a literal at its node and a constant's value at its item; for the `strings` limit of a constant (from 4g-1, lead decision L-f: a `str` value of more than `SEA_LIM_LINE_BYTES` bytes computed while `seaname` evaluates a constant, its value or a part of its expression), that constant's item; for a type of a signature, the `fn` item); for a record without one (a type record, §3.5.1), the `pos` of the next record that has one, the look-ahead stopping at the next `fn` or `cn` record (whose `pos` is then used) and at `#end` (then line 1, column 1 of the program file); passes 3b and 4: the position of the `func` record (§3.6.3) of the function being processed |
 | `expr` | the expression node at fault: for `type mismatch`, `condition must be bool`, `index must be i64`, `integer constant not exact in f64`, `not a constant expression`, `dim must be 0 or 1` (262), `cannot iterate over`, the format errors and `argument for ref parameter …` the expression itself (the argument, condition, index, iterable, constant expression; for a named option `dim:` or `desc:` its value expression, not the name; for the arms of an `if` expression whose types differ, the `else` arm, with `expected` the then-arm's type and `found` the else-arm's); for `integer overflow` and `integer division by zero` in a constant or, from 4f, in a `dim:` value (codes 260, 261) the operator node (`bin`, `neg`) whose evaluation fails, the innermost first in evaluation order; for the operand errors (`cannot combine…`, `shape mismatch`, `vector @ vector…`, `operator … cannot be applied…`) the operator node (`bin`, `neg`, `not`, or the `call` of an elemental function or `where`); for `shape mismatch` of a value stored into a fixed-size type (initialisation, assignment, argument passing, return: `let a: f64[4] = [1.0, 2.0, 3.0]`), the value expression, and the text names the target's shape first (`shape mismatch: 4 vs 3`); for `type cannot be inferred: add a type annotation` (252, from 4e) the `[]` itself (its `arr` node), also in a binding without a type annotation (`let x = []` reports at the `[`) |
-| `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
+| `name` `slit` `init` `match` `arm` `ref` `call` `narg` `dot` `index` `row` `struct` `fn` `param` `str` `break` `continue` | that node of `sea.ast` (§3.4): `init` the repeated (second) or unknown initializer; `arm` the arm with the repeated pattern; `ref` the first `ref` argument, in source order, whose root another argument shares (`ref argument aliases…`) or the offending `ref` argument, and for 227 at a `ref` parameter's default (from phase 6, L-bw) the default expression; `row` the first row whose length differs or that mixes vectors and matrices; `str` the format string literal; `call` for `elemental function cannot be recursive` the first call, in source order, on a cycle of calls through an elemental function |
 | `item` | the `const`, `struct` or `fn` node of the top-level item |
 | `binding` | the node declaring the name: `pname`, `param`, the `for` node (for a loop variable every error is reported at the `for` node; the AST `npos` field is used only for the `loc` record's position, §3.4, §3.5.4), a struct's `field`, or the `const`/`struct`/`fn` item; for `redefinition of '%s'` the later declaration |
 | `fieldname` | the `field` or `init` node of the reserved name |
-| `effect` | the `param` node of a `ref` parameter, or the `call` that has effects |
+| `effect` | the `param` node of a `ref` parameter of an elemental function (`seaname`'s signature step), or, inside an elemental function's body, the `call` of a function with effects (from phase 6 the first in source order, found by `seaname`'s call pre-pass, L-cq) |
 | `type` | the `type` node; for a literal, its `slit` (`unknown struct type`) or `array` (`arrays cannot hold %s`) node |
 | `target` | the assignment target (the position of its text) |
 | `results` | the `return` node (also for `return f(…)` of a multiple-result call in a function without results), the `call` bound to a single name (`let y = two()`), or the `ptuple`/`tasg` node whose count differs; the texts read `expected` the number of the call's results (or the function's, at a `return`) and `found` the number of names (or values) |
@@ -1362,6 +1386,9 @@ and the tests of the removed words, and phase 6 and later remove these:
 | a call of `solve`, `lu`, `chol`, `rcond` or `eig_sym` | its name | phase 8 |
 | a call of `figure`, `panel`, `twin_y`, `plot`, `bar`, `barh`, `contour`, `image`, `xline`, `legend`, `title`, `xlabel`, `ylabel`, `xlim`, `ylim`, `x_ticks`, `y_ticks`, `grid`, `axis_equal`, `y_reverse` or `save_svg` | its name | phase 9 |
 
+Phase 6 removes its rows in the steps of §2.11.2 (6b, 6c, 6d; agreed 2026-10-26), whose "Readings fixed by
+phase 6" fix the front end's reading of named and default arguments, elemental functions and the
+library calls of phase 6.
 Every other predeclared function of LANGUAGE.md Appendix C is implemented after phase 4. The
 operand errors of `@` (LANGUAGE.md §6.2) are reported as in v1 from 4d on, before the `@` row
 is considered: a scalar operand or a `bool` array operand is `operator '@' cannot be applied to %s and %s`
@@ -2767,6 +2794,125 @@ tables, has 0 free letters.
 The 7 411 > 7 000 projection recorded after 5c-2 no longer applies to `sealopt`: phase 7's lines
 are the new pass's.
 
+**Projected for phase 6** (the phase-6 specification, §2.11, agreed 2026-10-26 with Decisions 80–93,
+revised after two independent reviews of the text; estimates of own lines from the
+sizes "Measured after 5d", ±30 % on each increment). Where the code goes (Decision 81 for the front
+end, Decision 91 for the default values, Decisions 83, 84 and 92 for pass 3a):
+
+* `seaname`: the call pre-pass (the call graph from the resolved callees, the effects fixpoint by a
+  worklist, the cycles by an explicit stack, the §8.6 class with its site count, loop test and
+  statement count by Appendix A statements) 200–360; the signature checks of elemental functions and
+  defaults (228 at a `ref` parameter, 253 with no result allowed, 236, 227, the names of a default)
+  40–80; 228 and 232 through `rerr` 30–60; `rfn`'s `el` 2 and the phase-rule rows 10–30; fixes
+  50–110: **330–640** (6b 280–540, 6c 50–100).
+* `seacheck`: named and default arguments (matching, 224–226, the copied defaults, the `seq` of
+  "Evaluation order") 150–280; the default values checked with the `const` items (Decision 91: the
+  annotated-constant check reused, the constant outcomes, 237, 201, 260, 261) 40–80; elemental calls
+  (conversions, broadcast types, 202 and 217 at the `call`, the instance types, no-result calls)
+  120–220; `format`, `print`, `make_dir`, `write_json` (with 243), `f64 %`, `ind2sub` with an array
+  `r`, the phase-rule rows 80–160; the `fn` kinds 5–10; fixes 60–120: **455–870** (6b 270–520, 6c
+  130–240, 6d 30–60, fixes spread).
+* `seaexpand`: step 3 and reachability through instances 60–120; step 4 (emit by type with `str`
+  values and arrays, the `.j` locals, `dyn` under `jvec`/`jmat`, the guard of an empty matrix of
+  structs) 170–320; G12 for `inst` and `emap` 30–60; fixes 40–90: **300–590** (6c 110–220, 6d
+  190–370).
+* `sealoop`: the reader for `inst`, `emap`, `j*` and the kinds `elem`, `inl` with the `fid`
+  renumbering 30–60; L20 (L18 generalized: own positions, `ref` arguments, `tret`, aggregate results,
+  the drop of `elem` and `inl` functions) 150–300; L19 (rule 22's nest reused, k results including
+  k = 0, the discarded results, L11's statement forms) 180–350; `ind2sub` with an array `r` 20–40; the
+  `j*` statements and their validation 30–60; `f64 %` in L7 and the `seq` cases of R11 20–50; fixes
+  60–150: **490–1 010** (6b 200–400, 6c 230–480, 6d 60–130).
+* `sealower`: rule 39's generic path from the `entries` block and its mapping table 120–200; the
+  phase-6 nodes through it with their validation and the second `ON … GOTO` line 60–120; R31 40–90;
+  R32 50–110; fixes 50–120; the 16 `DATA` lines of the new entries: **336–656** (6b 266–520, 6c
+  10–30, 6d 60–106). Raising its `entries` capacity edits two existing lines.
+* `seaopt`, `sealopt`, `seagen_a64`, `seagen_x64`: the 16 `DATA` lines (each seagen's capacity raise
+  edits two existing lines). `seaparse`: none (the whole grammar since phase 1; Decision 93 keeps it).
+* The runtimes (no Baysick limit): per target `rt_file.s` (the JSON emitter and `make_dir`) 450–800,
+  `FORMAT` and `PRINT` 60–120, `FMOD` (the C library's `fmod` and the adjustment) 30–60, the JSON close
+  in `rt_err.s` 20–40.
+
+Remaining after phase 6 (the upper ends of §2.7's re-estimate and of the gates already agreed):
+`seacheck` phases 8 and 9, 850 (150–250 and 300–600, §2.7 "Re-estimate for v1"); `seaname` 100
+(handle types in signatures, phases 8–9; an estimate); `seaexpand` none; `sealoop` phase 7's fusion
+1 500 (`sealoop`'s row of the pass-3a split table), or fixes 1 000 if the gate below gives fusion a
+pass of its own (which then also takes L19, Decision 88); `sealower` 370 (phases 7–9, table-driven,
+Decision 52); `seaopt` and `sealopt` 1 000 (fixes, Decision 78); `seagen_a64`, `seagen_x64` 1 200
+(phases 7 and 8).
+
+| Program | After 5d (measured) | Phase 6 | After phase 6 | ≤ 7 000 built | Remaining | Projected v1 (≤ 9 000) | Stress (+ remaining × 1.5) | Free numeric letters |
+|---------|------:|------:|------:|:---:|------:|------:|------:|------|
+| `seaname` | 5 281 | 330–640 | 5 611–5 921 | yes | 100 | 5 711–6 021 | 5 761–6 071 | to be counted at the gate; the pre-pass needs 1–2 (call-graph rows, worklist) |
+| `seacheck` | 6 426 | 455–870 | 6 881–7 296 | **no at the upper end** (296 over); not a condition (Decision 82) | 850 | 7 731–8 146 | 8 156–8 571 | 14 (`A B D F G I L P Q R S U V Z`); phase 6 needs 0–1 |
+| `seacheck` with the reserve compaction (C2, C3, C5: −150 to −300) | 6 126–6 276 | 455–870 | 6 581–7 146 | no at the upper end (146 over) | 850 | 7 431–7 996 | 7 856–8 421 | as above |
+| `seaexpand` | 4 130 | 300–590 | 4 430–4 720 | yes | none | 4 430–4 720 | — | — |
+| `sealoop` | 5 829 | 490–1 010 | 6 319–6 839 | yes (161 at the upper end) | 1 500 (fusion) | 7 819–8 339 | 8 569–**9 089** | 3 (`B X Y`); phase 6 needs 0–1 (L19's result list in the existing inline tables) |
+| `sealoop`, fusion in its own pass with L19 (Decision 88) | 5 829 | 490–1 010 | 6 319–6 839 | yes | 1 000 (fixes) | 7 319–7 839 | 7 819–8 339 | as above |
+| `sealower` | 6 473 | 336–656 | 6 809–7 129 | not a condition after 4h (Decision 50) | 370 | 7 179–7 499 | 7 364–7 684 | 3 (`C S X`); phase 6 needs none (rule 39 reads the `entries` table it loads) |
+| `seaopt` | 5 491 | 16 | 5 507 | yes | 1 000 | 6 507 | 7 007 | 2 (`S V`) |
+| `sealopt` | 5 411 | 16 | 5 427 | yes | 1 000 | 6 427 | 6 927 | 0 (waived, Decision 78) |
+| `seagen_a64` | 5 022 | 16 | 5 038 | yes | 1 200 | 6 238 | 6 838 | 0 (L-ac) |
+| `seagen_x64` | 5 360 | 16 | 5 376 | yes | 1 200 | 6 576 | 7 176 | 0 (L-ac) |
+
+Three readings. (1) **`seacheck` passes 7 000 built lines at the upper end of its increment, and no
+behaviour-neutral compaction closes the gap.** Its earlier increments landed inside their estimates
+(4g 594 against 600–950 for 4g and 4h), so the upper end is a real possibility. The patterns that
+freed 690 lines in `sealower` at 4h-0 mostly do not apply: `seacheck` is written in the `SUB`/`CALL`
+style (124 `SUB`s, 709 `CALL`s, 9 `GOSUB`s, no `DEF`), so C1 (fall-through entries and tail calls of
+`GOSUB` code), C4 (multi-line `DEF` text helpers) and C6 (one shared child-evaluation `GOSUB` loop)
+have nothing to work on; C2 (merging consecutive `REM` lines up to 250 bytes, every comment's text
+kept) is measured on its 4 979 own lines (598 `REM` lines, 319 of them following another) at 219 lines
+at most; C3 and C5 (lookups and validation predicates) where they apply 0–80; so 150–300 in all,
+which still leaves the upper end at 7 146. But `seacheck`'s remaining work is the smallest of the
+front end (850), and with it the pass passes both 9 000 conditions even at the upper end with no
+compaction (8 146 and 8 571). Decision 82 therefore treats `seacheck` as Decision 50
+treats `sealower`: its 7 000 condition replaced by the two 9 000 conditions, with the C2/C3/C5
+compaction as the reserve the measurement after 6c calls for; Decision 81 already moves the
+whole-program analyses (about 300–500 lines) to `seaname`, which has the room. (2) **`sealoop` fits
+phase 6 but not phase 6 and phase 7's fusion at the stress view** (9 089 > 9 000 at the upper end):
+this is exactly the question Decision 56 left to the gate after phase 6 (the fusion seam), and the
+gate below decides it; because `sealoop`'s increments have been erratic (§2.7, "Projected for 4h":
+4f 271 against 600–900, 4g-2 774 against 315–510, misses of up to +52 % over the upper end), the
+measurement after 6c below checks it before 6d's code and may bring the decision forward. A fusion
+pass ahead of `sealoop` would read `sea.hir`, where elemental applications are still `emap` records
+(L19 runs in `sealoop`), and LANGUAGE.md §8.5 requires them to fuse with the element-wise expression
+around them; so such a pass takes L19 with it (§9, Decision 88), and `sealoop`'s remaining is then
+1 000 of fixes (the table's second `sealoop` row; L19's 180–350 lines leave it in phase 7, not
+counted). (3) `sealower` passes Decision 50's gate after phase 6 at every end (7 129 + 370 = 7 499,
+7 129 + 555 = 7 684 ≤ 9 000), crossing 7 000 built lines only at the upper end, which Decision 50's
+gates after 4h no longer limit; its longest line is at the 255-byte limit (no line of it can grow, as
+before, so the new node kinds take a second `ON` line). The other passes change by their `DATA`
+lines only.
+
+**The measurement after 6c** (Decision 87). After 6c, `make check-limits` and the free letters of
+`seacheck` and `sealoop` are recorded here, with each one's measured 6b and 6c increments against
+their estimates. `seacheck` passes when built + 120 (the upper end of its 6d part, 60, plus 60 of
+fixes) + 1 275 (its remaining × 1.5) ≤ 9 000 (Decision 82 (a)); if it fails, the compaction of
+reading (1) (C2, C3, C5) is its relief, agreed with the user before 6d's code. `sealoop` passes when
+built + 190 (130 plus 60) ≤ 7 000 and its measured 6b + 6c increment is within 1.5 times the upper end
+of its estimate (1 320); if it fails either, the reliefs are, in this order, the fusion seam decided
+then instead of at the gate (Decision 88 (a)'s condition applied early: fusion and L19 in a pass of
+their own from phase 7, `sealoop` gated with 1 000 of fixes), or a compaction of `sealoop` by §2.7's
+patterns, agreed with the user before 6d's code.
+
+**The gate after phase 6** (Decision 88; Decision 50 for `sealower`, Decision 82 for `seacheck`,
+Decision 56 for `sealoop`'s fusion seam). After 6e, `make check-limits` (lines, `FOR`s,
+string-constant bytes, 255-byte lines) and the free numeric array letters of the main program of
+every pass are measured and recorded here. Each program passes in Decision 71's form with its
+remaining work above (built ≤ 7 000, built + remaining ≤ 9 000, built + 1.5 × remaining ≤ 9 000),
+with these specifics: `seacheck` by Decision 82 (a) (built + 850 ≤ 9 000 and built + 1 275 ≤ 9 000,
+no 7 000 condition) with at least 2 free letters; `seaname` (100) with at least 2 free letters;
+`seaexpand` built ≤ 7 000; `sealower` by Decision 50 (built + 370 ≤ 9 000 and built + 555 ≤ 9 000)
+with at least 2 free letters; `seaopt`, `sealopt`, `seagen_a64`, `seagen_x64` as at the gate after
+phase 5 (Decision 78's waiver kept). `sealoop` passes with phase 7's fusion in it when built ≤ 7 000,
+built + 1 500 ≤ 9 000, built + 2 250 ≤ 9 000 and it has at least 2 free letters; when it fails the
+stress condition, the letter condition or both, and no other, phase 7's fusion gets a pass of its own
+ahead of `sealoop` that also takes L19 (the expression-tree seam of the 4e-0 split; its name, files,
+intermediate format, `--emit` kind and budget specified with phase 7), and `sealoop` is then gated
+with remaining 1 000 (fixes); any other failure of any program gets a relief specified and agreed
+with the user before phase 7's code. At the projection above, `sealoop` passes at the lower end and
+fails its stress line at the upper end, and `seacheck` passes at both ends.
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -2852,6 +2998,383 @@ line count against Baysick's 10 000 lines, and `make check-limits` checks each b
 Baysick's other per-program limits of §2.7 (1000 `FOR` statements, 65 536 bytes of string
 constants outside `DATA`, 255-byte lines); `make check-includes` and `make check-contracts`
 check the contract files (§2.6).
+
+### 2.11 Phase 6: functions and output (sub-phase 6a)
+
+**Status: agreed 2026-10-26.** This section is the specification of phase 6 of §8 (row 6,
+"Functions and output"), written as sub-phase 6a in the way 5a specified phase 5 and revised after
+two independent reviews. Its questions are **Decisions 80–93** of §9, each decided by the user as
+option (a) (2026-10-26). Its smaller readings are the lead decisions **L-bw – L-cx** (§9, "Lead
+decisions of phase 6"), agreed with the text. No code, test or contract file changes with 6a: the
+contract changes this section needs are listed in "Contract changes" below and are made by the work
+package WP-CONTRACT of sub-phase 6b, each with its document table in the same change (the contract
+rule of §2.6); until then the tables of §3 and §4.8 describe the contracts as they are.
+
+#### 2.11.1 Scope
+
+Phase 6 implements, on both targets, everything row 6 of §8 names and its "done when" needs:
+
+* **named and default arguments** of user and prelude functions (LANGUAGE.md §8.1), with the
+  errors 224, 225, 226, 236 of user functions (§2.6.2);
+* the **inlining rule of LANGUAGE.md §8.6** for the program's own functions: every call of an
+  elemental function, of a function called from exactly one call site, and of a non-recursive
+  function without a loop of at most `SEA_LIM_INLINE_STMTS` statements is inlined (Decisions 81,
+  83);
+* **elemental functions** (LANGUAGE.md §8.5): the item, its checks (228, 232, 253), calls with
+  scalars (ordinary calls, inlined) and with arrays (broadcast element by element, Decision 84);
+  and `ind2sub` with an array first argument (Decision 33's phase-6 part, L-cl);
+* `%` with an `f64` operand (LANGUAGE.md §6.6; Decision 23's phase-6 part);
+* **text and file output**: `format`, `print`, `make_dir` (LANGUAGE.md §10.9, §10.10, §11.1,
+  §11.2; Decision 89) and **`write_json`** (LANGUAGE.md §11.4): pass 2b's expansion (§3.5.7 step
+  4), the lowering of the `j*` records, and the runtime's JSON emitter on both targets;
+* the ports **`sea/ports/w1_shaft_design.sea`** and **`sea/ports/w5_tolerance_mc.sea`**, without
+  figures (Decision 80), accepted by `tests/accept.sh` (§6.3, Decision 86): their JSON passes
+  `compare.py --candidate`, their reports are equivalent by `compare_report.py` with the token maps
+  `sea/ports/<name>.tokens` (§6.4), and their outputs are byte-identical across targets (§6.6).
+
+Not in phase 6: the figures and `--figures` (phase 9, Decision 80); fusion (phase 7: an elemental
+application or a `write_json` loop may allocate temporaries, §5.1, and nothing is promised about
+`-S` output beyond phase 5's shapes, which must still hold); the speed comparison with MATLAB
+(phase 10, §6.5); the matrix product, factorizations and handle types (phase 8).
+
+**Contract changes** (WP-CONTRACT, the first package of 6b, alone, before any other 6b code):
+
+1. `include/rt.inc`: the sixteen entries of §2.11.6, ids 23–38, appended to `SEA_ENTRY_LIST`
+   (`SEA_ENT_COUNT` becomes 38), and the same rows moved into §4.8's Id-first entry table with its
+   `SEA_ENT_COUNT` row (`tests/include_asserts.inc` needs no edit: it already checks
+   `SEA_ENT_COUNT` against the number of entry records). In the same change the `entries` capacity
+   (`tb_entries`, §2.6.3) of `sealower` (now exactly 22: its `DIM Y(22), Y$(22,5)` and the `CALL
+   "tb_entries"` argument) and of `seagen_a64` and `seagen_x64` (now 29) is raised to 64 (L-cs: room
+   for phases 8 and 9), two lines in each of the three passes; `seaopt` and `sealopt` (399) need no
+   change. Every pass that loads the `entries` block grows by one generated `DATA` line per entry
+   (16).
+2. `include/passes.txt`: the enumeration `fkind` gains the word `inl` (`enum fkind main fn elem
+   inl`): a `fn` record of kind `inl` is an ordinary function that LANGUAGE.md §8.6 (b) or (c)
+   requires to be inlined (Decision 81); §3.5.4's table says so in the same change. No record
+   format changes. The `el` field of `sea.res`'s `rfn` record keeps its format (`el:u`) and gains
+   the value 2 (§3.4.1's table in the same change): 0 an ordinary function, 1 an elemental one, 2 an
+   ordinary function that §8.6 (b) or (c) requires to be inlined. (`sea.ast`'s `fn` keeps `el` 0 or
+   1.)
+3. `include/errors.inc`, `include/limits.inc`: no change. Every message phase 6 reports exists
+   (224–228, 232, 236, 253, 254, 16–18 and 21), and so does `SEA_LIM_INLINE_STMTS` (50) and
+   `SEA_JSON_BUF_BYTES` (65 536).
+
+#### 2.11.2 The phase rule in phase 6
+
+Each sub-phase removes from the after-phase-4 table of §2.6.2 exactly the rows it implements, in
+the same change as its tests (the phase-4 practice):
+
+| Sub-phase | No longer reported (implemented) | Still reported |
+|-----------|----------------------------------|----------------|
+| 6b | `named arguments` (every named argument: of user functions, of prelude functions, and names a library function does not take, which are now 224, L-by), `default arguments`, `f64 %`, and the library names `format`, `print`, `make_dir` | `elemental functions`, `ind2sub` (array first argument), `write_json` |
+| 6c | `elemental functions` (at the item) and `ind2sub` (at the `call`) | `write_json` |
+| 6d | `write_json` | — |
+
+After phase 6 the table in force has exactly the rows of phases 8 and 9 (`@`, `handle types`,
+`solve` `lu` `chol` `rcond` `eig_sym`, and the plotting names with `save_svg`). The errors the
+removed rows made unreachable become reachable in the sub-phase that removes the row: 224, 225 and
+226 of user and prelude functions, 236, and 227 or 254 at a default or a named argument (L-bw) in
+6b; 228, 232, 253, and 202, 217 and 201 at an elemental call in 6c; 243 of `write_json` with a
+handle type in 6d (no handle type can be written before phase 8, so its test uses a handle-typed
+parameter's type in a signature only from phase 8; until then the `handle types` row reports first,
+and the 243 case is tested when phase 8 removes that row). The tests of the removed words are
+retired with their rows (`err_ns_lib_format` and the other `err_ns_*` goldens of the removed rows,
+§6.2), and no new test names a removed word.
+
+**Readings fixed by phase 6** (front end; lead decisions L-bw, L-bx, L-by, L-cq):
+
+* **Defaults** (L-bx; Decision 91). The structural checks are `seaname`'s, in the signature step of
+  "Which program reports it" (§2.6.2), each function's parameters in order: after a parameter with
+  a default, a parameter without one is `parameter needs a default value` (236) at its `param`
+  node; a `ref` parameter with a default is `ref argument must be a mutable variable, element or
+  field` (227) at the default expression (L-bw); the names in a default are resolved like those of
+  a `const` item's value. The value checks are `seacheck`'s (Decision 91), made where it checks the
+  `const` items (§3.4.1: before the bodies), in item order, each default exactly as the value of a
+  `const` item annotated with the parameter's type (LANGUAGE.md §7.2): `not a constant expression`
+  (237), `type mismatch` (201), and an evaluation that overflows or divides by zero 260 or 261, each
+  at the node the `const` rules name; a default that names a constant uses that constant's outcome
+  (Decision 25: a constant without a value, or of the error type, is not evaluated, so the default
+  reports nothing more). Every error competes in source order with every other (§2.6.2, "Order
+  across the two programs": a default's error on line 50 loses to a constant's on line 1). A default
+  without an error is copied into every call that omits it as §3.5.4 says (the expression, with its
+  own positions); its value is not written.
+* **Named arguments** (L-by, L-bw). A named argument of a user or prelude function names one of its
+  parameters (else `unknown parameter`, 224, at the `narg`); a name given twice is 225 at the second
+  `narg`; a parameter given neither positionally nor by name and without a default is `missing
+  argument` (226) at the `call`. A library function other than a prelude function takes no named
+  argument other than its options (LANGUAGE.md §10, "Options"): any other name is 224 at the `narg`
+  (the reading "Readings fixed by 4f" promised). A named argument whose parameter is a `ref`
+  parameter is `argument for ref parameter '%s' must be marked ref` (254) at its value, since
+  `name: ref x` does not parse (Appendix A's `arg`): a `ref` parameter is given positionally only,
+  and LANGUAGE.md §8.1 says so (Decision 93). The arguments are checked in source order (each
+  value, then its `narg`), then the call, as in 4f. Pass 2a writes the arguments in parameter order
+  with the temporaries of "Evaluation order" (§3.5.5) when that order differs from the source's
+  (L-cp).
+* **Elemental functions and effects** (L-cq; Decision 81). `seaname` checks an `elemental fn`'s
+  signature in the signature step: a `ref` parameter is `effects in elemental function` (228) at its
+  `param` node, and a result type other than `f64`, `i64` or `bool` (or a tuple of those) is 253 at
+  the `fn` item; an elemental function without results is accepted (Decision 92). After resolving
+  every body, `seaname` makes one whole-program pass over the
+  resolved bodies (the *call pre-pass*) that computes, for every `fn` item, whether it has effects
+  (LANGUAGE.md §8.1: it calls `printf`, `print`, `write_json`, `make_dir`, `save_svg` or a plotting
+  function of §12, has a `ref` parameter, or calls a function with effects; `error` is not an
+  effect; a fixpoint over the call graph), the cycles of the call graph, and the §8.6 class
+  (§2.11.3). Every part of the pre-pass is iterative (a worklist for the fixpoint, an explicit stack
+  for the cycle search, both in arrays sized by `SEA_LIM_SYMBOLS` and `SEA_LIM_NODES`), never
+  recursive `CALL`s, so Baysick's limit of 1 024 active `CALL`s does not bound the call graph's
+  depth. It reports, as body errors through the `rerr` record (§3.4.1, "Order across the two
+  programs"), `effects in elemental function` (228) at every `call` inside an elemental function's
+  body that calls a function with effects (a library function with effects, or a user function with
+  effects; the first in source order is the one reported), and `elemental function cannot be
+  recursive` (232) at the first `call`, in source order, on a cycle of calls through an elemental
+  function. The pre-pass is the first check a single program makes at a `call` node, so a 228 or
+  232 is found before any `seacheck` error at the same position (§2.6.2's condition for moving an
+  error into `seaname`); errors earlier in source order still win.
+* **Elemental calls** (`seacheck`, LANGUAGE.md §8.5, §6.3). Arguments convert to their parameters'
+  types as for any call, element by element for an array argument of an elemental parameter (an
+  `i64[]` to an `f64` parameter gets a `cvt`). A call whose elemental arguments are all scalars is
+  an ordinary `call`. Otherwise its elemental arguments are combined by the shape rules of
+  LANGUAGE.md §6.3 with the static checks of §3.5.5 ("Static shapes"): a vector with a matrix is 202
+  and a mismatch of two compile-time extents 217, both at the `call`; its type is the result type
+  (one result) or the tuple of result types (several) as arrays of the broadcast shape, fixed-size
+  exactly when every array argument of an elemental parameter is fixed-size; uniform parameters
+  (`str`, structs, records, arrays) take their arguments unchanged. Pass 2a writes it as a `call`
+  (§3.5.6: only `sea.hir1` has a `call` of an elemental function with array arguments).
+* **Library calls of phase 6.** `format(fmt, …)`: a formatting call ("Within one formatting
+  call", §2.6.2), type `str`. `print(s)`: one `str`, type `void`. `make_dir(path)`: one `str`, type
+  `void`. `write_json(path, value)`: `path` a `str`, `value` of any type that is not and does not
+  contain a handle type (else 243 at the `call`, LANGUAGE.md §11.4), type `void`. Each with another
+  number or type of arguments is 243 at the `call` (a `print` of an `i64` is `no overload of 'print'
+  accepts (i64)`). `%` with an `f64` operand is `bin mod` of `f64` operands (an `i64` operand
+  converted, LANGUAGE.md §6.5), element by element for arrays. `ind2sub(r, k)` with an array `r`:
+  `r` and `k` are elemental (`i64` or `i64` arrays), combined as an elemental call's arguments.
+
+#### 2.11.3 Front end and pass 2b
+
+**`seaname`** (Decision 81). Besides the readings above: the `elemental` item is accepted (no
+phase-rule error at the item), and the call pre-pass computes the **§8.6 class** of every ordinary
+`fn` item of the program's file (the prelude's functions are always inlined by rule 37 and are not
+classed), which `seaname` writes in its `rfn` record's `el` (2 for a function that LANGUAGE.md §8.6
+(b) or (c) covers; 1 for an elemental function, which §8.6 (a) covers; 0 otherwise). On the source as
+written (lead decisions L-ch, L-ci, L-cj):
+
+* (b) **one call site**: exactly one `call` node of the whole stream names the function, counting
+  calls in every function of the program's file whether or not `.main` reaches it, calls in the
+  function's own body, and calls with array arguments of an elemental function (L-ch; LANGUAGE.md
+  §8.6 as amended by 6a);
+* (c) **not recursive** (the function lies on no cycle of the call graph of every `call` node of
+  the stream, L-cj), **no loop** (its body holds no `while` and no `for` node), and **at most
+  `SEA_LIM_INLINE_STMTS` statements**, counted as LANGUAGE.md §8.6 (as amended by 6a) counts them,
+  one per Appendix A `statement`: every node of the kinds `let`, `var`, `asg`, `tasg`, `cstmt`,
+  `while`, `for`, `match`, `break`, `continue` and `return` counts 1; an `if` counts 1 except an
+  `if` that is the `else` child of an `if` (an `else if` of the same `if_stmt` chain), which counts
+  0; a `block` counts 1 when it is a statement (a child of a `block`) and 0 as the body of a
+  function, loop, `if` branch or `arm`; the statements inside every block count (L-ci).
+
+**`seacheck`** checks named and default arguments, elemental calls and the library calls of phase 6
+as the readings say, and writes each function's `fn` record with kind `elem` (an elemental
+function), `inl` (an `rfn` with `el` 2) or `fn` (§3.5.4, contract change 2).
+
+**`seaexpand`** implements steps 3 and 4 of §3.5.7 as written (step 4 as amended by 6a: `str` values
+and `str` arrays are JSON scalars and vectors, a fixed-size array of JSON scalars is written as
+`jvec (dyn e)` or `jmat (dyn e)` so the emitter's entries receive heap arrays only, L-ce, `sealoop`'s
+L10 materializing the `dyn`, and a matrix of structs or records with no element is guarded to `[]`);
+step 5 keeps the functions that
+the kept `emap` instances name (as §3.5.7 says); its G12 validation (§3.5.7) gains, with 6c, an
+`inst` record's argument count and types against its function's parameters (an elemental parameter
+an array of the parameter's element type or the scalar itself, a uniform one exactly the
+parameter's type) and an `emap`'s n and children against its instance, and keeps the `fn` kinds
+`inl` and `elem` unchanged.
+
+#### 2.11.4 Pass 3a: `sealoop` (L19, L20)
+
+`sealoop`'s reader accepts, from 6c, the `inst` and `emap` records and the `fn` kind `elem`, from 6b
+the kind `inl`, and from 6d the `j*` records of §3.5.5 (it rejects each of them as `BAD_RECORD`
+before its sub-phase). Two rewrites are added, and L18 is generalized; none adds a record or field
+to `sea.hirl` (only the HIR records `iblk` and `iret` of 4h are used).
+
+* **L20** (LANGUAGE.md §8.6; Decision 83) `call P ty fid n` whose callee F has kind `elem` or
+  `inl`: as L18, with these differences. (1) The copied nodes keep their own positions (§3.6.4
+  "Sites": code inlined from the program's own functions keeps its own sites); the `xblk`, its
+  `tmp`s and the `iblk` take P, and so do the `loc` records of the new `.i` locals (L-cf). (2) A
+  `ref` parameter's argument is the `rarg` as written, bound by `tmp Ai = rarg …`; Ai is then a
+  *ref local* of the inline block (R31). (3) A `tret C` in the copy becomes `tbind` of k new `.i`
+  locals (the function's k result types) of C, followed by `iret P′ k` of their `lv`s (P′ the
+  `tret`'s own position). (4) F's result type may be any type: scalars, `str`, dynamic arrays, structs,
+  records, fixed-size arrays and tuples of those (an aggregate result: R32). (5) A `call` in the copy
+  whose callee has kind `elem` or `inl` is rewritten by L20 again, and one of a prelude function by
+  L18, so inlining is recursive; it terminates, because no elemental function lies on a cycle (232),
+  an `inl` function of class (c) is not recursive, and a cycle of the reachable program always holds
+  a function with two call sites (one from the cycle, one from outside it), which has class 0. When
+  every call is rewritten, `sealoop` drops the prelude, `elem` and `inl` functions (their records
+  from `fn` to `end`) and renumbers the remaining functions densely in their order, rewriting every
+  `fid` field (L-v extended, L-cg); no `inst` or `emap` record is written to `sea.hirl` (L19 has
+  replaced every `emap`), so `sealower` never sees the kinds `elem` and `inl`, `inst` or `emap`.
+* **L19** (LANGUAGE.md §8.5; Decision 84) `emap P T iid n` with children a1 … an, instance I of
+  function F (parameters p1 … pn, k results; an *array argument* is one whose type in I's list is an
+  array, which pass 2a allows only for an elemental parameter): (1) `tmp Ai = ai` for every argument
+  in order, so every argument is evaluated once, in full, before any element is computed (L-ck); (2)
+  the broadcast extents of the array arguments and their run-time `shape mismatch` checks, exactly
+  as rule 22 forms and checks them for an elemental `lib` with array operands (the same records,
+  sites and order; the static mismatches were pass 2a's); (3) for each result j that the enclosing
+  statement does not discard, a new array `tmp Rj = anew P Tj 0 r` of the broadcast extents (Tj the
+  j-th result type of T; for a fixed-size Tj its home, rule 27 (a)); a result is discarded when its
+  component of the `tbind` or `tasg` holding the `emap` is `-` or `skip` (Decision 84; under an
+  `eval` every result is discarded); (4) rule 22's loop nest over the broadcast extents (column-major:
+  the row index innermost, so the element positions run in increasing linear order), whose body reads
+  each array argument's element at the position (index 0 in a dimension of extent 1, as rule 22 reads
+  a broadcast operand), and calls F (`call P ty1 fid n`, ty1 F's result type) with the element
+  values in the elemental positions and `lv Ai` in the uniform ones; L20 inlines that call, every
+  site in it the callee's own (an error raised in the body therefore stops the program at the first
+  failing element in increasing linear order, with the callee's line, LANGUAGE.md §8.5); for k = 1
+  the value is stored by `est` into R1's element at the position; for k ≥ 2 the body is a `block`
+  whose first statement is a `tbind` of new `.l` locals E1 … Ek (`-` for a discarded result) of the
+  inline call (R8's L12 form) followed by the `est` of every kept Ej; for k = 0 (an elemental
+  function without results, Decision 92) no result is allocated and the body is the inline call as
+  a statement (`eval`), run for its errors only; (5) the `emap`'s value: for k
+  = 1 `lv R1` (owned: T2 moves it out); for k ≥ 2, in place of the `tbind`, `tasg`, `tret` or `eval`
+  that holds the `emap`, the statement forms L11 writes for `ind2sub` with k components in place of
+  two (the `tbind`'s locals bound from the Rj, a `tasg`'s targets stored by rule 15 (j) with their
+  `cv`, `ret k` for a `tret`, nothing kept for an `eval`). An empty broadcast shape gives empty results
+  and runs no element (rule 22's guard). L19 then rewrites its output like any code (L4, L7, L10, L12,
+  L20).
+* **`ind2sub` with an array `r`** (L-cl): a two-result elemental application of rule 36's scalar
+  sequence (`imodf`, `idivf` at P) by L19's steps (1)–(5), with P's site for every check; L11 keeps
+  the case of a scalar `r`.
+* **`f64 %`**: an element-wise `bin mod` with an `f64` array operand is rewritten by L7 as every other
+  element-wise operator; its scalar `bin mod` per element is lowered by rule 39 (`FMOD`, L-cm).
+* **`write_json`** (6d): the `j*` records are statements `sealoop` keeps, rewriting their children
+  like any expression (`jvec (dyn e)` by L10; a `jopen`'s path and a `jval`'s value as operands);
+  the `fore` and `forr` loops of pass 2b's expansion are rewritten by L4 and by the scalar `forr`
+  path as any loop. Validation: a `j*` record only where pass 2b writes it (the block of §3.5.7 step
+  4: `jopen` first, `jclose` last, `jobj`/`jarr` balanced by `jend` within the block, a `jkey` only
+  inside an object, a `jval` child of type `f64`, `i64`, `bool` or `str`, a `jvec` or `jmat` child of
+  a dynamic vector or matrix type of those four element types); any violation is `BAD_RECORD`.
+* **Capacity**: as L18 (§3.5.9 "Capacity"): the nodes L19 and L20 add count against
+  `SEA_LIM_NODES` and their `.l` and `.i` locals against `SEA_LIM_SYMBOLS`, a limit reported at the
+  position of the `emap` or `call` being rewritten. A program whose inlining multiplies its size
+  (an `inl` function calling another `inl` function twice, nested deeply) can reach `program too
+  large: nodes`, which LANGUAGE.md §3.1's capacity bound allows.
+
+#### 2.11.5 Pass 3a: `sealower` (rule 39, R31, R32)
+
+* **Rule 39, library calls through the entry table** (Decision 52, specified here; §3.6.6). A node
+  of the mapping table below is lowered generically from its entry's record in the `entries` block
+  (`rt.inc`'s `SEA_ENTRY_LIST`, §4.8): (1) its operands left to right by rule 1, each already of the
+  class the entry's Args letter names (pass 2a typed them); for the formatting entry the `fmt` record
+  and the argument slot exactly as rule 8 builds them (`sa S`, the stores, `la F`); (2) `rcall
+  <symbol> <site> nr <results> na <arguments>`, the site the node's line when the entry's Site is `S`
+  and `-` otherwise, each result into a new register (the last one the destination of rule 2); (3) a
+  `p` result is owned (rule 15 (k)), and the owned temporaries among the operands are released right
+  after the `rcall` (rule 15 (b)). The rules already written for `printf`, `now`, the elementary
+  functions, `error`, `args` and sorting (8, 9, 14, 24, 34, 35) stay as they are, so no earlier golden
+  changes (L-cr). `sealower`'s dispatch over node kinds is an `ON … GOTO` line already 215 bytes
+  long, so the new kinds (the nine `j*` records) take a second `ON` line rather than lengthening it
+  (§2.7's 255-byte limit). Mapping:
+
+  | Node | Entry | Operands |
+  |------|-------|----------|
+  | `lib format` (its `fmt`) | `FORMAT` | F, S as rule 8 |
+  | `lib print(s)` | `PRINT` | s |
+  | `lib make_dir(path)` | `MAKE_DIR` | path |
+  | `bin mod` of two `f64` | `FMOD` | left, right (no site: the entry cannot fail) |
+  | `jopen` / `jclose` | `JSON_OPEN` / `JSON_CLOSE` | the path / none |
+  | `jobj` / `jarr` / `jend` | `JSON_OBJ` / `JSON_ARR` / `JSON_END` | none |
+  | `jkey v` | `JSON_KEY` | a `str` data record of v (rule 7's `la`) |
+  | `jval` of an `f64` / `i64` / `bool` / `str` | `JSON_F64` / `JSON_I64` / `JSON_BOOL` / `JSON_STR` | the value |
+  | `jvec` / `jmat` | `JSON_VEC` / `JSON_MAT` | the array (borrowed) |
+
+* **R31, `ref` arguments of an inline call** (Decision 83). An inline `xblk` (R26) one of whose
+  `tmp`s binds a `rarg` is a call for rules 12 and 31 in every respect: the `rarg` is lowered at its
+  place in the argument order exactly as for a `call` (a scalar local's slot `sa A` and its store, a
+  reference local's `stp`, a struct or fixed-size local's home address, an element or field path's
+  checks, cows and address, the deferred case of rule 31 included), and the `tmp`'s local Ai (a *ref
+  local*) is then the `p` register holding that address; inside the `iblk` a read of `lv Ai` is the
+  callee's read of a `ref` parameter (`ldi`/`ldf`/`ldp` from `Ai - 0 0`, rule 12, 31), an assignment
+  to it the callee's store, and its element stores use the cow of the memory location (Ai, 0) (rule
+  19); the roots of the inline `xblk` (rule 12) are those of its `rarg`s, so the reads before it are
+  protected as before a call (R30 extended); the reloads of rule 12 follow `enddo B`, before R27's
+  destination `mov` (as they follow a `call` before `mov x R`). T1's alias does not apply to a ref
+  local.
+* **R32, aggregate results of an inline call** (Decision 83). An `iblk` whose type is a struct, a
+  record or a fixed-size array (or a tuple with such components) gets, before `do B`, a new home H
+  of each such result type (rule 27 (a)), as a call's hidden result address is a home the caller
+  provides (§3.6.3); an `iret` stores each such value into its H as rule 27 (d) stores into a home
+  (the reference fields of a borrowed value retained, an owned value moved), then `exit B`; the
+  `iblk`'s value for that component is H, owned as a call's aggregate result is (rule 15 (g)), and a
+  destination receives it as rule 27 receives a call's result home.
+* **Validation** (in addition to §3.5.9): an `iblk`'s type may be any result type (R32); a ref local
+  only as a `tmp` of an inline `xblk` whose child is a `rarg`; a `j*` record's child of the type the
+  mapping table requires; no `fn` of kind `elem` or `inl`, no `inst`, no `emap` (L-cg). Any violation
+  is `BAD_RECORD`.
+
+#### 2.11.6 Runtime entries of phase 6
+
+Planned rows of §4.8's entry table (Decision 85), entered by WP-CONTRACT with their ids; written
+here name first, because they are not yet in `rt.inc` (§2.6's contract rule). Each `S` entry takes
+the site as its last integer argument (§4.8); every returned object is owned, every argument
+borrowed; a failing entry calls `_sea_err` and never returns.
+
+| Name (planned id) | Symbol | Site | Args | Results | Contract |
+|-------------------|--------|------|------|---------|----------|
+| `FORMAT` (23) | `sea_format` | `S` | `pp` | `p` | `(fmt, slots, site)`: a new string of exactly the bytes `sea_printf` would write for the same format and slots (LANGUAGE.md §11.1), through the internal sink `sea_error` uses; a result longer than `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (L-cc) |
+| `PRINT` (24) | `sea_print` | `S` | `p` | `-` | `(s, site)`: s's bytes into the standard-output buffer, nothing added (LANGUAGE.md §11.2); a failed write of the buffer: `CANNOT_WRITE` with `<stdout>` and the errno, as `sea_printf` (L-cd) |
+| `MAKE_DIR` (25) | `sea_make_dir` | `S` | `p` | `-` | `(path, site)`: the path's bytes copied into a new NUL-terminated buffer (a path holding a NUL byte: `CANNOT_MKDIR` with `EINVAL`; the buffer freed on every exit); `mkdir(buf, 0777)` (the process's umask applies); success returns; on any failure the errno is saved first, then the path is tested for a directory by `open(buf, O_RDONLY \| O_DIRECTORY)` (closed at once when it succeeds, no `stat`, whose structure layout and glibc symbol differ between the targets): a directory returns (so `/` behaves alike on macOS, where `mkdir` gives `EISDIR`, and Linux, `EEXIST`); otherwise `CANNOT_MKDIR` with the path and the saved errno (an existing non-directory gives `File exists`; a missing parent `No such file or directory`: no parent is created, Decision 89) |
+| `FMOD` (26) | `sea_fmod` | `-` | `ff` | `f` | `(a, b)`: `a % b` of LANGUAGE.md §6.6 for `f64`: b = ±0 gives a's bits unchanged; else an infinite a or a NaN operand gives `#7FF8000000000000`; else r = the C library's `fmod(a, b)` (exact by IEEE 754, so the same bits from Apple's libm and glibc; the runtimes already link the C library), and r + b rounded once when r ≠ 0 and r and b differ in sign (L-cm). Cannot fail |
+| `JSON_OPEN` (27) | `sea_json_open` | `S` | `p` | `-` | `(path, site)`: first allocates the emitter's state (the retained path, an empty `SEA_JSON_BUF_BYTES` buffer, the container stack, depth 0, the descriptor field set to −1), then copies the path into a NUL-terminated buffer and opens it for writing (`O_WRONLY \| O_CREAT \| O_TRUNC`, mode 0666 before the umask) and stores the descriptor; a failure (a NUL byte in the path: `EINVAL`) frees the state, then `CANNOT_OPEN` with the path and the errno. At most one file is open (pass 2b's blocks do not nest) |
+| `JSON_CLOSE` (28) | `sea_json_close` | `S` | `-` | `-` | `(site)`: writes LF, flushes, closes, releases the path and frees the emitter's state; a failed write or `close`: `CANNOT_WRITE` with the path and the errno |
+| `JSON_OBJ` (29), `JSON_ARR` (30) | `sea_json_obj`, `sea_json_arr` | `S` | `-` | `-` | `(site)`: begins an object or an array as the next value (the top value, an element, or the value of the last key) |
+| `JSON_END` (31) | `sea_json_end` | `S` | `-` | `-` | `(site)`: ends the innermost open object or array |
+| `JSON_KEY` (32) | `sea_json_key` | `S` | `p` | `-` | `(key, site)`: the next member's key, in the innermost open object |
+| `JSON_F64` (33) | `sea_json_f64` | `S` | `f` | `-` | `(x, site)` (x in `d0` / `%xmm0`, site in `x0` / `%rdi`): a number, `%.17g` for a finite x, `null` for NaN and ±∞ |
+| `JSON_I64` (34), `JSON_BOOL` (35), `JSON_STR` (36) | `sea_json_i64`, `sea_json_bool`, `sea_json_str` | `S` | `i`, `i`, `p` | `-` | `(v, site)`: an `i64` in decimal; `true`/`false`; a string, escaped (LANGUAGE.md §11.4) |
+| `JSON_VEC` (37), `JSON_MAT` (38) | `sea_json_vec`, `sea_json_mat` | `S` | `p` | `-` | `(a, site)`: a dynamic vector (flat array) or matrix (array of rows) of ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, each element written as the scalar entries write it; a matrix with no element is `[]` |
+
+Every emitter entry other than `JSON_OPEN` writes into the buffer and flushes it when full; a failed
+flush is `CANNOT_WRITE` with the kept path and the errno, the file then closed without another write.
+`_sea_err` (§4.5, §4.8), on any run-time error while a JSON file is open (the emitter's state exists
+and its descriptor field is not −1), flushes that file's buffer and closes it, ignoring a failure of
+that flush (LANGUAGE.md §9.2 step 3; the error it reports is the original one), so `rt_err.s` changes
+on both targets (L-ca); an error raised inside `JSON_OPEN` before the descriptor is stored finds no
+open file. **Layout** (LANGUAGE.md §11.4; L-bz):
+a value at depth d (the top value at 0) is written as follows: a scalar as above; a non-empty object
+as `{`, LF, each member on its own line indented 2(d + 1) spaces as `"key": ` and its value at depth
+d + 1, every member but the last followed by `,`, then LF, 2d spaces and `}`; a non-empty array
+likewise with `[`, its elements and `]`; an empty object `{}`, an empty array `[]`; a matrix of r ≥ 1
+rows and c ≥ 1 columns as an array of r arrays of c elements, element (i, j) at position j of row i;
+then, after the top value, one LF. A key is written as a string. The emitter keeps one state per
+open container (its kind and whether it has an element yet) in a stack on the heap, grown as needed
+and freed by `JSON_CLOSE` (L-co: no depth limit, `OUT_OF_MEMORY` if it cannot grow); it trusts the
+nesting pass 2b writes, as `sea_printf` trusts its format. The live-object count of `SEA_HEAP_CHECK`
+is unchanged by a completed `write_json`.
+
+Where they live (both targets, written alike): `FORMAT` and `PRINT` in `rt_fmt.s` (beside `sea_printf`
+and `sea_error`, whose sink they share) and `rt_out.s`; `MAKE_DIR` and the JSON emitter in a new
+`rt_file.s`; `FMOD` in `rt_math.s`; the runtime object lists of `Makefile` and `Makefile.linux` gain
+`rt_file.s`.
+
+#### 2.11.7 Passes 3b, 3c and 4
+
+No transformation, template or rule changes. `seaopt` and `sealopt` (through `lirrw`) validate the
+new `rcall` entry names against the `entries` block as before (their capacity, 399, suffices), and
+pass 4 calls the new entries by the calling convention of §4.8 (its capacity raised by
+WP-CONTRACT). Phase 5's shapes (§5.2) and the `make test-shape` lines must still hold: the W5 and W4
+hot loops are in functions §8.6 does not inline (`lcg_fill` has four call sites and a loop; W4's
+loop is in `.main`), while `stack_gap` (one call site in `w5_stats.sea`) is now inlined, which no
+shape line names.
+
+#### 2.11.8 The ports and their acceptance
+
+`sea/ports/` is a new directory of the sea repository. `w5_tolerance_mc.sea` is LANGUAGE.md Appendix
+D without its figures section and without the `--figures` branch of its option loop (Decision 80);
+`w1_shaft_design.sea` is a new port of `w1_shaft_design.m`, written statement by statement as
+Appendix D is (operation order kept, LANGUAGE.md §6.8; 1-based indices in its JSON; faithfulness notes
+in its header comment), with `shaft_safety` an `elemental fn` called with scalars (`bisect_diameter`),
+the 2001-element sweep vector and the 90 × 120 grids (LANGUAGE.md §2.1), and no figure code. Each
+accepts only `--export-reference` (any other argument is its `unknown option` error, as Appendix D's
+`_` arm). The token maps `sea/ports/<name>.tokens` are written from the MATLAB scripts' `fprintf`
+formats and `compare.py`'s `RULES`, never from Sea output (§6.4). `tests/accept.sh` (§6.3, Decision
+86) runs them.
 
 ## 3. Intermediate files
 
@@ -3785,7 +4308,7 @@ constants (LANGUAGE.md §4.2) are written with their decided type (`ci` for `i64
 | `jobj`, `jarr`, `jend` | — | `0` | — | begin an object, begin an array, end the innermost one |
 | `jkey` | `v:s` | `0` | — | the next member's key |
 | `jval` | — | `1` | a scalar | one `f64`, `i64`, `bool` or `str` value (LANGUAGE.md §11.4) |
-| `jvec`, `jmat` | — | `1` | an array | a vector (flat array) or matrix (array of rows) of scalars |
+| `jvec`, `jmat` | — | `1` | an array | a dynamic vector (flat array) or matrix (array of rows) of `f64`, `i64`, `bool` or `str` elements (from phase 6 pass 2b writes `dyn` before a fixed-size one, L-ce) |
 
 **Positions of the nodes pass 2a writes** (§3.3: a node takes the position its rule names).
 A node made from one AST node takes that node's position: `lv`, `cref`, `call` and `lib` take the
@@ -4061,12 +4584,17 @@ In this order:
    block P: bind J1 = path; bind J2 = value; jopen (lv J1); emit(lv J2); jclose
    ```
 
-   where emit(e), by the type of e: a scalar → `jval e`; a struct or record → `jobj`, then for
-   each field i in declaration order `jkey <name>` and emit(`fld e i`), then `jend`; a vector or
-   fixed vector of scalars → `jvec e`; a matrix or fixed matrix of scalars → `jmat e`; a vector of
-   structs or records → `jarr`, `fore K in e { emit(lv K) }`, `jend`; a matrix of structs or
-   records → `jarr`, `forr R in 0..rows(e) { jarr; forr C in 0..cols(e) { emit(idx e
-   (lv R) (lv C)) }; jend }`, `jend`. Every loop body is one `block`. A handle type has no
+   where emit(e), by the type of e, a *JSON scalar* being an `f64`, `i64`, `bool` or `str` value
+   (here `str` counts with the scalars, unlike §4.5's classes): a JSON scalar → `jval e`; a struct
+   or record → `jobj`, then for each field i in declaration order `jkey <name>` and emit(`fld e
+   i`), then `jend`; a dynamic vector of JSON scalars (`str[]` included) → `jvec e`, a fixed vector
+   → `jvec (dyn e)`; a dynamic matrix of JSON scalars → `jmat e`, a fixed matrix → `jmat (dyn e)`
+   (the `dyn` to the dynamic type of the same rank and element type, L-ce); a vector of structs or
+   records → `jarr`, `fore K in e { emit(lv K) }`, `jend`; a matrix of structs or records → `if
+   (rows(e) == 0 || cols(e) == 0) { jarr; jend } else { jarr; forr R in 0..rows(e) { jarr; forr C
+   in 0..cols(e) { emit(idx e (lv R) (lv C)) }; jend }; jend }` (a matrix with no element is `[]`,
+   LANGUAGE.md §11.4, also r × 0; e is an `lv`, `fld` or `idx` path of locals, so reading it again
+   has no effect). Every loop body and branch is one `block`. A handle type has no
    case: pass 2a has rejected it (LANGUAGE.md §11.4). The runtime writes
    the layout of LANGUAGE.md §11.4 (indentation, one member or element per line, `[]` for an
    empty array).
@@ -5361,15 +5889,23 @@ and no others.
 **Inlining is deferred to phase 6** (§8), except for prelude calls. The phase-1 to phase-5 pass 3a
 inlines no call of a program's own function (the performance guarantee of LANGUAGE.md §8.6 is not
 observable in a program's output); from phase 4 it inlines every call of a prelude function, in
-the canonical form of rule 37 (Decision 18). Until phase 6 the dump tests use only programs in which LANGUAGE.md §8.6 requires no
-inlining (no function called from exactly one call site, none that rule (c) covers, no elemental
-function); the prelude calls are tested by program tests, by `.hir`, `.hirl` and `.lir1` dump
+the canonical form of rule 37 (Decision 18). The dump tests of phases 1–5 were meant to use only
+programs in which LANGUAGE.md §8.6 requires no inlining; the review of the phase-6 specification found
+21 lowering dump tests whose function §8.6 (b) or (c) covers (listed in §6.2, "Phase-6 tests"), and
+every `.res`, `.hir1` and `.hir` golden of a program with such a function changes with the `el` value 2
+and the kind `inl`; phase 6 treats them by Decision 90. The prelude calls are tested by program tests, by `.hir`, `.hirl` and `.lir1` dump
 tests built with the prelude (a `NAME.prelude` marker, §6.2, Decision 57), whose expected dumps
 follow rule 37, and by stage goldens of hand-written two-file `sea.hir` (Decision 55).
+From phase 6 (§2.11) pass 3a inlines exactly the calls LANGUAGE.md §8.6 requires (the
+functions of kind `elem` and `inl`, §2.11.3) by `sealoop`'s rewrite L20 (§2.11.4) with
+`sealower`'s refinements R31 and R32 (§2.11.5), the copied code keeping its own sites; the dumps of
+the inlined forms are the `inl6_*` and `elem6_*` tests of §6.2, and a golden that inlining changes
+is treated by Decision 90 and re-derived from these rules (L-ct). Phase 6 adds rule 39 (library calls through the entry table,
+Decision 52), stated in §2.11.5.
 
 Rules 1–14 are the scalar subset of phase 1–3; rules 15–38 are the arrays, structs, strings,
 reference counts and copy on write of phase 4 (§8, sub-phases 4d–4h), each introduced by the
-sub-phase that implements its construct.
+sub-phase that implements its construct; rule 39 is phase 6's (§2.11.5).
 
 **Two programs from sub-phase 4e-0** (Decisions 26–29). The rules below say what `sea.lir1` holds
 for a construct, whichever program of pass 3a does the work. From 4e-0 `sealoop` rewrites the array
@@ -10081,6 +10617,118 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     10 registers, and only the order of §4.9.2's scan (smallest deepest loop depth, then ends last)
     keeps the spilled ones outside those loops (§5.2, L-bo).
 
+* **Phase-6 tests** (sub-phases 6b–6e, §8; agreed with §2.11, 2026-10-26). Expected outputs are derived from
+  LANGUAGE.md (§6.6, §8.1, §8.5, §8.6, §9.2, §10.9, §10.10, §11) and, for dumps, from §2.11 and
+  §3.5.7 by hand; every program runs under the heap check with no leak on both targets; every earlier
+  test passes (a golden that §8.6 inlining changes is treated by Decision 90 and re-derived, L-ct),
+  and so do `make test-shape` and the phase-4 acceptance programs. New name prefixes, each with its
+  `tests/vectors/` generator where it has one:
+  * **Goldens that inlining changes** (6b, T2; Decision 90). (1) The 21 lowering dump tests whose
+    function §8.6 (b) or (c) covers: `lib_rule23`, `lib_rule24`, `str_rule15`, `str_rule32`,
+    `str_rule33`, `struct_rule18`, `struct_rule29` (their `.lir1` is a §3.6.6 rule's agreed example
+    verbatim, written inside a function with its parameters in `p` registers), `str_ref_ln`,
+    `struct_l17_path` (a `ref` parameter root), `str_l12`, `struct_l12` (a multiple-result call bound
+    by L12), `struct_l6_field` (calls `p()`, `q()` inside a selection, rule 19's order): their
+    subject is a call boundary, so each keeps it: its function is made non-inlinable without
+    changing what the test is about (a second call site appended at the end of `.main`, whose output
+    the `.out` gains, and a loop that runs no iteration, a `while false` loop with an empty body, as
+    the function's first statement; for a function that already has two call sites, the loop
+    alone), and every golden of the test is re-derived; `lib_sum_dim0`, `lib_sum_dim1`,
+    `lib_variance`, `match_l16`, `str_ew`, `str_fill_flat`, `str_fixed_self`, `str_l17`,
+    `struct_l17`: their subject is a construct inside the function, unaffected by where it stands,
+    so the function is inlined and the `.hirl` and `.lir1` goldens are re-derived with L20's form
+    (the `.ast` unchanged, the `.res`, `.hir1` and `.hir` by (2)). (2) Every `.res`, `.hir1` and
+    `.hir` golden of a program with a function that §8.6 (b) or (c) covers (about 70 `.res` with an
+    `rfn` record and 51 `.hir1` with user `fn` records are candidates; T2 classifies each function
+    by §2.11.3's rules on the source, by hand): `rfn`'s `el` becomes 2 and the `fn` kind `inl`.
+    Because WP-NAME's `el` 2 and WP-CHECK's kind `inl` change these goldens, the 6b packages
+    integrate in the order WP-CONTRACT, then T2's re-derived goldens with WP-NAME and WP-CHECK in
+    one integration step (each package's own checks run against T2's goldens in its scratch tree
+    before), so `make test` is never committed red.
+  * **6b, calls** (T1: `tests/programs/{call6_,inl_,fmod_,fmt6_,print_,mkdir_}*`, `tests/errors/{err_call6_,r_inl6_,r_mkdir_,r_fmt6_}*`;
+    T2: `tests/passes/inl6_*`, `res6_*`): named arguments in every order with argument expressions
+    that print (the output in source order), defaults of each scalar type and of `str` (a constant
+    name, `pi`, an operator expression), defaults with named arguments, named arguments of a prelude
+    function (`linspace(n: 5, d2: 1.0, d1: 0.0)`), and the errors 224 (a user function, a library
+    function's positional parameter `sqrt(x: 2.0)`, a prelude function), 225, 226 (a parameter
+    without a default skipped by name), 236, 227 at a `ref` parameter's default, 254 at a named `ref`
+    parameter, 237, 201, 260 and 261 at a default, each at its position; §8.6 inlining whose output
+    proves the semantics unchanged (a single-site function with a loop, a small function called many
+    times, a function with a `ref` scalar, element and array parameter (R31) including the deferred
+    case of rule 31 and a read before it in the same statement, a struct, record and fixed-size
+    result (R32), `return f(…)` of a multiple-result call inside an inlined function, nested and
+    recursive-through-inlining calls, an inlined function that calls a prelude function, a recursive
+    small function that stays a call, a function of 50 and of 51 statements counted by LANGUAGE.md
+    §8.6 (an `if … else if … else` chain counting 1, a bare `{ }` block statement counting 1 plus its
+    statements, observed through the `.hirl` dump of `inl6_count50` and `inl6_count51`), a function
+    with two call sites one of which is in a function `.main` never reaches (not class (b)), a
+    default naming a constant, and a default's error on a later line than a constant item's error
+    (the constant's is reported, Decision 91)), and `r_inl6_*`: a
+    run-time error inside an inlined function reports the callee's line, not the call's (§3.6.4
+    "Sites"); `inl6_*` dumps (`.res` showing `el` 2, `.hir1` with the kind `inl`, `.hirl` of L20 with
+    its kept positions, `.lir1` with R31's slot and reload after `enddo` and R32's home, the dropped
+    functions); `fmod_*` from `tests/vectors/fmod6_cases.py` (`uv run`; it computes every expected
+    value with `math.fmod`, which is exact, and LANGUAGE.md §6.6's sign adjustment, never with
+    Python's `%`, which gives `+0.0` for `-6.0 % 3.0` where LANGUAGE.md §6.6 gives `-0.0`; it also
+    writes the committed vector file `tests/vectors/fmod6.vec` of the runtime tests; its special cases: ±0 divisors, ±∞ and NaN operands, the
+    signed zeros of `-6.0 % 3.0` and `6.0 % -3.0`, `-1 % inf`, subnormals, quotients near 2¹⁰²³,
+    scalars and element-wise on arrays, printed with `%.17g` and `str()`); `fmt6_*`: `format` of
+    every conversion and flag of the `printf` tests, printed with `print`, byte-equal to the `printf`
+    line of the same arguments; `print_*` (no newline added, empty strings, bytes 0x80–0xFF);
+    `mkdir_*` (a new directory proved by a `write_json` into it from 6d on, and before 6d by
+    `make_dir` of the same path twice with no error, and `make_dir("/")` and `make_dir(".")` with no
+    error on both targets); `r_mkdir_*` (an existing file at the path, from a `NAME.files/` fixture:
+    `cannot create directory 'x': File exists`; a missing parent: `No such file or directory`);
+    `err_call6_ref_named` (a named argument for a `ref` parameter: 254, Decision 93).
+  * **6c, elemental functions** (T1: `tests/programs/{elem_,ind2sub_arr}*`, among them
+    `elem_noresult` (an elemental function without results, called with scalars and with arrays,
+    whose `error` stops at the first failing element: Decision 92) and `elem_calls_recursive` (an
+    elemental function calling an ordinary recursive function, allowed: LANGUAGE.md §8.5 as amended),
+    `tests/errors/{err_elem6_,r_elem6_}*`; T2: `tests/passes/elem6_*`): scalar calls; vector and
+    matrix arguments; broadcasting of a scalar with a vector, of `.col`/`.row` with a matrix; fixed-
+    size arguments (fixed results) and mixed fixed and dynamic ones (dynamic results); `i64` arrays
+    to `f64` parameters; uniform `str`, struct, record and array parameters; one result and five
+    (W1's shape), results bound to `_` (not allocated: no change in output, and the heap check's
+    count), a tuple assignment of the results into selection targets (`(A[m, :], B[m, :], _) = f(v,
+    …)`), an `eval` of an elemental call (no effect but its errors), nested elemental calls and an
+    elemental function calling another, named and default arguments of an elemental function, empty
+    arrays (no call runs: an `error` in the body is not reached); `r_elem6_*`: an `error` and an
+    out-of-bounds index inside the body at a known element (the first failing element in linear
+    order, the callee's line), a `shape mismatch` of two dynamic arguments (at the call's line);
+    `err_elem6_*`: 228 at a `ref` parameter, at a `printf`, at a call of a function with effects, at
+    a call of a function that calls one (transitive), 232 direct and mutual (the first call in source
+    order), 253, 202 and 217 at the call, 201 at an argument, each against an earlier error in source
+    order in the other program of pass 2a (the `rerr` order, L-cq); `ind2sub_arr*`: an array `r` with
+    a scalar and with an array `k`, an `r` of 0 at a known element (`integer division by zero`);
+    `elem6_*` dumps: the `.hir` of pass 2b's step 3 (`inst`, `emap`), the `.hirl` of L19 (the
+    discarded results, L11's statement forms for k = 5), the `.lir1`.
+  * **6d, `write_json`** (T1: `tests/programs/json_*` with `NAME.expect/<file>.json`,
+    `tests/errors/r_json_*`; T2: `tests/passes/json6_*`): the expected files written by hand from
+    LANGUAGE.md §11.4 and §2.11.6's layout: each scalar type, NaN and ±∞ as `null`, −0, values that
+    need 17 digits, integral `f64` values (`100`), `i64` −2⁶³; strings with `"`, `\`, LF, TAB, 0x01,
+    0x1F, 0x7F and bytes 0x80–0xFF; vectors of each element type, `str[]`, empty vectors, matrices 2 ×
+    3, 1 × 1, 0 × 3 and 3 × 0; a struct, nested structs, a record with array fields (W5's shape), a
+    vector and a matrix of structs, a 2 × 0 and a 0 × 3 matrix of structs (both `[]`), fixed-size
+    fields and values (L-ce), `str` fields, a `str[]` field and a fixed `str[3]` value, a top-level scalar and a top-
+    level vector; two `write_json` calls to one path (the second replaces the first) and to two
+    paths; `r_json_*`: a path in a missing directory (`cannot open 'nodir/a.json': No such file or
+    directory`), a path that is a directory, `write_json(".", v)` (`cannot open '.': Is a directory`;
+    git keeps no empty directory, so no fixture is used), a run-time error after a completed
+    `write_json` (the file stays complete); `json6_*` dumps: the `.hir` of step 4 (the `.j` locals,
+    the loops of a vector and a matrix of structs, `dyn` under `jvec`), the `.hirl`, the `.lir1` of
+    rule 39. A write failure of a JSON file cannot be provoked byte-identically on both targets (no
+    full device on macOS), so it is tested by the runtime tests of the Linux target (`/dev/full`)
+    and by review on arm64.
+  * **Runtime tests** (6b, WP-RT-A64 and WP-RT-X64: `tests/rt/<target>/rt_format*`, `rt_print*`,
+    `rt_mkdir*` (`/`, `.`, an existing file, a missing parent, a NUL byte), `rt_fmod*` (the committed
+    vector file `tests/vectors/fmod6.vec`, bit for bit; the Linux host has no Python, so the runtime
+    tests read the committed file, which T1 writes with `fmod6_cases.py` as 6b's first delivery,
+    before WP-RT's tests run), `rt_json_layout`,
+    `rt_json_heap` (the live count unchanged), `rt_json_errors` (open failures; on Linux also a
+    failed flush to `/dev/full`, its message and status, and the file closed)).
+  * **Acceptance** (6e): `tests/accept.sh` with `sea/ports/w1_shaft_design.*` and
+    `sea/ports/w5_tolerance_mc.*` (§6.3, "Phase-6 acceptance").
+
 ### 6.3 Workload acceptance
 
 `sea/ports/w1_shaft_design.sea` … `w5_tolerance_mc.sea` are the ports. `sea/tests/accept.sh`
@@ -10104,6 +10752,35 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
 
 Indices in the JSON must be MATLAB's 1-based numbers (the port adds 1, LANGUAGE.md Appendix D); the keys
 with `exact` rules (`rank`, `k_worst`, `i_best`, `lcg_final`, counts, …) check this.
+
+**Phase-6 acceptance** (Decisions 80 and 86; the "done when" of phase 6, §8 row 6). The
+ports of phase 6 are `sea/ports/w1_shaft_design.sea` and `sea/ports/w5_tolerance_mc.sea`, without
+figures (§2.11.8), each with its token map `sea/ports/<name>.tokens` (§6.4). **`tests/accept.sh [-v]
+[--save-out DIR] [PATTERN...]`** (Mac; run by `make test` in the group `test-accept`, after
+`tests/accept4.sh`, whose programs stay because the shape tests and the phase-4 keys use them): for
+each `sea/ports/NAME.sea` (NAME a workload name), in a `mktemp -d` directory T, `sea build -o
+T/run/NAME` under `accept4.sh`'s compile timeout (`SEA_COMPILE_TIMEOUT`, default 120 seconds; W1's
+compile time is measured and recorded in §6.3 at 6e, so a port near the limit is seen), then run in
+the working directory `T/run` with
+`--export-reference`, `SEA_HEAP_CHECK=1` and standard input `/dev/null` under a 120-second timeout
+(`SEA_ACCEPT_TIMEOUT` overrides it), standard output to `T/report.txt` and standard error to
+`T/stderr.txt` (both outside the run directory); the status must be 0, `T/stderr.txt` exactly
+`heap: 0 live objects` and LF, and `T/run` must then hold `NAME.json` and nothing else but the
+executable; then `uv run --no-project --with numpy python <workloads>/reference_py/compare.py
+--candidate T/run NAME` (every key of the MATLAB reference) and `uv run --no-project --with numpy
+python <workloads>/reference_py/compare_report.py NAME T/report.txt sea/ports/NAME.tokens
+--candidate-json T/run/NAME.json` must both exit 0. Output
+format, exit statuses, `--save-out` (which also copies `NAME.json`), `BUILD`, `SEA` and `WORKLOADS`
+as `accept4.sh`'s. Steps 1–3 of the list above are this script; step 4 (`--figures`) comes with
+phase 9. **On the Linux host** each port is a cross case (§6.6.1) built and checked on the Mac by
+`cross_pack.sh` through `accept.sh --save-out`: the host runs it with `--export-reference` and
+compares its standard output with the Mac's byte for byte after removing, on both sides, every line
+that matches `^Compute time: .* s$` (the one line §6.4 and §6.6 exclude), and its `NAME.json` byte
+for byte through the case's `NAME.expect/` (L-cn); `compare.py` is not needed there (Decision 86).
+The line filter is new code in `tests/cross_pack.sh` and `tests/cross_run.sh`: a port case is marked
+by a `.meta` line `filter=compute-time` (a new case attribute, §6.6.1), which `cross_run.sh` applies
+with `grep -v` to both outputs before comparing, and the Mac side applies when it saves the expected
+output; both are WP-ACCEPT's files (§8 row 6e).
 
 **Phase-4 acceptance** (Decision 19; the "done when" of phase 4, §8). Until phase 6 brings
 `write_json`, the acceptance programs write a JSON subset with `printf` and are checked on the
@@ -10498,7 +11175,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()`, and the exact math functions, `ind2sub`, `sub2ind`, `lower`, `str(x)`, `meshgrid`, `setdiff` (Decision 23); built in the serial sub-phases 4a–4h below (Decisions 17–24) | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D; checked by `compare.py --keys` on the Mac and byte identity on the Linux host (Decision 19) |
 | 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9). **Complete** (2026-10-25): 5a–5d done, the shapes met on both targets, the gate after phase 5 passed with Decision 78 (§2.7, "Measured after 5d") |
-| 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) | W1 and W5 complete (without figures): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
+| 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) (specified in sub-phase 6a, agreed 2026-10-26 with Decisions 80–93; built in the sub-phases 6b–6e below, with the conditional 6b-0, §2.11) | W1 and W5 complete (without figures; §6.3, "Phase-6 acceptance"): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
@@ -10528,6 +11205,12 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 5c-1 | **`seaopt`: analysis and the local transformations** T1 (checks and overflow), T2 (division), T3 (value numbering), T4 (if-conversion) and T10 (clean-up, renumbering) of §5.8; may run in parallel with 5b (disjoint files). Work packages: **WP-OPT** `passes/seaopt/*` (`R` widened, at most the one new letter `W`, L-ad); **T1** `tests/programs/opt_*`, `tests/errors/r_opt_*` and their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump5_cases.py`, 5c-1's `opt5_*` goldens (§6.2's list) and the `.lir` goldens that T1–T4 and T10 change, re-derived (L-ak), in `tests/passes/` (T2 and 5b's T-RA report their CORPUS rows to T1) | the 5c-1 tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test` and `make cross` pass. **Done** (2026-10-24): `make test` (programs 1 292, stage 589, lib 207) and `make cross` (555 cases) pass; `seaopt` 5 316 built lines, the gate arithmetic and the decision it calls for in §2.7 |
 | 5c-2 | **Pass 3c `sealopt`: the loop transformations** T5 (promotion), T6 (copy-on-write versioning), T7 (strength reduction), T8 (hoisting, constant commoning) and T9 (unswitching), with T10, of §5.8, in a new pass (Decision 74), and the liveness rule of §4.9.2 (Decision 75); after 5c-1. Work packages, each owning its files; **WP-LIRRW** first and alone: `passes/lib/lirrw.bas` (new: `seaopt`'s reader, validator, writer and T10 moved out unchanged as a shared main-program part with its contract of names and entry lines, L-bd, L-bi), its section of `passes/lib/API.md`, `LIBS_CANON`, the module list and the overlap check of `Makefile` (§2.6.3), `passes/seaopt/*` and its `build.list`; proved neutral by byte-identical `sea.lir` and diagnostics over the corpus (as L-p) and `make test`; then, as its own step, L-bn's reading of T10 in `lirrw` (an instruction's read of its own destination does not count) and L-bq's condition of T4 in `passes/seaopt/*`, with the `.lir` goldens it changes listed for T2 to re-derive from §5.8. Then in parallel: **WP-LOPT** `passes/sealopt/*` and its `build.list` (prefix `lo_`, own lines 100 – 59 999, L-bc; T6's and T9's renaming of the copies' local registers, L-bl, and T9's placement into the copies, L-bm); **WP-PIPE** `driver/sea` (`seaopt` writes `sea.lir2`, then `sealopt`; `--emit lir2`; the usage text), `tests/driver_check.sh` (`--emit lir2`, the usage text, a missing `sealopt` executable), `tests/stage.sh` (the pairs `seaopt lir1 lir2` and `sealopt lir2 lir`, the skips of §6.2), `tests/run.sh` (`--emit lir2`), `tests/cross_pack.sh` and `tests/cross_run.sh` if they need it, `tools/seaval.bas` (the format `lir2`, checked as `lir1`), `tools/passlines.sh` (the pass list), `Makefile` (the program `sealopt`, its installation), and the lists of passes, `--emit` kinds, modules and `seaval` formats in `sea/CLAUDE.md`; **WP-RA2** (Decision 75) `passes/lib/ralloc.bas`, its section of `passes/lib/API.md` (after WP-LIRRW), its cases in `tests/lib_check.sh`, the `ra_else` calls in `passes/seagen_a64/*` and `passes/seagen_x64/*`, and the `tests/passes/ra5_live_*` tests of §6.2; **T1** `tests/programs/opt_*`, `tests/errors/r_opt_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump5_cases.py`, `tests/passes/`: every `NAME.lir` with a `NAME.lir1` renamed to `NAME.lir2` and, for the tests with a `NAME.sea`, its new `NAME.lir` derived (`lir4_seaopt` gets none; `gen_arith` and `ra5_*` are pass-4 tests and stay, L-bj), 5c-2's `opt5_*` goldens (`.lir1`, `.lir2`, `.lir`) (L-ak; T2 reports its CORPUS rows to T1). WP-LOPT and WP-PIPE work against T2's goldens through `stage.sh` | `seaopt`'s extraction proved neutral; the 5c-2 tests of §6.2 pass on both targets, `opt5_lcg.lir` equal to §5.8's W5 loop; every stage pair holds; the `ra5_*` tests pass under Decision 75; every earlier test passes; `make test` and `make cross` pass; `make check-limits` measured and recorded in §2.7. **Done** (2026-10-25): `make test` (driver 112, check_data 114, lib_check 220, arith 94, stage 634, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596 on the Linux host) pass; `sealopt` 5 411 built lines and `seaopt` 5 491, sizes and letters in §2.7 ("Measured after 5c-2"); lead decisions L-br–L-bv, the last from the independent review round of the working tree, which found one T5 miscompile (L-bv, (1)) and fixed it with the six regression tests `opt_destrew_*`; the implementers' readings are recorded after L-bv |
 | 5d | **Shapes, benchmarks, gate; close-out** (after 5b and 5c-2, under Decision 75's liveness rule; the gate as L-be revises it). Work packages: **WP-SHAPE** `tests/shape.sh`, `tests/shape/*.shape` (from §5.2's targets, by hand; each loop identified by its properties, §6.2, L-ar), the `Makefile` group `test-shape` in `make test` and its entry in the `make test` group list of `sea/CLAUDE.md`; **WP-BENCH** `bench/micro/*`, `bench/micro.sh`, `bench/results/micro-*.tsv` (§5.9), the phase-4 compiler built in a scratch worktree; then the gate after phase 5 (§2.7) | `make test-shape` passes for both targets (the phase's "done when", row 5); the micro-benchmarks are recorded in §5.9 for both targets with their machines; `make test` and `make cross` pass; the sizes and letters are recorded in §2.7 and the gate applied, a failing program getting a relief agreed with the user before phase 6's code. **Done** (2026-10-25), with the gate's one open item below: `make test-shape` passes on both targets, W5 `lcg_fill`'s fast copy (`L2_3`) 20 instructions on arm64 and 23 on x86_64, W4's interior `j` copy (`L1_81`) 24 and 27, no frame access, no call, cold branches 1 and 0, exactly §5.2's targets (§5.2, "Measured after 5d"); reaching x86_64 needed the `imulh` fix of `seagen_x64` (operand b always in a register, as §4.9.2's template says) and Decisions 76 (a step that is a `mov` of an `li` register is a loop-closing constant, both targets) and 77 (an x86_64 non-commuting two-address destination avoids its second operand's register, `ra_avoid`); the micro-benchmarks are in §5.9 (Apple M2 Pro and Intel i7-4790: `sor` phase 5 within 1 % of C on both, 5.43 and 6.71 times faster than phase 4; `lcg` 1.19 and 1.35 times C, 2.01 and 3.46 times faster than phase 4); `make test` (driver 112, check_data 114, lib_check 222, arith 94, stage 634, shape 4, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596) pass; the gate after phase 5 (§2.7, "Measured after 5d"): `seaopt`, `seagen_a64` and `seagen_x64` pass, **`sealopt` fails** on its letters (0 free numeric array letters, at least 2 required; its lines pass), so **a relief for `sealopt` is to be specified and agreed with the user before phase 6's code**, and phase 5 is closed when it is. **Relief agreed and gate passed** (2026-10-25): Decision 78, phase 7's scalar replacement and vectorization in a pass 3d of their own after `sealopt`, which receives fixes only, and its letter condition waived; the gate re-applied (§2.7, "The gate after phase 5 with Decision 78's relief") passes all four programs (`sealopt` 6 411 and 6 911 ≤ 9 000 with 1 000 remaining), so phase 5 is complete |
+| 6a | **Phase-6 specification** (documents only; proposed 2026-10-25, revised after two independent reviews, agreed 2026-10-26 with Decisions 80–93 and lead decisions L-bw–L-cx): §0, §2.6.2 (a pointer), §2.7 ("Projected for phase 6", "The measurement after 6c", "The gate after phase 6"), §2.11 (scope, phase rule by sub-phase, the readings, `seaname`/`seacheck`/`seaexpand`/`sealoop`/`sealower` of phase 6 with L19, L20, rule 39, R31, R32, the planned entries 23–38, the ports), §3.5.7 step 4 (`str` values and arrays, the empty matrix of structs), §3.6.6 (the dump tests §8.6 now covers), §6.2 ("Phase-6 tests"), §6.3 ("Phase-6 acceptance"), this table, §9, and LANGUAGE.md §8.1, §8.5, §8.6, §9.2, §10.10 and §11.4 (clarifications: L-bw and L-cp, Decision 92 and the meaning of "in or through", L-ch and L-ci, L-cc, Decision 89, L-bz); revised after two independent reviews; no contract file, intermediate format or code changes; done when committed, then 6b | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 80–93. **Done** (2026-10-26): the specification agreed, each Decision as option (a); next 6b (6b-0 only if the measurement after 6c triggers it, Decisions 82 and 87) |
+| 6b-0 | **The `seacheck` reserve: a compaction with no change of behaviour** (conditional, Decisions 82 and 87: run only when the measurement after 6c calls for it, before 6d's code; despite its name it then follows 6c): the patterns of §2.7 that apply to `seacheck`'s `SUB`/`CALL` style, C2 (consecutive `REM` lines merged up to 250 bytes, every comment's text kept), C3 and C5 where they apply; target 150–300 built lines (its 14 free numeric array letters already pass the gate, so no letter target). Work package: **WP-CHECK0** `passes/seacheck/*` only | `sea.hir1` and the diagnostics of every test are byte-identical before and after (as L-p proved 4h-0's: `tests/run.sh` with `--save-out` on both trees, compared with `cmp`); `make test` and `make cross` pass; `seacheck`'s built lines recorded in §2.7, at least 150 fewer than before the step |
+| 6b | **Calls and output** (after 6a): named and default arguments (LANGUAGE.md §8.1, §8.5), the inlining rule (§8.6: `seaname`'s classification, `sealoop`'s L20, `sealower`'s R31 and R32), `f64` `%` (FMOD), `format`, `print`, `make_dir` (rule 39). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 23–38, `SEA_ENT_COUNT` 38), `include/passes.txt` (`enum fkind main fn elem inl`; `rfn`'s `el` value 2 in its comment), the tables of §3.4.1 (`rfn`), §3.5.4 (`fn`) and §4.8 (the rows of §2.11.6 moved into the Id-first table), and the `entries` capacities of `sealower` (22), `seagen_a64` and `seagen_x64` (29) raised to 64 (L-cs; two lines in each pass, the `DIM` and the `CALL "tb_entries"` argument, which WP-CONTRACT alone edits; `tests/include_asserts.inc` needs no edit); then in parallel, each owning its files: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-LOOP** `passes/sealoop/*` (L20); **WP-LOWER** `passes/sealower/*` (rule 39, R31, R32); **WP-RT-A64** `runtime/arm64_macos/*` (new `rt_file.s`; `rt_fmt.s`, `rt_out.s`, `rt_math.s`, `rt_err.s`), the object list of `Makefile`, `tests/rt/arm64_macos/*`; **WP-RT-X64** `runtime/x86_64_linux/*`, `Makefile.linux`, `tests/rt/x86_64_linux/*`; **T1** `tests/programs/{call6_,inl_,fmod_,fmt6_,print_,mkdir_}*`, `tests/errors/{err_call6_,r_inl6_,r_mkdir_,r_fmt6_}*`, `tests/vectors/fmod6_cases.py` and the committed `tests/vectors/fmod6.vec` (T1's first delivery, before WP-RT's runtime tests use it), the retired `err_ns_*` goldens of the removed phase-rule rows, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump6_cases.py`, `tests/passes/{inl6_,res6_}*`, the 21 lowering dump tests of §6.2 treated by Decision 90 (their `.sea`, `.out` and goldens) and the `.res`, `.hir1` and `.hir` goldens that `el` 2 and the kind `inl` change (T2 reports its CORPUS rows to T1). Integration order: WP-CONTRACT; then WP-NAME, WP-CHECK and T2's goldens in one integration step (`make test` would be red with either alone), then the rest | the 6b tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test`, `make check-contracts` and `make cross` pass; sizes recorded in §2.7 |
+| 6c | **Elemental functions** (after 6b): `elemental` (LANGUAGE.md §8.5; the call pre-pass of `seaname` with 228 and 232, L-cq; the call typing of `seacheck`; pass 2b's step 3 with `inst` and `emap`; `sealoop`'s L19 and L-ck's order), `ind2sub` with an array `r` (L-cl). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*` (L19); **WP-LOWER** `passes/sealower/*` (validation only); **T1** `tests/programs/{elem_,ind2sub_arr}*`, `tests/errors/{err_elem6_,r_elem6_}*`, `tests/CORPUS.md`; **T2** `tests/passes/elem6_*`; then the measurement after 6c (§2.7) | the 6c tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass; the measurement after 6c recorded in §2.7, and any relief it calls for agreed with the user before 6d's code |
+| 6d | **`write_json`** (after 6c): pass 2b's step 4 (`jvec (dyn e)` for fixed-size values, L-ce), the `j*` statements through `sealoop` (validation, capacity) and `sealower` (rule 39's JSON rows), the runtime emitter of §2.11.6 (in 6b's entries). Work packages: **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*`; **WP-LOWER** `passes/sealower/*`; **T1** `tests/programs/json_*` with their `NAME.expect/`, `tests/errors/r_json_*`, `tests/CORPUS.md`; **T2** `tests/passes/json6_*` | the 6d tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass |
+| 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code |
 
 ## 9. Decisions (agreed)
 
@@ -11400,6 +12083,207 @@ living in its existing block tables; `sealoop` at most one, leaving at least 2) 
     and (b) add a release step and a version suffix to maintain. Affects §1.2 (one sentence); no
     row of §8, no contract file, no code.
 
+80. **What phase 6's ports contain, given that figures are phase 9**
+    (§2.11.8; W1 and W5 as MATLAB scripts and Appendix D draw figures, which need phase 9's plotting
+    names, still reported by the phase rule). Options: (a) **the ports leave out every figure
+    statement and the `--figures` option, and accept only `--export-reference`; phase 9 adds the
+    figure code to the same files**; (b) the full text with the figure code, compiled only after a
+    marker-stripping step in `tests/accept.sh`; (c) no ports in phase 6: smaller `printf`-and-JSON
+    programs that reproduce the reference keys. **Decided: (a)** (the user, 2026-10-26); it is what row 6's "without
+    figures" says, keeps the ports ordinary Sea programs that the compiler builds as written, and the
+    figures are additive in phase 9 (a new arm of the option loop and a block of plotting calls); (b)
+    puts a preprocessor that Sea does not have into the test harness, and the stripped text is not
+    the file that is compiled; (c) gives up the workload test that is phase 6's purpose. Affects
+    §2.11.8, §6.3, §8 (rows 6, 6e).
+81. **Where the checks of elemental functions and the §8.6 inlining
+    class are made, and how the class reaches pass 3a** (§2.11.2, §2.11.3). Options: (a) **`seaname`
+    makes one whole-program call pre-pass after resolving the bodies: effects (fixpoint), call-graph
+    cycles, 228 and 232 through `rerr`, and the §8.6 class of every `fn` item on the source, written
+    as `rfn`'s `el` 2 and carried by `seacheck` as the HIR `fn` kind `inl` (`enum fkind` gains `inl`;
+    no record format changes)**; (b) all of it in `seacheck`, which holds the types; (c) `seacheck`
+    reports 228/232, and `sealoop` recomputes the inlining class on `sea.hir`. **Decided: (a)** (the user, 2026-10-26);
+    the class is defined on the source as written (call sites, statements, loops) and on names, which
+    are `seaname`'s; the pre-pass is the first check at a `call` node, so moving 228 and 232 keeps the
+    rule "Order across the two programs" (§2.6.2); `seaname` has the room (projection 5 611–5 921,
+    §2.7) and `seacheck` does not (Decision 82); (b) adds 250–400 lines to the pass that is already
+    over its cap at the upper end of its projection; (c) counts on rewritten HIR (defaults copied, pass
+    2b's instances), where the counts of §8.6 differ from the source's, and puts a whole-program
+    analysis into the pass with the most erratic estimates. Affects §2.11.2, §2.11.3, §3.4.1 and §3.5.4
+    (contract change 2 of §2.11.1).
+82. **Room in `seacheck` for phase 6** (§2.7, "Projected for phase 6":
+    6 426 + 455–870 = 6 881–7 296, above 7 000 built lines at the upper end; its earlier increments
+    landed inside their estimates; revised after the review found that `sealower`'s 4h-0 patterns
+    do not carry over). The compaction available is smaller than first written: `seacheck` is in the
+    `SUB`/`CALL` style (124 `SUB`s, 709 `CALL`s, 9 `GOSUB`s, no `DEF`), so C1, C4 and C6 (`GOSUB`
+    fall-through and tail calls, multi-line `DEF` text helpers, one shared `GOSUB` child loop) have
+    nothing to act on; C2 (merging consecutive `REM` lines, measured on its own code) saves at most
+    219, C3 and C5 0–80: 150–300 in all, which leaves the upper end at 6 581–7 146. Options: (a)
+    **gate `seacheck` as Decision 50 gates `sealower`: its 7 000 condition is replaced by built +
+    850 ≤ 9 000 and built + 1 275 ≤ 9 000 (passed at every end: 8 146 and 8 571), with at least 2
+    free letters; no sub-step before 6b; the compaction (C2, C3, C5; 150–300) is the reserve that
+    the measurement after 6c calls for if built + 120 + 1 275 > 9 000 there**; (b) the compaction
+    first, as sub-step 6b-0 (150–300), and keep the 7 000 condition, accepting that the upper end
+    still fails it and would need (a) or (c) at the gate; (c) split `seacheck` now: the library-call
+    checks (overload tables and typing of §10's functions) into a new pass between 2a and 2b, a new
+    intermediate format and driver step; (d) move the named-argument matching (224, 225, 226 of
+    user and prelude functions) into `seaname`, which knows the signatures, saving 100–150 lines of
+    `seacheck` but leaving `seacheck` to repeat the mapping to write `sea.hir1`. **Decided: (a)**
+    (the user, 2026-10-26); `seacheck`'s remaining work after phase 6 is the smallest of the front end (850), so the
+    7 000 condition, which exists to keep room for later phases, protects little here, while the
+    9 000 conditions, which do, pass at every end; Decision 50 set the precedent for `sealower`
+    after it had compacted; it costs no sub-phase and keeps the compaction in reserve; (b) spends a
+    sub-phase for a saving that does not reach the condition it is for; (c) is the right shape only
+    if phases 8–9 grow `seacheck` well past their 850, which the gate after phase 8 can still decide;
+    (d) duplicates the matching across two programs. Affects §2.7, §8 (rows 6b-0, 6b), the gate
+    after phase 6.
+83. **What §8.6 inlining of the program's own functions covers in
+    pass 3a** (L18 inlines the prelude, whose functions have scalar or array parameters and results
+    and no `ref` parameter). Options: (a) **all of it: `ref` parameters (R31: the argument's address
+    bound to a ref local, lowered exactly as a call's), aggregate results (R32: a caller-provided
+    home, as a call's hidden result address), and `return` of a multiple-result call (`tret` → `tbind`
+    of `.i` locals and `iret`), so every function §8.6 names is inlined**; (b) amend LANGUAGE.md §8.6
+    so that a function with a `ref` parameter is not inlined; (c) exempt all three cases from §8.6.
+    **Decided: (a)** (the user, 2026-10-26); §8.6 is normative, and W1's `make_params` (three call sites, but no loop,
+    not recursive and about 15 statements, so class (c)) returns a struct, and W1's `shaft_safety`
+    (elemental) returns a tuple; R31 and R32 reuse the lowering of calls and homes that phase 4
+    tests, so the semantics of an inlined call are those of the call by construction; (b) and (c)
+    change the language to fit the implementation and leave `make_params`'s struct result to a call,
+    which the workload could live with but the rule does not allow. Affects §2.11.4 (L20), §2.11.5
+    (R31, R32), §3.6.6.
+84. **How an elemental call with array arguments is lowered** (§3.5.7
+    step 3 writes `inst` and `emap`). Options: (a) **`sealoop` rewrite L19: arguments once, rule 22's
+    broadcast extents, checks and loop nest, one `anew` per kept result (a result bound to `_` or
+    `skip`, or under `eval`, is not allocated), an inlined per-element call, `est` of each kept
+    result, L11's statement forms for k ≥ 2**; (b) as (a), but every result allocated; (c) pass 2b
+    writes the loops in HIR as it does for `write_json`. **Decided: (a)** (the user, 2026-10-26); rule 22 already owns
+    broadcasting, its checks and its order, so an elemental application has the shapes, sites and
+    error order of an elemental library call; skipping discarded results saves W1's grids work and
+    memory and changes no output (an error in the body is still raised at the first failing
+    element); (b) is simpler by about 40 lines but allocates arrays nobody reads, which the heap
+    check would still pass; (c) duplicates rule 22's broadcasting in pass 2b, a second
+    implementation of the shape rules that must agree with the first. Affects §2.11.4.
+85. **The runtime interface of phase 6's output** (§2.11.6). Options:
+    (a) **sixteen entries, ids 23–38: `FORMAT`, `PRINT`, `MAKE_DIR`, `FMOD`, and twelve JSON entries
+    (open, close, object, array, end, key, four scalars, vector, matrix), all lowered by rule 39's
+    table**; (b) one `sea_json` entry with an operation code as its first argument; (c) the emitter
+    written as LIR by `sealower` around a small byte-writing entry. **Decided: (a)** (the user, 2026-10-26); each entry
+    has one fixed signature, so the entry table types its calls and rule 39 stays a table lookup
+    (Decision 52); (b) needs a variadic argument class the entry table cannot describe; (c) moves the
+    `%.17g` formatting and escaping into generated code on both targets and grows `sealower`, which
+    has the least room. Affects §2.11.6, `rt.inc` (WP-CONTRACT), §4.8.
+86. **How the ports are accepted** (§6.3). Options: (a) **a new
+    `tests/accept.sh` for `sea/ports/`, beside `tests/accept4.sh`, which stays: `compare.py
+    --candidate` and `compare_report.py` with the token maps on the Mac; on the Linux host byte
+    identity of the report (minus the `Compute time` line) and of the JSON against the Mac's**; (b)
+    merge both into one script with two modes; (c) run `compare.py` and `compare_report.py` on the
+    host too. **Decided: (a)** (the user, 2026-10-26); the phase-4 programs keep their own keys and the shape tests use
+    them, and a separate script keeps phase 4's tests untouched; byte identity on the host is a
+    stronger check than the comparators and needs no Python or NumPy there; (b) mixes two contracts
+    in one file for no gain; (c) adds a NumPy dependency to the host for a check byte identity already
+    implies. Affects §6.3, §8 (row 6e).
+87. **How phase 6 is built** (§8). Options: (a) **the sub-phases 6a
+    (specification), 6b (calls and output with WP-CONTRACT first, then WP-NAME, WP-CHECK and T2's
+    re-derived goldens integrated together), 6c (elemental, then the measurement after 6c), 6d
+    (`write_json`), 6e (ports, acceptance, gate), each with work packages that own disjoint files;
+    6b-0 (the `seacheck` compaction) only as Decision 82 (b) or its reserve requires**; (b) one build
+    after 6a with every package in parallel; (c) one sub-phase per pass. **Decided: (a)** (the user, 2026-10-26); each
+    sub-phase ends with a passing `make test` and `make cross` and removes its own phase-rule rows;
+    6b's entries and fkind change come first so that 6c and 6d only use them; 6c is followed by the
+    measurement of `sealoop` and `seacheck` before 6d adds to them; (b) puts five packages into the
+    same passes at once, which the file-ownership rule forbids; (c) splits each feature across
+    sub-phases, so no sub-phase tests a feature end to end. Affects §8.
+88. **The gate after phase 6 and where phase 7's fusion goes**
+    (§2.7: `sealoop` 6 319–6 839 after phase 6, and 7 819–8 339 with phase 7's fusion estimate of
+    1 500, up to 9 089 under stress; its increments have missed their upper ends by up to 52 %).
+    Options: (a) **write the gate's conditions now in Decision 71's form (each program ≤ 7 000 built
+    lines after phase 6 except `sealower` and `seacheck`, Decisions 50 and 82, ≤ 9 000 with its
+    remaining phases' estimates and with them × 1.5, 2 free numeric array letters except where
+    waived); if `sealoop` fails the stress condition, the letter condition or both, and nothing
+    else, phase 7's fusion gets a pass of its own ahead of `sealoop`, and that pass also takes L19:
+    it reads `sea.hir`, where an elemental application is still an `emap`, and LANGUAGE.md §8.5
+    requires elemental applications to fuse with the element-wise expression around them, so the
+    pass treats an `emap` as a k-result element-wise operator, writes the fused broadcast nest with
+    the per-element call, and leaves only that call to `sealoop`'s L20 (`sealoop` loses L19's
+    180–350 lines in phase 7 and is gated with 1 000 of fixes); the measurement after 6c may bring
+    this decision forward when `sealoop`'s measured 6b + 6c increment exceeds 1.5 times its estimate
+    or its projection after 6d exceeds 7 000**; (b) decide now that fusion is a new pass (with L19);
+    (c) leave the question to phase 7's specification. **Decided: (a)** (the user, 2026-10-26); `sealoop`'s
+    projections have been the least reliable of all passes (4f 271 against 600–900, 4g-2 774
+    against 315–510), so the decision is better taken on a measurement, and writing the condition
+    and its consequence for L19 now means neither the gate nor the measurement needs a new question;
+    (b) adds a pass and moves L19 before the numbers say it is needed; (c) leaves phase 6 closing
+    without a rule for its largest risk, and phase 7 would then find L19 on the wrong side of the
+    seam. Affects §2.7, §8 (rows 6c, 6e).
+89. **What `make_dir` does when the directory or its parents exist or
+    are missing** (LANGUAGE.md §10.10 said only that it creates a directory). Options: (a) **one
+    level, as POSIX `mkdir(path, 0777)` under the umask; on any failure the errno is saved and the
+    path is tested for a directory by `open(path, O_RDONLY | O_DIRECTORY)` (closed at once): a
+    directory is not an error (so `/` and `.` succeed alike on macOS, where `mkdir("/")` gives
+    `EISDIR`, and Linux, `EEXIST`); otherwise `cannot create directory '<path>': <saved errno
+    text>` (an existing file `File exists`, a missing parent `No such file or directory`); no parent
+    is created**; (b) create missing parents, as `mkdir -p`. **Decided: (a)** (the user, 2026-10-26); the workloads
+    create one output directory next to the program; the errors are the existing `CANNOT_MKDIR`
+    message with the errno; testing with `open` rather than `stat` avoids the targets' different
+    `struct stat` layouts and glibc's versioned `stat` symbols, and testing after any failure rather
+    than only after `EEXIST` makes both targets agree; (b) needs a loop over path components with
+    its own error rules (which component failed, races between them) that no workload needs.
+    Affects LANGUAGE.md §10.10 (one sentence), §2.11.6 (`MAKE_DIR`).
+90. **The existing dump tests that §8.6 inlining changes** (§6.2; the
+    review found 21 lowering dump tests whose function §8.6 (b) or (c) covers, and about 70 `.res`
+    and 51 `.hir1` goldens that `el` 2 and the kind `inl` may change). Options: (a) **re-derive every
+    affected golden by hand from the rules; in the 12 tests whose subject is a call boundary (a
+    §3.6.6 rule's verbatim example written inside a function, a `ref` parameter root, a
+    multiple-result call bound by L12, calls inside a selection) make the function non-inlinable
+    with a second call site at the end of `.main` and a `while false` loop with an empty body as its
+    first statement, so the test keeps its subject; in the other 9 let the function be inlined and
+    re-derive with L20's form; integrate T2's goldens with WP-NAME and WP-CHECK in one step**; (b) a
+    test-only driver option `--no-inline` (with `el` 0 and kind `fn` written) that the existing dump
+    tests use through a `.meta` line, so their goldens stay as they are; (c) re-derive all of them
+    with inlining, including the call-boundary tests. **Decided: (a)** (the user, 2026-10-26); the tests keep testing
+    what their `tests/CORPUS.md` row says, on the configuration users run; the work is mechanical
+    (the class is decided on the source by §2.11.3's rules); (b) is the least work but adds a CLI
+    option, a pass flag and a harness attribute to maintain, and tests a configuration no program
+    is built with; (c) loses the coverage of call lowering that those 12 tests give (the verbatim
+    examples of rules 15, 18, 23, 24, 29, 32 and 33 would no longer match their rule's text).
+    Affects §3.6.6, §6.2, §8 (row 6b), L-ct.
+91. **Where a parameter default's value is checked** (§2.11.2; the
+    review found that the first text, which put every default check into `seaname`, needs the
+    outcome of constants that only `seacheck` evaluates, Decision 25). Options: (a) **`seaname` keeps
+    the structural checks of the signature step (236, 227 at a `ref` parameter's default, the names
+    resolved like a `const` value's); `seacheck` checks each default's value where it checks the
+    `const` items (237, 201, 260, 261, a constant's outcome used as Decision 25 says), each error
+    competing in source order as every other (§2.6.2)**; (b) all in `seaname`, which would then
+    evaluate constants itself (moving or duplicating `seacheck`'s constant evaluator); (c) all in
+    `seaname`, with defaults restricted to literals and constant names checked only for their
+    type. **Decided: (a)** (the user, 2026-10-26); the value check is the `const` check, which lives in `seacheck`, and
+    the source-order rule already orders a default's error against a constant's (a default's error
+    on line 50 loses to a constant's on line 1); it moves 40–80 lines from `seaname` to `seacheck`
+    (counted in §2.7, and within Decision 82 (a)'s conditions); (b) duplicates the evaluator; (c)
+    narrows LANGUAGE.md §8.1's "a constant default". Affects §2.11.2, §2.7, L-bx.
+92. **An elemental function without results** (LANGUAGE.md §8.5
+    required results "one result or a tuple" without saying whether none is allowed; L19 was
+    written for k ≥ 1). Options: (a) **allowed: called with scalars it is an ordinary call
+    statement; called with arrays it is applied at every element position for its errors only (it
+    has no effects), with L19's k = 0 form (no result allocated, the inlined call as a statement)**;
+    (b) forbidden: 253 at the `fn` item (the text `elemental function result must be f64, i64 or
+    bool` then also covers "no result"). **Decided: (a)** (the user, 2026-10-26); it is the regular case of the rule
+    (k results, k = 0), costs a few lines in L19, and makes an elemental validation routine
+    (`check_ranges(x)` that calls `error` on a bad element) possible; (b) is simpler by those few
+    lines but forbids a well-defined program for no semantic reason. Affects LANGUAGE.md §8.5 (one
+    sentence), §2.11.2, §2.11.4 (L19).
+93. **A named argument for a `ref` parameter** (Appendix A's `arg`
+    does not let `name: ref x` parse, so a `ref` parameter cannot be given by name at all; the
+    first text gave 254, `argument for ref parameter '%s' must be marked ref`, whose advice cannot
+    be followed). Options: (a) **keep the grammar: a `ref` parameter is given positionally only,
+    LANGUAGE.md §8.1 says so, and `name: x` for a `ref` parameter is 254 at x (the message names the
+    parameter; the sentence in §8.1 explains it)**; (b) extend Appendix A so that `name: ref x`
+    parses (pass 1, about 20–40 lines, and 115's start set), making named `ref` arguments legal;
+    (c) report a named `ref` argument as 224 `unknown parameter`. **Decided: (a)** (the user, 2026-10-26); no workload
+    passes a `ref` argument by name, the grammar has been fixed since phase 1 (`seaparse` has no
+    other phase-6 change), and 254 at least names the parameter; (b) is a clean extension that can
+    come later without breaking a program; (c) is wrong (the parameter exists). Affects LANGUAGE.md
+    §8.1 (one sentence), §2.11.2, L-bw.
+
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
 normative section): L-ac,
@@ -11613,3 +12497,94 @@ and kept by the lead, after L-bv; normative for the goldens).
 *WP-PIPE*: "the loop" of the `ra5_live` frame-access check is read as every innermost loop.
 
 *WP-RA2*: a register read before any write counts as written at record 0.
+
+**Lead decisions of phase 6** (written 2026-10-25 with the text of §2.11 and agreed by the user
+together with Decisions 80–93 on 2026-10-26; each is a reading where
+LANGUAGE.md or the earlier rules leave a choice, written into its normative section):
+
+* **L-bw** A `ref` parameter with a default is 227 at the default expression (§2.6.2's `at` table
+  says so for the `ref` position); a named argument for a `ref` parameter is 254 at its value
+  (`name: ref x` does not parse, so a `ref` parameter is given positionally only, Decision 93).
+  LANGUAGE.md §8.1 gains the sentence (§2.11.2).
+* **L-bx** Per Decision 91: `seaname` makes a default's structural checks (236, 227, its names) in
+  the signature step; `seacheck` checks its value with the `const` items, as the value of a `const`
+  item annotated with the parameter's type (237, 201, 260, 261 at the nodes the `const` rules name,
+  a named constant's outcome per Decision 25), in source order with every other error; a correct
+  default is copied into each call that omits it with its own positions (§2.11.2).
+* **L-by** A library function other than a prelude function accepts only its option names as named
+  arguments; any other name is 224 at the `narg` (the promise of "Readings fixed by 4f") (§2.11.2).
+* **L-bz** JSON layout: two-space indentation per depth, `"key": value`, `,` after every member or
+  element but the last, `{}` and `[]` for empty containers, a matrix as an array of rows, a matrix
+  with no element `[]`, one LF after the top value; escapes `\"`, `\\`, `\n`, `\t`, and every other
+  byte below 0x20 as `\u00` with two lowercase hex digits; 0x7F and bytes 0x80–0xFF verbatim;
+  `-0` written as `-0` (`%.17g`). LANGUAGE.md §11.4 gains the sentence (§2.11.6).
+* **L-ca** A run-time error while a JSON file is open: `_sea_err` flushes and closes it, ignoring a
+  failure of that flush, then reports the original error; an emitter's own failed flush or close is
+  `CANNOT_WRITE` with the path and the errno. `JSON_OPEN` allocates the emitter's state (descriptor
+  −1) before it opens the file, and `_sea_err` acts only when the descriptor is set (§2.11.6).
+* **L-cb** `make_dir`'s details are Decision 89's: the path copied into a NUL-terminated buffer
+  (freed on every exit; a NUL byte in the path is `EINVAL`), `mkdir(buf, 0777)` under the umask, on
+  any failure the errno saved and the directory test by `open(buf, O_RDONLY | O_DIRECTORY)`, no
+  `stat` (§2.11.6).
+* **L-cc** A `format` result longer than `SEA_LIM_STR_BYTES`, like a failed allocation, is
+  `out of memory` (no new error code); LANGUAGE.md §9.2's out-of-memory row names `format` (§2.11.6).
+* **L-cd** `print` has its own entry `PRINT` writing into the standard-output buffer that `printf`
+  uses, so the two interleave in program order and fail alike (§2.11.6).
+* **L-ce** Pass 2b's step 4 writes `jvec (dyn e)` / `jmat (dyn e)` for a fixed-size value, so the
+  emitter's entries take heap arrays only (§2.11.3).
+* **L-cf** Inlined code of the program's own functions keeps its own positions (§3.6.4 "Sites");
+  the `xblk`, its `tmp`s, the `iblk` and the `loc` records of the `.i` locals take the call's P
+  (§2.11.4).
+* **L-cg** After L19 and L20, `sealoop` drops the prelude, `elem` and `inl` functions and renumbers
+  the rest densely (L-v extended); `sea.hirl` holds no `inst`, `emap` or kind `elem`/`inl`
+  (§2.11.4).
+* **L-ch** §8.6 (b) counts `call` nodes on the source over every function of the program's file,
+  reachable from `.main` or not, including the function's own body and elemental calls; LANGUAGE.md
+  §8.6 states it, since the guarantee is the programmer's to check (§2.11.3).
+* **L-ci** §8.6 (c)'s statement count is one per Appendix A `statement`: an `if … else if … else`
+  chain counts 1, a bare block statement counts 1, every other statement 1, and the statements
+  inside every block (bodies, branches, arms, bare blocks) count; LANGUAGE.md §8.6 states it
+  (§2.11.3).
+* **L-cj** "Recursive" is membership in a cycle of the call graph of every `call` node of the
+  stream (direct or mutual) (§2.11.3).
+* **L-ck** An elemental application evaluates every argument once, in full, before any element;
+  elements run in increasing linear (column-major) order, so an error in the body is raised at the
+  first failing element with the callee's line (§2.11.4).
+* **L-cl** `ind2sub` with an array `r` is a two-result elemental application of rule 36's scalar
+  sequence by L19, every check at the call's site; L11 keeps the scalar case (§2.11.4).
+* **L-cm** `FMOD`: b = ±0 returns a's bits; an infinite a or a NaN operand returns
+  `#7FF8000000000000`; otherwise r = the C library's `fmod(a, b)` (exact by IEEE 754, the same bits
+  on both C libraries), adjusted once by + b when r ≠ 0 and r and b differ in sign; not folded by any
+  pass. The test vectors are computed with `math.fmod` and the adjustment, never Python's `%`, and
+  committed as `tests/vectors/fmod6.vec` for the runtime tests (§2.11.6, §6.2).
+* **L-cn** On the Linux host a port's standard output is compared with the Mac's byte for byte
+  after removing, on both sides, the lines matching `^Compute time: .* s$`; its JSON byte for byte;
+  the filter is a new case attribute `filter=compute-time` of `cross_pack.sh` and `cross_run.sh`,
+  WP-ACCEPT's (§6.3).
+* **L-co** The JSON emitter's container stack lives on the heap, grows as needed (no depth limit,
+  `out of memory` if it cannot) and is freed by `JSON_CLOSE` (§2.11.6).
+* **L-cp** Named arguments are evaluated in source order: when that differs from parameter order,
+  pass 2a writes the `seq` of `.t` temporaries of "Evaluation order" (§3.5.5), which makes R11's
+  `seq` case reachable (§2.11.2).
+* **L-cq** 228 and 232 are reported by `seaname`'s call pre-pass through `rerr`, the first check at
+  a `call` node, keeping "Order across the two programs" (§2.11.2).
+* **L-cr** Rule 39 lowers only the nodes of its table; rules 8, 9, 14, 24, 34 and 35 stay as written,
+  so no earlier golden changes (§2.11.5).
+* **L-cs** The `entries` capacity of `sealower` (now 22) and of `seagen_a64` and `seagen_x64` (now
+  29) becomes 64 (room for phases 8 and 9), two edited lines per pass; `seaopt` and `sealopt` keep
+  399 (§2.11.1).
+* **L-ct** A golden that §8.6 inlining changes is re-derived from the rules by T2, never copied
+  from output, as Decision 90 says (the 21 lowering dump tests of §6.2 and the `.res`, `.hir1` and
+  `.hir` goldens of `el` 2 and kind `inl`); `stack_gap` of `tests/accept/w5_stats.sea` becomes
+  inlined, which changes no output (§3.6.6, §6.2).
+* **L-cu** For `write_json`, `str` is a JSON scalar: a `str` value is a `jval`, a `str[]` or `str[,]`
+  a `jvec` or `jmat` (fixed-size ones through `dyn`), although §4.5's classes count `str` as a
+  reference type (§3.5.7 step 4 as amended).
+* **L-cv** A matrix of structs or records with no element (r × 0 or 0 × c) is written `[]` by a
+  guard in pass 2b's expansion, matching LANGUAGE.md §11.4 (§3.5.7 step 4 as amended).
+* **L-cw** `seaname`'s call pre-pass is iterative (a worklist for the effects fixpoint, an explicit
+  stack for the cycle search), so Baysick's limit of 1 024 active `CALL`s does not bound the call
+  graph (§2.11.2).
+* **L-cx** `tests/accept.sh` writes a port's standard output and standard error outside its run
+  directory, which must then hold only `NAME.json` and the executable; a path that is a directory is
+  tested with `write_json(".", …)`, since git keeps no empty directory (§6.2, §6.3).

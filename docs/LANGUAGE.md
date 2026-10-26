@@ -1274,7 +1274,10 @@ elemental fn name(…) -> R { … }          §8.5
   branches (every branch of an `else if` chain) all end every path; a loop never does, whatever
   its condition (`while true { return 1 }` as the last statement is `missing return`).
 * **Default values**: a parameter may have a constant default; all parameters after it must
-  have one too.
+  have one too. A `ref` parameter cannot have a default (`ref argument must be a mutable variable,
+  element or field`, at the default) and is given positionally only: `name: ref x` does not parse,
+  and `name: x` for a `ref` parameter is `argument for ref parameter '%s' must be marked ref`, at the
+  value.
 * **Calls**: positional arguments first, then named ones `name: value` in any order (a positional
   argument after a named one is the compile error `positional argument after a named argument`, at
   that argument: `sort(desc: true, v)`); a name
@@ -1282,7 +1285,9 @@ elemental fn name(…) -> R { … }          §8.5
   parameter without a default must be given (`missing argument`). The standard library uses
   named arguments for options (`sort(v, desc: true)`, `plot(ax, x, y, style: "r--")`), and the
   options of a library function (`dim:`, `desc:`, `style:`) are given only by name: `sort(v, true)` is
-  `no overload of 'sort' accepts (f64[], bool)`.
+  `no overload of 'sort' accepts (f64[], bool)`. The arguments are evaluated in source order, named
+  ones included, whatever the order of the parameters they name (§6.8); an omitted argument's
+  default is a constant, so when it is evaluated cannot be observed.
 * **Effects.** A function **has effects** if it writes output (`printf`, `print`, `write_json`,
   `make_dir`, `save_svg`, the plotting calls), has a `ref` parameter, or calls a function with
   effects. `error` is not an effect in this sense. Elemental functions may not have effects
@@ -1349,18 +1354,21 @@ outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 `elemental fn` declares a function written for scalars that may also be called with arrays:
 
 * Its **elemental parameters** are those of type `f64`, `i64` or `bool`; its results must be
-  scalars of those types (one result or a tuple). Other parameters (structs, strings, arrays)
-  are **uniform**: passed unchanged.
+  scalars of those types (one result or a tuple), or it has no result. Other parameters (structs,
+  strings, arrays) are **uniform**: passed unchanged.
 * A call where every elemental argument is a scalar is an ordinary call. If one or more
   elemental arguments are arrays, all elemental arguments are broadcast together (§6.3) and
   the function is applied to each element position; each result becomes an array of the
-  broadcast shape. W1 calls `shaft_safety` with scalars (bisection), with a 2001-element vector
+  broadcast shape (a function without results is applied for its errors only, as a statement).
+  W1 calls `shaft_safety` with scalars (bisection), with a 2001-element vector
   (the material sweep) and with 90 × 120 matrices (the grid bisection).
 * The body may use any statements (loops, `if`, `match`, calls), but may not have effects
   (§8.1): no `ref` parameters, no output, and only calls of functions without effects
   (`effects in elemental function`). Recursion is not allowed in or through an
-  elemental function. `error` is allowed (it stops the program at the first failing element in
-  increasing linear order).
+  elemental function: no cycle of calls (direct or through other functions) may contain an
+  elemental function (`elemental function cannot be recursive`); an elemental function may call an
+  ordinary recursive function whose cycle it is not on. `error` is allowed (it stops the program at
+  the first failing element in increasing linear order).
 * Elemental calls are always inlined into the loop that applies them, and fuse with the
   surrounding element-wise expression (DESIGN.md §5.1).
 * All built-in scalar math functions (`sqrt`, `exp`, `log`, `cos`, `min(a, b)`, `round`, `where`,
@@ -1380,8 +1388,13 @@ workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
   performance model relies on (DESIGN.md §5.2–§5.3), stated on the source so a programmer can check
   it: a function is inlined at every call site if it is (a) elemental, or (b) called from
   exactly one call site, or (c) not recursive (directly or through other functions), contains
-  no loop, and has at most 50 statements, counting the statements of nested blocks. The
-  compiler may inline more. W3's `qc_deriv` (no loop, 16 statements; called 1.9M times) and
+  no loop, and has at most 50 statements, counting the statements of nested blocks. A **call
+  site** is a call of the function written anywhere in the program's file: in any function,
+  whether or not the program can reach it, in the function's own body, and a call of an elemental
+  function with arrays. **Statements** are counted as Appendix A's `statement`: each statement of
+  the body counts 1, an `if … else if … else` chain is one statement, a bare `{ … }` block is one
+  statement, and the statements inside every block (branches, loop bodies, `match` arms, bare
+  blocks) count too. The compiler may inline more. W3's `qc_deriv` (no loop, 16 statements; called 1.9M times) and
   W1's `shaft_safety` (elemental; called ~260k times on scalars) are therefore not calls at all
   in the compiled loops; their unused results are dead code.
 
@@ -1446,7 +1459,7 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | `chol` of a matrix that is not positive definite | `matrix is not positive definite` |
 | `eig_sym` of a non-symmetric matrix | `matrix is not symmetric` |
 | non-square matrix where square required | `matrix is not square (%s)` |
-| out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+`) | `out of memory` |
+| out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+` or from `format`) | `out of memory` |
 | stack overflow | `stack overflow` |
 | file or directory cannot be created/written (`write_json`, `save_svg`, `make_dir`) | `cannot open '%s': %s`, `cannot write '%s': %s`, `cannot create directory '%s': %s` (reason from a fixed table of errno texts so both targets print the same bytes) |
 | invalid plot argument (§12.3) | `invalid line style "%s"`, `invalid color "%s"` |
@@ -1678,7 +1691,7 @@ rules in every operation of this table.
 |----------|--------|
 | `args()` | `str[]`: the command-line arguments after the program name (Decision 14 in DESIGN.md §9) |
 | `now()` | §13 |
-| `make_dir(path)` | create a directory if it does not exist (MATLAB `if ~exist(d,'dir'), mkdir(d)`) |
+| `make_dir(path)` | create a directory if it does not exist (MATLAB `if ~exist(d,'dir'), mkdir(d)`): one level, no parent is created; an existing directory is not an error; an existing file at the path, a missing parent or any other failure is the run-time error `cannot create directory '%s': %s` (§9.2) |
 | `write_json(path, value)` | §11.4 |
 | `save_svg(fig, path)` | §12 |
 
@@ -1800,7 +1813,8 @@ written through a 64 KiB buffer, followed by LF. A value whose type is or contai
 
 **Layout promised**: two-space indentation per level, one element or member per line,
 `"key": value` with one space after the colon, LF line ends, the same bytes on every target for
-the same values. **Not promised**: textual agreement with MATLAB's `jsonencode`, which writes
+the same values. In `\u00XX` the two hex digits are lowercase, and LF and TAB use `\n` and `\t`;
+an empty object is `{}`, a matrix with no element `[]`, and `-0.0` is written `-0`. **Not promised**: textual agreement with MATLAB's `jsonencode`, which writes
 other number forms (`1.0E+6`, `2.145635252E+9`) and its own spacing. Nothing depends on the
 text: `compare.py` parses both files as numbers and flattens arrays before comparing.
 
