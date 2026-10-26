@@ -1390,8 +1390,9 @@ workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
   exactly one call site, or (c) not recursive (directly or through other functions), contains
   no loop, and has at most 50 statements, counting the statements of nested blocks. A **call
   site** is a call of the function written anywhere in the program's file: in any function,
-  whether or not the program can reach it, in the function's own body, and a call of an elemental
-  function with arrays. **Statements** are counted as Appendix A's `statement`: each statement of
+  whether or not the program can reach it, or in the function's own body; each call written counts
+  once, however often it runs (inside a loop, or in an elemental function applied to an array).
+  **Statements** are counted as Appendix A's `statement`: each statement of
   the body counts 1, an `if … else if … else` chain is one statement, a bare `{ … }` block is one
   statement, and the statements inside every block (branches, loop bodies, `match` arms, bare
   blocks) count too. The compiler may inline more. W3's `qc_deriv` (no loop, 16 statements; called 1.9M times) and
