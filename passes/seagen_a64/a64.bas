@@ -46,7 +46,7 @@
 83 REM Y3 the entries row of FREE (release calls it); S8 spill slots; C4 C5 a fused comparison
 84 REM (1 flags, condition C7$; 2 a test of register C6 against 0), M7 = 1 in a ret's move.
 85 REM ====================================================================================
-200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(29), Y$(29,5)
+200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(64), Y$(64,5)
 205 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 210 DIM K(60), K$(60), A(399,2), P$(199), M(199,6), Q$(1999), T$(199,2), V$(10,3), U$(30,2)
 215 DIM B$(219999), O(219999), G(219999), G$(300), U(40), L(4), Q(200), P(200), J$(320), V(4)
@@ -114,7 +114,7 @@
 500 CALL "tb_errors": P$, E(), E$(), 299, E0
 505 CALL "tb_exits": P$, E(), E$(), E0, X(), X$(), 19, N7
 510 CALL "tb_consts": P$, E(), E$(), E0, C(), C$(), 299, C9
-515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 29, Y9
+515 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 64, Y9
 520 LET Z(1) = 39
 525 LET Z(2) = 299
 530 LET Z(3) = 399

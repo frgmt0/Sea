@@ -22,7 +22,7 @@ enum hbinop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or cat
 enum unop neg not
 enum view T flat col row
 enum conv d i f F e E g G s
-enum fkind main fn elem
+enum fkind main fn elem inl
 enum pmode val ref
 enum lmut let var for
 enum lkind main fn
@@ -96,6 +96,7 @@ rec A 49 ifx 3 pos:pos
 rec A 50 rerr 0 pos:pos code:u k:u a:s*k
 rec A 51 rtup 0 id:u n:u t:ty*n
 ; nodes that replace sea.ast nodes (same pops)
+; rfn el: 0 an ordinary function, 1 an elemental one, 2 an ordinary function that LANGUAGE.md 8.6 (b) or (c) requires inlined
 rec A 52 rfn np+nr+1 pos:pos name:s el:u np:u nr:u fid:u rty:ty t:ty*np
 rec A 53 rst n pos:pos name:s n:u sid:u
 rec A 54 rcni 1+t pos:pos name:s t:u cid:u v:i

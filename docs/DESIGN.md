@@ -3022,7 +3022,8 @@ option (a) (2026-10-26). Its smaller readings are the lead decisions **L-bw – 
 decisions of phase 6"), agreed with the text. No code, test or contract file changes with 6a: the
 contract changes this section needs are listed in "Contract changes" below and are made by the work
 package WP-CONTRACT of sub-phase 6b, each with its document table in the same change (the contract
-rule of §2.6); until then the tables of §3 and §4.8 describe the contracts as they are.
+rule of §2.6); WP-CONTRACT is done: `rt.inc`, `passes.txt` and the tables of §3.4.1, §3.5.4 and §4.8
+hold them.
 
 #### 2.11.1 Scope
 
@@ -3053,7 +3054,7 @@ application or a `write_json` loop may allocate temporaries, §5.1, and nothing 
 
 **Contract changes** (WP-CONTRACT, the first package of 6b, alone, before any other 6b code):
 
-1. `include/rt.inc`: the sixteen entries of §2.11.6, ids 23–38, appended to `SEA_ENTRY_LIST`
+1. (Done.) `include/rt.inc`: the sixteen entries of §2.11.6, ids 23–38, appended to `SEA_ENTRY_LIST`
    (`SEA_ENT_COUNT` becomes 38), and the same rows moved into §4.8's Id-first entry table with its
    `SEA_ENT_COUNT` row (`tests/include_asserts.inc` needs no edit: it already checks
    `SEA_ENT_COUNT` against the number of entry records). In the same change the `entries` capacity
@@ -3335,25 +3336,11 @@ to `sea.hirl` (only the HIR records `iblk` and `iret` of 4h are used).
 
 #### 2.11.6 Runtime entries of phase 6
 
-Planned rows of §4.8's entry table (Decision 85), entered by WP-CONTRACT with their ids; written
-here name first, because they are not yet in `rt.inc` (§2.6's contract rule). Each `S` entry takes
-the site as its last integer argument (§4.8); every returned object is owned, every argument
-borrowed; a failing entry calls `_sea_err` and never returns.
-
-| Name (planned id) | Symbol | Site | Args | Results | Contract |
-|-------------------|--------|------|------|---------|----------|
-| `FORMAT` (23) | `sea_format` | `S` | `pp` | `p` | `(fmt, slots, site)`: a new string of exactly the bytes `sea_printf` would write for the same format and slots (LANGUAGE.md §11.1), through the internal sink `sea_error` uses; a result longer than `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (L-cc) |
-| `PRINT` (24) | `sea_print` | `S` | `p` | `-` | `(s, site)`: s's bytes into the standard-output buffer, nothing added (LANGUAGE.md §11.2); a failed write of the buffer: `CANNOT_WRITE` with `<stdout>` and the errno, as `sea_printf` (L-cd) |
-| `MAKE_DIR` (25) | `sea_make_dir` | `S` | `p` | `-` | `(path, site)`: the path's bytes copied into a new NUL-terminated buffer (a path holding a NUL byte: `CANNOT_MKDIR` with `EINVAL`; the buffer freed on every exit); `mkdir(buf, 0777)` (the process's umask applies); success returns; on any failure the errno is saved first, then the path is tested for a directory by `open(buf, O_RDONLY \| O_DIRECTORY)` (closed at once when it succeeds, no `stat`, whose structure layout and glibc symbol differ between the targets): a directory returns (so `/` behaves alike on macOS, where `mkdir` gives `EISDIR`, and Linux, `EEXIST`); otherwise `CANNOT_MKDIR` with the path and the saved errno (an existing non-directory gives `File exists`; a missing parent `No such file or directory`: no parent is created, Decision 89) |
-| `FMOD` (26) | `sea_fmod` | `-` | `ff` | `f` | `(a, b)`: `a % b` of LANGUAGE.md §6.6 for `f64`: b = ±0 gives a's bits unchanged; else an infinite a or a NaN operand gives `#7FF8000000000000`; else r = the C library's `fmod(a, b)` (exact by IEEE 754, so the same bits from Apple's libm and glibc; the runtimes already link the C library), and r + b rounded once when r ≠ 0 and r and b differ in sign (L-cm). Cannot fail |
-| `JSON_OPEN` (27) | `sea_json_open` | `S` | `p` | `-` | `(path, site)`: first allocates the emitter's state (the retained path, an empty `SEA_JSON_BUF_BYTES` buffer, the container stack, depth 0, the descriptor field set to −1), then copies the path into a NUL-terminated buffer and opens it for writing (`O_WRONLY \| O_CREAT \| O_TRUNC`, mode 0666 before the umask) and stores the descriptor; a failure (a NUL byte in the path: `EINVAL`) frees the state, then `CANNOT_OPEN` with the path and the errno. At most one file is open (pass 2b's blocks do not nest) |
-| `JSON_CLOSE` (28) | `sea_json_close` | `S` | `-` | `-` | `(site)`: writes LF, flushes, closes, releases the path and frees the emitter's state; a failed write or `close`: `CANNOT_WRITE` with the path and the errno |
-| `JSON_OBJ` (29), `JSON_ARR` (30) | `sea_json_obj`, `sea_json_arr` | `S` | `-` | `-` | `(site)`: begins an object or an array as the next value (the top value, an element, or the value of the last key) |
-| `JSON_END` (31) | `sea_json_end` | `S` | `-` | `-` | `(site)`: ends the innermost open object or array |
-| `JSON_KEY` (32) | `sea_json_key` | `S` | `p` | `-` | `(key, site)`: the next member's key, in the innermost open object |
-| `JSON_F64` (33) | `sea_json_f64` | `S` | `f` | `-` | `(x, site)` (x in `d0` / `%xmm0`, site in `x0` / `%rdi`): a number, `%.17g` for a finite x, `null` for NaN and ±∞ |
-| `JSON_I64` (34), `JSON_BOOL` (35), `JSON_STR` (36) | `sea_json_i64`, `sea_json_bool`, `sea_json_str` | `S` | `i`, `i`, `p` | `-` | `(v, site)`: an `i64` in decimal; `true`/`false`; a string, escaped (LANGUAGE.md §11.4) |
-| `JSON_VEC` (37), `JSON_MAT` (38) | `sea_json_vec`, `sea_json_mat` | `S` | `p` | `-` | `(a, site)`: a dynamic vector (flat array) or matrix (array of rows) of ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, each element written as the scalar entries write it; a matrix with no element is `[]` |
+The sixteen entries of phase 6 (Decision 85), ids 23–38, entered `rt.inc`'s `SEA_ENTRY_LIST` and
+§4.8's Id-first entry table with WP-CONTRACT (§2.11.1); the table there, with its Contract column,
+is their specification (§2.6's contract rule), and this section gives the rules they share. Each
+`S` entry takes the site as its last integer argument (§4.8); every returned object is owned,
+every argument borrowed; a failing entry calls `_sea_err` and never returns.
 
 Every emitter entry other than `JSON_OPEN` writes into the buffer and flushes it when full. On a
 failed flush (or a failed final write or `close` in `JSON_CLOSE`) the entry itself closes the
@@ -3756,7 +3743,7 @@ numbers all types again when it writes `sea.hir1` (§3.5.1).
 
 | Record | Fields after `pos` | Pops | Replaces | Meaning |
 |--------|--------------------|------|----------|---------|
-| `rfn` | `name:s el:u np:u nr:u fid:u rty:ty t:ty*np` | `np+nr+1` | `fn` | an entered function: its `fid` (§3.5.4: `.main` is 1, the entered `fn` items follow from 2 in stream order), its result type `rty` (1 for none, the type of one result, the `rtup` of several; 0 when a result type has an error) and its parameters' types `t` in order (0 for a parameter whose type has an error, among them a `str` parameter while strings are `not supported yet`, §2.6.2) |
+| `rfn` | `name:s el:u np:u nr:u fid:u rty:ty t:ty*np` | `np+nr+1` | `fn` | an entered function: `el` 0 for an ordinary function, 1 for an elemental one and 2 for an ordinary function that LANGUAGE.md §8.6 (b) or (c) requires inlined (§2.11.1, §2.11.3); its `fid` (§3.5.4: `.main` is 1, the entered `fn` items follow from 2 in stream order), its result type `rty` (1 for none, the type of one result, the `rtup` of several; 0 when a result type has an error) and its parameters' types `t` in order (0 for a parameter whose type has an error, among them a `str` parameter while strings are `not supported yet`, §2.6.2) |
 | `rst` | `name:s n:u sid:u` | `n` | `struct` | an entered struct: its number `sid`, from 1 in stream order among the entered structs |
 | `rcni` | `name:s t:u cid:u v:i` | `1+t` | `const` | an entered constant (`cid` from 1 in stream order among the entered constants, as `cn`, §3.5.2) whose value is the `i64` v |
 | `rcnf` | `name:s t:u cid:u v:f` | `1+t` | `const` | … whose value is the `f64` v |
@@ -4252,7 +4239,7 @@ end                                          pops the body (one block)
 
 | Record | Fields | Pops | Meaning |
 |--------|--------|------|---------|
-| `fn` | `fid:u name:s kind:fkind rty:ty np:u nl:u pos:pos` | `0` | kind `main` (the implicit main function of the top-level statements, LANGUAGE.md §7.2, named `.main`), `fn`, or `elem` (an `elemental fn`); `rty` the result type (1 for none, a `ttuple` for several); `pos` the `fn` or `elemental` keyword, for `.main` line 1, column 1 of the program's file |
+| `fn` | `fid:u name:s kind:fkind rty:ty np:u nl:u pos:pos` | `0` | kind `main` (the implicit main function of the top-level statements, LANGUAGE.md §7.2, named `.main`), `fn`, `elem` (an `elemental fn`) or `inl` (an ordinary function that LANGUAGE.md §8.6 (b) or (c) requires inlined, from an `rfn` with `el` 2; `sealoop` removes it, §2.11.4); `rty` the result type (1 for none, a `ttuple` for several); `pos` the `fn` or `elemental` keyword, for `.main` line 1, column 1 of the program's file |
 | `par` | `name:s ty:ty mode:pmode` | `0` | a parameter; mode `val` or `ref` |
 | `loc` | `name:s ty:ty mut:lmut pos:pos` | `0` | a local; mut `let`, `var` or `for` (a loop variable, LANGUAGE.md §7.5); `pos` its name in the declaration (for a loop variable the `npos` of its AST `for`) |
 | `end` | — | `1` | the end of the function; pops its body block |
@@ -7760,7 +7747,7 @@ Baysick's do.
 ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
 means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
 integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
-results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 22.
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 38.
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
@@ -7786,6 +7773,22 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 20 | `ARR_NEW_U` | `sea_arr_new_u` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: exactly `ARR_NEW` for ek `SEA_EK_F64`, `SEA_EK_I64` or `SEA_EK_BOOL` (no other ek is passed), except that the buffer is not cleared: its contents are unspecified until written. Pass 3a uses it only for an array whose creating node writes every element before any code reads one (§3.6.6 rule 17, *arrnew*), so the bytes a program prints never depend on them |
 | 21 | `SORT` | `sea_sort` | `S` | `pi` | `p` | `(v, desc, site)`: v a vector of ek `SEA_EK_F64`, `SEA_EK_I64` or `SEA_EK_STR`, desc 0 or 1. A new vector of v's elements (their bits unchanged, `str` elements retained) in the stable order of LANGUAGE.md §10.6: ascending, or with desc 1 descending, where equal elements (−0 and +0 are equal, every NaN equals every NaN) keep their input order in both directions; NaN after every number ascending, before every number descending; `str` byte-wise as `STR_CMP`. Any stable algorithm gives these bytes; the runtime uses an LSD radix sort on the order-preserving 64-bit key (−0 and every NaN canonicalized first; descending on the inverted key) for `f64` and `i64` and a stable merge sort for `str` (§4.5). No memory: `OUT_OF_MEMORY` |
 | 22 | `ARGSORT` | `sea_argsort` | `S` | `pi` | `p` | `(v, desc, site)`: the same order, returned as a new `i64` vector p (0-based) such that v[p[0]], v[p[1]], … is that order |
+| 23 | `FORMAT` | `sea_format` | `S` | `pp` | `p` | `(fmt, slots, site)`: a new string of exactly the bytes `sea_printf` would write for the same format and slots (LANGUAGE.md §11.1), through the internal sink `sea_error` uses; a result longer than `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (L-cc) |
+| 24 | `PRINT` | `sea_print` | `S` | `p` | `-` | `(s, site)`: s's bytes into the standard-output buffer, nothing added (LANGUAGE.md §11.2); a failed write of the buffer: `CANNOT_WRITE` with `<stdout>` and the errno, as `sea_printf` (L-cd) |
+| 25 | `MAKE_DIR` | `sea_make_dir` | `S` | `p` | `-` | `(path, site)`: the path's bytes copied into a new NUL-terminated buffer (a path holding a NUL byte: `CANNOT_MKDIR` with `EINVAL`; the buffer freed on every exit); `mkdir(buf, 0777)` (the process's umask applies); success returns; on any failure the errno is saved first, then the path is tested for a directory by `open(buf, O_RDONLY \| O_DIRECTORY)` (closed at once when it succeeds, no `stat`, whose structure layout and glibc symbol differ between the targets): a directory returns (so `/` behaves alike on macOS, where `mkdir` gives `EISDIR`, and Linux, `EEXIST`); otherwise `CANNOT_MKDIR` with the path and the saved errno (an existing non-directory gives `File exists`; a missing parent `No such file or directory`: no parent is created, Decision 89) |
+| 26 | `FMOD` | `sea_fmod` | `-` | `ff` | `f` | `(a, b)`: `a % b` of LANGUAGE.md §6.6 for `f64`: b = ±0 gives a's bits unchanged; else an infinite a or a NaN operand gives `#7FF8000000000000`; else r = the C library's `fmod(a, b)` (exact by IEEE 754, so the same bits from Apple's libm and glibc; the runtimes already link the C library), and r + b rounded once when r ≠ 0 and r and b differ in sign (L-cm). Cannot fail |
+| 27 | `JSON_OPEN` | `sea_json_open` | `S` | `p` | `-` | `(path, site)`: first allocates the emitter's state (the retained path, an empty `SEA_JSON_BUF_BYTES` buffer, the container stack, depth 0, the descriptor field set to −1), then copies the path into a NUL-terminated buffer and opens it for writing (`O_WRONLY \| O_CREAT \| O_TRUNC`, mode 0666 before the umask) and stores the descriptor; a failure (a NUL byte in the path: `EINVAL`) frees the state, then `CANNOT_OPEN` with the path and the errno. At most one file is open (pass 2b's blocks do not nest) |
+| 28 | `JSON_CLOSE` | `sea_json_close` | `S` | `-` | `-` | `(site)`: writes LF, flushes, closes, releases the path and frees the emitter's state; a failed write or `close`: `CANNOT_WRITE` with the path and the errno |
+| 29 | `JSON_OBJ` | `sea_json_obj` | `S` | `-` | `-` | `(site)`: begins an object as the next value (the top value, an element, or the value of the last key) |
+| 30 | `JSON_ARR` | `sea_json_arr` | `S` | `-` | `-` | `(site)`: begins an array as the next value (the top value, an element, or the value of the last key) |
+| 31 | `JSON_END` | `sea_json_end` | `S` | `-` | `-` | `(site)`: ends the innermost open object or array |
+| 32 | `JSON_KEY` | `sea_json_key` | `S` | `p` | `-` | `(key, site)`: the next member's key, in the innermost open object |
+| 33 | `JSON_F64` | `sea_json_f64` | `S` | `f` | `-` | `(x, site)` (x in `d0` / `%xmm0`, site in `x0` / `%rdi`): a number, `%.17g` for a finite x, `null` for NaN and ±∞ |
+| 34 | `JSON_I64` | `sea_json_i64` | `S` | `i` | `-` | `(v, site)`: an `i64` in decimal |
+| 35 | `JSON_BOOL` | `sea_json_bool` | `S` | `i` | `-` | `(v, site)`: `true` or `false` for a `bool` v |
+| 36 | `JSON_STR` | `sea_json_str` | `S` | `p` | `-` | `(s, site)`: a string, escaped (LANGUAGE.md §11.4) |
+| 37 | `JSON_VEC` | `sea_json_vec` | `S` | `p` | `-` | `(a, site)`: a dynamic vector (flat array) of ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, each element written as the scalar entries write it |
+| 38 | `JSON_MAT` | `sea_json_mat` | `S` | `p` | `-` | `(a, site)`: a dynamic matrix (array of rows) of those eks, each element written as the scalar entries write it; a matrix with no element is `[]` |
 
 **Entries of phase 4** (Decision 22: the runtime does memory, copy on write, strings, `error`,
 `args` and sorting; every loop over elements is inline LIR, §3.6.6). They entered `rt.inc`'s
@@ -7856,7 +7859,7 @@ algorithm gives the same bytes, so neither target can differ from the other):
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_ENT_COUNT` | 22 | number of entry records |
+| `SEA_ENT_COUNT` | 38 | number of entry records |
 | `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
 | `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 

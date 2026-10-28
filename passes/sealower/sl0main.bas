@@ -12,7 +12,7 @@
 155 REM Functions (multi-line DEFs; no GOSUB, no jump out): FNQ(Q3$) a constant of the consts table, also left in Q1 and T (1850); FNE(Q3$, Q4$) the row of an entry, clobbers I (9580); FNR$(V6) " " and a register's text, numbered at first use (7500).
 235 REM ====================================================================================
 240 FILES "sea.hirl"; "sea.lir1"
-245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(22), Y$(22,5), Z(8), I(40), L(4)
+245 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Y(64), Y$(64,5), Z(8), I(40), L(4)
 250 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 255 DIM H(99999,8), G(49999,8), A(99999,4), T(20008,3), M(199999), S$(199999), A$(2)
 260 DIM V(199999,3), W(599999), U(199999,2), D(49999,2), B(9999,2), J(59999,4), P(131071), O(99999,6)
@@ -22,7 +22,7 @@
 280 CALL "tb_errors": P$, E(), E$(), 299, E0
 285 CALL "tb_exits": P$, E(), E$(), E0, Q(), Q$(), 20, N9
 290 CALL "tb_consts": P$, E(), E$(), E0, K(), K$(), 299, K0
-295 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 22, Y0
+295 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 64, Y0
 300 LET Z(1) = 39
 305 LET Z(2) = 299
 310 LET Z(3) = 399

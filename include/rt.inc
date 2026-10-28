@@ -175,8 +175,24 @@
     \m 20, ARR_NEW_U, sea_arr_new_u, S, iiii, p
     \m 21, SORT, sea_sort, S, pi, p
     \m 22, ARGSORT, sea_argsort, S, pi, p
+    \m 23, FORMAT, sea_format, S, pp, p
+    \m 24, PRINT, sea_print, S, p, -
+    \m 25, MAKE_DIR, sea_make_dir, S, p, -
+    \m 26, FMOD, sea_fmod, -, ff, f
+    \m 27, JSON_OPEN, sea_json_open, S, p, -
+    \m 28, JSON_CLOSE, sea_json_close, S, -, -
+    \m 29, JSON_OBJ, sea_json_obj, S, -, -
+    \m 30, JSON_ARR, sea_json_arr, S, -, -
+    \m 31, JSON_END, sea_json_end, S, -, -
+    \m 32, JSON_KEY, sea_json_key, S, p, -
+    \m 33, JSON_F64, sea_json_f64, S, f, -
+    \m 34, JSON_I64, sea_json_i64, S, i, -
+    \m 35, JSON_BOOL, sea_json_bool, S, i, -
+    \m 36, JSON_STR, sea_json_str, S, p, -
+    \m 37, JSON_VEC, sea_json_vec, S, p, -
+    \m 38, JSON_MAT, sea_json_mat, S, p, -
 .endm
-.equiv SEA_ENT_COUNT,           22  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           38  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm
