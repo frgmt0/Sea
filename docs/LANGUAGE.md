@@ -1469,6 +1469,8 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | invalid plot argument (§12.3) | `invalid line style "%s"`, `invalid color "%s"` |
 | user `error(fmt, …)` | the formatted message |
 
+The compiler may evaluate an expression without allocating the intermediate arrays its operators would produce (fusion, DESIGN.md §5.1). It never allocates more than the operator-by-operator evaluation, so a program that runs out of memory may instead complete; it never reports `out of memory` where that evaluation would not.
+
 ### 9.3 `error`
 
 `error(fmt, args…)` formats like `format` (§11.1) and stops with that message (§9.2). The

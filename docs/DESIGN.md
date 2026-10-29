@@ -644,24 +644,23 @@ The non-goals of v1, each with its reason, are LANGUAGE.md §1.3.
                                         format strings, match, ref aliasing; writes the HIR
    2b  seaexpand   sea.hir1 ─► sea.hir  elemental instantiation per call shape, write_json
                                         expansion, constant folding, reachability
-   3a  sealoop     sea.hir ─► sea.hirl  array expressions made explicit as scalar loops over
+   3a  seafuse     sea.hir ─► sea.hirf  (phase 7) fusion F1–F5 into loop nests (§2.12.4), the
+                                        elemental applications L19 (§2.12.3)
+       sealoop     sea.hirf ─► sea.hirl array expressions made explicit as scalar loops over
                                         element accesses (§3.5.9), views to strided
                                         addressing; from 4h prelude inlining, from phase 6
-                                        elemental and §8.6 inlining, from phase 7 fusion
-                                        into loop nests
+                                        elemental and §8.6 inlining
        sealower    sea.hirl ─► sea.lir1 the canonical lowering (§3.6.6): registers, bounds
                                         checks, COW checks, reference counts, temporaries
    3b  seaopt      sea.lir1 ─► sea.lir2 check and overflow elimination, magic division,
                                         value numbering, if-conversion, clean-up (§5.8)
-   3c  sealopt     sea.lir2 ─► sea.lir  promotion, copy-on-write versioning, strength
+   3c  sealopt     sea.lir2 ─► sea.lir3 promotion, copy-on-write versioning, strength
                                         reduction, invariant hoisting, unswitching, clean-up
                                         (§5.8; from sub-phase 5c-2, Decision 74); from phase
-                                        7 fixes only (Decision 78)
-   3d  (phase 7)   sea.lir format       scalar replacement and vectorization (width 2,
-                                        plus width 4 for avx2),
-                                        a pass of its own after sealopt sharing lirrw
-                                        (Decision 78; its name, files and --emit kind
-                                        are settled by phase 7's specification)
+                                        7 fixes only (Decision 78); writes sea.lir3
+   3d  seavec      sea.lir3 ─► sea.lir  (phase 7) unrolling, scalar replacement and
+                                        vectorization (width 2, plus width 4 for avx2),
+                                        sharing lirrw (§2.12.6, Decision 78)
    4   seagen_a64 | seagen_x64          sea.lir ─► sea.s: instruction selection, register
                                         allocation, frames, assembly text
                   │
@@ -675,13 +674,13 @@ Each pass is an ordinary Baysick program (Baysick 0.6.0), compiled once with `ba
 native executable. Passes communicate only through text files with fixed names in the
 temporary directory (Baysick `FILES` names are fixed at compile time, Baysick LANGUAGE.md §7.21), and
 report through their exit status and standard error. The number of passes (eight programs, plus
-the second code generator) follows from the size calibration of §2.7; it is part of Decision 2
+the second code generator; ten programs and the second code generator after phase 7) follows from the size calibration of §2.7; it is part of Decision 2
 in §9. Pass 2a is two programs from phase 4a on (Decision 17, §2.7, §8): `seaname` resolves and checks
 the declarations and evaluates the constants, `seacheck` checks and types the rest and writes
 `sea.hir1`; "pass 2a" in this document means the two together, and §2.6.2 says which of them
 reports each error. Pass 3a is two programs from sub-phase 4e-0 on (Decision 26, §2.7, §8):
 `sealoop` rewrites the array constructs of `sea.hir` into explicit scalar HIR (`sea.hirl`, §3.5.9)
-and `sealower` lowers that to LIR; "pass 3a" means the two together.
+and `sealower` lowers that to LIR; "pass 3a" means the two together. From phase 7 pass 3a is three programs: `seafuse` (`sea.hir` → `sea.hirf`, §2.12.3) runs first and `sealoop` reads `sea.hirf`; pass 3d, `seavec` (§2.12.6), follows `sealopt`.
 
 ### 2.2 The driver: `sea`
 
@@ -689,7 +688,7 @@ A POSIX `sh` script (name: Decision 15 in §9):
 
 ```
 sea build <file.sea> [-o <out>] [--target arm64-macos|x86_64-linux] [-S]
-                     [--emit ast|res|hir1|hir|hirl|lir1|lir2|lir] [--keep-temps] [--no-prelude]
+                     [--emit ast|res|hir1|hir|hirf|hirl|lir1|lir2|lir3|lir] [--keep-temps] [--no-prelude]
 sea run <file.sea> [-- program arguments…]          build into the temporary directory, run
 sea --version | --help
 ```
@@ -1738,10 +1737,12 @@ overlap those of `limb` and `f64emu` (not `fltlit`, at 82 000 – 85 999), which
 | `seaname` | `io diag tables limb f64emu` | `errors exits consts records mtab` |
 | `seacheck` | `io diag tables` | `errors exits consts records` |
 | `seaexpand` | `io diag tables limb f64emu` | `errors exits consts records` |
+| `seafuse` (from 7b, pass 3a, §2.12.3) | `io diag tables layout` | `errors exits consts records` |
 | `sealoop` (from sub-phase 4e-0) | `io diag tables`; from 4g-2 `io diag tables layout` | `errors exits consts records` |
 | `sealower` | `io diag tables`; from 4g-2 `io diag tables layout` | `errors exits consts entries records` |
 | `seaopt` | `io diag tables`; from 5c-2 `io diag tables lirrw` | `errors exits consts entries records` |
 | `sealopt` (from 5c-2) | `io diag tables lirrw` | `errors exits consts entries records` |
+| `seavec` (from 7b, pass 3d, §2.12.6) | `io diag tables lirrw` | `errors exits consts entries records` |
 | `seagen_a64`, `seagen_x64` | `io diag tables`; from 5b `io diag tables ralloc` | `errors exits consts entries records` |
 | `tools/seaval.bas` (`tools/seaval.build.list`) | `io diag tables` | `errors consts records` |
 
@@ -1752,7 +1753,7 @@ constants from the `rcn…` records, §3.4.1). The line numbers keep the parts a
 
 | Part | Line numbers |
 |------|--------------|
-| the pass's own files | 1 – 59 999 |
+| the pass's own files (`seafuse` and `seavec`: 100 – 59 999, §2.12.3, §2.12.6) | 1 – 59 999 |
 | `passes/lib/io.bas`, `diag.bas`, `tables.bas` | 60 000 – 62 999, 63 000 – 65 999, 66 000 – 68 999 |
 | `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | 69 000 – 74 999, 75 000 – 81 999, 82 000 – 85 999 (82 000 – 88 999 before 4g-2) |
 | `passes/lib/lirrw.bas` (from 5c-2, a main-program part; never in a program with `limb` or `f64emu`, L-bi) | 69 000 – 81 999 |
@@ -3256,9 +3257,9 @@ is also the point of the Baysick project.
 | `passes/lib/io.bas`, `diag.bas`, `tables.bas` | shared pass modules: the header protocol and record reading and writing (§2.2, §3.1–§3.3), diagnostics (§2.6.2), the tables of §2.7 |
 | `passes/lib/limb.bas`, `f64emu.bas`, `fltlit.bas` | multi-limb integers, the exact IEEE binary64 emulation and the float-literal conversion (§2.8) |
 | `passes/lib/API.md`, `API-arith.md` | the interfaces of the shared modules (§2.6.3): `io`, `diag`, `tables`, `layout` (from 4g-2), `ralloc` (from 5b) and the main-program part `lirrw` (from 5c-2); `limb`, `f64emu`, `fltlit` |
-| `passes/seaparse/`, `seaname/`, `seacheck/`, `seaexpand/`, `sealoop/`, `sealower/`, `seaopt/`, `sealopt/`, `seagen_a64/`, `seagen_x64/` | each pass's own Baysick files (§2.1; `seaname/` from phase 4a, `sealoop/` from sub-phase 4e-0, `sealopt/` from sub-phase 5c-2), built as §2.6.3 says |
+| `passes/seaparse/`, `seaname/`, `seacheck/`, `seaexpand/`, `seafuse/`, `sealoop/`, `sealower/`, `seaopt/`, `sealopt/`, `seavec/`, `seagen_a64/`, `seagen_x64/` | each pass's own Baysick files (§2.1; `seaname/` from phase 4a, `sealoop/` from sub-phase 4e-0, `sealopt/` from sub-phase 5c-2, `seafuse/` and `seavec/` from phase 7), built as §2.6.3 says |
 | `tools/gendata.bas` | the `DATA` generator (§2.6.3) |
-| `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: its standard input names the format (`ast`, `res`, `hir1`, `hir`, `hirl`, `lir1`, `lir2`, `lir`; `lir2`, from sub-phase 5c-2, checked as `lir1` except for the two label rules of §3.6.2 that hold for `lir1` only, numbering by first reference and every defined label referenced, which `lir2` and `lir` do not check, L-bu; a file of format `ast` may hold only the records of §3.4's table, one of format `res` also those of §3.4.1; `hirl` the sets `H HF HL`, §3.5.9, from sub-phase 4e-0); the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
+| `tools/seaval.bas`, `tools/seaval.build.list` | a validator of intermediate files, used by the tests: its standard input names the format (`ast`, `res`, `hir1`, `hir`, `hirf`, `hirl`, `lir1`, `lir2`, `lir3`, `lir`; `lir2`, from sub-phase 5c-2, checked as `lir1` except for the two label rules of §3.6.2 that hold for `lir1` only, numbering by first reference and every defined label referenced, which `lir2` and `lir` do not check, L-bu; a file of format `ast` may hold only the records of §3.4's table, one of format `res` also those of §3.4.1; `hirl` the sets `H HF HL`, §3.5.9, from sub-phase 4e-0); the header, every record's fields against `passes.txt`, the pops and the tree stack (the non-node records are those §3.3 lists), and LIR register numbering and classes; it does not check the first-reference order of types, the ranges of `fid`/`cid`/`iid` references or `rcall` entry names |
 | `passes/<pass>/build.list` | the modules and `DATA` blocks of each pass (§2.6.3) |
 | `tools/passlines.sh` | the line count of each built pass against Baysick's limits (`make lines`) |
 | `tools/math_tables.py` | the generator of `include/math_tables.inc` (§4.10.3, §4.10.6), run with `uv run --with mpmath`; `--check` verifies the committed file |
@@ -4411,8 +4412,8 @@ mode of the heap check).
 
 ## 3. Intermediate files
 
-The passes of §2.1 communicate through seven text files in the temporary directory (six before
-sub-phase 4e-0, which adds `sea.hirl`). This section
+The passes of §2.1 communicate through ten text files in the temporary directory (six before
+sub-phase 4e-0, which adds `sea.hirl`; eight before phase 7, which adds `sea.hirf` and `sea.lir3`). This section
 fixes their exact formats; `sea/include/passes.txt` (§3.9) is the same information in a form the
 passes' generated `DATA` blocks are made from (§2.6), and the two change only together.
 
@@ -4421,11 +4422,13 @@ passes' generated `DATA` blocks are made from (§2.6), and the two change only t
 | `sea.ast` | 1 `seaparse` | 2a `seaname` | the syntax tree as parsed, untyped (§3.4) |
 | `sea.res` | 2a `seaname` | 2a `seacheck` | the same tree with names resolved, declarations checked and constants evaluated (§3.4.1) |
 | `sea.hir1` | 2a `seacheck` | 2b | the resolved, typed tree (§3.5) |
-| `sea.hir` | 2b `seaexpand` | 3a `sealoop` | the same after constant substitution and folding, elemental instantiation, `write_json` expansion and reachability (§3.5) |
+| `sea.hir` | 2b `seaexpand` | 3a `seafuse` (from phase 7; before it `sealoop`) | the same after constant substitution and folding, elemental instantiation, `write_json` expansion and reachability (§3.5) |
+| `sea.hirf` | 3a `seafuse` | 3a `sealoop` | `sea.hir` after fusion and the elemental applications (§2.12.3; from phase 7), with `HL` records of §3.5.9 |
 | `sea.hirl` | 3a `sealoop` | 3a `sealower` | the same with the array constructs made explicit as scalar loops over element accesses (§3.5.9; from sub-phase 4e-0) |
 | `sea.lir1` | 3a `sealower` | 3b | loop-level code over virtual registers (§3.6) |
 | `sea.lir2` | 3b `seaopt` | 3c `sealopt` | the same after T1–T4 and T10 of §5.8 (§3.6; from sub-phase 5c-2, Decision 74; before it `seaopt` wrote `sea.lir`) |
-| `sea.lir` | 3c `sealopt` | 4 | the same after T5–T10 of §5.8 and, from phase 7, scalar replacement and vectorization (§3.6); from phase 7 those two run in a pass 3d of their own after `sealopt` instead, whose file names (and which file pass 4 reads) phase 7's specification settles (Decision 78) |
+| `sea.lir3` | 3c `sealopt` | 3d `seavec` | the same after T5–T10 of §5.8 (§3.6; from phase 7, where `sealopt` writes this file; before it `sealopt` wrote `sea.lir`) |
+| `sea.lir` | 3d `seavec` | 4 | the same after scalar replacement and vectorization (§2.12.6, §3.6; from phase 7, Decisions 78, 98) |
 
 The pass-1 input stream (§2.2) uses the header records of §3.2; pass 4 writes `sea.s`, which is
 assembly text and has no records. `sea build --emit X` copies `sea.X` unchanged (§2.2), so a
@@ -5797,8 +5800,8 @@ accumulator home of L13's sum8, when the file uses F8 and `sea.hir`'s table has 
 with n 8 (one that it has is used instead); it is numbered with the `tptr` records, in the same
 order of first reference, and counts against `SEA_LIM_TYPES` like them.
 
-**Locals.** The locals `sealoop` creates are named `.l1`, `.l2`, … per function and numbered after
-the `.j` locals (§3.5.4), in the order of their declaring records in the body (file order: `tmp`,
+**Locals.** The `.l` locals of `sea.hirl` (those `sealoop` creates and, from phase 7, those `seafuse` created in `sea.hirf`, §2.12.3) are named `.l1`, `.l2`, … per function and numbered after
+the `.j` locals (§3.5.4), in the order of their declaring records in the body, whichever program created them: `sealoop` renumbers every `.l` local of its output in file order (the order of first appearance in the written file; Decision 109), so the numbering is canonical (file order: `tmp`,
 `bind`, `rcnt`, `hloop`, and L12's `tbind` of `.l` locals; an `rcnt` declares its `l` before its
 `e`, a `tbind` its locals in component order, a `skip` declaring none); each has a `loc` record
 (mut `let` for `tmp`, `bind`, `rcnt` and `tbind`, `for` for the induction local of an `hloop`; type 3 for the `l`
@@ -6760,6 +6763,7 @@ The destination comes first. Operands are registers; constants are loaded with `
 | `itof` | `d:rf a:ri` | `i64` → `f64`, round to nearest even |
 | `ftoi` | `d:ri a:rf site:site` | `f64` → `i64` if integral and in range, else `conversion to i64` (LANGUAGE.md §4.2) |
 | `padd` | `d:rp a:rp b:ri` | address plus a byte offset |
+| `pdiff` | `d:ri a:rp b:rp` | the difference of two addresses, a − b, as a wrapping `i64` (written only by `seavec`, in `sea.lir` only, Decision 100) |
 | `ldi ldb` | `d:ri base:rp idx:ri? scale:u off:i` | load from base + idx·scale + off (idx `-`: 0): 8-byte `i64`; 1 byte zero-extended |
 | `ldf` | `d:rf base:rp idx:ri? scale:u off:i` | load an `f64` |
 | `ldp` | `d:rp base:rp idx:ri? scale:u off:i` | load an address |
@@ -8390,7 +8394,7 @@ cell (where the table has one; else 0) starts with the pop expression below. Its
 * `rec <set> <code> <op> <pops> <field> …` defines a record:
   * `<set>`: `A` (`sea.ast` and `sea.res`: codes 1–49 in both, codes 50–63 only in `sea.res`,
     §3.4.1), `H` (every HIR file: `sea.hir1`, `sea.hir`, `sea.hirl`), `H1` (`sea.hir1` only), `HF`
-    (`sea.hir` and `sea.hirl`), `HL` (`sea.hirl` only, codes 72–89, §3.5.9), `L` (both LIR files),
+    (`sea.hir` and `sea.hirl`), `HL` (`sea.hirf` and `sea.hirl`: the records `seafuse` may write into `sea.hirf` and `sealoop` writes into `sea.hirl`, codes 72–89, §3.5.9, §2.12.3; which of them may stand in `sea.hirf` is a semantic rule, not a set), `L` (every LIR file: `sea.lir1`, `sea.lir2`, `sea.lir3`, `sea.lir`),
     `LF` (`sea.lir` only);
   * `<code>`: its opcode number, unique within `A`, within `H H1 HF HL`, and within `L LF`;
   * `<pops>`: the number of nodes it pops: a sum of terms joined by `+` (no spaces), each a
@@ -8780,7 +8784,7 @@ Baysick's do.
 ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
 means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
 integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
-results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 38.
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 50. "Args" and "Results" are the letters `i f p`, and from phase 7 the vector classes `x` (a 2-lane `f64` vector in a vector register: arm64 `v0`, `v1`; x86_64 `%xmm0`, `%xmm1`) and `y` (a 4-lane vector: `%ymm0`, `%ymm1`; `x86_64-linux` only), as §2.12.8 says.
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
@@ -8822,6 +8826,18 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 36 | `JSON_STR` | `sea_json_str` | `S` | `p` | `-` | `(s, site)`: a string, escaped (LANGUAGE.md §11.4) |
 | 37 | `JSON_VEC` | `sea_json_vec` | `S` | `p` | `-` | `(a, site)`: a dynamic vector (flat array) of ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, each element written as the scalar entries write it |
 | 38 | `JSON_MAT` | `sea_json_mat` | `S` | `p` | `-` | `(a, site)`: a dynamic matrix (array of rows) of those eks, each element written as the scalar entries write it; a matrix with no element is `[]` |
+| 39 | `LOG_X` | `sea_log_x` | `-` | `x` | `x` | `_sea_log_x(v)`: each lane exactly `sea_log` of that lane (§2.12.8); cannot fail |
+| 40 | `EXP_X` | `sea_exp_x` | `-` | `x` | `x` | each lane `sea_exp` |
+| 41 | `SIN_X` | `sea_sin_x` | `-` | `x` | `x` | each lane `sea_sin` |
+| 42 | `COS_X` | `sea_cos_x` | `-` | `x` | `x` | each lane `sea_cos` |
+| 43 | `POW_X` | `sea_pow_x` | `-` | `xx` | `x` | each lane `sea_pow` of the lanes of the two operands |
+| 44 | `HYPOT_X` | `sea_hypot_x` | `-` | `xx` | `x` | each lane `sea_hypot` |
+| 45 | `LOG_Y` | `sea_log_y` | `-` | `y` | `y` | each of 4 lanes `sea_log`; `x86_64-linux` only (AVX2) |
+| 46 | `EXP_Y` | `sea_exp_y` | `-` | `y` | `y` | as 40, 4 lanes, `x86_64-linux` only |
+| 47 | `SIN_Y` | `sea_sin_y` | `-` | `y` | `y` | as 41, 4 lanes, `x86_64-linux` only |
+| 48 | `COS_Y` | `sea_cos_y` | `-` | `y` | `y` | as 42, 4 lanes, `x86_64-linux` only |
+| 49 | `POW_Y` | `sea_pow_y` | `-` | `yy` | `y` | as 43, 4 lanes, `x86_64-linux` only |
+| 50 | `HYPOT_Y` | `sea_hypot_y` | `-` | `yy` | `y` | as 44, 4 lanes, `x86_64-linux` only |
 
 **Entries of phase 4** (Decision 22: the runtime does memory, copy on write, strings, `error`,
 `args` and sorting; every loop over elements is inline LIR, §3.6.6). They entered `rt.inc`'s
@@ -8892,7 +8908,7 @@ algorithm gives the same bytes, so neither target can differ from the other):
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_ENT_COUNT` | 38 | number of entry records |
+| `SEA_ENT_COUNT` | 50 | number of entry records |
 | `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
 | `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 

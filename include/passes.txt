@@ -7,8 +7,8 @@
 ; rec <set> <code> <op> <pops> <field>...
 ;   set: A sea.ast and sea.res (codes 1-49 both files, 50- sea.res only: 3.4.1);
 ;        H every HIR file (sea.hir1, sea.hir, sea.hirl); H1 sea.hir1 only;
-;        HF sea.hir and sea.hirl; HL sea.hirl only (3.5.9, from sub-phase 4e-0);
-;        L both LIR files; LF sea.lir only
+;        HF sea.hir and sea.hirl; HL sea.hirf and sea.hirl (3.5.9, from sub-phase 4e-0);
+;        L every LIR file (sea.lir1, sea.lir2, sea.lir3, sea.lir); LF sea.lir only
 ;   field: name:type, then optionally ? (the field may be -), then optionally *count
 ;          (the field is repeated count times, count = an earlier u field): name:type?*count
 
@@ -285,6 +285,7 @@ rec L 53 fnan 0 d:ri a:rf
 rec L 54 itof 0 d:rf a:ri
 rec L 55 ftoi 0 d:ri a:rf site:site
 rec L 56 padd 0 d:rp a:rp b:ri
+rec LF 131 pdiff 0 d:ri a:rp b:rp
 ; memory
 rec L 57 ldi 0 d:ri base:rp idx:ri? scale:u off:i
 rec L 58 ldb 0 d:ri base:rp idx:ri? scale:u off:i

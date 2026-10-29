@@ -151,7 +151,8 @@
 // id dense from 1; symbol the ELF name (Mach-O adds a leading _), which LIR
 // rcall records write; site S (pass 4 passes the site index as one more,
 // last, integer argument) or -; args, results: LIR register classes in
-// order, or - for none. Fields separated by a comma and one space.
+// order (i f p; from phase 7 also x and y, the 2-lane and 4-lane vectors), or -
+// for none. Fields separated by a comma and one space.
 .macro SEA_ENTRY_LIST m
     \m 1, PRINTF, sea_printf, S, pp, -
     \m 2, NOW, sea_now, -, -, f
@@ -191,8 +192,20 @@
     \m 36, JSON_STR, sea_json_str, S, p, -
     \m 37, JSON_VEC, sea_json_vec, S, p, -
     \m 38, JSON_MAT, sea_json_mat, S, p, -
+    \m 39, LOG_X, sea_log_x, -, x, x
+    \m 40, EXP_X, sea_exp_x, -, x, x
+    \m 41, SIN_X, sea_sin_x, -, x, x
+    \m 42, COS_X, sea_cos_x, -, x, x
+    \m 43, POW_X, sea_pow_x, -, xx, x
+    \m 44, HYPOT_X, sea_hypot_x, -, xx, x
+    \m 45, LOG_Y, sea_log_y, -, y, y
+    \m 46, EXP_Y, sea_exp_y, -, y, y
+    \m 47, SIN_Y, sea_sin_y, -, y, y
+    \m 48, COS_Y, sea_cos_y, -, y, y
+    \m 49, POW_Y, sea_pow_y, -, yy, y
+    \m 50, HYPOT_Y, sea_hypot_y, -, yy, y
 .endm
-.equiv SEA_ENT_COUNT,           38  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           50  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm
