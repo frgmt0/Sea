@@ -68,8 +68,13 @@ the user's agreement. Phase 0 (§8) did:
    lead decisions L-cy–L-dh); sub-phase 6c (elemental functions, `ind2sub` with an array `r`) is done
    (2026-10-28; §2.7, "Measured after 6c"; lead decisions L-di–L-dq); the measurement after 6c
    calls for no relief, so 6b-0 is not run (Decisions 82 and 87); sub-phase 6d (`write_json`) is done
-   (2026-10-28; §2.7, "Measured after 6d"; lead decisions L-dr–L-ec); next is 6e (the ports W1 and
-   W5, `tests/accept.sh`, then the gate after phase 6). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
+   (2026-10-28; §2.7, "Measured after 6d"; lead decisions L-dr–L-ec); sub-phase 6e (the ports W1
+   and W5, `tests/accept.sh`, the gate after phase 6) is done (2026-10-29; §6.3, "Measured at 6e";
+   lead decisions L-ed–L-eg): both ports are accepted on the Mac and byte-identical on the Linux host
+   but for the `Compute time` line, and the gate after phase 6 passes every program with phase 7's
+   fusion counted in `sealoop`, so fusion stays there (§2.7, "Measured at the gate after phase 6");
+   phase 6 is complete; next is phase 7 (fusion and SIMD, §8 row 7), starting with its
+   specification (documents only, as 5a and 6a). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
    §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -511,7 +516,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Next: sub-phase 6e (the ports W1 and W5, `tests/accept.sh`, then the gate after phase 6).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification.
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3017,6 +3022,57 @@ with remaining 1 000 (fixes); any other failure of any program gets a relief spe
 with the user before phase 7's code. At the projection above, `sealoop` passes at the lower end and
 fails its stress line at the upper end, and `seacheck` passes at both ends.
 
+**Measured at the gate after phase 6** (2026-10-29, the integrated 6e tree; `make` and `make
+check-limits` = `sh tools/passlines.sh limits`; the free letters are the numeric array letters of
+each pass's main-program `DIM`s, read from `build/gen/<pass>.bas` as for the earlier measurements:
+the `DIM`s outside every `SUB` … `SUBEND`, at the lines given below; the `DIM`s inside `SUB`s are
+local). Every `check-limits` verdict is ok. 6e changed no pass (its files are the ports, their token
+maps, `tests/accept.sh` and the cross scripts), so the sizes are those of "Measured after 6d".
+
+| Pass | Built lines | After 6d | 6e increment | `FOR`s | String bytes | Longest line | Main-program `DIM` lines | Free numeric array letters |
+|------|------------:|---------:|-------------:|-------:|-------------:|-------------:|------|------|
+| `seaparse` | 3 939 | 3 939 | 0 | 74 | 2 581 | 166 | 290–300 | 17 (`A B D G H I J K M O P S T U V W X`) |
+| `seaname` | 5 555 | 5 555 | 0 | 135 | 3 162 | 210 | 70–83 | 13 (`A B D F G I L P R S U V Z`) |
+| `seacheck` | 6 919 | 6 919 | 0 | 197 | 5 457 | 194 | 105–115 | 14 (`A B D F G I L P Q R S U V Z`) |
+| `seaexpand` | 4 796 | 4 796 | 0 | 121 | 5 928 | 155 | 220–242 | 2 (`I W`) |
+| `sealoop` | 6 512 | 6 512 | 0 | 107 | 12 210 | 208 | 250–266 | 3 (`B X Y`) |
+| `sealower` | 6 729 | 6 729 | 0 | 130 | 4 720 | 255 | 245–265 | 3 (`C S X`) |
+| `seaopt` | 5 507 | 5 507 | 0 | 159 | 5 315 | 179 | 365–382 | 2 (`S V`) |
+| `sealopt` | 5 427 | 5 427 | 0 | 214 | 5 371 | 179 | 365–384 | 0 |
+| `seagen_a64` | 5 038 | 5 038 | 0 | 132 | 4 359 | 135 | 200–225 | 0 |
+| `seagen_x64` | 5 376 | 5 376 | 0 | 132 | 4 264 | 136 | 200–205 | 0 |
+
+No letter outside these `DIM`s is used as an array in a main program (checked on the same files), so
+the counts are the letters free for a new main-program table. `seaname`, `seaparse` and
+`seaexpand` are counted at a gate for the first time.
+
+*The gate after phase 6 applied* (Decision 88 in Decision 71's form, with the remaining work of
+"Remaining after phase 6" above; Decision 82 (a) for `seacheck` and Decision 50 for `sealower`, which
+have no 7 000 condition; Decision 78's waiver for `sealopt`; L-ac for the code generators):
+
+| Program (remaining) | Built ≤ 7 000 | + remaining ≤ 9 000 | + 1.5 × remaining ≤ 9 000 | Free letters | Verdict |
+|---------|------|------|------|------|------|
+| `seaparse` (none) | 3 939: yes | 3 939: yes | 3 939: yes | none set | **pass** |
+| `seaname` (100) | 5 555: yes | 5 555 + 100 = 5 655: yes | 5 555 + 150 = 5 705: yes | 13 ≥ 2: yes | **pass** |
+| `seacheck` (850; Decision 82 (a)) | not a condition (6 919) | 6 919 + 850 = 7 769: yes | 6 919 + 1 275 = 8 194: yes | 14 ≥ 2: yes | **pass** |
+| `seaexpand` (none) | 4 796: yes | — | — | none set (it has 2) | **pass** |
+| `sealoop` (1 500, phase 7's fusion in it) | 6 512: yes | 6 512 + 1 500 = 8 012: yes | 6 512 + 2 250 = 8 762: yes | 3 ≥ 2: yes | **pass** |
+| `sealower` (370; Decision 50) | not a condition (6 729) | 6 729 + 370 = 7 099: yes | 6 729 + 555 = 7 284: yes | 3 ≥ 2: yes | **pass** |
+| `seaopt` (1 000, fixes) | 5 507: yes | 5 507 + 1 000 = 6 507: yes | 5 507 + 1 500 = 7 007: yes | 2 ≥ 2: yes | **pass** |
+| `sealopt` (1 000, fixes) | 5 427: yes | 5 427 + 1 000 = 6 427: yes | 5 427 + 1 500 = 6 927: yes | 0; waived (Decision 78) | **pass** |
+| `seagen_a64` (1 200) | 5 038: yes | 5 038 + 1 200 = 6 238: yes | 5 038 + 1 800 = 6 838: yes | none set (L-ac) | **pass** |
+| `seagen_x64` (1 200) | 5 376: yes | 5 376 + 1 200 = 6 576: yes | 5 376 + 1 800 = 7 176: yes | none set (L-ac) | **pass** |
+
+**The gate after phase 6 passes every program**; no relief is called for, and phase 6 is complete (§8,
+rows 6 and 6e). `sealoop` passes with phase 7's fusion counted in it, the stress and the letter
+condition included, so Decision 88's consequence does not apply: phase 7's fusion stays in `sealoop`
+(pass 3a, as §2 and §8 row 7 have it), L19 stays there, and no fusion pass is added. Its margins are
+the smallest of any program and an input to phase 7's specification: 488 lines under 7 000 built and
+238 under 9 000 at the stress line, while its increments have missed their upper ends by up to 52 %
+(this section, "Projected for 4h") and 6c's by 5 %; 6d's (74) and 6b's (107) landed inside or below.
+`seaparse` has no remaining work (Decision 93 keeps the grammar whole) and `seaexpand` only the 7 000
+condition, as the gate writes them.
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -3533,6 +3589,14 @@ accepts only `--export-reference` (any other argument is its `unknown option` er
 `_` arm). The token maps `sea/ports/<name>.tokens` are written from the MATLAB scripts' `fprintf`
 formats and `compare.py`'s `RULES`, never from Sea output (§6.4). `tests/accept.sh` (§6.3, Decision
 86) runs them.
+
+As built (6e). `w5_tolerance_mc.sea` drops, besides the figures section and the `--figures` arm,
+Appendix D's header line documenting `--figures` and the then-unused `var figures` (L-ed).
+`w1_shaft_design.sea` holds `caseMat` 0-based, as Sea indexes (MATLAB's `[2 2 3 1 4]` is `[1, 1, 2,
+0, 3]`), with a header note; the bearing index keeps MATLAB's 1-based number internally (`brgIdx`, 0
+for none), which is not exported, so the "1-based indices in its JSON" rule above has nothing to
+apply to (W1's JSON has no index key); MATLAB's `w1:*` error identifiers are dropped and their
+messages kept (none fires); the export record is named `out`, since `ref` is a keyword (L-ee).
 
 ## 3. Intermediate files
 
@@ -11026,7 +11090,19 @@ for byte through the case's `NAME.expect/` (L-cn); `compare.py` is not needed th
 The line filter is new code in `tests/cross_pack.sh` and `tests/cross_run.sh`: a port case is marked
 by a `.meta` line `filter=compute-time` (a new case attribute, §6.6.1), which `cross_run.sh` applies
 with `grep -v` to both outputs before comparing, and the Mac side applies when it saves the expected
-output; both are WP-ACCEPT's files (§8 row 6e).
+output; both are WP-ACCEPT's files (§8 row 6e). As built (L-ef): each port is a case of a new
+case kind `ports` (§6.6.1), whose `NAME.args` (`--export-reference`) and `NAME.meta`
+(`filter=compute-time`) `cross_pack.sh` generates; a port that fails `accept.sh` on the Mac is a pack
+failure (`NAME.packfail`).
+
+*Measured at 6e* (2026-10-29, Apple M2 Pro, the shared 6e build). Compile times (`build/sea build -o
+… ports/NAME.sea`, wall clock): `w1_shaft_design` 13.8 s, `w5_tolerance_mc` 7.1 s, both far under
+`SEA_COMPILE_TIMEOUT`'s 120 s. Both ports pass `tests/accept.sh` (22.7 s for the two): `compare.py
+--candidate` passes every key, W1's 31 keys mostly bit-identical to MATLAB's with the largest
+relative difference 3.8e-16, W5's largest relative difference about 1.8e-14; `compare_report.py`
+finds both reports equivalent, and each report text is byte-identical to MATLAB's but for its
+`Compute time` line. On the Linux host both ports' standard output is byte-identical to the Mac's
+but for that line, and their JSON byte-identical (§8 row 6e).
 
 **Phase-4 acceptance** (Decision 19; the "done when" of phase 4, §8). Until phase 6 brings
 `write_json`, the acceptance programs write a JSON subset with `printf` and are checked on the
@@ -11116,7 +11192,11 @@ of the report is judged. One line per report-line pattern:
 
 where the regex matches the report line (POSIX extended, anchored), the token number counts
 blank-separated tokens from 1, and the rule is one of `compare.py`'s rule kinds applied to the
-two tokens read as numbers.
+two tokens read as numbers. `compare_report.py` splits a map line into its fields on whitespace, so
+a regex contains no blank: a blank of the report line is written `[[:space:]]`, never `[ ]` (which
+the split would cut in two) (L-eg). Where a JSON key's tolerance is below one printed unit of the
+report token, the map converts that tolerance to the report's units (as the `Rejects:` yield below
+converts 4e-6 of a fraction to 4e-4 percent) and adds no rounding slack (L-eg).
 
 **Reading a token.** Before a token is parsed, three characters are stripped, in this order: one
 trailing `,`, `;` or `:`; then one trailing `)`; then one leading `(`. Each stripped character, or
@@ -11224,11 +11304,24 @@ the same files the Mac uses (one set for both targets).
 * `passes/NAME` with a `NAME.out`: the program built with `--no-prelude` and run (§6.2).
 * `passes/NAME.lir` pass-4 tests (hand-written LIR, §6.2): the file with its `#target` record
   replaced by `#target x86_64-linux`, run through `seagen_x64` on the Mac.
+* `accept/NAME`: every phase-4 acceptance program `tests/accept/NAME.sea`, built and checked on
+  the Mac by `tests/accept4.sh --save-out`, its standard output packed as `NAME.out` (§6.3).
+* `ports/NAME`: every phase-6 port `ports/NAME.sea` (from 6e, L-ef): `cross_pack.sh` runs
+  `tests/accept.sh --save-out` on it (build, run, heap check, `compare.py`, `compare_report.py`);
+  when that passes, it compiles the port as any case and packs its standard output without the lines
+  matching `^Compute time: .* s$` as `NAME.out`, its `NAME.json` as `NAME.expect/NAME.json`, and the
+  generated sidecars `NAME.args` (the one argument `--export-reference`) and `NAME.meta` (the one
+  line `filter=compute-time`); when `accept.sh` fails, `NAME.packfail` holds `status <n>` and
+  `accept.sh`'s standard output and standard error (exit 2 of `accept.sh` is a setup error of
+  `cross_pack.sh`). The host runs it under `SEA_ACCEPT_TIMEOUT` (default 120 seconds), as an
+  `accept/` case.
 * `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1). Its `.meta` may hold
   `stdout=epipe`, `stdout=slowpipe` and `env=NAME=VALUE` lines (`SEA_KERNELS` and
   `BAYSICK_KERNELS` otherwise unset) and nothing else: no `requires=` (§4.7.1). A program case's
-  `.meta` may hold only `stdout=epipe` and `stdout=closed` (§6.2). `cross_run.sh` stops with
-  exit 2 on any other line, an empty line excepted.
+  `.meta` may hold only `stdout=epipe` and `stdout=closed` (§6.2), and `filter=compute-time`
+  (L-cn, L-ef; written only for `ports/` cases): with it, `cross_run.sh` removes the lines matching
+  `^Compute time: .* s$` from both the expected and the actual standard output before comparing.
+  `cross_run.sh` stops with exit 2 on any other line, an empty line excepted.
 
 **An extra case, `math/math_check`.** Besides the program cases, `make cross` runs one case on the
 host: `cross_pack.sh` copies `tests/math/math_check.c` and `tests/math/*.vec` into
@@ -11256,11 +11349,12 @@ run only on the Mac (`make test`).
 <bundle>/baysick/include/*.inc        src/runtime_x86_64_linux/*.s (the x86_64
 <bundle>/baysick/src/runtime_x86_64_linux/*.s   libbaysickrt.a is built from them)
 <bundle>/cases/<kind>/NAME.s          the program as compiled on the Mac, kind programs,
-                                      errors or passes
+                                      errors, passes, accept or ports
 <bundle>/cases/<kind>/NAME.out .err .status .in .args .meta, NAME.files/, NAME.expect/
                                       copies of the sidecars present
 <bundle>/cases/<kind>/NAME.packfail   instead of NAME.s when compiling failed: "status <n>",
-                                      then the compiler's standard error
+                                      then the compiler's standard error (accept, ports: also
+                                      when the Mac check failed, then its output)
 ```
 
 **`tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]`** (Mac). `BUNDLE_DIR` must not exist or be
@@ -11421,7 +11515,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 3 | **Elementary functions.** Sea's own scalar `log exp sin cos pow hypot` on both targets (Decision 6) | `math/` tests pass on both targets: ≤ 1 ulp against the high-precision references, identical bits on both targets (§4.10.6: the runtimes reproduce the model's bits for every committed vector on both targets; the generator has checked each vector against mpmath; the `lib_math_*` programs pass in `run.sh` and the cross run) |
 | 4 | **Arrays and structs.** Dynamic and fixed arrays of `f64`/`i64`/`bool`/`str`, indexing, slices, masks, `$`, views, bounds checks, COW, broadcasting, element-wise operators (one loop per operation at first), reductions in the pinned order, `linspace`, `zeros`…, `sort`/`argsort`, `find*`, `bincount`; structs, arrays of structs and projection, records, `str` and `match`, `error`, `args()`, and the exact math functions, `ind2sub`, `sub2ind`, `lower`, `str(x)`, `meshgrid`, `setdiff` (Decision 23); built in the serial sub-phases 4a–4h below (Decisions 17–24) | W4's scalar SOR solver reproduces `it_sor` (±1 rule) and `T_max`; W5's sampling and statistics reproduce `first_dev`, `mean_cold`, `std_cold`, `hist_counts` using the `Dim` struct array of LANGUAGE.md Appendix D; checked by `compare.py --keys` on the Mac and byte identity on the Linux host (Decision 19) |
 | 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9). **Complete** (2026-10-25): 5a–5d done, the shapes met on both targets, the gate after phase 5 passed with Decision 78 (§2.7, "Measured after 5d") |
-| 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) (specified in sub-phase 6a, agreed 2026-10-26 with Decisions 80–93; built in the sub-phases 6b–6e below, with the conditional 6b-0, §2.11) | W1 and W5 complete (without figures; §6.3, "Phase-6 acceptance"): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets |
+| 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) (specified in sub-phase 6a, agreed 2026-10-26 with Decisions 80–93; built in the sub-phases 6b–6e below, with the conditional 6b-0, §2.11) | W1 and W5 complete (without figures; §6.3, "Phase-6 acceptance"): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets. **Complete** (2026-10-29): 6a–6e done (6b-0 not run, Decisions 82 and 87), W1 and W5 accepted on the Mac by `tests/accept.sh` and byte-identical on the Linux host but for the `Compute time` line (§6.3), the gate after phase 6 passed with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6") |
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
@@ -11456,7 +11550,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 6b | **Calls and output** (after 6a): named and default arguments (LANGUAGE.md §8.1), the inlining rule (§8.6: `seaname`'s classification, `sealoop`'s L20, `sealower`'s R31 and R32), `f64` `%` (FMOD), `format`, `print`, `make_dir` (rule 39). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 23–38, `SEA_ENT_COUNT` 38), `include/passes.txt` (`enum fkind main fn elem inl`; `rfn`'s `el` value 2 in its comment), the tables of §3.4.1 (`rfn`), §3.5.4 (`fn`) and §4.8 (the rows of §2.11.6 moved into the Id-first table), and the `entries` capacities of `sealower` (22), `seagen_a64` and `seagen_x64` (29) raised to 64 (L-cs; two lines in each pass, the `DIM` and the `CALL "tb_entries"` argument, which WP-CONTRACT alone edits; `tests/include_asserts.inc` needs no edit); then in parallel, each owning its files: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-LOOP** `passes/sealoop/*` (L20; L7's element-wise `f64 %`; R11's `seq` case, now reachable, L-cp); **WP-LOWER** `passes/sealower/*` (rule 39, R31, R32); **WP-RT-A64** `runtime/arm64_macos/*` (new `rt_file.s`; `rt_fmt.s`, `rt_out.s`, `rt_math.s`, `rt_err.s`), the object list of `Makefile`, `tests/rt/arm64_macos/*`; **WP-RT-X64** `runtime/x86_64_linux/*`, `Makefile.linux`, `tests/rt/x86_64_linux/*`; **T1** `tests/programs/{call6_,inl_,fmod_,fmt6_,print_,mkdir_}*`, `tests/errors/{err_call6_,r_inl6_,r_mkdir_}*`, `tests/vectors/fmod6_cases.py` (T1's first delivery, before WP-RT writes `rt_fmod_vec.s` from its `--emit-asm` table), `err_ns_lib_write_json`, the 6b re-derived and moved tests of §6.2 ("Existing tests that phase 6 changes"), the retired `err_ns_*` goldens of the removed phase-rule rows, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump6_cases.py`, `tests/passes/{inl6_,res6_}*`, the 21 lowering dump tests of §6.2 treated by Decision 90 (their `.sea`, `.out` and goldens), `res_err_default.res` and the `.res`, `.hir1` and `.hir` goldens that `el` 2 and the kind `inl` change (T2 reports its CORPUS rows to T1). Integration order: WP-CONTRACT; then WP-NAME, WP-CHECK, WP-LOOP, WP-LOWER and all of T2's goldens in one integration step (T2's `.res`, `.hir1` and `.hir` goldens need WP-NAME and WP-CHECK, its `.hirl` and `.lir1` goldens L20, R31 and R32; `make test` would be red with any part alone), then the runtime packages and T1 | the 6b tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test`, `make check-contracts` and `make cross` pass; sizes recorded in §2.7. **Done** (2026-10-28): `make test` passes in every group (`test-programs` 1 528), `make cross` 700 cases on the Linux host `desktop`, `test-rt` 114 on arm64 and 116 on x86_64; sizes and free letters in §2.7 ("Measured after 6b": `seaname` 5 424, `seacheck` 6 798, `sealoop` 5 936, `sealower` 6 637, `seagen_a64` 5 038, `seagen_x64` 5 376; Decision 82's condition holds, 8 193 ≤ 9 000); lead decisions L-cy–L-dh (agreed 2026-10-28) record the readings the integration fixed |
 | 6c | **Elemental functions** (after 6b): `elemental` (LANGUAGE.md §8.5; the call pre-pass of `seaname` with 228 and 232, L-cq; the call typing of `seacheck`; pass 2b's step 3 with `inst` and `emap`; `sealoop`'s L19 and L-ck's order), `ind2sub` with an array `r` (L-cl). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*` (L19); **WP-LOWER** `passes/sealower/*` (validation only); **T1** `tests/programs/{elem_,ind2sub_arr}*`, `tests/errors/{err_elem6_,r_elem6_}*`, the retired `err_ns_elemental` and `err_ns_ind2sub_array`, the re-derived `err_merge_same_pos`, `tests/CORPUS.md`; T2 also re-derives `res_err_elemental.res`; **T2** `tests/passes/elem6_*`; then the measurement after 6c (§2.7) | the 6c tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass; the measurement after 6c recorded in §2.7, and any relief it calls for agreed with the user before 6d's code. **Done** (2026-10-28): `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 686, `test-protocol` 46, `test-programs` 1 612, `test-accept` 2), `make cross` 742 cases on the Linux host `desktop`, 0 failed; the measurement after 6c recorded in §2.7 ("Measured after 6c": `seaname` 5 555, `seacheck` 6 863, `seaexpand` 4 359, `sealoop` 6 438, `sealower` 6 652; `seacheck` 6 863 + 120 + 1 275 = 8 258 ≤ 9 000, `sealoop` 6 438 + 190 = 6 628 ≤ 7 000 and 107 + 502 = 609 ≤ 1 320), so no relief is called for and 6b-0 is not run; lead decisions L-di–L-dq (agreed 2026-10-28) record the readings the integration fixed |
 | 6d | **`write_json`** (after 6c): pass 2b's step 4 (`jvec (dyn e)` for fixed-size values, L-ce), the `j*` statements through `sealoop` (validation, capacity) and `sealower` (rule 39's JSON rows), the runtime emitter of §2.11.6 (built and tested by 6b's WP-RT-A64 and WP-RT-X64 with the other entries). Work packages: **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*`; **WP-LOWER** `passes/sealower/*`; **T1** `tests/programs/json_*` with their `NAME.expect/` and `json_into_new_dir`, `tests/errors/r_json_*`, the retired `err_ns_lib_write_json`, `tests/CORPUS.md`; **T2** `tests/passes/json6_*` | the 6d tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass. **Done** (2026-10-28): `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 703, `test-protocol` 46, `test-programs` 1 667, `test-accept` 2), `make cross` 776 cases on the Linux host `desktop`, 0 failed; sizes in §2.7 ("Measured after 6d": `seacheck` 6 919, `seaexpand` 4 796, `sealoop` 6 512, `sealower` 6 729); lead decisions L-dr–L-ec (agreed 2026-10-28) record the readings the integration fixed; the independent review's defect (`seacheck`'s `hct` with an unbounded work list, L-dz) fixed before commit |
-| 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code |
+| 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code. **Done** (2026-10-29): `tests/accept.sh` passes both ports on the Mac (22.7 s; W1 compiles in 13.8 s, W5 in 7.1 s; every JSON key passes, the reports are equivalent, §6.3); `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 703, `test-protocol` 46, `test-programs` 1 667, `test-accept` 2 + 2); `make cross` 778 cases on the Linux host `desktop` (both ports byte-identical but for the `Compute time` line), 0 failed; the gate after phase 6 applied (§2.7, "Measured at the gate after phase 6"): every program passes (`sealoop` with phase 7's fusion: 6 512, 8 012 and 8 762 with 3 free letters), so no relief is needed and fusion stays in `sealoop`; lead decisions L-ed–L-eg (agreed 2026-10-29) record the readings the integration fixed |
 
 ## 9. Decisions (agreed)
 
@@ -12984,3 +13078,21 @@ LANGUAGE.md or the earlier rules leave a choice, written into its normative sect
   `bind J1`/`bind J2` retain as any `bind` and are released at the block's end in reverse order (a
   struct J2 copied into its own slot, rule 27); each `fld` of a struct-matrix element is lowered by
   rule 18 in full (both extents, both `chkb`, one load per field) (§3.5.7 step 4, §2.11.4, §2.11.5).
+* **L-ed** (6e, agreed 2026-10-29) The W5 port leaves out, besides the figures section and the
+  `--figures` arm of its option loop, Appendix D's header line documenting `--figures` and the
+  `var figures` it would no longer use (§2.11.8).
+* **L-ee** (6e, agreed 2026-10-29) The W1 port holds `caseMat` 0-based (MATLAB's `[2 2 3 1 4]` is
+  `[1, 1, 2, 0, 3]`), with a header note; the bearing index keeps MATLAB's 1-based number internally
+  (`brgIdx`, 0 for none), which is not exported, so §2.11.8's "1-based indices in its JSON" has
+  nothing to apply to; MATLAB's `w1:*` error identifiers are dropped and their messages kept; the
+  export record is named `out` (`ref` is a keyword) (§2.11.8).
+* **L-ef** (6e, agreed 2026-10-29) The ports are cross cases of a new case kind `ports` (bundle
+  `cases/ports/NAME.{s,out,args,meta}` and `NAME.expect/NAME.json`): `cross_pack.sh` checks each
+  with `accept.sh --save-out`, packs its standard output without the `Compute time` line and
+  generates `NAME.args` (`--export-reference`) and `NAME.meta` (`filter=compute-time`); a port that
+  fails on the Mac is `NAME.packfail`. Amends §6.6.1 (the case list, the `.meta` keys, the bundle
+  kinds, where the `accept` kind is now listed too) and §6.3.
+* **L-eg** (6e, agreed 2026-10-29) A token-map regex writes a blank as `[[:space:]]`, never `[ ]`,
+  because `compare_report.py` splits the map's fields on whitespace; where a JSON tolerance is below
+  one printed unit, the map converts it to the report's units and adds no rounding slack (the
+  `Rejects:` precedent). Amends §6.4 in place.

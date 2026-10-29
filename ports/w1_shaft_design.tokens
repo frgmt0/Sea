@@ -1,0 +1,35 @@
+# Token map for the W1 report (DESIGN.md 6.4). Written from the fprintf formats of
+# workloads/w1_shaft_design.m and the rules of reference_py/compare.py (RULES["w1_shaft_design"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). Units: the report prints mm, the JSON keys are in m, so atol is converted (x1e3).
+#
+# Case rows: '%-15s %7.2f %6d %7s %8.3f %8.1f %6d %6.3f %6.3f %8.0f %7.2f %-7s %8d'. Every case
+# label is two words, so the tokens are: 1-2 label, 3 P[kW], 4 rpm, 5 Mat, 6 dReq[mm],
+# 7 dStd[mm], 8 it, 9 nf, 10 ny, 11 crit[rpm], 12 ratio, 13 Bearing, 14 L10[h].
+# dReq: case_dReq num 2e-7 m = 2e-4 mm.
+^[A-Z][a-z]+[[:space:]][a-z]+[[:space:]]+[0-9]+[.][0-9][0-9][[:space:]]   6   num 2e-4 0
+# dStd: case_dStd exact (a standard size from the preferred-size table).
+^[A-Z][a-z]+[[:space:]][a-z]+[[:space:]]+[0-9]+[.][0-9][0-9][[:space:]]   7   json case_dStd
+# it: case_iters int 1.
+^[A-Z][a-z]+[[:space:]][a-z]+[[:space:]]+[0-9]+[.][0-9][0-9][[:space:]]   8   json case_iters
+# L10[h]: case_L10h int 1.
+^[A-Z][a-z]+[[:space:]][a-z]+[[:space:]]+[0-9]+[.][0-9][0-9][[:space:]]   14  json case_L10h
+#
+# Material comparison rows: '  %-8s Sut %5.0f MPa  min d for n >= %.1f: %7.3f mm'; token 11 is
+# the minimum diameter [mm]. mat_dMin num 3.6e-5 m = 3.6e-2 mm (one sweep step).
+^[[:space:]][[:space:]](CS|AS)-[A-Za-z0-9]+[[:space:]]+Sut   11   num 3.6e-2 0
+#
+# Grid rows: '  largest  d = %7.3f mm at P = %6.2f kW, %6.1f rpm' (and 'smallest'); token 4 is d [mm].
+# grid_d_max / grid_d_min num 2e-7 m = 2e-4 mm. The P and rpm tokens use the default rule: the
+# argmax/argmin grid point must be the same point (the grid spacing is far above one printed unit).
+^[[:space:]][[:space:]]largest[[:space:]]+d   4   num 2e-4 0
+^[[:space:]][[:space:]]smallest[[:space:]]+d  4   num 2e-4 0
+# '  yield-limited points: %.2f %%   total bisection iterations: %d'
+# token 3 is the yield-limited percentage: grid_yield_fraction num 3/10800 (as a fraction) =
+# 2.7778e-2 percent; token 8 is the iteration total: grid_iters_total int 20.
+^[[:space:]][[:space:]]yield-limited   3   num 2.7778e-2 0
+^[[:space:]][[:space:]]yield-limited   8   json grid_iters_total
+# '  scalar vs vectorized bisection max difference: %.3e m': token 7, grid_vec_maxdiff small 1e-7
+# (round-off noise: both values must be finite and at most 1e-7 in magnitude).
+^[[:space:]][[:space:]]scalar[[:space:]]vs   7   json grid_vec_maxdiff

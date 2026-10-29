@@ -120,6 +120,8 @@ check_meta() {
         case $_l in
         "" | stdout=epipe | stdout=closed) ;;
         env=SEA_HEAP_CHECK=*) ;;
+        filter=compute-time) [ "$2" = ports ] && continue
+            echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         heap=off) [ "$2" = rt ] || continue
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         stdout=slowpipe | env=*) [ "$2" = rt ] && continue
@@ -249,7 +251,7 @@ do_case() {
     _kind=$1; _n=$2
     name=$_kind/$_n
     base=$BUNDLE/cases/$_kind/$_n
-    check_meta "$base" prog
+    case $_kind in ports) check_meta "$base" ports ;; *) check_meta "$base" prog ;; esac
     if [ -f "$base.packfail" ]; then
         fail "$name" "compile (on the Mac) failed: $(head -3 "$base.packfail" | tr '\n' ' ')"; return
     fi
@@ -258,16 +260,24 @@ do_case() {
     errors) [ -f "$base.err" ] && [ -f "$base.status" ] || { fail "$name" "missing $_n.err or $_n.status"; return; } ;;
     passes) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     accept) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
+    ports) [ -f "$base.out" ] && [ -f "$base.expect/$_n.json" ] || { fail "$name" "missing $_n.out or $_n.expect/$_n.json"; return; } ;;
     esac
     asm_link "$name" "$base.s" "" || return
     _savet=$TIMEOUT
-    if [ "$_kind" = accept ]; then TIMEOUT=${SEA_ACCEPT_TIMEOUT:-120}; fi
+    case $_kind in accept | ports) TIMEOUT=${SEA_ACCEPT_TIMEOUT:-120} ;; esac
     if ! newwork "$base"; then fail "$name" "cannot prepare the work directory"; rm -rf "$WORK"; return; fi
     run_prog "$base" "$TMP/prog"
     TIMEOUT=$_savet
     experr=$TMP/empty; [ -f "$base.err" ] && experr=$base.err
     expout=$TMP/empty; [ -f "$base.out" ] && expout=$base.out
     want=$(want_status "$base")
+    # filter=compute-time (L-cn): drop the "Compute time" line from both outputs before comparing
+    if [ "$(meta_get "$base.meta" filter)" = compute-time ]; then
+        grep -v '^Compute time: .* s$' "$expout" > "$TMP/f.exp"
+        grep -v '^Compute time: .* s$' "$TMP/r.out" > "$TMP/f.out"
+        expout=$TMP/f.exp
+        mv -f "$TMP/f.out" "$TMP/r.out"
+    fi
     ok=1
     [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
     [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
@@ -280,7 +290,7 @@ do_case() {
     [ $ok = 1 ] && pass
 }
 
-for k in programs errors passes accept; do
+for k in programs errors passes accept ports; do
     for n in $(case_names $k); do do_case $k "$n"; done
 done
 

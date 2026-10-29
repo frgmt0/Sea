@@ -1,0 +1,463 @@
+// w1_shaft_design.sea -- Gear-shaft sizing study (scalar-heavy design calculation + sweeps)
+//
+// Sea port of sea/workloads/w1_shaft_design.m (Sea acceptance workload 1). Same model, same
+// numbers, no figures (DESIGN.md 2.11.8, Decision 80). Options:
+//   --export-reference   write w1_shaft_design.json to the working directory
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
+//   `2 * pi * rpm / 60`, `T / geo.rg / cos(geo.phi)`, `F * geo.a * (geo.L - geo.a) / geo.L`,
+//   `(brgC / Pbrg) ^ 3 * 1e6 / (60 * caseRpm[c])`, `mat.rho * pi * dStd ^ 2 / 4 * geo.L`,
+//   `0.0254e-3 * (2070e6 / mat.Sut) ^ 1.8`, `a * (Sut / 1e6) ^ b`, `pi * d ^ 4 / 64`, and
+//   `shaft_safety` line by line as LANGUAGE.md 2.1 writes it. MATLAB's `.^2`, `.^3`, `^4` are
+//   Sea's pinned multiplications for integer exponents up to 4 (LANGUAGE.md 6.5); the other
+//   powers are `pow`.
+// * shaft_safety. MATLAB's mask-based vector function is an `elemental fn` written for scalars
+//   (LANGUAGE.md 2.1, 8.5): `kb(m1)`/`kb(m2)` become an `if` expression with the same tests and
+//   formulas. It is called with scalars (bisect_diameter, the design cases, the grid check),
+//   with the 2001-element sweep vector and with the 90 x 120 grids.
+// * Vectorized bisection. MATLAB's `lo(up) = mid(up); hi(~up) = mid(~up)` is
+//   `lo = where(up, mid, lo); hi = where(up, hi, mid)` (LANGUAGE.md 2.1): the same value per
+//   element. `0.005 * ones(size(PW))` is `0.005 * ones(rows(PW), cols(PW))`.
+// * Indices. Sea is 0-based: `caseMat` holds 0-based indices into `mats` (MATLAB's 2 2 3 1 4);
+//   `find(…, 1)` with `isempty` is `find_first` returning -1; `max(dGrid(:))` is `max` and
+//   `argmax` of `dGrid.flat` (the first maximum in column-major order, as MATLAB) and
+//   `ind2sub` gives 0-based row and column, used only to index `gridP` and `gridRpm`; `brgIdx`
+//   stores MATLAB's 1-based bearing number (`b + 1`, 0 for none). The JSON holds no index keys.
+// * Integers. Bisection iteration counts (`iters`, `itGrid`), the bearing bores and the shaft
+//   speeds are `i64`; every use in `f64` arithmetic converts them exactly (LANGUAGE.md 4.2), so
+//   the values are MATLAB's doubles. `fracYield` is `nnz / numel`, two exactly converted
+//   integers. `L10h` stays `f64` because it is NaN when no bearing fits (written `null`).
+// * Structs. MATLAB's `cfg`, `geo`, `p` and `mats` are the structs `Cfg`, `Geo`, `Params` and
+//   the `Material[]` table; `res` (a struct of row vectors) is a record of vectors;
+//   `caseLabel`, `caseFinish`, `caseBearing` and `brgLabel` are `str[]`.
+// * make_params builds the whole `Params` value at once (a struct literal initialises every
+//   field) from the same expressions in MATLAB's order; only `surface_factor` can fail.
+// * bisect_diameter turns its parameters `lo` and `hi` into mutable locals (`var lo = lo`) as
+//   MATLAB's local copies; `[d, iters]` is a tuple result.
+// * Unused results. `[critRpm, ~, ~] = critical_speed(…)` is `let (critRpm, _, _) = …`;
+//   two-output calls of three- and five-result functions discard the rest with `_`.
+// * Errors keep MATLAB's messages without the message identifiers (`w1:config`, …); none fires.
+// * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT and
+//   SEA_SAVE_FIGURES and the figures section are not ported (Decision 80). `wlName`/`wlDir` are
+//   not needed: the JSON goes to the working directory (LANGUAGE.md 11.3) and the export record
+//   (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
+// * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` values or
+//   integral `f64` values (`lifeTarget`, `L10h`, LANGUAGE.md 11.1).
+
+struct Cfg {
+    finish: str         // surface finish: ground | machined | hot-rolled | as-forged
+    reliability: f64    // required reliability [-], one of the tabulated values
+    nTarget: f64        // required safety factor (fatigue and yield) [-]
+    lifeTarget: f64     // required bearing L10 life [h]
+}
+
+struct Geo {
+    L: f64              // bearing span [m]
+    a: f64              // gear distance from left bearing [m]
+    rg: f64             // gear pitch radius [m]
+    phi: f64            // gear pressure angle [rad]
+    mGear: f64          // gear mass [kg]
+    ripple: f64         // alternating torque / mean torque [-]
+    rRatio: f64         // shoulder fillet radius / diameter [-]
+    Kt: f64             // theoretical stress concentration, bending [-]
+    Kts: f64            // theoretical stress concentration, torsion [-]
+    seatRatio: f64      // bearing seat diameter / shoulder diameter [-]
+}
+
+struct Material {
+    name: str
+    Sut: f64            // ultimate strength [Pa]
+    Sy: f64             // yield strength [Pa]
+    E: f64              // Young's modulus [Pa]
+    rho: f64            // density [kg/m^3]
+}
+
+struct Params {
+    Sut: f64
+    Sy: f64
+    ka: f64
+    ke: f64
+    SePrime: f64
+    aPeterson: f64      // Peterson characteristic length [m]
+    rRatio: f64
+    Kt: f64
+    Kts: f64
+    ripple: f64
+    nTarget: f64
+}
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- configuration
+let cfg = Cfg { finish: "machined", reliability: 0.99, nTarget: 2.0, lifeTarget: 20000 }
+
+// Shaft and gear geometry (invented)
+let geo = Geo {
+    L: 0.420,
+    a: 0.150,
+    rg: 0.085,
+    phi: 20 * pi / 180,
+    mGear: 9.5,
+    ripple: 0.12,
+    rRatio: 0.04,
+    Kt: 1.90,
+    Kts: 1.45,
+    seatRatio: 1 / 1.20,
+}
+
+// Material table (invented values, steels of increasing strength)
+let mats = [
+    Material { name: "CS-low", Sut: 470e6,  Sy: 380e6,  E: 205e9, rho: 7860 },
+    Material { name: "CS-med", Sut: 640e6,  Sy: 530e6,  E: 205e9, rho: 7850 },
+    Material { name: "AS-QT1", Sut: 1030e6, Sy: 890e6,  E: 207e9, rho: 7850 },
+    Material { name: "AS-QT2", Sut: 1460e6, Sy: 1290e6, E: 207e9, rho: 7840 },
+]
+
+// Invented deep-groove ball-bearing catalog: bore [mm], dynamic rating C [N]
+let brgBore = [15, 17, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+let brgC = [7.9, 9.7, 12.9, 14.2, 19.8, 25.9, 31.2, 33.9, 35.6, 44.1, 52.8, 56.6, 62.4, 67.1, 71.0,
+    84.0, 96.5, 109.0, 113.5] * 1e3
+var brgLabel = filled("", len(brgBore))
+for i in 0..len(brgBore) {
+    brgLabel[i] = format("DG-%03d", brgBore[i])
+}
+
+// Preferred shaft diameters (R20 series) [mm]
+let stdD = [10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5, 35.5, 40, 45, 50, 56, 63, 71, 80, 90,
+    100, 112, 125, 140, 160, 180, 200, 224, 250, 280]
+
+// Design cases
+let caseLabel = ["Conveyor drive", "Pump coupling", "Mixer gearbox", "Fan jackshaft", "Winch input"]
+let casePower = [7.5, 22, 15, 4, 30] * 1e3      // transmitted power [W]
+let caseRpm = [960, 2900, 420, 1450, 720]        // shaft speed [rev/min]
+let caseMat = [1, 1, 2, 0, 3]                    // 0-based index into mats
+let caseFinish = ["machined", "ground", "machined", "hot-rolled", "ground"]
+
+// ---------------------------------------------------------------- validation
+surface_factor(cfg.finish, mats[0].Sut)   // validates cfg.finish (errors if unknown)
+let ke = reliability_factor(cfg.reliability)
+if cfg.nTarget <= 1 {
+    error("nTarget must exceed 1, got %g", cfg.nTarget)
+}
+if geo.a <= 0 || geo.a >= geo.L {
+    error("gear position a=%g must lie inside the span L=%g", geo.a, geo.L)
+}
+if (len(caseLabel) != len(casePower) || len(casePower) != len(caseRpm) ||
+        len(caseRpm) != len(caseMat) || len(caseMat) != len(caseFinish)) {
+    error("design case tables have inconsistent lengths")
+}
+
+// ---------------------------------------------------------------- design cases
+let nCase = len(caseLabel)
+var res = {
+    dReq: zeros(nCase), iters: filled(0, nCase), dStd: zeros(nCase),
+    nf: zeros(nCase), ny: zeros(nCase), Se: zeros(nCase),
+    Kf: zeros(nCase), Kfs: zeros(nCase), torque: zeros(nCase),
+    Mmax: zeros(nCase), critRpm: zeros(nCase), critRatio: zeros(nCase),
+    R1: zeros(nCase), R2: zeros(nCase), brgIdx: filled(0, nCase),
+    L10h: zeros(nCase), mass: zeros(nCase),
+}
+var caseBearing = filled("", nCase)
+for c in 0..nCase {
+    let mat = mats[caseMat[c]]
+    let p = make_params(geo, cfg, mat, caseFinish[c], ke)
+    let (T, Mmax, F) = shaft_loads(casePower[c], caseRpm[c], geo)
+    let (dReq, iters) = bisect_diameter(Mmax, T, p, cfg.nTarget, 0.005, 0.300, 1e-7)
+    let k = find_first(stdD >= dReq * 1e3)
+    if k < 0 {
+        error("case \"%s\" needs d=%.1f mm, above the preferred range", caseLabel[c], dReq * 1e3)
+    }
+    let dStd = stdD[k] / 1e3
+    let (nf, ny, Se, Kf, Kfs) = shaft_safety(dStd, Mmax, T, p)
+    let (critRpm, _, _) = critical_speed(dStd, geo, mat)
+    let R1 = F * (geo.L - geo.a) / geo.L
+    let R2 = F * geo.a / geo.L
+    let dSeat = dStd * geo.seatRatio
+    let Pbrg = max(R1, R2)
+    let life = (brgC / Pbrg) ^ 3 * 1e6 / (60 * caseRpm[c])
+    let b = find_first(brgBore >= dSeat * 1e3 & life >= cfg.lifeTarget)
+    if b < 0 {
+        caseBearing[c] = "none"
+        res.brgIdx[c] = 0
+        res.L10h[c] = nan
+    } else {
+        caseBearing[c] = brgLabel[b]
+        res.brgIdx[c] = b + 1                     // MATLAB's 1-based bearing number
+        res.L10h[c] = round(life[b])
+    }
+    res.dReq[c] = dReq;   res.iters[c] = iters;  res.dStd[c] = dStd
+    res.nf[c] = nf;       res.ny[c] = ny;        res.Se[c] = Se
+    res.Kf[c] = Kf;       res.Kfs[c] = Kfs;      res.torque[c] = T
+    res.Mmax[c] = Mmax;   res.critRpm[c] = critRpm
+    res.critRatio[c] = critRpm / caseRpm[c]
+    res.R1[c] = R1;       res.R2[c] = R2
+    res.mass[c] = mat.rho * pi * dStd ^ 2 / 4 * geo.L
+}
+
+// ---------------------------------------------------------------- sweep A: material curves
+// Safety factors versus diameter for every material at design case 1 loads (vectorized).
+let dSweep = linspace(0.010, 0.080, 2001)
+let (T1, M1, _) = shaft_loads(casePower[0], caseRpm[0], geo)
+let nMat = len(mats)
+var nfCurve = zeros(nMat, len(dSweep))
+var nyCurve = zeros(nMat, len(dSweep))
+var dMinMat = zeros(nMat)
+for m in 0..nMat {
+    let p = make_params(geo, cfg, mats[m], cfg.finish, ke)
+    (nfCurve[m, :], nyCurve[m, :], _, _, _) = shaft_safety(dSweep, M1, T1, p)
+    let ok = find_first(min(nfCurve[m, :], nyCurve[m, :]) >= cfg.nTarget)
+    if ok < 0 {
+        dMinMat[m] = nan
+    } else {
+        dMinMat[m] = dSweep[ok]
+    }
+}
+
+// ---------------------------------------------------------------- sweep B: power x speed grid
+// Required diameter over a power/speed grid, by scalar bisection at every grid point,
+// then re-checked with a vectorized bisection over the whole grid at once.
+let gridP = linspace(0.5e3, 45e3, 90)       // [W]
+let gridRpm = linspace(250, 3600, 120)      // [rev/min]
+let pGrid = make_params(geo, cfg, mats[caseMat[0]], cfg.finish, ke)
+var dGrid = zeros(len(gridP), len(gridRpm))
+var itGrid = filled(0, len(gridP), len(gridRpm))
+var yieldLimited = filled(false, len(gridP), len(gridRpm))
+for i in 0..len(gridP) {
+    for j in 0..len(gridRpm) {
+        let (Tg, Mg, _) = shaft_loads(gridP[i], gridRpm[j], geo)
+        (dGrid[i, j], itGrid[i, j]) = bisect_diameter(Mg, Tg, pGrid, cfg.nTarget,
+            0.005, 0.300, 1e-7)
+        let (nfg, nyg, _, _, _) = shaft_safety(dGrid[i, j], Mg, Tg, pGrid)
+        yieldLimited[i, j] = nyg < nfg
+    }
+}
+
+// Vectorized bisection over the whole grid (fusion target: every line is element-wise)
+let (RPM, PW) = meshgrid(gridRpm, gridP)
+let omegaG = 2 * pi * RPM / 60
+let TG = PW / omegaG
+let FG = TG / geo.rg / cos(geo.phi)
+let MG = FG * geo.a * (geo.L - geo.a) / geo.L
+var lo = 0.005 * ones(rows(PW), cols(PW))
+var hi = 0.300 * ones(rows(PW), cols(PW))
+for it in 0..40 {
+    let mid = 0.5 * (lo + hi)
+    let (nfv, nyv, _, _, _) = shaft_safety(mid, MG, TG, pGrid)
+    let up = min(nfv, nyv) < cfg.nTarget
+    lo = where(up, mid, lo)
+    hi = where(up, hi, mid)
+}
+let dGridVec = 0.5 * (lo + hi)
+let vecMaxDiff = max(abs(dGridVec.flat - dGrid.flat))
+
+let dGridMax = max(dGrid.flat)
+let kMax = argmax(dGrid.flat)
+let (iMax, jMax) = ind2sub(rows(dGrid), kMax)
+let dGridMin = min(dGrid.flat)
+let kMin = argmin(dGrid.flat)
+let (iMin, jMin) = ind2sub(rows(dGrid), kMin)
+let fracYield = nnz(yieldLimited.flat) / numel(yieldLimited)
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+printf("\n=== W1  Gear-shaft sizing study ===\n")
+printf("Finish: %s   reliability: %.4g (ke = %.3f)   target n: %.2f   bearing life: %d h\n",
+    cfg.finish, cfg.reliability, ke, cfg.nTarget, cfg.lifeTarget)
+printf("Span %.0f mm, gear at %.0f mm, pitch radius %.0f mm, ripple %.0f %%\n\n",
+    geo.L * 1e3, geo.a * 1e3, geo.rg * 1e3, geo.ripple * 100)
+
+printf("%-15s %7s %6s %7s %8s %8s %6s %6s %6s %8s %7s %-7s %8s\n", "Case", "P[kW]",
+    "rpm", "Mat", "dReq[mm]", "dStd[mm]", "it", "nf", "ny", "crit[rpm]", "ratio",
+    "Bearing", "L10[h]")
+for c in 0..nCase {
+    printf("%-15s %7.2f %6d %7s %8.3f %8.1f %6d %6.3f %6.3f %8.0f %7.2f %-7s %8d\n",
+        caseLabel[c], casePower[c] / 1e3, caseRpm[c], mats[caseMat[c]].name,
+        res.dReq[c] * 1e3, res.dStd[c] * 1e3, res.iters[c], res.nf[c], res.ny[c],
+        res.critRpm[c], res.critRatio[c], caseBearing[c], res.L10h[c])
+}
+
+printf("\nMaterial comparison at case \"%s\" loads (T = %.2f N m, M = %.2f N m):\n",
+    caseLabel[0], T1, M1)
+for m in 0..nMat {
+    printf("  %-8s Sut %5.0f MPa  min d for n >= %.1f: %7.3f mm\n", mats[m].name,
+        mats[m].Sut / 1e6, cfg.nTarget, dMinMat[m] * 1e3)
+}
+
+printf("\nPower x speed grid (%d x %d points, material %s):\n", len(gridP),
+    len(gridRpm), mats[caseMat[0]].name)
+printf("  largest  d = %7.3f mm at P = %6.2f kW, %6.1f rpm\n", dGridMax * 1e3,
+    gridP[iMax] / 1e3, gridRpm[jMax])
+printf("  smallest d = %7.3f mm at P = %6.2f kW, %6.1f rpm\n", dGridMin * 1e3,
+    gridP[iMin] / 1e3, gridRpm[jMin])
+printf("  yield-limited points: %.2f %%   total bisection iterations: %d\n",
+    100 * fracYield, sum(itGrid.flat))
+printf("  scalar vs vectorized bisection max difference: %.3e m\n", vecMaxDiff)
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w1_shaft_design",
+        ke: ke,
+        case_label: caseLabel,
+        case_bearing: caseBearing,
+        case_dReq: res.dReq,
+        case_iters: res.iters,
+        case_dStd: res.dStd,
+        case_nf: res.nf,
+        case_ny: res.ny,
+        case_Se: res.Se,
+        case_Kf: res.Kf,
+        case_Kfs: res.Kfs,
+        case_torque: res.torque,
+        case_Mmax: res.Mmax,
+        case_critRpm: res.critRpm,
+        case_R1: res.R1,
+        case_R2: res.R2,
+        case_L10h: res.L10h,
+        case_mass: res.mass,
+        sweep_d: dSweep,
+        sweep_nf: nfCurve,
+        sweep_ny: nyCurve,
+        mat_dMin: dMinMat,
+        grid_P: gridP,
+        grid_rpm: gridRpm,
+        grid_d: dGrid,
+        grid_iters_total: sum(itGrid.flat),
+        grid_yield_fraction: fracYield,
+        grid_d_max: dGridMax,
+        grid_d_min: dGridMin,
+        grid_vec_maxdiff: vecMaxDiff,
+    }
+    write_json("w1_shaft_design.json", out)
+}
+
+// ================================================================ functions
+
+// Collect the material- and finish-dependent constants used by shaft_safety.
+fn make_params(geo: Geo, cfg: Cfg, mat: Material, finish: str, ke: f64) -> Params {
+    let ka = surface_factor(finish, mat.Sut)
+    let SePrime = if mat.Sut <= 1400e6 { 0.5 * mat.Sut } else { 700e6 }
+    let aPeterson = 0.0254e-3 * (2070e6 / mat.Sut) ^ 1.8   // Peterson characteristic length [m]
+    return Params {
+        Sut: mat.Sut,
+        Sy: mat.Sy,
+        ka: ka,
+        ke: ke,
+        SePrime: SePrime,
+        aPeterson: aPeterson,
+        rRatio: geo.rRatio,
+        Kt: geo.Kt,
+        Kts: geo.Kts,
+        ripple: geo.ripple,
+        nTarget: cfg.nTarget,
+    }
+}
+
+// Marin surface factor ka = a * Sut[MPa]^b.
+fn surface_factor(finish: str, Sut: f64) -> f64 {
+    var a = 0.0
+    var b = 0.0
+    match lower(finish) {
+        "ground" => { a = 1.58; b = -0.085 }
+        "machined" => { a = 4.51; b = -0.265 }
+        "hot-rolled" => { a = 57.7; b = -0.718 }
+        "as-forged" => { a = 272; b = -0.995 }
+        _ => { error("unknown surface finish \"%s\"", finish) }
+    }
+    return a * (Sut / 1e6) ^ b
+}
+
+// Marin reliability factor from the standard table.
+fn reliability_factor(R: f64) -> f64 {
+    let table = [0.50, 1.000; 0.90, 0.897; 0.95, 0.868; 0.99, 0.814; 0.999, 0.753; 0.9999, 0.702]
+    let k = find_first(abs(table[:, 0] - R) < 1e-12)
+    if k < 0 {
+        error("reliability %.6g is not tabulated", R)
+    }
+    return table[k, 1]
+}
+
+// Torque, maximum bending moment and resultant gear force for power P [W] at rpm.
+fn shaft_loads(P: f64, rpm: f64, geo: Geo) -> (f64, f64, f64) {
+    let omega = 2 * pi * rpm / 60
+    let T = P / omega
+    let F = T / geo.rg / cos(geo.phi)
+    let Mmax = F * geo.a * (geo.L - geo.a) / geo.L
+    return (T, Mmax, F)
+}
+
+// DE-Goodman fatigue and von Mises yield safety factors; element-wise in d, Mmax, T.
+elemental fn shaft_safety(d: f64, Mmax: f64, T: f64, p: Params) -> (f64, f64, f64, f64, f64) {
+    let dmm = d * 1e3
+    let kb = if dmm > 2.79 && dmm <= 51 { 1.24 * dmm ^ -0.107 }
+             else if dmm > 51 { 1.51 * min(dmm, 254) ^ -0.157 }
+             else { 1.0 }
+    let Se = p.ka * kb * p.ke * p.SePrime
+    let r = p.rRatio * d
+    let q = 1 / (1 + p.aPeterson / r)
+    let qs = 1 / (1 + 0.6 * p.aPeterson / r)
+    let Kf = 1 + q * (p.Kt - 1)
+    let Kfs = 1 + qs * (p.Kts - 1)
+    let Ma = Mmax          // rotating shaft: fully reversed bending
+    let Mm = 0.0
+    let Tm = T
+    let Ta = p.ripple * T
+    let c16 = 16 / (pi * d ^ 3)
+    let alt = sqrt(4 * (Kf * Ma) ^ 2 + 3 * (Kfs * Ta) ^ 2)
+    let mmean = sqrt(4 * (Kf * Mm) ^ 2 + 3 * (Kfs * Tm) ^ 2)
+    let nf = 1 / (c16 * (alt / Se + mmean / p.Sut))
+    let sigMax = sqrt((32 * Kf * (Mm + Ma) / (pi * d ^ 3)) ^ 2
+                      + 3 * (16 * Kfs * (Tm + Ta) / (pi * d ^ 3)) ^ 2)
+    let ny = p.Sy / sigMax
+    return (nf, ny, Se, Kf, Kfs)
+}
+
+// Smallest diameter with min(nf, ny) >= nTarget, by bisection on [lo, hi].
+fn bisect_diameter(Mmax: f64, T: f64, p: Params, nTarget: f64, lo: f64, hi: f64,
+                   tol: f64) -> (f64, i64) {
+    let (nfLo, nyLo, _, _, _) = shaft_safety(lo, Mmax, T, p)
+    let (nfHi, nyHi, _, _, _) = shaft_safety(hi, Mmax, T, p)
+    if min(nfLo, nyLo) >= nTarget {
+        return (lo, 0)
+    }
+    if min(nfHi, nyHi) < nTarget {
+        error("no diameter up to %.3f m reaches n = %.2f", hi, nTarget)
+    }
+    var lo = lo
+    var hi = hi
+    var iters = 0
+    while hi - lo > tol {
+        let mid = 0.5 * (lo + hi)
+        let (nfM, nyM, _, _, _) = shaft_safety(mid, Mmax, T, p)
+        if min(nfM, nyM) < nTarget {
+            lo = mid
+        } else {
+            hi = mid
+        }
+        iters = iters + 1
+    }
+    return (hi, iters)
+}
+
+// First critical speed by Dunkerley: uniform simply supported shaft plus gear point mass.
+fn critical_speed(d: f64, geo: Geo, mat: Material) -> (f64, f64, f64) {
+    let I = pi * d ^ 4 / 64
+    let mPerLen = mat.rho * pi * d ^ 2 / 4
+    let wShaft = (pi / geo.L) ^ 2 * sqrt(mat.E * I / mPerLen)
+    let b = geo.L - geo.a
+    let kGear = 3 * mat.E * I * geo.L / (geo.a ^ 2 * b ^ 2)
+    let wGear = sqrt(kGear / geo.mGear)
+    let wCrit = 1 / sqrt(1 / wShaft ^ 2 + 1 / wGear ^ 2)
+    let critRpm = wCrit * 60 / (2 * pi)
+    return (critRpm, wShaft, wGear)
+}

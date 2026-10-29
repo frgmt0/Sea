@@ -96,8 +96,15 @@ done** (2026-10-28: elemental functions, `ind2sub` with an array `r`; lead decis
 "Measured after 6c"; the measurement after 6c calls for no relief, so 6b-0 is not run, Decision 87).
 **6d is done** (2026-10-28: `write_json`; lead decisions L-dr–L-ec; `make test` and `make cross`
 (776) pass; `seacheck` 6 919 built lines, `seaexpand` 4 796, `sealoop` 6 512, `sealower` 6 729,
-DESIGN.md §2.7 "Measured after 6d"). **Next:** **6e** (the ports W1 and W5, `tests/accept.sh`, the
-gate after phase 6). Versions 0.y.z are alpha; 1.0.0 = v1
+DESIGN.md §2.7 "Measured after 6d"). **6e is done** (2026-10-29: the ports `ports/w1_shaft_design.sea`
+and `ports/w5_tolerance_mc.sea` without figures, their token maps, `tests/accept.sh`, the cross case
+kind `ports`; lead decisions L-ed–L-eg; `tests/accept.sh` passes both, every JSON key and both reports;
+`make test` and `make cross` (778) pass, the ports byte-identical on the host but for the `Compute
+time` line; DESIGN.md §6.3 "Measured at 6e"). The gate after phase 6 passes every program with no
+relief (`sealoop` 6 512 built lines, 8 762 at the stress line with phase 7's fusion, 3 free letters:
+fusion stays in `sealoop`; DESIGN.md §2.7 "Measured at the gate after phase 6"). **Phase 6 is
+complete.** **Next:** **phase 7** (fusion and SIMD, DESIGN.md §8 row 7), starting with its
+specification. Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first
@@ -126,7 +133,7 @@ gate after phase 6). Versions 0.y.z are alpha; 1.0.0 = v1
   instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
   (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`),
-  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps). Each group is also its own target.
+  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the phase-6 ports W1 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.

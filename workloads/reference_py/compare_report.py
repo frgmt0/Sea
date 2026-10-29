@@ -13,8 +13,8 @@ Token map: one entry per line, fields separated by runs of blanks:
     <line regex>  <token number>  <rule>
 
 * The regex is POSIX extended, matched at the START of the report line (so `^Rejects:` and
-  `Rejects:` are the same). It may not contain blanks (fields are split on blanks): write `[ ]`
-  or `[[:space:]]` for a blank. POSIX bracket classes ([:digit:], [:alpha:], ...) are accepted.
+  `Rejects:` are the same). It may not contain blanks (fields are split on blanks): write
+  `[[:space:]]` for a blank. POSIX bracket classes ([:digit:], [:alpha:], ...) are accepted.
 * The token number counts blank-separated tokens of the line from 1. It must name a numeric
   token of the reference line.
 * Blank lines and lines starting with `#` are comments.

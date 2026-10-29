@@ -1,0 +1,268 @@
+// w5_tolerance_mc.sea -- Monte Carlo tolerance stack-up of a bearing/gear axial stack
+//
+// Sea port of sea/workloads/w5_tolerance_mc.m (Sea acceptance workload 5). Same model, same
+// numbers. Options:
+//   --export-reference   write w5_tolerance_mc.json to the working directory
+
+struct Dim {
+    name: str
+    nom: f64      // nominal length [mm]
+    tol: f64      // symmetric tolerance [mm]
+    dist: str     // "normal" | "uniform" | "triangular"
+    sign: i64     // +1 opens the gap, -1 closes it
+    alpha: f64    // thermal expansion coefficient [1/K]
+}
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- inputs
+let dims = [
+    Dim { name: "housing depth",  nom: 84.00, tol: 0.050, dist: "normal",     sign: 1,  alpha: 23.1e-6 },
+    Dim { name: "gasket",         nom: 0.25,  tol: 0.040, dist: "triangular", sign: 1,  alpha: 80e-6 },
+    Dim { name: "bearing 1",      nom: 19.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "spacer",         nom: 24.75, tol: 0.030, dist: "uniform",    sign: -1, alpha: 11.5e-6 },
+    Dim { name: "gear hub",       nom: 22.00, tol: 0.040, dist: "triangular", sign: -1, alpha: 11.5e-6 },
+    Dim { name: "bearing 2",      nom: 17.00, tol: 0.012, dist: "normal",     sign: -1, alpha: 11.5e-6 },
+    Dim { name: "retaining ring", nom: 1.20,  tol: 0.030, dist: "uniform",    sign: -1, alpha: 12.0e-6 },
+]
+let nSample = 1_000_000      // Monte Carlo samples [-]
+let seed = 7_340_117         // LCG seed [-]
+let Tref = 20.0              // reference (inspection) temperature [degC]
+let Tlo = 20.0               // operating temperature range, uniform [degC]
+let Thi = 95.0
+let LSL = 0.20               // cold end-play lower limit [mm]
+let USL = 0.42               // cold end-play upper limit [mm]
+let hotMax = 0.45            // hot end-play upper limit [mm]
+let histLo = 0.0             // histogram range for the cold gap [mm]
+let histHi = 0.6
+let nBin = 60
+let pct = [0.135, 2.5, 50, 97.5, 99.865]   // percentiles to report [%]
+let scale = linspace(0.4, 1.6, 25)         // tolerance scaling factors for the sweep [-]
+let yieldTarget = 0.9973
+
+let nDim = len(dims)
+for d in 0..nDim {
+    match dims[d].dist {
+        "normal" | "uniform" | "triangular" => {}
+        _ => { error("dimension \"%s\": unknown distribution \"%s\"", dims[d].name, dims[d].dist) }
+    }
+    if dims[d].tol <= 0 {
+        error("dimension \"%s\": tolerance must be positive", dims[d].name)
+    }
+}
+
+// ---------------------------------------------------------------- analytic limits
+var nomGap = 0.0
+var wcHalf = 0.0
+var rssVar = 0.0
+var sigmaDim = zeros(nDim)
+for d in 0..nDim {
+    nomGap = nomGap + dims[d].sign * dims[d].nom
+    wcHalf = wcHalf + dims[d].tol
+    match dims[d].dist {
+        "normal" => { sigmaDim[d] = dims[d].tol / 3 }
+        "uniform" => { sigmaDim[d] = dims[d].tol / sqrt(3) }
+        "triangular" => { sigmaDim[d] = dims[d].tol / sqrt(6) }
+        _ => {}
+    }
+    rssVar = rssVar + sigmaDim[d] ^ 2
+}
+let rssSigma = sqrt(rssVar)
+
+// ---------------------------------------------------------------- sampling
+var s = seed
+var dev = zeros(nSample, nDim)        // deviation of each dimension from nominal [mm]
+for d in 0..nDim {
+    match dims[d].dist {
+        "normal" => {
+            let u = lcg_fill(ref s, 2 * nSample)
+            let u1 = u[0..$ step 2]
+            let u2 = u[1..$ step 2]
+            let z = sqrt(-2 * log(u1)) * cos(2 * pi * u2)
+            dev[:, d] = z * (dims[d].tol / 3)
+        }
+        "uniform" => {
+            let u = lcg_fill(ref s, nSample)
+            dev[:, d] = dims[d].tol * (2 * u - 1)
+        }
+        "triangular" => {
+            let u = lcg_fill(ref s, nSample)
+            let t = dims[d].tol
+            dev[:, d] = where(u < 0.5, -t + t * sqrt(2 * u), t - t * sqrt(2 * (1 - u)))
+        }
+        _ => {}
+    }
+}
+let uTop = lcg_fill(ref s, nSample)
+let Top = Tlo + (Thi - Tlo) * uTop
+let lcgFinal = s
+
+let nom = dims.nom
+let sgn = dims.sign
+let alpha = dims.alpha
+let (gapCold, gapHot) = stack_gap(dev, 1, nom, sgn, alpha, Top, Tref)
+
+// ---------------------------------------------------------------- statistics
+let muC = mean(gapCold)
+let sdC = std(gapCold)
+let muH = mean(gapHot)
+let sdH = std(gapHot)
+let cpk = min(USL - muC, muC - LSL) / (3 * sdC)
+let nLow = nnz(gapCold < LSL)
+let nHigh = nnz(gapCold > USL)
+let nHot = nnz(gapHot > hotMax)
+let pass = gapCold >= LSL & gapCold <= USL & gapHot <= hotMax
+let yieldMC = nnz(pass) / nSample
+
+let binW = (histHi - histLo) / nBin
+let bin = floor((gapCold - histLo) / binW)          // 0-based bin number, as f64
+let inRange = bin >= 0 & bin < nBin
+let counts = bincount(i64(bin[inRange]), nBin)
+let underflow = nnz(bin < 0)
+let overflow = nnz(bin >= nBin)
+let edges = histLo + (0..=nBin) * binW
+
+let sortedC = sort(gapCold)
+let sortedH = sort(gapHot)
+var pC = zeros(len(pct))
+var pH = zeros(len(pct))
+for k in 0..len(pct) {
+    pC[k] = prctile_mid(sortedC, pct[k])
+    pH[k] = prctile_mid(sortedH, pct[k])
+}
+
+var contrib = zeros(nDim)
+for d in 0..nDim {
+    contrib[d] = variance(dev[:, d]) / variance(gapCold)
+}
+let rnk = argsort(contrib, desc: true)
+
+// ---------------------------------------------------------------- tolerance scaling sweep
+var yieldScale = zeros(len(scale))
+var cpkScale = zeros(len(scale))
+for k in 0..len(scale) {
+    let (gc, gh) = stack_gap(dev, scale[k], nom, sgn, alpha, Top, Tref)
+    let ok = gc >= LSL & gc <= USL & gh <= hotMax
+    yieldScale[k] = nnz(ok) / nSample
+    let m = mean(gc)
+    cpkScale[k] = min(USL - m, m - LSL) / (3 * std(gc))
+}
+let kOk = find_last(yieldScale >= yieldTarget)
+let scaleMax = if kOk < 0 { nan } else { scale[kOk] }
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+printf("\n=== W5  Monte Carlo tolerance stack-up (%d samples) ===\n", nSample)
+printf("%-15s %8s %7s %-10s %4s %9s\n", "Dimension", "nom[mm]", "tol", "dist", "sgn",
+    "var share")
+for d in 0..nDim {
+    printf("%-15s %8.3f %7.3f %-10s %+4d %8.2f%%\n", dims[d].name, dims[d].nom,
+        dims[d].tol, dims[d].dist, dims[d].sign, 100 * contrib[d])
+}
+printf("\nNominal gap %.4f mm; worst case %.4f .. %.4f mm; RSS 3-sigma %.4f .. %.4f mm\n",
+    nomGap, nomGap - wcHalf, nomGap + wcHalf, nomGap - 3 * rssSigma, nomGap + 3 * rssSigma)
+printf("Cold gap: mean %.5f, std %.5f, min %.5f, max %.5f mm, Cpk %.3f\n", muC, sdC,
+    sortedC[0], sortedC[$ - 1], cpk)
+printf("Hot gap : mean %.5f, std %.5f, min %.5f, max %.5f mm\n", muH, sdH, sortedH[0],
+    sortedH[$ - 1])
+printf("Rejects: %d below LSL, %d above USL, %d too loose when hot; yield %.4f %%\n",
+    nLow, nHigh, nHot, 100 * yieldMC)
+printf("Percentiles (cold / hot) [mm]:\n")
+for k in 0..len(pct) {
+    printf("  P%-7.3f %9.5f %9.5f\n", pct[k], pC[k], pH[k])
+}
+printf("Largest contributors: %s, %s, %s\n", dims[rnk[0]].name, dims[rnk[1]].name,
+    dims[rnk[2]].name)
+printf("Histogram: %d bins of %.3f mm, underflow %d, overflow %d, fullest bin %d\n",
+    nBin, binW, underflow, overflow, max(counts))
+printf("Largest tolerance scale with yield >= %.2f %%: %.2f\n", 100 * yieldTarget, scaleMax)
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w5_tolerance_mc",
+        n_sample: nSample,
+        lcg_final: lcgFinal,
+        first_dev: dev[0..10, :],
+        first_top: Top[0..10],
+        nom_gap: nomGap,
+        wc_half: wcHalf,
+        rss_sigma: rssSigma,
+        mean_cold: muC,
+        std_cold: sdC,
+        mean_hot: muH,
+        std_hot: sdH,
+        min_cold: sortedC[0],
+        max_cold: sortedC[$ - 1],
+        min_hot: sortedH[0],
+        max_hot: sortedH[$ - 1],
+        cpk: cpk,
+        n_low: nLow,
+        n_high: nHigh,
+        n_hot: nHot,
+        yield: yieldMC,
+        hist_counts: counts,
+        hist_underflow: underflow,
+        hist_overflow: overflow,
+        pct: pct,
+        pct_cold: pC,
+        pct_hot: pH,
+        contrib: contrib,
+        rank: rnk + 1,               // MATLAB's 1-based ranks
+        scale: scale,
+        yield_scale: yieldScale,
+        cpk_scale: cpkScale,
+        scale_max: scaleMax,
+    }
+    write_json("w5_tolerance_mc.json", out)
+}
+
+// ================================================================ functions
+
+// n uniforms in (0,1) from the Park-Miller minimal-standard LCG (exact in i64).
+fn lcg_fill(ref s: i64, n: i64) -> f64[] {
+    var u = zeros(n)
+    for i in 0..n {
+        s = 16807 * s % 2147483647
+        u[i] = s / 2147483647
+    }
+    return u
+}
+
+// End play at the reference temperature and at the operating temperature, with the
+// deviations scaled by k. Terms are summed in chain order.
+fn stack_gap(dev: f64[,], k: f64, nom: f64[], sgn: i64[], alpha: f64[], Top: f64[],
+             Tref: f64) -> (f64[], f64[]) {
+    let n = rows(dev)
+    var gapCold = zeros(n)
+    var gapHot = zeros(n)
+    let dT = Top - Tref
+    for d in 0..len(nom) {
+        let L = nom[d] + k * dev[:, d]
+        gapCold = gapCold + sgn[d] * L
+        gapHot = gapHot + sgn[d] * (L * (1 + alpha[d] * dT))
+    }
+    return (gapCold, gapHot)
+}
+
+// Percentile of sorted data by the midpoint rule: r = p/100*N + 0.5 (a 1-based rank),
+// linear interpolation, clamped to the first and last samples.
+fn prctile_mid(xs: f64[], p: f64) -> f64 {
+    let n = len(xs)
+    let r = p / 100 * n + 0.5
+    if r <= 1 { return xs[0] }
+    if r >= n { return xs[n - 1] }
+    let k = floor(r)                 // 1-based rank of the lower sample, as f64
+    let f = r - k
+    let i = i64(k) - 1               // its 0-based index
+    return xs[i] + f * (xs[i + 1] - xs[i])
+}

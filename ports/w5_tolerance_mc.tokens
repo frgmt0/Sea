@@ -1,0 +1,49 @@
+# Token map for the W5 report (DESIGN.md 6.4). Written from the fprintf formats of
+# workloads/w5_tolerance_mc.m and the rules of reference_py/compare.py (RULES["w5_tolerance_mc"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). The W5 JSON keys are in mm, the report's units, so `json <key>` applies directly.
+#
+# '=== W5  Monte Carlo tolerance stack-up (%d samples) ===': token 7 is '(1000000' (the '('
+# is stripped); n_sample exact.
+^===[[:space:]]W5   7   json n_sample
+#
+# The dimension table rows ('%-15s %8.3f %7.3f %-10s %+4d %8.2f%%') have a variable number of
+# name tokens and end in the variance share '19.27%', which is a non-numeric token (a '%' suffix is
+# not stripped) and so must be identical as text; they need no entry.
+#
+# 'Cold gap: mean %.5f, std %.5f, min %.5f, max %.5f mm, Cpk %.3f'
+^Cold[[:space:]]gap:   4   json mean_cold
+^Cold[[:space:]]gap:   6   json std_cold
+^Cold[[:space:]]gap:   8   json min_cold
+^Cold[[:space:]]gap:   10  json max_cold
+^Cold[[:space:]]gap:   13  json cpk
+# 'Hot gap : mean %.5f, std %.5f, min %.5f, max %.5f mm' (token 3 is the lone ':').
+^Hot[[:space:]]gap[[:space:]]:   5   json mean_hot
+^Hot[[:space:]]gap[[:space:]]:   7   json std_hot
+^Hot[[:space:]]gap[[:space:]]:   9   json min_hot
+^Hot[[:space:]]gap[[:space:]]:   11  json max_hot
+#
+# 'Rejects: %d below LSL, %d above USL, %d too loose when hot; yield %.4f %%'
+# counts n_low / n_high / n_hot int 2; token 14 is the yield in percent, the JSON key `yield`
+# is 4e-6 absolute on the fraction, so 4e-4 on the percentage (the DESIGN.md 6.4 example).
+^Rejects:   2   json n_low
+^Rejects:   5   json n_high
+^Rejects:   8   json n_hot
+^Rejects:   14  num 4e-4 0
+#
+# Percentile rows '  P%-7.3f %9.5f %9.5f': token 1 (e.g. P2.500) is non-numeric and identical;
+# token 2 is the cold percentile, token 3 the hot one (pct_cold / pct_hot num 1e-14 absolute).
+^[[:space:]][[:space:]]P[0-9]   2   json pct_cold
+^[[:space:]][[:space:]]P[0-9]   3   json pct_hot
+#
+# 'Histogram: %d bins of %.3f mm, underflow %d, overflow %d, fullest bin %d'
+# token 8 underflow, 10 overflow, 13 fullest bin: hist_underflow / hist_overflow / hist_counts int 2.
+^Histogram:   8    json hist_underflow
+^Histogram:   10   json hist_overflow
+^Histogram:   13   json hist_counts
+#
+# 'Largest tolerance scale with yield >= %.2f %%: %.2f': token 9 is scale_max (exact); token 8
+# is '%:' (the ':' is stripped, '%' remains: non-numeric, identical).
+^Largest[[:space:]]tolerance   9   json scale_max
+# The 'Largest contributors' line is names only (non-numeric, identical).

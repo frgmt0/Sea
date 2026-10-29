@@ -19,6 +19,7 @@
 #   make test-stage       tests/stage.sh    each pass on the golden output of the previous one
 #   make test-shape       tests/shape.sh    instruction-count shape of the W5 and W4 hot loops, both targets (5.2)
 #   make test-accept      tests/accept4.sh  phase-4 acceptance programs against compare.py --keys (needs uv)
+#                         then tests/accept.sh: the phase-6 ports W1 and W5 (compare.py, compare_report.py)
 #   make test-protocol    tests/protocol.sh pass protocol: missing #end, driver #end check
 #   make test-driver      tests/driver_check.sh  the driver without passes
 #   make test-lib         tests/lib_check.sh    the shared pass modules
@@ -235,7 +236,10 @@ test-stage: all
 test-shape: all
 	$(call RUN_SCRIPT,tests/shape.sh)
 test-accept: all
-	$(call RUN_SCRIPT,tests/accept4.sh)
+	@for s in tests/accept4.sh tests/accept.sh; do \
+	    if [ ! -f $$s ]; then echo "make: $$s not written yet" >&2; rc=1; continue; fi; \
+	    BUILD=$(BUILD) BAYSICK=$(BAYSICK) sh $$s || rc=1; \
+	done; exit $${rc:-0}
 test-protocol: all
 	$(call RUN_SCRIPT,tests/protocol.sh)
 test-driver: install

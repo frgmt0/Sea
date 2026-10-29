@@ -4,7 +4,7 @@
 # usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]
 #   -o BUNDLE_DIR  output directory; must not exist or must be empty (else exit 2)
 #   PATTERN        only pack cases whose name (programs/NAME, errors/NAME, passes/NAME,
-#                  accept/NAME, rt/NAME) contains one of the patterns (matched literally)
+#                  accept/NAME, ports/NAME, rt/NAME) contains one of the patterns (matched literally)
 #
 # Environment:
 #   SEA      the driver (default: build/sea of the Sea repository); the pass executables are
@@ -18,6 +18,9 @@
 # target-independent and skipped silently); passes/NAME.sea with NAME.out (--no-prelude);
 # hand-written passes/NAME.lir (retargeted, run through seagen_x64); rt/x86_64_linux/NAME.s.
 # math/math_check (tests/math: harness source and *.vec, built and run on the host).
+# ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
+# NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference), NAME.meta
+# (filter=compute-time) and NAME.expect/NAME.json.
 # A case whose compilation fails gets NAME.packfail ("status <n>", then stderr) instead of NAME.s.
 #
 # Exit status: 0 the bundle is complete (even with .packfail files), 2 setup error.
@@ -71,6 +74,7 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 mkdir -p "$BUNDLE/include" "$BUNDLE/runtime/x86_64_linux" "$BUNDLE/tests/rt/x86_64_linux" \
     "$BUNDLE/baysick/include" "$BUNDLE/baysick/src/runtime_x86_64_linux" \
     "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" "$BUNDLE/cases/accept" \
+    "$BUNDLE/cases/ports" \
     || setup_fail "cannot create bundle directory '$BUNDLE'"
 echo "sea-x86_64-linux-bundle 1" > "$BUNDLE/BUNDLE" || setup_fail "cannot write $BUNDLE/BUNDLE"
 printf '%s\n' "$PATTERNS" > "$BUNDLE/PATTERNS" || setup_fail "cannot write $BUNDLE/PATTERNS"
@@ -241,6 +245,35 @@ for src in "$ROOT"/tests/accept/*.sea; do
     else
         cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"
         packfail "$BUNDLE/cases/accept/$nm" "$st" "$TMP/acc.all"
+    fi
+    PACKED=$((PACKED + 1))
+done
+
+# ports/NAME (DESIGN.md 6.3, 6.6.1, L-cn): the Mac builds and runs the port and checks it with
+# tests/accept.sh (heap check, compare.py, compare_report.py); its standard output, without the
+# lines matching `^Compute time: .* s$`, is packed as NAME.out with the meta line
+# filter=compute-time and the argument --export-reference (NAME.args); its NAME.json is packed
+# as NAME.expect/NAME.json. A Mac run that fails its check is a pack failure (NAME.packfail).
+for src in "$ROOT"/ports/*.sea; do
+    [ -e "$src" ] || continue
+    nm=$(basename "$src" .sea)
+    selected "ports/$nm" || continue
+    rm -rf "$TMP/acc"
+    SEA="$SEA" sh "$ROOT/tests/accept.sh" --save-out "$TMP/acc" "ports/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
+    st=$?
+    if [ $st -eq 2 ]; then setup_fail "tests/accept.sh: $(head -3 "$TMP/acc.err" | tr '\n' ' ')"; fi
+    if [ $st -eq 0 ] && [ -f "$TMP/acc/$nm.out" ] && [ -f "$TMP/acc/$nm.json" ]; then
+        if pack_sea ports "$ROOT/ports" "$nm"; then
+            dest=$BUNDLE/cases/ports/$nm
+            grep -v '^Compute time: .* s$' "$TMP/acc/$nm.out" > "$dest.out"
+            [ $? -le 1 ] || setup_fail "cannot write $nm.out"
+            mkdir -p "$dest.expect" && /bin/cp -f "$TMP/acc/$nm.json" "$dest.expect/$nm.json" || setup_fail "cannot write $nm.expect"
+            printf 'filter=compute-time\n' > "$dest.meta" || setup_fail "cannot write $nm.meta"
+            printf '%s\n' --export-reference > "$dest.args" || setup_fail "cannot write $nm.args"
+        fi
+    else
+        cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"
+        packfail "$BUNDLE/cases/ports/$nm" "$st" "$TMP/acc.all"
     fi
     PACKED=$((PACKED + 1))
 done
