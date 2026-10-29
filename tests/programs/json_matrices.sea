@@ -1,0 +1,34 @@
+// json_matrices -- matrices as arrays of rows, element (i, j) at position j of row i (LANGUAGE.md 11.4; DESIGN.md 2.11.6): 2 x 3 f64,
+// 3 x 2 i64, 2 x 2 bool and str, NaN and infinities as null, 1 x 1, the transpose view m23.T (3 rows), an
+// elemental result, and the matrices with no element (0 x 3, 3 x 0, 0 x 0 of f64, i64, bool and str) as `[]`;
+// each as a top-level value and as a record field
+let m23: f64[,] = [1.0, 2.0, 3.0; 4.0, 5.5, -6.0]
+let mi: i64[,] = [1, 2; 3, 4; 5, 6]
+let mb: bool[,] = [true, false; false, true]
+let ms: str[,] = ["a", "b"; "c", "d\n"]
+let mn: f64[,] = [nan, inf; (-inf), 0.0]
+write_json("mat23.json", m23)
+write_json("mat_i64.json", mi)
+write_json("mat_str.json", ms)
+write_json("mat_empty.json", zeros(0, 3))
+let r = {
+    m23: m23,
+    mi: mi,
+    mb: mb,
+    ms: ms,
+    mn: mn,
+    m11: filled(7.0, 1, 1),
+    t: m23.T,
+    z03: zeros(0, 3),
+    z30: zeros(3, 0),
+    i03: filled(0, 0, 3),
+    i30: filled(1, 3, 0),
+    b03: filled(true, 0, 3),
+    b30: filled(false, 3, 0),
+    s03: filled("", 0, 3),
+    s30: filled("", 3, 0),
+    z00: zeros(0, 0),
+    scaled: m23 * 2.0,
+}
+write_json("matrices.json", r)
+printf("done\n")

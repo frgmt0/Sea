@@ -1,0 +1,7 @@
+// r_json_call_error -- an error inside a function called as the value: reported at its own line, and no file is created (DESIGN.md 3.5.7
+// step 4; LANGUAGE.md 9.3)
+fn bad() -> f64 {
+    error("bad value")
+    return 0.0
+}
+write_json("never.json", bad())

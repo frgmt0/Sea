@@ -1,0 +1,2 @@
+// err_json_one_arg -- write_json without its value: 243 at the call (DESIGN.md 2.11.2; LANGUAGE.md 11.4)
+write_json("a.json")

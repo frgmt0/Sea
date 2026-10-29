@@ -1,0 +1,1 @@
+err_json_path_array.sea:3:1: error: no overload of 'write_json' accepts (str[], i64[2])

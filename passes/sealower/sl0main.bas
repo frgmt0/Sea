@@ -76,7 +76,7 @@
 662 LET K2$ = K2$ & "|idx=39|dol=40|tmat=42|"
 663 LET K2$ = K2$ & "|xblk=43|tmp=44|hloop=45|ext=46|adat=47|eld=48|est=49|anew=50|wbin=51|tptr=52|"
 664 LET K2$ = K2$ & "|chkb=53|chk=54|rcnt=55|cow=56|mcpy=57|cdat=58|tfvec=41|tfmat=59|fld=60|slit=61|tstruct=62|trec=63|fd=64||iblk=65|iret=66|"
-665 LET K1$ = K1$ & K2$
+665 LET K1$ = K1$ & K2$ & "|jopen=67|jclose=68|jobj=69|jarr=70|jend=71|jkey=72|jval=73|jvec=74|jmat=75|"
 670 FOR I = 1 TO Z(7)
 675 LET R(I, 0) = 0
 680 IF R(I, 1) = 2 THEN 690

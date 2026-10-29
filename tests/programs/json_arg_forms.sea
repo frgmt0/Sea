@@ -1,0 +1,37 @@
+// json_arg_forms -- the forms of the arguments (LANGUAGE.md 11.4; DESIGN.md 3.5.7 step 4: the path and the value are bound once, in this
+// order, before the file is opened): call results with effects (path before value, each called once: `path 1`,
+// `make 1`), a path from `format` in a loop, a vector parameter written inside a function, an element, a column and a
+// row slice, a reduction, a `str` concatenation, a matrix expression, a call inside an `if`
+struct R {
+    k: i64
+    s: str
+}
+fn make(k: i64) -> R {
+    printf("make %d\n", k)
+    return R { k: k, s: format("item-%d", k) }
+}
+fn path(k: i64) -> str {
+    printf("path %d\n", k)
+    return format("p%d.json", k)
+}
+fn write_all(v: f64[], name: str) {
+    write_json(name, v)
+}
+write_json(path(1), make(1))
+for k in 0..3 {
+    write_json(format("loop%d.json", k), { k: k, sq: k * k })
+}
+write_all([1.5, 2.5], "wa.json")
+write_all(zeros(2), "wb.json")
+let rs = [make(1), make(2)]
+write_json("elem.json", rs[1])
+let A: f64[,] = [1.0, 2.5; 4.0, 0.5]
+write_json("col.json", A[:, 1])
+write_json("row.json", A[0, :])
+write_json("sum.json", sum(A.flat))
+write_json("cat.json", "a" + "b")
+write_json("expr.json", A * 2.0 + 1.0)
+if len(rs) == 2 {
+    write_json("if.json", true)
+}
+printf("done\n")

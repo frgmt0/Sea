@@ -1,0 +1,5 @@
+// r_json_is_dir -- write_json of a path that is an existing directory (a fixture with a file inside): "Is a directory" (LANGUAGE.md
+// 11.4, 9.2); the fixture is untouched
+printf("before\n")
+write_json("d", [1, 2])
+printf("after\n")

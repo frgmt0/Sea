@@ -17,7 +17,8 @@
 170 REM Tables: D$ the body records as read (r = 1..D0); P(r,0) its records row, P(r,1) its node
 175 REM   (for fn its function); H nodes (0 the output row before its subtree, 1 kind, 2 ty or 0,
 180 REM   3 first child, 4 next sibling, 5 fore lid, lib n, dol: link of the unclaimed dols then
-185 REM   its idx, idx: the local of its base, block: statements added, 6 its record row, 7 and 8
+185 REM   its idx, idx: the local of its base, block: statements added, jobj jarr: the open one
+186 REM   it is in (A, 6d), 6 its record row, 7 and 8
 190 REM   the first and last output row of its subtree); W the tree stack, after (A) the parents;
 195 REM   G functions (1 locals base in A, 2 np, 3 nl, 4 new locals, 5 their first entry in
 200 REM   U(.,5), 6 fn record r); A local types; T types (0 n or rows of a fixed type, 1 rank 1 2,
@@ -38,7 +39,9 @@
 237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B);
 238 REM   6b: L20 (lpainl) the calls of fn kind inl as well (M then also its inline levels).
 239 REM   6c: 63 inst (dropped by L20) 64 emap; the calls of kind elem by L20, L19 (lpbelm) the emaps.
-240 REM ====================================================================================
+240 REM   6d: 65-73 jopen jclose jobj jarr jend jkey jval jvec jmat: kept statements (copied
+241 REM   after their children), validated in (A) (900-987; DESIGN 2.11.4).
+243 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
 250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
@@ -95,6 +98,7 @@
 450 REM ---- R(i,0) = the kind of every record row of sea.hir that 4d implements, else 0 ---------
 455 LET K1$ = "|ci=01|cf=02|cb=03|cs=04|lv=05|cvt=06|un=07|bin=08|powk=09|call=10|rarg=11|lib=12|fmt=13|ftext=14|fconv=15|rng=16|ifx=17|skip=18|seq=19|bind=20|"
 460 LET K2$ = "|tbind=21|eval=22|asg=23|tasg=24|if=25|while=26|forr=27|break=28|cont=29|ret=30|tret=31|block=32|fn=33|par=34|loc=35|end=36|tvec=37|ttuple=38|"
+462 LET K1$ = K1$ & "|jopen=65|jclose=66|jobj=67|jarr=68|jend=69|jkey=70|jval=71|jvec=72|jmat=73|"
 465 LET K1$ = K1$ & K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
 466 LET A9 = 120008
 467 LET K1$ = K1$ & "|dyn=43|fix=44|view=45|all=46|arr=47|row=48|tfvec=49|tfmat=50|"
@@ -173,6 +177,7 @@
 755 IF K < 20 THEN 770
 760 IF K < 39 THEN 775
 762 IF ABS(K - 60.5) = 1.5 THEN 775
+763 IF K > 64 THEN 775
 765 IF K = 41 THEN 775
 766 IF K > 55 THEN 770
 767 IF K > 50 THEN 775
@@ -189,6 +194,10 @@
 815 NEXT I
 820 LET W1 = W1 - P1 + 1
 825 LET W(W1) = H0
+826 IF K = 32 THEN 960
+827 IF K > 64 THEN 900
+828 IF E1 > 0 THEN 930
+829 IF D2 = 1 THEN 940
 830 REM fore: its loop variable; lib: its n; dol: pushed on the unclaimed dols; idx: claims the
 832 REM unclaimed dols of its indices (those after its base's root: post-order, 3.3)
 835 IF K <> 41 THEN 850
@@ -207,6 +216,71 @@
 876 LET H(D9, 5) = H0
 878 LET D9 = Q5
 880 GOTO 872
+881 REM ---- 6d: a j* record (DESIGN 2.11.4 "write_json"): only between a jopen and its jclose in
+882 REM file order (D2 = 1 there: the block of 3.5.7 step 4), a statement of a block (E1 counts
+883 REM the j* nodes no block has claimed yet); the child of a jval a JSON scalar (bool i64 f64
+884 REM str), of a jvec / jmat a dynamic vector / matrix of JSON scalars, of a jopen a str; else bad
+900 LET E1 = E1 + 1
+901 IF K <> 65 THEN 906
+902 IF D2 = 1 THEN 2900
+903 IF H(H(H0, 3), 2) <> 5 THEN 2900
+904 LET D2 = 1
+905 GOTO 1290
+906 IF D2 = 0 THEN 2900
+907 IF K <> 66 THEN 910
+908 LET D2 = 0
+909 GOTO 1290
+910 IF K < 71 THEN 1290
+911 LET D5 = H(H(H0, 3), 2)
+912 IF K > 71 THEN 916
+913 IF D5 < 2 THEN 2900
+914 IF D5 > 5 THEN 2900
+915 GOTO 1290
+916 IF T(D5, 1) <> K - 71 THEN 2900
+917 IF T(D5, 3) <> 0 THEN 2900
+918 IF T(D5, 2) < 2 THEN 2900
+919 IF T(D5, 2) > 5 THEN 2900
+920 GOTO 1290
+925 REM a node other than a block whose children hold a j* record: bad record
+930 LET D5 = H(H0, 3)
+931 IF D5 = 0 THEN 936
+932 IF H(D5, 1) > 64 THEN 2900
+933 LET D5 = H(D5, 4)
+934 GOTO 931
+936 IF D2 = 0 THEN 835
+937 REM between a jopen and its jclose only what pass 2b's emit writes: no other statement
+940 IF POS("|20|21|22|23|24|26|28|29|30|31|51|52|", "|" & STR$(K) & "|") > 0 THEN 2900
+942 GOTO 835
+950 REM a block: its j* statements in order; a jclose the last statement, after the block's jopen
+952 REM (D4 1 after it, 2 after the jclose); jobj and jarr closed by a jend of the same block (D3
+954 REM the innermost open one, each linked to the one it is inside by H(.,5)); a jkey in a jobj
+960 LET D3 = 0
+961 LET D4 = 0
+962 LET D5 = H(H0, 3)
+963 IF D5 = 0 THEN 985
+964 IF H(D5, 1) < 65 THEN 983
+965 LET E1 = E1 - 1
+966 ON H(D5, 1) - 64 GOTO 968, 970, 975, 975, 978, 981, 983, 983, 983
+968 LET D4 = 1
+969 GOTO 983
+970 IF D4 <> 1 THEN 2900
+971 IF H(D5, 4) > 0 THEN 2900
+972 IF D3 > 0 THEN 2900
+973 LET D4 = 2
+974 GOTO 983
+975 LET H(D5, 5) = D3
+976 LET D3 = D5
+977 GOTO 983
+978 IF D3 = 0 THEN 2900
+979 LET D3 = H(D3, 5)
+980 GOTO 983
+981 IF D3 = 0 THEN 2900
+982 IF H(D3, 1) <> 67 THEN 2900
+983 LET D5 = H(D5, 4)
+984 GOTO 963
+985 IF D3 > 0 THEN 2900
+986 IF D4 = 1 THEN 2900
+987 GOTO 1290
 1285 REM ---- the next record ------------------------------------------------------------------------
 1290 IF A2 = 1 THEN 50740
 1292 CALL "io_read": 1, L$, L9, P$, E(), E$(), E0

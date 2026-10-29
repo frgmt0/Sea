@@ -1,0 +1,16 @@
+// json_str_fields -- str members and arrays of str inside structs (LANGUAGE.md 4.4, 4.8, 11.4): a str field with quotes, a dynamic str[]
+// field (with an empty string and an LF; and an empty one), a fixed str[3] field, a fixed str[3] value, a run-time
+// `format` string, and a vector of such structs inside a record
+struct Lab {
+    name: str
+    tags: str[]
+    trio: str[3]
+}
+let l1 = Lab { name: "lab \"1\"", tags: ["t1", "", "t3\n"], trio: ["x", "y", "z"] }
+let e: str[] = []
+let l2 = Lab { name: format("lab-%d", 2), tags: e, trio: ["", "", ""] }
+write_json("lab.json", l1)
+let trio: str[3] = ["u\t", "v", "w"]
+write_json("trio.json", trio)
+write_json("rec.json", { label: "top", tags: ["a", "b"], trio: trio, labs: [l1, l2] })
+printf("done\n")

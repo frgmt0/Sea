@@ -1,0 +1,2 @@
+// err_json_no_arg -- write_json without arguments: 243 at the call
+write_json()

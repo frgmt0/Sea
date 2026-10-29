@@ -52,6 +52,7 @@
 30160 GOTO 1285
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
+30201 IF K > 66 THEN 34900
 30202 ON K - 42 GOTO 30210, 30240, 30290, 30330, 30370, 30400, 30440, 30480, 30530, 2360, 40200, 40210, 40242, 40286, 40302, 40320, 2360, 52800, 52820, 2360, 2360, 2360, 33900, 33978
 30204 REM ---- xblk ty n: ty is its last child's type; an iblk value makes it inline (33980)
 30210 LET H(H1, 4) = I(2)
@@ -249,7 +250,8 @@
 31158 GOTO 31152
 31160 IF A(E1 + H(O1, 5), 0) * (1 - A(E1 + H(O1, 5), 2)) <> 0 THEN 2360
 31162 RETURN
-31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
+31990 REM ==== lowering: the node kinds 43-51 (from 9705; 67-75 at 34800) and the resume codes 60-65 (from 9715) ===
+31996 IF H(X, 1) > 66 THEN 34800
 32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700, 2365, 2365, 2365, 33700, 33800
 32010 ON S - 59 GOTO 32240, 32250, 32130, 32420, 32560, 33210, 41028, 41056, 50220, 50730, 51580, 33750, 33812
 32090 REM ---- tmp L (T1, T3): no instruction of its own. The child with L's register as its destination (A(.,3), set by T3, else L's own), except: an lv M (not a ref parameter, not a rule-12 copy), an ifx, && or || is lowered with no destination and
@@ -855,3 +857,78 @@
 34751 LET Z0 = 1
 34752 NEXT A6
 34754 RETURN
+34798 REM ==== sub-phase 6d (DESIGN 2.11.5): rule 39's JSON rows. The nine j* statements of 3.5.5 are node kinds 67 jopen 68 jclose 69 jobj 70 jarr 71 jend 72 jkey 73 jval 74 jvec 75 jmat (jkey: H0 its key in S$); each is one rcall of its entry
+34799 REM with no result, the site its line (Site S); a jopen's path, a jval's value and a jvec's or jmat's array (borrowed by the entry) are its operands by rule 1, the owned temporaries among them released after the rcall (rule 15 (b))
+34800 REM ---- a j* statement X (from 31996): its children onto U with the resume code 46 (8000; 8015 continues at 34810)
+34801 LET S = 46
+34802 GOTO 8000
+34808 REM ---- 34810: Q1$ = the entry of X's kind (the second ON line of the node kinds); a jval's by its value's type (bool i64 f64 str); a jkey's operand is la of a str data record of its key (rule 7), pushed on U
+34810 LET Z6 = W(W0 + 3)
+34812 ON H(X, 1) - 66 GOTO 34820, 34822, 34824, 34826, 34828, 34830, 34840, 34846, 34848
+34820 LET Q1$ = "JSON_OPEN"
+34821 GOTO 34860
+34822 LET Q1$ = "JSON_CLOSE"
+34823 GOTO 34860
+34824 LET Q1$ = "JSON_OBJ"
+34825 GOTO 34860
+34826 LET Q1$ = "JSON_ARR"
+34827 GOTO 34860
+34828 LET Q1$ = "JSON_END"
+34829 GOTO 34860
+34830 GOSUB 7418
+34831 LET Q3 = 1
+34832 LET Q4 = X
+34833 GOSUB 7935
+34834 LET L1$ = "la" & FNR$(N2) & " d" & STR$(D0)
+34835 GOSUB 7695
+34836 LET R9 = N2
+34837 GOSUB 7966
+34838 LET Q1$ = "JSON_KEY"
+34839 GOTO 34860
+34840 LET T1 = H(H(X, 7), 4)
+34841 LET Q1$ = "JSON_" & SEG$("BOOLI64 F64 STR ", 4 * T1 - 7, 4 * T1 - 4)
+34842 IF SEG$(Q1$, 9, 9) <> " " THEN 34860
+34843 LET Q1$ = SEG$(Q1$, 1, 8)
+34844 GOTO 34860
+34846 LET Q1$ = "JSON_VEC"
+34847 GOTO 34860
+34848 LET Q1$ = "JSON_MAT"
+34858 REM ---- 34860: rule 39 from the entry's record: its Args classes against the operands U(Z6+1 .. U0), rcall <symbol> <site> 0 na <operands>, then the owned temporaries among the children released; the statement is done (R9 = 0, U popped)
+34860 LET Q9 = FNE(Q1$, "")
+34862 LET Z5 = LEN(Y$(Q9, 4))
+34864 IF Y$(Q9, 4) <> "-" THEN 34868
+34866 LET Z5 = 0
+34868 IF Z5 <> U0 - Z6 THEN 2360
+34870 IF Y$(Q9, 5) = "-" THEN 34874
+34872 CALL "dg_bug": P$, "entry " & Q1$ & " (results -) is not in the entries table"
+34874 GOSUB 5590
+34876 LET L1$ = L1$ & " " & STR$(Z5)
+34878 FOR K7 = Z6 + 1 TO U0
+34880 IF SEG$("ifp", V(U(K7, 1), 1), V(U(K7, 1), 1)) <> SEG$(Y$(Q9, 4), K7 - Z6, K7 - Z6) THEN 2360
+34882 LET L1$ = L1$ & FNR$(U(K7, 1))
+34884 NEXT K7
+34886 GOSUB 7695
+34888 LET X0 = H(X, 7)
+34890 IF X0 = 0 THEN 34896
+34892 LET R0 = U(Z6 + 1, 1)
+34894 GOSUB 10080
+34896 LET R9 = 0
+34897 GOTO 3083
+34898 REM ---- reading a j* record (from 30201; node H1, kind K): a jkey's key into S$ (H0); its child of the type rule 39's row requires (2.11.5): jopen a str, jval an f64 i64 bool or str, jvec (jmat) a dynamic vector (matrix) of those
+34900 IF K <> 72 THEN 34908
+34902 GOSUB 1900
+34904 LET S$(S0) = G$(3)
+34906 LET H(H1, 0) = S0
+34908 LET E2 = H(H1, 7)
+34910 IF E2 = 0 THEN 1285
+34912 LET E3 = H(E2, 4)
+34914 IF K = 67 THEN 34930
+34916 IF K = 73 THEN 34926
+34918 IF E3 <= 9 THEN 2360
+34920 IF T(E3, 1) <> 1 + 2 * (K - 74) THEN 2360
+34922 LET E3 = T(E3, 2)
+34926 IF E3 < 2 THEN 2360
+34928 IF E3 <= 5 THEN 1285
+34929 GOTO 2360
+34930 IF E3 = 5 THEN 1285
+34932 GOTO 2360

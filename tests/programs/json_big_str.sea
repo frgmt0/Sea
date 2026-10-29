@@ -1,0 +1,8 @@
+// json_big_str -- one str of 40960 bytes whose escaped form is 77826 bytes (every 10-byte piece has a quote, a backslash, LF, TAB and 0x01,
+// written as 19 bytes), so the 64 KiB buffer boundary falls inside the escapes (LANGUAGE.md 11.4; DESIGN.md 2.11.6)
+var s = "ab\"c\\d\n\te\x01"
+for k in 0..12 {
+    s = s + s
+}
+write_json("bigstr.json", { s: s, n: len(s) })
+printf("done\n")

@@ -1,0 +1,15 @@
+// json6_vecstruct -- write_json of a vector of structs (DESIGN.md 3.5.7 step 4): jarr, a fore
+// over the elements (the .j3 loop variable; L4 in sealoop) whose body is the struct's jobj ...
+// jend, then jend; every j* record and every jval entry (f64, i64, bool, str) lowered by rule
+// 39 (2.11.5); the empty vector is written [] by the same code
+struct P {
+    x: f64
+    n: i64
+    ok: bool
+    s: str
+    v: f64[]
+    m: f64[,]
+}
+let ps: P[] = []
+write_json("ps.json", ps)
+printf("done\n")

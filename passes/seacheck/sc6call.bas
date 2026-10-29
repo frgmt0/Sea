@@ -34,7 +34,7 @@
 12495 LET S = M(G, 2)
 12500 SUBEND
 12505 REM ---- ck_lib: call J of a library function (LANGUAGE 10): printf error format (ck_printf), print
-12507 REM make_dir (lout), and by class Z
+12507 REM make_dir, write_json (lout), and by class Z
 12510 REM 1 now() 2 idiv(i64, i64) 3 log exp sin cos sqrt floor ceil trunc round (f64) 4 isnan(f64)
 12515 REM 5 pow hypot (f64, f64) 6 abs sign (i64 | f64) 7 min max (n, n) 8 where(bool, x, x) 9
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
@@ -50,12 +50,13 @@
 12566 LET M(J, 9) = 0
 12570 LET H = N(J, 1)
 12571 REM printf, error (lead decision L-d) and format (phase 6) are formatting calls (DESIGN 2.6.2); print
-12572 REM and make_dir take one str (lout, sc9call). A name has no blank, so = compares it exactly
+12572 REM and make_dir take one str, write_json a str and a value (lout, sc9call). A name has no blank, so = compares it exactly
 12575 IF L$ = "printf" THEN 12585
 12576 IF L$ = "error" THEN 12585
 12577 IF L$ = "format" THEN 12585
 12578 IF L$ = "print" THEN 12582
-12580 IF L$ <> "make_dir" THEN 12595
+12579 IF L$ = "make_dir" THEN 12582
+12580 IF L$ <> "write_json" THEN 12595
 12582 CALL "lout": N(), M(), T(), C(), S$(), X(), X$(), J, L$
 12583 GOTO 13610
 12585 CALL "ck_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J

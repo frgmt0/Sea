@@ -1,0 +1,6 @@
+// r_json_after_index -- an index out of bounds after a completed write_json of a larger value: the earlier file is complete, the error is
+// the original one (LANGUAGE.md 5.4, 9.2 step 3, 11.4)
+let v: f64[] = [1.0, 2.0]
+write_json("v.json", v)
+let k = 5
+printf("%g\n", v[k])

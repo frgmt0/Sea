@@ -1,0 +1,5 @@
+// r_json_second_fails -- the first write_json completes, the second names a missing directory: the first file stays complete and the error
+// names the second path (LANGUAGE.md 11.4, 9.2)
+write_json("first.json", [1, 2, 3])
+printf("first done\n")
+write_json("missing/second.json", [4, 5])

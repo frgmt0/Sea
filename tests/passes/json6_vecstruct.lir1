@@ -1,0 +1,82 @@
+#sea 1
+#target arm64-macos
+#file json6_vecstruct.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 0
+la p2 d1
+li i3 1
+li i4 1
+rcall sea_arr_new_s 0:13 1 p5 4 p2 i3 i1 i4
+la p6 d2
+retain p6
+mov p7 p5
+retain p7
+rcall sea_json_open 0:14 0 1 p6
+rcall sea_json_arr 0:14 0 0
+mov p8 p7
+retain p8
+ldi i9 p8 - 0 16
+li i10 0
+icmp gt i11 i9 i10
+if 1 i11
+ldp p12 p8 - 0 40
+li i13 1
+isub i14 i9 i13
+loop 2 i15 i10 i14 i13
+li i16 48
+imul i17 i15 i16
+padd p18 p12 i17
+rcall sea_json_obj 0:14 0 0
+la p19 d3
+rcall sea_json_key 0:14 0 1 p19
+ldf f20 p18 - 0 0
+rcall sea_json_f64 0:14 0 1 f20
+la p21 d4
+rcall sea_json_key 0:14 0 1 p21
+ldi i22 p18 - 0 8
+rcall sea_json_i64 0:14 0 1 i22
+la p23 d5
+rcall sea_json_key 0:14 0 1 p23
+ldb i24 p18 - 0 16
+rcall sea_json_bool 0:14 0 1 i24
+la p25 d6
+rcall sea_json_key 0:14 0 1 p25
+ldp p26 p18 - 0 24
+rcall sea_json_str 0:14 0 1 p26
+la p27 d7
+rcall sea_json_key 0:14 0 1 p27
+ldp p28 p18 - 0 32
+rcall sea_json_vec 0:14 0 1 p28
+la p29 d8
+rcall sea_json_key 0:14 0 1 p29
+ldp p30 p18 - 0 40
+rcall sea_json_mat 0:14 0 1 p30
+rcall sea_json_end 0:14 0 0
+endloop 2
+endif 1
+release p8
+rcall sea_json_end 0:14 0 0
+rcall sea_json_close 0:14 0 0
+release p7
+release p6
+sa p31 s1
+la p32 d9
+rcall sea_printf 0:15 0 2 p32 p31
+release p5
+ret 0
+endfunc
+slay d1 48 3
+soff 24
+soff 32
+soff 40
+str d2 ps.json
+str d3 x
+str d4 n
+str d5 ok
+str d6 s
+str d7 v
+str d8 m
+fmt d9 1
+ftext done%0A
+#end

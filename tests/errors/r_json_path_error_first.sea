@@ -1,0 +1,6 @@
+// r_json_path_error_first -- the path is evaluated before the value: both fail, the path's error is the one reported, and no file is created
+// (DESIGN.md 3.5.7 step 4: `bind J1 = path; bind J2 = value`)
+let names: str[] = ["a.json"]
+let v: i64[] = [1, 2]
+let k = 5
+write_json(names[3], v[k])

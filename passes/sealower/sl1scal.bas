@@ -864,14 +864,14 @@
 7990 LET J(J0, 1) = W(W0 + 3)
 7992 LET J(J0, 3) = J9
 7995 RETURN
-7997 REM ---- 8000: the children of X onto U, one value each, with the resume code S (38 40 49), then its continuation (8015); 8005: the next child after a value (R9 pushed); 8007: the next child
+7997 REM ---- 8000: the children of X onto U, one value each, with the resume code S (38 40 46 49), then its continuation (8015); 8005: the next child after a value (R9 pushed); 8007: the next child
 8000 LET W(W0 + 3) = U0
 8002 LET W(W0 + 4) = H(X, 7)
 8004 GOTO 8010
 8005 GOSUB 7966
 8007 LET W(W0 + 4) = H(W(W0 + 4), 8)
 8010 IF W(W0 + 4) > 0 THEN 7366
-8015 ON S - 37 GOTO 8627, 2365, 13000, 2365, 2365, 2365, 2365, 2365, 2365, 2365, 2365, 19550
+8015 ON S - 37 GOTO 8627, 2365, 13000, 2365, 2365, 2365, 2365, 2365, 34810, 2365, 2365, 19550
 8100 REM ---- reading tasg: n, then one cv flag per target (0, or 1 of a scalar result, R10), in M
 8105 LET H(H1, 6) = I(2)
 8110 LET H(H1, 0) = M1 + 1

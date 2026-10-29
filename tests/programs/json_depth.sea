@@ -1,0 +1,7 @@
+// json_depth -- eight levels of nesting: records inside records, an array of records, a record with a fixed vector and a matrix at
+// depth 7 (each level indented by two more spaces, closing brackets at the indentation of their opening line, LANGUAGE.md
+// 11.4 "Layout promised"; DESIGN.md 2.11.6, no depth limit)
+let m: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let d = { l1: { l2: { l3: { l4: [{ l5: { l6: [1.5, 2.5], m: m } }, { l5: { l6: [3.5, 4.5], m: m } }] } } } }
+write_json("depth.json", d)
+printf("done\n")

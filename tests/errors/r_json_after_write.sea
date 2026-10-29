@@ -1,0 +1,6 @@
+// r_json_after_write -- a run-time error after a completed write_json: standard output is flushed, the line goes to standard error and the
+// file written before it stays complete, byte for byte (LANGUAGE.md 9.2 steps 1-3, 11.4)
+printf("written\n")
+write_json("ok.json", { v: [1.5, 2.5, -0.0], s: "kept" })
+printf("now the error\n")
+error("boom %d", 7)

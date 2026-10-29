@@ -1,0 +1,14 @@
+// json6_struct -- write_json of a struct (DESIGN.md 3.5.7 step 4): jobj, then a jkey and a jval
+// for each scalar field (f64, i64, bool, str), jvec (dyn e) for the fixed-size field w (L-ce; the
+// dyn rewritten by L10), jmat for the dynamic matrix m, and jend; .j1 the path, .j2 the value
+struct P {
+    x: f64
+    n: i64
+    ok: bool
+    name: str
+    w: f64[3]
+    m: f64[,]
+}
+let p = P { x: 1.5, n: 7, ok: true, name: "a", w: [1.0, 2.0, 3.0], m: zeros(2, 2) }
+write_json("p.json", p)
+printf("done\n")

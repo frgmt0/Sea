@@ -1,0 +1,3 @@
+// err_json_path_array -- a path that is a vector, with a fixed-size vector value: 243 at the call
+let p: str[] = ["a.json"]
+write_json(p, [1, 2])

@@ -1,0 +1,11 @@
+// json6_matstruct -- write_json of a matrix of structs (DESIGN.md 3.5.7 step 4, L-cv): the guard
+// if (rows(e) == 0 || cols(e) == 0) { jarr; jend } else { jarr; forr R { jarr; forr C { the
+// struct of idx e R C }; jend }; jend }; the inner loop variable C is .j3 and R .j4 (declaring
+// records in file order, 3.5.4); rows and cols become ext (L3), the forr loops stay
+struct Q {
+    a: f64
+    b: str
+}
+let qm: Q[,] = []
+write_json("qm.json", qm)
+printf("done\n")

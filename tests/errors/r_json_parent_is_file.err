@@ -1,0 +1,1 @@
+r_json_parent_is_file.sea:2: error: cannot open 'x/y.json': Not a directory

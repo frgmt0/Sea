@@ -24,9 +24,14 @@
 96 REM  5 reachability from .main through call records and the instances of emap records; functions and
 97 REM    instances renumbered densely in their old order; types renumbered by first reference (3.5.1:
 98 REM    the inst records first, then the functions); unreferenced types dropped
-105 REM Step 4 (write_json expansion) belongs to sub-phase 6d (DESIGN 2.11.2): pass 2a rejects write_json
-110 REM until then, so no lib write_json can reach this pass. Such a record is reported as an internal
-115 REM error (BAD_RECORD), never passed on. The fn kinds elem (6c) and inl (6b) are kept unchanged.
+105 REM  4 (6d) write_json expansion, in the stream (5700, 6000): an eval of lib write_json(path, value) at P becomes
+106 REM    block P: bind J1 = path; bind J2 = value; jopen (lv J1); emit(lv J2); jclose, every new node at P; emit by
+107 REM    type (JSON scalars f64 i64 bool str: jval; struct/record: jobj, jkey + emit(fld) per field, jend; vectors
+108 REM    and matrices of JSON scalars: jvec / jmat, through a dyn when fixed-size (L-ce); a vector of structs: jarr,
+109 REM    fore K, jend; a matrix of structs: the guarded forr R / forr C form, empty -> [] (L-cv)). The .j locals
+110 REM    (lids after the par, loc and .t locals) are numbered in the file order of their declaring bind/fore/forr
+111 REM    records (3.5.4) and written after the function's last loc record, its nl raised (5850, 5860, 5880).
+115 REM The fn kinds elem (6c) and inl (6b) are kept unchanged.
 121 REM Phase 4d (G12, 3.5.7): array type records (element a scalar, str or struct; fixed extents fit LIM_FIXED_ELEMS),
 122 REM idx (n = rank of the base, or 1 for a bool-matrix mask; index kinds of LANGUAGE 5.2), dol (claimed by the idx it
 123 REM sits in, dim < n; none left at a function end), fore (vector iterable, loop variable of the element type) are
@@ -56,7 +61,8 @@
 200 REM special codes of V: 1-7 tvec tmat tfvec tfmat tstruct trec ttuple, 8 fd, 9 cn, 11 fn,
 205 REM  12 par, 13 loc, 14 end, 15 ci, 16 cf, 17 cref, 18 cvt, 19 un, 20 bin, 21 call, 22 lib, 23 powk,
 207 REM  24 dol, 25 fore, 26 idx, 27 view, 28 arr, 29 row, 30 dyn, 31 fix, 32 asg, 33 match, 34 arm, 35 fld,
-208 REM  36 proj, 37 slit
+208 REM  36 proj, 37 slit, 38 eval
+209 REM (6d) G H Q I$ V$: loop placeholders + block counters, per fn .j locals (V$ row, count, par+loc), tasks, pool, .j locs (5700-6996)
 210 REM ====================================================================================
 215 FILES "sea.hir1"; "sea.hir"
 220 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
@@ -64,6 +70,7 @@
 230 DIM M(249999,3), O$(249999), S(249999)
 235 DIM T(20010,5), P(399999), K$(399999), Y$(20010), Y(20010), D(50010,1), K(50010,3), O(20010)
 240 DIM J(49999,3), Q$(49999), L(49999,2), X(49999,4)
+242 DIM G(49999,2), H(50010,2), Q(49999,4), I$(99999), V$(49999)
 245 LET P$ = "seaexpand"
 250 REM ---- the tables ---------------------------------------------------------------------
 255 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -90,7 +97,7 @@
 340 LET K2$ = "|ci=15|cf=16|cref=17|cvt=18|un=19|bin=20|call=21|lib=22|powk=23|dol=24|fore=25|idx=26|"
 342 LET K2$ = K2$ & "view=27|arr=28|row=29|dyn=30|fix=31|asg=32|"
 341 GOSUB 4400
-343 LET K2$ = K2$ & "match=33|arm=34|fld=35|proj=36|slit=37|"
+343 LET K2$ = K2$ & "match=33|arm=34|fld=35|proj=36|slit=37|eval=38|"
 345 LET N2 = 0
 350 LET R5 = 0
 355 LET R6 = 0
@@ -147,6 +154,10 @@
 590 LET M$ = "unknown opcode '" & G$(1) & "' for sea.hir1"
 595 GOTO 2915
 600 LET Y0 = V(I0)
+601 REM (6d) a lib write_json is the child of an eval: the record after it must be that eval (5700)
+602 LET M$ = "a lib write_json that is not the child of an eval"
+603 IF J9 = 0 THEN 605
+604 IF Y0 <> 38 THEN 2915
 605 REM the u-like fields: U(j) = the value of the j-th field, tokens counted with the repeats
 610 LET T0 = 1
 615 FOR J1 = 1 TO R(I0, 4)
@@ -295,6 +306,9 @@
 1330 LET F7 = 1
 1335 LET X9 = U(5) + U(6)
 1336 LET H3 = X9
+1337 LET H(F6, 0) = V0 + 1
+1338 LET H(F6, 1) = 0
+1339 LET H(F6, 2) = X9
 1340 LET K(F6, 1) = O0 + 1
 1345 LET K(F6, 3) = 0
 1346 REM an elemental function (kind elem) is marked for step 3 (5340)
@@ -410,9 +424,16 @@
 1770 GOTO 1915
 1775 CALL "FEDIV": A3, A2, A1, A0, B3, B2, B1, B0, R3, R2, R1, R0
 1780 GOTO 1915
-1795 REM ---- lib: sqrt of a constant folds (any value); write_json is a later phase -----------------------
-1800 LET M$ = "write_json expansion is a later phase: pass 2a rejects it, so pass 2b never sees it in phase 1"
-1805 IF G$(4) = "write_json" THEN 2915
+1795 REM ---- lib: sqrt of a constant folds (any value); write_json waits for its eval (5700) -----------------------
+1800 IF G$(4) <> "write_json" THEN 1810
+1801 REM (6d) lib write_json: two arguments, type void; J3 = the value's first record, J9 = 1 until its eval (5700)
+1802 LET M$ = "a lib write_json without exactly two arguments, or not typed void (1)"
+1803 IF U(4) <> 2 THEN 2915
+1804 IF U(2) <> 1 THEN 2915
+1805 GOSUB 2980
+1806 LET J3 = S(S0 + 2)
+1807 LET J9 = 1
+1808 GOTO 905
 1810 GOSUB 2980
 1815 IF G$(4) <> "sqrt" THEN 905
 1820 IF U(4) <> 1 THEN 905
@@ -576,7 +597,8 @@
 2515 IF W3 > 9 + T9 THEN 2915
 2520 IF Y(W3) <> 0 THEN 2530
 2525 GOSUB 3435
-2530 NEXT I2
+2530 GOSUB 5880
+2531 NEXT I2
 2535 NEXT F1
 2540 REM ---- write sea.hir -------------------------------------------------------------------------------------------
 2545 SCRATCH #2
@@ -647,13 +669,15 @@
 2850 LET T1 = 2
 2855 LET Z9$ = STR$(K(F1, 3))
 2860 GOSUB 3395
+2862 IF H(F1, 1) > 0 THEN 5850
 2865 GOTO 2805
 2870 IF M(I2, 0) = 4 THEN 5580
 2872 LET T1 = 4
 2875 LET Z9$ = STR$(K(M(I2, 1), 3))
 2880 GOSUB 3395
 2885 GOTO 2805
-2890 NEXT I2
+2890 GOSUB 5860
+2891 NEXT I2
 2895 NEXT F1
 2900 CALL "io_fin": 2
 2905 STOP
@@ -1038,7 +1062,7 @@
 4995 REM ---- 5000: phase 4e (G12, DESIGN 3.5.7): view, arr, row, dyn, fix, the target tree of an asg; Q4 the last child's root ----
 5000 GOSUB 2980
 5002 LET Q4 = O0
-5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100, 5160, 5180, 5190, 5190, 5222
+5004 ON Y0 - 26 GOTO 5010, 5040, 5060, 5070, 5070, 5100, 5160, 5180, 5190, 5190, 5222, 5700
 5010 REM view: .T and .flat of a matrix, .col and .row of a vector (fixed-size or dynamic, LANGUAGE 5.6)
 5012 GOSUB 4900
 5014 GOSUB 4950
@@ -1350,3 +1374,416 @@
 5660 LET M(I2, 0) = 4
 5662 LET M(I2, 1) = H9
 5664 RETURN
+5695 REM ---- 5700 (6d, step 4 of 3.5.7): an eval whose child is a lib write_json (J9 = 1: the lib is the newest record O0, its
+5696 REM path the records S3 ... J3 - 1, its value J3 ... O0 - 1) becomes block P: bind J1 = path; bind J2 = value; jopen (lv J1);
+5697 REM emit(lv J2); jclose, every new node at the eval's position P (E2$); any other eval is copied (5150) ----
+5700 IF J9 = 0 THEN 5150
+5702 LET J9 = 0
+5704 LET E2$ = G$(2)
+5706 LET J2 = S3
+5708 LET J4 = O0
+5710 REM the path's root is the record before the value, the value's root the record before the lib
+5712 LET Q4 = J3 - 1
+5714 GOSUB 4900
+5716 LET M$ = "the path of a write_json is not a str"
+5718 IF Q5 <> 5 THEN 2915
+5720 LET Q4 = J4 - 1
+5722 GOSUB 4900
+5724 LET J6 = Q5
+5726 REM the .j locals J1 (the path, lid J7) and J2 (the value, lid J7 + 1), mut let, declared by their binds (6880)
+5728 LET J7 = H(F6, 2) + H(F6, 1) + 1
+5730 LET C7 = 5
+5732 LET C8$ = "let"
+5734 GOSUB 6880
+5736 LET C7 = J6
+5738 GOSUB 6880
+5740 REM the value's records move up one row (into the lib's row); the bind of J1 takes the value's first row
+5742 FOR D7 = J4 - 1 TO J3 STEP -1
+5744 LET O$(D7 + 1) = O$(D7)
+5746 FOR D6 = 0 TO 3
+5748 LET M(D7 + 1, D6) = M(D7, D6)
+5750 NEXT D6
+5752 NEXT D7
+5754 LET T$ = "bind " & E2$ & " " & STR$(J7)
+5756 GOSUB 6900
+5758 LET O$(J3) = T$
+5760 LET M(J3, 0) = 0
+5762 LET M(J3, 1) = 0
+5764 LET M(J3, 2) = 0
+5766 LET M(J3, 3) = I0
+5768 REM then bind J2, jopen (lv J1): three statements of the block so far (counter 1, G(1,1))
+5770 LET T$ = "bind " & E2$ & " " & STR$(J7 + 1)
+5772 GOSUB 6800
+5774 LET T$ = "lv " & E2$ & " 5 " & STR$(J7)
+5776 GOSUB 6800
+5778 LET T$ = "jopen " & E2$
+5780 GOSUB 6800
+5782 LET E5 = 1
+5784 LET G(1, 1) = 3
+5786 REM the task stack (E3), the expression pool (E4) and the placeholder locals (E6) start empty; the first task emit(lv J2)
+5788 LET E3 = 0
+5790 LET E4 = 0
+5792 LET E6 = 0
+5794 LET T$ = "lv " & E2$ & " " & STR$(J6) & " " & STR$(J7 + 1)
+5796 GOSUB 6870
+5798 LET C2 = 1
+5800 LET C3 = E4
+5802 LET C4 = 1
+5804 LET C5 = J6
+5806 GOSUB 6940
+5808 GOSUB 6000
+5810 REM jclose ends the block; its statement count is counter 1
+5812 LET T$ = "jclose " & E2$
+5814 GOSUB 6800
+5816 LET T$ = "block " & E2$ & " " & STR$(G(1, 1) + 1)
+5818 GOSUB 6800
+5820 REM the lv of a loop local written before its fore / forr has a placeholder ~q: its lid G(q,0), known now (from bind J2 on)
+5822 FOR D7 = J4 + 1 TO O0
+5824 IF SEG$(O$(D7), 1, 3) <> "lv " THEN 5830
+5826 LET W1 = POS(O$(D7), "~")
+5828 IF W1 = 0 THEN 5830
+5829 LET O$(D7) = SEG$(O$(D7), 1, W1 - 1) & STR$(G(VAL(SEG$(O$(D7), W1 + 1, LEN(O$(D7)))), 0))
+5830 NEXT D7
+5838 LET S3 = J2
+5839 GOSUB 3150
+5840 GOTO 1920
+5845 REM ---- 5850 (6d): the fn record of function F1 with .j locals: nl (token 7) raised by their count H(F1,1) ----
+5850 LET T1 = 7
+5852 GOSUB 3345
+5854 LET Z9$ = STR$(VAL(Z$) + H(F1, 1))
+5856 GOSUB 3395
+5858 GOTO 2805
+5859 REM ---- 5860 (6d): after the last par / loc record of function F1 (row I2), its .j loc records, their types renumbered ----
+5860 IF I2 <> K(F1, 1) + H(F1, 2) THEN 5878
+5862 FOR D8 = H(F1, 0) TO H(F1, 0) + H(F1, 1) - 1
+5864 LET T$ = V$(D8)
+5866 LET T1 = 3
+5868 GOSUB 3345
+5870 LET W1 = VAL(Z$)
+5872 GOSUB 3415
+5874 LET Z9$ = STR$(W1)
+5875 GOSUB 3395
+5876 CALL "io_put": 2, T$
+5877 NEXT D8
+5878 RETURN
+5879 REM ---- 5880 (6d): type numbering (3.5.1) of the .j loc records of function F1, at their place after its last par / loc ----
+5880 IF I2 <> K(F1, 1) + H(F1, 2) THEN 5898
+5882 FOR D8 = H(F1, 0) TO H(F1, 0) + H(F1, 1) - 1
+5884 LET T$ = V$(D8)
+5886 LET T1 = 3
+5888 GOSUB 3345
+5890 LET W3 = VAL(Z$)
+5892 IF W3 < 10 THEN 5896
+5894 IF Y(W3) <> 0 THEN 5896
+5895 GOSUB 3435
+5896 NEXT D8
+5898 RETURN
+5995 REM ---- 6000 (6d): the task loop of emit (3.5.7 step 4), until the task stack E3 is empty. A task Q(k,0..4): 1 emit (pool rows
+5996 REM Q1 ... Q1 + Q2 - 1 = the expression e, Q3 its type), 2 out (pool row Q1, one statement), 3 close a loop (Q3 the placeholder
+5997 REM of its local, Q4 1 fore, 2 forr), 4 close an if; the pool is a stack too: a popped task's rows end it. G(E5,1) counts the
+5998 REM statements of the innermost open block ----
+6000 IF E3 = 0 THEN 6098
+6002 LET D2 = Q(E3, 0)
+6004 LET D3 = Q(E3, 1)
+6006 LET D4 = Q(E3, 2)
+6008 LET D5 = Q(E3, 3)
+6010 LET D9 = Q(E3, 4)
+6012 LET E3 = E3 - 1
+6014 LET E4 = D3 + D4 - 1
+6016 ON D2 GOTO 6100, 6020, 6030, 6060
+6020 REM out: one statement of the innermost block
+6022 LET T$ = I$(D3)
+6024 GOSUB 6800
+6026 LET G(E5, 1) = G(E5, 1) + 1
+6028 GOTO 6000
+6030 REM close a loop: its body block, then the fore / forr that declares the .j local of placeholder D5 (6880), one statement
+6032 LET T$ = "block " & E2$ & " " & STR$(G(E5, 1))
+6034 GOSUB 6800
+6036 LET E5 = E5 - 1
+6038 LET C7 = G(D5, 2)
+6040 LET C8$ = "for"
+6042 GOSUB 6880
+6044 LET G(D5, 0) = D0
+6046 LET T$ = "forr "
+6048 IF D9 = 2 THEN 6052
+6050 LET T$ = "fore "
+6052 LET T$ = T$ & E2$ & " " & STR$(D0)
+6054 GOSUB 6800
+6056 LET G(E5, 1) = G(E5, 1) + 1
+6058 GOTO 6000
+6060 REM close an if: its else block, then the if (e 1), one statement
+6062 LET T$ = "block " & E2$ & " " & STR$(G(E5, 1))
+6064 GOSUB 6800
+6066 LET E5 = E5 - 1
+6068 LET T$ = "if " & E2$ & " 1"
+6070 GOSUB 6800
+6072 LET G(E5, 1) = G(E5, 1) + 1
+6074 GOTO 6000
+6098 RETURN
+6100 REM emit(e) of type D5, e the pool rows D3 ... D3 + D4 - 1, by the kind of the type (4950: F8 the kind, F9 the element type)
+6102 LET Q5 = D5
+6104 GOSUB 4950
+6106 LET F8 = Q6
+6108 LET F9 = Q7
+6110 LET M$ = "write_json of a value whose type has no JSON form (void, a handle or a tuple)"
+6112 IF F8 = 0 THEN 6120
+6114 IF F8 > 6 THEN 2915
+6116 IF F8 > 4 THEN 6200
+6118 IF F9 >= 10 THEN 6300
+6119 GOTO 6150
+6120 REM a JSON scalar (bool i64 f64 str): jval e
+6122 IF D5 < 2 THEN 2915
+6124 IF D5 > 5 THEN 2915
+6126 GOSUB 6850
+6128 LET T$ = "jval " & E2$
+6130 GOSUB 6800
+6132 LET G(E5, 1) = G(E5, 1) + 1
+6134 GOTO 6000
+6150 REM a vector / matrix of JSON scalars: jvec e / jmat e; a fixed-size one through a dyn to the dynamic type (L-ce, 6700)
+6152 GOSUB 6850
+6154 IF F8 < 3 THEN 6164
+6156 LET E7 = F8 - 2
+6158 LET E8 = F9
+6160 GOSUB 6700
+6162 LET T$ = "dyn " & E2$ & " " & STR$(E9)
+6163 GOSUB 6800
+6164 LET T$ = "jvec " & E2$
+6166 IF F8 = 1 THEN 6172
+6168 IF F8 = 3 THEN 6172
+6170 LET T$ = "jmat " & E2$
+6172 GOSUB 6800
+6174 LET G(E5, 1) = G(E5, 1) + 1
+6176 GOTO 6000
+6200 REM a struct or record: jobj, then per field i jkey <name> and emit(fld e i), then jend (pushed in reverse, jend first)
+6202 LET T$ = "jobj " & E2$
+6204 GOSUB 6800
+6206 LET G(E5, 1) = G(E5, 1) + 1
+6208 LET T$ = "jend " & E2$
+6210 GOSUB 6890
+6212 FOR D8 = T(D5, 3) - 1 TO 0 STEP -1
+6214 LET C3 = E4 + 1
+6216 GOSUB 6860
+6218 LET C5 = P(T(D5, 2) + D8)
+6220 LET T$ = "fld " & E2$ & " " & STR$(C5) & " " & STR$(D8)
+6222 GOSUB 6870
+6224 LET C2 = 1
+6226 LET C4 = D4 + 1
+6228 GOSUB 6940
+6230 LET T$ = "jkey " & E2$ & " " & K$(T(D5, 2) + D8)
+6232 GOSUB 6890
+6234 NEXT D8
+6236 GOTO 6000
+6300 REM a vector (here) or a matrix (6400) of structs or records
+6302 IF F8 = 2 THEN 6400
+6304 IF F8 = 4 THEN 6400
+6306 REM vector: jarr, fore K in e { emit(lv K) }, jend; K a placeholder (the element type) until its fore is written
+6308 LET C7 = F9
+6310 GOSUB 6960
+6312 LET T$ = "jarr " & E2$
+6314 GOSUB 6800
+6316 LET G(E5, 1) = G(E5, 1) + 1
+6318 GOSUB 6850
+6320 GOSUB 6970
+6322 LET T$ = "jend " & E2$
+6324 GOSUB 6890
+6326 LET C2 = 3
+6328 LET C3 = E4 + 1
+6330 LET C4 = 0
+6332 LET C5 = E6
+6334 LET C6 = 1
+6336 GOSUB 6940
+6338 LET T$ = "lv " & E2$ & " " & STR$(F9) & " ~" & STR$(E6)
+6340 GOSUB 6870
+6342 LET C2 = 1
+6344 LET C3 = E4
+6346 LET C4 = 1
+6348 LET C5 = F9
+6350 GOSUB 6940
+6352 GOTO 6000
+6400 REM matrix: if (rows(e) == 0 || cols(e) == 0) { jarr; jend } else { jarr; forr R in 0..rows(e) { jarr; forr C in
+6401 REM 0..cols(e) { emit(idx e (lv R) (lv C)) }; jend }; jend } (L-cv); R (B4) and C (B5) i64 placeholders, B6 the type i64[]
+6402 LET C7 = 3
+6404 GOSUB 6960
+6406 LET B4 = E6
+6408 GOSUB 6960
+6410 LET B5 = E6
+6412 LET E7 = 1
+6414 LET E8 = 3
+6416 GOSUB 6700
+6418 LET B6 = E9
+6420 REM the condition rows(e) == 0 || cols(e) == 0
+6422 GOSUB 6850
+6424 LET T$ = "lib " & E2$ & " 3 rows 1"
+6426 GOSUB 6800
+6428 GOSUB 6992
+6430 GOSUB 6850
+6432 LET T$ = "lib " & E2$ & " 3 cols 1"
+6434 GOSUB 6800
+6436 GOSUB 6992
+6438 LET T$ = "bin " & E2$ & " 2 or"
+6440 GOSUB 6800
+6442 REM the then block: jarr; jend
+6444 LET T$ = "jarr " & E2$
+6446 GOSUB 6800
+6448 LET T$ = "jend " & E2$
+6450 GOSUB 6800
+6452 LET T$ = "block " & E2$ & " 2"
+6454 GOSUB 6800
+6456 REM the else block: jarr, forr R's range 0..rows(e); R's body: jarr, forr C's range 0..cols(e); C's body
+6458 GOSUB 6970
+6460 LET C9$ = "rows"
+6462 GOSUB 6980
+6464 GOSUB 6970
+6466 LET C9$ = "cols"
+6468 GOSUB 6980
+6470 GOSUB 6970
+6472 REM pushed in reverse: close the if, jend, close R, jend, close C, emit(idx e (lv R) (lv C)) of the element type F9
+6474 LET C2 = 4
+6475 LET C3 = E4 + 1
+6476 LET C4 = 0
+6477 GOSUB 6940
+6478 LET T$ = "jend " & E2$
+6479 GOSUB 6890
+6480 LET C2 = 3
+6481 LET C3 = E4 + 1
+6482 LET C4 = 0
+6483 LET C5 = B4
+6484 LET C6 = 2
+6485 GOSUB 6940
+6486 LET T$ = "jend " & E2$
+6487 GOSUB 6890
+6488 LET C2 = 3
+6489 LET C3 = E4 + 1
+6490 LET C4 = 0
+6491 LET C5 = B5
+6492 GOSUB 6940
+6493 LET C3 = E4 + 1
+6494 GOSUB 6860
+6495 LET T$ = "lv " & E2$ & " 3 ~" & STR$(B4)
+6496 GOSUB 6870
+6497 LET T$ = "lv " & E2$ & " 3 ~" & STR$(B5)
+6498 GOSUB 6870
+6499 LET T$ = "idx " & E2$ & " " & STR$(F9) & " 2"
+6500 GOSUB 6870
+6502 LET C2 = 1
+6504 LET C4 = D4 + 3
+6506 LET C5 = F9
+6508 GOSUB 6940
+6510 GOTO 6000
+6695 REM ---- 6700 (6d): E9 = the type of kind E7 (1 tvec, 2 tmat) with element type E8: the existing one, else a new one (3.5.1:
+6696 REM step 5 numbers it by first reference); its component goes after the type components and the call argument types ----
+6700 LET E9 = 0
+6702 FOR B7 = 10 TO 9 + T9
+6704 IF E9 > 0 THEN 6710
+6706 IF T(B7, 1) <> E7 THEN 6710
+6708 IF P(T(B7, 2)) <> E8 THEN 6710
+6709 LET E9 = B7
+6710 NEXT B7
+6712 IF E9 > 0 THEN 6738
+6714 LET W9$ = "types"
+6716 IF T9 >= T7 THEN 2925
+6718 LET B8 = P9
+6720 IF X7 <= B8 THEN 6724
+6722 LET B8 = X7
+6724 LET B8 = B8 + 1
+6726 IF B8 > 399999 THEN 2925
+6728 LET P(B8) = E8
+6729 LET P9 = B8
+6730 LET T9 = T9 + 1
+6732 LET E9 = 9 + T9
+6734 LET T(E9, 1) = E7
+6735 LET T(E9, 2) = B8
+6736 LET T(E9, 3) = 1
+6738 RETURN
+6795 REM ---- 6800 (6d): append the new record T$ (no stack entry: the whole block is one node, 5838); 6900 finds its row ----
+6800 GOSUB 6900
+6802 LET K1 = 0
+6804 GOSUB 3070
+6806 RETURN
+6845 REM ---- 6850: append the expression e (pool rows D3 ... D3 + D4 - 1); 6860: copy it to the top of the pool ----
+6850 FOR C1 = D3 TO D3 + D4 - 1
+6852 LET T$ = I$(C1)
+6854 GOSUB 6800
+6856 NEXT C1
+6858 RETURN
+6860 FOR C1 = D3 TO D3 + D4 - 1
+6862 LET T$ = I$(C1)
+6864 GOSUB 6870
+6866 NEXT C1
+6868 RETURN
+6869 REM ---- 6870: T$ onto the pool (row E4) ----
+6870 LET W9$ = "nodes"
+6871 IF E4 >= 99999 THEN 2925
+6872 LET E4 = E4 + 1
+6873 LET I$(E4) = T$
+6874 RETURN
+6875 REM ---- 6880: a new .j local of type C7, mut C8$, at P: its lid D0 (after the par, loc and .t locals and the earlier .j ones,
+6876 REM in the order of the declaring records, 3.5.4), its loc record in V$ (written by 5860); against LIM_SYMBOLS ----
+6880 LET W9$ = "symbols"
+6881 IF V0 >= S7 THEN 2925
+6882 LET V0 = V0 + 1
+6883 LET H(F6, 1) = H(F6, 1) + 1
+6884 LET D0 = H(F6, 2) + H(F6, 1)
+6885 LET V$(V0) = "loc .j" & STR$(H(F6, 1)) & " " & STR$(C7) & " " & C8$ & " " & E2$
+6886 RETURN
+6889 REM ---- 6890: an out task of the statement T$ ----
+6890 GOSUB 6870
+6891 LET C2 = 2
+6892 LET C3 = E4
+6893 LET C4 = 1
+6894 GOSUB 6940
+6895 RETURN
+6899 REM ---- 6900: I0 = the row of T$'s opcode in the records table (set H or HF) ----
+6900 LET I0 = 0
+6902 LET B9$ = SEG$(T$, 1, POS(T$, " ") - 1)
+6904 FOR B9 = 1 TO Z(7)
+6906 IF I0 > 0 THEN 6914
+6908 IF R$(B9) <> B9$ THEN 6914
+6910 IF R(B9, 1) = 2 THEN 6913
+6911 IF R(B9, 1) <> 4 THEN 6914
+6913 LET I0 = B9
+6914 NEXT B9
+6916 IF I0 > 0 THEN 6920
+6918 CALL "dg_bug": P$, "record " & B9$ & " is not in the records table"
+6920 RETURN
+6939 REM ---- 6940: push the task C2 (C3 C4 C5 C6) ----
+6940 LET W9$ = "nodes"
+6942 IF E3 >= 49999 THEN 2925
+6944 LET E3 = E3 + 1
+6946 LET Q(E3, 0) = C2
+6948 LET Q(E3, 1) = C3
+6950 LET Q(E3, 2) = C4
+6952 LET Q(E3, 3) = C5
+6954 LET Q(E3, 4) = C6
+6956 RETURN
+6959 REM ---- 6960: a new placeholder loop local of type C7 (E6), its lid unknown until its loop record (6030) ----
+6960 LET W9$ = "nodes"
+6962 IF E6 >= 49999 THEN 2925
+6964 LET E6 = E6 + 1
+6966 LET G(E6, 0) = 0
+6968 LET G(E6, 2) = C7
+6969 RETURN
+6970 REM ---- 6970: open a block: a new statement counter ----
+6971 LET W9$ = "nodes"
+6972 IF E5 >= 49999 THEN 2925
+6974 LET E5 = E5 + 1
+6976 LET G(E5, 1) = 0
+6978 RETURN
+6979 REM ---- 6980: jarr (one statement), then the range 0..C9$(e) of a forr (rng: i64[] B6, exclusive, no step) ----
+6980 LET T$ = "jarr " & E2$
+6981 GOSUB 6800
+6982 LET G(E5, 1) = G(E5, 1) + 1
+6983 LET T$ = "ci " & E2$ & " 3 0"
+6984 GOSUB 6800
+6985 GOSUB 6850
+6986 LET T$ = "lib " & E2$ & " 3 " & C9$ & " 1"
+6987 GOSUB 6800
+6988 LET T$ = "rng " & E2$ & " " & STR$(B6) & " 0 0"
+6989 GOSUB 6800
+6990 RETURN
+6991 REM ---- 6992: == 0 of the i64 just appended (ci 0, bin eq of type bool) ----
+6992 LET T$ = "ci " & E2$ & " 3 0"
+6993 GOSUB 6800
+6994 LET T$ = "bin " & E2$ & " 2 eq"
+6995 GOSUB 6800
+6996 RETURN

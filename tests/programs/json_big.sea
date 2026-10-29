@@ -1,0 +1,12 @@
+// json_big -- a file of about 120 KB: an i64 vector of 4000 values and an f64 vector of 2500 values (k / 7, 17 digits) inside a record,
+// so the 64 KiB buffer is flushed at least once in the middle of the numbers (LANGUAGE.md 11.4, DESIGN.md 2.11.6)
+var a = filled(0, 4000)
+for k in 0..4000 {
+    a[k] = k * 1000003 - 3000000000
+}
+var x = zeros(2500)
+for k in 0..2500 {
+    x[k] = f64(k) / 7.0
+}
+write_json("big.json", { n: len(a), a: a, x: x, tail: "end" })
+printf("done\n")

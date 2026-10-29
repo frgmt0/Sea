@@ -94,7 +94,10 @@ lead decisions L-cy–L-dh; `make test` and `make cross` (700) pass; `seacheck` 
 done** (2026-10-28: elemental functions, `ind2sub` with an array `r`; lead decisions L-di–L-dq;
 `make test` and `make cross` (742) pass; `seacheck` 6 863 built lines, `sealoop` 6 438, `seaexpand` 4 359, `seaname` 5 555, DESIGN.md §2.7
 "Measured after 6c"; the measurement after 6c calls for no relief, so 6b-0 is not run, Decision 87).
-**Next:** **6d** (`write_json`). Versions 0.y.z are alpha; 1.0.0 = v1
+**6d is done** (2026-10-28: `write_json`; lead decisions L-dr–L-ec; `make test` and `make cross`
+(776) pass; `seacheck` 6 919 built lines, `seaexpand` 4 796, `sealoop` 6 512, `sealower` 6 729,
+DESIGN.md §2.7 "Measured after 6d"). **Next:** **6e** (the ports W1 and W5, `tests/accept.sh`, the
+gate after phase 6). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first

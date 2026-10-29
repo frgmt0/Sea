@@ -1,0 +1,18 @@
+// json_struct_empty -- a struct with no fields is `{}` (LANGUAGE.md 4.6, 11.4: an empty object is `{}`): as the top value, as a member, as the
+// elements of a vector (one `{}` per element, a non-empty array), as an empty vector `[]` and as the elements of a 2 x 2
+// matrix (array of rows)
+struct E {}
+let two = [E {}, E {}]
+let none: E[] = []
+write_json("top.json", E {})
+write_json("vec.json", two)
+write_json("none.json", none)
+let r = {
+    e: E {},
+    n: 1,
+    list: two,
+    none: none,
+    grid: filled(E {}, 2, 2),
+}
+write_json("rec.json", r)
+printf("done\n")

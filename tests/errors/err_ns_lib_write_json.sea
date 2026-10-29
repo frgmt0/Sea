@@ -1,3 +1,0 @@
-// err_ns_lib_write_json -- write_json is the phase-rule word until 6d: "not supported yet: write_json" at the call (DESIGN.md 2.11.2: the
-// library-names row loses format, print and make_dir in 6b and write_json in 6d)
-write_json("out.json", 1.5)

@@ -1,0 +1,9 @@
+// json_into_new_dir -- make_dir then write_json into the new directory and into a directory created below it (LANGUAGE.md 10.10, 11.3, 11.4);
+// make_dir of the existing directory is no error and leaves the file, which the last write_json replaces
+make_dir("out")
+write_json("out/a.json", { ok: true })
+make_dir("out/sub")
+write_json("out/sub/b.json", [1, 2, 3])
+make_dir("out")
+write_json("out/a.json", { ok: false, n: 2 })
+printf("done\n")

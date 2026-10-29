@@ -1,0 +1,7 @@
+// json_two_paths -- two paths written in turn, the first one written again (the same bytes): both files stay complete and independent
+// (LANGUAGE.md 11.4: one file per call)
+let v: f64[] = [1.5, 2.5]
+write_json("one.json", v)
+write_json("two.json", { n: len(v), v: v })
+write_json("one.json", v)
+printf("done\n")

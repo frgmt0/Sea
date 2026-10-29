@@ -1,0 +1,15 @@
+{
+  "name": "outer",
+  "mid": {
+    "id": 9,
+    "inner": {
+      "v": 2.5,
+      "tag": "one"
+    },
+    "ok": false
+  },
+  "extra": {
+    "v": -0,
+    "tag": "two \"2\""
+  }
+}

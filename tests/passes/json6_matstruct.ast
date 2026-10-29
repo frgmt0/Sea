@@ -1,0 +1,23 @@
+#sea 1
+#target arm64-macos
+#file json6_matstruct.sea
+type 0:6:8 f64 s 0
+field 0:6:5 a
+type 0:7:8 str s 0
+field 0:7:5 b
+struct 0:5:1 Q 2
+pname 0:9:5 qm
+type 0:9:9 Q m 0
+array 0:9:16 0
+let 0:9:1 1
+name 0:10:1 write_json
+str 0:10:12 qm.json
+name 0:10:23 qm
+call 0:10:1 2
+cstmt 0:10:1
+name 0:11:1 printf
+str 0:11:8 done%0A
+call 0:11:1 1
+cstmt 0:11:1
+prog 4
+#end

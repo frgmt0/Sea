@@ -1,0 +1,19 @@
+// json_fixed_structs -- a fixed-size vector P[2] and matrix P[2,2] of structs (a type that exists by annotation only, LANGUAGE.md 4.5) are
+// written like the dynamic arrays of structs: an array of objects, an array of rows (implementer reading, isolated in
+// its own test), at the top level and as record fields
+struct P {
+    id: i64
+    name: str
+    w: f64
+}
+struct Q {
+    k: i64
+    vals: f64[]
+    grid: f64[,]
+}
+let fv: P[2] = [P { id: 1, name: "a", w: 0.25 }, P { id: 2, name: "b", w: 0.75 }]
+let fm: P[2, 2] = [P { id: 1, name: "a", w: 0.25 }, P { id: 2, name: "b", w: 0.75 }; P { id: 3, name: "c", w: 1.25 }, P { id: 4, name: "d", w: 1.75 }]
+write_json("fv.json", fv)
+write_json("fm.json", fm)
+write_json("rec.json", { fv: fv, fm: fm })
+printf("done\n")

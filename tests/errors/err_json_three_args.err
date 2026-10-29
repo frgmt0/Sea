@@ -1,0 +1,1 @@
+err_json_three_args.sea:2:1: error: no overload of 'write_json' accepts (str, f64, bool)

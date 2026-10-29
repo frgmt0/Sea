@@ -1,0 +1,19 @@
+// json_i64_values -- a record of i64 fields written in decimal (LANGUAGE.md 11.4): 0, negative values, -2^63 and 2^63-1, 2^53 + 1 (exact:
+// an i64 is never written through f64), a digit-grouped and a hexadecimal literal, a computed product
+let k = 3037000499
+let r = {
+    zero: 0,
+    one: 1,
+    minus_one: -1,
+    max: 9223372036854775807,
+    min: -9223372036854775808,
+    above_2p53: 9007199254740993,
+    million: 1_000_000,
+    neg_million: -1000000,
+    half_range: 4611686018427387904,
+    square: k * k,
+    diff: 7 - 10,
+    hex: 0xFF,
+}
+write_json("i64.json", r)
+printf("done\n")

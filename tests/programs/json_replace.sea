@@ -1,0 +1,13 @@
+// json_replace -- two write_json calls to one path: the second replaces the first (the file is truncated, not overwritten in place: the
+// second version is shorter), a loop writing one path three times (the last version stays), and the same path written
+// once more after the loop by a shorter value (LANGUAGE.md 11.4, 11.3)
+write_json("r.json", { long: [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5], text: "a rather long first version" })
+write_json("r.json", 7)
+for k in 0..3 {
+    write_json("loop.json", { k: k, pad: "xxxxxxxxxxxxxxxxxxxx" })
+}
+write_json("loop.json", [k0()])
+fn k0() -> i64 {
+    return 0
+}
+printf("done\n")

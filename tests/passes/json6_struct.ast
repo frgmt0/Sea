@@ -1,0 +1,50 @@
+#sea 1
+#target arm64-macos
+#file json6_struct.sea
+type 0:5:8 f64 s 0
+field 0:5:5 x
+type 0:6:8 i64 s 0
+field 0:6:5 n
+type 0:7:9 bool s 0
+field 0:7:5 ok
+type 0:8:11 str s 0
+field 0:8:5 name
+int 0:9:12 3
+type 0:9:8 f64 fv 1
+field 0:9:5 w
+type 0:10:8 f64 m 0
+field 0:10:5 m
+struct 0:4:1 P 6
+pname 0:12:5 p
+float 0:12:16 #3FF8000000000000
+init 0:12:13 x
+int 0:12:24 7
+init 0:12:21 n
+true 0:12:31
+init 0:12:27 ok
+str 0:12:43 a
+init 0:12:37 name
+float 0:12:52 #3FF0000000000000
+float 0:12:57 #4000000000000000
+float 0:12:62 #4008000000000000
+row 0:12:52 3
+array 0:12:51 1
+init 0:12:48 w
+name 0:12:71 zeros
+int 0:12:77 2
+int 0:12:80 2
+call 0:12:71 2
+init 0:12:68 m
+slit 0:12:9 P 6
+let 0:12:1 0
+name 0:13:1 write_json
+str 0:13:12 p.json
+name 0:13:22 p
+call 0:13:1 2
+cstmt 0:13:1
+name 0:14:1 printf
+str 0:14:8 done%0A
+call 0:14:1 1
+cstmt 0:14:1
+prog 4
+#end

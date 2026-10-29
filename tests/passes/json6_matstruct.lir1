@@ -1,0 +1,89 @@
+#sea 1
+#target arm64-macos
+#file json6_matstruct.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 0
+li i2 0
+la p3 d1
+li i4 2
+rcall sea_arr_new_s 0:9 1 p5 4 p3 i4 i1 i2
+la p6 d2
+retain p6
+mov p7 p5
+retain p7
+rcall sea_json_open 0:10 0 1 p6
+ldi i8 p7 - 0 16
+li i9 0
+icmp eq i10 i8 i9
+ifz 1 i10
+ldi i11 p7 - 0 24
+li i12 0
+icmp eq i10 i11 i12
+endif 1
+if 2 i10
+rcall sea_json_arr 0:10 0 0
+rcall sea_json_end 0:10 0 0
+else 2
+rcall sea_json_arr 0:10 0 0
+li i13 0
+ldi i14 p7 - 0 16
+li i15 1
+rcount i16 i17 i13 i14 i15 0 0:10
+if 3 i17
+loop 4 i18 i13 i16 i15
+rcall sea_json_arr 0:10 0 0
+li i19 0
+ldi i20 p7 - 0 24
+li i21 1
+rcount i22 i23 i19 i20 i21 0 0:10
+if 5 i23
+loop 6 i24 i19 i22 i21
+rcall sea_json_obj 0:10 0 0
+la p25 d3
+rcall sea_json_key 0:10 0 1 p25
+ldi i26 p7 - 0 16
+chkb i18 i26 0 0:10
+ldi i27 p7 - 0 24
+chkb i24 i27 1 0:10
+ldp p28 p7 - 0 40
+imul i29 i24 i26
+iadd i30 i18 i29
+ldf f31 p28 i30 16 0
+rcall sea_json_f64 0:10 0 1 f31
+la p32 d4
+rcall sea_json_key 0:10 0 1 p32
+ldi i33 p7 - 0 16
+chkb i18 i33 0 0:10
+ldi i34 p7 - 0 24
+chkb i24 i34 1 0:10
+ldp p35 p7 - 0 40
+imul i36 i24 i33
+iadd i37 i18 i36
+ldp p38 p35 i37 16 8
+rcall sea_json_str 0:10 0 1 p38
+rcall sea_json_end 0:10 0 0
+endloop 6
+endif 5
+rcall sea_json_end 0:10 0 0
+endloop 4
+endif 3
+rcall sea_json_end 0:10 0 0
+endif 2
+rcall sea_json_close 0:10 0 0
+release p7
+release p6
+sa p39 s1
+la p40 d5
+rcall sea_printf 0:11 0 2 p40 p39
+release p5
+ret 0
+endfunc
+slay d1 16 1
+soff 8
+str d2 qm.json
+str d3 a
+str d4 b
+fmt d5 1
+ftext done%0A
+#end

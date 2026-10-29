@@ -1,0 +1,34 @@
+// json_struct -- a struct of each scalar type, the same struct written from a literal in another field order (keys are in declaration
+// order), nested structs three levels deep (indentation 2 per level, LANGUAGE.md 11.4) with a NaN-free negative
+// zero, and a record literal with nested records (keys in the order written)
+struct Scalars {
+    f: f64
+    n: i64
+    b: bool
+    s: str
+}
+struct Inner {
+    v: f64
+    tag: str
+}
+struct Mid {
+    id: i64
+    inner: Inner
+    ok: bool
+}
+struct Outer {
+    name: str
+    mid: Mid
+    extra: Inner
+}
+write_json("scalars.json", Scalars { f: 0.1, n: -7, b: true, s: "hello" })
+// the fields come out in declaration order, not in the order of the literal
+write_json("reordered.json", Scalars { s: "hello", b: true, n: -7, f: 0.1 })
+let o = Outer {
+    extra: Inner { tag: "two \"2\"", v: -0.0 },
+    mid: Mid { ok: false, inner: Inner { v: 2.5, tag: "one" }, id: 9 },
+    name: "outer",
+}
+write_json("nested.json", o)
+write_json("record.json", { a: 1, b: 2.5, c: "x", d: false, inner: { p: 1.0, q: { r: "deep", s: inf } } })
+printf("done\n")

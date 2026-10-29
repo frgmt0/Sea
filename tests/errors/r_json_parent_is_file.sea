@@ -1,0 +1,2 @@
+// r_json_parent_is_file -- write_json below a path that is a file: "Not a directory" (LANGUAGE.md 11.4, 9.2: the reason from the errno table)
+write_json("x/y.json", 1)

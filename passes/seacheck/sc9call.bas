@@ -277,8 +277,8 @@
 24630 LET G = N(G, 7)
 24635 GOTO 24565
 24640 SUBEND
-24645 REM ---- lout: print(s) and make_dir(path) (LANGUAGE 10.10, 11.2; DESIGN 2.11.2): one str, type
-24650 REM void; no ref argument (255); with no argument error any other number or type of arguments is
+24645 REM ---- lout: print(s), make_dir(path) and write_json(path, value) (LANGUAGE 10.10, 11.2, 11.4;
+24650 REM DESIGN 2.11.2): one str (write_json: a str and a value, lwk), type void; no ref argument (255); with no argument error any other number or type of arguments is
 24655 REM 'no overload of ... accepts (...)' (243) at the call, the types as written (a named one as
 24660 REM name: T, 224 at its narg already leaving it an error) -----------------------------------
 24665 SUB "lout": N(), M(), T(), C(), S$(), X(), X$(), J, L$
@@ -304,8 +304,8 @@
 24760 LET A = N(A, 8)
 24765 NEXT I
 24770 IF E = 1 THEN 24795
-24775 IF N(J, 1) <> 1 THEN 24790
-24780 IF M(N(N(J, 7), 8), 1) = 5 THEN 24795
+24775 CALL "lwk": N(), M(), T(), J, L$, Z
+24780 IF Z = 1 THEN 24795
 24790 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", L$, B$, "", 2
 24795 SUBEND
 24800 REM ---- em_uarg: the arguments of call J written with em_ucall's marks (DESIGN 3.5.4, 3.5.5):
@@ -477,3 +477,58 @@
 25540 CALL "er": N(), X(), X$(), J, "SHAPE_MISMATCH_C", A$, B$, "", 2
 25545 LET M(J, 1) = 0
 25550 SUBEND
+25555 REM ---- lwk: Z = 1 when library output call J (print, make_dir, write_json; lout) has an overload:
+25556 REM print and make_dir take one str, write_json(path, value) a str and a value whose type is
+25557 REM no handle type and contains none (DESIGN 2.11.2); the argument types are final (fin) -------
+25560 SUB "lwk": N(), M(), T(), J, L$, Z
+25565 LET Z = 0
+25570 LET A = N(N(J, 7), 8)
+25575 IF L$ = "write_json" THEN 25595
+25580 IF N(J, 1) <> 1 THEN 25640
+25585 IF M(A, 1) <> 5 THEN 25640
+25590 LET Z = 1
+25592 GOTO 25640
+25595 IF N(J, 1) <> 2 THEN 25640
+25600 IF M(A, 1) <> 5 THEN 25640
+25605 LET A = N(A, 8)
+25610 LET Q = M(A, 1)
+25615 IF Q < 2 THEN 25640
+25620 CALL "hct": T(), Q, R
+25625 IF R = 1 THEN 25640
+25630 LET Z = 1
+25640 SUBEND
+25645 REM ---- hct: R = 1 when type Q is a handle type, a tuple, or an array, struct or record type that
+25646 REM contains one (no JSON value, LANGUAGE 11.4), else 0. D is the work list of the types still to
+25647 REM look at, G marks a type row once it is on it: only a non-scalar type not yet seen is pushed
+25648 REM (an array's element type, a field's type), so the list and the time are bounded by the number
+25649 REM of types, however deeply or widely the structs nest ----------------------------------------
+25650 SUB "hct": T(), Q, R
+25655 DIM D(65009), G(65009)
+25660 LET R = 0
+25665 IF Q < 6 THEN 25780
+25667 IF Q <= 9 THEN 25775
+25670 LET P = 1
+25672 LET D(1) = Q
+25674 LET G(Q) = 1
+25676 IF P = 0 THEN 25780
+25680 LET V = D(P)
+25685 LET P = P - 1
+25695 LET K = T(V, 0)
+25700 IF K > 6 THEN 25775
+25705 LET N1 = 1
+25710 IF K <= 4 THEN 25720
+25715 LET N1 = T(V, 1)
+25720 FOR I = 1 TO N1
+25722 LET B = T(V, 1)
+25724 IF K <= 4 THEN 25730
+25726 CALL "fdg": T(), V, I, A, B
+25730 IF B < 6 THEN 25745
+25732 IF B <= 9 THEN 25775
+25734 IF G(B) = 1 THEN 25745
+25736 LET G(B) = 1
+25738 LET P = P + 1
+25740 LET D(P) = B
+25745 NEXT I
+25747 GOTO 25676
+25775 LET R = 1
+25780 SUBEND

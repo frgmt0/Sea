@@ -1,0 +1,40 @@
+// json_struct_arrays -- arrays of structs and records (LANGUAGE.md 11.4): a vector of 3 structs (one str with a quote, a NaN field as null), a
+// 2 x 3 matrix of structs (array of rows, element (i, j) at position j of row i), a vector of 1, an empty vector, the 2 x 0
+// and 0 x 3 matrices of structs (both `[]`), a vector of structs with a vector and a matrix field (empty ones `[]`),
+// a vector of records; each top-level and as a record field (one level deeper)
+struct P {
+    id: i64
+    name: str
+    w: f64
+}
+struct Q {
+    k: i64
+    vals: f64[]
+    grid: f64[,]
+}
+let ps = [P { id: 1, name: "one", w: 0.5 }, P { id: 2, name: "tw\"o", w: -1.5 }, P { id: 3, name: "", w: nan }]
+let pp = P { id: 1, name: "one", w: 0.5 }
+let one = [pp]
+let none: P[] = []
+let m = [P { id: 0, name: "g00", w: 0.0 }, P { id: 1, name: "g01", w: 0.25 }, P { id: 2, name: "g02", w: 0.5 }; P { id: 10, name: "g10", w: 1.0 }, P { id: 11, name: "g11", w: 1.25 }, P { id: 12, name: "g12", w: 1.5 }]
+let qs = [Q { k: 1, vals: [0.5, 1.5], grid: [1.0, 2.0; 3.0, 4.0] }, Q { k: 2, vals: zeros(0), grid: zeros(0, 2) }]
+let recs = [{ a: 1, b: "x" }, { a: 2, b: "y" }]
+write_json("vec.json", ps)
+write_json("mat.json", m)
+write_json("recs.json", recs)
+write_json("one.json", one)
+write_json("none.json", none)
+write_json("g20.json", filled(pp, 2, 0))
+write_json("g03.json", filled(pp, 0, 3))
+let r = {
+    items: ps,
+    grid: m,
+    one: one,
+    none: none,
+    g20: filled(pp, 2, 0),
+    g03: filled(pp, 0, 3),
+    qs: qs,
+    recs: recs,
+}
+write_json("rec.json", r)
+printf("done\n")

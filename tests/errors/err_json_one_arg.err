@@ -1,0 +1,1 @@
+err_json_one_arg.sea:2:1: error: no overload of 'write_json' accepts (str)

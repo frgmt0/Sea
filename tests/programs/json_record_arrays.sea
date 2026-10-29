@@ -1,0 +1,24 @@
+// json_record_arrays -- W5's export shape (LANGUAGE.md 2.5 Appendix D, 11.4): one record of scalars, a dynamic i64 vector, a fixed-size f64
+// vector (a literal), a 3 x 2 matrix with a NaN, a str[], a nested record with a fixed vector, an i64 expression
+// (rnk + 1), an empty vector and a 0 x 4 matrix (both `[]`), the field named `yield`
+let counts: i64[] = [3, 0, 12, 5]
+let dev: f64[,] = [0.5, -0.25; 1.5, 2.0; -3.0, nan]
+let names = ["bottom chord", "top chord"]
+let ef: f64[] = []
+let rnk: i64[] = [2, 0, 1]
+let out = {
+    workload: "w5_tolerance_mc",
+    n_sample: 100000,
+    lcg_final: 6364136223846793005,
+    yield: 0.987654321,
+    hist_counts: counts,
+    pct: [0.135, 2.5, 50.0, 97.5, 99.865],
+    first_dev: dev,
+    names: names,
+    limits: { lo: 0.0, hi: 1.0, grid: [1.5, 2.5] },
+    rank: rnk + 1,
+    empty_f: ef,
+    empty_m: zeros(0, 4),
+}
+write_json("w5_shape.json", out)
+printf("done\n")

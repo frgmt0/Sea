@@ -1,0 +1,32 @@
+// json_fixed -- fixed-size values and fields (LANGUAGE.md 4.5, 11.4; DESIGN.md 3.5.7 step 4, L-ce: `dyn` of the value under jvec / jmat):
+// a struct with f64[3], i64[2], bool[2], f64[2,2], str[2] and f64[0] fields, fixed vectors and matrices as top-level
+// values (f64, i64, bool), a fixed str[3] and str[2,2] by annotation, fixed arrays without elements (`[]`: f64[0],
+// f64[2,0], i64[0,3]), fixed-size values as record fields; written exactly like dynamic arrays
+struct Fx {
+    v: f64[3]
+    k: i64[2]
+    flags: bool[2]
+    m: f64[2, 2]
+    names: str[2]
+    e: f64[0]
+}
+let fx = Fx { v: [1.0, 2.5, -0.0], k: [4, 5], flags: [true, false], m: [1.0, 2.0; 3.0, 4.0], names: ["p", "q\t"], e: [] }
+write_json("fx.json", fx)
+write_json("v3.json", [1.0, 2.0, 3.0])
+write_json("k2.json", [1, -2])
+write_json("b2.json", [true, false])
+write_json("m22.json", [1.0, 2.0; 3.0, 4.0])
+write_json("m23.json", [1, 2, 3; 4, 5, 6])
+write_json("mb.json", [true, false; false, true])
+let ns: str[3] = ["a", "b\n", "c"]
+write_json("str3.json", ns)
+let nm: str[2, 2] = ["a", "b"; "c", "d"]
+write_json("str22.json", nm)
+let z: f64[0] = []
+let z2: f64[2, 0] = []
+let z3: i64[0, 3] = []
+write_json("z.json", z)
+write_json("z2.json", z2)
+write_json("z3.json", z3)
+write_json("rec.json", { pos: [1.0, 2.0], grid: [1, 2, 3; 4, 5, 6], fx: fx })
+printf("done\n")

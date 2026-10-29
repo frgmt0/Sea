@@ -1,0 +1,2 @@
+// err_json_path_i64 -- a path that is not a str: 243 at the call (both arguments spelled)
+write_json(1, 2)

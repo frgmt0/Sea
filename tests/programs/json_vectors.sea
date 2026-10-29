@@ -1,0 +1,37 @@
+// json_vectors -- dynamic vectors of every element type as flat arrays, one element per line (LANGUAGE.md 11.4): f64 (0.1, -0.0, 1e22,
+// NaN and the infinities as null, 100 as `100`), i64 (the extremes, 2^53 + 1), bool, str (with escapes); empty vectors
+// of each type and a vector of length 1 as `[]` / one line; zeros, ones and filled; an elemental result; each as a
+// top-level value and as a record field (depth 1)
+let a: f64[] = [0.1, -0.0, 1e+22, nan, inf, (-inf), 100.0, 0.3333333333333333, 5e-324, -2.5]
+let b: i64[] = [0, 1, -1, 9223372036854775807, -9223372036854775808, 9007199254740993, 1000000]
+let c: bool[] = [true, false, true]
+let d: str[] = ["a", "b\"c", "", "d\ne", "\\"]
+let ea: f64[] = []
+let ei: i64[] = []
+let eb: bool[] = []
+let es: str[] = []
+let one: f64[] = [2.5]
+write_json("vec_f64.json", a)
+write_json("vec_i64.json", b)
+write_json("vec_bool.json", c)
+write_json("vec_str.json", d)
+write_json("vec_empty.json", ea)
+let r = {
+    a: a,
+    b: b,
+    c: c,
+    d: d,
+    ea: ea,
+    ei: ei,
+    eb: eb,
+    es: es,
+    one: one,
+    z: zeros(3),
+    o: ones(2),
+    fi: filled(7, 2),
+    fb: filled(true, 2),
+    fs: filled("x", 2),
+    scaled: a * 2.0,
+}
+write_json("vectors.json", r)
+printf("done\n")

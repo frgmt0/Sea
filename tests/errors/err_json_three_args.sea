@@ -1,0 +1,2 @@
+// err_json_three_args -- write_json with an extra argument: 243 at the call, the types spelled in order
+write_json("a.json", 1.5, true)

@@ -1,0 +1,5 @@
+// r_json_missing_dir -- write_json of a path in a missing directory: no directory is created, "No such file or directory" at the call's
+// line; output printed before it is flushed first (LANGUAGE.md 11.4, 9.2; errors.inc CANNOT_OPEN)
+printf("start\n")
+write_json("nodir/a.json", 1.5)
+printf("never\n")

@@ -1,0 +1,5 @@
+// r_json_value_error -- an error while the value is evaluated: the path and the value are bound before the file is opened (DESIGN.md 3.5.7
+// step 4), so no file is created; the index error is at the write_json line
+let v: i64[] = [1, 2]
+let k = 5
+write_json("never.json", v[k])

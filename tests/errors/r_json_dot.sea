@@ -1,0 +1,3 @@
+// r_json_dot -- write_json(".", v): the working directory is a directory, "Is a directory" (LANGUAGE.md 11.4, 9.2; git keeps no empty
+// directory, so no fixture is used)
+write_json(".", { a: 1 })
