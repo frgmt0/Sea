@@ -1,0 +1,5 @@
+// err_call6_default_overflow -- a default whose i64 evaluation overflows: 260 at the operator node (its left operand), as for a const item
+fn f(a: i64 = 9223372036854775807 + 1) -> i64 {
+    return a
+}
+printf("%d\n", f(1))

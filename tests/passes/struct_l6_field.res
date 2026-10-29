@@ -5,14 +5,20 @@ rtst 10 G 1 1
 rtfd v 11
 rtvec 11 4
 rtype 0:1:11 i64 s 0 3
+false 0:1:23
+block 0:1:29 0
+while 0:1:17
 rint 0:2:12 0 #0000000000000000
 return 0:2:5 1
-block 0:1:15 1
+block 0:1:15 2
 rfn 0:1:1 p 0 0 1 2 3
 rtype 0:4:11 i64 s 0 3
+false 0:4:23
+block 0:4:29 0
+while 0:4:17
 rint 0:5:12 1 #3FF0000000000000
 return 0:5:5 1
-block 0:4:15 1
+block 0:4:15 2
 rfn 0:4:1 q 0 0 1 3 3
 rpname 0:7:5 dims 1
 rname 0:7:20 ones pd 0

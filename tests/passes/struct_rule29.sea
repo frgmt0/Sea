@@ -1,4 +1,4 @@
-fn show(dims: Dim[]) {
+fn show(dims: Dim[]) { while false {}
     let nom = dims.nom
     let names = dims.name
     printf("%s %g %s %g\n", names[0], nom[0], names[1], nom[1])

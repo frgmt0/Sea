@@ -37,7 +37,7 @@ row 0:13:13 1
 array 0:13:12 1
 return 0:13:5 1
 block 0:12:31 1
-rfn 0:12:1 mk 0 2 1 2 15 10 14
+rfn 0:12:1 mk 2 2 1 2 15 10 14
 rpname 0:15:5 v 1
 rtype 0:15:8 B v 0 16
 array 0:15:14 0

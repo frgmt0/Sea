@@ -1,0 +1,5 @@
+// err_call6_default_divzero -- a default that divides by zero: 261 at the operator node (its left operand)
+fn f(a: i64 = 7 % (2 - 2)) -> i64 {
+    return a
+}
+printf("%d\n", f(1))

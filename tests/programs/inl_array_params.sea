@@ -1,0 +1,32 @@
+// inl_array_params -- array and matrix arguments and results of inlined functions: the argument is unchanged after the call (value
+// semantics), a call as an argument of another (LANGUAGE.md 8.2, 4.5)
+fn dbl(v: f64[]) -> f64[] {
+    return v * 2.0
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for k in 0..n {
+        v[k] = f64(k) * 0.5
+    }
+    return v
+}
+fn total(v: f64[]) -> f64 {
+    return sum(v)
+}
+fn msum(M: f64[,]) -> f64 {
+    return sum(M.flat)
+}
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+let a = ramp(4)
+let b = dbl(a)
+pv(a)
+pv(b)
+printf("%g %g\n", total(a), total(dbl(b)))
+let m: f64[,] = [1.0, 2.0; 3.0, 4.5]
+printf("%g %g\n", msum(m), msum(m * 2.0))

@@ -1,0 +1,12 @@
+// inl6_agg -- R32 (DESIGN.md 2.11.5): mk (two call sites, one statement) returns a struct and
+// is inlined: each iblk gets a new home H before do, the iret stores the struct literal's own
+// home into H (rule 27 (d): an owned value moved, li and mcopy) and exits, and the field read
+// takes H; P holds no reference field, so no retain or release appears
+fn mk(x: f64) -> P {
+    return P { x: x, y: x * 2.0 }
+}
+printf("%g %g\n", mk(1.5).x, mk(2.0).y)
+struct P {
+    x: f64
+    y: f64
+}

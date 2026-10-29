@@ -3,6 +3,7 @@
 14530 REM reference (3.5.1), mode 2 writes the table and then every record. ----------------------
 14535 SUB "sc_emit": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 14540 LET X(28) = 0
+14542 LET X(41) = 0
 14545 FOR H = 1 TO 2
 14550 LET X(27) = H
 14555 IF H = 1 THEN 14625
@@ -104,7 +105,11 @@
 14940 CALL "tyr": T(), W(), X(), Y(S, 2), A$
 14945 CALL "io_esc": S$(Y(S, 1)), 0, B$
 14950 CALL "pos": N(), F, P$
-14955 CALL "wr": X(), "fn " & STR$(Y(S, 5)) & " " & B$ & " fn " & A$ & " " & STR$(P0) & " " & STR$(L0) & " " & P$
+14951 REM the kind (DESIGN 3.5.4): fn, elem (rfn el 1) or inl (el 2, Decision 81)
+14952 LET K$ = " fn "
+14953 IF Y(S, 4) = 0 THEN 14955
+14954 LET K$ = SEG$(" elem inl ", 5 * Y(S, 4) - 4, 4 * Y(S, 4) + 2)
+14955 CALL "wr": X(), "fn " & STR$(Y(S, 5)) & " " & B$ & K$ & A$ & " " & STR$(P0) & " " & STR$(L0) & " " & P$
 14960 FOR R = Y(S, 9) TO Y(S, 8)
 14965 CALL "tyr": T(), W(), X(), Y(R, 2), A$
 14970 CALL "io_esc": S$(Y(R, 1)), 0, B$
@@ -261,27 +266,34 @@
 15710 REM ---- em_expr: expression E in post-order (= node order); M(J,8) < 0 marks a node where the
 15715 REM writing jumps past node -M(J,8): a powk exponent, the literal 2^63 under neg, or the callee
 15720 REM of printf (whose arguments are written between the format pieces, em_printf), or the value of a
-15722 REM dim: option (narg -M(J,8), written as one ci of the value M(narg,5); DESIGN 3.5.5) --------
+15722 REM dim: option (narg -M(J,8), written as one ci of the value M(narg,5); DESIGN 3.5.5), or the
+15723 REM callee of a Sea function called with a named or an omitted argument (em_uarg, then the call) --
 15725 SUB "em_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 15730 LET J = M(E, 0)
 15735 IF J > E THEN 15800
+15736 IF X(41) = 0 THEN 15740
+15737 CALL "erep": N(), M(), T(), W(), X(), J, E, G
+15738 IF G = 0 THEN 15740
+15739 GOTO 15760
 15740 IF M(J, 8) >= 0 THEN 15770
 15745 LET G = -M(J, 8)
 15747 IF N(G, 0) <> 36 THEN 15750
 15748 CALL "pos": N(), N(G, 7), P$
 15749 CALL "wr": X(), "ci " & P$ & " 3 " & STR$(M(G, 5))
 15750 IF N(G, 0) <> 35 THEN 15760
+15751 IF M(N(G, 7), 2) < 1 THEN 15755
+15752 CALL "em_uarg": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
+15753 CALL "em_node": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
+15754 GOTO 15756
 15755 CALL "em_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
+15756 CALL "embd": N(), M(), X(), G
 15760 LET J = G + 1
 15765 GOTO 15735
 15770 IF N(J, 0) <> 30 THEN 15785
 15775 IF N(N(J, 9), 0) <> 35 THEN 15785
 15780 IF N(N(J, 9), 7) = J THEN 15790
 15785 CALL "em_node": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
-15786 IF N(J, 0) <> 48 THEN 15790
-15787 IF M(J, 4) = 0 THEN 15790
-15788 CALL "pos": N(), N(J, 7), P$
-15789 CALL "wr": X(), "bind " & P$ & " " & STR$(X(40) + M(J, 4))
+15786 CALL "embd": N(), M(), X(), J
 15790 LET J = J + 1
 15795 GOTO 15735
 15800 SUBEND
@@ -356,7 +368,13 @@
 16125 GOTO 16220
 16130 LET S = M(N(J, 7), 2)
 16135 IF S < 0 THEN 16150
-16140 CALL "wr": X(), "call" & Q$ & " " & STR$(Y(S, 5)) & " " & STR$(N(J, 1))
+16136 REM written by em_uarg (its callee jumps here): np arguments, then the seq of a reordered one
+16137 LET H = N(J, 1)
+16138 IF M(N(J, 7), 8) >= 0 THEN 16140
+16139 LET H = Y(S, 6)
+16140 CALL "wr": X(), "call" & Q$ & " " & STR$(Y(S, 5)) & " " & STR$(H)
+16141 IF M(J, 9) = 0 THEN 16220
+16142 CALL "wr": X(), "seq" & Q$ & " " & STR$(M(J, 9) - 1)
 16145 GOTO 16220
 16150 CALL "io_esc": S$(N(N(J, 7), 6)), 0, B$
 16151 REM a dim: form is name.dim; sort and argsort without desc: take the inserted cb 0 (sc9red lred)
@@ -450,5 +468,6 @@
 16450 CALL "wr": X(), "fmt " & P$ & " 1 " & STR$(P(0, 0))
 16455 CALL "pos": N(), G, P$
 16457 CALL "io_esc": S$(N(N(G, 7), 6)), 0, B$
-16460 CALL "wr": X(), "lib " & P$ & " 1 " & B$ & " 1"
+16458 CALL "tyr": T(), W(), X(), M(G, 1), A$
+16460 CALL "wr": X(), "lib " & P$ & " " & A$ & " " & B$ & " 1"
 16465 SUBEND

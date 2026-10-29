@@ -5,6 +5,9 @@ rtype 0:1:12 str s 0 5
 param 0:1:9 a 0 0
 rtype 0:1:20 str s 0 5
 param 0:1:17 b 0 0
+false 0:1:33
+block 0:1:39 0
+while 0:1:27
 rname 0:2:8 a loc 1
 rname 0:2:12 b loc 2
 bin 0:2:8 lt
@@ -33,7 +36,7 @@ bin 0:7:48 lt
 conv 0:7:44 str
 call 0:7:5 4
 cstmt 0:7:5
-block 0:1:25 2
+block 0:1:25 3
 rfn 0:1:1 less 0 2 0 2 1 5 5
 rname 0:9:1 less fn 2
 str 0:9:6 ab

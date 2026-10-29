@@ -1,0 +1,8 @@
+// mkdir_root_dot -- make_dir("/") and make_dir(".") name existing directories (no error on either target: DESIGN.md 4.8 MAKE_DIR
+// tests the path for a directory after a failed mkdir), "./sub" is created once and found again
+make_dir("/")
+make_dir(".")
+make_dir("./sub")
+make_dir("./sub")
+make_dir(".")
+printf("done\n")

@@ -1,0 +1,7 @@
+// err_call6_default_const_order -- Decision 91: a default's error on a later line than a constant item's error loses; the constant's 260 on line 2
+// is reported, not the default's 201 on line 3 (DESIGN.md 2.11.2: every error competes in source order)
+const A = 9223372036854775807 + 1
+fn f(a: i64 = 1.5) -> i64 {
+    return a
+}
+printf("%d\n", f(1))

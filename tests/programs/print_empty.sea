@@ -1,0 +1,11 @@
+// print_empty -- print of empty strings writes nothing (LANGUAGE.md 11.2)
+print("")
+print("")
+print("a")
+print("")
+let e = ""
+print(e + e)
+print("b\n")
+print(format(""))
+printf("")
+print("c\n")

@@ -5,16 +5,22 @@ type 0:1:11 i64 s 0
 param 0:1:8 n 0 0
 type 0:1:20 str s 0
 type 0:1:25 i64 s 0
+false 0:1:38
+block 0:1:44 0
+while 0:1:32
 name 0:2:17 n
 conv 0:2:13 str
 name 0:2:21 n
 int 0:2:25 1
 bin 0:2:21 add
 return 0:2:5 2
-block 0:1:30 1
+block 0:1:30 2
 fn 0:1:1 two 0 1 2
 type 0:4:11 i64 s 0
 param 0:4:8 i 0 0
+false 0:4:24
+block 0:4:30 0
+while 0:4:18
 pname 0:5:9 names
 str 0:5:18 x
 str 0:5:23 y
@@ -45,7 +51,7 @@ index 0:8:36 1
 name 0:8:46 k
 call 0:8:5 4
 cstmt 0:8:5
-block 0:4:16 4
+block 0:4:16 5
 fn 0:4:1 upd 0 1 0
 pname 0:10:6 a
 pname 0:10:9 b

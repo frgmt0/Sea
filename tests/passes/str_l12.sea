@@ -1,7 +1,7 @@
-fn two(n: i64) -> (str, i64) {
+fn two(n: i64) -> (str, i64) { while false {}
     return (str(n), n + 1)
 }
-fn upd(i: i64) {
+fn upd(i: i64) { while false {}
     var names = ["x", "y"]
     var k = 0
     (names[i], k) = two(i + 5)

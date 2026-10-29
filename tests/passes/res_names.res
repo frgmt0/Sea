@@ -22,7 +22,7 @@ if 0:6:5 0
 rname 0:10:12 lo loc 2
 return 0:10:5 1
 block 0:4:22 3
-rfn 0:4:1 f 0 1 1 2 3 3
+rfn 0:4:1 f 2 1 1 2 3 3
 rpname 0:12:5 n 1
 rname 0:12:9 f fn 2
 rname 0:12:11 K cst 1

@@ -14,7 +14,7 @@ call 0:7:1 1 2 2
 eval 0:7:1
 block 0:1:1 2
 end
-fn 2 tile fn 1 2 2 0:1:1
+fn 2 tile inl 1 2 2 0:1:1
 par s 5 val
 par r 3 val
 loc m 10 let 0:2:9

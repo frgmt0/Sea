@@ -46,7 +46,7 @@ call 0:15:9 4 2 1
 bind 0:15:1 9
 block 0:1:1 9
 end
-fn 2 h fn 4 1 0 0:4:1
+fn 2 h inl 4 1 0 0:4:1
 par v 4 val
 lv 0:5:12 4 1
 ret 0:5:5 1

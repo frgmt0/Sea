@@ -1,0 +1,41 @@
+#sea 1
+#target arm64-macos
+#file inl6_ref.sea
+type 0:5:15 i64 s 0
+param 0:5:8 c 1 0
+type 0:5:23 i64 s 0
+param 0:5:20 d 0 0
+type 0:5:31 i64 s 0
+name 0:6:5 c
+name 0:6:10 d
+asg 0:6:5 add
+name 0:7:12 c
+return 0:7:5 1
+block 0:5:35 2
+fn 0:5:1 inc 0 2 1
+pname 0:9:5 n
+int 0:9:9 1
+var 0:9:1 0
+pname 0:10:5 m
+name 0:10:9 n
+name 0:10:13 inc
+name 0:10:21 n
+ref 0:10:17
+int 0:10:24 10
+call 0:10:13 2
+bin 0:10:9 add
+let 0:10:1 0
+name 0:11:1 inc
+name 0:11:9 n
+ref 0:11:5
+int 0:11:12 100
+call 0:11:1 2
+cstmt 0:11:1
+name 0:12:1 printf
+str 0:12:8 %25d%20%25d%0A
+name 0:12:19 n
+name 0:12:22 m
+call 0:12:1 3
+cstmt 0:12:1
+prog 5
+#end

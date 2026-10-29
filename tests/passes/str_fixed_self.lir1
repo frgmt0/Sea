@@ -5,6 +5,8 @@ func .main main 0:1:1 0 0
 slot s1 24 8
 slot s2 24 8
 slot s3 24 8
+slot s4 24 8
+slot s5 24 8
 sa p1 s1
 li i2 3
 li i3 4
@@ -75,51 +77,76 @@ ldp p41 p22 - 0 8
 release p41
 ldp p42 p22 - 0 16
 release p42
-call show 0 1 p1
-la p43 d4
-li i44 0
-li i45 3
-chkb i44 i45 0 0:7
-retain p43
-ldp p46 p1 i44 8 0
-stp p43 p1 i44 8 0
-release p46
-call show 0 1 p1
-ldp p47 p1 - 0 0
-release p47
-ldp p48 p1 - 0 8
-release p48
-ldp p49 p1 - 0 16
-release p49
-ret 0
-endfunc
-func show fn 0:1:1 1 p1 0
-slot s1 24 8
-li i2 0
-li i3 3
-chkb i2 i3 0 0:2
-ldp p4 p1 i2 8 0
-li i5 1
-li i6 3
-chkb i5 i6 0 0:2
-ldp p7 p1 i5 8 0
-li i8 2
-li i9 3
-chkb i8 i9 0 0:2
-ldp p10 p1 i8 8 0
-sa p11 s1
-stp p4 p11 - 0 0
-stp p7 p11 - 0 8
-stp p10 p11 - 0 16
-la p12 d5
-rcall sea_printf 0:2 0 2 p12 p11
+do 3
+li i43 0
+li i44 3
+chkb i43 i44 0 0:2
+ldp p45 p1 i43 8 0
+li i46 1
+li i47 3
+chkb i46 i47 0 0:2
+ldp p48 p1 i46 8 0
+li i49 2
+li i50 3
+chkb i49 i50 0 0:2
+ldp p51 p1 i49 8 0
+sa p52 s4
+stp p45 p52 - 0 0
+stp p48 p52 - 0 8
+stp p51 p52 - 0 16
+la p53 d4
+rcall sea_printf 0:2 0 2 p53 p52
+exit 3
+enddo 3
+la p54 d5
+li i55 0
+li i56 3
+chkb i55 i56 0 0:7
+retain p54
+ldp p57 p1 i55 8 0
+stp p54 p1 i55 8 0
+release p57
+do 4
+li i58 0
+li i59 3
+chkb i58 i59 0 0:2
+ldp p60 p1 i58 8 0
+li i61 1
+li i62 3
+chkb i61 i62 0 0:2
+ldp p63 p1 i61 8 0
+li i64 2
+li i65 3
+chkb i64 i65 0 0:2
+ldp p66 p1 i64 8 0
+sa p67 s5
+stp p60 p67 - 0 0
+stp p63 p67 - 0 8
+stp p66 p67 - 0 16
+la p68 d6
+rcall sea_printf 0:2 0 2 p68 p67
+exit 4
+enddo 4
+ldp p69 p1 - 0 0
+release p69
+ldp p70 p1 - 0 8
+release p70
+ldp p71 p1 - 0 16
+release p71
 ret 0
 endfunc
 str d1 x
 str d2 y
 str d3 z
-str d4 w
-fmt d5 6
+fmt d4 6
+fconv - - - s p
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - s p
+ftext %0A
+str d5 w
+fmt d6 6
 fconv - - - s p
 ftext %20
 fconv - - - s p

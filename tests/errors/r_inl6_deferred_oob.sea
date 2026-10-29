@@ -1,0 +1,14 @@
+// r_inl6_deferred_oob -- the deferred ref argument of rule 31: addat(ref v[2], shrink(ref v)) checks v[2] at its place (ok, 3 elements),
+// shrink then replaces v by a 1-element array, and the recheck before the call fails with the CALL's line (the
+// argument path belongs to the caller; DESIGN.md 3.6.6 rule 31, R31)
+fn addat(ref x: f64, k: i64) {
+    x += f64(k)
+}
+fn shrink(ref v: f64[]) -> i64 {
+    v = zeros(1)
+    return 1
+}
+var v: f64[] = [1.0, 2.0, 3.0]
+printf("before\n")
+addat(ref v[2], shrink(ref v))
+printf("after\n")

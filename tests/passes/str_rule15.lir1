@@ -15,22 +15,28 @@ endfunc
 func show fn 0:3:1 2 p1 p2 0
 slot s1 8 8
 slot s2 16 8
-rcall sea_str_cat 0:4 1 p3 2 p1 p2
-mov p4 p3
-retain p4
-rcall sea_str_cat 0:6 1 p5 2 p1 p2
-sa p6 s1
-stp p5 p6 - 0 0
-la p7 d1
-rcall sea_printf 0:6 0 2 p7 p6
+do 1
+li i3 0
+ifz 2 i3
+exit 1
+endif 2
+enddo 1
+rcall sea_str_cat 0:4 1 p4 2 p1 p2
+mov p5 p4
+retain p5
+rcall sea_str_cat 0:6 1 p6 2 p1 p2
+sa p7 s1
+stp p6 p7 - 0 0
+la p8 d1
+rcall sea_printf 0:6 0 2 p8 p7
+release p6
+sa p9 s2
+stp p4 p9 - 0 0
+stp p5 p9 - 0 8
+la p10 d2
+rcall sea_printf 0:7 0 2 p10 p9
 release p5
-sa p8 s2
-stp p3 p8 - 0 0
-stp p4 p8 - 0 8
-la p9 d2
-rcall sea_printf 0:7 0 2 p9 p8
 release p4
-release p3
 ret 0
 endfunc
 fmt d1 2

@@ -1,0 +1,6 @@
+// err_call6_ref_named -- a named argument for a ref parameter: 254 at its value, "name: ref x" does not parse (Decision 93, LANGUAGE.md 8.1)
+fn bump(ref x: i64) {
+    x += 1
+}
+var v = 0
+bump(x: v)

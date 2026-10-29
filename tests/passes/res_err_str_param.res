@@ -10,6 +10,6 @@ str 0:4:12 x%0A
 call 0:4:5 1
 cstmt 0:4:5
 block 0:3:22 1
-rfn 0:3:1 f 0 2 0 2 1 5 3
+rfn 0:3:1 f 2 2 0 2 1 5 3
 prog 1
 #end

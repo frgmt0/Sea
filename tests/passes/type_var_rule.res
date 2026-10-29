@@ -9,7 +9,7 @@ rint 0:5:13 2 #4000000000000000
 bin 0:5:9 div
 asg 0:5:5 set
 block 0:4:21 1
-rfn 0:4:1 half 0 1 0 2 1 4
+rfn 0:4:1 half 2 1 0 2 1 4
 rpname 0:7:5 d 1
 float 0:7:9 #4004000000000000
 let 0:7:1 0

@@ -1,0 +1,1 @@
+err_call6_format_arg.sea:2:22: error: format "%d" expects an integer or f64, found str

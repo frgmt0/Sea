@@ -1,2 +1,0 @@
-// err_prel_named -- a named argument of a prelude function: the phase-rule word until phase 6, at the narg (L-t)
-let v = linspace(0.0, 1.0, n: 3)

@@ -29,13 +29,16 @@ block 0:1:1 4
 end
 fn 2 two fn 10 1 0 0:1:1
 par n 3 val
+cb 0:1:38 2 0
+block 0:1:44 0
+while 0:1:32
 lv 0:2:17 3 1
 lib 0:2:13 5 str 1
 lv 0:2:21 3 1
 ci 0:2:25 3 1
 bin 0:2:21 3 add
 ret 0:2:5 2
-block 0:1:30 1
+block 0:1:30 2
 end
 fn 3 upd fn 1 1 9 0:4:1
 par i 3 val
@@ -48,6 +51,9 @@ loc .l4 5 let 0:7:5
 loc .l5 3 let 0:7:5
 loc .l6 3 let 0:7:5
 loc .l7 3 let 0:7:5
+cb 0:4:24 2 0
+block 0:4:30 0
+while 0:4:18
 ci 0:5:17 3 2
 tmp 0:5:17 4
 lv 0:5:17 3 4
@@ -110,6 +116,6 @@ ftext 0:8:12 1 %0A
 fmt 0:8:12 1 6
 lib 0:8:5 1 printf 1
 eval 0:8:5
-block 0:4:16 4
+block 0:4:16 5
 end
 #end

@@ -1,0 +1,2 @@
+// err_call6_format_count -- format with fewer arguments than conversions: 211 at the call (LANGUAGE.md 11.1)
+let s = format("%d %d", 1)

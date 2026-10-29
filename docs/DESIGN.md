@@ -64,8 +64,9 @@ the user's agreement. Phase 0 (§8) did:
    receives fixes only and its letter condition is waived), with which the gate passes all four
    programs (§2.7, "The gate after phase 5 with Decision 78's relief"), so phase 5 is complete;
    phase 6 (functions and output) is specified (sub-phase 6a, §2.11; Decisions 80–93, agreed
-   2026-10-26); next is 6b (6b-0, the conditional `seacheck` compaction, only if the measurement
-   after 6c triggers it, Decisions 82 and 87). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
+   2026-10-26); sub-phase 6b (calls and output) is done (2026-10-28; §2.7, "Measured after 6b";
+   lead decisions L-cy–L-dh); next is 6c (6b-0, the conditional `seacheck` compaction, only if the
+   measurement after 6c triggers it, Decisions 82 and 87). Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
    §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -507,7 +508,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Next: sub-phase 6b (6b-0, the conditional `seacheck` compaction, runs only if the measurement after 6c triggers it, Decisions 82 and 87).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Next: sub-phase 6c (6b-0, the conditional `seacheck` compaction, runs only if the measurement after 6c triggers it, Decisions 82 and 87).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -2895,6 +2896,37 @@ gates after 4h no longer limit; its longest line is at the 255-byte limit (no li
 before, so the new node kinds take a second `ON` line). The other passes change by their `DATA`
 lines only.
 
+**Measured after 6b** (2026-10-28, the integrated 6b tree; `make`, `make lines` and `sh tools/passlines.sh
+limits build`; the free letters are the numeric array letters of the main program's `DIM`s, read from
+`build/gen/<pass>.bas`, as for the earlier measurements). Every verdict is ok.
+
+| Pass | Built lines | After 5d | 6b increment | 6b estimate | `FOR`s | String bytes | Longest line | Free numeric array letters |
+|------|------------:|---------:|-------------:|------------:|-------:|-------------:|-------------:|----------------------------|
+| `seaparse` | 3 939 | 3 939 | 0 | none | 74 | 2 581 | 166 | not changed |
+| `seaname` | 5 424 | 5 281 | 143 | 280–540 | 125 | 2 946 | 210 | not counted |
+| `seacheck` | 6 798 | 6 426 | 372 | 270–520 | 194 | 5 421 | 194 | 14 (`A B D F G I L P Q R S U V Z`) |
+| `seaexpand` | 4 130 | 4 130 | 0 | none | 98 | 4 985 | 141 | not changed |
+| `sealoop` | 5 936 | 5 829 | 107 | 200–400 | 92 | 11 501 | 208 | 3 (`B X Y`) |
+| `sealower` | 6 637 | 6 473 | 164 | 266–520 | 128 | 4 499 | 255 | 3 (`C S X`) |
+| `seaopt` | 5 507 | 5 491 | 16 | 16 | 159 | 5 315 | 179 | not changed (2: `S V`) |
+| `sealopt` | 5 427 | 5 411 | 16 | 16 | 214 | 5 371 | 179 | not changed (0, waived) |
+| `seagen_a64` | 5 038 | 5 022 | 16 | 16 | 132 | 4 359 | 135 | not changed (0) |
+| `seagen_x64` | 5 376 | 5 360 | 16 | 16 | 132 | 4 264 | 136 | not changed (0) |
+
+The built lines are measured. The free letters of `seacheck`, `sealoop` and `sealower` were read from
+their main-program `DIM`s (lines 105–115 of `seacheck`, 250–266 of `sealoop`, 245–265 of `sealower`;
+the `DIM`s further down are inside `SUB`s or modules and are local) and equal the figures the 6b
+implementers reported; no 6b code added an array letter. Four passes landed below their estimate
+(`seaname` 143, `sealoop` 107, `sealower` 164 against 280–540, 200–400 and 266–520), `seacheck`
+inside it (372 against 270–520). **Decision 82's `seacheck` condition holds**: 6 798 + 120 + 1 275 =
+8 193 ≤ 9 000, where 120 is the upper end of its 6d part (60) plus 60 of fixes and 1 275 its
+remaining 850 × 1.5. Adding the upper end of its 6c estimate (130–240) to the measured 6b figure
+gives 6 798 + 240 = 7 038 built, and 7 038 + 120 + 1 275 = 8 433 ≤ 9 000: the condition still holds
+at the projected upper end, so 6b-0 is not triggered by the 6b measurement (the measurement after 6c
+decides, Decision 87). `sealoop` is at 5 936 against the 7 000 condition: with the upper ends of its
+6c (230–480) and 190 of 6d fixes it would be 5 936 + 480 + 190 = 6 606 ≤ 7 000, and its 6b increment
+(107) is far under the 1 320 trigger (a projection, not a measurement).
+
 **The measurement after 6c** (Decision 87). After 6c, `make check-limits` and the free letters of
 `seacheck` and `sealoop` are recorded here, with each one's measured 6b and 6c increments against
 their estimates. `seacheck` passes when built + 120 (the upper end of its 6d part, 60, plus 60 of
@@ -3124,7 +3156,8 @@ retired with their rows (`err_ns_lib_format` and the other `err_ns_*` goldens of
 * **Named arguments** (L-by, L-bw). A named argument of a user or prelude function names one of its
   parameters (else `unknown parameter`, 224, at the `narg`); a name given twice is 225 at the second
   `narg`; a parameter given neither positionally nor by name and without a default is `missing
-  argument` (226) at the `call`. A library function other than a prelude function takes no named
+  argument` (226) at the `call`, except in a call that reports 224, where 226 is not reported (the
+  unknown name may be the missing parameter, L-cy). A library function other than a prelude function takes no named
   argument other than its options (LANGUAGE.md §10, "Options"): any other name is 224 at the `narg`
   (the reading "Readings fixed by 4f" promised). A named argument whose parameter is a `ref`
   parameter is `argument for ref parameter '%s' must be marked ref` (254) at its value, since
@@ -3328,7 +3361,11 @@ to `sea.hirl` (only the HIR records `iblk` and `iret` of 4h are used).
   provides (§3.6.3); an `iret` stores each such value into its H as rule 27 (d) stores into a home
   (the reference fields of a borrowed value retained, an owned value moved), then `exit B`; the
   `iblk`'s value for that component is H, owned as a call's aggregate result is (rule 15 (g)), and a
-  destination receives it as rule 27 receives a call's result home.
+  destination receives it as rule 27 receives a call's result home. Refined by L-da: H is always a
+  new home, allocated before `do B` after the `tmp`s and the R32 homes before the deferred rule-31
+  stores; under a `bind` H is moved into the local, under a `tbind`, `tasg`, `tret` or `eval` it is
+  copied into the home the parent provides, in R27's place of the `mov`; a struct-literal value goes
+  into its own home V, then `li N size; mcopy H V N`, per rule 27 (d).
 * **Validation** (in addition to §3.5.9): an `iblk`'s type may be any result type (R32); a ref local
   only as a `tmp` of an inline `xblk` whose child is a `rarg`; a `j*` record's child of the type the
   mapping table requires; no `fn` of kind `elem` or `inl`, no `inst`, no `emap` (L-cg). Any violation
@@ -3825,7 +3862,7 @@ does, reports its errors, and then decides its value (§3.5.2, Decision 25):
    no value and no error, and the outcome is ignored (Decision 25 as refined: "a part of the
    expression whose type is in error");
 3. otherwise the outcome must be a value of the kind of its derived type (`rcni` for `i64`,
-   `rcnf` for `f64`, `rcnb` for `bool`), which becomes its value, or an `rcne` whose `epos` is
+   `rcnf` for `f64` (a constant `f64` `%`, `5.5 % 2.0`, is evaluated, L-dd), `rcnb` for `bool`), which becomes its value, or an `rcne` whose `epos` is
    the position of a `bin` or `neg` node of that constant's expression, `ovf` only at an `add`,
    `sub`, `mul` or `neg` and `div0` only at a `mod`: `seacheck` then reports `integer overflow`
    or `integer division by zero` at `epos` at that moment, so it takes its place in its find
@@ -4366,7 +4403,12 @@ values in declaration order), it keeps the source order with temporaries:
   order, every such expression that is not a constant (`ci`, `cf`, `cb`, `cs`) or a `rarg` is
   bound, in source order, to a new local `.t`*n* (mut `let`, the expression's type) by a `bind`,
   and is written in its place as `lv .t`*n*; inside a `rarg`, every index expression of the target
-  that is not a constant is bound the same way, in source order among the others;
+  that is not a constant is bound the same way, in source order among the others, except an index
+  expression that holds its own `$` (a `dol`), which is written in place, since a `dol` may appear
+  only inside its `idx`; its effects, if any, run at the argument's position in parameter order
+  (L-db). "Constant" here is the `cst` rule (`ci`, `cf`, `cb`, `cs` leaves, `pi`, `inf`, `nan`,
+  `eps`), so `-5` and a named constant are bound; when every bound value is a constant the `seq`
+  is written with `seq … 0`, as struct literals are (L-dc);
 * the node is then the value of a `seq` that holds those `bind` nodes (§3.5.5 table);
 * inserted default arguments are constant expressions without effects (LANGUAGE.md §8.1) and are
   evaluated in their parameter position, after the temporaries;
@@ -4558,7 +4600,7 @@ matrix index (a mask: that the mask has the base's shape is checked at run time,
 indices of the kinds of LANGUAGE.md §5.2 (an `all` is recognised by its record, its `ty` not
 checked further; an `rng` counts as an `i64` vector; every other index has the type `i64`, an
 `i64` vector or a `bool` vector); a `dol` occurs only
-inside the indices of an `idx` (not in its base) and has `dim` < that `idx`'s n (a `dol` not
+inside the indices of an `idx` (not in its base; a `rarg` target's index with its own `dol` stays in place, L-db) and has `dim` < that `idx`'s n (a `dol` not
 claimed by an `idx` when its function ends is a violation); `fld` and `proj` name a field
 that exists (`proj` only of a scalar or `str` field of a vector of structs); a `view` has an
 operand of the rank LANGUAGE.md §5.6 requires; a `slit` has as many values as its type has
@@ -5514,7 +5556,7 @@ makes an inline call behave exactly as the call it replaces):
 
 | # | Refinement |
 |---|------------|
-| R26 | **Inline `xblk`.** An `xblk` whose n statements are exactly one `tmp` per parameter, in order, and whose value is an `iblk` is an *inline `xblk`*. Its `ty` may be a `ttuple` (only as the child of a `tbind`, `tasg`, `tret` or `eval`, or as the value of a `seq` that is such a child, L12's `tbind` of `.l` locals included) or 1 (only under `eval`). It is owned exactly when its results are reference values, as a call is (rule 15 (k)). T1 holds for its `tmp`s: an `lv M` argument makes Ai another name for M, rule 37's "each parameter's register is its argument's register"; T2 releases its owned `tmp`s (owned argument temporaries) right after its value, in the order R27 gives (after the `mov`s of a `tbind`, before the stores of a `tasg`), as rule 15 (b) releases them after a call; T3 does not apply (its value is no `lv`): its destination is handed to the `iblk`. An `iblk` bounds every search for an enclosing node: within its body, T2's "innermost `xblk`", R11's and R22's "directly in a `block`" ("in no `xblk`") and R8's "directly in a `block`" stop at the `iblk`, so a `tmp` inside the body is never a temporary of an `xblk` outside the `iblk`, and an owned `tmp` directly in a `block` inside the body, with no `xblk` between it and the `iblk`, is R11's and R22's (released at that block's end and on the exits that leave it), whatever `xblk`s enclose the inline call. Validation: every statement of an inline `xblk` is a `tmp` and its value an `iblk` (`sealower`). |
+| R26 | **Inline `xblk`.** An `xblk` whose n statements are exactly one `tmp` per parameter, in order, and whose value is an `iblk` is an *inline `xblk`*. Its `ty` may be a `ttuple` (only as the child of a `tbind`, `tasg`, `tret` or `eval`, or as the value of a `seq` that is such a child, L12's `tbind` of `.l` locals included) or 1 (only under `eval`). It is owned exactly when its results are reference values, as a call is (rule 15 (k)). T1 holds for its `tmp`s: an `lv M` argument makes Ai another name for M, rule 37's "each parameter's register is its argument's register"; T2 releases its owned `tmp`s (owned argument temporaries) right after its value, in the order R27 gives (after the `mov`s of a `tbind`, before the stores of a `tasg`), as rule 15 (b) releases them after a call; T3 does not apply (its value is no `lv`): its destination is handed to the `iblk`. An `iblk` bounds every search for an enclosing node: within its body, T2's "innermost `xblk`", R11's and R22's "directly in a `block`" ("in no `xblk`") and R8's "directly in a `block`" stop at the `iblk`, so a `tmp` inside the body is never a temporary of an `xblk` outside the `iblk`, and an owned `tmp` directly in a `block` inside the body, with no `xblk` between it and the `iblk`, is R11's and R22's (released at that block's end and on the exits that leave it), whatever `xblk`s enclose the inline call. Validation: every statement of an inline `xblk` is a `tmp` and its value an `iblk` (`sealower`). For rule 12's "one statement", each statement of the inlined body is one, and an `iret` is a statement as a `ret` is (L-cz). |
 | R27 | **The value of an `iblk`** (the one statement of the inline destination rule; §3.6.6 refers to it). Without a destination its value is R1 … Rk, with no `mov`: so rule 15 (d)'s new register V of an `asg set` to a reference local is R1 (`release L`, `mov L R1`, as for a call), an `asg set` to a scalar `ref` parameter stores R1 as rule 2 stores a call's result there, and under a `tmp` (the inline `xblk` as an operand, a library argument, a `fix`, a `match` scrutinee, an argument of another inline call: `linspace(…) + 1.0`, `sum(linspace(…))`) L is another name for R1, with no `mov`, as T1 makes it for an `ifx` (rule 3). With a destination D of rule 2 or 3 (a `bind`, an `asg set` to a scalar local, an operand or arm register), `mov D R1` after `enddo B` (rule 37: "a destination of rule 2 receives it with `mov`"). This takes precedence over T3: when an `xblk` with a destination D has the value `lv L` and its `tmp L` binds an inline `xblk`, T3 does not apply, and the destination receives `mov D R1`. Under a `tbind` or `tasg` each component is stored exactly as rule 2 (d) and rule 15 (j) store a call's new result register for that target (a local, a `ref` parameter, a numeric element by scalar indices; `itof` for cv 1; a `_` that holds counts released, rule 15 (h)); under a `tbind` the `mov`s into the locals come first, then T2's releases of the owned argument `tmp`s, then rule 15 (h)'s releases of the `_` components; under a `tasg` the owned argument `tmp`s are released before the stores, as after a call. Under a `tret`, the releases of rule 16 (c), then `ret k R1 … Rk`; under an `eval`, each owned Ri released right after the statement (rule 15 (h)). |
 | R28 | **`.i` locals are ordinary locals.** They are declared by `bind`, `forr`, `tbind`, a `seq`'s `bind` or, for a loop variable that L4 rewrites, a `tmp`; they are assigned, indexed, compound-assigned and released (rule 16) exactly as source locals; R8's limits and `sealower`'s checks of `.l` locals do not apply to them (the prefix `.i` is not `.l`). |
 | R29 | **Exits of an `iblk`.** A `break` or `cont` inside an `iblk` names a loop inside it. An `iret` releases, after its values are owned, the bound locals of every enclosing block inside the `iblk`'s body (innermost first, rule 16 (c)), the hidden locals inside it (L4's H, an owned `match` scrutinee) and the owned `tmp`s of the blocks it leaves inside it (R22), never anything of the caller. Rule 16 (a): no releases at the end of a block whose last statement is an `iret`, nor at the end of the body block of an `iblk` with k ≥ 1 (never reached: `missing return`, LANGUAGE.md §8.1); the body block of an `iblk` with k = 0 ends with its releases and `exit B` unless its last statement is an `iret` (rule 37 (4)). Rule 15 (a)'s places that need an owned value include `iret`. |
@@ -6073,6 +6115,8 @@ body in post-order; the sites listed with each rewrite).
     `tmp` directly in a block (as in L4) is a statement, whose expression is its child; an `hloop`
     is a statement whose expression is its range only (its first three children), like a `forr`;
     the `bind` of L4 is a statement like any `bind` (its expression the vector, as the `fore` was).
+    Inside an `iblk` the "one statement" is each statement of the inlined body (the callee's
+    statements, L-w), and an `iret` is a statement just as a `ret` is (L-cz).
     From 4e the statements of an L6 or L12 `block` (§3.5.9), and the statements L11 writes (in place of a `tbind`,
     or as the `block` of a `tasg` or `tret`), together form one statement, the rewritten `asg` or `tasg` (or tuple statement): their `tmp`s and `bind`s are not
     statements of their own. A read of a local that this rule copies there (the value, an index, a
@@ -7702,7 +7746,10 @@ except for these tests, whose subject is target-dependent by this section and §
   host CPU (`avx2` or `sse2`), so the test checks that the variant in use is the first of
   `bsk_kern_variants` and that `sea_variant` is its mapped id, and prints `kernel best variant ok`;
 * `rt_main_state`: `sea_variant` must be `SEA_VAR_SSE2` or `SEA_VAR_AVX2` on x86_64
-  (`SEA_VAR_NEON` on arm64); the output `state ok` is the same.
+  (`SEA_VAR_NEON` on arm64); the output `state ok` is the same;
+* `rt_json_errors_full`, `rt_json_errors_close` (x86_64 only): a failed write of a JSON file to
+  `/dev/full`, inside a flush and in `JSON_CLOSE`'s final write (message, status, the file closed
+  once); macOS has no full device, so §6.2 assigns this case to the Linux runtime tests.
 
 A `.meta` of an x86_64 runtime test holds only `stdout=epipe`, `stdout=slowpipe` and
 `env=NAME=VALUE` lines, never `requires=fmt_g`: that key marks the arm64 tests that `run_rt.sh`
@@ -7775,7 +7822,7 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 22 | `ARGSORT` | `sea_argsort` | `S` | `pi` | `p` | `(v, desc, site)`: the same order, returned as a new `i64` vector p (0-based) such that v[p[0]], v[p[1]], … is that order |
 | 23 | `FORMAT` | `sea_format` | `S` | `pp` | `p` | `(fmt, slots, site)`: a new string of exactly the bytes `sea_printf` would write for the same format and slots (LANGUAGE.md §11.1), through the internal sink `sea_error` uses; a result longer than `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (L-cc) |
 | 24 | `PRINT` | `sea_print` | `S` | `p` | `-` | `(s, site)`: s's bytes into the standard-output buffer, nothing added (LANGUAGE.md §11.2); a failed write of the buffer: `CANNOT_WRITE` with `<stdout>` and the errno, as `sea_printf` (L-cd) |
-| 25 | `MAKE_DIR` | `sea_make_dir` | `S` | `p` | `-` | `(path, site)`: the path's bytes copied into a new NUL-terminated buffer (a path holding a NUL byte: `CANNOT_MKDIR` with `EINVAL`; the buffer freed on every exit); `mkdir(buf, 0777)` (the process's umask applies); success returns; on any failure the errno is saved first, then the path is tested for a directory by `open(buf, O_RDONLY \| O_DIRECTORY)` (closed at once when it succeeds, no `stat`, whose structure layout and glibc symbol differ between the targets): a directory returns (so `/` behaves alike on macOS, where `mkdir` gives `EISDIR`, and Linux, `EEXIST`); otherwise `CANNOT_MKDIR` with the path and the saved errno (an existing non-directory gives `File exists`; a missing parent `No such file or directory`: no parent is created, Decision 89) |
+| 25 | `MAKE_DIR` | `sea_make_dir` | `S` | `p` | `-` | `(path, site)`: the path's bytes copied into a new NUL-terminated buffer (a path holding a NUL byte: `CANNOT_MKDIR` with `EINVAL`; the buffer freed on every exit); `mkdir(buf, 0777)` (the process's umask applies); success returns; on any failure the errno is saved first, then the path is tested for a directory by `open(buf, O_RDONLY \| O_DIRECTORY)` (closed at once when it succeeds, no `stat`, whose structure layout and glibc symbol differ between the targets): a directory returns (so `/` behaves alike on macOS, where `mkdir` gives `EISDIR`, and Linux, `EEXIST`); otherwise `CANNOT_MKDIR` with the path and the saved errno (an existing non-directory gives `File exists`; a missing parent `No such file or directory`: no parent is created, Decision 89; the empty path `""` gives `No such file or directory`, `ENOENT` on both targets, L-de; an existing directory without read permission fails the `open` with `EACCES`, so the saved `mkdir` errno `File exists` is reported, accepted, L-dh) |
 | 26 | `FMOD` | `sea_fmod` | `-` | `ff` | `f` | `(a, b)`: `a % b` of LANGUAGE.md §6.6 for `f64`: b = ±0 gives a's bits unchanged; else an infinite a or a NaN operand gives `#7FF8000000000000`; else r = the C library's `fmod(a, b)` (exact by IEEE 754, so the same bits from Apple's libm and glibc; the runtimes already link the C library), and r + b rounded once when r ≠ 0 and r and b differ in sign (L-cm). Cannot fail |
 | 27 | `JSON_OPEN` | `sea_json_open` | `S` | `p` | `-` | `(path, site)`: first allocates the emitter's state (the retained path, an empty `SEA_JSON_BUF_BYTES` buffer, the container stack, depth 0, the descriptor field set to −1), then copies the path into a NUL-terminated buffer and opens it for writing (`O_WRONLY \| O_CREAT \| O_TRUNC`, mode 0666 before the umask) and stores the descriptor; a failure (a NUL byte in the path: `EINVAL`) frees the state, then `CANNOT_OPEN` with the path and the errno. At most one file is open (pass 2b's blocks do not nest) |
 | 28 | `JSON_CLOSE` | `sea_json_close` | `S` | `-` | `-` | `(site)`: writes LF, flushes, closes, releases the path and frees the emitter's state; a failed write or `close`: `CANNOT_WRITE` with the path and the errno |
@@ -10670,7 +10717,8 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     changing what the test is about (a second call site appended at the end of `.main`, whose output
     the `.out` gains, and a loop that runs no iteration, a `while false` loop with an empty body, as
     the function's first statement; for a function that already has two call sites, the loop
-    alone), and every golden of the test is re-derived (for the verbatim tests the `.lir1` is then
+    alone; in a test with several inlinable functions each gets the loop, and where every such
+    function already has two or more call sites no call site is added and the `.out` is unchanged, L-df), and every golden of the test is re-derived (for the verbatim tests the `.lir1` is then
     the rule's example plus the lowering of the empty loop at the function's start and of the
     second call in `.main`, both derived by T2 from the rules; the example's own lines stay as the
     rule writes them); `lib_sum_dim0`, `lib_sum_dim1`,
@@ -10703,8 +10751,8 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
       LANGUAGE.md's `linspace` (the values 0, 0.5 and 1, printed by its `printf`).
     * 6b, T2: `tests/passes/res_err_default.res` re-derived (no `rerr`; the default `K` resolved to
       an `rname` of the constant, §3.4.1 as amended), its header comment updated.
-      `res_err_param_shadow.res` (a literal default, whose `int` was already an `rint`) is checked
-      and unchanged; `ex` and `stmt_grammar_full` have `.ast` goldens only, unchanged.
+      `res_err_param_shadow.res` (a literal default, whose `int` was already an `rint`) is re-derived
+      with `el` 2: its function has 0 call sites and 1 statement, so it is class (c) (L-dg); `ex` and `stmt_grammar_full` have `.ast` goldens only, unchanged.
     * 6c, T1, retired with their rows: `err_ns_elemental`, `err_ns_ind2sub_array`.
     * 6c, T1, re-derived: `err_merge_same_pos` keeps its subject (a `seaname` error and a `seacheck`
       error at one position, the first found reported) with a new `seaname` error: its function gets
@@ -11293,7 +11341,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 5d | **Shapes, benchmarks, gate; close-out** (after 5b and 5c-2, under Decision 75's liveness rule; the gate as L-be revises it). Work packages: **WP-SHAPE** `tests/shape.sh`, `tests/shape/*.shape` (from §5.2's targets, by hand; each loop identified by its properties, §6.2, L-ar), the `Makefile` group `test-shape` in `make test` and its entry in the `make test` group list of `sea/CLAUDE.md`; **WP-BENCH** `bench/micro/*`, `bench/micro.sh`, `bench/results/micro-*.tsv` (§5.9), the phase-4 compiler built in a scratch worktree; then the gate after phase 5 (§2.7) | `make test-shape` passes for both targets (the phase's "done when", row 5); the micro-benchmarks are recorded in §5.9 for both targets with their machines; `make test` and `make cross` pass; the sizes and letters are recorded in §2.7 and the gate applied, a failing program getting a relief agreed with the user before phase 6's code. **Done** (2026-10-25), with the gate's one open item below: `make test-shape` passes on both targets, W5 `lcg_fill`'s fast copy (`L2_3`) 20 instructions on arm64 and 23 on x86_64, W4's interior `j` copy (`L1_81`) 24 and 27, no frame access, no call, cold branches 1 and 0, exactly §5.2's targets (§5.2, "Measured after 5d"); reaching x86_64 needed the `imulh` fix of `seagen_x64` (operand b always in a register, as §4.9.2's template says) and Decisions 76 (a step that is a `mov` of an `li` register is a loop-closing constant, both targets) and 77 (an x86_64 non-commuting two-address destination avoids its second operand's register, `ra_avoid`); the micro-benchmarks are in §5.9 (Apple M2 Pro and Intel i7-4790: `sor` phase 5 within 1 % of C on both, 5.43 and 6.71 times faster than phase 4; `lcg` 1.19 and 1.35 times C, 2.01 and 3.46 times faster than phase 4); `make test` (driver 112, check_data 114, lib_check 222, arith 94, stage 634, shape 4, protocol 46, programs 1 382, rt 2), `make check-contracts` and `make cross` (596 of 596) pass; the gate after phase 5 (§2.7, "Measured after 5d"): `seaopt`, `seagen_a64` and `seagen_x64` pass, **`sealopt` fails** on its letters (0 free numeric array letters, at least 2 required; its lines pass), so **a relief for `sealopt` is to be specified and agreed with the user before phase 6's code**, and phase 5 is closed when it is. **Relief agreed and gate passed** (2026-10-25): Decision 78, phase 7's scalar replacement and vectorization in a pass 3d of their own after `sealopt`, which receives fixes only, and its letter condition waived; the gate re-applied (§2.7, "The gate after phase 5 with Decision 78's relief") passes all four programs (`sealopt` 6 411 and 6 911 ≤ 9 000 with 1 000 remaining), so phase 5 is complete |
 | 6a | **Phase-6 specification** (documents only; proposed 2026-10-25, revised after two independent reviews, agreed 2026-10-26 with Decisions 80–93 and lead decisions L-bw–L-cx): §0, §2.6.2 (a pointer), §2.7 ("Projected for phase 6", "The measurement after 6c", "The gate after phase 6"), §2.11 (scope, phase rule by sub-phase, the readings, `seaname`/`seacheck`/`seaexpand`/`sealoop`/`sealower` of phase 6 with L19, L20, rule 39, R31, R32, the planned entries 23–38, the ports), §3.5.7 step 4 (`str` values and arrays, the empty matrix of structs), §3.6.6 (the dump tests §8.6 now covers), §6.2 ("Phase-6 tests"), §6.3 ("Phase-6 acceptance"), this table, §9, and LANGUAGE.md §8.1, §8.5, §8.6, §9.2, §10.10 and §11.4 (clarifications: L-bw and L-cp, Decision 92 and the meaning of "in or through", L-ch and L-ci, L-cc, Decision 89, L-bz); revised after two independent reviews; no contract file, intermediate format or code changes; done when committed, then 6b | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 80–93. **Done** (2026-10-26): the specification agreed, each Decision as option (a); next 6b (6b-0 only if the measurement after 6c triggers it, Decisions 82 and 87) |
 | 6b-0 | **The `seacheck` reserve: a compaction with no change of behaviour** (conditional, Decisions 82 and 87: run only when the measurement after 6c calls for it, before 6d's code; despite its name it then follows 6c): the patterns of §2.7 that apply to `seacheck`'s `SUB`/`CALL` style, C2 (consecutive `REM` lines merged up to 250 bytes, every comment's text kept), C3 and C5 where they apply; target 150–300 built lines (its 14 free numeric array letters already pass the gate, so no letter target). Work package: **WP-CHECK0** `passes/seacheck/*` only | `sea.hir1` and the diagnostics of every test are byte-identical before and after (as L-p proved 4h-0's: `tests/run.sh` with `--save-out` on both trees, compared with `cmp`); `make test` and `make cross` pass; `seacheck`'s built lines recorded in §2.7, at least 150 fewer than before the step |
-| 6b | **Calls and output** (after 6a): named and default arguments (LANGUAGE.md §8.1), the inlining rule (§8.6: `seaname`'s classification, `sealoop`'s L20, `sealower`'s R31 and R32), `f64` `%` (FMOD), `format`, `print`, `make_dir` (rule 39). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 23–38, `SEA_ENT_COUNT` 38), `include/passes.txt` (`enum fkind main fn elem inl`; `rfn`'s `el` value 2 in its comment), the tables of §3.4.1 (`rfn`), §3.5.4 (`fn`) and §4.8 (the rows of §2.11.6 moved into the Id-first table), and the `entries` capacities of `sealower` (22), `seagen_a64` and `seagen_x64` (29) raised to 64 (L-cs; two lines in each pass, the `DIM` and the `CALL "tb_entries"` argument, which WP-CONTRACT alone edits; `tests/include_asserts.inc` needs no edit); then in parallel, each owning its files: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-LOOP** `passes/sealoop/*` (L20; L7's element-wise `f64 %`; R11's `seq` case, now reachable, L-cp); **WP-LOWER** `passes/sealower/*` (rule 39, R31, R32); **WP-RT-A64** `runtime/arm64_macos/*` (new `rt_file.s`; `rt_fmt.s`, `rt_out.s`, `rt_math.s`, `rt_err.s`), the object list of `Makefile`, `tests/rt/arm64_macos/*`; **WP-RT-X64** `runtime/x86_64_linux/*`, `Makefile.linux`, `tests/rt/x86_64_linux/*`; **T1** `tests/programs/{call6_,inl_,fmod_,fmt6_,print_,mkdir_}*`, `tests/errors/{err_call6_,r_inl6_,r_mkdir_}*`, `tests/vectors/fmod6_cases.py` (T1's first delivery, before WP-RT writes `rt_fmod_vec.s` from its `--emit-asm` table), `err_ns_lib_write_json`, the 6b re-derived and moved tests of §6.2 ("Existing tests that phase 6 changes"), the retired `err_ns_*` goldens of the removed phase-rule rows, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump6_cases.py`, `tests/passes/{inl6_,res6_}*`, the 21 lowering dump tests of §6.2 treated by Decision 90 (their `.sea`, `.out` and goldens), `res_err_default.res` and the `.res`, `.hir1` and `.hir` goldens that `el` 2 and the kind `inl` change (T2 reports its CORPUS rows to T1). Integration order: WP-CONTRACT; then WP-NAME, WP-CHECK, WP-LOOP, WP-LOWER and all of T2's goldens in one integration step (T2's `.res`, `.hir1` and `.hir` goldens need WP-NAME and WP-CHECK, its `.hirl` and `.lir1` goldens L20, R31 and R32; `make test` would be red with any part alone), then the runtime packages and T1 | the 6b tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test`, `make check-contracts` and `make cross` pass; sizes recorded in §2.7 |
+| 6b | **Calls and output** (after 6a): named and default arguments (LANGUAGE.md §8.1), the inlining rule (§8.6: `seaname`'s classification, `sealoop`'s L20, `sealower`'s R31 and R32), `f64` `%` (FMOD), `format`, `print`, `make_dir` (rule 39). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 23–38, `SEA_ENT_COUNT` 38), `include/passes.txt` (`enum fkind main fn elem inl`; `rfn`'s `el` value 2 in its comment), the tables of §3.4.1 (`rfn`), §3.5.4 (`fn`) and §4.8 (the rows of §2.11.6 moved into the Id-first table), and the `entries` capacities of `sealower` (22), `seagen_a64` and `seagen_x64` (29) raised to 64 (L-cs; two lines in each pass, the `DIM` and the `CALL "tb_entries"` argument, which WP-CONTRACT alone edits; `tests/include_asserts.inc` needs no edit); then in parallel, each owning its files: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-LOOP** `passes/sealoop/*` (L20; L7's element-wise `f64 %`; R11's `seq` case, now reachable, L-cp); **WP-LOWER** `passes/sealower/*` (rule 39, R31, R32); **WP-RT-A64** `runtime/arm64_macos/*` (new `rt_file.s`; `rt_fmt.s`, `rt_out.s`, `rt_math.s`, `rt_err.s`), the object list of `Makefile`, `tests/rt/arm64_macos/*`; **WP-RT-X64** `runtime/x86_64_linux/*`, `Makefile.linux`, `tests/rt/x86_64_linux/*`; **T1** `tests/programs/{call6_,inl_,fmod_,fmt6_,print_,mkdir_}*`, `tests/errors/{err_call6_,r_inl6_,r_mkdir_}*`, `tests/vectors/fmod6_cases.py` (T1's first delivery, before WP-RT writes `rt_fmod_vec.s` from its `--emit-asm` table), `err_ns_lib_write_json`, the 6b re-derived and moved tests of §6.2 ("Existing tests that phase 6 changes"), the retired `err_ns_*` goldens of the removed phase-rule rows, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump6_cases.py`, `tests/passes/{inl6_,res6_}*`, the 21 lowering dump tests of §6.2 treated by Decision 90 (their `.sea`, `.out` and goldens), `res_err_default.res` and the `.res`, `.hir1` and `.hir` goldens that `el` 2 and the kind `inl` change (T2 reports its CORPUS rows to T1). Integration order: WP-CONTRACT; then WP-NAME, WP-CHECK, WP-LOOP, WP-LOWER and all of T2's goldens in one integration step (T2's `.res`, `.hir1` and `.hir` goldens need WP-NAME and WP-CHECK, its `.hirl` and `.lir1` goldens L20, R31 and R32; `make test` would be red with any part alone), then the runtime packages and T1 | the 6b tests of §6.2 pass on both targets; every stage pair holds; every earlier test passes; `make test`, `make check-contracts` and `make cross` pass; sizes recorded in §2.7. **Done** (2026-10-28): `make test` passes in every group (`test-programs` 1 528), `make cross` 700 cases on the Linux host `desktop`, `test-rt` 114 on arm64 and 116 on x86_64; sizes and free letters in §2.7 ("Measured after 6b": `seaname` 5 424, `seacheck` 6 798, `sealoop` 5 936, `sealower` 6 637, `seagen_a64` 5 038, `seagen_x64` 5 376; Decision 82's condition holds, 8 193 ≤ 9 000); lead decisions L-cy–L-dh (agreed 2026-10-28) record the readings the integration fixed |
 | 6c | **Elemental functions** (after 6b): `elemental` (LANGUAGE.md §8.5; the call pre-pass of `seaname` with 228 and 232, L-cq; the call typing of `seacheck`; pass 2b's step 3 with `inst` and `emap`; `sealoop`'s L19 and L-ck's order), `ind2sub` with an array `r` (L-cl). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*` (L19); **WP-LOWER** `passes/sealower/*` (validation only); **T1** `tests/programs/{elem_,ind2sub_arr}*`, `tests/errors/{err_elem6_,r_elem6_}*`, the retired `err_ns_elemental` and `err_ns_ind2sub_array`, the re-derived `err_merge_same_pos`, `tests/CORPUS.md`; T2 also re-derives `res_err_elemental.res`; **T2** `tests/passes/elem6_*`; then the measurement after 6c (§2.7) | the 6c tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass; the measurement after 6c recorded in §2.7, and any relief it calls for agreed with the user before 6d's code |
 | 6d | **`write_json`** (after 6c): pass 2b's step 4 (`jvec (dyn e)` for fixed-size values, L-ce), the `j*` statements through `sealoop` (validation, capacity) and `sealower` (rule 39's JSON rows), the runtime emitter of §2.11.6 (built and tested by 6b's WP-RT-A64 and WP-RT-X64 with the other entries). Work packages: **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*`; **WP-LOWER** `passes/sealower/*`; **T1** `tests/programs/json_*` with their `NAME.expect/` and `json_into_new_dir`, `tests/errors/r_json_*`, the retired `err_ns_lib_write_json`, `tests/CORPUS.md`; **T2** `tests/passes/json6_*` | the 6d tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass |
 | 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code |
@@ -12685,3 +12733,37 @@ LANGUAGE.md or the earlier rules leave a choice, written into its normative sect
 * **L-cx** `tests/accept.sh` writes a port's standard output and standard error outside its run
   directory, which must then hold only `NAME.json` and the executable; a path that is a directory is
   tested with `write_json(".", …)`, since git keeps no empty directory (§6.2, §6.3).
+* **L-cy** (6b, agreed 2026-10-28) In a call that reports `unknown parameter` (224), `missing
+  argument` (226) is not reported, because the unknown name may be the missing parameter. Amends
+  §2.11.2 ("Named arguments"); code: `passes/seacheck/sc9call.bas`.
+* **L-cz** (6b, 2026-10-28) Inside an `iblk`, the "one statement" of §3.6.6 rule 12 is each statement
+  of the inlined body (the callee's statements, L-w), and an `iret` is a statement just as a `ret`
+  is; the rule's "statements inside an `xblk` belong to the statement that holds the `xblk`" applies
+  to the `xblk`s of the body, not to the body itself. Amends R26 and §3.6.6 rule 12.
+* **L-da** (6b, 2026-10-28) R32's home H is always a new home, allocated before `do B` after the
+  `tmp`s of the inline `xblk`. Under a `bind` H is copied (moved) into the local; under a `tbind`,
+  `tasg`, `tret` or `eval` H is copied into the home the parent provides, in R27's place of the
+  `mov`. The order before `do B` is the R32 homes first, then the deferred rule-31 stores. A struct
+  literal value goes into its own home V, then `li N size; mcopy H V N`, as rule 27 (d) stores a
+  value into a home. Amends R32 (§2.11.5).
+* **L-db** (6b, 2026-10-28) In a reordered call (L-cp), an index expression of a `rarg` target that
+  holds its own `$` (a `dol`) is written in place, not bound, since a `dol` may appear only inside
+  its `idx`; if such an index also has effects, they run at the argument's position in parameter
+  order, not in source order. Amends §3.5.5 "Evaluation order" and the `dol` rule of the validation
+  of the same section.
+* **L-dc** (6b, 2026-10-28) A reordered call whose bound values are all constants writes `seq … 0`,
+  as struct literals already do. "Constant" for binding is the existing `cst` rule (`ci`, `cf`, `cb`,
+  `cs` leaves, `pi`, `inf`, `nan`, `eps`), so `-5` and a named constant are bound. Amends §3.5.5
+  "Evaluation order".
+* **L-dd** (6b, 2026-10-28) `seaname` evaluates a constant `f64` `%` (`const M = 5.5 % 2.0`) and writes
+  `rcnf`; `seacheck` then sees `rcnf`, not a `bin` (§3.4.1 step 3, LANGUAGE.md §7.2).
+* **L-de** (6b, 2026-10-28) `make_dir("")` reports `No such file or directory` (`ENOENT` on both
+  targets) (§4.8, `MAKE_DIR`).
+* **L-df** (6b, 2026-10-28) Decision 90 with several inlinable functions in one test: each gets the
+  `while false {}` loop. Where every such function already has two or more call sites, no second
+  call site is added and the `.out` is unchanged (§6.2, "Goldens that inlining changes").
+* **L-dg** (6b, 2026-10-28) `res_err_param_shadow`'s function has 0 call sites and 1 statement, so it
+  is class (c) and its `.res` is re-derived with `el` 2, not "checked and unchanged" (§6.2).
+* **L-dh** (6b, 2026-10-28) `make_dir` on an existing directory without read permission: Decision
+  89's `open(O_RDONLY | O_DIRECTORY)` test fails with `EACCES`, and `make_dir` then reports the saved
+  `mkdir` errno (`File exists`). This is accepted; no code change (§4.8, `MAKE_DIR`).

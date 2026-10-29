@@ -1,0 +1,6 @@
+live before=0
+[n=00042 s=ab  |3.142      NaN 1.500000e+00%] rc=1 tag_ok=1 len=43
+[] rc=1 tag_ok=1 len=0
+[0|+7|7.000000] rc=1 tag_ok=1 len=13
+[n=00042 s=ab  |3.142      NaN 1.500000e+00%]
+live after=0

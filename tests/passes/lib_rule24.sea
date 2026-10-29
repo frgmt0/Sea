@@ -1,4 +1,4 @@
-fn top(c: f64[]) -> i64 {
+fn top(c: f64[]) -> i64 { while false {}
     // lib_rule24 -- DESIGN.md 3.6.6 rule 24 (sorting and searching): its example verbatim on
     // line 8, argsort with desc: true of c in p1. 3.5.9 L14 and R16: the lib argsort stays in
     // sea.hirl (this function is sea.hir unchanged) and is lowered to rcall sea_argsort with

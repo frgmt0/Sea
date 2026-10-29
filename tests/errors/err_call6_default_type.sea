@@ -1,0 +1,5 @@
+// err_call6_default_type -- a default of the wrong type: 201 at the default expression (as a const item annotated with the parameter's type)
+fn f(a: i64 = 1.5) -> i64 {
+    return a
+}
+printf("%d\n", f(1))

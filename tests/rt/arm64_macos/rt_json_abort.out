@@ -1,0 +1,6 @@
+child status=1
+--- a.json
+{
+  "k": 1,
+  "s": [
+    true|

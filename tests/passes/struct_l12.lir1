@@ -125,16 +125,28 @@ release p73
 ret 0
 endfunc
 func two fn 0:1:1 1 i1 2 p i
-rcall sea_str_i64 0:2 1 p2 1 i1
-li i3 1
-iaddc i4 i1 i3 0:2
-ret 2 p2 i4
+do 1
+li i2 0
+ifz 2 i2
+exit 1
+endif 2
+enddo 1
+rcall sea_str_i64 0:2 1 p3 1 i1
+li i4 1
+iaddc i5 i1 i4 0:2
+ret 2 p3 i5
 endfunc
 func mk fn 0:4:1 2 p1 i2 1 i
-rcall sea_str_i64 0:5 1 p3 1 i2
-stp p3 p1 - 0 0
-lf f4 #3FF8000000000000
-stf f4 p1 - 0 8
+do 1
+li i3 0
+ifz 2 i3
+exit 1
+endif 2
+enddo 1
+rcall sea_str_i64 0:5 1 p4 1 i2
+stp p4 p1 - 0 0
+lf f5 #3FF8000000000000
+stf f5 p1 - 0 8
 ret 1 i2
 endfunc
 str d1 a

@@ -1,0 +1,5 @@
+// err_call6_unknown_only_named -- a call whose only argument is an unknown name: 224 at the narg, before the missing argument of the call
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(zz: 2))

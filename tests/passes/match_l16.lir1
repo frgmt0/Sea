@@ -8,10 +8,6 @@ li i2 1
 call scan 0 1 i2
 ret 0
 endfunc
-func tag fn 0:1:1 1 i1 1 p
-rcall sea_str_i64 0:2 1 p2 1 i1
-ret 1 p2
-endfunc
 func scan fn 0:4:1 1 i1 0
 slot s1 8 8
 slot s2 8 8
@@ -22,44 +18,52 @@ icmp lt i3 i2 i1
 ifz 2 i3
 exit 1
 endif 2
-call tag 1 p4 1 i2
-la p5 d1
-rcall sea_str_cmp - 1 i6 2 p4 p5
-li i7 0
-icmp eq i8 i6 i7
-la p9 d2
-rcall sea_str_cmp - 1 i10 2 p4 p9
-li i11 0
-icmp eq i12 i10 i11
-ior i13 i8 i12
-if 3 i13
-release p4
+do 3
+rcall sea_str_i64 0:2 1 p4 1 i2
+mov p5 p4
+exit 3
+enddo 3
+la p6 d1
+rcall sea_str_cmp - 1 i7 2 p5 p6
+li i8 0
+icmp eq i9 i7 i8
+la p10 d2
+rcall sea_str_cmp - 1 i11 2 p5 p10
+li i12 0
+icmp eq i13 i11 i12
+ior i14 i9 i13
+if 4 i14
+release p5
 exit 1
-else 3
-la p14 d3
-rcall sea_str_cmp - 1 i15 2 p4 p14
-li i16 0
-icmp eq i17 i15 i16
-if 4 i17
-sa p18 s1
-la p19 d4
-rcall sea_printf 0:9 0 2 p19 p18
 else 4
-sa p20 s2
-sti i2 p20 - 0 0
-la p21 d5
-rcall sea_printf 0:10 0 2 p21 p20
+la p15 d3
+rcall sea_str_cmp - 1 i16 2 p5 p15
+li i17 0
+icmp eq i18 i16 i17
+if 5 i18
+sa p19 s1
+la p20 d4
+rcall sea_printf 0:9 0 2 p20 p19
+else 5
+sa p21 s2
+sti i2 p21 - 0 0
+la p22 d5
+rcall sea_printf 0:10 0 2 p22 p21
+endif 5
 endif 4
-endif 3
-release p4
-li i22 1
-iaddc i2 i2 i22 0:12
+release p5
+li i23 1
+iaddc i2 i2 i23 0:12
 enddo 1
-call tag 1 p23 1 i1
-sa p24 s3
-la p25 d6
-rcall sea_printf 0:15 0 2 p25 p24
-release p23
+do 6
+rcall sea_str_i64 0:2 1 p24 1 i1
+mov p25 p24
+exit 6
+enddo 6
+sa p26 s3
+la p27 d6
+rcall sea_printf 0:15 0 2 p27 p26
+release p25
 ret 0
 endfunc
 str d1 2

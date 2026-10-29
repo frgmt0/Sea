@@ -1,0 +1,12 @@
+// inl6_ref -- R31 (DESIGN.md 2.11.5): inc (two call sites, two statements) is inlined with
+// a ref scalar parameter: its tmp binds the rarg (the slot sa and the store of n), inside the
+// iblk c is read and written through that address, and n is reloaded right after enddo; the
+// read of n before the call on line 10 is copied (rule 12, R30 extended); line 11 under eval
+fn inc(ref c: i64, d: i64) -> i64 {
+    c += d
+    return c
+}
+var n = 1
+let m = n + inc(ref n, 10)
+inc(ref n, 100)
+printf("%d %d\n", n, m)

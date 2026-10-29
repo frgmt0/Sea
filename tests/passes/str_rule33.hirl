@@ -14,6 +14,9 @@ loc n 3 var 0:2:9
 loc .l1 5 let 0:3:5
 loc .l2 2 let 0:3:5
 loc .l3 2 let 0:3:5
+cb 0:1:25 2 0
+block 0:1:31 0
+while 0:1:19
 ci 0:2:13 3 0
 bind 0:2:5 2
 lv 0:3:11 5 1
@@ -46,9 +49,12 @@ ftext 0:7:12 1 %0A
 fmt 0:7:12 1 2
 lib 0:7:5 1 printf 1
 eval 0:7:5
-block 0:1:17 3
+block 0:1:17 4
 end
 fn 3 drive fn 1 0 0 0:9:1
+cb 0:9:20 2 0
+block 0:9:26 0
+while 0:9:14
 cs 0:10:10 5 x
 call 0:10:5 1 2 1
 eval 0:10:5
@@ -58,6 +64,6 @@ eval 0:11:5
 cs 0:12:10 5 z
 call 0:12:5 1 2 1
 eval 0:12:5
-block 0:9:12 3
+block 0:9:12 4
 end
 #end

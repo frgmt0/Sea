@@ -2,29 +2,22 @@
 #target arm64-macos
 #file struct_l17.sea
 func .main main 0:1:1 0 0
-slot s1 8 8
-slot s2 8 8
-li i1 0
-call edit 1 i2 1 i1
-sa p3 s1
-sti i2 p3 - 0 0
-la p4 d1
-rcall sea_printf 0:15 0 2 p4 p3
-li i5 1
-call edit 1 i6 1 i5
-sa p7 s2
-sti i6 p7 - 0 0
-la p8 d2
-rcall sea_printf 0:16 0 2 p8 p7
-ret 0
-endfunc
-func edit fn 0:1:1 1 i1 1 i
 slot s1 16 8
 slot s2 40 8
 slot s3 16 8
 slot s4 16 8
 slot s5 16 8
 slot s6 48 8
+slot s7 8 8
+slot s8 16 8
+slot s9 40 8
+slot s10 16 8
+slot s11 16 8
+slot s12 16 8
+slot s13 48 8
+slot s14 8 8
+li i1 0
+do 1
 sa p2 s1
 lf f3 #0000000000000000
 stf f3 p2 - 0 0
@@ -32,7 +25,7 @@ lf f4 #3FF0000000000000
 stf f4 p2 - 0 8
 sa p5 s2
 sti i1 p5 - 0 0
-la p6 d3
+la p6 d1
 retain p6
 stp p6 p5 - 0 8
 li i7 2
@@ -53,7 +46,7 @@ ldi i18 p5 - 0 0
 li i19 2
 iaddc i20 i18 i19 0:5
 sti i20 p5 - 0 0
-la p21 d4
+la p21 d2
 retain p21
 ldp p22 p5 - 0 8
 stp p21 p5 - 0 8
@@ -68,11 +61,11 @@ ldp p27 p5 - 0 16
 ldi i28 p27 - 0 0
 li i29 1
 icmp ne i30 i28 i29
-if 1 i30
+if 2 i30
 rcall sea_arr_unique 0:8 1 p31 1 p27
 stp p31 p5 - 0 16
 mov p27 p31
-endif 1
+endif 2
 ldp p32 p27 - 0 40
 stf f24 p32 i1 8 0
 sa p33 s3
@@ -117,24 +110,133 @@ stf f53 p61 - 0 16
 stf f58 p61 - 0 24
 stf f59 p61 - 0 32
 stf f60 p61 - 0 40
-la p62 d5
+la p62 d3
 rcall sea_printf 0:12 0 2 p62 p61
 ldi i63 p5 - 0 0
 ldp p64 p5 - 0 8
 release p64
 ldp p65 p5 - 0 16
 release p65
-ret 1 i63
+mov i66 i63
+exit 1
+enddo 1
+sa p67 s7
+sti i66 p67 - 0 0
+la p68 d4
+rcall sea_printf 0:15 0 2 p68 p67
+li i69 1
+do 3
+sa p70 s8
+lf f71 #0000000000000000
+stf f71 p70 - 0 0
+lf f72 #3FF0000000000000
+stf f72 p70 - 0 8
+sa p73 s9
+sti i69 p73 - 0 0
+la p74 d5
+retain p74
+stp p74 p73 - 0 8
+li i75 2
+li i76 1
+li i77 1
+li i78 1
+rcall sea_arr_new 0:3 1 p79 4 i76 i77 i75 i78
+stp p79 p73 - 0 16
+li i80 24
+padd p81 p73 i80
+li i82 16
+mcopy p81 p70 i82
+ldi i83 p73 - 0 0
+li i84 1
+iaddc i85 i83 i84 0:4
+sti i85 p73 - 0 0
+ldi i86 p73 - 0 0
+li i87 2
+iaddc i88 i86 i87 0:5
+sti i88 p73 - 0 0
+la p89 d6
+retain p89
+ldp p90 p73 - 0 8
+stp p89 p73 - 0 8
+release p90
+lf f91 #4008000000000000
+stf f91 p73 - 0 32
+lf f92 #4022000000000000
+ldp p93 p73 - 0 16
+ldi i94 p93 - 0 16
+chkb i69 i94 0 0:8
+ldp p95 p73 - 0 16
+ldi i96 p95 - 0 0
+li i97 1
+icmp ne i98 i96 i97
+if 4 i98
+rcall sea_arr_unique 0:8 1 p99 1 p95
+stp p99 p73 - 0 16
+mov p95 p99
+endif 4
+ldp p100 p95 - 0 40
+stf f92 p100 i69 8 0
+sa p101 s10
+li i102 24
+padd p103 p73 i102
+li i104 16
+mcopy p101 p103 i104
+sa p105 s11
+lf f106 #3FE0000000000000
+stf f106 p105 - 0 0
+lf f107 #3FE8000000000000
+stf f107 p105 - 0 8
+li i108 24
+padd p109 p73 i108
+li i110 16
+mcopy p109 p105 i110
+sa p111 s12
+li i112 24
+padd p113 p73 i112
+li i114 16
+mcopy p111 p113 i114
+ldi i115 p73 - 0 0
+ldp p116 p73 - 0 8
+ldp p117 p73 - 0 16
+li i118 0
+ldi i119 p117 - 0 16
+chkb i118 i119 0 0:12
+ldp p120 p117 - 0 40
+ldf f121 p120 i118 8 0
+ldp p122 p73 - 0 16
+li i123 1
+ldi i124 p122 - 0 16
+chkb i123 i124 0 0:12
+ldp p125 p122 - 0 40
+ldf f126 p125 i123 8 0
+ldf f127 p101 - 0 8
+ldf f128 p111 - 0 0
+sa p129 s13
+sti i115 p129 - 0 0
+stp p116 p129 - 0 8
+stf f121 p129 - 0 16
+stf f126 p129 - 0 24
+stf f127 p129 - 0 32
+stf f128 p129 - 0 40
+la p130 d7
+rcall sea_printf 0:12 0 2 p130 p129
+ldi i131 p73 - 0 0
+ldp p132 p73 - 0 8
+release p132
+ldp p133 p73 - 0 16
+release p133
+mov i134 i131
+exit 3
+enddo 3
+sa p135 s14
+sti i134 p135 - 0 0
+la p136 d8
+rcall sea_printf 0:16 0 2 p136 p135
+ret 0
 endfunc
-fmt d1 2
-fconv - - - d i
-ftext %0A
-fmt d2 2
-fconv - - - d i
-ftext %0A
-str d3 a
-str d4 b
-fmt d5 12
+str d1 a
+str d2 b
+fmt d3 12
 fconv - - - d i
 ftext %20
 fconv - - - s p
@@ -146,5 +248,26 @@ ftext %20
 fconv - - - g f
 ftext %20
 fconv - - - g f
+ftext %0A
+fmt d4 2
+fconv - - - d i
+ftext %0A
+str d5 a
+str d6 b
+fmt d7 12
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d8 2
+fconv - - - d i
 ftext %0A
 #end

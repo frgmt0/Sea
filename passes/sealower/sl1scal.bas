@@ -98,7 +98,8 @@
 3720 IF C2 <> 2 THEN 2360
 3725 LET O$ = "fdiv"
 3730 GOTO 3800
-3735 IF C2 <> 1 THEN 2360
+3735 IF C2 = 2 THEN 8502
+3736 IF C2 <> 1 THEN 2360
 3740 IF H(H(X, 7), 4) <> 3 THEN 2360
 3745 LET O$ = "imodf"
 3750 GOSUB 7775
@@ -267,7 +268,8 @@
 4610 GOSUB 7695
 4620 LET R9 = N2
 4625 LET Q5 = A1
-4630 GOSUB 7966
+4630 IF H(X, 1) = 44 THEN 34210
+4635 GOSUB 7966
 4640 LET U(U0, 2) = Q5
 4645 LET W(W0 + 4) = H(W(W0 + 4), 8)
 4650 GOTO 4465
@@ -329,13 +331,13 @@
 4973 LET R9 = U(U0, 1)
 4974 LET U0 = U0 - Q6
 4975 GOTO 3090
-4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14)-------------------------
-4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  |error  "
+4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14); error (34); format (rule 39: as printf, entry FORMAT, its owned result into D2)
+4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  |error  |format "
 4990 LET W2$ = S$(H(X, 0))
 4995 GOSUB 1875
 5000 IF W2 = 0 THEN 19360
-5005 IF H(X, 6) <> VAL(SEG$("101121111221", W2, W2)) THEN 2360
-5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600, 5020
+5005 IF H(X, 6) <> VAL(SEG$("1011211112211", W2, W2)) THEN 2360
+5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600, 5020, 5020
 5015 REM printf: frame x1 = U0 at entry, x2 = the next piece of the fmt
 5020 LET X2 = H(X, 7)
 5025 IF H(X2, 1) <> 13 THEN 2365
@@ -354,7 +356,7 @@
 5100 LET U(U0, 2) = C1
 5105 LET W(W0 + 4) = H(W(W0 + 4), 8)
 5110 GOTO 5040
-5115 REM the slot of SLOT_SIZE * max(n, 1) bytes, one store per argument, la of the fmt, rcall
+5115 REM the slot of SLOT_SIZE * max(n, 1) bytes, one store per argument, la of the fmt, rcall (format: its result D2 after nr); owned str arguments released (42900) unless error
 5120 LET A1 = U0 - W(W0 + 3)
 5125 LET Z1 = Z7 * A1
 5130 IF A1 > 0 THEN 5140
@@ -382,12 +384,18 @@
 5270 LET Q9 = Y1
 5271 IF S$(H(X, 0)) = "printf" THEN 5275
 5272 LET Q9 = FNE("ERROR", "")
+5273 IF S$(H(X, 0)) = "error" THEN 5275
+5274 LET Q9 = FNE("FORMAT", "")
 5275 GOSUB 5590
-5280 LET L1$ = L1$ & " " & STR$(LEN(Y$(Y1, 4))) & FNR$(A3) & FNR$(A2)
+5276 LET D2 = 0
+5277 IF Z4 = 0 THEN 5280
+5278 GOSUB 7466
+5279 LET L1$ = L1$ & FNR$(D2)
+5280 LET L1$ = L1$ & " " & STR$(LEN(Y$(Q9, 4))) & FNR$(A3) & FNR$(A2)
 5310 GOSUB 7695
-5311 IF Q9 = Y1 THEN 42900
+5311 IF Y$(Q9, 1) <> "ERROR" THEN 42900
 5315 LET U0 = W(W0 + 3)
-5320 GOTO 3081
+5320 GOTO 3088
 5330 REM now: rcall of the entry NOW into the dest or a new f register
 5335 GOSUB 7461
 5345 LET Q9 = Y2
@@ -968,7 +976,9 @@
 8480 GOTO 8405
 8482 GOSUB 15830
 8485 GOTO 3083
-8500 REM ---- bin pow (a ^ that is not a powk): rcall sea_pow - 1 d 2 a b into D2 (rule 14) ---------
+8500 REM ---- bin pow (a ^ that is not a powk): rcall sea_pow - 1 d 2 a b into D2 (rule 14); 8502: bin mod of two f64, rcall sea_fmod - 1 d 2 a b (rule 39, FMOD) --
+8502 LET Q1$ = "FMOD"
+8503 GOTO 8510
 8505 LET Q1$ = "POW"
 8510 GOSUB 8705
 8512 IF LEN(Y$(Q9, 4)) <> 2 THEN 2360

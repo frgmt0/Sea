@@ -1,0 +1,47 @@
+#sea 1
+#target arm64-macos
+#file inl6_ref.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 16 8
+li i1 1
+mov i2 i1
+sa p3 s1
+sti i1 p3 - 0 0
+li i4 10
+do 1
+ldi i5 p3 - 0 0
+iaddc i6 i5 i4 0:6
+sti i6 p3 - 0 0
+ldi i7 p3 - 0 0
+mov i8 i7
+exit 1
+enddo 1
+ldi i1 p3 - 0 0
+iaddc i9 i2 i8 0:10
+sa p10 s2
+sti i1 p10 - 0 0
+li i11 100
+do 2
+ldi i12 p10 - 0 0
+iaddc i13 i12 i11 0:6
+sti i13 p10 - 0 0
+ldi i14 p10 - 0 0
+mov i15 i14
+exit 2
+enddo 2
+ldi i1 p10 - 0 0
+sa p16 s3
+sti i1 p16 - 0 0
+sti i9 p16 - 0 8
+la p17 d1
+rcall sea_printf 0:12 0 2 p17 p16
+ret 0
+endfunc
+fmt d1 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

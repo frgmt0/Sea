@@ -22,6 +22,6 @@ rtype 0:3:11 Q s 0 0
 rint 0:3:22 1 #3FF0000000000000
 return 0:3:15 1
 block 0:3:13 1
-rfn 0:3:1 f 0 0 1 2 0
+rfn 0:3:1 f 2 0 1 2 0
 prog 3
 #end

@@ -1,0 +1,29 @@
+// inl_recursive_stays -- recursive small functions stay calls (LANGUAGE.md 8.6: (c) needs a function that is not recursive; fact and the
+// pair is_even/is_odd have two call sites each) and recursion 20000 deep works
+fn fact(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    return n * fact(n - 1)
+}
+fn is_even(n: i64) -> bool {
+    if n == 0 {
+        return true
+    }
+    return is_odd(n - 1)
+}
+fn is_odd(n: i64) -> bool {
+    if n == 0 {
+        return false
+    }
+    return is_even(n - 1)
+}
+fn depth(n: i64) -> i64 {
+    if n == 0 {
+        return 0
+    }
+    return 1 + depth(n - 1)
+}
+printf("%d %d\n", fact(10), fact(20))
+printf("%d %d %d\n", is_even(10), is_odd(7), is_even(7))
+printf("%d\n", depth(20000))

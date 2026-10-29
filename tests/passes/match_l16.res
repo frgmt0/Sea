@@ -8,7 +8,7 @@ rname 0:2:16 k loc 1
 conv 0:2:12 str
 return 0:2:5 1
 block 0:1:23 1
-rfn 0:1:1 tag 0 1 1 2 5 3
+rfn 0:1:1 tag 2 1 1 2 5 3
 rtype 0:4:12 i64 s 0 3
 param 0:4:9 n 0 0
 rpname 0:5:9 i 2

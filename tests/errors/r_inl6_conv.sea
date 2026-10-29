@@ -1,0 +1,6 @@
+// r_inl6_conv -- i64(x) of a non-integral value inside an inlined function: the callee's line (LANGUAGE.md 4.2, 9.2)
+fn whole(x: f64) -> i64 {
+    return i64(x)
+}
+printf("%d\n", whole(4.0))
+printf("%d\n", whole(2.5))

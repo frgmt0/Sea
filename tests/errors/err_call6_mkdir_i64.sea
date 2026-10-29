@@ -1,0 +1,2 @@
+// err_call6_mkdir_i64 -- make_dir takes one str: 243 at the call
+make_dir(3)

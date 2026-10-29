@@ -27,7 +27,7 @@ lib 0:16:1 1 printf 1
 eval 0:16:1
 block 0:1:1 2
 end
-fn 2 edit fn 3 1 4 0:1:1
+fn 2 edit inl 3 1 4 0:1:1
 par k 3 val
 loc l0 10 let 0:2:9
 loc s 12 var 0:3:9

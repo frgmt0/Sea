@@ -1,0 +1,13 @@
+// inl_void -- an inlined function without a result and with an early return (LANGUAGE.md 8.1, 8.6)
+fn log_if(x: i64) {
+    if x < 0 {
+        return
+    }
+    printf("v%d\n", x)
+}
+log_if(-1)
+log_if(0)
+log_if(3)
+for k in -2..3 {
+    log_if(k)
+}

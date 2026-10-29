@@ -1,0 +1,23 @@
+// inl_return_multi -- return f(...) of a multiple-result call inside an inlined function (LANGUAGE.md 8.4: the results are returned
+// unchanged), bound by let, discarded as a statement, and bound with _
+fn two(x: i64) -> (i64, i64) {
+    return (x, x * 2)
+}
+fn pass(x: i64) -> (i64, i64) {
+    return two(x + 1)
+}
+fn mixed(x: f64) -> (f64, i64, str) {
+    return (x * 2.0, 3, "s")
+}
+fn passm(x: f64) -> (f64, i64, str) {
+    return mixed(x)
+}
+let (a, b) = pass(5)
+printf("%d %d\n", a, b)
+let (c, d, e) = passm(1.5)
+printf("%g %d %s\n", c, d, e)
+pass(1)
+let (_, z) = pass(9)
+printf("%d\n", z)
+let (p, _) = pass(0)
+printf("%d\n", p)

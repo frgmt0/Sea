@@ -5,6 +5,9 @@ rtvec 10 4
 rtype 0:1:11 f64 v 0 10
 param 0:1:8 c 0 0
 rtype 0:1:21 i64 s 0 3
+false 0:1:33
+block 0:1:39 0
+while 0:1:27
 rpname 0:8:9 r 2
 rname 0:8:13 argsort pd 0
 rname 0:8:21 c loc 1
@@ -16,7 +19,7 @@ rname 0:9:12 r loc 2
 rint 0:9:14 0 #0000000000000000
 index 0:9:12 1
 return 0:9:5 1
-block 0:1:25 2
+block 0:1:25 3
 rfn 0:1:1 top 0 1 1 2 3 10
 rname 0:11:1 printf pd 0
 str 0:11:8 %25d%0A

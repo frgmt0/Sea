@@ -14,12 +14,15 @@ param 0:1:10 dims 0 0
 rtype 0:1:26 i64 s 0 3
 param 0:1:23 d 0 0
 rtype 0:1:34 f64 s 0 4
+false 0:1:46
+block 0:1:52 0
+while 0:1:40
 rname 0:9:12 dims loc 1
 rname 0:9:17 d loc 2
 index 0:9:12 1
 dot 0:9:12 nom
 return 0:9:5 1
-block 0:1:38 1
+block 0:1:38 2
 rfn 0:1:1 nomOf 0 2 1 2 4 11 3
 rpname 0:11:5 dims 1
 str 0:11:25 a

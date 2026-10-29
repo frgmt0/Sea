@@ -13,8 +13,12 @@
 #                arguments (DESIGN.md 2.6.2)
 #   sea_error    (global, SEA_ENT_ERROR) format like sea_printf into the
 #                sink, then sea_err(SEA_E_USER, site, {the text})
+#   sea_format   (global, SEA_ENT_FORMAT) format like sea_printf into the
+#                sink and return a new string of the bytes (DESIGN.md
+#                2.11.6, 4.8 entry 23; L-cc)
 #   sea_fmt_sink (.globl + .hidden: private to the runtime) the growing
-#                text buffer sea_error formats into (RTF_SINK_*)
+#                text buffer sea_error and sea_format format into
+#                (RTF_SINK_*)
 # Uses:
 #   sea_alloc, sea_free_block, sea_live (rt_mem.s) the sink's blocks and
 #                sea_error's string object; sea_err (rt_err.s)
@@ -930,6 +934,70 @@ sea_error:
     call sea_err                    # noreturn
     ud2
     .size sea_error, . - sea_error
+
+# ---------------------------------------------------------------------
+# sea_format -- entry FORMAT (DESIGN.md 4.8 entry 23; LANGUAGE.md 11.1).
+#   Purpose : a new string of exactly the bytes sea_printf would write
+#             for the same format and slots: sea_printf runs with
+#             .Lrt_fmt_tosink set, so its output primitives append to the
+#             sink sea_fmt_sink (as for sea_error); then a string object
+#             (count 1, counted in sea_live) receives a copy of the text.
+#             A text longer than SEA_LIM_STR_BYTES (stopped by
+#             .Lrt_fmt_sink_room as soon as it is needed), or no memory,
+#             is `out of memory` at the site (L-cc). The sink's block is
+#             kept for the next use (it is not an object: sea_live counts
+#             only the result).
+#   Inputs  : %rdi = pre-parsed format, %rsi = argument slots, %rdx =
+#             site
+#   Outputs : %rax = the new string (owned by the caller)
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = site, %r12 = length,
+#             %r13 = the string, %rbp = frame pointer
+#   Frame   : 32 bytes (%rbp %rbx %r12 %r13) + 8 pad = 40 bytes
+# ---------------------------------------------------------------------
+    .globl sea_format
+    .type sea_format, @function
+    .p2align 4
+sea_format:
+    pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    subq $8, %rsp                   # %rsp = 0 (mod 16)
+    movq %rdx, %rbx                 # the site
+    leaq sea_fmt_sink(%rip), %rax
+    movq $0, RTF_SINK_LEN(%rax)     # an empty text
+    movq $1, .Lrt_fmt_tosink(%rip)
+    call sea_printf                 # (%rdi, %rsi, %rdx as given) into the sink
+    movq $0, .Lrt_fmt_tosink(%rip)
+    # The string object of the text.
+    leaq sea_fmt_sink(%rip), %rax
+    movq RTF_SINK_LEN(%rax), %r12   # <= SEA_LIM_STR_BYTES (.Lrt_fmt_sink_room)
+    leaq SEA_STR_BYTES(%r12), %rdi
+    movq %rbx, %rsi
+    call sea_alloc                  # out of memory there
+    movq %rax, %r13
+    movq $1, SEA_STR_RC(%r13)       # count 1
+    movq $0, SEA_STR_TAG(%r13)      # the tag and the 7 bytes after it
+    movb $SEA_TAG_STR, SEA_STR_TAG(%r13)
+    movq %r12, SEA_STR_LEN(%r13)
+    incq sea_live(%rip)             # one more live object
+    testq %r12, %r12
+    jz 1f                           # an empty text: no bytes to copy
+    leaq SEA_STR_BYTES(%r13), %rdi
+    leaq sea_fmt_sink(%rip), %rcx
+    movq RTF_SINK_PTR(%rcx), %rsi
+    movq %r12, %rdx
+    call memcpy@PLT
+1:  movq %r13, %rax                 # the result
+    addq $8, %rsp
+    popq %r13
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+    .size sea_format, . - sea_format
 
 # ---------------------------------------------------------------------
 # sea_fmt_g -- an f64 as Sea's printf("%g") prints it.

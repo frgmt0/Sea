@@ -1,0 +1,1 @@
+err_call6_print_i64.sea:2:1: error: no overload of 'print' accepts (i64)

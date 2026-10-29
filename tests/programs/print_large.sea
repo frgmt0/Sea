@@ -1,0 +1,5 @@
+// print_large -- print of one 70 000-byte str (more than the 64 KiB buffer holds: written through, LANGUAGE.md 11.2, 11.3)
+let big = format("%70000s", "x")
+print(big)
+print("\n")
+printf("%d\n", len(big))

@@ -1,7 +1,8 @@
 3425 REM ---- sn_check: the work of seaname (DESIGN 3.4.1, 3.4.2): the items in stream order (names,
 3430 REM LANGUAGE 7.2: visible everywhere), every entered const in the constant order (typed path,
 3435 REM value), the struct fields and signatures, the resolution walk of the body of every entered fn
-3440 REM in fid order and of .main (the symbols limit counts in this order), the other type nodes.
+3440 REM in fid order and of .main (the symbols limit counts in this order), the other type nodes,
+3442 REM then the call pre-pass of the LANGUAGE 8.6 classes (sn_cls).
 3445 SUB "sn_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H(), Q(), G$()
 3450 LET X(3) = 1
 3455 LET X(4) = 9
@@ -44,6 +45,8 @@
 3618 NEXT S
 3625 CALL "rs_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), 1
 3627 CALL "tyfin": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
+3628 REM the call pre-pass (DESIGN 2.11.2, 2.11.3), after every body is resolved
+3629 CALL "sn_cls": N(), M(), Y(), W(), X()
 3630 SUBEND
 3635 REM ---- ck_item: one top-level item I becomes a symbol (fn 1, const 2, struct 3) ---------------
 3638 REM An item of file 0 of a stream of more than one #file (the prelude) is exempt (L-s).
@@ -97,7 +100,8 @@
 3850 LET R = M(I, 1)
 3855 SUBEND
 3960 REM ---- ck_sig: the signature of fn S: parameter types in M(param,1), result types in
-3965 REM M(type,1), the result type in Y(S,2) (1 none, a type, or a ttuple; 0 after an error) -------
+3965 REM M(type,1), the result type in Y(S,2) (1 none, a type, or a ttuple; 0 after an error); the
+3967 REM structural checks of the defaults (236, 227) and their names resolved (rsdef; DESIGN 2.11.2) --
 3970 SUB "ck_sig": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
 3975 DIM U(70)
 3980 LET F = Y(S, 3)
@@ -105,6 +109,7 @@
 3990 LET P0 = Y(S, 6)
 3995 LET R0 = Y(S, 7)
 4000 LET I = N(F, 7)
+4002 LET D9 = 0
 4005 FOR J = 1 TO P0
 4010 LET Q = N(I, 6)
 4015 REM two parameters of one name: at the later one
@@ -118,10 +123,19 @@
 4055 CALL "pdx": X$(), S$(Q), P
 4060 IF P = 0 THEN 4070
 4065 CALL "er": N(), X(), X$(), I, "SHADOWS_PREDECLARED", "", "", "", 0
-4070 IF N(I, 2) = 0 THEN 4095
-4075 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "default arguments", "", "", 1
+4070 IF N(I, 2) = 0 THEN 4085
+4072 LET D9 = 1
+4074 IF N(I, 1) = 0 THEN 4095
+4075 REM a ref parameter with a default: 227 at the default expression (LANGUAGE 8.1, L-bw)
+4076 CALL "er": N(), X(), X$(), N(N(I, 7), 8), "REF_TARGET", "", "", "", 0
+4080 GOTO 4095
+4085 REM after a parameter with a default, one without: 236 at its param (L-bx)
+4088 IF D9 = 0 THEN 4095
+4090 CALL "er": N(), X(), X$(), I, "DEFAULT_MISSING", "", "", "", 0
 4095 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(I, 7), D
 4100 LET M(I, 1) = D
+4102 IF N(I, 2) = 0 THEN 4105
+4103 CALL "rsdef": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(N(I, 7), 8), F
 4105 LET I = N(I, 8)
 4110 NEXT J
 4115 REM the result types follow the parameters

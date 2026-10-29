@@ -1,0 +1,9 @@
+// r_inl6_nested -- an error in the inner function of two nested inlined calls is at the inner function's line (LANGUAGE.md 6.5)
+fn inner(x: i64) -> i64 {
+    return 1000000000000 * x * x
+}
+fn outer(x: i64) -> i64 {
+    return inner(x) + 1
+}
+printf("%d\n", outer(3))
+printf("%d\n", outer(100000))

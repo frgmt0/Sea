@@ -1,0 +1,1 @@
+err_call6_default_type.sea:2:15: error: type mismatch: expected i64, found f64

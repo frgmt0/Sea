@@ -1,0 +1,2 @@
+// err_call6_mkdir_two -- make_dir of two arguments: 243
+make_dir("a", "b")

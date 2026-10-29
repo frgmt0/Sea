@@ -1,0 +1,15 @@
+// fmt6_big -- format results of 2 KiB, 70 KB (past the 64 KiB output buffer) and 100 KB: lengths by LANGUAGE.md 11.1 (width
+// counts bytes; %.5000f of 1.0 is "1." and 5000 zeros) and a str copied through %s
+var s = "ab"
+for k in 0..10 {
+    s = s + s
+}
+printf("%d\n", len(s))
+printf("%d\n", len(format("%s", s)))
+if format("%s", s) == s {
+    printf("same\n")
+}
+printf("%d\n", len(format("%100000d", 5)))
+printf("%d\n", len(format("%.5000f", 1.0)))
+printf("%d\n", len(format("%-70000s|", "x")))
+printf("[%s]\n", format("%.3s", s))

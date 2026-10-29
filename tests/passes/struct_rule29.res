@@ -11,6 +11,9 @@ rtfd alpha 4
 rtvec 11 10
 rtype 0:1:15 Dim v 0 11
 param 0:1:9 dims 0 0
+false 0:1:30
+block 0:1:36 0
+while 0:1:24
 rpname 0:2:9 nom 2
 rname 0:2:15 dims loc 1
 dot 0:2:15 nom
@@ -35,7 +38,7 @@ rint 0:4:61 1 #3FF0000000000000
 index 0:4:57 1
 call 0:4:5 5
 cstmt 0:4:5
-block 0:1:22 3
+block 0:1:22 4
 rfn 0:1:1 show 0 1 0 2 1 11
 rpname 0:6:5 d 1
 str 0:6:21 a

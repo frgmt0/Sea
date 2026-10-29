@@ -1,9 +1,13 @@
 // =====================================================================
 // sea/runtime/arm64_macos/rt_math.s -- the elementary functions log exp
-// sin cos pow hypot (LANGUAGE.md 10.4; DESIGN.md 4.10, 4.8 entries 3-8).
+// sin cos pow hypot (LANGUAGE.md 10.4; DESIGN.md 4.10, 4.8 entries 3-8)
+// and f64 % (entry 26, FMOD).
 //
 // Defines: _sea_log _sea_exp _sea_sin _sea_cos _sea_pow _sea_hypot
 //          (rt.inc SEA_ENT_LOG .. SEA_ENT_HYPOT, symbols sea_log ..)
+//          and _sea_fmod (SEA_ENT_FMOD: f64 %, LANGUAGE.md 6.6), which
+//          calls the C library's fmod and keeps the ordinary AAPCS64
+//          clobbers (it is not one of the 4.10 functions)
 //
 // Every result is the bit pattern of DESIGN.md 4.10.4: each step below is
 // the IEEE operation the text lists, in its order (one rounded fadd, fsub,
@@ -863,6 +867,59 @@ _sea_hypot:
 Lrt_math_hypot_inf:
     movz x4, #0x7FF0, lsl #48
     fmov d0, x4
+    ret
+
+// ---------------------------------------------------------------------
+// _sea_fmod -- a % b for f64 (LANGUAGE.md 6.6; DESIGN.md 4.8 entry FMOD,
+//   2.11.6, L-cm).
+//   Purpose : in this order: b = +-0 gives a's bits unchanged; else an
+//             infinite a or a NaN operand gives #7FF8000000000000; else
+//             r = the C library's fmod(a, b) (exact by IEEE 754, so the
+//             same bits from Apple's libm and glibc), and r + b (one
+//             rounded fadd) when r != 0 and r and b differ in sign. A
+//             zero r keeps the sign fmod gives it (the sign of a).
+//   Inputs  : d0 = a, d1 = b
+//   Outputs : d0 = a % b
+//   Clobbers: x0-x17, x15, d0-d7, d16-d31, NZCV (calls libm's fmod: the
+//             ordinary AAPCS64 clobbers, not the narrower set of 4.10.1)
+//   Callee-saved used: d8 = b across the call
+//   Frame   : 32 bytes (frame record + d8, pad)
+// ---------------------------------------------------------------------
+    .globl _sea_fmod
+    .p2align 2
+_sea_fmod:
+    // b = +-0 (an ordered compare: a NaN b is not equal to 0): a as it is.
+    fcmp d1, #0.0
+    b.eq Lrt_math_fmod_ret
+    // A NaN a or b: the compare of a with b is unordered.
+    fcmp d0, d1
+    b.vs Lrt_math_fmod_nan
+    // An infinite a: |a| bits << 1 equal Inf's bits << 1 (NaN is gone).
+    fmov x9, d0
+    lsl x9, x9, #1
+    movz x10, #0xFFE0, lsl #48      // Inf's bits << 1
+    cmp x9, x10
+    b.eq Lrt_math_fmod_nan
+    stp x29, x30, [sp, #-32]!       // frame record
+    mov x29, sp
+    str d8, [sp, #16]
+    fmov d8, d1                     // keep b across the call
+    bl _fmod                        // d0 = r = fmod(a, b), exact
+    // r != 0 and sign(r) != sign(b): r + b, rounded once.
+    fcmp d0, #0.0
+    b.eq 1f                         // r = +-0: kept as fmod gives it
+    fmov x9, d0
+    fmov x10, d8
+    eor x9, x9, x10                 // bit 63: the signs differ
+    tbz x9, #63, 1f
+    fadd d0, d0, d8                 // r + b
+1:  ldr d8, [sp, #16]
+    ldp x29, x30, [sp], #32
+Lrt_math_fmod_ret:
+    ret
+Lrt_math_fmod_nan:
+    CONST_BASE
+    ldr d0, [x15, #MC_NAN]          // #7FF8000000000000, constant word 31
     ret
 
 // ---------------------------------------------------------------------

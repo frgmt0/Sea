@@ -6,6 +6,17 @@
 # Defines (global, rt.inc SEA_ENT_LOG .. SEA_ENT_HYPOT):
 #   sea_log sea_exp sea_sin sea_cos   %xmm0 = x          -> %xmm0
 #   sea_pow sea_hypot                 %xmm0 = x, %xmm1 = y -> %xmm0
+# Defines (global, rt.inc SEA_ENT_FMOD; DESIGN.md 2.11.6, 4.8 entry 26):
+#   sea_fmod                          %xmm0 = a, %xmm1 = b -> %xmm0
+#                  a % b of LANGUAGE.md 6.6 for f64 (floored, the sign of
+#                  b): b = +-0 gives a's bits; else an infinite a or a NaN
+#                  operand gives #7FF8000000000000; else r = glibc's
+#                  fmod(a, b) (exact by IEEE 754), then r + b rounded once
+#                  when r != 0 and r and b differ in sign (L-cm). It is
+#                  not one of the elementary functions: an ordinary System V
+#                  function that calls fmod through the PLT (libm, linked
+#                  with -lm as every program is), the one exception to the
+#                  "calls nothing outside this file" rule below.
 # Defines (.globl + .hidden, internal, not contract; DESIGN.md 4.10.1):
 #   sea_exp_core   e^(x + xt): %xmm0 = x (not NaN), %xmm1 = xt -> %xmm0
 #   sea_log_core   ln of a positive normal pattern: %rax = ix
@@ -85,6 +96,9 @@
 .equ RTM_HYP_BIG,       0x5F30000000000000  # 2^500
 .equ RTM_HYP_SMALL,     0x20B0000000000000  # 2^-500
 .equ RTM_HYP_SUBN,      0x2590000000000000  # 2^-422
+# sea_fmod: the bits of +Inf shifted left by one (|bits| << 1 >= it: NaN or
+# +-Inf; above it: NaN).
+.equ RTM_INF2,          0xFFE0000000000000
 
 # Local offsets into .Lrtm_k (the powers of two and small values of the text).
 .equ K_ONE,             0*8         # 1.0
@@ -979,6 +993,60 @@ sea_hypot:
     movapd %xmm2, %xmm0
     ret
     .size sea_hypot, . - sea_hypot
+
+# ---------------------------------------------------------------------
+# sea_fmod -- a % b for f64 (entry FMOD; LANGUAGE.md 6.6; DESIGN.md 4.8
+#   entry 26, L-cm).
+#   Purpose : the floored remainder, in the order of LANGUAGE.md 6.6:
+#             (1) b = +-0: a unchanged (inf % 0 = inf, nan % 0 = NaN with
+#             a's payload); (2) a = +-Inf or a NaN or b NaN:
+#             #7FF8000000000000; (3) r = fmod(a, b), exact, the sign of a
+#             (a zero keeps it: -6 % 3 = -0); (4) if r != +-0 and the sign
+#             bits of r and b differ, r = r + b (one rounding). b = +-Inf
+#             falls out of (3)-(4): fmod gives a, then a + b = b when the
+#             signs differ (-1 % inf = inf).
+#   Inputs  : %xmm0 = a, %xmm1 = b
+#   Outputs : %xmm0 = the result
+#   Clobbers: all caller-saved registers (fmod is a C function), flags
+#   Callee-saved used: %rbp = frame pointer
+#   Frame   : 8 bytes (%rbp) + 16 (b at 0(%rsp)); cannot fail
+# ---------------------------------------------------------------------
+    .globl sea_fmod
+    .type sea_fmod, @function
+    .p2align 4
+sea_fmod:
+    movq %xmm1, %rcx                # bits(b)
+    movq %rcx, %rdx
+    shlq $1, %rdx                   # |b| << 1
+    jz .Lrtm_fmod_ret               # (1) b = +-0: a's bits, unchanged
+    movabsq $RTM_INF2, %r8
+    cmpq %r8, %rdx
+    ja .Lrtm_fmod_nan               # (2) b is NaN
+    movq %xmm0, %rax
+    shlq $1, %rax                   # |a| << 1
+    cmpq %r8, %rax
+    jae .Lrtm_fmod_nan              # (2) a is +-Inf or NaN
+    # (3) r = fmod(a, b): exact, so glibc gives the bits Apple's libm does.
+    pushq %rbp                      # %rsp = 0 (mod 16)
+    movq %rsp, %rbp
+    subq $16, %rsp                  # b kept at 0(%rsp) across the call
+    movsd %xmm1, 0(%rsp)
+    call fmod@PLT                   # %xmm0 = r
+    movq %xmm0, %rax
+    movq %rax, %rdx
+    shlq $1, %rdx
+    jz 1f                           # r = +-0: kept, with the sign of a
+    xorq 0(%rsp), %rax              # sign(r) XOR sign(b) in bit 63
+    jns 1f                          # same sign: r is the result
+    addsd 0(%rsp), %xmm0            # (4) r + b, rounded once
+1:  movq %rbp, %rsp
+    popq %rbp
+.Lrtm_fmod_ret:
+    ret
+.Lrtm_fmod_nan:
+    movsd sea_mt_const+MC_NAN(%rip), %xmm0   # the NaN of .Lrtm_nan
+    ret
+    .size sea_fmod, . - sea_fmod
 
 # ---------------------------------------------------------------------
 # Read-only data: the tables (include/math_tables.inc) and the local

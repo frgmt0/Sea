@@ -1,0 +1,26 @@
+// inl_result_fixed -- fixed-size results of inlined functions (R32): a vector, a matrix, an array of structs and a tuple holding one;
+// a result assigned over a var whose old value feeds the call (w = f3(w[1]))
+struct P { x: f64, n: i64 }
+fn f3(a: f64) -> f64[3] {
+    return [a, a * 2.0, a * 3.0]
+}
+fn m22(a: f64) -> f64[2,2] {
+    return [a, 0.0; 0.0, a + 1.0]
+}
+fn two(a: f64) -> P[2] {
+    return [P { x: a, n: 1 }, P { x: a * 2.0, n: 2 }]
+}
+fn mix(a: f64) -> (f64[3], f64) {
+    return (f3(a), a)
+}
+let u = f3(1.0)
+printf("%g %g %g\n", u[0], u[1], u[2])
+var w = f3(2.0)
+w = f3(w[1])
+printf("%g %g %g\n", w[0], w[1], w[2])
+let M = m22(5.0)
+printf("%g %g %g %g\n", M[0, 0], M[0, 1], M[1, 0], M[1, 1])
+let (t, s) = mix(2.0)
+printf("%g %g %g %g\n", t[0], t[1], t[2], s)
+let ps = two(1.5)
+printf("%g %d %g %d\n", ps[0].x, ps[0].n, ps[1].x, ps[1].n)

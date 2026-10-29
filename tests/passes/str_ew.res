@@ -29,7 +29,7 @@ conv 0:4:38 str
 call 0:4:5 4
 cstmt 0:4:5
 block 0:1:17 3
-rfn 0:1:1 ew 0 1 0 2 1 10
+rfn 0:1:1 ew 2 1 0 2 1 10
 rname 0:6:1 ew fn 2
 str 0:6:5 a
 str 0:6:10 b

@@ -6,16 +6,22 @@ rtype 0:1:11 i64 s 0 3
 param 0:1:8 n 0 0
 rtype 0:1:20 str s 0 5
 rtype 0:1:25 i64 s 0 3
+false 0:1:38
+block 0:1:44 0
+while 0:1:32
 rname 0:2:17 n loc 1
 conv 0:2:13 str
 rname 0:2:21 n loc 1
 rint 0:2:25 1 #3FF0000000000000
 bin 0:2:21 add
 return 0:2:5 2
-block 0:1:30 1
+block 0:1:30 2
 rfn 0:1:1 two 0 1 2 2 10 3
 rtype 0:4:11 i64 s 0 3
 param 0:4:8 i 0 0
+false 0:4:24
+block 0:4:30 0
+while 0:4:18
 rpname 0:5:9 names 2
 str 0:5:18 x
 str 0:5:23 y
@@ -46,7 +52,7 @@ index 0:8:36 1
 rname 0:8:46 k loc 3
 call 0:8:5 4
 cstmt 0:8:5
-block 0:4:16 4
+block 0:4:16 5
 rfn 0:4:1 upd 0 1 0 3 1 3
 rpname 0:10:6 a 1
 rpname 0:10:9 b 2

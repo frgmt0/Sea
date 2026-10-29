@@ -397,9 +397,10 @@
 23282 LET Q = M(V, 5)
 23285 SUBEND
 23290 REM ---- emtmp: the .t locals of function S (DESIGN 3.5.4, 3.5.5 "Evaluation order"): the values
-23295 REM ck_slit bound (M(init,4) > 0), numbered in the order of their bind records (= node order of
-23300 REM their init nodes) in the body, from L + 1 (lids after the np + nl of the function), so that
-23305 REM M(init,4) = its number; K = their count; Z = 1 also writes their loc records (mut let, the
+23295 REM ck_slit bound (M(init,4) > 0) and the arguments ck_ucall bound (M(value,6) > 0, from 6b),
+23300 REM numbered in the order of their bind records (= node order of their init or value nodes) in
+23305 REM the body, from L + 1 (lids after the np + nl of the function), so that M(init,4) or
+23307 REM M(value,6) = its number; K = their count; Z = 1 also writes their loc records (mut let, the
 23310 REM value's type, at the value's position) ------------------------------------------------------
 23315 SUB "emtmp": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S, Z, K
 23320 LET K = 0
@@ -414,14 +415,20 @@
 23356 IF N(I, 0) = 3 THEN 23410
 23358 IF N(I, 0) = 5 THEN 23410
 23360 FOR J = M(G, 0) TO G
+23362 IF M(J, 6) > 0 THEN 23372
 23365 IF N(J, 0) <> 48 THEN 23400
 23370 IF M(J, 4) = 0 THEN 23400
-23375 LET K = K + 1
+23372 LET K = K + 1
+23374 LET V = N(J, 7)
+23376 IF M(J, 6) = 0 THEN 23380
+23377 LET M(J, 6) = K
+23378 LET V = J
+23379 GOTO 23385
 23380 LET M(J, 4) = K
 23385 IF Z = 0 THEN 23400
-23387 CALL "cty": N(), M(), N(J, 7), Q
+23387 CALL "cty": N(), M(), V, Q
 23390 CALL "tyr": T(), W(), X(), Q, A$
-23392 CALL "pos": N(), N(J, 7), P$
+23392 CALL "pos": N(), V, P$
 23395 CALL "wr": X(), "loc .t" & STR$(K) & " " & A$ & " let " & P$
 23400 NEXT J
 23405 IF S > 1 THEN 23420

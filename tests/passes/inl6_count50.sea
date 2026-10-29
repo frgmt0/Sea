@@ -1,0 +1,61 @@
+// inl6_count50 -- 8.6 (c) at its limit (DESIGN.md 2.11.3, L-ci): c50 has two call sites, no
+// loop and 50 statements (the if ... else if ... else chain 1, its branches 3, the bare
+// block 1 and its statement 1), so both calls are inlined by L20 (kind inl; the .hirl keeps the copied nodes' own
+// positions, the tmps, iblk and xblk at the call, and drops c50
+fn c50(k: i64) -> i64 {
+    var s = k
+    if s > 0 {
+        s += 1
+    } else if s < 0 {
+        s -= 1
+    } else {
+        s = 1
+    }
+    {
+        s += 2
+    }
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    return s
+}
+printf("%d %d\n", c50(0), c50(5))

@@ -1,0 +1,13 @@
+// fmt6_bytes -- %s of strings holding bytes 0x80-0xFF, UTF-8 text and a NUL: width and precision count bytes (so %4s of the two
+// bytes of e-acute pads two spaces, %.2s of a 4-byte code point keeps its first two bytes); the str keeps a NUL
+// (LANGUAGE.md 11.1 "s: the bytes", 3.5, 4.4)
+print(format("%s|", "\xFF\xFE\x80"))
+print(format("%4s|", "\u{e9}"))
+print(format("%-4s|", "\u{20ac}"))
+print(format("%.2s|", "\u{1F600}"))
+let z = format("%s", "a\0b")
+printf("%d\n", len(z))
+print(z)
+print("\n")
+print(format("%s%s", "\xC3", "\xA9"))
+print("\n")

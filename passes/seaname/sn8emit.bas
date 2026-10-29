@@ -134,6 +134,10 @@
 12880 IF Q < 10 THEN 12890
 12885 LET Q = T(Q, 9)
 12890 LET L$ = "rfn" & SEG$(L$, 3, LEN(L$)) & " " & STR$(Y(S, 5)) & " " & STR$(Q)
+12891 REM el 2: an ordinary fn that LANGUAGE 8.6 (b) or (c) covers (sn_cls); the field after the name
+12892 IF Y(S, 9) <> 2 THEN 12895
+12893 LET P1 = POS(L$, " ", POS(L$, " ", 5) + 1)
+12894 LET L$ = SEG$(L$, 1, P1) & "2" & SEG$(L$, POS(L$, " ", P1 + 1), LEN(L$))
 12895 LET G = N(I, 7)
 12900 FOR J = 1 TO Y(S, 6)
 12905 LET Q = M(G, 1)

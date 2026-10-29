@@ -1,2 +1,0 @@
-// err_ns_lib_format -- a call of format: its name until phase 6, at the call (DESIGN.md 2.6.2; L-z)
-let s = format("%d", 3)

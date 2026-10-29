@@ -220,10 +220,11 @@
 40530 NEXT O2
 40532 LET O2 = 0
 40538 RETURN
-40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar local declared by a bind (R8)
+40540 REM ---- 40550 (an asg E2, from 31123; back to 31040): to a .l local only with op set, of a scalar local declared by a bind (R8); a ref local (R31) is a ref parameter here
 40550 LET O1 = H(E2, 7)
 40552 IF H(O1, 1) <> 5 THEN 40564
 40554 LET O1 = H(O1, 5)
+40555 IF A(E1 + O1, 2) = 1 THEN 40564
 40556 IF A(E1 + O1, 4) - 2 * INT(A(E1 + O1, 4) / 2) = 0 THEN 40564
 40558 IF A(E1 + O1, 4) <> 5 THEN 2360
 40560 IF H(E2, 5) <> 1 THEN 2360

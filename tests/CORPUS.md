@@ -44,6 +44,8 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | sub-phases 5c-1/5c-2 `passes/opt5_*` dumps, `passes/lir4_seaopt.lir2`, `passes/lx.lir2`/`lx.lir` (DESIGN.md §6.2 "Phase-5 tests", L-ak) | `vectors/dump5_cases.py`: `.lir1` from the phase-4 passes (the input); `.lir2` by §5.8's T1–T4 and T10 (L-bq, L-bn), `.lir` by T5–T10 (L-bl, L-bm, L-br, L-bs, L-bt), both hand-derived with the event list each case must produce, never by running `seaopt` or `sealopt` |
 | `accept/w5_stats` (4h acceptance, DESIGN.md §6.3, lead decision L-aa) | `vectors/prel4h_cases.py` copies LANGUAGE.md Appendix D's code verbatim for what the four keys need (each block asserted to be Appendix D's lines in Appendix D's order; `args()`, `now()`, the report, the figures, the export, `prctile_mid`, `lcgFinal` and the analytic limits asserted absent), then appends the `printf` JSON of §6.3; the expected values are the committed MATLAB reference `workloads/reference/w5_tolerance_mc.json`, compared by `accept4.sh` through `compare.py --candidate --keys first_dev,mean_cold,std_cold,hist_counts` (on the Linux host: byte identity with the Mac's output). A NumPy mirror of the copied program (scratch, not committed; its `log`, `cos`, `sqrt` are NumPy's, so it checks the selection and the JSON format, not Sea's bits) passes that comparison |
 | `accept/w4_sor` (4d acceptance, DESIGN.md §6.3) | ported by hand from `workloads/w4_heat_plate.m` (inputs, scalar SOR); checked by `compare.py --candidate --keys it_sor,T_max` against `workloads/reference/w4_heat_plate.json`; a line-by-line IEEE mirror of the port in Python (scratch, not committed) prints `{"it_sor": 832, "T_max": 160.76267159277148}`, the reference values exactly |
+| sub-phase 6b `programs/fmod_*` (DESIGN.md §6.2 "6b, calls", L-cm) | `vectors/fmod6_cases.py`: every expected value computed with `math.fmod` (the C library's exact `fmod`) and LANGUAGE.md §6.6's sign adjustment in this order: b = ±0 gives a unchanged, an infinite a or a NaN operand gives NaN, r = fmod(a, b), then r + b rounded once when r ≠ 0 and r and b differ in sign; never Python's `%` (it gives +0.0 for `-6.0 % 3.0` where §6.6 gives −0.0). Self-checks on every run: `math.fmod` equals the exact rational remainder (`fractions.Fraction`), the adjusted sum equals the exactly rounded rational, Python's `%` agrees on the value of every finite result. The same 403 vectors (special cases and 160 deterministic pseudo-random pairs) are the table `--emit-asm` prints for the runtime tests `rt_fmod_vec` (`--check-asm FILE` checks a test's copy). Printing by the exact printf oracle of `progfmt.py` (`%.17g`, `str()` as §10.9) |
+| sub-phase 6b `programs/{call6,inl,fmt6,print,mkdir}_*` and `errors/{err_call6,r_inl6,r_mkdir}_*`, `r_print_flush`, `err_ns_lib_write_json`, the five re-derived L-by goldens and the retired `err_ns_*` goldens (DESIGN.md §6.2 "Phase-6 tests") | `vectors/call6_cases.py`: each program has a Python mirror beside it (exact integers for `i64`, IEEE binary64 for `f64`, `progfmt.format_all` for every printed `f64`), the clause that fixes each expected byte in its header comment; `fmt6_*` captures the cases of `progfmt.py`'s `fmt_{f,e,g,d,d_f64,s,pct,nonfinite}` generators and of `fmt_d_ext` and `fmt_prec_zeros`, each as `printf(F, …)` then `print(format(F, …))`, the expected output being the oracle's bytes twice; error positions from DESIGN.md §2.6.2 (`at`) and §3.3, checked against the AST of the source (`sea build --emit ast`: a call at its callee name, a `bin` at its left operand, a `param` and a `narg` at their names); run-time lines are the callee's (DESIGN.md §3.6.4 "Sites") except an argument, a deferred `ref` argument's recheck and `make_dir`. The `inl_*` programs that use no phase-6 construct and the `r_inl6_*` tests (but `r_inl6_default_arg`) were also run with the pre-phase-6 compiler, which does not inline: same bytes |
 | other `programs/` | by hand (integer results, halves, short decimal values) |
 | `errors/` | message texts from the error table (DESIGN.md §2.6.2), column from its `at` column; run-time lines from the LIR site rules (§3.6.4, §3.6.6, §4.6) |
 | `passes/` (validated with `build/tools/seaval`, exit 0 for every dump) | by hand from DESIGN.md §3 record by record (post-order, positions §3.3/§3.5.5, numbering §3.5.1/§3.5.4/§3.6.1, canonical lowering §3.6.6). `ex.ast`, `lx.lir1`, `lx.lir` are the DESIGN examples verbatim |
@@ -248,6 +250,56 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `lex_crlf` | §3.1 (CR before LF and at end of file removed) |
 | `lex_long_line` | §3.1; DESIGN.md §2.2 step 2 (4096 bytes allowed, also followed by CR) |
 | `err_flush` (`.out .err .status`) | §9.2 (stdout flushed without an extra newline, then the error) |
+| `fmod_scalar` | §6.6, §6.5, §11.1; DESIGN.md §4.8 (`FMOD`, L-cm; 6b): `f64 %` at run time (operands read from arrays so nothing is folded) over the special cases: ±0 divisors (the result is a), ±∞ and NaN operands (NaN), `-6.0 % 3.0` is −0.0 and `6.0 % -3.0` is +0.0, `-1 % inf` is `inf` and `1 % inf` is 1, subnormals, quotients up to 2¹⁰²³ and DBL_MAX, one rounding of r + b (`-1e-20 % 1.0` is 1.0); `%.17g` |
+| `fmod_str` | §6.6, §10.9 (6b): the pairs of `fmod_scalar` printed with `str()`: `-0`, `nan`, `inf`, `-inf` |
+| `fmod_random` | §6.6 (6b): 120 pseudo-random pairs (`random.Random(61)`, both signs, exponents −1000 … 1000, divisor near and far) |
+| `fmod_array` | §6.2, §6.3, §6.5, §6.6, §4.2; DESIGN.md §2.11.4 L7 (6b): element-wise `f64 %`: vector with vector, with a scalar either way, with an untyped integer literal and an `i64` variable, an `i64[]` with an `f64` scalar, matrix with matrix and with a scalar, `.row` and `.col` broadcasting, `2×1 % 1×3`, empty arrays (no element computed), a fixed-size array, inside a larger expression |
+| `call6_named_order` | §8.1, §6.8 (6b): named arguments in all six orders and mixed with positional ones, argument expressions that print: evaluated in source order, bound by name (every result 123); named arguments inside named arguments |
+| `call6_named_types` | §8.1, §4.2 (6b): named arguments of `f64`, `bool`, `str`, `i64`, array and struct parameters out of order; an untyped literal and an `i64` value for an `f64` parameter |
+| `call6_defaults` | §8.1, §7.2 (6b): defaults of each scalar type and of `str`: constant names, `pi`, `2.0 * pi + 1.0` (`%.17g`), `K * 2 + 1`, `"x" + "y"`, `-0.5`, an untyped `2` for `f64`; omitted, positional and named arguments mixed |
+| `call6_defaults_named` | §8.1 (6b): a parameter skipped by name keeps its default, the others in any order, expressions evaluated in source order |
+| `call6_default_ref` | §8.1, §8.3 (6b): a `ref` parameter followed by parameters with defaults, given by name |
+| `call6_defaults_const_late` | §8.1, §7.2 (6b): defaults naming constants declared after the function, a constant defined by another constant, an operator expression |
+| `call6_default_recursive` | §8.1, §8.6 (6b): a recursive function with defaults calling itself with named arguments (stays a call) |
+| `call6_prel_named` | §10.3, §8.1 (6b; moved from `errors/err_prel_named`): `linspace(0.0, 1.0, n: 3)` gives 0, 0.5, 1 |
+| `call6_prel_named_order` | §10.3, §10.6, §10.7, §8.1 (6b): named arguments of `linspace` (all orders, evaluation order `tf(1) t(2) tf(3)`), `meshgrid(y:, x:)`, `bincount(n:, idx:)`, `setdiff(b:, a:)` with the names swapped and not |
+| `inl_single_loop` | §8.6 (b), §7.5 (6b): functions with a loop called from one site: a `for`, a `while` with an early return, a return from inside a loop, `break` and `continue` |
+| `inl_many_calls` | §8.6 (c) (6b): small functions called from many sites, in a loop of 1000 and outside, one calling another |
+| `inl_nested` | §8.6 (c); DESIGN.md §2.11.4 L20 (6b): f1 calls f0 twice, f2 f1 twice, f3 f2 twice (8 copies of f0), a chain a → b → c, calls nested in arguments |
+| `inl_recursive_stays` | §8.6 (6b): `fact`, `is_even`/`is_odd` and `depth` (20 000 deep) are recursive, so calls |
+| `inl_mutual_single` | §8.6 (b) (6b): a mutual pair where `b` has one call site (inlined into `a`, the recursion going through the inlined body) and `a` has several |
+| `inl_ref_scalar` | §8.3, §6.8; DESIGN.md §3.6.6 rules 12, 31, §3.5.9 R30, R31 (6b): `ref` scalar parameter of inlined functions; `y = a + bump(ref a)` (11 12), `a += bump(ref a)` (12), `show2(a, bump(ref a))` (1 11) and `show2(bump(ref a), a)` (11 11); the deferred `addto(ref a, bump(ref a))` (22 22); a `ref` parameter passed on |
+| `inl_ref_elem` | §8.3; rule 31, R31 (6b): `ref` bound to an element, a field, an element's field, a struct whole; the deferred `addat(ref v[0], grow(ref v))` where `grow` replaces v (the element is addressed in the new array: `14 8 7 6 5`) |
+| `inl_ref_array` | §8.3, §4.5; rules 12 (a), 31, R30 (6b): array `ref` parameters: store through `ref` copies a shared buffer, in-place reversal, whole replacement, `sum_with(a, zap(ref a))` sees the old array (104.5) |
+| `inl_result_struct` | §8.4, §4.6; rule 27, R32 (6b): struct results (strings, arrays, nested struct fields), a result assigned over a `var`, a parameter returned unchanged, a tuple with a struct component |
+| `inl_result_fixed` | §4.5, §8.4; rule 27, R32 (6b): `f64[3]`, `f64[2,2]`, `P[2]` and tuple results; `w = f3(w[1])` |
+| `inl_return_multi` | §8.4 (6b): `return f(…)` of a multiple-result call inside an inlined function, bound, discarded as a statement, bound with `_` |
+| `inl_calls_prelude` | §10.3, §10.6, §10.7, §8.6; rule 37 (6b): inlined functions calling `linspace`, `bincount`, `setdiff` |
+| `inl_two_sites_unreachable` | §8.6 (6b): functions with a loop and two call sites, one in a function `.main` never reaches: not class (b), calls |
+| `inl_stmt_forms` | §8.6 (c) (6b): an `if / else if / else` chain, a bare block, a `match` inside inlined functions |
+| `inl_strings` | §4.4, §8.2, §8.3 (6b): `str` parameters, results and a `ref` parameter of inlined functions; heap check 0 |
+| `inl_array_params` | §8.2, §4.5 (6b): array and matrix arguments and results of inlined functions; the argument unchanged |
+| `inl_eval_order` | §8.1, §6.8 (6b): inlining evaluates every argument once, in source order, also an ignored or twice-read one |
+| `inl_hygiene` | §7.2 (6b): the callee's parameter and locals named like the caller's variables, no capture |
+| `inl_return_branches` | §8.1 (6b): returns from several branches and a nested `else` block, the call an operand |
+| `inl_void` | §8.1 (6b): an inlined function without a result and an early `return` |
+| `inl_conditional_context` | §6.4, §6.8, §6.10 (6b): an inlined call in a `while` condition (re-evaluated), the right operand of `&&` and `||`, `if` expression arms, a loop with `break` |
+| `fmt6_d`, `fmt6_d_f64`, `fmt6_e`, `fmt6_f`, `fmt6_g`, `fmt6_pct`, `fmt6_s`, `fmt6_nonfinite`, `fmt6_d_ext`, `fmt6_prec_zeros` | §11.1, §10.9 (6b): the cases of `fmt_*` of the same name, each as `printf` and `print(format(…))`, byte-equal (each line twice) |
+| `fmt6_basic` | §10.9, §11.1 (6b): `format` as a `str`: concatenation, `len`, `==`, a `printf` argument, a loop of `DG-%03d` labels, the empty format, `%%` |
+| `fmt6_order` | §6.8 rule 5, §11.1 (6b): the arguments of `format` evaluate left to right, also nested |
+| `fmt6_big` | §11.1 (6b): 2 KiB, 70 001 and 100 000-byte results, `%.5000f`, `%.3s` |
+| `fmt6_empty` | §11.1 (6b): empty results and padding of nothing, precision 0, a width below the length |
+| `fmt6_bytes` | §11.1, §3.5 (6b): `%s` of bytes 0x80–0xFF, UTF-8 and a NUL; width and precision count bytes |
+| `print_basic` | §11.2, §10.9 (6b): no newline added, pieces join, `str()` of each type, no trailing newline at the end |
+| `print_empty` | §11.2 (6b): empty strings write nothing |
+| `print_bytes` | §11.2, §3.5, §3.1 (6b): bytes 0x80–0xFF, 0x01–0x1F, 0x7F, a NUL, `\u{…}` and raw UTF-8 |
+| `print_mixed` | §11.2, §11.3; DESIGN.md §4.8 `PRINT`, L-cd (6b): `print` and `printf` interleave in one buffer across the 64 KiB flush (72 000 bytes) |
+| `print_large` | §11.2, §11.3 (6b): one 70 000-byte `str` |
+| `mkdir_twice` | §10.10 (6b): an existing directory is not an error |
+| `mkdir_nested` | §10.10 (6b): `d`, `d/e`, `d/e/f`: each parent exists because the previous call created it |
+| `mkdir_root_dot` | §10.10; DESIGN.md §4.8 `MAKE_DIR` (6b): `make_dir("/")` and `make_dir(".")` without error on both targets, `./sub` twice |
+| `mkdir_existing_dir` | §10.10 (6b): a directory from a fixture (`dir/keep.txt`), also with a trailing `/`; the file untouched |
+| `mkdir_many` | §10.10, §10.9 (6b): ten directories by `format`, a sub-directory in each, then again |
 
 ## passes/
 
@@ -283,6 +335,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `stmt_tasg` | ast hir1 hir hirl lir1 (+ `.out`) | LANGUAGE.md §7.3, §4.2 (b); §3.5.5 `tasg` `cv` flags; §3.6.6 rule 2 `tasg` steps (a)–(d): cv 1 into a local (`itof`, `mov`), cv 0 straight into the target register, `skip` a new register, a `ref`-parameter target with cv 1 (`itof`, `stf`), a target local the call passes by `ref` (new register, reload, then `mov`) |
 | `stmt_loops` | ast hir1 hir hirl lir1 | §3.5.5 `while` `forr` `cont` `break`, §3.5.7 (step −2 folded); §3.6.6 rule 4 |
 | `gen_arith` | lir (+ `.out`) | pass-4 input written as LIR; `.out` lines 3–4 derived from the spec: the `d`/`e` of 12 `rcount`s by DESIGN.md §3.6.4: n elements of the range (LANGUAGE.md §5.1), `d` = 0 for an empty range (n = 0), else (n−1) mod 2⁶⁴ printed as i64 (−1 for the full range n = 2⁶⁴), `e` = 1 iff n > 0 |
+| `gen_calls` | lir (+ `.out`) | pass-4 input written as LIR (pre-6b, row added in 6b): a `call` with 20 `i` and 20 `f` arguments and results, the arguments passed through to a callee and printed back, a recursive factorial (2432902008176640000) |
 | `lir4_retain_release` | lir (+ `.out`) | sub-phase 4c pass-4 test (§6.2): `retain`/`release` (§3.6.4, §4.9) on a fresh array (count 1 → 2 → 3, read with `ldi` at `SEA_OBJ_RC`), the same object shared (3 → 2 → 1), its last `release` freeing it (the next array of its 128-byte class is the same block, by the LIFO free lists of §4.1, again count 1 and zeroed), a static `str` object (count `SEA_RC_STATIC` 0 unchanged by `retain`/`release`), and a fresh `sea_str_i64` string (−2⁶³ in decimal, §4.8) |
 | `lir4_release_leaf` | lir (+ `.out`) | a function whose only call-like instruction is `release` (non-leaf by §4.9: frame record, §4.6 check): it frees an `str[]` and a string through `sea_free` and still returns to its caller |
 | `lir4_mcopy` | lir (+ `.out`) | `mcopy` of 0, 7, 8, 9 and 100 bytes from a `dat` buffer + 5 to a zeroed 128-byte slot + 3 (both unaligned); the 16 words of each slot printed with `%d` (little-endian, computed by `vectors/lir4_gen.py`), so bytes beyond n stay 0 |
@@ -350,40 +403,40 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `ew_ind2sub` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L11, rule 22 (Decision 33): `ind2sub` of a vector as two element-wise loops over held arguments |
 | `arr_tasg_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, §3.5.9 L12 (Decision 37): a tuple assignment with a selection target (an L6 store of a fixed-size result through a `.l` local) and a fixed → dynamic component (`cv` 2, the `dyn` of L10); one `tbind` of fixed-size `.l` locals passing their slots as hidden result addresses; two fixed-size results returned by copy |
 | `arr_lit_cat_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4e, L9, rule 26 (c) with every part fixed-size: a vector join `[a, 4.0, a]` and a matrix row `[m, m]` with home slots, the length and column sums kept, no row check, static extents and offsets |
-| `lib_rule23` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, §3.6.6 rule 23 (reductions): the agreed example `let s = sum(x)` (`x` an `f64[]` in `p1`) as a whole program, its `.lir1` the rule's text exactly; `.hirl` from §3.5.9 L13 (sum8 with the accumulator home of the appended type `f64[8]`, R14; the lane `K & 7` by `wbin and`, R13; the `ifx` taking the register of `s`, R12 (a)) |
-| `lib_rule24` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, rule 24 (sorting and searching): the agreed example `let r = argsort(c, desc: true)` on line 8, its `.lir1` the rule's text exactly (`rcall sea_argsort` with the vector and the `desc` value); `.hirl` = `.hir` for that function (L14, R16: the `lib argsort` stays); `r[0]` read by rule 18, `r` released before the `ret` |
+| `lib_rule23` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, §3.6.6 rule 23 (reductions): the agreed example `let s = sum(x)` (`x` an `f64[]` in `p1`) as a whole program, its `.lir1` the rule's text exactly; `.hirl` from §3.5.9 L13 (sum8 with the accumulator home of the appended type `f64[8]`, R14; the lane `K & 7` by `wbin and`, R13; the `ifx` taking the register of `s`, R12 (a)) (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `lib_rule24` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, rule 24 (sorting and searching): the agreed example `let r = argsort(c, desc: true)` on line 8, its `.lir1` the rule's text exactly (`rcall sea_argsort` with the vector and the `desc` value); `.hirl` = `.hir` for that function (L14, R16: the `lib argsort` stays); `r[0]` read by rule 18, `r` released before the `ret` (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
 | `lib_mean_i64` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 on a fixed-size `i64` vector: `sum` (isum, the extent loaded after the data, `iaddc` with the call's line, the accumulator taking the register of `t`, R12 (b)) and `mean` (the sum converted before n, rule 23) |
-| `lib_variance` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13: `variance` (n = 0 NaN, n = 1 zero, else the two-pass mean and deviations, each sum8 with its own home slot; the outer `ifx` taking the register of `v`, R12 (a)) and `std` (the variance `xblk`, then `fsqrt`) |
+| `lib_variance` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13: `variance` (n = 0 NaN, n = 1 zero, else the two-pass mean and deviations, each sum8 with its own home slot; the outer `ifx` taking the register of `v`, R12 (a)) and `std` (the variance `xblk`, then `fsqrt`) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
 | `lib_max` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 on fixed-size vectors: `max` of `f64` (`EMPTY_REDUCE` with the function's name, NaN ignored, the first maximum; R15's `where` values) and `argmin` of `i64` |
 | `lib_nnz` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13: `nnz` (`wbin add` of a `bool`, R7), `any` and `all` of a fixed-size `bool` vector, each accumulator taking the register of its local (R12 (b)) |
-| `lib_sum_dim0` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 0)` of a dynamic matrix (extents and data loaded once before the outer loop over the columns, one sum8 home slot for every column, the element at `I + J * rows`) |
-| `lib_sum_dim1` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 1)` of a fixed-size `f64[2,3]`, its result the fixed-size `f64[2]` (Decision 39: a home slot copied into the home of `s`), the lane `wbin and` of J |
+| `lib_sum_dim0` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 0)` of a dynamic matrix (extents and data loaded once before the outer loop over the columns, one sum8 home slot for every column, the element at `I + J * rows`) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `lib_sum_dim1` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L13 `dim:` form: `sum(A, dim: 1)` of a fixed-size `f64[2,3]`, its result the fixed-size `f64[2]` (Decision 39: a home slot copied into the home of `s`), the lane `wbin and` of J (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
 | `lib_find` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14: `find` of a fixed-size `bool` vector (the count, the new `i64[]` of that length, the indices stored in order); the result is dynamic (Decision 39) |
 | `lib_find_first` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14: `find_first` (the first `true`: `where` of a counter, R15) and `find_last` of a fixed-size `bool` vector |
 | `lib_sort_fixed` | ast res hir1 hir hirl lir1 (+ `.out`) | 4f, L14, R16, Decision 39: `sort` and `argsort` of a fixed-size vector (the `dyn` pass 2a writes at the call's position, rewritten by L10, released right after the `rcall`), `desc:` inserted as false and given as a run-time `bool` |
-| `str_rule15` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 15: the example (`let s = a + b`, `let t = s`, `printf("%s\n", a + b)`) verbatim; `str(i64)` by rule 32; locals released by rule 16 (a) |
+| `str_rule15` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 15: the example (`let s = a + b`, `let t = s`, `printf("%s\n", a + b)`) verbatim; `str(i64)` by rule 32; locals released by rule 16 (a) (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
 | `str_rule26` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 26: `let names = ["a", "bc"]` verbatim (L9 (b), R21's sea_arr_new); an element loop over it (L4, rule 30) |
 | `str_rule30` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 30's first example `for a in args() {` verbatim, also rule 35's `rcall sea_args`; `len(args())` (L3) |
-| `str_rule32` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 32: `if a < b {` verbatim; `lower`, `len` of a str (L3), `str(bool)` |
-| `str_rule33` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 33 and §3.5.9 L16: the `"x" \| "y"` / `_` match verbatim |
-| `match_l16` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.5.9 L16: multi-pattern arms, `_`, a `_`-only match; owned scrutinees released after the last endif (R11) and before a `break`'s exit (R22) |
-| `str_l17` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.5.9 L17 of a str element by a scalar index: `=` (R17 (a), retained at the store) and `+=` (`bin cat`, R17 (b) move) |
-| `str_fill_flat` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L2 `filled` with a str value and L10 `.flat` of a `str[,]` with R20 (element count, retain loop) |
-| `str_ew` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L7 with str operands (Decision 45): element-wise `bin cat` and comparison (sea_str_cmp, `bool[]`) |
-| `str_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L12 with an L17 target (`(names[i], k) = two(i + 5)`): no `tmp Vv`, est of `lv L1`, R25's move |
+| `str_rule32` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 32: `if a < b {` verbatim; `lower`, `len` of a str (L3), `str(bool)` (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `str_rule33` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.6.6 rule 33 and §3.5.9 L16: the `"x" \| "y"` / `_` match verbatim (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `match_l16` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.5.9 L16: multi-pattern arms, `_`, a `_`-only match; owned scrutinees released after the last endif (R11) and before a `break`'s exit (R22) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `str_l17` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, §3.5.9 L17 of a str element by a scalar index: `=` (R17 (a), retained at the store) and `+=` (`bin cat`, R17 (b) move) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `str_fill_flat` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L2 `filled` with a str value and L10 `.flat` of a `str[,]` with R20 (element count, retain loop) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `str_ew` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L7 with str operands (Decision 45): element-wise `bin cat` and comparison (sea_str_cmp, `bool[]`) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `str_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-1, L12 with an L17 target (`(names[i], k) = two(i + 5)`): no `tmp Vv`, est of `lv L1`, R25's move (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
 | `res_str_consts` | ast res hir1 hir (+ `.out`) | 4g-1, §3.4.2 `rcns` (L-f, L-g): str constants of `+`, one naming another, annotated, rcnb from str comparisons |
 | `res_rt` | ast res (+ `.out`) | 4g-2, §3.4.2's example rt.sea verbatim: its documented sea.res (rtst/rtfd, rtfvec, rslit) |
 | `res_rtst` | ast res | 4g-2, §3.4.2 type-table order (rtst in sid order with rtfd naming a later id, field/signature/other types); rslit sid 0 (undeclared `Q`, struct name hidden by a local) |
 | `struct_rule27` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, §3.6.6 rule 27's example verbatim (slit bound in place, scalar field load) |
-| `struct_rule18` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, rule 18's second example verbatim (`dims[d].nom`); L9 (b) of Dim elements (sea_arr_new_s, slay, R19 in place) |
-| `struct_rule29` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, rule 29's example verbatim (L15 of an f64 field), L15 of a str field, L2 `filled` of a struct (R19 copy + retains) |
-| `struct_l17` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L17 on a struct local: scalar, compound, str field (R17), nested (R24), array-field element (R23), slit into a struct field (rule 27 (d)) |
-| `struct_l17_path` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L17 through elements of a `ref` root: two-array path (cows, D'/E' from the cow's register, L-n), `ds[i].lim = T{…}` (sc 32 off 16), nested and str fields |
+| `struct_rule18` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, rule 18's second example verbatim (`dims[d].nom`); L9 (b) of Dim elements (sea_arr_new_s, slay, R19 in place) (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `struct_rule29` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, rule 29's example verbatim (L15 of an f64 field), L15 of a str field, L2 `filled` of a struct (R19 copy + retains) (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `struct_l17` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L17 on a struct local: scalar, compound, str field (R17), nested (R24), array-field element (R23), slit into a struct field (rule 27 (d)) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `struct_l17_path` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L17 through elements of a `ref` root: two-array path (cows, D'/E' from the cow's register, L-n), `ds[i].lim = T{…}` (sc 32 off 16), nested and str fields (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
 | `struct_cow2` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, `a[0].w[0].v[0] = 9.0` after `let b = a` prints `1 9`: three cows (R23) |
-| `str_ref_ln` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L-n: `v[i] = "x"` into `ref v: str[]`: the est address is the cow's A, no second ldp |
-| `str_fixed_self` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, `str[3]`: L10 fix by R20 (`ci 3`), `a[:] = a` (L6 counted self-copy), element store (R17) |
-| `struct_l6_field` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L6 with a field root `dims[p()].v[q()..3] = 0.0` (rule 19 order, DT from the last cow) |
-| `struct_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L12 with `(s.name, k)` and `(ps[0], k)` targets (R25 moves, R19); slit into an existing element; struct tbind |
+| `str_ref_ln` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L-n: `v[i] = "x"` into `ref v: str[]`: the est address is the cow's A, no second ldp (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `str_fixed_self` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, `str[3]`: L10 fix by R20 (`ci 3`), `a[:] = a` (L6 counted self-copy), element store (R17) (from 6b the function is inlined by L20: the .hirl/.lir1 show the construct inside the inline xblk/iblk at each call site; Decision 90) |
+| `struct_l6_field` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L6 with a field root `dims[p()].v[q()..3] = 0.0` (rule 19 order, DT from the last cow) (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
+| `struct_l12` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, L12 with `(s.name, k)` and `(ps[0], k)` targets (R25 moves, R19); slit into an existing element; struct tbind (from 6b each function that LANGUAGE.md 8.6 would inline starts with `while false {}` on its header line, so it keeps its calls; Decision 90) |
 | `rec_slay` | ast res hir1 hir hirl lir1 (+ `.out`) | 4g-2, records (L-m): L9 (b) with the record's slay, L4 over records (R18 address) |
 | `inl_half` | hir hirl lir1 (stage-only) | 4h, §3.6.6 rule 37's example as a hand-written two-file `sea.hir` (Decision 55); L18's `tmp`, `iblk`, `iret`, `xblk`; `half` dropped; `.lir1` body byte for byte rule 37's text |
 | `inl_nested` | hir hirl lir1 (stage-only) | 4h, L18 (5): a prelude function calling another twice; `sq(hyp(…))`, an inline call as the argument of another (R27 under a `tmp`, no `mov`); blocks 1–7 |
@@ -430,7 +483,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_err_elemental` | ast res | §3.4.1: `rerr 259 elemental functions` at `elemental`; `rfn` el 1 |
 | `res_err_param_redef` | ast res | §3.4.1: `rerr 235` at the second parameter `a` |
 | `res_err_param_shadow` | ast res | §3.4.1: two errors at one `param` (213 and default arguments): the first found, 213, is the `rerr` |
-| `res_err_default` | ast res | §3.4.1: `rerr 259 default arguments`; the default `K` is copied as `name` |
+| `res_err_default` | ast res | a default is a resolved region: K resolves to `rname cst 1` of the constant that follows; no rerr (Decision 91) |
 | `res_err_str_param` | ast res | §3.4.1, re-derived by 4g-1: the `str` parameter is typed in its `rfn`; no `rerr` |
 | `res_err_str_result` | ast res | §3.4.1, re-derived by 4g-1: the `str` result type is typed in its `rfn`; no `rerr` |
 | `res_err_array` | ast res hir1 | §3.4.2, §2.6.2 step 4e: `fn f(v: f64[3], k: i64)`; in 4d the fixed-size type was `rerr 259 arrays`; from 4e `seaname` resolves it (`rtfvec`), so the `.res` holds no `rerr` and the test gains a `.hir1` (§6.2: a `.res` without `.hir1` is a program whose `sea.res` holds an `rerr`); rewritten by `vectors/dump4e_cases.py` |
@@ -445,6 +498,24 @@ From sub-phase 4e-0 every test above that has a `.sea` and a `.lir1` also has a 
 Every function in a `.lir1`/`.lir` test has a loop or is recursive and has two or more call
 sites, so LANGUAGE.md §8.6 requires no inlining (§3.6.6). Only `lx.lir` is pinned for pass 3b
 (§3.6.5: the other loop bodies hold constants that a later pass 3b may hoist).
+
+## passes/ rows of sub-phase 6b (T2's tests, handed to T1)
+
+T2 (`vectors/dump6_cases.py`, `passes/{inl6_,res6_}*`, the 21 lowering dump tests treated by Decision 90, `res_err_default.res`
+and the `.res`, `.hir1` and `.hir` goldens that `el` 2 and the kind `inl` change; DESIGN.md §6.2, §8 row 6b) reports its
+rows to T1, who alone edits this file; they are entered here, in the table format of `## passes/` above, when T2 hands them over.
+T2 handed over its rows; they follow.
+
+| Test | Files | Spec (DESIGN.md unless noted) |
+|------|-------|-------------------------------|
+| `res6_default` | .sea .ast .res | 6b: a parameter default is a resolved region (DESIGN 3.4.1, Decision 91): a constant name (`rname cst`), `pi` (`rname pd`), `pi ^ 2` as `rpowk 2`; no outcome record; the function el 2 (8.6 (c)) |
+| `res6_class` | .sea .ast .res | 6b: rfn's el is the 8.6 class (DESIGN 2.11.3): el 1 elemental, el 2 one call site (with a loop), el 0 a loop with two sites one in a never-reached function, el 2 a function with no site, el 2 / el 0 at 50 / 51 statements (if-else-if-else chain 1, bare block 1), el 0 a recursive pair; carries rerr 259 `elemental functions` until 6c |
+| `inl6_count50` | .sea .ast .res .hir1 .hir .hirl .out | 6b: LANGUAGE.md 8.6 (c) at its limit: a function of 50 statements (if-else-if-else chain 1, bare block 1 plus its statement) with two call sites is kind inl and both calls are inlined by L20 in the .hirl (DESIGN 2.11.3, 2.11.4, L-ci) |
+| `inl6_count51` | .sea .ast .res .hir1 .hir .hirl .out | 6b: the same function with 51 statements stays a call (kind fn; the .hirl is the .hir) |
+| `inl6_basic` | .sea .ast .res .hir1 .hir .hirl .lir1 .out | 6b: el 2 / kind inl; L20's inline xblk with the copied nodes' own positions (sites of the callee's line), R27 (a bind destination's mov after enddo, an operand taking R1), the inlined function dropped and the next renumbered (L-cg) |
+| `inl6_ref` | .sea .ast .res .hir1 .hir .hirl .lir1 .out | 6b: R31: a `ref` scalar parameter of an inlined function (the rarg's slot and store, reads and the compound store through the ref local, the reload after enddo), the rule-12 copy of a read before the inline call, the eval form |
+| `inl6_agg` | .sea .ast .res .hir1 .hir .hirl .lir1 .out | 6b: R32: a struct result of an inlined function (the home H before do, the iret's store of the literal's home into H by rule 27 (d), the field read from H) |
+| `inl6_seq_named` | .sea .ast .res .hir1 .hir .hirl .out | 6b: named arguments out of parameter order (3.5.5 "Evaluation order", L-cp): the seq of .t temporaries in source order, as the mask tmp of an L6 store (R11's seq case through sealoop) |
 
 ## accept/ (DESIGN.md §6.3, run by `tests/accept4.sh`)
 
@@ -470,10 +541,12 @@ concatenation errors, the static `shape mismatch` (217) of DESIGN.md §3.5.5, 20
 and a fixed-size `str` type, `max` of one argument, `ind2sub` with an array first argument). A
 fixed-size type or literal of struct elements cannot be tested on its own before 4g: its `struct`
 item is reported first (`structs` at the item, by `seaname`).
-From sub-phase 4f (DESIGN.md §2.6.2 step 4f, "Readings fixed by 4f") the reductions, `sort`, `argsort`, `find`, `find_first`, `find_last` and the options `dim:` and `desc:` are implemented: the goldens `err_ns_lib_sum`, `err_ns_lib_max1`, `err_ns_lib_max1_fixed` and `err_ns_lib_min1` are retired (their calls are `programs/red_former_ns`), and the 4f tests below cover the run-time errors `integer overflow` of a checked `i64` sum (also inside `mean`, `variance` and a `dim:` form) and `%s of an empty array`, error 115 of pass 1 (also before an earlier pass-2 error), 225 at the second `narg`, a `dim:` value's 201, 237 and 262 in that order and before the call's 243, the `name: T` spelling of 243, the phase-rule word `named arguments` for a name the function does not take (`argmax(A, dim: 0)`; a repeated one at its first `narg`), and 217/201 for the fixed-size results of Decision 39. `err_ns_named_arg` (a named argument of a user function) stays.
+From sub-phase 4f (DESIGN.md §2.6.2 step 4f, "Readings fixed by 4f") the reductions, `sort`, `argsort`, `find`, `find_first`, `find_last` and the options `dim:` and `desc:` are implemented: the goldens `err_ns_lib_sum`, `err_ns_lib_max1`, `err_ns_lib_max1_fixed` and `err_ns_lib_min1` are retired (their calls are `programs/red_former_ns`), and the 4f tests below cover the run-time errors `integer overflow` of a checked `i64` sum (also inside `mean`, `variance` and a `dim:` form) and `%s of an empty array`, error 115 of pass 1 (also before an earlier pass-2 error), 225 at the second `narg`, a `dim:` value's 201, 237 and 262 in that order and before the call's 243, the `name: T` spelling of 243, the phase-rule word `named arguments` for a name the function does not take (`argmax(A, dim: 0)`; a repeated one at its first `narg`), and 217/201 for the fixed-size results of Decision 39. `err_ns_named_arg` (a named argument of a user function) stayed until 6b, which retired it.
 From sub-phase 4g-1 (DESIGN.md §2.6.2 step 4g-1, "Readings fixed by 4g") strings, `match`, `error`, `args`, `str()` and `lower()` are implemented: the goldens `err_ns_string_let`, `err_ns_string_type`, `err_ns_str_literal`, `err_ns_arr_str_elem` and `err_ns_match` are retired (their constructs are `programs/str_basic`, `str_arrays` and `match_basic`), and `err_const_noval_calltype`, `err_const_noval_errtype` and `err_const_noval_shortcircuit` keep their intent with an undeclared struct type `Q` in place of `str` in the faulty result type (`unknown struct type`, 229, at the same `type` node, lead decision L-i). The 4g-1 tests below cover 201 (a `str` binding, a `match` scrutinee), 240 and 241 on `str` operands, 207 (no `_`, `_` not last, no arm, before a scrutinee error: L-a), 208 (within an arm, across arms, after `_`, a second `_`), 233, 210 and 211 for `error`, 243 for `lower`, `str` of an array and `args` (L-d), `missing return` after `error`, `program too large: strings` for a `str` constant value or part over 4 096 bytes (L-f), the word `strings` for a fixed-size `str` type, and the run-time errors of `error` (flushed output, a function, formatting, a `_` arm), `args()[0]` without arguments and an element-wise `str` shape mismatch. `str()` without an argument is a syntax error (`unexpected token ')'`, LANGUAGE.md Appendix A: `conv_type "(" expr ")"`). `err_ns_str_fixed_type`, `err_ns_struct` and `err_ns_record` stay until 4g-2.
 From sub-phase 4g-2 (DESIGN.md §2.6.2 step 4g-2, "Readings fixed by 4g") structs, records, projection and fixed-size `str` and struct arrays are implemented: the goldens `err_ns_struct`, `err_ns_record`, `err_ns_str_fixed_type` and `err_ns_str_fixed_let` are retired (their constructs are `programs/struct_basic`, `records` and `str_fixed`). The 4g-2 tests below cover 204, 205, 206 at struct literals, 205 and 222 in a record literal (L-b, at the `init`), 221 (direct, through `P[]`, through `P[2]`, mutual: the first struct in source order), 222 and 235 in a declaration, 229 at a literal, 238 (a field of a `let` struct, an element's field of a `let` array, naming the root), 239 (a projection target), 240 (`p == q`), 249 (a struct, a record spelled `{a: i64, s: str}`, a matrix of structs `P[,]`, L-c), 256 (an array field, a struct field), 201 (a record where a struct is expected, also with the struct's field names), and the run-time check of a `str[3]` binding; positions as DESIGN.md §2.6.2 and §3.3 give them (a `dot` and a `bin` at their left operand, a `slit` at its type name, an `init` at its name, a `struct` at its keyword, a `field` at its name, a target at its text).
 From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 table) the prelude functions `linspace`, `meshgrid`, `setdiff` and `bincount` are implemented. No golden named one of the four removed words, so none is retired (L-z). The 4h tests below cover the prelude calls checked as user calls (L-t: 226, 242 and 201 at an argument, never 243; `expected i64[], found f64[1]` for a fixed-size literal; 255 naming LANGUAGE.md's parameter `idx`; `named arguments` at the `narg`), the prelude names (L-s: 212 for a program `fn` or `const`, 213 for a local, a parameter and a loop variable), the run-time errors of prelude code at the line of the program's call (L-y: `bincount`'s index errors, also inside a user function, `invalid array size` for `bincount` with n = −2 and n = 3 000 000 000 and for `linspace` with n = 3 000 000 000, `out of memory` for a too large `meshgrid` result), and one close-out test for each after-phase-4 row that had none (L-z: `@` of two matrices at its left operand, `format`, `solve`, `figure` at the call). `undeclared name 'linspace'` under `--no-prelude` needs a driver flag, which `errors/` tests cannot pass: it is the `tests/driver_check.sh` case of §6.2 (and the dump `passes/res_noprelude_pnames`).
+From sub-phase 6b (DESIGN.md §2.11.2, §6.2 "Existing tests that phase 6 changes") named and default arguments, `f64 %`, `format`, `print` and `make_dir` are implemented: the goldens `err_ns_named_arg`, `err_ns_default_arg`, `err_ns_f64_mod` and `err_ns_lib_format` are retired with their phase-rule rows (their constructs are `programs/call6_*`, `fmod_*`, `fmt6_*`); `err_prel_named` moved to `programs/call6_prel_named` (`linspace(0.0, 1.0, n: 3)` is legal); `err_find_desc_unknown`, `err_red_argmax_dim`, `err_red_desc_unknown`, `err_red_desc_twice_unknown` and `err_sort_dim_unknown` are re-derived (a name a library function does not take is 224 `unknown parameter` at the `narg`, L-by, at the position the phase-rule word had); `err_ns_lib_write_json` keeps the `write_json` row until 6d. The 6b tests below cover 224 (a user function, a library function's positional parameter, a prelude function), 225, 226 (a parameter without a default skipped by name), 236, 227 at a `ref` parameter's default, 254 at a named `ref` argument, 237, 201, 260, 261 and 200 at a default (in source order with a constant item's error: Decision 91), 243 for `print` and `make_dir`, 210, 211, 233 and 234 for `format`, the run-time line of an error inside an inlined function (the callee's, §3.6.4 "Sites"; an argument expression's and the deferred `ref` recheck's are the caller's), and the run-time errors of `make_dir`.
+
 
 | Test | Message | What |
 |------|---------|------|
@@ -575,11 +648,8 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `err_not_exact_printf_f` | `integer constant not exact in f64` | an untyped literal argument of %f is f64 and must be exact (LANGUAGE.md 4.2 (e)) |
 | `err_not_function` | `'a' is not a function` | calling a local (DESIGN.md 2.6.2; at the call) |
 | `err_not_function_const` | `'C' is not a function` | calling a constant (DESIGN.md 2.6.2; at the call) |
-| `err_ns_default_arg` | `not supported yet: default arguments` | phase 1: a parameter default, reported at the param node (DESIGN.md 2.6.2) |
 | `err_ns_elemental` | `not supported yet: elemental functions` | phase 1: an elemental fn (at the item, its elemental keyword) |
-| `err_ns_f64_mod` | `not supported yet: f64 %` | phase 1: % with an f64 operand (at the bin node) |
 | `err_ns_handle` | `not supported yet: handle types` | phase 1: a handle type (at the type node) |
-| `err_ns_named_arg` | `not supported yet: named arguments` | phase 1: a named argument (at the narg) |
 | `err_rt_arr_size_neg` | `invalid array size -1` | LANGUAGE.md 10.2, 9.2: a negative extent of `zeros`, after the output before it |
 | `err_rt_arr_size_big` | `invalid array size 2147483648` | 4.5, 10.2: an extent of 2³¹ (`ones`) |
 | `err_rt_arr_size_mat` | `invalid array size -3` | 10.2: a bad column extent of `filled` |
@@ -686,11 +756,11 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `err_tasg_shape_static` | `shape mismatch: 2 vs 3` | 4e (Decision 37): a fixed `f64[3]` result into a fixed `f64[2]` target, 217 at the target, the target's shape first (DESIGN.md §3.5.5) |
 | `err_tasg_type` | `type mismatch: expected f64[], found bool[]` | 4e (Decision 37): a `bool[]` result into an `f64[]` target, 201 at the target (DESIGN.md §3.5.5) |
 | `err_rt_tasg_fix_cvt` | `shape mismatch: expected 3, got 4` | 4e (Decision 37): a dynamic `i64[]` result of 4 into a fixed `f64[3]` target, the run-time shape check at the statement's line (the conversion cannot fail) |
-| `err_find_desc_unknown` | `not supported yet: named arguments` | 4f: find(m, desc: true): find takes no named argument |
+| `err_find_desc_unknown` | `unknown parameter` | 4f, re-derived in 6b (224 at the narg, L-by): find(m, desc: true): find takes no named argument |
 | `err_find_f64` | `no overload of 'find_last' accepts (f64[])` | 4f: find of an f64 vector (bool vectors only, LANGUAGE.md 10.6) |
-| `err_red_argmax_dim` | `not supported yet: named arguments` | 4f: argmax(A, dim: 0): argmax takes no dim:, so the phase rule's word at the narg, never 243 (LANGUAGE.md 10.5, DESIGN.md 2.6.2) |
-| `err_red_desc_twice_unknown` | `not supported yet: named arguments` | 4f: a repeated name the function does not take is the phase rule's word at its first narg (DESIGN.md 2.6.2) |
-| `err_red_desc_unknown` | `not supported yet: named arguments` | 4f: sum(v, desc: true): desc is not a name of sum: not supported yet: named arguments at the narg (DESIGN.md 2.6.2 step 4f) |
+| `err_red_argmax_dim` | `unknown parameter` | 4f, re-derived in 6b: argmax(A, dim: 0): argmax takes no dim:, so 224 at the narg, never 243 (LANGUAGE.md 10.5, DESIGN.md 2.11.2) |
+| `err_red_desc_twice_unknown` | `unknown parameter` | 4f, re-derived in 6b: a repeated name the function does not take is 224 at its first narg, which precedes the second one's 225 |
+| `err_red_desc_unknown` | `unknown parameter` | 4f, re-derived in 6b: sum(v, desc: true): desc is not a name of sum: 224 at the narg (DESIGN.md 2.11.2) |
 | `err_red_dim_bool` | `type mismatch: expected i64, found bool` | 4f: dim: true: 201, expected i64, found bool |
 | `err_red_dim_f64` | `type mismatch: expected i64, found f64` | 4f: dim: 0.0: type mismatch, expected i64 (201) at the value (LANGUAGE.md 10.5) |
 | `err_red_dim_fixed_shape` | `shape mismatch: 3 vs 4` | 4f: sum(F, dim: 0) of a fixed f64[3,4] is an f64[4]: bound to f64[3] it is the static shape mismatch 3 vs 4 at the value (Decision 39, DESIGN.md 3.5.5) |
@@ -715,7 +785,7 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `err_sort_bool` | `no overload of 'argsort' accepts (bool[], desc: bool)` | 4f: argsort of a bool vector (f64, i64 and str vectors only, LANGUAGE.md 10.6) |
 | `err_sort_desc_twice` | `parameter given twice` | 4f: a repeated desc: is 225 at the second narg |
 | `err_sort_desc_type` | `type mismatch: expected bool, found i64` | 4f: desc: 1 is not a bool: 201 at the value (LANGUAGE.md 10.6, DESIGN.md 2.6.2) |
-| `err_sort_dim_unknown` | `not supported yet: named arguments` | 4f: sort(v, dim: 0): dim is not a name of sort |
+| `err_sort_dim_unknown` | `unknown parameter` | 4f, re-derived in 6b: sort(v, dim: 0): dim is not a name of sort |
 | `err_sort_matrix` | `no overload of 'sort' accepts (f64[,])` | 4f: sort of a matrix (vectors only, LANGUAGE.md 10.6) |
 | `err_sort_positional_after_named` | `positional argument after a named argument` | 4f: sort(desc: true, v): a positional argument after a named one, 115 of pass 1 at that argument (LANGUAGE.md 8.1, Decision 41) |
 | `err_sort_positional_first` | `positional argument after a named argument` | 4f: 115 is pass 1's: reported before a pass-2 error earlier in the source (an undeclared name on line 3; LANGUAGE.md 9.1, DESIGN.md 2.6.2) |
@@ -800,14 +870,12 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `err_prel_setdiff_f64` | `type mismatch: expected i64[], found f64[1]` | 4h: `setdiff([1.5], [1])` (201 at the first argument, L-t) |
 | `err_prel_meshgrid_matrix` | `type mismatch: expected f64[], found f64[,]` | 4h: `meshgrid(A, y)` with a matrix A (201 at A, L-t, Decision 54) |
 | `err_prel_ref` | `'idx' is not a ref parameter` | 4h: `bincount(ref v, 2)` (255 at the `ref`, LANGUAGE.md's parameter name, L-t) |
-| `err_prel_named` | `not supported yet: named arguments` | 4h: `linspace(0.0, 1.0, n: 3)` (the phase rule at the `narg` until phase 6, L-t) |
 | `err_prel_redef_fn` | `redefinition of predeclared name` | 4h: a program `fn bincount` (212 at the item; the prelude's items are exempt, L-s) |
 | `err_prel_redef_const` | `redefinition of predeclared name` | 4h: a program `const linspace` (212 at the item, L-s) |
 | `err_prel_shadow_local` | `local name shadows a predeclared name` | 4h: `let setdiff = 1` (213 at the name, L-s) |
 | `err_prel_shadow_param` | `local name shadows a predeclared name` | 4h: a parameter named `meshgrid` (213 at the param, L-s) |
 | `err_prel_shadow_for` | `local name shadows a predeclared name` | 4h: `for bincount in 0..3` (213 at the `for`, L-s) |
 | `err_ns_matmul` | `not supported yet: @` | 4h close-out (L-z): `A @ B` of two matrices, at the operator node (its left operand) until phase 8 |
-| `err_ns_lib_format` | `not supported yet: format` | 4h close-out (L-z): a call of `format`, at the call, until phase 6 |
 | `err_ns_lib_solve` | `not supported yet: solve` | 4h close-out (L-z): a call of `solve`, at the call, until phase 8 |
 | `err_ns_lib_figure` | `not supported yet: figure` | 4h close-out (L-z): a call of `figure`, at the call, until phase 9 |
 | `r_prel_bincount_oob` | `index 3 out of bounds for dimension 0 of extent 2` | 4h: a value outside 0 … n − 1 after printed output, at the call's line (L-y) |
@@ -957,6 +1025,55 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `err_unexpected_token` | `unexpected token '*'` | a binary operator where an operand is expected (Appendix A) |
 | `err_unterminated_comment` | `unterminated comment` | an unterminated block comment, reported at its /* (LANGUAGE.md 3.2) |
 | `err_unterminated_string` | `unterminated string` | a string literal may not contain a line break (LANGUAGE.md 3.5; at the ") |
+| `err_ns_lib_write_json` | `not supported yet: write_json` | 6b: `write_json(…)` at the call, the row still in force until 6d (DESIGN.md §2.11.2); retired in 6d |
+| `err_call6_unknown_user` | `unknown parameter` | 6b: `f(1, zz: 2)`: 224 at the `narg` (LANGUAGE.md §8.1) |
+| `err_call6_unknown_only_named` | `unknown parameter` | 6b: `f(zz: 2)`: 224 at the `narg`, before the call's missing argument |
+| `err_call6_unknown_lib` | `unknown parameter` | 6b: `sqrt(x: 2.0)`: a library function's positional parameter is no name (L-by) |
+| `err_call6_unknown_prel` | `unknown parameter` | 6b: `linspace(0.0, 1.0, m: 3)`: a prelude function takes the names of §10.3 only |
+| `err_call6_twice_pos` | `parameter given twice` | 6b: `f(1, a: 2)`: 225 at the `narg` |
+| `err_call6_twice_named` | `parameter given twice` | 6b: `f(a: 1, a: 2)`: 225 at the second `narg` |
+| `err_call6_twice_prel` | `parameter given twice` | 6b: `linspace(0.0, 1.0, 3, n: 2)`: 225 at the `narg` |
+| `err_call6_missing_skip` | `missing argument` | 6b: `f(1, c: 3)` with `b` neither given nor defaulted: 226 at the call |
+| `err_call6_default_order` | `parameter needs a default value` | 6b: `fn f(a: i64 = 1, b: i64)`: 236 at the `param` (its name) |
+| `err_call6_ref_default` | `ref argument must be a mutable variable, element or field` | 6b: `fn f(ref x: i64 = 1)`: 227 at the default (L-bw) |
+| `err_call6_ref_named` | `argument for ref parameter 'x' must be marked ref` | 6b: `bump(x: v)` for a `ref` parameter: 254 at the value (Decision 93) |
+| `err_call6_default_not_const` | `not a constant expression` | 6b: `a: f64 = now()`: 237 at the call (Decision 91) |
+| `err_call6_default_type` | `type mismatch: expected i64, found f64` | 6b: `a: i64 = 1.5`: 201 at the default |
+| `err_call6_default_type_str` | `type mismatch: expected str, found i64` | 6b: `s: str = 5`: 201 at the default |
+| `err_call6_default_overflow` | `integer overflow` | 6b: `a: i64 = 9223372036854775807 + 1`: 260 at the operator (its left operand) |
+| `err_call6_default_divzero` | `integer division by zero` | 6b: `a: i64 = 7 % (2 - 2)`: 261 at the operator (its left operand) |
+| `err_call6_default_undeclared` | `undeclared name 'ZZ'` | 6b: a default naming an undeclared name: 200 at the name |
+| `err_call6_default_const_order` | `integer overflow` | 6b, Decision 91: a constant's 260 on line 2 is reported before a default's 201 on line 3 |
+| `err_call6_default_const_order2` | `type mismatch: expected i64, found f64` | 6b: the reverse: a default's 201 on line 2 before a constant's 260 on line 5 |
+| `err_call6_order_value_first` | `type mismatch: expected i64, found str` | 6b: `f(a: "x", zz: 1)`: each value before its narg, in source order: 201 before 224 |
+| `err_call6_order_narg_first` | `unknown parameter` | 6b: `f(zz: 1, a: "x")`: 224 at `zz` before the later mismatch |
+| `err_call6_print_i64` | `no overload of 'print' accepts (i64)` | 6b: `print(5)`: 243 at the call |
+| `err_call6_print_two` | `no overload of 'print' accepts (str, str)` | 6b: two arguments |
+| `err_call6_print_none` | `no overload of 'print' accepts ()` | 6b: no argument |
+| `err_call6_mkdir_i64` | `no overload of 'make_dir' accepts (i64)` | 6b: `make_dir(3)` |
+| `err_call6_mkdir_two` | `no overload of 'make_dir' accepts (str, str)` | 6b: two arguments |
+| `err_call6_format_arg` | `format "%d" expects an integer or f64, found str` | 6b: 210 at the argument of `format` (a formatting call, DESIGN.md §2.6.2) |
+| `err_call6_format_count` | `format "%d %d" expects 2 arguments, found 1` | 6b: 211 at the call |
+| `err_call6_format_literal` | `format must be a string literal` | 6b: 233 at the argument |
+| `err_call6_format_bad` | `invalid format conversion "%q"` | 6b: 234 at the literal |
+| `err_call6_format_bad_flag` | `invalid format conversion "%#d"` | 6b: `#` with `%d`, 234 at the literal |
+| `r_inl6_single_site` | `index 3 out of bounds for dimension 0 of extent 3` | 6b: an error inside a single-site inlined function with a loop: the callee's line (DESIGN.md §3.6.4 "Sites") |
+| `r_inl6_small_many` | `integer division by zero` | 6b: a small function with two sites: the callee's line |
+| `r_inl6_nested` | `integer overflow` | 6b: the inner function of two nested inlined calls: its own line |
+| `r_inl6_ref_param` | `index 2 out of bounds for dimension 0 of extent 2` | 6b: a store through a `ref` array parameter: the callee's line |
+| `r_inl6_error_stmt` | `negative: -4` | 6b: `error(…)` inside an inlined function: its own line |
+| `r_inl6_conv` | `conversion to i64: 2.5 is not an integer` | 6b: `i64(x)` in an inlined function |
+| `r_inl6_arg_error` | `index 5 out of bounds for dimension 0 of extent 2` | 6b: an argument expression's error is the caller's line |
+| `r_inl6_deferred_oob` | `index 2 out of bounds for dimension 0 of extent 1` | 6b: rule 31's deferred `ref` element recheck after the inner call shrank the array: the call's line |
+| `r_inl6_multiline_call` | `integer division by zero` | 6b: a call over two lines: the callee's line |
+| `r_inl6_default_arg` | `integer division by zero` | 6b: an omitted default and a named argument reach the inlined callee: its line |
+| `r_inl6_loop_in_caller` | `integer division by zero` | 6b: a later iteration of the caller's loop fails; earlier output flushed first |
+| `r_mkdir_file_exists` | `cannot create directory 'x': File exists` | 6b: an existing file (fixture `x`) at the path (LANGUAGE.md §10.10) |
+| `r_mkdir_missing_parent` | `cannot create directory 'nodir/sub': No such file or directory` | 6b: no parent is created; earlier output flushed |
+| `r_mkdir_parent_is_file` | `cannot create directory 'x/y': Not a directory` | 6b: the parent is a file |
+| `r_mkdir_empty_path` | `cannot create directory '': No such file or directory` | 6b: `make_dir("")` (implementer reading: both libcs give ENOENT; the spec names no empty path) |
+| `r_mkdir_second_fails` | `cannot create directory 'a/b/c': No such file or directory` | 6b: the first `make_dir` succeeds, the second names a missing grandparent |
+| `r_print_flush` | `boom` | 6b: `print("partial")` then `error`: stdout flushed with no extra newline (§9.2 step 1) |
 
 ## vectors/ (WP12's generators; run with `uv run python tests/vectors/<name>.py`)
 
@@ -989,3 +1106,5 @@ From sub-phase 4h (DESIGN.md §2.6.2 "Readings fixed by 4h", the after-phase-4 t
 | `hirl4e0_cases.py` | `passes/NAME.hirl` for the 17 dump tests with a `.sea` and a `.lir1`, and the `passes/loop_*.{sea,ast,res,hir1,hir,hirl,lir1,out}` tests (`.res` through `res_gen.py`) |
 | `dump4e_cases.py` | the 4e dump tests `passes/arr_rule{20,21,22,25,28}`, `passes/sel_{reads,ref_store,compound}`, `passes/ew_{colrow,ind2sub}`, `passes/arr_{lit_fixed,lit_dyn,lit_cat,lit_cat_fixed,views,dynfix,fixed,tasg_l12}` (`.sea .ast .res .hir1 .hir .hirl .lir1 .out`), and the rewritten `passes/res_err_array.res` (+ its new `.hir1`) |
 | `fmt.py` | `rt/arm64_macos/rt_fmt_*` and `rt/x86_64_linux/rt_fmt_*` from one table (identical `.out` files) |
+| `fmod6_cases.py` | `programs/fmod_{scalar,str,random,array}.{sea,out}`; with `--emit-asm arm64_macos` or `--emit-asm x86_64_linux` the 403-vector table of `f64 %` (raw bit patterns of a, b and the expected result) as assembler data between the marker comments `FMOD6-VECTORS-BEGIN <target>` / `FMOD6-VECTORS-END` for `tests/rt/<target>/rt_fmod_vec.s`; with `--check-asm FILE` it checks a test's copy of the table (run `uv run --no-project python tests/vectors/fmod6_cases.py`, 6b) |
+| `call6_cases.py` | the 6b `programs/{call6,inl,fmt6,print,mkdir}_*` (not `fmod_*`), `errors/{err_call6,r_inl6,r_mkdir}_*`, `r_print_flush`, `err_ns_lib_write_json`; it re-derives the five 224 goldens and deletes the retired `err_ns_{named_arg,default_arg,f64_mod,lib_format}` and the moved `err_prel_named` (run after `fmod6_cases.py` and `progfmt.py`, whose cases it imports; `fmt6_{d_ext,prec_zeros}` read `programs/fmt_{d_ext,prec_zeros}`) |

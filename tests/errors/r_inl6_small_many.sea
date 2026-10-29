@@ -1,0 +1,6 @@
+// r_inl6_small_many -- a small function called from two sites: the error is at the callee's line (LANGUAGE.md 6.6, 9.2)
+fn ratio(a: i64, b: i64) -> i64 {
+    return a % b
+}
+printf("%d\n", ratio(7, 3))
+printf("%d\n", ratio(7, 0))

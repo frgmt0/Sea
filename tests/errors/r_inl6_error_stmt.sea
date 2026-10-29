@@ -1,0 +1,9 @@
+// r_inl6_error_stmt -- error() inside an inlined function: its own line (LANGUAGE.md 9.3: the location is the error call)
+fn check(x: i64) -> i64 {
+    if x < 0 {
+        error("negative: %d", x)
+    }
+    return x
+}
+printf("%d\n", check(1))
+printf("%d\n", check(-4))

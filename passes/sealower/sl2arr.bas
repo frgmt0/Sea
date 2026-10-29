@@ -621,7 +621,7 @@
 16740 GOTO 3090
 16750 REM ==== ref arguments (rules 12, 31) ---- 16780: Z0 = 1 if the ref argument X2 with root A1 is deferred: a later argument of the call contains a call that passes the same root by ref (rule 31)
 16780 LET Z0 = 0
-16790 LET P6 = H(X2, 8)
+16790 LET P6 = H(X2 + 1 - SGN(ABS(H(X2 + 1, 1) - 44)), 8)
 16800 IF P6 = 0 THEN 16950
 16810 LET P4 = P6
 16820 GOSUB 13480
@@ -707,19 +707,19 @@
 18350 RETURN
 19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3); sort argsort (R16, rule 24) at 33600. W2 counts from 8 frame: x1 = U0 at
 19345 REM entry (the arguments above it), x2 = the next argument, x3 = the function; 19575: the result is D2 (R9 = D2), the arguments popped
-19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    "
+19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    |print   |make_dir "
 19370 LET W2$ = S$(H(X, 0))
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
 19390 IF W2 = 0 THEN 2360
 19395 LET W2 = W2 + 7
-19400 IF H(X, 6) < VAL(SEG$("1121111111111112232322110", W2, W2)) THEN 2360
-19410 IF H(X, 6) > VAL(SEG$("2231111111111112232322110", W2, W2)) THEN 2360
+19400 IF H(X, 6) < VAL(SEG$("112111111111111223232211011", W2, W2)) THEN 2360
+19410 IF H(X, 6) > VAL(SEG$("223111111111111223232211011", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
 19430 LET S = 49
 19440 GOTO 8000
 19550 LET Z6 = W(W0 + 3)
 19560 LET W2 = W(W0 + 5)
-19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600, 42400, 42400, 42400
+19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600, 42400, 42400, 42400, 34000, 34000
 19575 LET R9 = D2
 19580 GOTO 3083
 20860 REM ---- the exact math functions on scalars (rule 36) ------------------------------------
@@ -885,8 +885,9 @@
 23180 GOSUB 7575
 23190 GOTO 19575
 23210 REM ==== the rule-12 pre-pass, phase 4 part ---- 23230 / 23250 (sea.hirl): a tmp is a statement whose expression is its child, an hloop one whose expression is its range (its first three children); an xblk is no statement: its subtree [E6,
-23220 REM xblk] belongs to the statement that holds it (2588)
+23220 REM xblk] belongs to the statement that holds it (2588); an iret is a statement like a ret (6b: inlined bodies are visited, 34700)
 23230 IF H(N4, 1) = 44 THEN 2600
+23231 IF H(N4, 1) = 66 THEN 2600
 23232 IF H(N4, 1) = 45 THEN 2600
 23234 IF H(N4, 1) <> 43 THEN 2720
 23236 LET P4 = N4

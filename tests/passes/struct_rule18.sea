@@ -1,4 +1,4 @@
-fn nomOf(dims: Dim[], d: i64) -> f64 {
+fn nomOf(dims: Dim[], d: i64) -> f64 { while false {}
     // struct_rule18 -- DESIGN.md 3.6.6 rule 18's second example on line 9: dims[d].nom with dims
     // a Dim[] in p1 (size 48, nom at 8) and d in i2, the fld of the idx folded into one load;
     // Dim is LANGUAGE.md Appendix D's. The literal of line 11 is L9 (b) with struct elements

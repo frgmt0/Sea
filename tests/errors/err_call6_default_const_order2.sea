@@ -1,0 +1,6 @@
+// err_call6_default_const_order2 -- the reverse: a default's 201 on line 2 comes before a constant item's 260 on line 5 and is reported
+fn f(a: i64 = 1.5) -> i64 {
+    return a
+}
+printf("%d\n", f(1))
+const A = 9223372036854775807 + 1

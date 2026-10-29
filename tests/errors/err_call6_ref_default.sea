@@ -1,0 +1,6 @@
+// err_call6_ref_default -- a ref parameter cannot have a default: 227 at the default expression (LANGUAGE.md 8.1; DESIGN.md 2.11.2, L-bw)
+fn f(ref x: i64 = 1) {
+    x += 1
+}
+var v = 0
+f(ref v)

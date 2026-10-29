@@ -1,0 +1,5 @@
+// err_call6_twice_pos -- a parameter given positionally and by name: 225 at the narg (LANGUAGE.md 8.1)
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(1, a: 2))

@@ -1,5 +1,5 @@
-// res_err_default -- rerr 259 default arguments at the param; the default expression is
-// copied unresolved (DESIGN.md 3.4.1, 2.6.2)
+// res_err_default -- from 6b a default is a resolved region: K resolves to an rname of the
+// constant that follows the function (DESIGN.md 3.4.1, Decision 91); no rerr
 fn f(a: i64 = K) -> i64 {
     return a
 }

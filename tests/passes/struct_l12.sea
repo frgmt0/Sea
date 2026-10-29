@@ -1,7 +1,7 @@
-fn two(k: i64) -> (str, i64) {
+fn two(k: i64) -> (str, i64) { while false {}
     return (str(k), k + 1)
 }
-fn mk(k: i64) -> (P, i64) {
+fn mk(k: i64) -> (P, i64) { while false {}
     return (P { name: str(k), x: 1.5 }, k)
 }
 var s = P { name: "a", x: 0.5 }

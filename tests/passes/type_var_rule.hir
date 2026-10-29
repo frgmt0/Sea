@@ -48,7 +48,7 @@ ci 0:20:9 3 0
 bind 0:20:1 7
 block 0:1:1 12
 end
-fn 2 half fn 1 1 0 0:4:1
+fn 2 half inl 1 1 0 0:4:1
 par v 4 ref
 lv 0:5:5 4 1
 lv 0:5:9 4 1

@@ -1,0 +1,11 @@
+// call6_defaults_const_late -- a default naming constants that are declared after the function, one defined by another constant, and an
+// operator expression of a constant (LANGUAGE.md 7.2: any order; 8.1)
+fn f(n: i64 = LATER, m: i64 = LATER * 2) -> i64 {
+    return n + m
+}
+const LATER = EARLY + 1
+const EARLY = 41
+printf("%d\n", f())
+printf("%d\n", f(1))
+printf("%d\n", f(m: 0))
+printf("%d\n", f(n: 2, m: 3))

@@ -54,11 +54,17 @@ release p5
 ret 0
 endfunc
 func nomOf fn 0:1:1 2 p1 i2 1 f
-ldi i3 p1 - 0 16
-chkb i2 i3 0 0:9
-ldp p4 p1 - 0 40
-ldf f5 p4 i2 48 8
-ret 1 f5
+do 1
+li i3 0
+ifz 2 i3
+exit 1
+endif 2
+enddo 1
+ldi i4 p1 - 0 16
+chkb i2 i4 0 0:9
+ldp p5 p1 - 0 40
+ldf f6 p5 i2 48 8
+ret 1 f6
 endfunc
 slay d1 48 2
 soff 0

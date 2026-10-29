@@ -1,0 +1,59 @@
+// inl_ref_elem -- ref parameters bound to an element, a field and an element's field of inlined functions (rule 31: the path's
+// checks, cows and address); a struct passed whole by ref; the deferred element case addat(ref v[0], grow(ref v)),
+// where grow replaces v: the element is addressed in the new array (LANGUAGE.md 8.3; DESIGN.md 3.6.6 rule 31)
+struct S { n: i64, w: f64 }
+fn incr(ref x: f64) {
+    x += 1.0
+}
+fn bumpn(ref n: i64) -> i64 {
+    n += 1
+    return n
+}
+fn setmax(ref m: f64, v: f64) {
+    if v > m {
+        m = v
+    }
+}
+fn grow(ref v: f64[]) -> i64 {
+    v = [9.0, 8.0, 7.0, 6.0, 5.0]
+    return 5
+}
+fn addat(ref x: f64, k: i64) {
+    x += f64(k)
+}
+fn twice_incr(ref x: f64) {
+    incr(ref x)
+    incr(ref x)
+}
+fn upd(ref s: S) {
+    s.n += 1
+    s.w *= 2.0
+}
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+var v: f64[] = [1.0, 2.0, 3.0]
+incr(ref v[1])
+pv(v)
+setmax(ref v[0], 4.5)
+setmax(ref v[2], 1.0)
+pv(v)
+var s = S { n: 5, w: 0.5 }
+let r = bumpn(ref s.n)
+printf("%d %d %g\n", s.n, r, s.w)
+incr(ref s.w)
+printf("%g\n", s.w)
+upd(ref s)
+printf("%d %g\n", s.n, s.w)
+var ss = [S { n: 1, w: 1.0 }, S { n: 2, w: 2.0 }]
+bumpn(ref ss[1].n)
+upd(ref ss[0])
+printf("%d %g %d %g\n", ss[0].n, ss[0].w, ss[1].n, ss[1].w)
+addat(ref v[0], grow(ref v))
+pv(v)
+twice_incr(ref v[4])
+pv(v)

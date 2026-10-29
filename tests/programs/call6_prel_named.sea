@@ -1,0 +1,4 @@
+// call6_prel_named -- a named argument of a prelude function: linspace(0.0, 1.0, n: 3) is legal from 6b (it was the phase-rule
+// error err_prel_named until then); the values 0, 0.5 and 1 by LANGUAGE.md 10.3 (n1 = 2: d1 + (k * (d2 - d1)) / n1)
+let v = linspace(0.0, 1.0, n: 3)
+printf("%d: %g %g %g\n", len(v), v[0], v[1], v[2])

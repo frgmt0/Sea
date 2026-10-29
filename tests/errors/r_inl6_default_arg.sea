@@ -1,0 +1,6 @@
+// r_inl6_default_arg -- an omitted default and a named argument reach an inlined callee that fails at its own line (LANGUAGE.md 8.1)
+fn rem(a: i64, b: i64 = 0) -> i64 {
+    return a % b
+}
+printf("%d\n", rem(7, b: 4))
+printf("%d\n", rem(5))

@@ -1,0 +1,48 @@
+#sea 1
+#target arm64-macos
+#file inl6_agg.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
+slot s3 16 8
+slot s4 16 8
+slot s5 16 8
+lf f1 #3FF8000000000000
+sa p2 s1
+do 1
+sa p3 s2
+stf f1 p3 - 0 0
+lf f4 #4000000000000000
+fmul f5 f1 f4
+stf f5 p3 - 0 8
+li i6 16
+mcopy p2 p3 i6
+exit 1
+enddo 1
+ldf f7 p2 - 0 0
+lf f8 #4000000000000000
+sa p9 s3
+do 2
+sa p10 s4
+stf f8 p10 - 0 0
+lf f11 #4000000000000000
+fmul f12 f8 f11
+stf f12 p10 - 0 8
+li i13 16
+mcopy p9 p10 i13
+exit 2
+enddo 2
+ldf f14 p9 - 0 8
+sa p15 s5
+stf f7 p15 - 0 0
+stf f14 p15 - 0 8
+la p16 d1
+rcall sea_printf 0:8 0 2 p16 p15
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

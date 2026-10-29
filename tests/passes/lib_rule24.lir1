@@ -40,15 +40,21 @@ rcall sea_printf 0:12 0 2 p23 p22
 ret 0
 endfunc
 func top fn 0:1:1 1 p1 1 i
-li i2 1
-rcall sea_argsort 0:8 1 p3 2 p1 i2
-li i4 0
-ldi i5 p3 - 0 16
-chkb i4 i5 0 0:9
-ldp p6 p3 - 0 40
-ldi i7 p6 i4 8 0
-release p3
-ret 1 i7
+do 1
+li i2 0
+ifz 2 i2
+exit 1
+endif 2
+enddo 1
+li i3 1
+rcall sea_argsort 0:8 1 p4 2 p1 i3
+li i5 0
+ldi i6 p4 - 0 16
+chkb i5 i6 0 0:9
+ldp p7 p4 - 0 40
+ldi i8 p7 i5 8 0
+release p4
+ret 1 i8
 endfunc
 fmt d1 2
 fconv - - - d i

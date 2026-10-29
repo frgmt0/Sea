@@ -1,0 +1,18 @@
+// call6_default_recursive -- a recursive function (it stays a call, LANGUAGE.md 8.6) with defaults and a named argument in its own body
+fn sumto(n: i64, acc: i64 = 0) -> i64 {
+    if n == 0 {
+        return acc
+    }
+    return sumto(n - 1, acc: acc + n)
+}
+fn power(base: i64, e: i64 = 2, r: i64 = 1) -> i64 {
+    if e == 0 {
+        return r
+    }
+    return power(base, e: e - 1, r: r * base)
+}
+printf("%d\n", sumto(10))
+printf("%d\n", sumto(100, acc: 1000))
+printf("%d\n", power(3))
+printf("%d\n", power(2, e: 10))
+printf("%d\n", power(e: 5, base: 2))

@@ -1,0 +1,29 @@
+// inl_many_calls -- small non-recursive functions without a loop called from many sites, in a loop and outside it, one calling
+// another (LANGUAGE.md 8.6 (c), inlined at every site)
+fn clamp(x: i64, lo: i64, hi: i64) -> i64 {
+    if x < lo {
+        return lo
+    }
+    if x > hi {
+        return hi
+    }
+    return x
+}
+fn sq(x: f64) -> f64 {
+    return x * x
+}
+fn hyp2(a: f64, b: f64) -> f64 {
+    return sq(a) + sq(b)
+}
+var tot = 0
+for k in -5..15 {
+    tot += clamp(k, 0, 9)
+}
+printf("%d\n", tot)
+printf("%d %d %d\n", clamp(-1, 0, 3), clamp(2, 0, 3), clamp(7, 0, 3))
+printf("%g %g\n", hyp2(3.0, 4.0), hyp2(0.5, 1.5))
+var acc = 0.0
+for k in 0..1000 {
+    acc += sq(f64(k) * 0.5)
+}
+printf("%.17g\n", acc)

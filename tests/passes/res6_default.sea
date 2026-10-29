@@ -1,0 +1,8 @@
+// res6_default -- from 6b a parameter default is a resolved region (DESIGN.md 3.4.1, Decision
+// 91): a constant name, the predeclared pi and an operator expression with a ^ (rpowk)
+const N = 4
+fn f(a: i64, b: i64 = N, c: f64 = pi, d: f64 = 2.0 * pi ^ 2) -> f64 {
+    return a + b + c + d
+}
+printf("%g\n", f(1))
+printf("%g\n", f(1, d: 0.5))

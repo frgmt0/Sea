@@ -1,0 +1,46 @@
+// call6_prel_named_order -- named arguments of the prelude functions linspace, meshgrid, bincount and setdiff in parameter order and not
+// (LANGUAGE.md 10.3, 10.6, 10.7, 8.1: a prelude function is called like a user function, with its own parameter
+// names); the argument expressions evaluate in source order
+fn t(k: i64, v: i64) -> i64 {
+    printf("eval %d\n", k)
+    return v
+}
+fn tf(k: i64, v: f64) -> f64 {
+    printf("eval %d\n", k)
+    return v
+}
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+pv(linspace(n: 5, d2: 1.0, d1: 0.0))
+pv(linspace(0.0, d2: 2.0, n: 3))
+pv(linspace(d2: 1.0, d1: 0.0, n: 3))
+pv(linspace(tf(1, 1.0), n: t(2, 4), d2: tf(3, 4.0)))
+let xs: f64[] = [1.0, 2.0, 3.0]
+let ys: f64[] = [10.0, 20.0]
+let (X, Y) = meshgrid(y: ys, x: xs)
+for i in 0..rows(X) {
+    for j in 0..cols(X) {
+        printf(" %g,%g", X[i, j], Y[i, j])
+    }
+    printf(" |")
+}
+printf("\n")
+let ids: i64[] = [0, 1, 1, 3, 3, 3]
+pvi(bincount(n: 5, idx: ids))
+let a: i64[] = [5, 1, 3, 3, 9]
+let b: i64[] = [3, 9]
+pvi(setdiff(b: b, a: a))
+pvi(setdiff(b: a, a: b))
+pvi(setdiff(a, b: b))

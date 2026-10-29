@@ -186,13 +186,19 @@ eval 0:9:1
 block 0:1:1 3
 end
 fn 2 p fn 3 0 0 0:1:1
+cb 0:1:23 2 0
+block 0:1:29 0
+while 0:1:17
 ci 0:2:12 3 0
 ret 0:2:5 1
-block 0:1:15 1
+block 0:1:15 2
 end
 fn 3 q fn 3 0 0 0:4:1
+cb 0:4:23 2 0
+block 0:4:29 0
+while 0:4:17
 ci 0:5:12 3 1
 ret 0:5:5 1
-block 0:4:15 1
+block 0:4:15 2
 end
 #end

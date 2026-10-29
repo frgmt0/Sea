@@ -1,0 +1,12 @@
+// print_mixed -- print and printf share one buffer and interleave in program order, across the 64 KiB flush (72 000 bytes are
+// written; LANGUAGE.md 11.2, 11.3; DESIGN.md 4.8 PRINT, L-cd)
+printf("a")
+print("b")
+printf("%s", "c")
+print("d\n")
+for k in 0..3000 {
+    print("0123456789")
+    printf("%s", "abcdefghij")
+    print("xyz\n")
+}
+printf("end\n")

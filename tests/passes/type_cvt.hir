@@ -46,14 +46,14 @@ bin 0:17:9 4 add
 bind 0:17:1 7
 block 0:1:1 8
 end
-fn 2 widen fn 4 1 0 0:4:1
+fn 2 widen inl 4 1 0 0:4:1
 par k 3 val
 lv 0:5:12 3 1
 cvt 0:5:12 4
 ret 0:5:5 1
 block 0:4:25 1
 end
-fn 3 scale fn 4 1 0 0:7:1
+fn 3 scale inl 4 1 0 0:7:1
 par x 4 val
 lv 0:8:12 4 1
 cf 0:8:16 4 #4000000000000000

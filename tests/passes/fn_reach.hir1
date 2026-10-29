@@ -8,26 +8,26 @@ call 0:16:9 3 4 0
 bind 0:16:1 1
 block 0:1:1 1
 end
-fn 2 unused fn 10 1 0 0:4:1
+fn 2 unused inl 10 1 0 0:4:1
 par n 3 val
 lv 0:5:13 3 1
 lv 0:5:16 3 1
 ret 0:5:5 2
 block 0:4:33 1
 end
-fn 3 leaf fn 3 0 0 0:7:1
+fn 3 leaf inl 3 0 0 0:7:1
 ci 0:8:12 3 7
 ret 0:8:5 1
 block 0:7:18 1
 end
-fn 4 mid fn 3 0 0 0:10:1
+fn 4 mid inl 3 0 0 0:10:1
 call 0:11:12 3 3 0
 ci 0:11:21 3 1
 bin 0:11:12 3 add
 ret 0:11:5 1
 block 0:10:17 1
 end
-fn 5 dead fn 3 0 0 0:13:1
+fn 5 dead inl 3 0 0 0:13:1
 call 0:14:12 3 4 0
 ret 0:14:5 1
 block 0:13:18 1

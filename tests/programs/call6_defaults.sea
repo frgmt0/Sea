@@ -1,0 +1,16 @@
+// call6_defaults -- defaults of each scalar type and of str: a constant name (K, NAME), pi, an operator expression (2.0 * pi + 1.0,
+// K * 2 + 1, "x" + "y"), a negative literal and an untyped integer for an f64 parameter; omitted, positional and
+// named arguments mixed (LANGUAGE.md 8.1, 7.2: a default is a constant); %.17g shows pi and 2 * pi + 1 exactly
+const K = 4
+const NAME = "cfg"
+fn d(n: i64 = K, x: f64 = pi, y: f64 = 2.0 * pi + 1.0, ok: bool = true, s: str = NAME, w: str = "x" + "y", z: f64 = -0.5, m: i64 = K * 2 + 1, h: f64 = 2) {
+    printf("n=%d x=%.17g y=%.17g ok=%d s=%s w=%s z=%g m=%d h=%g\n", n, x, y, ok, s, w, z, m, h)
+}
+d()
+d(1)
+d(1, 1.0)
+d(2, 2.0, 3.0, false, "q", "r", 4.0, 5, 6.5)
+d(m: 3)
+d(s: "named", n: 0)
+d(1, z: 9.0, x: 0.25)
+d(ok: false, h: 0.125)

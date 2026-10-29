@@ -1,0 +1,2 @@
+// err_call6_unknown_lib -- sqrt(x: 2.0): a library function's positional parameter is not a name: 224 at the narg (DESIGN.md 2.11.2, L-by)
+let r = sqrt(x: 2.0)

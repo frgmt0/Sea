@@ -73,6 +73,7 @@
 30248 IF E3 <> A(E1 + I(2), 1) THEN 2360
 30250 IF A(E1 + I(2), 0) <> 0 THEN 2360
 30252 LET A(E1 + I(2), 0) = H1
+30253 LET A(E1 + I(2), 2) = 1 - SGN(ABS(H(E2, 1) - 11))
 30254 IF E3 <= 9 THEN 1285
 30256 IF T(E3, 1) <> 4 THEN 1285
 30257 IF H(E2, 1) = 58 THEN 1285
@@ -192,7 +193,7 @@
 31028 IF E3 = 21 THEN 31100
 31030 IF E3 = 23 THEN 31120
 31032 IF E3 = 24 THEN 31130
-31034 IF E3 = 11 THEN 31120
+31034 IF E3 = 11 THEN 34100
 31036 IF E3 = 45 THEN 31090
 31038 IF E3 = 27 THEN 31090
 31039 IF ABS(E3 - 65.5) = .5 THEN 31044
@@ -246,7 +247,7 @@
 31156 LET O1 = H(O1, 7)
 31157 IF O1 = 0 THEN 2365
 31158 GOTO 31152
-31160 IF A(E1 + H(O1, 5), 0) <> 0 THEN 2360
+31160 IF A(E1 + H(O1, 5), 0) * (1 - A(E1 + H(O1, 5), 2)) <> 0 THEN 2360
 31162 RETURN
 31990 REM ==== lowering: the node kinds 43-51 (from 9705) and the resume codes 60-65 (from 9715) ===
 32000 ON H(X, 1) - 42 GOTO 32200, 32100, 32400, 32400, 52300, 32400, 32400, 32400, 32400, 2365, 32400, 32400, 32400, 41502, 32400, 41532, 2365, 50200, 50700, 2365, 2365, 2365, 33700, 33800
@@ -255,6 +256,7 @@
 32091 REM L names its register
 32100 LET E1 = G(F0, 0) + H(X, 5)
 32102 LET E2 = H(X, 7)
+32103 IF H(E2, 1) = 11 THEN 34200
 32104 LET W(W0 + 3) = 0
 32106 LET D1 = A(E1, 3)
 32108 IF D1 > 0 THEN 32124
@@ -579,23 +581,29 @@
 33654 GOSUB 10080
 33656 GOTO 19575
 33690 REM ==== sub-phase 4h (DESIGN 3.5.9 L18, R26-R30 and their validation; 3.6.6 rule 37 and its iblk/iret bullet): kinds 65 iblk (H4 ty, H6 k, H5 its inline xblk) and 66 iret (H6 k, H5 its iblk); an inline xblk has H5 = its iblk. Resume codes 71, 72
-33700 REM ---- iblk k (R27): R1 .. Rk on U above x1 (D = -2: a component's own new register is its Ri), do B (x2 = B), its block above the scope height x3 (resume 71); a value with a destination (D >= 0) has k = 1
+33700 REM ---- iblk k (R27): R1 .. Rk on U above x1 (D = -2: a component's own new register is its Ri; R32: an aggregate component a new home), do B (x2 = B), its block above the scope height x3 (resume 71); with a destination (D >= 0) k = 1
 33702 IF D < 0 THEN 33706
 33704 IF H(X, 6) <> 1 THEN 2360
 33706 LET W(W0 + 3) = U0
 33708 FOR O6 = 1 TO H(X, 6)
-33710 IF D <> -2 THEN 33716
-33712 LET N2 = U(W(W0 + 3) - H(X, 6) + O6, 1)
-33714 IF N2 > N7 THEN 33726
-33716 LET T1 = H(X, 4)
-33718 IF T1 <= 9 THEN 33724
-33720 IF T(T1, 1) <> 2 THEN 33724
-33722 LET T1 = M(T(T1, 3) + O6 - 1)
+33710 LET T1 = H(X, 4)
+33711 IF T1 <= 9 THEN 33714
+33712 IF T(T1, 1) <> 2 THEN 33714
+33713 LET T1 = M(T(T1, 3) + O6 - 1)
+33714 GOSUB 40595
+33715 IF F5 = 0 THEN 33719
+33716 GOSUB 40622
+33717 LET N2 = D2
+33718 GOTO 33726
+33719 IF D <> -2 THEN 33724
+33720 LET N2 = U(W(W0 + 3) - H(X, 6) + O6, 1)
+33722 IF N2 > N7 THEN 33726
 33724 GOSUB 7395
 33725 GOSUB 7420
 33726 GOSUB 7970
 33728 LET U(U0, 1) = N2
 33730 NEXT O6
+33731 GOSUB 34300
 33732 GOSUB 7885
 33734 LET W(W0 + 4) = B7
 33736 LET W(W0 + 5) = J9
@@ -613,7 +621,7 @@
 33760 LET L1$ = "exit " & STR$(W(W0 + 4))
 33762 GOSUB 7695
 33764 LET L1$ = "enddo " & STR$(W(W0 + 4))
-33766 GOSUB 7695
+33766 GOSUB 34400
 33767 REM R27, the value R1 .. Rk: P3 = the statement's frame (below the inline xblk, past seqs and xblks); a destination D gets mov D R1, except the new register V of rule 15 (d) or of a scalar ref parameter's asg set (W(P3 + 3) = D): V is R1
 33768 LET E1 = W(W0 + 3)
 33769 LET R9 = U(E1 + 1, 1) * SGN(H(X, 6))
@@ -633,13 +641,14 @@
 33785 REM D = -2: a component in a local's register (a tbind's local, a tasg's scalar local) gets mov L Ri here under a tbind, from step (d) of rule 2 under a tasg (U(.,2) = -L)
 33786 FOR O6 = 1 TO H(X, 6)
 33787 LET E2 = E1 - H(X, 6) + O6
-33788 IF U(E2, 1) > N7 THEN 33796
+33788 IF U(E2, 1) + N7 * V(U(E1 + O6, 1), 0) > N7 THEN 33795
 33789 IF H(W(P3), 1) = 24 THEN 33793
 33790 LET L1$ = "mov" & FNR$(U(E2, 1)) & FNR$(U(E1 + O6, 1))
 33791 GOSUB 7620
 33792 GOTO 33796
 33793 LET U(E2, 2) = -U(E2, 1)
 33794 LET U(E2, 1) = U(E1 + O6, 1)
+33795 IF V(U(E1 + O6, 1), 0) = 1 THEN 34600
 33796 NEXT O6
 33797 LET U0 = E1
 33798 GOTO 3090
@@ -662,6 +671,7 @@
 33828 LET U4 = W(O6 + 5)
 33830 GOSUB 10390
 33832 FOR E5 = 1 TO H(X, 6)
+33833 IF V(U(W(O6 + 3) + E5, 1), 0) = 1 THEN 34500
 33834 LET L1$ = "mov" & FNR$(U(W(O6 + 3) + E5, 1)) & FNR$(U(W(W0 + 3) + E5, 1))
 33836 GOSUB 7620
 33838 NEXT E5
@@ -724,3 +734,124 @@
 33992 IF I(2) <= 9 THEN 1285
 33994 IF T(I(2), 1) = 2 THEN 2360
 33996 GOTO 1285
+33998 REM ==== sub-phase 6b (DESIGN 2.11.5): rule 39 (print, make_dir here; format at 5274, FMOD at 8502), R31 (ref arguments of an inline call: ref locals, A(.,2) = 1), R32 (aggregate results of an inline call: a new home, V(.,0) = 1)
+34000 REM ---- rule 39 (from 19570: W2 26 print, 27 make_dir; operands U(Z6+1 .. U0)), from the entry's record: operands of its Args classes, rcall with the site (S) or -, each result a new register (the last the destination), owned operands released
+34001 LET Q1$ = "MAKE_DIR"
+34002 IF W2 = 27 THEN 34006
+34004 LET Q1$ = "PRINT"
+34006 LET Q9 = FNE(Q1$, "")
+34008 IF LEN(Y$(Q9, 4)) <> U0 - Z6 THEN 2360
+34010 GOSUB 5590
+34012 LET D2 = 0
+34014 FOR K7 = 1 TO Z4
+34016 LET C1 = POS("ifp", SEG$(Y$(Q9, 5), K7, K7))
+34018 LET D = D * INT(K7 / Z4)
+34020 GOSUB 7470
+34022 LET L1$ = L1$ & FNR$(D2)
+34024 NEXT K7
+34026 LET L1$ = L1$ & " " & STR$(U0 - Z6)
+34028 FOR K7 = Z6 + 1 TO U0
+34030 IF SEG$("ifp", V(U(K7, 1), 1), V(U(K7, 1), 1)) <> SEG$(Y$(Q9, 4), K7 - Z6, K7 - Z6) THEN 2360
+34032 LET L1$ = L1$ & FNR$(U(K7, 1))
+34034 NEXT K7
+34036 GOSUB 7695
+34038 LET X0 = H(X, 7)
+34040 FOR K7 = Z6 + 1 TO U0
+34042 LET R0 = U(K7, 1)
+34044 GOSUB 10080
+34046 LET X0 = H(X0, 8)
+34048 NEXT K7
+34050 GOTO 19575
+34098 REM ---- (31034) a rarg E2 whose parent is a tmp (E2 + 1): that tmp's parent (its last sibling + 1) is an inline xblk (H5 its iblk), so a ref local stands only there (2.11.5 validation)
+34100 IF H(E2 + 1, 1) <> 44 THEN 31120
+34102 LET O1 = E2 + 1
+34104 IF H(O1, 8) = 0 THEN 34110
+34106 LET O1 = H(O1, 8)
+34108 GOTO 34104
+34110 IF H(O1 + 1, 1) <> 43 THEN 2360
+34112 IF H(O1 + 1, 5) = 0 THEN 2360
+34114 GOTO 31120
+34198 REM ---- R31 (from 32103): tmp Ai = rarg lowered at its place as a call's argument (4515: a scalar local's slot sa A and store, a reference local's stp, a struct or fixed local's home, a ref parameter's p, a path; deferred: rule 31)
+34200 LET W(W0 + 4) = E2
+34202 LET X2 = E2
+34204 GOTO 4515
+34208 REM (4630) the ref local Ai is then the p register R9 holding the address: written as R9 (its output number shared, 3.6.1); a deferred path has none yet (34300)
+34210 IF R9 = 0 THEN 32134
+34212 LET V(H(X, 5), 2) = V(R9, 2)
+34214 GOTO 32134
+34298 REM ---- 34300 (iblk X, before do B): the rest of each deferred ref argument of its inline xblk in argument order (rule 31): a local's store into its slot Ai; a path again (loads, checks at the call's line, cows), Ai then its address
+34300 LET K7 = H(H(X, 5), 7)
+34302 IF H(K7, 1) <> 44 THEN 34330
+34304 LET X2 = H(K7, 7)
+34306 IF H(X2, 1) <> 11 THEN 34326
+34308 IF H(X2, 0) <> 1 THEN 34326
+34310 IF H(H(X2, 7), 1) <> 5 THEN 34318
+34312 LET V2 = H(H(X2, 7), 5)
+34314 LET V3 = H(K7, 5)
+34315 LET Z3 = 0
+34316 GOSUB 7650
+34317 GOTO 34326
+34318 GOSUB 53600
+34320 LET J7 = 1
+34322 LET J8 = 0
+34324 GOSUB 53620
+34325 LET V(H(K7, 5), 2) = V(R9, 2)
+34326 LET K7 = H(K7, 8)
+34328 GOTO 34302
+34330 RETURN
+34398 REM ---- 34400 (iblk X): enddo B (L1$), then the reloads of rule 12 (R31): each slot argument's local (a scalar or reference local, not a ref parameter or ref local, not a home) loaded from its Ai, in argument order; then R27
+34400 GOSUB 7695
+34402 LET K7 = H(H(X, 5), 7)
+34404 IF H(K7, 1) <> 44 THEN 34420
+34406 LET X3 = H(K7, 7)
+34408 IF H(X3, 1) <> 11 THEN 34418
+34410 IF H(H(X3, 7), 1) <> 5 THEN 34418
+34412 LET V2 = H(H(X3, 7), 5)
+34414 IF A(G(F0, 0) + V2, 2) + V(V2, 0) > 0 THEN 34418
+34415 LET V3 = H(K7, 5)
+34416 LET Z3 = 0
+34417 GOSUB 7640
+34418 LET K7 = H(K7, 8)
+34419 GOTO 34404
+34420 RETURN
+34498 REM ---- R32 (from 33833, iret): the owned aggregate value E5 stored into its home Ri (the iblk W(O6)'s component type): li N size, mcopy H V N (moved: owned, rule 15 (a) above)
+34500 LET T5 = H(W(O6), 4)
+34502 IF T(T5, 1) <> 2 THEN 34506
+34504 LET T5 = M(T(T5, 3) + E5 - 1)
+34506 LET V2 = U(W(O6 + 3) + E5, 1)
+34508 LET V3 = U(W(W0 + 3) + E5, 1)
+34510 GOSUB 40670
+34512 GOTO 33838
+34598 REM ---- R32 (from 33795, D = -2): an aggregate component's home Ri copied (moved) into the home its tbind, tasg, tret or eval provides, in R27's place of the mov
+34600 LET T5 = M(T(H(X, 4), 3) + O6 - 1)
+34602 LET V2 = U(E2, 1)
+34604 LET V3 = U(E1 + O6, 1)
+34606 GOSUB 40670
+34608 GOTO 33796
+34698 REM ---- the rule-12 pre-pass (2586, 2588) and an iblk (6b, R31; L-w): an inlined body's statements are statements of their own, as in the callee. At an iblk N4 met while skipping, its body is visited (E6 = N4), the old E6 and iblk B3 kept in its H0
+34699 REM (unused by the iblk); below its body start B4 they come back (34720). 34740: Z0 = 1 if the rarg K5 lies in the body of an iblk inside the statement (its own statement's, not this one's)
+34700 IF H(N4, 1) <> 65 THEN 2720
+34702 LET H(N4, 0) = E6 + 1E6 * B3
+34704 LET B3 = N4
+34706 LET E6 = N4
+34708 LET P4 = N4
+34710 GOSUB 13480
+34712 LET B4 = P4
+34714 GOTO 2720
+34720 LET E6 = H(B3, 0) - 1E6 * INT(H(B3, 0) / 1E6)
+34722 LET B3 = INT(H(B3, 0) / 1E6)
+34724 LET B4 = 0
+34726 IF B3 = 0 THEN 2586
+34728 LET P4 = B3
+34730 GOSUB 13480
+34732 LET B4 = P4
+34734 GOTO 2586
+34740 LET Z0 = 0
+34742 FOR A6 = K5 + 1 TO B5
+34744 IF H(A6, 1) <> 65 THEN 34752
+34746 LET P4 = A6
+34748 GOSUB 13480
+34750 IF P4 > K5 THEN 34752
+34751 LET Z0 = 1
+34752 NEXT A6
+34754 RETURN

@@ -1,0 +1,25 @@
+// fmt6_basic -- format returns a str: used in concatenation, with len, ==, as a printf argument and in a loop (W1's DG-%03d
+// labels); the empty format, %% and mixed conversions (LANGUAGE.md 10.9, 11.1)
+fn t(k: i64, v: i64) -> i64 {
+    printf("eval %d\n", k)
+    return v
+}
+let s = format("%d-%s", 5, "ab")
+printf("%s|%d\n", s, len(s))
+let tg = format("DG-%03d", 7)
+let u = s + "/" + tg
+print(u + "\n")
+for k in 0..3 {
+    print(format("DG-%03d,", k + 1))
+}
+print("\n")
+printf("%d\n", len(format("")))
+printf("%s\n", format("%%"))
+let lbl = format("%5.1f|%-6d|%+d", 3.14159, 42, 7)
+printf("%s\n", lbl)
+if format("%d", 10) == "10" {
+    printf("eq\n")
+}
+printf("%d\n", len(format("%s%s", s, tg)))
+let big = 2 ^ 10
+printf("%s\n", format("%d %.3f %s", i64(big), 0.5, str(1.25)))

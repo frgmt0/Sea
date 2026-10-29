@@ -46,24 +46,30 @@ release p5
 ret 0
 endfunc
 func f fn 0:1:1 2 p1 i2 0
-la p3 d4
-ldp p4 p1 - 0 0
-ldi i5 p4 - 0 16
-chkb i2 i5 0 0:2
-ldp p6 p1 - 0 0
-ldi i7 p6 - 0 0
-li i8 1
-icmp ne i9 i7 i8
-if 1 i9
-rcall sea_arr_unique 0:2 1 p10 1 p6
-stp p10 p1 - 0 0
-mov p6 p10
-endif 1
-ldp p11 p6 - 0 40
-retain p3
-ldp p12 p11 i2 8 0
-stp p3 p11 i2 8 0
-release p12
+do 1
+li i3 0
+ifz 2 i3
+exit 1
+endif 2
+enddo 1
+la p4 d4
+ldp p5 p1 - 0 0
+ldi i6 p5 - 0 16
+chkb i2 i6 0 0:2
+ldp p7 p1 - 0 0
+ldi i8 p7 - 0 0
+li i9 1
+icmp ne i10 i8 i9
+if 3 i10
+rcall sea_arr_unique 0:2 1 p11 1 p7
+stp p11 p1 - 0 0
+mov p7 p11
+endif 3
+ldp p12 p7 - 0 40
+retain p4
+ldp p13 p12 i2 8 0
+stp p4 p12 i2 8 0
+release p13
 ret 0
 endfunc
 str d1 a

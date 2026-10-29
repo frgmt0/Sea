@@ -5,12 +5,15 @@ type 0:1:13 str v 0
 param 0:1:6 v 1 0
 type 0:1:23 i64 s 0
 param 0:1:20 i 0 0
+false 0:1:36
+block 0:1:42 0
+while 0:1:30
 name 0:2:5 v
 name 0:2:7 i
 index 0:2:5 1
 str 0:2:12 x
 asg 0:2:5 set
-block 0:1:28 1
+block 0:1:28 2
 fn 0:1:1 f 0 2 0
 pname 0:4:5 names
 str 0:4:14 a

@@ -1,0 +1,5 @@
+// err_call6_twice_named -- a name given twice: 225 at the second narg
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(a: 1, a: 2))

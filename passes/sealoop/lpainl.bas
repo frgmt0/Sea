@@ -1,40 +1,55 @@
 50000 REM ====================================================================================
 50002 REM sealoop part 10 (lines 50000-54999): L18, the inlining of prelude calls (DESIGN 3.5.9
-50004 REM "What sealoop rewrites in 4h", 3.5.4, 3.6.6 rule 37; Decisions 53-57, L-u, L-v). A function
-50006 REM whose fn pos is in file 0 of a stream of several files is a prelude function. After (A),
-50008 REM if there is one, the records are rebuilt into the list O (text O$): each call of a prelude
-50010 REM function F becomes its arguments, each followed by tmp P q (q a new local .p of the
-50012 REM parameter's type), a copy of F's body (every node at P, the call's position; ret as iret;
-50014 REM F's parameters read as the q, its other locals as new locals .i; a prelude call in the
-50016 REM copy inlined the same way, D55), iblk P ty k and xblk P ty n; the prelude functions are
-50018 REM dropped and the fids renumbered (G(F,0): the new fid, 0 for a prelude function). The .p
+50004 REM "What sealoop rewrites in 4h", 3.5.4, 3.6.6 rule 37; Decisions 53-57, L-u, L-v), and from
+50005 REM 6b L20, the inlining of the calls of fn kind inl (DESIGN 2.11.4; Decision 83, L-cf, L-cg).
+50006 REM A function whose fn pos is in file 0 of a stream of several files is a prelude function.
+50008 REM After (A), if there is one or an inl function, the records are rebuilt into the list O
+50010 REM (text O$): each call of such a function F becomes its arguments, each followed by tmp P
+50012 REM q (q a new local .p of the parameter's type, .q for a ref parameter, whose argument is
+50014 REM the rarg as written), a copy of F's body (L18: every node at P, the call's position;
+50015 REM L20: every node at its own position; ret as iret; L20: tret C as tbind P' k of new .i
+50016 REM locals of C, their lv and iret P' k, P' its own position; F's parameters read as the q,
+50017 REM its other locals as new locals .i; a call of such a function in the copy inlined the same
+50018 REM way, D55), iblk P ty k and xblk P ty n; those functions are dropped and the fids
+50019 REM renumbered (G(F,0): the new fid, 0 for a prelude function, -1 for an inl one). The .p
 50020 REM and .i loc records follow the function's own (cursor L3), its nl grown at its end. Then
 50022 REM (A) reads the new list again (A2 = 1); the walk makes each .p tmp a .l local (50800, U(p,0)
 50024 REM the .p's entry of A); lp2out numbers the .i locals after the .l ones in the order of their
 50026 REM declaring records (A(entry) = 100000 + i, above every type id) and rewrites the lids
 50028 REM (52500). State: L4 the depth of the copy, per level s M(s,0) the call, M(s,1) the .i base,
-50030 REM M(s,2) the row; H(X,8) of a prelude call its callee, H(X,7) the last row of node X in O,
-50032 REM H(X,0) the .p of an argument; H9 S9 the nodes and locals of sea.hirl (SEA_LIM_NODES,
-50034 REM SEA_LIM_SYMBOLS, reported at P, A2$). H6 the last lid of the function, H5 its new ones.
-50036 REM ---- the functions: new fids; a prelude function validated, its nodes and locals uncounted
+50030 REM M(s,2) the row, M(s,3) the row whose pos is the level's P (negative for an inl callee,
+50031 REM whose copy keeps its positions; a prelude call inside a prelude copy takes the outer P);
+50032 REM H(X,8) of such a call its callee, H(X,7) the last row of node X in O, H(X,0) the .p of
+50033 REM an argument; H9 S9 the nodes and locals of sea.hirl (SEA_LIM_NODES, SEA_LIM_SYMBOLS,
+50034 REM reported at P, A2$). H6 the last lid of the function, H5 its new ones. V5 1 for inl.
+50036 REM ---- the functions: new fids; a dropped function validated, its nodes and locals uncounted
 50040 LET A4 = 0
 50042 LET H9 = H0
 50044 LET S9 = A0
 50046 FOR Y1 = 1 TO G0
 50048 LET G(Y1, 0) = Y1 - A4
 50050 LET R2 = G(Y1, 6)
-50052 LET F9 = 8
+50052 LET F9 = 4
 50054 GOSUB 8440
-50056 IF N1 < 2 THEN 50090
-50058 IF SEG$(F9$, 1, 2) <> "0:" THEN 50090
-50060 LET A4 = A4 + 1
-50062 LET G(Y1, 0) = 0
+50055 LET Z1$ = F9$
+50056 LET F9 = 8
+50057 GOSUB 8440
+50058 LET V5 = 0
+50059 IF N1 < 2 THEN 50061
+50060 IF SEG$(F9$, 1, 2) = "0:" THEN 50064
+50061 IF Z1$ <> "inl" THEN 50090
+50062 LET V5 = 1
+50063 REM a prelude function (V5 0) or an inl one (V5 1) is dropped
+50064 LET A4 = A4 + 1
+50065 LET G(Y1, 0) = -V5
 50066 GOSUB 51600
 50068 LET H9 = H9 - Y4 + R2 + G(Y1, 2) + G(Y1, 3) + 1
 50070 LET S9 = S9 - G(Y1, 2) - G(Y1, 3)
-50071 REM no tret, no ref parameter, a result type of 3.5.9 (kind elem: 1450)
-50072 FOR R0 = R2 + 1 TO Y4
-50074 IF R(P(R0, 0), 0) = 31 THEN 2900
+50071 IF V5 = 1 THEN 50090
+50072 REM a prelude function: kind fn, no tret, no ref parameter, a result type of 3.5.9
+50073 IF Z1$ <> "fn" THEN 2900
+50074 FOR R0 = R2 + 1 TO Y4
+50075 IF R(P(R0, 0), 0) = 31 THEN 2900
 50076 IF SEG$(D$(R0), 1, 4) <> "par " THEN 50080
 50078 IF SEG$(D$(R0), LEN(D$(R0)) - 3, LEN(D$(R0))) = " ref" THEN 2900
 50080 NEXT R0
@@ -111,10 +126,13 @@
 50208 LET Y1 = H(X, 8)
 50210 GOSUB 51600
 50212 IF R0 < Y4 THEN 50300
-50214 LET L4 = L4 - 1
-50215 LET R0 = M(L4, 2)
-50216 LET R2 = H(X, 6)
-50218 LET F9 = 3
+50213 LET V5 = 0
+50214 IF M(L4, 3) > 0 THEN 50216
+50215 LET V5 = 1
+50216 LET L4 = L4 - 1
+50217 LET R0 = M(L4, 2)
+50218 LET R2 = H(X, 6)
+50219 LET F9 = 3
 50220 GOSUB 8440
 50222 LET T4 = VAL(F9$)
 50224 GOSUB 51700
@@ -122,13 +140,18 @@
 50228 GOSUB 51950
 50230 LET Z$ = "xblk " & A2$ & " " & STR$(T4) & " " & STR$(G(Y1, 2))
 50232 GOSUB 51950
-50234 GOTO 50330
-50300 REM ---- a node: a prelude call inlined (50400); else copied (in a copy by 52500, fid renumbered)
+50233 IF L4 = 0 THEN 50330
+50234 GOSUB 51650
+50235 GOTO 50330
+50300 REM ---- a node: a prelude or inl call inlined (50400); else copied (in a copy by 52500, fid
+50301 REM renumbered; a tret by 50340, a block with trets by 50480)
 50302 LET X = P(R0, 1)
 50304 IF H(X, 8) > 0 THEN 50400
 50306 LET Z$ = D$(R0)
 50308 IF L4 = 0 THEN 50316
-50310 GOSUB 52500
+50309 IF H(X, 1) = 31 THEN 50340
+50310 IF H(X, 1) = 32 THEN 50480
+50311 GOSUB 52500
 50312 GOSUB 51950
 50314 GOTO 50330
 50316 IF R(P(R0, 0), 0) <> 10 THEN 50326
@@ -140,7 +163,47 @@
 50326 GOSUB 51900
 50330 LET H(X, 7) = O0
 50332 GOTO 50140
-50400 REM ---- L18 (1)-(5) at the call X (row R0) of the prelude function Y1: n = np, no cycle
+50338 REM ---- L20 (3): a tret C of a copy: tbind P' k of k new .i locals (F's result types, loc pos
+50339 REM P) of C, their lv at P' and iret P' k (P' the tret's own position)
+50340 LET Y1 = H(M(L4, 0), 8)
+50341 LET R2 = G(Y1, 6)
+50342 LET F9 = 5
+50343 GOSUB 8440
+50344 LET T4 = VAL(F9$)
+50345 IF T4 <= 9 THEN 2900
+50346 IF T(T4, 1) + T(T4, 2) > 0 THEN 2900
+50347 GOSUB 51770
+50348 LET Y3 = R2
+50349 LET F9 = 3
+50350 GOSUB 8440
+50351 LET T5 = VAL(F9$)
+50352 LET R2 = R0
+50353 LET F9 = 2
+50354 GOSUB 8440
+50355 LET Y8$ = F9$
+50356 LET Y7$ = "tbind " & Y8$ & " " & STR$(T5)
+50357 LET U4 = H6
+50358 FOR Y4 = 1 TO T5
+50359 LET R2 = Y3
+50360 LET F9 = 3 + Y4
+50361 GOSUB 8440
+50362 LET Z$ = "loc .i " & F9$ & " let " & A2$
+50363 GOSUB 51800
+50364 LET Y7$ = Y7$ & " " & STR$(H6)
+50365 NEXT Y4
+50366 LET Z$ = Y7$
+50367 GOSUB 51950
+50368 FOR Y4 = 1 TO T5
+50369 LET R2 = Y3
+50370 LET F9 = 3 + Y4
+50371 GOSUB 8440
+50372 LET Z$ = "lv " & Y8$ & " " & F9$ & " " & STR$(U4 + Y4)
+50373 GOSUB 51950
+50374 NEXT Y4
+50375 LET Z$ = "iret " & Y8$ & " " & STR$(T5)
+50376 GOSUB 51950
+50377 GOTO 50330
+50400 REM ---- L18 / L20 (1)-(5) at the call X (row R0) of the function Y1: n = np, no cycle
 50402 LET Y1 = H(X, 8)
 50404 LET R2 = R0
 50406 LET F9 = 5
@@ -149,21 +212,35 @@
 50412 FOR Y4 = 1 TO L4
 50414 IF H(M(Y4, 0), 8) = Y1 THEN 2900
 50416 NEXT Y4
-50418 IF L4 > 0 THEN 50426
-50420 GOSUB 8400
-50422 LET A2$ = P9$
-50424 LET H9 = H9 - 1
-50426 REM each argument (of its parameter's type) followed by tmp P q, q a new local .p
+50419 REM P (A2$): the call's own position, inside a prelude copy that copy's P (Y3 its row)
+50420 LET Y3 = R0
+50421 IF L4 > 0 THEN 50423
+50422 LET H9 = H9 - 1
+50423 IF M(L4, 3) <= 0 THEN 50425
+50424 LET Y3 = M(L4, 3)
+50425 LET R2 = Y3
+50426 GOSUB 8400
+50427 LET A2$ = P9$
 50428 LET X1 = H(X, 3)
-50430 FOR Y4 = 1 TO G(Y1, 2)
+50429 REM each argument (of its parameter's type) followed by tmp P q, q a new local .p (a ref
+50430 REM parameter's: .q, its argument a rarg, which no other parameter takes)
+50431 FOR Y4 = 1 TO G(Y1, 2)
 50432 IF H(X1, 2) <> A(G(Y1, 1) + Y4) THEN 2900
-50434 LET Z$ = "loc .p " & STR$(H(X1, 2)) & " let " & A2$
-50436 GOSUB 51800
-50438 LET H(X1, 0) = H6
-50440 LET Z$ = "tmp " & A2$ & " " & STR$(H6)
-50442 GOSUB 51960
-50444 LET C9 = H(X1, 7)
-50446 GOSUB 51910
+50433 LET Z$ = D$(G(Y1, 6) + Y4)
+50434 LET Z1$ = ".p "
+50435 IF SEG$(Z$, LEN(Z$) - 3, LEN(Z$)) <> " ref" THEN 50437
+50436 LET Z1$ = ".q "
+50437 IF H(X1, 1) <> 11 THEN 50439
+50438 IF Z1$ = ".p " THEN 2900
+50439 IF H(X1, 1) = 11 THEN 50441
+50440 IF Z1$ = ".q " THEN 2900
+50441 LET Z$ = "loc " & Z1$ & STR$(H(X1, 2)) & " let " & A2$
+50442 GOSUB 51800
+50443 LET H(X1, 0) = H6
+50444 LET Z$ = "tmp " & A2$ & " " & STR$(H6)
+50445 GOSUB 51960
+50446 LET C9 = H(X1, 7)
+50447 GOSUB 51910
 50448 LET X1 = H(X1, 4)
 50450 NEXT Y4
 50452 REM a new local .i for each other local of F (its type and mut, pos P), from M(s,1) + 1 on
@@ -180,7 +257,23 @@
 50472 LET M(L4, 0) = X
 50474 LET M(L4, 1) = U4
 50476 LET M(L4, 2) = G(Y1, 6) + G(Y1, 2) + G(Y1, 3)
+50477 LET M(L4, 3) = Y3 * (1 - 2 * ABS(G(Y1, 0)))
 50478 GOTO 50140
+50479 REM ---- a block of a copy: its n grown by one for each tret among its statements (L20 (3))
+50480 LET Y3 = 0
+50481 LET X1 = H(X, 3)
+50482 IF X1 = 0 THEN 50487
+50483 IF H(X1, 1) <> 31 THEN 50485
+50484 LET Y3 = Y3 + 1
+50485 LET X1 = H(X1, 4)
+50486 GOTO 50482
+50487 IF Y3 = 0 THEN 50311
+50488 LET R2 = R0
+50489 LET F9 = 3
+50490 GOSUB 8440
+50491 LET F9$ = STR$(VAL(F9$) + Y3)
+50492 GOSUB 8470
+50493 GOTO 50311
 50700 REM ---- #end; then (A) reads the new stream (A2 = 1, tmp xblk iblk iret known: kinds 59-62)
 50702 LET Z$ = "#end"
 50704 GOSUB 51900
@@ -224,19 +317,22 @@
 51604 IF Y1 = G0 THEN 51608
 51606 LET Y4 = G(Y1 + 1, 6) - 1
 51608 RETURN
-51700 REM ---- 51700: T5 = the result count k of type T4 (0 void, n a ttuple, else 1), which must be
-51702 REM a scalar, str, a dynamic array or a ttuple of those (3.5.9 "What the passes validate")
+51650 REM ---- 51650: A2$ = the P of level L4 (the pos of the row |M(L4,3)|)
+51652 LET R2 = ABS(M(L4, 3))
+51654 GOSUB 8400
+51656 LET A2$ = P9$
+51658 RETURN
+51700 REM ---- 51700: T5 = the result count k of type T4 (0 void, n a ttuple, else 1); of a prelude
+51702 REM function (V5 0) a scalar, str, a dynamic array or a ttuple of those (3.5.9 "What the passes
+51703 REM validate"); of an inl one (V5 1) any result type (L20 (4))
 51704 LET T5 = 0
 51706 IF T4 = 1 THEN 51742
 51708 LET T5 = 1
 51710 LET U6 = T4
 51712 IF T4 <= 9 THEN 51740
 51714 IF T(T4, 1) > 0 THEN 51740
-51716 IF T(T4, 2) > 0 THEN 2900
-51718 LET R2 = 0
-51720 LET R2 = R2 + 1
-51721 IF R2 > D0 THEN 2900
-51722 IF SEG$(D$(R2), 1, 8 + LEN(STR$(T4))) <> "ttuple " & STR$(T4) & " " THEN 51720
+51716 IF T(T4, 2) > 0 THEN 51740
+51718 GOSUB 51770
 51724 LET F9 = 3
 51726 GOSUB 8440
 51728 LET T5 = VAL(F9$)
@@ -248,13 +344,20 @@
 51739 NEXT Y4
 51740 IF T5 = 1 THEN 51750
 51742 RETURN
-51750 REM ---- 51750: type U6 must be bool, i64, f64, str or a dynamic array
+51750 REM ---- 51750: type U6 must be bool, i64, f64, str or a dynamic array (V5 1: any type)
+51751 IF V5 = 1 THEN 51762
 51752 IF U6 < 2 THEN 2900
 51754 IF U6 <= 5 THEN 51762
 51756 IF U6 <= 9 THEN 2900
 51758 IF T(U6, 1) = 0 THEN 2900
 51760 IF T(U6, 3) > 0 THEN 2900
 51762 RETURN
+51770 REM ---- 51770: R2 = the row of the ttuple record of type T4
+51772 LET R2 = 0
+51774 LET R2 = R2 + 1
+51776 IF R2 > D0 THEN 2900
+51778 IF SEG$(D$(R2), 1, 8 + LEN(STR$(T4))) <> "ttuple " & STR$(T4) & " " THEN 51774
+51780 RETURN
 51800 REM ---- 51800: a new local (its loc record Z$ at the cursor L3), H6 its lid; SEA_LIM_SYMBOLS
 51802 LET H6 = H6 + 1
 51804 LET H5 = H5 + 1
@@ -295,7 +398,7 @@
 52200 REM ---- 52200 (lp2out, A2 = 1): the record R1 written, but not a .p or .i loc (52400, 10500)
 52202 LET Z$ = D$(R1)
 52204 IF K <> 35 THEN 52208
-52206 IF POS("|.p |.i |", "|" & SEG$(Z$, 5, 7) & "|") > 0 THEN 10300
+52206 IF POS("|.p |.q |.i |", "|" & SEG$(Z$, 5, 7) & "|") > 0 THEN 10300
 52208 LET V4 = 1
 52210 GOSUB 52500
 52212 LET Z1$ = Z$
@@ -321,7 +424,7 @@
 52416 CALL "io_put": 2, "loc .i" & STR$(I5) & SEG$(D$(R2), 7, LEN(D$(R2)))
 52418 NEXT I5
 52420 RETURN
-52500 REM ---- 52500: the record Z$ rewritten. V4 0: a node of the copy of level L4 (pos P, ret as
+52500 REM ---- 52500: the record Z$ rewritten. V4 0: a node of the copy of level L4 (L18 pos P, ret as
 52502 REM iret, a call's fid renumbered, F's parameters the .p and its locals the .i from M(s,1) + 1);
 52504 REM 1: as written (a .p as @p, an .i numbered after the .l locals); 2: the .i it declares
 52506 REM numbered, Z$ kept. Lid fields (passes.txt): lv 4, bind forr fore tmp 3, tbind 4 on.
@@ -333,6 +436,7 @@
 52518 IF SEG$(Z$, 1, 3) = "lv " THEN 52590
 52520 CALL "io_split": Z$, G$(), 300, C0
 52522 IF V4 > 0 THEN 52534
+52523 IF M(L4, 3) < 0 THEN 52526
 52524 LET G$(2) = A2$
 52526 IF G$(1) <> "ret" THEN 52530
 52528 LET G$(1) = "iret"

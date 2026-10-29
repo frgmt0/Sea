@@ -8,7 +8,7 @@ rtype 0:3:20 f64 s 0 4
 rname 0:4:12 x loc 1
 return 0:4:5 1
 block 0:3:24 1
-rfn 0:3:1 sqrt 0 1 1 2 4 4
+rfn 0:3:1 sqrt 2 1 1 2 4 4
 rpname 0:6:5 y 1
 rname 0:6:9 sqrt fn 2
 float 0:6:14 #4000000000000000

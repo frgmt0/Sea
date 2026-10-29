@@ -3,6 +3,9 @@
 #file str_rule33.sea
 rtype 0:1:12 str s 0 5
 param 0:1:9 a 0 0
+false 0:1:25
+block 0:1:31 0
+while 0:1:19
 rpname 0:2:9 n 2
 rint 0:2:13 0 #0000000000000000
 var 0:2:5 0
@@ -25,8 +28,11 @@ str 0:7:12 %25d%0A
 rname 0:7:20 n loc 2
 call 0:7:5 2
 cstmt 0:7:5
-block 0:1:17 3
+block 0:1:17 4
 rfn 0:1:1 pick 0 1 0 2 1 5
+false 0:9:20
+block 0:9:26 0
+while 0:9:14
 rname 0:10:5 pick fn 2
 str 0:10:10 x
 call 0:10:5 1
@@ -39,7 +45,7 @@ rname 0:12:5 pick fn 2
 str 0:12:10 z
 call 0:12:5 1
 cstmt 0:12:5
-block 0:9:12 3
+block 0:9:12 4
 rfn 0:9:1 drive 0 0 0 3 1
 rname 0:14:1 drive fn 3
 call 0:14:1 0

@@ -1,0 +1,5 @@
+// mkdir_existing_dir -- make_dir of a directory that exists before the program starts (a fixture with a file inside): not an error, the
+// file is untouched (LANGUAGE.md 10.10)
+make_dir("dir")
+make_dir("dir/")
+printf("kept\n")

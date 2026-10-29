@@ -1,0 +1,33 @@
+#sea 1
+#target arm64-macos
+#file inl6_agg.sea
+tstruct 10 P 2
+fd x 4
+fd y 4
+fn 1 .main main 1 0 0 0:1:1
+cf 0:8:22 4 #3FF8000000000000
+call 0:8:19 10 2 1
+fld 0:8:19 4 0
+fconv 0:8:8 1 - - - g
+ftext 0:8:8 1 %20
+cf 0:8:33 4 #4000000000000000
+call 0:8:30 10 2 1
+fld 0:8:30 4 1
+fconv 0:8:8 1 - - - g
+ftext 0:8:8 1 %0A
+fmt 0:8:8 1 4
+lib 0:8:1 1 printf 1
+eval 0:8:1
+block 0:1:1 1
+end
+fn 2 mk inl 10 1 0 0:5:1
+par x 4 val
+lv 0:6:19 4 1
+lv 0:6:25 4 1
+cf 0:6:29 4 #4000000000000000
+bin 0:6:25 4 mul
+slit 0:6:12 10 2
+ret 0:6:5 1
+block 0:5:20 1
+end
+#end

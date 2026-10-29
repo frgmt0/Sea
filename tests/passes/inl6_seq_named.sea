@@ -1,0 +1,14 @@
+// inl6_seq_named -- named arguments out of parameter order (DESIGN.md 3.5.5 "Evaluation
+// order", L-cp): m2 and m1 are bound in source order to .t1 and .t2 and pick gets lv .t2, lv .t1
+// in a seq; the seq is the mask of an L6 store, a tmp of its block (R11's seq case); pick keeps
+// its calls (a loop and two call sites, LANGUAGE.md 8.6)
+fn pick(a: bool[], b: bool[]) -> bool[] { while false {}
+    printf("pick %d %d\n", len(a), len(b))
+    return a
+}
+var v = filled(1.0, 3)
+let m1 = filled(true, 3)
+let m2 = filled(false, 2)
+v[pick(b: m2, a: m1)] = 0.0
+let w = pick(m2, m1)
+printf("%g %g %g %d\n", v[0], v[1], v[2], len(w))

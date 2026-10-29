@@ -1,0 +1,13 @@
+// fmt6_pct -- format of the cases of fmt_pct.sea, printed with print and byte-equal to the printf line of the same
+// arguments (LANGUAGE.md 11.1, 10.9: format(F, ...) is the str that printf(F, ...) writes); the
+// expected bytes are progfmt.py's exact decimal oracle, each case twice
+printf("%%\n")
+print(format("%%\n"))
+printf("100%%\n")
+print(format("100%%\n"))
+printf("%d%%\n", 50)
+print(format("%d%%\n", 50))
+printf("%%d\n")
+print(format("%%d\n"))
+printf("[%%%d%%]\n", 7)
+print(format("[%%%d%%]\n", 7))

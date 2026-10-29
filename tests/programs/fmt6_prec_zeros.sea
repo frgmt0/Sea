@@ -1,0 +1,4 @@
+// fmt6_prec_zeros -- the printf lines of fmt_prec_zeros.sea, each followed by print(format(...)) of the same arguments, byte-equal
+// (LANGUAGE.md 11.1: %d of a bool, of -0.0, C integer rules for an integral f64, %e for a non-integral one)
+printf("[%.0000000005f] [%.00e] [%.000d] [%5.0000000002f]\n", 1.0, 2.5, 7, 3.14159)
+print(format("[%.0000000005f] [%.00e] [%.000d] [%5.0000000002f]\n", 1.0, 2.5, 7, 3.14159))

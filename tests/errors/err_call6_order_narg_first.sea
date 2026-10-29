@@ -1,0 +1,5 @@
+// err_call6_order_narg_first -- the unknown name zz comes first in source order: 224 at it, before the mismatch of a: "x" after it
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(zz: 1, a: "x"))

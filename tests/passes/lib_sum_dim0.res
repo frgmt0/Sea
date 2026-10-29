@@ -17,7 +17,7 @@ rint 0:3:14 0 #0000000000000000
 index 0:3:12 1
 return 0:3:5 1
 block 0:1:29 2
-rfn 0:1:1 colsum 0 1 1 2 4 10
+rfn 0:1:1 colsum 2 1 1 2 4 10
 rname 0:5:1 printf pd 0
 str 0:5:8 %25g%0A
 rname 0:5:16 colsum fn 2

@@ -1,0 +1,5 @@
+// err_call6_default_undeclared -- a default that names an undeclared name: 200 at the name
+fn f(a: i64 = ZZ) -> i64 {
+    return a
+}
+printf("%d\n", f(1))

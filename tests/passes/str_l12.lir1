@@ -18,60 +18,72 @@ release p2
 ret 0
 endfunc
 func two fn 0:1:1 1 i1 2 p i
-rcall sea_str_i64 0:2 1 p2 1 i1
-li i3 1
-iaddc i4 i1 i3 0:2
-ret 2 p2 i4
+do 1
+li i2 0
+ifz 2 i2
+exit 1
+endif 2
+enddo 1
+rcall sea_str_i64 0:2 1 p3 1 i1
+li i4 1
+iaddc i5 i1 i4 0:2
+ret 2 p3 i5
 endfunc
 func upd fn 0:4:1 1 i1 0
 slot s1 24 8
-li i2 2
-li i3 4
-li i4 1
+do 1
+li i2 0
+ifz 2 i2
+exit 1
+endif 2
+enddo 1
+li i3 2
+li i4 4
 li i5 1
-rcall sea_arr_new 0:5 1 p6 4 i3 i4 i2 i5
-ldp p7 p6 - 0 40
-la p8 d2
-retain p8
-stp p8 p7 - 0 0
-la p9 d3
+li i6 1
+rcall sea_arr_new 0:5 1 p7 4 i4 i5 i3 i6
+ldp p8 p7 - 0 40
+la p9 d2
 retain p9
-stp p9 p7 - 0 8
-li i10 0
-li i11 5
-iaddc i12 i1 i11 0:7
-call two 2 p13 i14 1 i12
-ldi i15 p6 - 0 16
-chkb i1 i15 0 0:7
-ldi i16 p6 - 0 0
-li i17 1
-icmp ne i18 i16 i17
-if 1 i18
-rcall sea_arr_unique 0:7 1 p19 1 p6
-mov p6 p19
-endif 1
-ldp p20 p6 - 0 40
-ldp p21 p20 i1 8 0
-stp p13 p20 i1 8 0
-release p21
-mov i10 i14
-li i22 0
-ldi i23 p6 - 0 16
-chkb i22 i23 0 0:8
-ldp p24 p6 - 0 40
-ldp p25 p24 i22 8 0
-li i26 1
-ldi i27 p6 - 0 16
-chkb i26 i27 0 0:8
-ldp p28 p6 - 0 40
-ldp p29 p28 i26 8 0
-sa p30 s1
-stp p25 p30 - 0 0
-stp p29 p30 - 0 8
-sti i10 p30 - 0 16
-la p31 d4
-rcall sea_printf 0:8 0 2 p31 p30
-release p6
+stp p9 p8 - 0 0
+la p10 d3
+retain p10
+stp p10 p8 - 0 8
+li i11 0
+li i12 5
+iaddc i13 i1 i12 0:7
+call two 2 p14 i15 1 i13
+ldi i16 p7 - 0 16
+chkb i1 i16 0 0:7
+ldi i17 p7 - 0 0
+li i18 1
+icmp ne i19 i17 i18
+if 3 i19
+rcall sea_arr_unique 0:7 1 p20 1 p7
+mov p7 p20
+endif 3
+ldp p21 p7 - 0 40
+ldp p22 p21 i1 8 0
+stp p14 p21 i1 8 0
+release p22
+mov i11 i15
+li i23 0
+ldi i24 p7 - 0 16
+chkb i23 i24 0 0:8
+ldp p25 p7 - 0 40
+ldp p26 p25 i23 8 0
+li i27 1
+ldi i28 p7 - 0 16
+chkb i27 i28 0 0:8
+ldp p29 p7 - 0 40
+ldp p30 p29 i27 8 0
+sa p31 s1
+stp p26 p31 - 0 0
+stp p30 p31 - 0 8
+sti i11 p31 - 0 16
+la p32 d4
+rcall sea_printf 0:8 0 2 p32 p31
+release p7
 ret 0
 endfunc
 fmt d1 4

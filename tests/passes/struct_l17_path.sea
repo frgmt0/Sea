@@ -1,4 +1,4 @@
-fn upd(ref ds: D[], i: i64, x: f64) {
+fn upd(ref ds: D[], i: i64, x: f64) { while false {}
     ds[i].w[0] = x
     ds[i].lim = T { lo: x, hi: 2.0 }
     ds[i].lim.hi = x + 1.0

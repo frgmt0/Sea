@@ -7,6 +7,7 @@
 35 REM declaration errors, as the rerr record (DESIGN 2.6.2 "Which program reports it"), and ends
 40 REM with status 10 on a capacity limit of its own (symbols, types; nodes, strings, constants of
 45 REM literals). Files: 1 sea.ast (input), 2 sea.res (output). Built with io diag tables limb f64emu.
+47 REM From 6b it resolves parameter defaults and classes every fn by LANGUAGE 8.6 (sn9cls, rfn el 2).
 50 REM Tables (passed to every SUB): N M nodes, Y symbols, T types, W work stack, C literal limbs,
 55 REM S$ strings, X X$ state, H the hash of C, O that of S$, Q the mtab words, D$ the records read.
 60 REM Layouts: the REM block of sn2util. Much of the code is phase 1's seacheck, moved (DESIGN 2.7).
@@ -60,7 +61,7 @@
 270 GOTO 99999
 275 REM ---- sc_lim: the limits of limits.inc this pass needs, checked against the table sizes ----
 280 SUB "sc_lim": P$, K(), K$(), K0, X()
-285 DIM Q$(10)
+285 DIM Q$(11)
 290 LET Q$(1) = "FILE_VERSION"
 295 LET Q$(2) = "LIM_SYMBOLS"
 300 LET Q$(3) = "LIM_TYPES"
@@ -71,13 +72,15 @@
 325 LET Q$(8) = "LIM_DEC_FIELD"
 327 LET Q$(9) = "LIM_FIXED_ELEMS"
 328 LET Q$(10) = "LIM_LINE_BYTES"
-330 FOR I = 1 TO 10
+329 LET Q$(11) = "LIM_INLINE_STMTS"
+330 FOR I = 1 TO 11
 335 CALL "tb_cval": K(), K$(), K0, Q$(I), V, T
 340 IF T = 0 THEN 350
 345 CALL "dg_bug": P$, "constant " & Q$(I) & " is not in the consts table"
 350 IF I = 1 THEN 380
 351 IF I = 10 THEN 382
 352 IF I = 9 THEN 377
+353 IF I = 11 THEN 383
 355 IF I = 8 THEN 370
 360 LET X(18 + I) = V
 365 GOTO 385
@@ -88,6 +91,8 @@
 380 LET X(34) = V
 381 GOTO 385
 382 LET X(45) = V
+383 IF I < 11 THEN 385
+384 LET X(47) = V
 385 NEXT I
 390 IF X(20) > 49999 THEN 425
 395 IF 9 + 2 * X(21) + INT(X(23) / 9) + 1 > 51209 THEN 425

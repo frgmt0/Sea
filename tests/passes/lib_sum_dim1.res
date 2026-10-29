@@ -21,7 +21,7 @@ rname 0:3:14 k loc 2
 index 0:3:12 1
 return 0:3:5 1
 block 0:1:39 2
-rfn 0:1:1 rowsum 0 2 1 2 4 10 3
+rfn 0:1:1 rowsum 2 2 1 2 4 10 3
 rpname 0:5:5 M 1
 float 0:5:10 #3FF0000000000000
 float 0:5:15 #4000000000000000

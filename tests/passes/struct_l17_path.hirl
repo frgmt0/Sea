@@ -147,6 +147,9 @@ loc .l20 5 let 0:5:5
 loc .l21 13 let 0:5:5
 loc .l22 3 let 0:5:5
 loc .l23 3 let 0:5:5
+cb 0:1:45 2 0
+block 0:1:51 0
+while 0:1:39
 lv 0:2:18 4 3
 tmp 0:2:5 4
 lv 0:2:5 13 1
@@ -260,6 +263,6 @@ adat 0:5:5 14
 lv 0:5:5 3 25
 est 0:5:5 32 0
 block 0:5:5 7
-block 0:1:37 4
+block 0:1:37 5
 end
 #end

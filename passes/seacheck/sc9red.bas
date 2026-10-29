@@ -5,25 +5,31 @@
 19420 REM ---- ck_narg: named argument J (name: value) of a call. dim: of sum mean variance std max min
 19425 REM any all nnz and desc: of sort argsort are checked here: a dim: value i64 (201), constant (237),
 19430 REM 0 or 1 (262), in that order, at the value; a desc: value bool (201); then (value first, DESIGN
-19435 REM 2.6.2) a name given twice is 225 at the second narg. Any other narg is 'not supported yet:
-19440 REM named arguments'. M(J,1) the value's type (0 after an error), M(J,5) the dim value, which is
-19445 REM then written as one ci (M(first node,8) = -J, em_expr) -----------------------------------
+19435 REM 2.6.2) a name given twice is 225 at the second narg. Any other name of a library function is
+19440 REM 224 (L-by); a named argument of a Sea function is ck_ucall's (M(J,1) its value's type), of
+19442 REM anything else the call's error. M(J,1) the value's type (0 after an error), M(J,5) the dim
+19445 REM value, which is then written as one ci (M(first node,8) = -J, em_expr) --------------------
 19450 SUB "ck_narg": N(), M(), Y(), T(), C(), S$(), X(), X$(), J
 19455 LET M(J, 1) = 0
 19460 LET V = N(J, 7)
 19465 LET G = N(N(J, 9), 7)
-19475 IF N(G, 0) <> 30 THEN 19510
-19480 IF M(G, 2) >= -8 THEN 19510
+19475 IF N(G, 0) <> 30 THEN 19658
+19480 IF M(G, 2) >= -8 THEN 19540
 19485 LET C$ = "|" & S$(N(G, 6)) & "|"
 19490 IF S$(N(J, 6)) <> "dim" THEN 19500
 19495 IF POS("|sum|mean|variance|std|max|min|any|all|nnz|", C$) > 0 THEN 19515
 19500 IF S$(N(J, 6)) <> "desc" THEN 19510
 19505 IF POS("|sort|argsort|", C$) > 0 THEN 19517
-19510 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "named arguments", "", "", 1
+19510 CALL "er": N(), X(), X$(), J, "UNKNOWN_PARAM", "", "", "", 0
 19512 GOTO 19658
 19515 LET Z = 1
 19516 GOTO 19555
 19517 LET Z = 2
+19518 GOTO 19555
+19540 IF M(G, 2) < 1 THEN 19658
+19541 IF Y(M(G, 2), 0) <> 1 THEN 19658
+19542 LET M(J, 1) = M(V, 1)
+19543 GOTO 19658
 19555 CALL "vu": N(), M(), T(), X(), X$(), V, D
 19560 IF D = 0 THEN 19658
 19565 IF D <> -1 THEN 19580

@@ -107,12 +107,24 @@ release p5
 ret 0
 endfunc
 func p fn 0:1:1 0 1 i
+do 1
 li i1 0
-ret 1 i1
+ifz 2 i1
+exit 1
+endif 2
+enddo 1
+li i2 0
+ret 1 i2
 endfunc
 func q fn 0:4:1 0 1 i
-li i1 1
-ret 1 i1
+do 1
+li i1 0
+ifz 2 i1
+exit 1
+endif 2
+enddo 1
+li i2 1
+ret 1 i2
 endfunc
 slay d1 8 1
 soff 0

@@ -9,7 +9,7 @@ str 0:4:12 x%0A
 call 0:4:5 1
 cstmt 0:4:5
 block 0:3:12 1
-rfn 0:3:1 f 0 1 0 2 1 0
+rfn 0:3:1 f 2 1 0 2 1 0
 name 0:7:5 printf
 str 0:7:12 y%0A
 call 0:7:5 1

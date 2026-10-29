@@ -1,0 +1,2 @@
+// err_call6_format_bad_flag -- # with %d is undefined in C and an error in Sea: 234 at the literal, the conversion written through its letter
+let s = format("%#d", 1)

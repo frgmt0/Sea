@@ -1,0 +1,69 @@
+#sea 1
+#target arm64-macos
+#file inl6_basic.sea
+tvec 10 3
+fn 1 .main main 1 0 4 0:1:1
+loc a 4 let 0:15:5
+loc b 4 let 0:16:5
+loc .l1 4 let 0:15:9
+loc .l2 4 let 0:16:9
+cf 0:15:15 4 #3FF8000000000000
+tmp 0:15:9 3
+lv 0:6:12 4 3
+cf 0:6:16 4 #4000000000000000
+bin 0:6:12 4 mul
+iret 0:6:5 1
+block 0:5:25 1
+iblk 0:15:9 4 1
+xblk 0:15:9 4 1
+bind 0:15:1 1
+lv 0:16:15 4 1
+tmp 0:16:9 4
+lv 0:6:12 4 4
+cf 0:6:16 4 #4000000000000000
+bin 0:6:12 4 mul
+iret 0:6:5 1
+block 0:5:25 1
+iblk 0:16:9 4 1
+xblk 0:16:9 4 1
+cf 0:16:20 4 #3FF0000000000000
+bin 0:16:9 4 add
+bind 0:16:1 2
+lv 0:17:25 4 1
+fconv 0:17:8 1 - - - g
+ftext 0:17:8 1 %20
+lv 0:17:28 4 2
+fconv 0:17:8 1 - - - g
+ftext 0:17:8 1 %20
+ci 0:17:36 3 3
+call 0:17:31 3 2 1
+fconv 0:17:8 1 - - - d
+ftext 0:17:8 1 %20
+ci 0:17:45 3 4
+call 0:17:40 3 2 1
+fconv 0:17:8 1 - - - d
+ftext 0:17:8 1 %0A
+fmt 0:17:8 1 8
+lib 0:17:1 1 printf 1
+eval 0:17:1
+block 0:1:1 3
+end
+fn 2 keep fn 3 1 2 0:8:1
+par n 3 val
+loc s 3 var 0:9:9
+loc i 3 for 0:10:9
+ci 0:9:13 3 0
+bind 0:9:5 2
+ci 0:10:14 3 0
+lv 0:10:17 3 1
+rng 0:10:14 10 0 0
+lv 0:11:9 3 2
+lv 0:11:14 3 3
+asg 0:11:9 add
+block 0:10:19 1
+forr 0:10:5 3
+lv 0:13:12 3 2
+ret 0:13:5 1
+block 0:8:24 3
+end
+#end

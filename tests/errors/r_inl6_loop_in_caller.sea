@@ -1,0 +1,8 @@
+// r_inl6_loop_in_caller -- an inlined small function called in a loop of the caller fails on a later iteration: the output of the earlier
+// iterations is flushed first, the line is the callee's (LANGUAGE.md 9.2)
+fn inv(k: i64) -> i64 {
+    return 12 % k
+}
+for k in 3..=0 step -1 {
+    printf("%d\n", inv(k))
+}

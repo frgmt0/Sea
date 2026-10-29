@@ -1,0 +1,40 @@
+// inl_result_struct -- struct results of inlined functions (R32: the result lives in a home the caller provides), a struct with str,
+// array and nested struct fields, a result assigned over a var of the same type (the old value released: the heap
+// check), a parameter returned unchanged, a tuple with a struct component bound by let (a record has no type
+// syntax, so no function returns one: LANGUAGE.md 4.10)
+struct P { x: f64, y: f64, n: i64 }
+struct R { name: str, v: f64[], p: P }
+fn mkp(a: f64, n: i64) -> P {
+    return P { x: a, y: a * 2.0, n: n }
+}
+fn scalep(p: P, k: f64) -> P {
+    var q = p
+    q.x *= k
+    q.y *= k
+    return q
+}
+fn mkr(name: str, n: i64) -> R {
+    return R { name: name + "!", v: [f64(n), f64(n) * 2.0], p: mkp(0.5, n) }
+}
+fn ident(r: R) -> R {
+    return r
+}
+fn both(n: i64) -> (P, R) {
+    return (mkp(f64(n), n), mkr("t", n))
+}
+fn pr(r: R) {
+    printf("%s [%g %g] %g %g %d\n", r.name, r.v[0], r.v[1], r.p.x, r.p.y, r.p.n)
+}
+let p = mkp(1.5, 3)
+let q = scalep(p, 2.0)
+printf("%g %g %d | %g %g %d\n", p.x, p.y, p.n, q.x, q.y, q.n)
+var r = mkr("a", 1)
+pr(r)
+r = mkr("b", 2)
+pr(r)
+let r2 = ident(r)
+pr(r2)
+pr(mkr("c", 3))
+let (bp, br) = both(4)
+printf("%g %d\n", bp.x, bp.n)
+pr(br)

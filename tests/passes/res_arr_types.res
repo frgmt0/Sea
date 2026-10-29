@@ -34,7 +34,7 @@ rname 0:8:13 r loc 3
 rname 0:8:16 a loc 1
 return 0:8:5 2
 block 0:3:47 3
-rfn 0:3:1 f 0 2 2 2 13 10 11
+rfn 0:3:1 f 2 2 2 2 13 10 11
 rpname 0:10:5 m 1
 rtype 0:10:8 f64 m 0 10
 rname 0:10:17 zeros pd 0

@@ -19,7 +19,7 @@ index 0:2:38 1
 call 0:2:5 4
 cstmt 0:2:5
 block 0:1:20 1
-rfn 0:1:1 show 0 1 0 2 1 10
+rfn 0:1:1 show 2 1 0 2 1 10
 rpname 0:4:5 a 1
 rint 0:4:12 3 #4008000000000000
 rtype 0:4:8 str fv 1 10

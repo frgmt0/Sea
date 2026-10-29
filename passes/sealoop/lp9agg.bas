@@ -133,7 +133,8 @@
 45337 GOSUB 45390
 45338 LET Z2 = H1
 45339 GOTO 45302
-45340 REM the root: a local or a ref parameter (its par record's mode)
+45340 REM the root: a local or a ref parameter (its par record's mode); from 6b also a ref local of
+45341 REM an inline block (the .q local of L20 (2), R31), which is read as the ref parameter it is
 45342 LET R9 = Z2
 45344 LET R2 = H(Z2, 6)
 45346 LET F9 = 4
@@ -142,8 +143,9 @@
 45352 LET E7 = H(Z2, 2)
 45354 LET E4 = 0
 45356 LET E2 = 0
-45358 IF E9 > G(F0, 2) THEN 45370
-45360 LET Z$ = D$(G(F0, 6) + E9)
+45358 LET Z$ = D$(G(F0, 6) + E9)
+45359 IF SEG$(Z$, 1, 7) = "loc .q " THEN 45364
+45360 IF E9 > G(F0, 2) THEN 45370
 45362 IF SEG$(Z$, LEN(Z$) - 3, LEN(Z$)) <> " ref" THEN 45370
 45364 IF T(E7, 1) = 0 THEN 45370
 45366 IF T(E7, 3) = 1 THEN 45370

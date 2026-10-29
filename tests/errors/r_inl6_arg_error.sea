@@ -1,0 +1,8 @@
+// r_inl6_arg_error -- an argument expression that fails belongs to the caller: its own line even when the callee is inlined (the
+// call is on line 8 here, the callee is lines 2 to 4; DESIGN.md 3.6.4 "Sites")
+fn id(x: i64) -> i64 {
+    return x
+}
+let a: i64[] = [1, 2]
+printf("%d\n", id(a[1]))
+printf("%d\n", id(a[5]))

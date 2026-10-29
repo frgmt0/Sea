@@ -1,0 +1,15 @@
+// inl_mutual_single -- a mutually recursive pair where b has exactly one call site (class (b), inlined into a: the recursion goes
+// through the inlined body) and a has several (it stays a call); LANGUAGE.md 8.6, DESIGN.md 2.11.4 L20
+fn a(n: i64) -> i64 {
+    if n == 0 {
+        return 0
+    }
+    return 1 + b(n - 1)
+}
+fn b(n: i64) -> i64 {
+    if n == 0 {
+        return 100
+    }
+    return 2 + a(n - 1)
+}
+printf("%d %d %d %d\n", a(0), a(1), a(2), a(7))

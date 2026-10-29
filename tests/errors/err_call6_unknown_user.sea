@@ -1,0 +1,5 @@
+// err_call6_unknown_user -- a name the function does not take is 224 at the narg (LANGUAGE.md 8.1; DESIGN.md 2.11.2)
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(1, zz: 2))

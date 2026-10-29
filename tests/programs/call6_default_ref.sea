@@ -1,0 +1,26 @@
+// call6_default_ref -- a ref parameter (given positionally only, never defaulted) followed by parameters with defaults, some given by
+// name (LANGUAGE.md 8.1, 8.3)
+fn bump(ref x: i64, by: i64 = 1, times: i64 = 1) {
+    for k in 0..times {
+        x += by
+    }
+}
+fn scale(ref a: f64[], k: f64 = 2.0) {
+    for i in 0..len(a) {
+        a[i] *= k
+    }
+}
+var v = 0
+bump(ref v)
+printf("%d\n", v)
+bump(ref v, 5)
+printf("%d\n", v)
+bump(ref v, times: 3, by: 2)
+printf("%d\n", v)
+bump(ref v, times: 2)
+printf("%d\n", v)
+var w: f64[] = [1.0, 2.0]
+scale(ref w)
+printf("%g %g\n", w[0], w[1])
+scale(ref w, k: 0.5)
+printf("%g %g\n", w[0], w[1])

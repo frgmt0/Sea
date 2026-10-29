@@ -1,0 +1,18 @@
+// call6_defaults_named -- defaults with named arguments: a parameter skipped by name keeps its default, the others are given in any order,
+// and the argument expressions still evaluate in source order (LANGUAGE.md 8.1)
+fn t(k: i64, v: i64) -> i64 {
+    printf("eval %d\n", k)
+    return v
+}
+fn j(a: i64, b: i64 = 10, c: i64 = 20, d: i64 = 30) {
+    printf("%d %d %d %d\n", a, b, c, d)
+}
+j(1)
+j(1, 2)
+j(1, d: 4)
+j(1, c: 3)
+j(d: 4, a: 1)
+j(1, 2, d: 9)
+j(c: 7, b: 8, a: 9)
+j(d: 1, c: 2, b: 3, a: 4)
+j(t(1, 1), d: t(2, 4), b: t(3, 2))

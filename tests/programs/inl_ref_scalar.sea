@@ -1,0 +1,44 @@
+// inl_ref_scalar -- a ref scalar parameter of inlined functions (DESIGN.md 3.6.6 rule 12, 31, R31): the callee updates the caller's
+// variable; a read evaluated before a ref call in the same statement keeps the old value (y = a + bump(ref a),
+// a += bump(ref a), f(a, bump(ref a))); the deferred case f(ref a, g(ref a)) sees the variable as the inner
+// call left it (LANGUAGE.md 8.3, 6.8); a ref parameter passed on to another inlined function
+fn bump(ref x: i64) -> i64 {
+    x += 10
+    return x
+}
+fn addto(ref x: i64, y: i64) -> i64 {
+    x += y
+    return x
+}
+fn twice(ref x: i64) {
+    x *= 2
+}
+fn quad(ref x: i64) {
+    twice(ref x)
+    twice(ref x)
+}
+fn show2(p: i64, q: i64) {
+    printf("%d %d\n", p, q)
+}
+var a = 1
+let r1 = bump(ref a)
+printf("%d %d\n", a, r1)
+a = 1
+let y = a + bump(ref a)
+printf("%d %d\n", a, y)
+a = 1
+a += bump(ref a)
+printf("%d\n", a)
+a = 1
+let r2 = addto(ref a, bump(ref a))
+printf("%d %d\n", a, r2)
+a = 1
+show2(a, bump(ref a))
+a = 1
+show2(bump(ref a), a)
+a = 3
+twice(ref a)
+twice(ref a)
+printf("%d\n", a)
+quad(ref a)
+printf("%d\n", a)

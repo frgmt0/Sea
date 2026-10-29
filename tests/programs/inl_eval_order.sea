@@ -1,0 +1,21 @@
+// inl_eval_order -- inlining evaluates every argument once, in source order, also an argument the callee ignores or reads twice
+// or in the other order (LANGUAGE.md 8.1, 6.8)
+fn t(k: i64, v: i64) -> i64 {
+    printf("eval %d\n", k)
+    return v
+}
+fn use2(x: i64) -> i64 {
+    return x + x
+}
+fn ignore(x: i64) -> i64 {
+    return 7
+}
+fn sub(a: i64, b: i64) -> i64 {
+    let r = b * 10
+    return r + a
+}
+printf("%d\n", use2(t(1, 5)))
+printf("%d\n", ignore(t(2, 5)))
+printf("%d\n", sub(t(3, 1), t(4, 2)))
+printf("%d\n", sub(b: t(5, 2), a: t(6, 1)))
+printf("%d\n", use2(use2(t(7, 3))))

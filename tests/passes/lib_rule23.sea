@@ -1,4 +1,4 @@
-fn total(x: f64[]) -> f64 {
+fn total(x: f64[]) -> f64 { while false {}
     // lib_rule23 -- DESIGN.md 3.6.6 rule 23 (reductions): its example verbatim on line 3 (x is p1)
     let s = sum(x)
     return s

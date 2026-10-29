@@ -1,0 +1,10 @@
+// r_inl6_multiline_call -- a call written over several lines whose inlined callee fails: the callee's line (DESIGN.md 3.6.4)
+fn quot(a: i64,
+        b: i64) -> i64 {
+    return a % b
+}
+let r = quot(1,
+             3)
+printf("%d\n", r)
+let q = quot(1,
+             0)

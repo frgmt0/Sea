@@ -1,0 +1,1 @@
+err_call6_ref_default.sea:2:19: error: ref argument must be a mutable variable, element or field

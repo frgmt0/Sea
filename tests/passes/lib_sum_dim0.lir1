@@ -2,8 +2,10 @@
 #target arm64-macos
 #file lib_sum_dim0.sea
 func .main main 0:1:1 0 0
-slot s1 8 8
+slot s1 64 8
 slot s2 8 8
+slot s3 64 8
+slot s4 8 8
 li i1 2
 li i2 3
 li i3 1
@@ -21,94 +23,162 @@ loop 2 i13 i9 i12 i11
 stf f7 p8 i13 8 0
 endloop 2
 endif 1
-call colsum 1 f14 1 p5
-release p5
-sa p15 s1
-stf f14 p15 - 0 0
-la p16 d1
-rcall sea_printf 0:5 0 2 p16 p15
-li i17 3
+do 3
+ldi i14 p5 - 0 16
+ldi i15 p5 - 0 24
+li i16 1
+li i17 1
 li i18 1
-li i19 1
-li i20 2
-rcall sea_arr_new 0:6 1 p21 4 i19 i20 i17 i18
-call colsum 1 f22 1 p21
-release p21
-sa p23 s2
-stf f22 p23 - 0 0
-la p24 d2
-rcall sea_printf 0:6 0 2 p24 p23
+rcall sea_arr_new_u 0:2 1 p19 4 i16 i17 i15 i18
+ldp p20 p19 - 0 40
+ldp p21 p5 - 0 40
+li i22 0
+icmp gt i23 i15 i22
+if 4 i23
+li i24 1
+isub i25 i15 i24
+loop 5 i26 i22 i25 i24
+li i27 0
+icmp gt i28 i14 i27
+if 6 i28
+sa p29 s1
+lf f30 #8000000000000000
+stf f30 p29 - 0 0
+stf f30 p29 - 0 8
+stf f30 p29 - 0 16
+stf f30 p29 - 0 24
+stf f30 p29 - 0 32
+stf f30 p29 - 0 40
+stf f30 p29 - 0 48
+stf f30 p29 - 0 56
+li i31 7
+li i32 1
+isub i33 i14 i32
+loop 7 i34 i27 i33 i32
+iand i35 i34 i31
+ldf f36 p29 i35 8 0
+imul i37 i26 i14
+iadd i38 i34 i37
+ldf f39 p21 i38 8 0
+fadd f36 f36 f39
+stf f36 p29 i35 8 0
+endloop 7
+ldf f40 p29 - 0 0
+ldf f41 p29 - 0 8
+ldf f42 p29 - 0 16
+ldf f43 p29 - 0 24
+ldf f44 p29 - 0 32
+ldf f45 p29 - 0 40
+ldf f46 p29 - 0 48
+ldf f47 p29 - 0 56
+fadd f48 f40 f41
+fadd f49 f42 f43
+fadd f50 f48 f49
+fadd f51 f44 f45
+fadd f52 f46 f47
+fadd f53 f51 f52
+fadd f54 f50 f53
+else 6
+lf f54 #0000000000000000
+endif 6
+stf f54 p20 i26 8 0
+endloop 5
+endif 4
+li i55 0
+ldi i56 p19 - 0 16
+chkb i55 i56 0 0:3
+ldp p57 p19 - 0 40
+ldf f58 p57 i55 8 0
+release p19
+mov f59 f58
+exit 3
+enddo 3
+release p5
+sa p60 s2
+stf f59 p60 - 0 0
+la p61 d1
+rcall sea_printf 0:5 0 2 p61 p60
+li i62 3
+li i63 1
+li i64 1
+li i65 2
+rcall sea_arr_new 0:6 1 p66 4 i64 i65 i62 i63
+do 8
+ldi i67 p66 - 0 16
+ldi i68 p66 - 0 24
+li i69 1
+li i70 1
+li i71 1
+rcall sea_arr_new_u 0:2 1 p72 4 i69 i70 i68 i71
+ldp p73 p72 - 0 40
+ldp p74 p66 - 0 40
+li i75 0
+icmp gt i76 i68 i75
+if 9 i76
+li i77 1
+isub i78 i68 i77
+loop 10 i79 i75 i78 i77
+li i80 0
+icmp gt i81 i67 i80
+if 11 i81
+sa p82 s3
+lf f83 #8000000000000000
+stf f83 p82 - 0 0
+stf f83 p82 - 0 8
+stf f83 p82 - 0 16
+stf f83 p82 - 0 24
+stf f83 p82 - 0 32
+stf f83 p82 - 0 40
+stf f83 p82 - 0 48
+stf f83 p82 - 0 56
+li i84 7
+li i85 1
+isub i86 i67 i85
+loop 12 i87 i80 i86 i85
+iand i88 i87 i84
+ldf f89 p82 i88 8 0
+imul i90 i79 i67
+iadd i91 i87 i90
+ldf f92 p74 i91 8 0
+fadd f89 f89 f92
+stf f89 p82 i88 8 0
+endloop 12
+ldf f93 p82 - 0 0
+ldf f94 p82 - 0 8
+ldf f95 p82 - 0 16
+ldf f96 p82 - 0 24
+ldf f97 p82 - 0 32
+ldf f98 p82 - 0 40
+ldf f99 p82 - 0 48
+ldf f100 p82 - 0 56
+fadd f101 f93 f94
+fadd f102 f95 f96
+fadd f103 f101 f102
+fadd f104 f97 f98
+fadd f105 f99 f100
+fadd f106 f104 f105
+fadd f107 f103 f106
+else 11
+lf f107 #0000000000000000
+endif 11
+stf f107 p73 i79 8 0
+endloop 10
+endif 9
+li i108 0
+ldi i109 p72 - 0 16
+chkb i108 i109 0 0:3
+ldp p110 p72 - 0 40
+ldf f111 p110 i108 8 0
+release p72
+mov f112 f111
+exit 8
+enddo 8
+release p66
+sa p113 s4
+stf f112 p113 - 0 0
+la p114 d2
+rcall sea_printf 0:6 0 2 p114 p113
 ret 0
-endfunc
-func colsum fn 0:1:1 1 p1 1 f
-slot s1 64 8
-ldi i2 p1 - 0 16
-ldi i3 p1 - 0 24
-li i4 1
-li i5 1
-li i6 1
-rcall sea_arr_new_u 0:2 1 p7 4 i4 i5 i3 i6
-ldp p8 p7 - 0 40
-ldp p9 p1 - 0 40
-li i10 0
-icmp gt i11 i3 i10
-if 1 i11
-li i12 1
-isub i13 i3 i12
-loop 2 i14 i10 i13 i12
-li i15 0
-icmp gt i16 i2 i15
-if 3 i16
-sa p17 s1
-lf f18 #8000000000000000
-stf f18 p17 - 0 0
-stf f18 p17 - 0 8
-stf f18 p17 - 0 16
-stf f18 p17 - 0 24
-stf f18 p17 - 0 32
-stf f18 p17 - 0 40
-stf f18 p17 - 0 48
-stf f18 p17 - 0 56
-li i19 7
-li i20 1
-isub i21 i2 i20
-loop 4 i22 i15 i21 i20
-iand i23 i22 i19
-ldf f24 p17 i23 8 0
-imul i25 i14 i2
-iadd i26 i22 i25
-ldf f27 p9 i26 8 0
-fadd f24 f24 f27
-stf f24 p17 i23 8 0
-endloop 4
-ldf f28 p17 - 0 0
-ldf f29 p17 - 0 8
-ldf f30 p17 - 0 16
-ldf f31 p17 - 0 24
-ldf f32 p17 - 0 32
-ldf f33 p17 - 0 40
-ldf f34 p17 - 0 48
-ldf f35 p17 - 0 56
-fadd f36 f28 f29
-fadd f37 f30 f31
-fadd f38 f36 f37
-fadd f39 f32 f33
-fadd f40 f34 f35
-fadd f41 f39 f40
-fadd f42 f38 f41
-else 3
-lf f42 #0000000000000000
-endif 3
-stf f42 p8 i14 8 0
-endloop 2
-endif 1
-li i43 0
-ldi i44 p7 - 0 16
-chkb i43 i44 0 0:3
-ldp p45 p7 - 0 40
-ldf f46 p45 i43 8 0
-release p7
-ret 1 f46
 endfunc
 fmt d1 2
 fconv - - - g f

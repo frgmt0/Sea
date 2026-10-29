@@ -1,0 +1,62 @@
+// inl6_count51 -- 8.6 (c) at its limit (DESIGN.md 2.11.3, L-ci): c51 has two call sites, no
+// loop and 51 statements (the if ... else if ... else chain 1, its branches 3, the bare
+// block 1 and its statement 1), so it stays a call (kind fn; the .hirl is the .hir: nothing to rewrite)
+// one statement over SEA_LIM_INLINE_STMTS, LANGUAGE.md 8.6
+fn c51(k: i64) -> i64 {
+    var s = k
+    if s > 0 {
+        s += 1
+    } else if s < 0 {
+        s -= 1
+    } else {
+        s = 1
+    }
+    {
+        s += 2
+    }
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    return s
+}
+printf("%d %d\n", c51(0), c51(5))

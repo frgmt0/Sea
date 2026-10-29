@@ -38,6 +38,9 @@ fn 2 show fn 1 1 2 0:1:1
 par dims 11 val
 loc nom 12 let 0:2:9
 loc names 13 let 0:3:9
+cb 0:1:30 2 0
+block 0:1:36 0
+while 0:1:24
 lv 0:2:15 11 1
 proj 0:2:15 12 1
 bind 0:2:5 2
@@ -67,6 +70,6 @@ ftext 0:4:12 1 %0A
 fmt 0:4:12 1 8
 lib 0:4:5 1 printf 1
 eval 0:4:5
-block 0:1:22 3
+block 0:1:22 4
 end
 #end

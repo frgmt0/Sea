@@ -87,9 +87,12 @@ and vectorization get their own pass 3d after `sealopt`, sharing `lirrw`, name a
 lead decisions L-bw–L-cx; DESIGN.md §2.11, §2.7, §6.2, §6.3, §8): named and default arguments,
 §8.6 inlining (`sealoop` L20, `sealower` R31/R32), elemental functions (L19), `format`, `print`,
 `make_dir`, `f64 %`, `write_json` (rule 39, runtime entries 23–38), the W1 and W5 ports without
-figures; `seacheck` gated as `sealower` is (Decision 82). **Next:** **6b** (calls and output;
-WP-CONTRACT first); 6b-0, the conditional `seacheck` compaction, only if the measurement after 6c
-triggers it (Decision 87). Versions 0.y.z are alpha; 1.0.0 = v1
+figures; `seacheck` gated as `sealower` is (Decision 82). **6b is done** (2026-10-28: named and
+default arguments, §8.6 inlining, `f64` `%`, `format`, `print`, `make_dir`, runtime entries 23–38;
+lead decisions L-cy–L-dh; `make test` and `make cross` (700) pass; `seacheck` 6 798 built lines,
+`sealoop` 5 936, `sealower` 6 637, `seaname` 5 424, DESIGN.md §2.7 "Measured after 6b"). **Next:**
+**6c** (elemental functions, `ind2sub` with an array `r`); 6b-0, the conditional `seacheck`
+compaction, only if the measurement after 6c triggers it (Decision 87). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first

@@ -21,7 +21,7 @@ rname 0:4:26 d loc 3
 call 0:4:5 3
 cstmt 0:4:5
 block 0:1:21 3
-rfn 0:1:1 spread 0 1 0 2 1 10
+rfn 0:1:1 spread 2 1 0 2 1 10
 rname 0:6:1 spread fn 2
 rname 0:6:8 ones pd 0
 rint 0:6:13 3 #4008000000000000

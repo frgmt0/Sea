@@ -1,0 +1,5 @@
+// err_call6_missing_skip -- a parameter without a default skipped by name: 226 at the call (LANGUAGE.md 8.1: b is neither given nor defaulted)
+fn f(a: i64, b: i64, c: i64 = 0) -> i64 {
+    return a + b + c
+}
+printf("%d\n", f(1, c: 3))

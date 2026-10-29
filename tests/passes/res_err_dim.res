@@ -9,6 +9,6 @@ rtype 0:3:20 i64 s 0 3
 rint 0:4:12 1 #3FF0000000000000
 return 0:4:5 1
 block 0:3:24 1
-rfn 0:3:1 f 0 1 1 2 3 0
+rfn 0:3:1 f 2 1 1 2 3 0
 prog 1
 #end

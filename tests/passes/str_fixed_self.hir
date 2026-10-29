@@ -30,7 +30,7 @@ call 0:8:1 1 2 1
 eval 0:8:1
 block 0:1:1 5
 end
-fn 2 show fn 1 1 0 0:1:1
+fn 2 show inl 1 1 0 0:1:1
 par a 10 val
 lv 0:2:26 10 1
 ci 0:2:28 3 0

@@ -1,0 +1,2 @@
+// err_call6_unknown_prel -- linspace(0.0, 1.0, m: 3): a prelude function takes the names of LANGUAGE.md 10.3 only: 224 at the narg
+let v = linspace(0.0, 1.0, m: 3)

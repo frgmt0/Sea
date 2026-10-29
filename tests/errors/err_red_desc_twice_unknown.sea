@@ -1,5 +1,5 @@
-// err_red_desc_twice_unknown -- a repeated name the function does not take is the phase rule's word at its
-// first narg (DESIGN.md 2.6.2)
+// err_red_desc_twice_unknown -- a repeated name the function does not take is unknown parameter (224, L-by) at its
+// first narg, which precedes the second one's 225 (DESIGN.md 2.11.2)
 let v: f64[] = [1.0, 2.0]
 let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
 let s = sum(v, desc: true, desc: true)

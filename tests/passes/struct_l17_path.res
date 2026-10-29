@@ -16,6 +16,9 @@ rtype 0:1:24 i64 s 0 3
 param 0:1:21 i 0 0
 rtype 0:1:32 f64 s 0 4
 param 0:1:29 x 0 0
+false 0:1:45
+block 0:1:51 0
+while 0:1:39
 rname 0:2:5 ds loc 1
 rname 0:2:8 i loc 2
 index 0:2:5 1
@@ -49,7 +52,7 @@ index 0:5:5 1
 dot 0:5:5 name
 str 0:5:18 z
 asg 0:5:5 set
-block 0:1:37 4
+block 0:1:37 5
 rfn 0:1:1 upd 0 3 0 2 1 13 3 4
 rpname 0:7:5 t0 1
 float 0:7:18 #0000000000000000

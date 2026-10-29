@@ -1,3 +1,0 @@
-// err_ns_f64_mod -- phase 1: % with an f64 operand (at the bin node)
-let x = 5.5
-let r = x % 2.0

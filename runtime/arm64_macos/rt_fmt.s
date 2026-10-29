@@ -9,10 +9,14 @@
 //   _sea_error    (global, SEA_ENT_ERROR) format like _sea_printf into the
 //                 sink, then the run-time error USER with that text
 //                 (LANGUAGE.md 9.3; DESIGN.md 4.8)
+//   _sea_format   (global, SEA_ENT_FORMAT) format like _sea_printf into the
+//                 sink and return a new string of the text (LANGUAGE.md
+//                 11.1; DESIGN.md 4.8, 2.11.6)
 //   _sea_fmt_g    (private to the runtime) an f64 as Sea's printf("%g")
 //                 prints it, for _sea_err's `f` arguments (DESIGN.md 2.6.2)
 //   _sea_fmt_sink (private to the runtime) the growing text buffer that
-//                 _sea_error formats into (DESIGN.md 4.5), three u64:
+//                 _sea_error and _sea_format format into (DESIGN.md 4.5),
+//                 three u64:
 //                 RTF_SINK_PTR the block (0 until first used),
 //                 RTF_SINK_LEN the bytes in it, RTF_SINK_CAP its size
 //                 (a power of two >= RTF_SINK_MIN, from _sea_alloc)
@@ -27,8 +31,8 @@
 // Destination. The engine (Lrt_fmt_run) writes every piece through
 // Lrt_fmt_out and Lrt_fmt_fill, which send it to the standard-output
 // buffer or, while Lrt_fmt_dest is 1, append it to the sink. _sea_printf
-// sets the destination to standard output, _sea_error to the sink; the
-// bytes are the same either way (LANGUAGE.md 9.3, 11.1). The sink grows
+// sets the destination to standard output, _sea_error and _sea_format to
+// the sink; the bytes are the same either way (LANGUAGE.md 9.3, 11.1). The sink grows
 // by doubling; a text longer than SEA_LIM_STR_BYTES (it becomes a str) or
 // no memory is _sea_err(SEA_E_OUT_OF_MEMORY, site).
 //
@@ -786,26 +790,26 @@ Lrt_fmt_sink_repeat:
     ret
 
 // ---------------------------------------------------------------------
-// _sea_error -- the entry ERROR (DESIGN.md 4.8; LANGUAGE.md 9.3).
-//   Purpose : format exactly as _sea_printf does, into the sink (emptied
-//             first), make a string object of the text (count 1, one
-//             more live object) and call _sea_err(SEA_E_USER, site,
-//             {that string}), which flushes standard output and reports
-//             `<file>:<line>: error: <text>` (LANGUAGE.md 9.2).
+// Lrt_fmt_to_sink -- run the engine into the emptied sink and make a
+//   string object of the text.
+//   Purpose : the common part of _sea_error and _sea_format: the
+//             destination becomes the sink, the sink is emptied, the
+//             engine formats exactly as for _sea_printf (a text longer
+//             than SEA_LIM_STR_BYTES, or no memory, is
+//             _sea_err(SEA_E_OUT_OF_MEMORY, site) in the sink's growth),
+//             then a new string of the sink's bytes is made: count 1,
+//             tag, length, one more live object.
 //   Inputs  : x0 = pre-parsed format, x1 = argument slots, x2 = site
-//   Outputs : never returns
-//   Clobbers: everything (noreturn)
+//   Outputs : x0 = the new string (owned by the caller)
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
 //   Callee-saved used: x19 = site, x20 = the string
-//   Frame   : 32 bytes (frame record + x19, x20) + 16 (the argument slot
-//             at [sp]) = 48 bytes
+//   Frame   : 32 bytes (frame record + x19, x20)
 // ---------------------------------------------------------------------
-    .globl _sea_error
     .p2align 2
-_sea_error:
+Lrt_fmt_to_sink:
     stp x29, x30, [sp, #-32]!       // frame record
     mov x29, sp
     stp x19, x20, [sp, #16]
-    sub sp, sp, #16                 // the slot of _sea_err
     mov x19, x2
     adrp x9, Lrt_fmt_dest@PAGE
     mov w10, #1
@@ -839,7 +843,53 @@ _sea_error:
     ldr x10, [x9, _sea_live@PAGEOFF]
     add x10, x10, #1                // one more live object
     str x10, [x9, _sea_live@PAGEOFF]
-    str x20, [sp]                   // the slot: the message string
+    mov x0, x20
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #32
+    ret
+
+// ---------------------------------------------------------------------
+// _sea_format -- the entry FORMAT (DESIGN.md 4.8, 2.11.6, L-cc;
+//   LANGUAGE.md 11.1).
+//   Purpose : a new string of exactly the bytes _sea_printf would write
+//             for the same format and slots, through the sink _sea_error
+//             uses. A result longer than SEA_LIM_STR_BYTES, or no memory:
+//             _sea_err(SEA_E_OUT_OF_MEMORY, site).
+//   Inputs  : x0 = pre-parsed format, x1 = argument slots, x2 = site
+//   Outputs : x0 = the new string (count 1, owned by the caller)
+//   Clobbers: as Lrt_fmt_to_sink
+//   Callee-saved used: none
+//   Frame   : none (tail call of Lrt_fmt_to_sink)
+// ---------------------------------------------------------------------
+    .globl _sea_format
+    .p2align 2
+_sea_format:
+    b Lrt_fmt_to_sink
+
+// ---------------------------------------------------------------------
+// _sea_error -- the entry ERROR (DESIGN.md 4.8; LANGUAGE.md 9.3).
+//   Purpose : format exactly as _sea_printf does, into the sink (emptied
+//             first), make a string object of the text (count 1, one
+//             more live object) and call _sea_err(SEA_E_USER, site,
+//             {that string}), which flushes standard output and reports
+//             `<file>:<line>: error: <text>` (LANGUAGE.md 9.2).
+//   Inputs  : x0 = pre-parsed format, x1 = argument slots, x2 = site
+//   Outputs : never returns
+//   Clobbers: everything (noreturn)
+//   Callee-saved used: x19 = site
+//   Frame   : 32 bytes (frame record + x19, pad) + 16 (the argument slot
+//             at [sp]) = 48 bytes
+// ---------------------------------------------------------------------
+    .globl _sea_error
+    .p2align 2
+_sea_error:
+    stp x29, x30, [sp, #-32]!       // frame record
+    mov x29, sp
+    str x19, [sp, #16]
+    sub sp, sp, #16                 // the slot of _sea_err
+    mov x19, x2
+    bl Lrt_fmt_to_sink              // x0 = the message string
+    str x0, [sp]                    // the slot: the message string
     mov w0, #SEA_E_USER
     mov x1, x19
     mov x2, sp

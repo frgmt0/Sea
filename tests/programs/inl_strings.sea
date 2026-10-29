@@ -1,0 +1,24 @@
+// inl_strings -- str parameters, results and a ref parameter of inlined functions (references retained and released: the heap
+// check proves no leak)
+fn shout(s: str) -> str {
+    return s + "!"
+}
+fn label(k: i64) -> str {
+    return "DG-" + str(k)
+}
+fn join3(a: str, b: str, c: str) -> str {
+    return a + "/" + b + "/" + c
+}
+fn keep(ref s: str) {
+    s += "?"
+}
+printf("%s %s\n", shout("hi"), shout(shout("yo")))
+printf("%s %s %s\n", label(1), label(22), label(-3))
+printf("%s\n", join3(label(7), shout("x"), "z"))
+var t = "q"
+keep(ref t)
+keep(ref t)
+printf("%s %d\n", t, len(t))
+let s = shout("a")
+let u = s + s
+printf("%s %s\n", s, u)

@@ -1,0 +1,34 @@
+// inl_calls_prelude -- inlined functions that call prelude functions (linspace, bincount, setdiff, rule 37 inlines those: an inlined
+// body holding an inlined body; LANGUAGE.md 10.3, 10.6, 10.7, 8.6)
+fn ramp_mean(n: i64) -> f64 {
+    let v = linspace(0.0, 1.0, n)
+    return sum(v) / f64(n)
+}
+fn ramp_named(n: i64) -> f64[] {
+    return linspace(n: n, d2: 2.0, d1: 1.0)
+}
+fn count_vals(v: i64[], n: i64) -> i64[] {
+    return bincount(v, n)
+}
+fn diffset(a: i64[], b: i64[]) -> i64[] {
+    return setdiff(a, b)
+}
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+printf("%.17g %.17g\n", ramp_mean(5), ramp_mean(1))
+pv(ramp_named(3))
+let ids: i64[] = [0, 1, 1, 3, 3, 3]
+pvi(count_vals(ids, 5))
+pvi(diffset([5, 1, 3, 3, 9], [3, 9]))

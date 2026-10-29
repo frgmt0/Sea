@@ -3,6 +3,9 @@
 #file struct_rule29.sea
 type 0:1:15 Dim v 0
 param 0:1:9 dims 0 0
+false 0:1:30
+block 0:1:36 0
+while 0:1:24
 pname 0:2:9 nom
 name 0:2:15 dims
 dot 0:2:15 nom
@@ -27,7 +30,7 @@ int 0:4:61 1
 index 0:4:57 1
 call 0:4:5 5
 cstmt 0:4:5
-block 0:1:22 3
+block 0:1:22 4
 fn 0:1:1 show 0 1 0
 pname 0:6:5 d
 str 0:6:21 a

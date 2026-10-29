@@ -1,6 +1,6 @@
 // str_rule15 -- DESIGN.md 3.6.6 rule 15 (owned and borrowed reference values): its example on
 // lines 4-6, a and b the parameters p1 and p2 of show (line 3)
-fn show(a: str, b: str) {
+fn show(a: str, b: str) { while false {}
     let s = a + b
     let t = s
     printf("%s\n", a + b)

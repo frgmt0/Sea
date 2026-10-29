@@ -1,0 +1,5 @@
+// err_call6_default_order -- a parameter after one with a default must have a default: 236 at the param node (its name; LANGUAGE.md 8.1)
+fn f(a: i64 = 1, b: i64) -> i64 {
+    return a + b
+}
+printf("%d\n", f(1, 2))

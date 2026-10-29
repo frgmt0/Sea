@@ -1,0 +1,7 @@
+// mkdir_nested -- make_dir("d") then make_dir("d/e") and "d/e/f": each succeeds only because its parent was created before (no
+// parent is created: LANGUAGE.md 10.10); a failure would be "No such file or directory" and status 1
+make_dir("d")
+make_dir("d/e")
+make_dir("d/e")
+make_dir("d/e/f")
+printf("nested\n")

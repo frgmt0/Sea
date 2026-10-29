@@ -7,7 +7,7 @@ rtype 0:4:17 f64 s 0 4
 rname 0:5:12 v loc 1
 return 0:5:5 1
 block 0:4:21 1
-rfn 0:4:1 h 0 1 1 2 4 4
+rfn 0:4:1 h 2 1 1 2 4 4
 rpname 0:7:5 x 1
 float 0:7:9 #3FF8000000000000
 let 0:7:1 0

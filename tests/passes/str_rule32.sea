@@ -1,4 +1,4 @@
-fn less(a: str, b: str) {
+fn less(a: str, b: str) { while false {}
     if a < b {
         printf("lt\n")
     } else {

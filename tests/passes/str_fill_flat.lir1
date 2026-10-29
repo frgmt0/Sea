@@ -2,16 +2,11 @@
 #target arm64-macos
 #file str_fill_flat.sea
 func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 16 8
 la p1 d1
 li i2 2
-call tile 0 2 p1 i2
-la p3 d2
-li i4 1
-call tile 0 2 p3 i4
-ret 0
-endfunc
-func tile fn 0:1:1 2 p1 i2 0
-slot s1 16 8
+do 1
 li i3 2
 li i4 4
 li i5 2
@@ -20,14 +15,14 @@ imul i7 i2 i3
 ldp p8 p6 - 0 40
 li i9 0
 icmp gt i10 i7 i9
-if 1 i10
+if 2 i10
 li i11 1
 isub i12 i7 i11
-loop 2 i13 i9 i12 i11
+loop 3 i13 i9 i12 i11
 retain p1
 stp p1 p8 i13 8 0
-endloop 2
-endif 1
+endloop 3
+endif 2
 ldi i14 p6 - 0 16
 ldi i15 p6 - 0 24
 imul i16 i14 i15
@@ -42,14 +37,14 @@ imul i24 i16 i23
 mcopy p21 p22 i24
 li i25 0
 icmp gt i26 i16 i25
-if 3 i26
+if 4 i26
 li i27 1
 isub i28 i16 i27
-loop 4 i29 i25 i28 i27
+loop 5 i29 i25 i28 i27
 ldp p30 p21 i29 8 0
 retain p30
-endloop 4
-endif 3
+endloop 5
+endif 4
 ldi i31 p20 - 0 16
 li i32 1
 ldi i33 p20 - 0 16
@@ -59,15 +54,78 @@ ldp p35 p34 i32 8 0
 sa p36 s1
 sti i31 p36 - 0 0
 stp p35 p36 - 0 8
-la p37 d3
+la p37 d2
 rcall sea_printf 0:4 0 2 p37 p36
 release p20
 release p6
+exit 1
+enddo 1
+la p38 d3
+li i39 1
+do 6
+li i40 2
+li i41 4
+li i42 2
+rcall sea_arr_new 0:2 1 p43 4 i41 i42 i39 i40
+imul i44 i39 i40
+ldp p45 p43 - 0 40
+li i46 0
+icmp gt i47 i44 i46
+if 7 i47
+li i48 1
+isub i49 i44 i48
+loop 8 i50 i46 i49 i48
+retain p38
+stp p38 p45 i50 8 0
+endloop 8
+endif 7
+ldi i51 p43 - 0 16
+ldi i52 p43 - 0 24
+imul i53 i51 i52
+li i54 4
+li i55 1
+li i56 1
+rcall sea_arr_new 0:3 1 p57 4 i54 i55 i53 i56
+ldp p58 p57 - 0 40
+ldp p59 p43 - 0 40
+li i60 8
+imul i61 i53 i60
+mcopy p58 p59 i61
+li i62 0
+icmp gt i63 i53 i62
+if 9 i63
+li i64 1
+isub i65 i53 i64
+loop 10 i66 i62 i65 i64
+ldp p67 p58 i66 8 0
+retain p67
+endloop 10
+endif 9
+ldi i68 p57 - 0 16
+li i69 1
+ldi i70 p57 - 0 16
+chkb i69 i70 0 0:4
+ldp p71 p57 - 0 40
+ldp p72 p71 i69 8 0
+sa p73 s2
+sti i68 p73 - 0 0
+stp p72 p73 - 0 8
+la p74 d4
+rcall sea_printf 0:4 0 2 p74 p73
+release p57
+release p43
+exit 6
+enddo 6
 ret 0
 endfunc
 str d1 ab
-str d2 c
-fmt d3 4
+fmt d2 4
+fconv - - - d i
+ftext %20
+fconv - - - s p
+ftext %0A
+str d3 c
+fmt d4 4
 fconv - - - d i
 ftext %20
 fconv - - - s p

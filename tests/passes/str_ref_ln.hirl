@@ -59,6 +59,9 @@ loc .l1 5 let 0:2:5
 loc .l2 10 let 0:2:5
 loc .l3 3 let 0:2:5
 loc .l4 3 let 0:2:5
+cb 0:1:36 2 0
+block 0:1:42 0
+while 0:1:30
 cs 0:2:12 5 x
 tmp 0:2:5 3
 lv 0:2:5 10 1
@@ -79,6 +82,6 @@ adat 0:2:5 11
 lv 0:2:5 3 5
 est 0:2:5 8 0
 block 0:2:5 7
-block 0:1:28 1
+block 0:1:28 2
 end
 #end

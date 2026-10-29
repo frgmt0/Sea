@@ -1,0 +1,1 @@
+r_mkdir_missing_parent.sea:4: error: cannot create directory 'nodir/sub': No such file or directory

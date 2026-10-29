@@ -1,0 +1,17 @@
+// inl6_basic -- 8.6 inlining by L20 (DESIGN.md 2.11.3-2.11.5): twice (two call sites, one
+// statement) has el 2 and kind inl; its calls become inline xblks whose copied nodes keep their
+// own positions (line 6 sites); a bind destination receives mov after enddo (R27), an operand
+// takes R1 itself; twice is dropped and keep (a loop, two sites) renumbered from 3 to 2
+fn twice(x: f64) -> f64 {
+    return x * 2.0
+}
+fn keep(n: i64) -> i64 {
+    var s = 0
+    for i in 0..n {
+        s += i
+    }
+    return s
+}
+let a = twice(1.5)
+let b = twice(a) + 1.0
+printf("%g %g %d %d\n", a, b, keep(3), keep(4))

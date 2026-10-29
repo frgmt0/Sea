@@ -1,0 +1,5 @@
+// err_call6_default_not_const -- a default that is not a constant expression: 237 at the call node (seacheck, as a const item's value; Decision 91)
+fn f(a: f64 = now()) -> f64 {
+    return a
+}
+printf("%g\n", f(1.0))

@@ -52,70 +52,76 @@ ret 0
 endfunc
 func show fn 0:1:1 1 p1 0
 slot s1 32 8
-ldi i2 p1 - 0 16
-li i3 1
+do 1
+li i2 0
+ifz 2 i2
+exit 1
+endif 2
+enddo 1
+ldi i3 p1 - 0 16
 li i4 1
 li i5 1
-rcall sea_arr_new_u 0:2 1 p6 4 i3 i4 i2 i5
-ldp p7 p6 - 0 40
-ldp p8 p1 - 0 40
-li i9 0
-icmp gt i10 i2 i9
-if 1 i10
-li i11 1
-isub i12 i2 i11
-loop 2 i13 i9 i12 i11
-ldf f14 p8 i13 48 8
-stf f14 p7 i13 8 0
-endloop 2
-endif 1
-ldi i15 p1 - 0 16
-li i16 4
-li i17 1
-li i18 1
-rcall sea_arr_new 0:3 1 p19 4 i16 i17 i15 i18
-ldp p20 p19 - 0 40
-ldp p21 p1 - 0 40
-li i22 0
-icmp gt i23 i15 i22
-if 3 i23
-li i24 1
-isub i25 i15 i24
-loop 4 i26 i22 i25 i24
-ldp p27 p21 i26 48 0
-retain p27
-stp p27 p20 i26 8 0
+li i6 1
+rcall sea_arr_new_u 0:2 1 p7 4 i4 i5 i3 i6
+ldp p8 p7 - 0 40
+ldp p9 p1 - 0 40
+li i10 0
+icmp gt i11 i3 i10
+if 3 i11
+li i12 1
+isub i13 i3 i12
+loop 4 i14 i10 i13 i12
+ldf f15 p9 i14 48 8
+stf f15 p8 i14 8 0
 endloop 4
 endif 3
-li i28 0
-ldi i29 p19 - 0 16
-chkb i28 i29 0 0:4
-ldp p30 p19 - 0 40
-ldp p31 p30 i28 8 0
-li i32 0
-ldi i33 p6 - 0 16
-chkb i32 i33 0 0:4
-ldp p34 p6 - 0 40
-ldf f35 p34 i32 8 0
-li i36 1
-ldi i37 p19 - 0 16
-chkb i36 i37 0 0:4
-ldp p38 p19 - 0 40
-ldp p39 p38 i36 8 0
-li i40 1
-ldi i41 p6 - 0 16
-chkb i40 i41 0 0:4
-ldp p42 p6 - 0 40
-ldf f43 p42 i40 8 0
-sa p44 s1
-stp p31 p44 - 0 0
-stf f35 p44 - 0 8
-stp p39 p44 - 0 16
-stf f43 p44 - 0 24
-la p45 d4
-rcall sea_printf 0:4 0 2 p45 p44
-release p19
-release p6
+ldi i16 p1 - 0 16
+li i17 4
+li i18 1
+li i19 1
+rcall sea_arr_new 0:3 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+ldp p22 p1 - 0 40
+li i23 0
+icmp gt i24 i16 i23
+if 5 i24
+li i25 1
+isub i26 i16 i25
+loop 6 i27 i23 i26 i25
+ldp p28 p22 i27 48 0
+retain p28
+stp p28 p21 i27 8 0
+endloop 6
+endif 5
+li i29 0
+ldi i30 p20 - 0 16
+chkb i29 i30 0 0:4
+ldp p31 p20 - 0 40
+ldp p32 p31 i29 8 0
+li i33 0
+ldi i34 p7 - 0 16
+chkb i33 i34 0 0:4
+ldp p35 p7 - 0 40
+ldf f36 p35 i33 8 0
+li i37 1
+ldi i38 p20 - 0 16
+chkb i37 i38 0 0:4
+ldp p39 p20 - 0 40
+ldp p40 p39 i37 8 0
+li i41 1
+ldi i42 p7 - 0 16
+chkb i41 i42 0 0:4
+ldp p43 p7 - 0 40
+ldf f44 p43 i41 8 0
+sa p45 s1
+stp p32 p45 - 0 0
+stf f36 p45 - 0 8
+stp p40 p45 - 0 16
+stf f44 p45 - 0 24
+la p46 d4
+rcall sea_printf 0:4 0 2 p46 p45
+release p20
+release p7
 ret 0
 endfunc
 str d1 a

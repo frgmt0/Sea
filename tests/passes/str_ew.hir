@@ -19,7 +19,7 @@ call 0:7:1 1 2 1
 eval 0:7:1
 block 0:1:1 2
 end
-fn 2 ew fn 1 1 2 0:1:1
+fn 2 ew inl 1 1 2 0:1:1
 par v 10 val
 loc c 10 let 0:2:9
 loc e 11 let 0:3:9

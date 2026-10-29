@@ -1,0 +1,24 @@
+// inl_two_sites_unreachable -- functions with a loop and two call sites, one of them in a function .main never reaches: not class (b), they
+// stay calls (LANGUAGE.md 8.6: a call site is a call written anywhere in the file); the output is the same
+fn tri(n: i64) -> i64 {
+    var s = 0
+    for k in 1..=n {
+        s += k
+    }
+    return s
+}
+fn never() -> i64 {
+    return tri(3)
+}
+fn once(n: i64) -> i64 {
+    var s = 0
+    for k in 0..n {
+        s += k
+    }
+    return s
+}
+fn never2() -> i64 {
+    return once(2)
+}
+printf("%d\n", tri(4))
+printf("%d\n", once(5))

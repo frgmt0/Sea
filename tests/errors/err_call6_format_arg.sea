@@ -1,0 +1,2 @@
+// err_call6_format_arg -- format checks its arguments like printf: %d of a str is 210 at the argument (LANGUAGE.md 11.1, 9.1)
+let s = format("%d", "x")

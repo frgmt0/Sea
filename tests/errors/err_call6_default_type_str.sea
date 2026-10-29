@@ -1,0 +1,5 @@
+// err_call6_default_type_str -- a str parameter with an integer default: 201 at the default
+fn f(s: str = 5) {
+    printf("%s\n", s)
+}
+f("a")

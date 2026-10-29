@@ -15,7 +15,7 @@ rpowk 0:5:13 2
 rint 0:5:20 1 #3FF0000000000000
 return 0:5:5 2
 block 0:4:28 1
-rfn 0:4:1 g 0 1 2 2 10 4
+rfn 0:4:1 g 2 1 2 2 10 4
 rtype 0:7:9 f64 s 0 4
 param 0:7:6 x 0 0
 rtype 0:7:18 f64 s 0 4
@@ -29,7 +29,7 @@ bin 0:9:13 pow
 rname 0:9:20 K loc 2
 return 0:9:5 2
 block 0:7:28 2
-rfn 0:7:1 h 0 1 2 3 10 4
+rfn 0:7:1 h 2 1 2 3 10 4
 type 0:11:9 f64 s 0
 param 0:11:6 y 0 0
 type 0:11:17 f64 s 0

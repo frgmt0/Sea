@@ -126,99 +126,105 @@ ret 0
 endfunc
 func upd fn 0:1:1 3 p1 i2 f3 0
 slot s1 16 8
-ldp p4 p1 - 0 0
-li i5 0
-ldi i6 p4 - 0 16
-chkb i2 i6 0 0:2
-ldp p7 p4 - 0 40
-li i8 32
-imul i9 i2 i8
-padd p10 p7 i9
-ldp p11 p10 - 0 8
-ldi i12 p11 - 0 16
-chkb i5 i12 0 0:2
-ldp p13 p1 - 0 0
-ldi i14 p13 - 0 0
-li i15 1
-icmp ne i16 i14 i15
-if 1 i16
-rcall sea_arr_unique 0:2 1 p17 1 p13
-stp p17 p1 - 0 0
-mov p13 p17
-endif 1
-ldp p18 p13 - 0 40
-li i19 32
-imul i20 i2 i19
-padd p21 p18 i20
-ldp p22 p21 - 0 8
-ldi i23 p22 - 0 0
-li i24 1
-icmp ne i25 i23 i24
-if 2 i25
-rcall sea_arr_unique 0:2 1 p26 1 p22
-stp p26 p21 - 0 8
-mov p22 p26
+do 1
+li i4 0
+ifz 2 i4
+exit 1
 endif 2
-ldp p27 p22 - 0 40
-stf f3 p27 i5 8 0
-sa p28 s1
-stf f3 p28 - 0 0
-lf f29 #4000000000000000
-stf f29 p28 - 0 8
-ldp p30 p1 - 0 0
-ldi i31 p30 - 0 16
-chkb i2 i31 0 0:3
-ldp p32 p1 - 0 0
-ldi i33 p32 - 0 0
-li i34 1
-icmp ne i35 i33 i34
-if 3 i35
-rcall sea_arr_unique 0:3 1 p36 1 p32
-stp p36 p1 - 0 0
-mov p32 p36
+enddo 1
+ldp p5 p1 - 0 0
+li i6 0
+ldi i7 p5 - 0 16
+chkb i2 i7 0 0:2
+ldp p8 p5 - 0 40
+li i9 32
+imul i10 i2 i9
+padd p11 p8 i10
+ldp p12 p11 - 0 8
+ldi i13 p12 - 0 16
+chkb i6 i13 0 0:2
+ldp p14 p1 - 0 0
+ldi i15 p14 - 0 0
+li i16 1
+icmp ne i17 i15 i16
+if 3 i17
+rcall sea_arr_unique 0:2 1 p18 1 p14
+stp p18 p1 - 0 0
+mov p14 p18
 endif 3
-ldp p37 p32 - 0 40
-li i38 32
-imul i39 i2 i38
-padd p40 p37 i39
-li i41 16
-padd p40 p40 i41
-li i42 16
-mcopy p40 p28 i42
-lf f43 #3FF0000000000000
-fadd f44 f3 f43
-ldp p45 p1 - 0 0
-ldi i46 p45 - 0 16
-chkb i2 i46 0 0:4
-ldp p47 p1 - 0 0
-ldi i48 p47 - 0 0
-li i49 1
-icmp ne i50 i48 i49
-if 4 i50
-rcall sea_arr_unique 0:4 1 p51 1 p47
-stp p51 p1 - 0 0
-mov p47 p51
+ldp p19 p14 - 0 40
+li i20 32
+imul i21 i2 i20
+padd p22 p19 i21
+ldp p23 p22 - 0 8
+ldi i24 p23 - 0 0
+li i25 1
+icmp ne i26 i24 i25
+if 4 i26
+rcall sea_arr_unique 0:2 1 p27 1 p23
+stp p27 p22 - 0 8
+mov p23 p27
 endif 4
-ldp p52 p47 - 0 40
-stf f44 p52 i2 32 24
-la p53 d6
-ldp p54 p1 - 0 0
-ldi i55 p54 - 0 16
-chkb i2 i55 0 0:5
-ldp p56 p1 - 0 0
-ldi i57 p56 - 0 0
-li i58 1
-icmp ne i59 i57 i58
-if 5 i59
-rcall sea_arr_unique 0:5 1 p60 1 p56
-stp p60 p1 - 0 0
-mov p56 p60
+ldp p28 p23 - 0 40
+stf f3 p28 i6 8 0
+sa p29 s1
+stf f3 p29 - 0 0
+lf f30 #4000000000000000
+stf f30 p29 - 0 8
+ldp p31 p1 - 0 0
+ldi i32 p31 - 0 16
+chkb i2 i32 0 0:3
+ldp p33 p1 - 0 0
+ldi i34 p33 - 0 0
+li i35 1
+icmp ne i36 i34 i35
+if 5 i36
+rcall sea_arr_unique 0:3 1 p37 1 p33
+stp p37 p1 - 0 0
+mov p33 p37
 endif 5
-ldp p61 p56 - 0 40
-retain p53
-ldp p62 p61 i2 32 0
-stp p53 p61 i2 32 0
-release p62
+ldp p38 p33 - 0 40
+li i39 32
+imul i40 i2 i39
+padd p41 p38 i40
+li i42 16
+padd p41 p41 i42
+li i43 16
+mcopy p41 p29 i43
+lf f44 #3FF0000000000000
+fadd f45 f3 f44
+ldp p46 p1 - 0 0
+ldi i47 p46 - 0 16
+chkb i2 i47 0 0:4
+ldp p48 p1 - 0 0
+ldi i49 p48 - 0 0
+li i50 1
+icmp ne i51 i49 i50
+if 6 i51
+rcall sea_arr_unique 0:4 1 p52 1 p48
+stp p52 p1 - 0 0
+mov p48 p52
+endif 6
+ldp p53 p48 - 0 40
+stf f45 p53 i2 32 24
+la p54 d6
+ldp p55 p1 - 0 0
+ldi i56 p55 - 0 16
+chkb i2 i56 0 0:5
+ldp p57 p1 - 0 0
+ldi i58 p57 - 0 0
+li i59 1
+icmp ne i60 i58 i59
+if 7 i60
+rcall sea_arr_unique 0:5 1 p61 1 p57
+stp p61 p1 - 0 0
+mov p57 p61
+endif 7
+ldp p62 p57 - 0 40
+retain p54
+ldp p63 p62 i2 32 0
+stp p54 p62 i2 32 0
+release p63
 ret 0
 endfunc
 slay d1 32 2

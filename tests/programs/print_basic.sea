@@ -1,0 +1,9 @@
+// print_basic -- print writes the bytes of its str and nothing else: no newline is added, pieces join (LANGUAGE.md 11.2, 10.9)
+print("hello")
+print(", ")
+print("world\n")
+print("a\tb\n")
+let name = "str"
+print(name)
+print(" " + str(42) + "|" + str(-7) + "|" + str(1.5) + "|" + str(true) + "\n")
+print("no newline at the end")

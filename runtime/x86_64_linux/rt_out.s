@@ -4,6 +4,12 @@
 # The x86_64-linux twin of runtime/arm64_macos/rt_out.s: same routines,
 # same buffer, same failure model.
 #
+# Defines (global, rt.inc SEA_ENT_PRINT; DESIGN.md 2.11.6, 4.8 entry 24):
+#   sea_print        (s, site): s's bytes into the standard-output buffer,
+#                    nothing added (LANGUAGE.md 11.2); a failed write is
+#                    `cannot write '<stdout>': <reason>` at the site, as
+#                    sea_printf's (L-cd: the same buffer, so print and
+#                    printf interleave in program order)
 # Defines (all .globl + .hidden: internal to libsea, not a contract entry
 # of rt.inc; used by rt_main.s, rt_err.s and rt_fmt.s):
 #   sea_write_all    write(2) loop for any descriptor
@@ -344,6 +350,37 @@ sea_out_fail:
     call sea_err                    # noreturn
     ud2                             # not reached
     .size sea_out_fail, . - sea_out_fail
+
+# ---------------------------------------------------------------------
+# sea_print -- entry PRINT (DESIGN.md 4.8 entry 24; LANGUAGE.md 11.2).
+#   Purpose : append the string's bytes (SEA_STR_LEN of them, from
+#             SEA_STR_BYTES) to the standard-output buffer with
+#             sea_out_bytes, whose failure is sea_out_fail(errno, site):
+#             `cannot write '<stdout>': <reason>` at the site. An empty
+#             string writes nothing and reports nothing, exactly as an
+#             empty text of sea_printf (.Lrt_fmt_out skips length 0), so
+#             print("") and printf("") behave alike on a broken stdout.
+#   Inputs  : %rdi = the string object (borrowed), %rsi = site index
+#   Outputs : none
+#   Clobbers: all caller-saved registers
+#   Callee-saved used: %rbp = frame pointer
+#   Frame   : 8 bytes (%rbp); %rsp = 0 (mod 16) at the call
+# ---------------------------------------------------------------------
+    .globl sea_print
+    .type sea_print, @function
+    .p2align 4
+sea_print:
+    pushq %rbp                      # %rsp = 0 (mod 16)
+    movq %rsp, %rbp
+    movq %rsi, %rdx                 # the site, sea_out_bytes's third argument
+    movq SEA_STR_LEN(%rdi), %rsi    # byte count
+    testq %rsi, %rsi
+    jz 1f                           # an empty string: nothing to write
+    leaq SEA_STR_BYTES(%rdi), %rdi  # the bytes
+    call sea_out_bytes              # returns only on success
+1:  popq %rbp
+    ret
+    .size sea_print, . - sea_print
 
 # ---------------------------------------------------------------------
 # Data. The string object is static (count SEA_RC_STATIC, SEA_STR_*),

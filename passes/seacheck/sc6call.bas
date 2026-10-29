@@ -17,91 +17,6 @@
 11935 GOTO 11945
 11940 CALL "er": N(), X(), X$(), J, "NOT_FUNCTION", S$(N(G, 6)), "", "", 1
 11945 SUBEND
-11950 REM ---- ck_ucall: call J of Sea function R: counts, ref marks and targets, types, aliasing ------
-11955 REM (LANGUAGE 8.1, 8.3, 4.2: a ref argument of a var-rule candidate for an f64 parameter is an
-11960 REM f64 store, Decision 8)
-11965 SUB "ck_ucall": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J, R
-11970 LET H = N(J, 1)
-11975 LET P0 = Y(R, 6)
-11980 IF Y(R, 7) = 0 THEN 11995
-11985 LET M(J, 1) = Y(R, 2)
-11990 GOTO 12000
-11995 LET M(J, 1) = 1
-12000 IF H <= P0 THEN 12015
-12005 CALL "er": N(), X(), X$(), J, "TOO_MANY_ARGS", "", "", "", 0
-12010 GOTO 12025
-12015 IF H = P0 THEN 12025
-12020 CALL "er": N(), X(), X$(), J, "MISSING_ARG", "", "", "", 0
-12025 LET A = N(N(J, 7), 8)
-12030 LET P = N(Y(R, 3), 7)
-12035 FOR I = 1 TO H
-12040 IF I > P0 THEN 12320
-12045 LET D = M(P, 1)
-12050 LET K = N(A, 0)
-12055 IF K = 36 THEN 12325
-12060 IF N(P, 1) = 1 THEN 12095
-12065 REM an ordinary parameter
-12070 IF K <> 37 THEN 12085
-12075 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", S$(N(P, 6)), "", "", 1
-12080 GOTO 12325
-12085 CALL "cv": N(), M(), T(), C(), X(), X$(), A, D
-12090 GOTO 12325
-12095 REM a ref parameter: the argument says ref and is a var, or a ref parameter of the caller
-12100 IF K = 37 THEN 12115
-12105 CALL "er": N(), X(), X$(), A, "REF_NEEDED", S$(N(P, 6)), "", "", 1
-12110 GOTO 12325
-12115 LET G = N(A, 7)
-12120 LET B = G
-12125 IF N(G, 0) = 30 THEN 12210
-12130 IF M(G, 1) = 0 THEN 12325
-12135 REM a field or an element of a var or ref parameter, through fields and elements; a selection
-12140 REM or a projection is no ref target (LANGUAGE 8.3)
-12145 CALL "tpath": N(), M(), T(), S$(), G, 0, B
-12150 IF B = 0 THEN 12250
-12210 REM a name: undeclared (reported at the name), else it must be a var or a ref parameter;
-12215 REM a function, struct, constant, predeclared name or handle type is no ref target
-12220 LET S = M(B, 2)
-12225 IF S = 0 THEN 12325
-12230 IF S < 0 THEN 12250
-12235 IF Y(S, 0) <> 4 THEN 12250
-12240 IF Y(S, 4) = 2 THEN 12260
-12245 IF Y(S, 4) = 5 THEN 12260
-12250 CALL "er": N(), X(), X$(), A, "REF_TARGET", "", "", "", 0
-12255 GOTO 12325
-12260 IF D = 0 THEN 12325
-12265 IF M(G, 1) = D THEN 12325
-12270 IF B <> G THEN 12300
-12275 IF Y(S, 6) = 0 THEN 12300
-12280 IF D <> 4 THEN 12300
-12285 IF M(G, 1) <> 3 THEN 12300
-12290 CALL "cand": M(), Y(), X(), S
-12295 GOTO 12325
-12300 CALL "tyn": T(), D, A$
-12305 CALL "tyn": T(), M(G, 1), B$
-12310 CALL "er": N(), X(), X$(), G, "TYPE_MISMATCH", A$, B$, "", 2
-12315 GOTO 12325
-12320 CALL "fin": N(), M(), C(), X(), X$(), A
-12325 LET A = N(A, 8)
-12330 LET P = N(P, 8)
-12335 NEXT I
-12340 REM a ref argument must not share its root variable with another argument (LANGUAGE 8.3)
-12345 LET A = N(N(J, 7), 8)
-12350 FOR I = 1 TO H
-12355 IF N(A, 0) <> 37 THEN 12415
-12360 CALL "root": N(), M(), Y(), A, S
-12365 IF S = 0 THEN 12415
-12370 LET B = N(N(J, 7), 8)
-12375 IF B = 0 THEN 12415
-12380 IF B = A THEN 12405
-12385 CALL "root": N(), M(), Y(), B, S1
-12390 IF S1 <> S THEN 12405
-12395 CALL "er": N(), X(), X$(), A, "REF_ALIAS", "", "", "", 0
-12400 GOTO 12425
-12405 LET B = N(B, 8)
-12410 GOTO 12375
-12415 LET A = N(A, 8)
-12420 NEXT I
-12425 SUBEND
 12430 REM ---- root: S = the local at the root of argument A (a name or an element or field of one,
 12435 REM through every index and dot, or ref of such a path; LANGUAGE 8.3), else 0 ---------------
 12440 SUB "root": N(), M(), Y(), A, S
@@ -118,7 +33,8 @@
 12490 IF Y(M(G, 2), 0) <> 4 THEN 12500
 12495 LET S = M(G, 2)
 12500 SUBEND
-12505 REM ---- ck_lib: call J of a library function (LANGUAGE 10): printf (ck_printf), and by class Z
+12505 REM ---- ck_lib: call J of a library function (LANGUAGE 10): printf error format (ck_printf), print
+12507 REM make_dir (lout), and by class Z
 12510 REM 1 now() 2 idiv(i64, i64) 3 log exp sin cos sqrt floor ceil trunc round (f64) 4 isnan(f64)
 12515 REM 5 pow hypot (f64, f64) 6 abs sign (i64 | f64) 7 min max (n, n) 8 where(bool, x, x) 9
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
@@ -133,14 +49,17 @@
 12565 LET L$ = S$(N(N(J, 7), 6))
 12566 LET M(J, 9) = 0
 12570 LET H = N(J, 1)
-12575 IF LEN(L$) = 5 THEN 12592
-12576 IF LEN(L$) <> 6 THEN 12595
-12580 IF L$ <> "printf" THEN 12595
+12571 REM printf, error (lead decision L-d) and format (phase 6) are formatting calls (DESIGN 2.6.2); print
+12572 REM and make_dir take one str (lout, sc9call). A name has no blank, so = compares it exactly
+12575 IF L$ = "printf" THEN 12585
+12576 IF L$ = "error" THEN 12585
+12577 IF L$ = "format" THEN 12585
+12578 IF L$ = "print" THEN 12582
+12580 IF L$ <> "make_dir" THEN 12595
+12582 CALL "lout": N(), M(), T(), C(), S$(), X(), X$(), J, L$
+12583 GOTO 13610
 12585 CALL "ck_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
 12590 GOTO 13610
-12591 REM error(fmt, ...) is checked as a formatting call, as printf (DESIGN 2.6.2, lead decision L-d)
-12592 IF L$ = "error" THEN 12585
-12593 GOTO 12595
 12595 LET Q$ = "|now 01|idiv 02|log 03|exp 03|sin 03|cos 03|sqrt 03|floor 03|ceil 03|trunc 03|round 03"
 12600 LET Q$ = Q$ & "|isnan 04|pow 05|hypot 05|abs 06|sign 06|min 07|max 07|where 08|ind2sub 09"
 12605 LET Q$ = Q$ & "|sub2ind 10|zeros 11|ones 11|filled 12|len 13|rows 14|cols 14|numel 15|"
@@ -357,7 +276,7 @@
 13635 IF V > 4 THEN 13645
 13640 LET Q = 1
 13645 SUBEND
-13650 REM ---- ck_printf: printf or error (format, args...) (LANGUAGE 11.1, 9.3; DESIGN 2.6.2 "Within one formatting
+13650 REM ---- ck_printf: printf, error or format (type str) (format, args...) (LANGUAGE 11.1, 9.3; DESIGN 2.6.2 "Within one formatting
 13655 REM call"): an argument's own errors first, then the format literal, its conversions, the
 13660 REM argument count, and each argument against its conversion ------------------------------
 13665 SUB "ck_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J
@@ -366,6 +285,8 @@
 13680 LET H = N(J, 1)
 13685 LET G = N(J, 7)
 13687 LET L$ = S$(N(G, 6))
+13688 IF L$ <> "format" THEN 13690
+13689 LET M(J, 1) = 5
 13690 LET M(G, 8) = -J
 13695 IF H > 0 THEN 13710
 13700 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", L$, "", "", 2

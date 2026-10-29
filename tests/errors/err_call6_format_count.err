@@ -1,0 +1,1 @@
+err_call6_format_count.sea:2:9: error: format "%d %d" expects 2 arguments, found 1

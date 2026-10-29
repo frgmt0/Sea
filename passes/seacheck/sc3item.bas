@@ -5,6 +5,10 @@
 4780 SUB "sc_check": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H()
 4785 LET X(29) = 0
 4790 LET X(26) = 0
+4791 REM M(i,6), the pops of sc_read, becomes the bound-argument mark of ck_ucall (0 none, sc9call)
+4792 FOR I = 1 TO X(1)
+4793 LET M(I, 6) = 0
+4794 NEXT I
 4795 LET F1 = 0
 4800 LET C1 = 0
 4805 LET S1 = 0
@@ -74,6 +78,7 @@
 5125 LET Y(R, 0) = 1
 5130 LET Y(R, 5) = G1
 5135 LET Y(R, 4) = N(I, 1)
+5137 IF N(I, 1) > 2 THEN 5340
 5140 LET Y(R, 6) = N(I, 2)
 5145 LET Y(R, 7) = N(I, 3)
 5150 LET Y(R, 2) = M(I, 1)
@@ -105,6 +110,7 @@
 5275 NEXT J
 5280 NEXT S
 5285 CALL "ck_cord": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), H()
+5287 CALL "ck_dflt": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 5290 FOR S = 2 TO X(30)
 5295 CALL "ck_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
 5300 NEXT S
@@ -152,6 +158,18 @@
 5510 LET M(J, 3) = 2
 5515 NEXT J
 5520 NEXT S
+5525 REM from phase 6 every parameter default is a resolved region as a const expression is (3.4.1)
+5530 FOR S = 2 TO X(30)
+5535 LET H = N(Y(S, 3), 7)
+5540 FOR K = 1 TO Y(S, 6)
+5545 IF N(H, 2) = 0 THEN 5560
+5550 LET B = N(N(H, 7), 8)
+5552 FOR J = M(B, 0) TO B
+5554 LET M(J, 3) = 2
+5556 NEXT J
+5560 LET H = N(H, 8)
+5562 NEXT K
+5564 NEXT S
 5565 REM the type nodes of the entered items: each parameter's first child, the result types
 5570 FOR S = 2 TO X(30)
 5575 LET H = N(Y(S, 3), 7)
@@ -424,18 +442,8 @@
 7025 IF X(9) > X9 THEN 7105
 7030 IF Y(S, 2) = 0 THEN 7105
 7035 CALL "cexp": N(), Y(), S, E
-7040 FOR J = M(E, 0) TO E
-7045 IF N(J, 0) = 35 THEN 7085
-7050 IF N(J, 0) <> 30 THEN 7075
-7055 IF N(N(J, 9), 0) <> 35 THEN 7065
-7060 IF N(N(J, 9), 7) = J THEN 7095
-7065 IF N(J, 1) <> 2 THEN 7075
-7070 IF Y(X(31) + N(J, 2), 7) = 6 THEN 7105
-7075 IF M(J, 1) = 0 THEN 7105
-7080 GOTO 7095
-7085 IF N(N(J, 7), 1) <> 5 THEN 7105
-7090 GOTO 7075
-7095 NEXT J
+7040 CALL "cval": N(), M(), Y(), X(), E, Z
+7045 IF Z = 0 THEN 7105
 7100 CALL "cdec": N(), M(), Y(), C(), X(), X$(), H(), S
 7105 LET Y(S, 6) = 2
 7110 GOTO 6890

@@ -1,0 +1,5 @@
+// r_mkdir_missing_parent -- make_dir of a path whose parent does not exist: no parent is created, "No such file or directory" (LANGUAGE.md
+// 10.10); output printed before it is flushed first
+printf("start\n")
+make_dir("nodir/sub")
+printf("never\n")

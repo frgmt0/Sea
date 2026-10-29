@@ -99,7 +99,7 @@ rname 0:13:12 s loc 3
 dot 0:13:12 n
 return 0:13:5 1
 block 0:1:24 12
-rfn 0:1:1 edit 0 1 1 2 3 3
+rfn 0:1:1 edit 2 1 1 2 3 3
 rname 0:15:1 printf pd 0
 str 0:15:8 %25d%0A
 rname 0:15:16 edit fn 2

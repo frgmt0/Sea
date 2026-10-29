@@ -1,4 +1,4 @@
-fn f(ref v: str[], i: i64) {
+fn f(ref v: str[], i: i64) { while false {}
     v[i] = "x"
 }
 var names = ["a", "b"]

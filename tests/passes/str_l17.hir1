@@ -13,7 +13,7 @@ call 0:8:1 1 2 2
 eval 0:8:1
 block 0:1:1 2
 end
-fn 2 put fn 1 2 1 0:1:1
+fn 2 put inl 1 2 1 0:1:1
 par i 3 val
 par s 5 val
 loc names 10 var 0:2:9

@@ -1,7 +1,7 @@
-fn p() -> i64 {
+fn p() -> i64 { while false {}
     return 0
 }
-fn q() -> i64 {
+fn q() -> i64 { while false {}
     return 1
 }
 var dims = [G { v: ones(4) }]

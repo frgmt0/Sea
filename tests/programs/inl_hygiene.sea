@@ -1,0 +1,16 @@
+// inl_hygiene -- an inlined function whose parameter and locals have the names of the caller's variables: no capture, the
+// caller's variables are unchanged (LANGUAGE.md 7.2 scopes)
+fn f(x: i64) -> i64 {
+    let y = x * 2
+    var z = y + 1
+    z += x
+    return z
+}
+let x = 100
+let y = 200
+var z = 300
+let w = f(x + 1)
+printf("%d %d %d %d\n", x, y, z, w)
+z = f(z)
+printf("%d\n", z)
+printf("%d\n", f(f(1)))

@@ -1,0 +1,6 @@
+// err_call6_order_value_first -- the arguments are checked in source order, each value before its narg: the type mismatch of a: "x" (201, line 5)
+// comes before the unknown name zz after it (224)
+fn f(a: i64) -> i64 {
+    return a
+}
+printf("%d\n", f(a: "x", zz: 1))

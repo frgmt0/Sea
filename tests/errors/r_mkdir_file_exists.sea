@@ -1,0 +1,5 @@
+// r_mkdir_file_exists -- make_dir of a path that is an existing file (a fixture): "File exists", status 1 (LANGUAGE.md 10.10, 9.2;
+// DESIGN.md 4.8 MAKE_DIR: the saved errno, the path is not a directory)
+printf("before\n")
+make_dir("x")
+printf("after\n")

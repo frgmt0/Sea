@@ -1,0 +1,22 @@
+// call6_named_types -- named arguments of every scalar type, a str, an array and a struct parameter, out of order; an untyped
+// integer literal and an i64 value for an f64 parameter convert as any argument does (LANGUAGE.md 8.1, 4.2)
+struct Pt { x: f64, y: f64 }
+fn g(x: f64, flag: bool, name: str, n: i64) {
+    printf("%s n=%d flag=%d x=%.2f\n", name, n, flag, x)
+}
+fn h(v: f64[], scale: f64) -> f64 {
+    return sum(v) * scale
+}
+fn norm1(p: Pt, w: f64) -> f64 {
+    return (abs(p.x) + abs(p.y)) * w
+}
+g(1.5, true, "a", 2)
+g(n: 3, name: "b", flag: false, x: 2.25)
+g(0.5, n: 4, flag: true, name: "c")
+g(name: "d", x: 7, flag: false, n: 1)
+let k = 3
+g(x: k, flag: true, name: "e", n: k)
+let arr: f64[] = [1.0, 2.0, 3.0]
+printf("%g\n", h(scale: 2.0, v: arr))
+printf("%g\n", h(arr, scale: 0.5))
+printf("%g\n", norm1(w: 2.0, p: Pt { x: -1.0, y: 2.5 }))

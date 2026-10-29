@@ -36,7 +36,7 @@ index 0:5:46 1
 call 0:5:5 4
 cstmt 0:5:5
 block 0:1:24 4
-rfn 0:1:1 put 0 2 0 2 1 3 5
+rfn 0:1:1 put 2 2 0 2 1 3 5
 rname 0:7:1 put fn 2
 rint 0:7:5 0 #0000000000000000
 str 0:7:8 a

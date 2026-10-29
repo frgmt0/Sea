@@ -2,8 +2,11 @@
 // sea/runtime/arm64_macos/rt_out.s -- buffered standard output and the
 // raw write loop (DESIGN.md 4.5 "I/O", 4.6; LANGUAGE.md 9.2, 11.3).
 //
-// Defines (all .private_extern: internal to libsea, not a contract entry
-// of rt.inc; used by rt_main.s, rt_err.s and rt_fmt.s):
+// Defines:
+//   _sea_print        (global, SEA_ENT_PRINT) a string's bytes into the
+//                     buffer (LANGUAGE.md 11.2)
+// and (all .private_extern: internal to libsea, not a contract entry
+// of rt.inc; used by rt_main.s, rt_err.s, rt_fmt.s and rt_file.s):
 //   _sea_write_all    write(2) loop for any descriptor
 //   _sea_out_write    append bytes to the standard-output buffer
 //   _sea_out_repeat   append one byte value n times (padding)
@@ -304,6 +307,30 @@ _sea_out_fail:
     add x2, sp, #16                 // the slot vector
     bl _sea_err                     // noreturn (x1 = site already)
     brk #1                          // not reached
+
+// ---------------------------------------------------------------------
+// _sea_print -- the entry PRINT (DESIGN.md 4.8, 2.11.6, L-cd;
+//   LANGUAGE.md 11.2).
+//   Purpose : s's bytes into the standard-output buffer, nothing added,
+//             so print and printf interleave in program order. A failed
+//             write is the run-time error `cannot write '<stdout>':
+//             <reason>` at the site, as _sea_printf reports it. An empty
+//             s writes nothing (as an empty piece of _sea_printf).
+//   Inputs  : x0 = s (a string object, borrowed), x1 = site index
+//   Outputs : none
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: none
+//   Frame   : none (tail call of _sea_out_bytes)
+// ---------------------------------------------------------------------
+    .globl _sea_print
+    .p2align 2
+_sea_print:
+    mov x2, x1                      // the site
+    ldr x1, [x0, #SEA_STR_LEN]      // the byte count
+    add x0, x0, #SEA_STR_BYTES      // the bytes
+    cbz x1, 1f                      // nothing to write
+    b _sea_out_bytes                // tail call: returns to our caller
+1:  ret
 
 // ---------------------------------------------------------------------
 // Data. The string object is static (count SEA_RC_STATIC, SEA_STR_*),

@@ -64,11 +64,14 @@ end
 fn 2 nomOf fn 4 2 0 0:1:1
 par dims 11 val
 par d 3 val
+cb 0:1:46 2 0
+block 0:1:52 0
+while 0:1:40
 lv 0:9:12 11 1
 lv 0:9:17 3 2
 idx 0:9:12 10 1
 fld 0:9:12 4 1
 ret 0:9:5 1
-block 0:1:38 1
+block 0:1:38 2
 end
 #end

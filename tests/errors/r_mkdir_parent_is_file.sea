@@ -1,0 +1,2 @@
+// r_mkdir_parent_is_file -- make_dir below a path that is a file: "Not a directory" (LANGUAGE.md 10.10: any other failure)
+make_dir("x/y")

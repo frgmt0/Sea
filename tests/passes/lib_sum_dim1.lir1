@@ -4,8 +4,14 @@
 func .main main 0:1:1 0 0
 slot s1 48 8
 slot s2 48 8
-slot s3 8 8
-slot s4 8 8
+slot s3 16 8
+slot s4 16 8
+slot s5 64 8
+slot s6 8 8
+slot s7 16 8
+slot s8 16 8
+slot s9 64 8
+slot s10 8 8
 sa p1 s1
 sa p2 s2
 lf f3 #3FF0000000000000
@@ -23,85 +29,146 @@ stf f8 p2 - 0 40
 li i9 48
 mcopy p1 p2 i9
 li i10 0
-call rowsum 1 f11 2 p1 i10
-sa p12 s3
-stf f11 p12 - 0 0
-la p13 d1
-rcall sea_printf 0:6 0 2 p13 p12
-li i14 1
-call rowsum 1 f15 2 p1 i14
-sa p16 s4
-stf f15 p16 - 0 0
-la p17 d2
-rcall sea_printf 0:7 0 2 p17 p16
-ret 0
-endfunc
-func rowsum fn 0:1:1 2 p1 i2 1 f
-slot s1 16 8
-slot s2 16 8
-slot s3 64 8
-sa p3 s1
-li i4 2
-li i5 3
-sa p6 s2
-li i7 0
-icmp gt i8 i4 i7
-if 1 i8
-li i9 1
-isub i10 i4 i9
-loop 2 i11 i7 i10 i9
-li i12 0
-icmp gt i13 i5 i12
-if 3 i13
-sa p14 s3
-lf f15 #8000000000000000
-stf f15 p14 - 0 0
-stf f15 p14 - 0 8
-stf f15 p14 - 0 16
-stf f15 p14 - 0 24
-stf f15 p14 - 0 32
-stf f15 p14 - 0 40
-stf f15 p14 - 0 48
-stf f15 p14 - 0 56
-li i16 7
+do 1
+sa p11 s3
+li i12 2
+li i13 3
+sa p14 s4
+li i15 0
+icmp gt i16 i12 i15
+if 2 i16
 li i17 1
-isub i18 i5 i17
-loop 4 i19 i12 i18 i17
-iand i20 i19 i16
-ldf f21 p14 i20 8 0
-imul i22 i19 i4
-iadd i23 i11 i22
-ldf f24 p1 i23 8 0
-fadd f21 f21 f24
-stf f21 p14 i20 8 0
-endloop 4
-ldf f25 p14 - 0 0
-ldf f26 p14 - 0 8
-ldf f27 p14 - 0 16
-ldf f28 p14 - 0 24
-ldf f29 p14 - 0 32
-ldf f30 p14 - 0 40
-ldf f31 p14 - 0 48
-ldf f32 p14 - 0 56
-fadd f33 f25 f26
-fadd f34 f27 f28
-fadd f35 f33 f34
-fadd f36 f29 f30
-fadd f37 f31 f32
-fadd f38 f36 f37
-fadd f39 f35 f38
-else 3
-lf f39 #0000000000000000
-endif 3
-stf f39 p6 i11 8 0
-endloop 2
-endif 1
-li i40 16
-mcopy p3 p6 i40
-li i41 2
-chkb i2 i41 0 0:3
-ldf f42 p3 i2 8 0
-ret 1 f42
+isub i18 i12 i17
+loop 3 i19 i15 i18 i17
+li i20 0
+icmp gt i21 i13 i20
+if 4 i21
+sa p22 s5
+lf f23 #8000000000000000
+stf f23 p22 - 0 0
+stf f23 p22 - 0 8
+stf f23 p22 - 0 16
+stf f23 p22 - 0 24
+stf f23 p22 - 0 32
+stf f23 p22 - 0 40
+stf f23 p22 - 0 48
+stf f23 p22 - 0 56
+li i24 7
+li i25 1
+isub i26 i13 i25
+loop 5 i27 i20 i26 i25
+iand i28 i27 i24
+ldf f29 p22 i28 8 0
+imul i30 i27 i12
+iadd i31 i19 i30
+ldf f32 p1 i31 8 0
+fadd f29 f29 f32
+stf f29 p22 i28 8 0
+endloop 5
+ldf f33 p22 - 0 0
+ldf f34 p22 - 0 8
+ldf f35 p22 - 0 16
+ldf f36 p22 - 0 24
+ldf f37 p22 - 0 32
+ldf f38 p22 - 0 40
+ldf f39 p22 - 0 48
+ldf f40 p22 - 0 56
+fadd f41 f33 f34
+fadd f42 f35 f36
+fadd f43 f41 f42
+fadd f44 f37 f38
+fadd f45 f39 f40
+fadd f46 f44 f45
+fadd f47 f43 f46
+else 4
+lf f47 #0000000000000000
+endif 4
+stf f47 p14 i19 8 0
+endloop 3
+endif 2
+li i48 16
+mcopy p11 p14 i48
+li i49 2
+chkb i10 i49 0 0:3
+ldf f50 p11 i10 8 0
+mov f51 f50
+exit 1
+enddo 1
+sa p52 s6
+stf f51 p52 - 0 0
+la p53 d1
+rcall sea_printf 0:6 0 2 p53 p52
+li i54 1
+do 6
+sa p55 s7
+li i56 2
+li i57 3
+sa p58 s8
+li i59 0
+icmp gt i60 i56 i59
+if 7 i60
+li i61 1
+isub i62 i56 i61
+loop 8 i63 i59 i62 i61
+li i64 0
+icmp gt i65 i57 i64
+if 9 i65
+sa p66 s9
+lf f67 #8000000000000000
+stf f67 p66 - 0 0
+stf f67 p66 - 0 8
+stf f67 p66 - 0 16
+stf f67 p66 - 0 24
+stf f67 p66 - 0 32
+stf f67 p66 - 0 40
+stf f67 p66 - 0 48
+stf f67 p66 - 0 56
+li i68 7
+li i69 1
+isub i70 i57 i69
+loop 10 i71 i64 i70 i69
+iand i72 i71 i68
+ldf f73 p66 i72 8 0
+imul i74 i71 i56
+iadd i75 i63 i74
+ldf f76 p1 i75 8 0
+fadd f73 f73 f76
+stf f73 p66 i72 8 0
+endloop 10
+ldf f77 p66 - 0 0
+ldf f78 p66 - 0 8
+ldf f79 p66 - 0 16
+ldf f80 p66 - 0 24
+ldf f81 p66 - 0 32
+ldf f82 p66 - 0 40
+ldf f83 p66 - 0 48
+ldf f84 p66 - 0 56
+fadd f85 f77 f78
+fadd f86 f79 f80
+fadd f87 f85 f86
+fadd f88 f81 f82
+fadd f89 f83 f84
+fadd f90 f88 f89
+fadd f91 f87 f90
+else 9
+lf f91 #0000000000000000
+endif 9
+stf f91 p58 i63 8 0
+endloop 8
+endif 7
+li i92 16
+mcopy p55 p58 i92
+li i93 2
+chkb i54 i93 0 0:3
+ldf f94 p55 i54 8 0
+mov f95 f94
+exit 6
+enddo 6
+sa p96 s10
+stf f95 p96 - 0 0
+la p97 d2
+rcall sea_printf 0:7 0 2 p97 p96
+ret 0
 endfunc
 fmt d1 2
 fconv - - - g f

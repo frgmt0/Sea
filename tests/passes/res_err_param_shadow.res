@@ -9,6 +9,6 @@ rtype 0:3:23 i64 s 0 3
 rname 0:4:12 len loc 1
 return 0:4:5 1
 block 0:3:27 1
-rfn 0:3:1 f 0 1 1 2 3 3
+rfn 0:3:1 f 2 1 1 2 3 3
 prog 1
 #end

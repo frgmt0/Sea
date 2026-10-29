@@ -1,0 +1,9 @@
+// fmt6_empty -- empty results and padding of format: %s of "", width without argument bytes, precision 0, a width smaller than
+// the argument (LANGUAGE.md 11.1)
+print("[" + format("") + "]\n")
+print("[" + format("%s", "") + "]\n")
+print("[" + format("%5s", "") + "]\n")
+print("[" + format("%-5s", "") + "]\n")
+print("[" + format("%.0s", "abc") + "]\n")
+print("[" + format("%3s", "abcdef") + "]\n")
+printf("%d %d\n", len(format("")), len(format("%.0s", "zz")))

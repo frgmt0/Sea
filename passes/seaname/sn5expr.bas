@@ -167,10 +167,8 @@
 8080 CALL "num2": N(), M(), C(), X(), X$(), A, B, G1, G2, R, Z
 8085 IF Z = 1 THEN 8280
 8090 LET M(J, 1) = R
-8095 IF R = 3 THEN 8315
-8100 REM % with an f64 operand: 'not supported yet: f64 %' (DESIGN 2.6.2), not on the typed path
-8105 CALL "fl": X()
-8107 GOTO 8315
+8100 REM % of i64 operands, or (from 6b) with an f64 operand: f64 by FEMOD (LANGUAGE 6.6, 7.2; evbin)
+8105 GOTO 8315
 8110 IF G1 = 2 THEN 8280
 8115 IF G1 > 4 THEN 8280
 8120 IF G2 = 2 THEN 8280

@@ -1,0 +1,45 @@
+// inl_single_loop -- functions with a loop called from exactly one call site (LANGUAGE.md 8.6 (b), inlined): a for loop, a while loop
+// with an early return, a loop returning from inside, break and continue; the output is what a call would give
+fn sumsq(n: i64) -> i64 {
+    var s = 0
+    for k in 1..=n {
+        s += k * k
+    }
+    return s
+}
+fn first_over(limit: i64) -> i64 {
+    var k = 1
+    while k < 1000 {
+        if k * k > limit {
+            return k
+        }
+        k += 1
+    }
+    return -1
+}
+fn first_neg(v: f64[]) -> i64 {
+    for i in 0..len(v) {
+        if v[i] < 0.0 {
+            return i
+        }
+    }
+    return -1
+}
+fn count_skip(n: i64) -> i64 {
+    var c = 0
+    for k in 0..n {
+        if k % 2 == 0 {
+            continue
+        }
+        if k > 15 {
+            break
+        }
+        c += k
+    }
+    return c
+}
+printf("%d\n", sumsq(10))
+printf("%d\n", first_over(50))
+let pos: f64[] = [1.0, 2.0]
+printf("%d\n", first_neg(pos))
+printf("%d\n", count_skip(20))

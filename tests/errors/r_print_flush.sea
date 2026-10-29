@@ -1,0 +1,4 @@
+// r_print_flush -- print writes no newline: a run-time error flushes standard output as it is, with no extra newline, then reports
+// (LANGUAGE.md 9.2 step 1, 11.2)
+print("partial")
+error("boom")

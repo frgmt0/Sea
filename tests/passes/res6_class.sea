@@ -1,0 +1,153 @@
+// res6_class -- the 8.6 class in rfn's el (DESIGN.md 2.11.3, 3.4.1; LANGUAGE.md 8.6): sq 1
+// (elemental; 259 until 6c), once 2 (one call site, a loop), twice 0 (a loop; two sites, one in
+// unreached, which .main never reaches), unreached 2 (no site, one statement), s50 2 and s51 0
+// (50 and 51 statements: the if chain 1, the bare block 1), even and odd 0 (a recursive pair)
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+fn once(k: i64) -> i64 {
+    var s = 0
+    for i in 0..k {
+        s += i
+    }
+    return s
+}
+fn twice(k: i64) -> i64 {
+    var s = 0
+    while s < k {
+        s += 1
+    }
+    return s
+}
+fn unreached() -> i64 {
+    return twice(1)
+}
+fn even(n: i64) -> bool {
+    if n == 0 {
+        return true
+    }
+    return odd(n - 1)
+}
+fn odd(n: i64) -> bool {
+    if n == 0 {
+        return false
+    }
+    return even(n - 1)
+}
+fn s50(k: i64) -> i64 {
+    var s = k
+    if s > 0 {
+        s += 1
+    } else if s < 0 {
+        s -= 1
+    } else {
+        s = 1
+    }
+    {
+        s += 2
+    }
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    return s
+}
+fn s51(k: i64) -> i64 {
+    var s = k
+    if s > 0 {
+        s += 1
+    } else if s < 0 {
+        s -= 1
+    } else {
+        s = 1
+    }
+    {
+        s += 2
+    }
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    s += 1
+    return s
+}
+let a = once(3) + twice(2)
+let b = s50(0) + s51(0) + s50(1) + s51(1)
+let c = even(4) && odd(3)
+let d = sq(2.0)

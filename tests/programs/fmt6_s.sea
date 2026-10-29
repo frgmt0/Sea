@@ -1,0 +1,19 @@
+// fmt6_s -- format of the cases of fmt_s.sea, printed with print and byte-equal to the printf line of the same
+// arguments (LANGUAGE.md 11.1, 10.9: format(F, ...) is the str that printf(F, ...) writes); the
+// expected bytes are progfmt.py's exact decimal oracle, each case twice
+printf("[%s]\n", "abc")
+print(format("[%s]\n", "abc"))
+printf("[%5s] [%-5s]\n", "ab", "ab")
+print(format("[%5s] [%-5s]\n", "ab", "ab"))
+printf("[%.2s] [%5.1s]\n", "abcdef", "xyz")
+print(format("[%.2s] [%5.1s]\n", "abcdef", "xyz"))
+printf("[%s]\n", "")
+print(format("[%s]\n", ""))
+printf("[%4s]\n", "é")
+print(format("[%4s]\n", "é"))
+printf("[%s]\n", "a\tb")
+print(format("[%s]\n", "a\tb"))
+printf("%s-%s\n", "left", "right")
+print(format("%s-%s\n", "left", "right"))
+printf("[%3s]\n", "abcdef")
+print(format("[%3s]\n", "abcdef"))

@@ -24,7 +24,7 @@ lib 0:6:1 1 printf 1
 eval 0:6:1
 block 0:1:1 2
 end
-fn 2 colsum fn 4 1 1 0:1:1
+fn 2 colsum inl 4 1 1 0:1:1
 par A 10 val
 loc s 11 let 0:2:9
 lv 0:2:17 10 1

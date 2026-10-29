@@ -17,11 +17,15 @@
 //        `error: <message>` + LF                        SEA_SITE_NONE
 //      <file> is the string object at SEA_SITE_FILE of the record
 //      `_sea_sites + SEA_SITE_SIZE*site`, <line> its SEA_SITE_LINE;
-//   3. open output files are flushed and closed: Sea's file writers
-//      (write_json, save_svg, make_dir) open, write and close within one
-//      call and keep no descriptor open between calls, so no file can be
-//      open when an error is reported from outside such a call, and
-//      nothing is left to flush here;
+//   3. open output files are flushed and closed: the one file that can
+//      be open is a write_json file between JSON_OPEN and JSON_CLOSE
+//      (rt_file.s); _sea_json_abort writes its buffer and closes it,
+//      ignoring a failure of either (the error reported stays the
+//      original one; DESIGN.md 2.11.6, L-ca). It does nothing when no
+//      emitter state exists or its descriptor is -1 (an error inside
+//      JSON_OPEN before the descriptor is stored, or the emitter's own
+//      failed write, which closed the file before calling here). This
+//      step also runs for a code outside the run-time range;
 //   4. the process ends with _exit(SEA_EXIT_RUN_ERROR) (1), never exit:
 //      no atexit handler or library flush runs, which also makes this
 //      path safe from the SIGSEGV / SIGBUS handler of rt_main.s
@@ -42,7 +46,9 @@
 // (an `%` is always followed by one conversion character, which is
 // skipped; the character itself is not looked at).
 //
-// EXTERNAL INTERNAL SYMBOL used (defined by rt_fmt.s, not here):
+// EXTERNAL INTERNAL SYMBOLS used (defined elsewhere in the runtime):
+//   _sea_json_abort() (rt_file.s): step 3 above; clobbers like any
+//              function, returns normally.
 //   _sea_fmt_g(x0 = destination buffer of at least 16 bytes (this file
 //              passes RT_ERR_FMTG_BYTES = 32), d0 = the f64)
 //              -> x0 = number of bytes written
@@ -348,6 +354,8 @@ Lrt_err_msg_done:
     bl Lrt_err_flush                // the whole line, one write(2)
 
 Lrt_err_exit:
+    // 3. An open write_json file: flushed and closed, failures ignored.
+    bl _sea_json_abort
     mov w0, #SEA_EXIT_RUN_ERROR
     bl _exit                        // does not return
     brk #1                          // not reached

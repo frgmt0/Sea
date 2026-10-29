@@ -35,13 +35,14 @@
 232 REM   30 ret 31 tret 32 block 39 idx 40 dol 41 fore 43 dyn 44 fix 45 view 46 all 47 arr 48
 234 REM   row 51 match 52 arm 56 fld 57 proj 58 slit (nodes); 33 fn 34 par 35 loc 36 end 37 tvec 38
 236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd; 59 tmp 60 xblk 61 iblk 62 iret
-237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B).
+237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B);
+238 REM   6b: L20 (lpainl) the calls of fn kind inl as well (M then also its inline levels).
 240 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
 250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 260 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
-265 DIM O(449999,1), O$(449999), U(49999,5), V(499), M(99,2), D(64,1)
+265 DIM O(449999,1), O$(449999), U(49999,5), V(499), M(49999,3), D(64,1)
 266 DIM C(120008,6), J(99999,5)
 270 LET P$ = "sealoop"
 275 REM ---- the tables (canonical order: errors exits consts records) --------------------------
@@ -318,7 +319,7 @@
 1620 GOTO 1290
 1625 LET A0 = A0 + 1
 1630 LET A(A0) = I(2)
-1632 IF POS("|.p |.i |", "|" & G$(2) & " |") = 0 THEN 1640
+1632 IF POS("|.p |.q |.i |", "|" & G$(2) & " |") = 0 THEN 1640
 1634 LET G(G0, 0) = G(G0, 0) + 1
 1640 GOTO 1290
 1645 REM end pops the body block; the stack is then empty (3.3)

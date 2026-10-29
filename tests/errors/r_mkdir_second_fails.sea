@@ -1,0 +1,5 @@
+// r_mkdir_second_fails -- the first make_dir creates "d", the second names a missing grandparent: the error names its own path
+// (LANGUAGE.md 10.10, 9.2)
+make_dir("d")
+printf("created\n")
+make_dir("a/b/c")

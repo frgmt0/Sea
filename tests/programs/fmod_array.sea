@@ -1,0 +1,58 @@
+// fmod_array -- f64 % element-wise (LANGUAGE.md 6.2, 6.3, 6.5, 6.6; DESIGN.md 2.11.4 L7, rule 39): vector with vector,
+// with a scalar either way, an untyped integer literal and an i64 variable as the scalar (converted), an i64[] with an
+// f64 scalar, matrix with matrix, with a scalar, with .row and .col broadcasting, empty and fixed-size arrays; each
+// element is the scalar rule of fmod_scalar; printed with %.17g; expected bytes from tests/vectors/fmod6_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(M: f64[,]) {
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j])
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let V: f64[] = [
+    7.5, -7.5, 7.5,
+    -7.5, 6.0, -6.0,
+    6.0, -6.0, 0.0,
+    -0.0, 1e+300, inf,
+    -inf, nan,
+]
+let W: f64[] = [
+    2.0, 2.0, -2.0,
+    -2.0, 3.0, 3.0,
+    -3.0, -3.0, 5.0,
+    5.0, 7.0, 3.0,
+    3.0, 3.0,
+]
+pv(V % W)
+pv(V % 2.5)
+pv(2.5 % W)
+pv(V % 3)
+let k7 = 7
+pv(k7 % W)
+let I: i64[] = [5, -5, 7, -7, 0, 3]
+pv(I % 2.5)
+let M: f64[,] = [7.5, -7.5, 6.0; -6.0, 0.5, -0.5]
+let N: f64[,] = [2.0, 2.0, -3.0; 3.0, -0.25, 0.25]
+pm(M % N)
+pm(M % 2.0)
+let rv: f64[] = [2.0, -4.0, 0.5]
+let cv: f64[] = [4.0, -1.5]
+pm(M % rv.row)
+pm(M % cv.col)
+pm(cv.col % rv.row)
+let E = zeros(0)
+pv(E % E)
+pv(E % 3.0)
+let F: f64[4] = [5.0, -5.0, 2.0, -2.0]
+let G: f64[4] = F % 3.0
+pv(G)
+printf("%.17g\n", sum(F % 3.0 + 1.0))

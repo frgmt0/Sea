@@ -1,0 +1,1 @@
+err_call6_default_type_str.sea:2:15: error: type mismatch: expected str, found i64

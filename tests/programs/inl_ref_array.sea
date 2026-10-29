@@ -1,0 +1,49 @@
+// inl_ref_array -- array ref parameters of inlined functions: an element store through ref copies a shared buffer (the other
+// variable is unchanged), an in-place reversal, a whole-array replacement, and a value read before a ref call
+// that replaces it (sum_with(a, zap(ref a)) sees the old array; rule 12 (a), R30, R31)
+fn fill(ref v: f64[], x: f64) {
+    for i in 0..len(v) {
+        v[i] = x
+    }
+}
+fn rev(ref v: f64[]) {
+    let n = len(v)
+    for i in 0..idiv(n, 2) {
+        let t = v[i]
+        v[i] = v[n - 1 - i]
+        v[n - 1 - i] = t
+    }
+}
+fn first_to(ref v: f64[], x: f64) -> f64 {
+    let old = v[0]
+    v[0] = x
+    return old
+}
+fn zap(ref v: f64[]) -> f64 {
+    v = zeros(1)
+    return 1.0
+}
+fn sum_with(v: f64[], k: f64) -> f64 {
+    return sum(v) + k
+}
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+var a: f64[] = [1.0, 2.0, 3.0]
+var b = a
+fill(ref b, 7.0)
+pv(a)
+pv(b)
+rev(ref a)
+pv(a)
+let old = first_to(ref a, 100.0)
+printf("%g\n", old)
+pv(a)
+a[1] = 2.5
+printf("%g\n", sum_with(a, zap(ref a)))
+pv(a)
+printf("%g\n", sum_with(a, 0.5))

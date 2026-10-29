@@ -1,0 +1,8 @@
+// fmt6_order -- the arguments of format evaluate left to right, also in nested format calls (LANGUAGE.md 6.8 rule 5, 11.1)
+fn t(k: i64, v: i64) -> i64 {
+    printf("eval %d\n", k)
+    return v
+}
+printf("%s\n", format("%d %d %d", t(1, 10), t(2, 20), t(3, 30)))
+printf("%s\n", format("[%s]", format("%d", t(4, 5))))
+printf("%s\n", format("%s %s", format("%d", t(5, 1)), format("%d", t(6, 2))))

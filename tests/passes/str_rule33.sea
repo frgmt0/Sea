@@ -1,4 +1,4 @@
-fn pick(a: str) {
+fn pick(a: str) { while false {}
     var n = 0
     match a {
         "x" | "y" => { n = 1 }
@@ -6,7 +6,7 @@ fn pick(a: str) {
     }
     printf("%d\n", n)
 }
-fn drive() {
+fn drive() { while false {}
     pick("x")
     pick("y")
     pick("z")

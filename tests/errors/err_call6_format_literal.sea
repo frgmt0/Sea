@@ -1,0 +1,3 @@
+// err_call6_format_literal -- the format of format must be a string literal: 233 at the argument (LANGUAGE.md 11.1)
+let fm = "%d"
+let s = format(fm, 1)

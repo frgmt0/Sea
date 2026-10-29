@@ -18,9 +18,14 @@
 #        `error: <message>` + LF                        SEA_SITE_NONE
 #      <file> is the string object at SEA_SITE_FILE of the record
 #      `sea_sites + SEA_SITE_SIZE*site`, <line> its SEA_SITE_LINE;
-#   3. open output files are flushed and closed: Sea's file writers
-#      open, write and close within one call and keep no descriptor
-#      open between calls, so nothing is left to flush here;
+#   3. open output files are flushed and closed: the only file a
+#      program keeps open across calls is the JSON emitter's (rt_file.s,
+#      DESIGN.md 2.11.6, L-ca); sea_json_abort flushes its buffer and
+#      closes it when one is open (its state exists and its descriptor
+#      is not -1), ignoring a failure of either: the error reported is
+#      the original one. This step also runs for a code outside the
+#      run-time range (nothing is printed, but the file is still closed
+#      before the process ends);
 #   4. the process ends with _exit(SEA_EXIT_RUN_ERROR) (1), never exit:
 #      no atexit handler or library flush runs, which also makes this
 #      path safe from the SIGSEGV / SIGBUS handler of rt_main.s
@@ -42,6 +47,9 @@
 # (an `%` is always followed by one conversion character, which is
 # skipped; the character itself is not looked at).
 #
+# EXTERNAL INTERNAL SYMBOL used (defined by rt_file.s, not here):
+#   sea_json_abort() flush and close the open JSON file, if any (step 3);
+#             clobbers the caller-saved registers, never fails
 # EXTERNAL INTERNAL SYMBOL used (defined by rt_fmt.s, not here):
 #   sea_fmt_g(%rdi = destination buffer of at least 16 bytes (this file
 #             passes RT_ERR_FMTG_BYTES = 32), %xmm0 = the f64)
@@ -349,6 +357,9 @@ sea_err:
     call .Lrt_err_flush             # the whole line, one write(2)
 
 .Lrt_err_exit:
+    # 3. An open JSON file: flushed and closed, failures ignored (L-ca).
+    call sea_json_abort
+    # 4. The end.
     movl $SEA_EXIT_RUN_ERROR, %edi
     call _exit@PLT                  # does not return
     ud2                             # not reached

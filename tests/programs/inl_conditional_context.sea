@@ -1,0 +1,32 @@
+// inl_conditional_context -- an inlined call in a while condition (re-evaluated at every test), in the right operand of && and || (only when
+// reached), in the arms of an if expression (only the arm taken) and in an if condition inside a loop with break
+// (LANGUAGE.md 6.4, 6.8, 6.10)
+fn probe(k: i64) -> i64 {
+    printf("p%d ", k)
+    return k * k
+}
+var k = 0
+while probe(k) < 20 {
+    k += 1
+}
+printf("\n")
+printf("k=%d\n", k)
+let on = true
+let off = false
+if on && probe(7) > 40 {
+    printf("A\n")
+}
+if off && probe(8) > 0 {
+    printf("never\n")
+}
+if off || probe(9) > 80 {
+    printf("B\n")
+}
+let z = if k > 3 { probe(1) } else { probe(2) }
+printf("z=%d\n", z)
+for j in 0..4 {
+    if probe(j) > 3 {
+        break
+    }
+}
+printf("\n")

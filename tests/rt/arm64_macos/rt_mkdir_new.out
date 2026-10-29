@@ -1,0 +1,8 @@
+isdir=0
+ok
+isdir=1
+ok
+ok
+rc=1
+isdir=1
+live=0

@@ -1,0 +1,8 @@
+// r_inl6_ref_param -- an element store through a ref parameter of an inlined function: the callee's line (LANGUAGE.md 8.3, 5.4)
+fn store(ref v: f64[], k: i64) {
+    v[k] = 1.0
+}
+var a: f64[] = [0.0, 0.0]
+store(ref a, 1)
+printf("%g %g\n", a[0], a[1])
+store(ref a, 2)

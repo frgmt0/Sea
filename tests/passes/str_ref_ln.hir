@@ -37,11 +37,14 @@ end
 fn 2 f fn 1 2 0 0:1:1
 par v 10 ref
 par i 3 val
+cb 0:1:36 2 0
+block 0:1:42 0
+while 0:1:30
 lv 0:2:5 10 1
 lv 0:2:7 3 2
 idx 0:2:5 5 1
 cs 0:2:12 5 x
 asg 0:2:5 set
-block 0:1:28 1
+block 0:1:28 2
 end
 #end

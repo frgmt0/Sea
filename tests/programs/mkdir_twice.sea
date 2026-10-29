@@ -1,0 +1,5 @@
+// mkdir_twice -- make_dir of the same path twice: an existing directory is not an error (LANGUAGE.md 10.10)
+make_dir("d")
+make_dir("d")
+make_dir("d")
+printf("ok\n")

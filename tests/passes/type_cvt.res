@@ -7,7 +7,7 @@ rtype 0:4:21 f64 s 0 4
 rname 0:5:12 k loc 1
 return 0:5:5 1
 block 0:4:25 1
-rfn 0:4:1 widen 0 1 1 2 4 3
+rfn 0:4:1 widen 2 1 1 2 4 3
 rtype 0:7:13 f64 s 0 4
 param 0:7:10 x 0 0
 rtype 0:7:21 f64 s 0 4
@@ -16,7 +16,7 @@ float 0:8:16 #4000000000000000
 bin 0:8:12 mul
 return 0:8:5 1
 block 0:7:25 1
-rfn 0:7:1 scale 0 1 1 3 4 4
+rfn 0:7:1 scale 2 1 1 3 4 4
 rpname 0:10:5 n 1
 rint 0:10:9 3 #4008000000000000
 let 0:10:1 0

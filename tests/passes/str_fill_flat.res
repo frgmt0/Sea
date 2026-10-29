@@ -27,7 +27,7 @@ index 0:4:31 1
 call 0:4:5 3
 cstmt 0:4:5
 block 0:1:25 3
-rfn 0:1:1 tile 0 2 0 2 1 5 3
+rfn 0:1:1 tile 2 2 0 2 1 5 3
 rname 0:6:1 tile fn 2
 str 0:6:6 ab
 rint 0:6:12 2 #4000000000000000

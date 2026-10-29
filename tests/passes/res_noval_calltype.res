@@ -10,6 +10,6 @@ rtype 0:2:11 Q s 0 0
 rint 0:2:22 1 #3FF0000000000000
 return 0:2:15 1
 block 0:2:13 1
-rfn 0:2:1 f 0 0 1 2 0
+rfn 0:2:1 f 2 0 1 2 0
 prog 2
 #end

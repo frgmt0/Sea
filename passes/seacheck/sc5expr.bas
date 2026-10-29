@@ -230,8 +230,7 @@
 10755 CALL "num2": N(), M(), C(), X(), X$(), A, B, G1, G2, R, Z
 10760 IF Z = 1 THEN 10950
 10765 LET M(J, 1) = R
-10770 IF R = 3 THEN 10985
-10775 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "f64 %", "", "", 1
+10770 REM % of f64 operands (an i64 one converted by num2) is the exact fmod (LANGUAGE 6.6, phase 6)
 10780 GOTO 10985
 10785 IF G1 = 2 THEN 10950
 10790 IF G1 > 4 THEN 10950

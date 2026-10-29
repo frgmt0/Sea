@@ -1,0 +1,12 @@
+// mkdir_many -- ten directories created through format, a sub-directory in each (it exists only if the parent does), then all of
+// the ten again (LANGUAGE.md 10.10, 10.9)
+for k in 0..10 {
+    make_dir(format("d%d", k))
+}
+for k in 0..10 {
+    make_dir(format("d%d/s", k))
+}
+for k in 0..10 {
+    make_dir(format("d%d", k))
+}
+printf("%d\n", 10)

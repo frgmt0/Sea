@@ -1,0 +1,27 @@
+// inl_nested -- nested inlining: f1 calls f0 twice, f2 calls f1 twice, f3 calls f2 twice (each call site is inlined, so 8 copies
+// of f0), a chain a -> b -> c, and calls nested in arguments (LANGUAGE.md 8.6 (c); DESIGN.md 2.11.4 L20 inlines
+// recursively)
+fn f0(x: i64) -> i64 {
+    return x + 1
+}
+fn f1(x: i64) -> i64 {
+    return f0(f0(x))
+}
+fn f2(x: i64) -> i64 {
+    return f1(f1(x))
+}
+fn f3(x: i64) -> i64 {
+    return f2(f2(x))
+}
+fn a(x: f64) -> f64 {
+    return b(x) * 2.0
+}
+fn b(x: f64) -> f64 {
+    return c(x) + 1.0
+}
+fn c(x: f64) -> f64 {
+    return x * x
+}
+printf("%d %d %d %d\n", f0(0), f1(0), f2(0), f3(0))
+printf("%d\n", f3(f3(f3(1))))
+printf("%g %g\n", a(3.0), c(b(a(1.0))))
