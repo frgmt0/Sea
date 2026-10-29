@@ -21,7 +21,7 @@ mode=${1:-}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${2:-${BUILD:-$ROOT/build}}
 BAYSICK=${BAYSICK:-$ROOT/..}
-PASSES="seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64 seagen_x64"
+PASSES="seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec seagen_a64 seagen_x64"
 case $mode in
 lines | limits) ;;
 *) echo "usage: sh tools/passlines.sh lines|limits [BUILD_DIR]" >&2; exit 2 ;;

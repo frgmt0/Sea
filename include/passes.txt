@@ -6,8 +6,8 @@
 ; head <name> <field>...                  header record, written with a leading number sign
 ; rec <set> <code> <op> <pops> <field>...
 ;   set: A sea.ast and sea.res (codes 1-49 both files, 50- sea.res only: 3.4.1);
-;        H every HIR file (sea.hir1, sea.hir, sea.hirl); H1 sea.hir1 only;
-;        HF sea.hir and sea.hirl; HL sea.hirf and sea.hirl (3.5.9, from sub-phase 4e-0);
+;        H every HIR file (sea.hir1, sea.hir, sea.hirf, sea.hirl); H1 sea.hir1 only;
+;        HF sea.hir, sea.hirf and sea.hirl; HL sea.hirf and sea.hirl (3.5.9, from sub-phase 4e-0);
 ;        L every LIR file (sea.lir1, sea.lir2, sea.lir3, sea.lir); LF sea.lir only
 ;   field: name:type, then optionally ? (the field may be -), then optionally *count
 ;          (the field is repeated count times, count = an earlier u field): name:type?*count

@@ -1,0 +1,56 @@
+// elem6_inl_tasg_fields -- a tuple assignment of elemental results into field paths of a `ref` struct parameter inside a loop (t.s.a,
+// t.q[0].b, an element of a struct array field, elements of those fields, `_`), the function called twice; and the same into a local struct
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+struct S {
+    a: f64[]
+    b: f64[]
+    n: i64
+}
+struct T {
+    s: S
+    q: S[]
+}
+fn f(ref t: T, v: f64[], k: i64) {
+    for z in 0..k {
+        (t.s.a, t.q[0].b) = two(v, 1.0)
+        (t.q[1].a, _) = ind2sub([2, 2], [1, 3])
+        t.s.b = sq(v)
+        (t.s.a[0], t.q[0].a[0]) = two(9.0, 1.0)
+    }
+}
+fn g(v: f64[], k: i64) -> S {
+    var s = S { a: [0.0], b: [0.0], n: 0 }
+    for z in 0..k {
+        (s.a, s.b) = two(v, 2.0)
+    }
+    return s
+}
+var t = T { s: S { a: [0.0], b: [0.0], n: 1 }, q: [S { a: [0.0], b: [0.0], n: 1 }, S { a: [0.0], b: [0.0], n: 1 }] }
+f(ref t, [1.0, 2.0], 1)
+f(ref t, [1.0, 2.0, 3.0], 1)
+pv(t.s.a)
+pv(t.s.b)
+pv(t.q[0].b)
+pv(t.q[1].a)
+pv(t.q[0].a)
+pv(g([1.0], 1).a)
+pv(g([2.0], 1).b)

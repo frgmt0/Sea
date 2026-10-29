@@ -206,7 +206,7 @@ done
 
 # passes/NAME.sea with NAME.out: built with --no-prelude and run; with a NAME.prelude marker
 # (Decision 57) built with the real prelude, and the marker is a corpus mistake beside a dump
-# kind other than hir, hirl and lir1 (ast, res, hir1, lir2, lir; as tests/run.sh rejects it)
+# kind other than hir, hirf, hirl and lir1 (ast, res, hir1, lir2, lir3, lir; as tests/run.sh rejects it)
 for src in "$ROOT"/tests/passes/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
@@ -214,8 +214,8 @@ for src in "$ROOT"/tests/passes/*.sea; do
     [ -f "$base.out" ] || continue
     selected "passes/$nm" || continue
     if [ -f "$base.prelude" ]; then
-        for x in ast res hir1 lir2 lir; do
-            [ -f "$base.$x" ] && setup_fail "passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirl, .lir1 and .out)"
+        for x in ast res hir1 lir2 lir3 lir; do
+            [ -f "$base.$x" ] && setup_fail "passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirf, .hirl, .lir1 and .out)"
         done
         pack_sea passes "$ROOT/tests/passes" "$nm"
     else

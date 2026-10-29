@@ -1,5 +1,5 @@
 100 REM ====================================================================================
-105 REM sealopt -- pass 3c: sea.lir2 -> sea.lir (DESIGN 2.1, 3.6.5 "Pass 3c", 5.8; Decision 74,
+105 REM sealopt -- pass 3c: sea.lir2 -> sea.lir3 (DESIGN 2.1, 3.6.5 "Pass 3c", 5.8; Decision 74,
 110 REM L-bc). Lines 100-59999, SUBs none. Built as DESIGN 2.6.3 says: the files lo0main ... lo6t9
 115 REM (in name order), io diag tables and the shared main-program part lirrw, the DATA blocks
 120 REM errors exits consts entries records, then 99999 END (passes/sealopt/build.list).
@@ -30,7 +30,7 @@
 234 REM   flag, W3-W6 T7's saved counts (lirrw's reserved scalars, never Z8 or its other state).
 235 REM   W(w,0..4), V(k): the snapshot of I(n,0..4) and O(k), then the new records (REBUILD).
 240 REM ====================================================================================
-360 FILES "sea.lir2"; "sea.lir"
+360 FILES "sea.lir2"; "sea.lir3"
 365 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), Q(399,9), Q$(399), F(1499,3), F$(1499), Z(8)
 370 DIM J(299,4), J$(299), Y(399), Y$(399,5), D(39), D$(39), B(399), A(399)
 375 DIM I(199999,4), O(799999), R(99999,9), K(19999,4), C(199999,4), S$(199999)

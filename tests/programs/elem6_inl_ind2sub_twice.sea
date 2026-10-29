@@ -1,0 +1,24 @@
+// elem6_inl_ind2sub_twice -- ind2sub with an array r (LANGUAGE.md 10.7: (k % r, idiv(k, r)) element by element) in a function called twice,
+// so it is inlined at both call sites
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn m(k: i64) {
+    let (i1, j1) = ind2sub([3, 3], [1, 5])
+    pvi(i1)
+    pvi(j1)
+    printf("%d\n", k)
+}
+m(1)
+m(2)

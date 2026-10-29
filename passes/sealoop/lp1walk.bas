@@ -12,6 +12,8 @@
 5055 LET N7 = H0
 5060 LET S7 = A0
 5065 LET T7 = Y9 - 9
+5066 IF A6 = 0 THEN 5070
+5067 GOSUB 8770
 5070 LET O0 = 0
 5075 LET O9 = 0
 5076 FOR X = 10 TO Y9
@@ -25,8 +27,8 @@
 5091 LET V(55) = S(2)
 5092 LET V(56) = S(3)
 5093 LET V(57) = S(4)
-5094 REM the dispatch of a node by kind (two digits per kind; 5149; 6d: the j* records 65-73 copied)
-5095 LET Q4$ = "01010101011111111101010301010104010101011322121301010101010113140101010101010806020110100705090501011516010101181719200101010121010101010101010101"
+5094 REM the dispatch of a node by kind (two digits per kind; 5149; 6d: the j* records 65-73 copied; 7b: eval and the HL nodes 74-85 copied, tmp 50800)
+5095 LET Q4$ = "01010101011111111101010301010104010101011301121301010101010113140101010101010806020110100705090501011516010101181719200101010101010101010101010101010101010101010101010101"
 5096 REM the parents in W (the tree stack is free now; a body block has 0)
 5097 FOR X = 1 TO H0
 5098 LET W(X) = 0
@@ -42,6 +44,7 @@
 5112 LET X = P(R1, 1)
 5114 LET R7 = R1
 5116 LET K = R(P(R1, 0), 0)
+5117 IF K = 63 THEN 5195
 5118 IF K < 33 THEN 5135
 5119 IF K > 55 THEN 5135
 5120 IF K = 42 THEN 5126
@@ -49,9 +52,11 @@
 5122 IF K > 50 THEN 5135
 5123 IF K > 48 THEN 5126
 5124 IF K > 38 THEN 5135
-5126 REM a declaration (a type, fn par loc end): copied; fn opens the function F0
+5126 REM a declaration (a type, fn par loc end): copied; fn opens the function F0 (its .l locals
+5127 REM new locals, 8730); a tptr record (7b) is not copied: lp2out writes the tptr types
 5128 IF K <> 33 THEN 5131
-5130 LET F0 = X
+5129 LET F0 = X
+5130 GOSUB 8730
 5131 LET C9 = O9
 5132 GOSUB 8000
 5133 GOTO 5195
@@ -62,7 +67,7 @@
 5143 LET H(X, 0) = H(X1, 0)
 5145 LET C9 = O9
 5147 LET K4 = VAL(SEG$(Q4$, 2 * K - 1, 2 * K))
-5149 ON K4 GOTO 5160, 7000, 5300, 5350, 5170, 5400, 5450, 5500, 25000, 20500, 5550, 5600, 5700, 5800, 40000, 40200, 45030, 45100, 45150, 50800, 55000, 55180
+5149 ON K4 GOTO 5160, 7000, 5300, 5350, 5170, 5400, 5450, 5500, 25000, 20500, 5550, 5600, 5700, 5800, 40000, 40200, 45030, 45100, 45150, 50800
 5160 REM ---- copied after its children
 5162 GOSUB 8000
 5164 GOTO 5180
@@ -74,6 +79,7 @@
 5195 NEXT R1
 5197 GOTO 10000
 5295 REM ---- lib: L1-L3 (zeros ... numel), L7 (elemental, an array argument), L11's ind2sub ----------
+5296 REM (7b: ind2sub with an array r is L19's, seafuse's: in sea.hirf bad record, 2.12.3 rule (1))
 5300 LET R2 = H(X, 6)
 5302 LET F9 = 4
 5304 GOSUB 8440
@@ -86,7 +92,9 @@
 5316 LET X5 = X
 5318 GOSUB 5750
 5320 IF Y8 = 1 THEN 5170
-5322 GOTO 5160
+5321 IF H(H(X, 3), 2) <= 9 THEN 5160
+5322 IF T(H(H(X, 3), 2), 1) = 0 THEN 5160
+5323 GOTO 2900
 5324 IF POS(K4$, "|" & F9$ & "|") = 0 THEN 5160
 5326 IF H(X, 5) > 1 THEN 5550
 5328 IF F9$ = "min" THEN 5160
@@ -160,11 +168,10 @@
 5702 IF H(X5, 4) = 0 THEN 5706
 5704 LET X5 = H(X5, 4)
 5705 GOTO 5702
-5706 IF H(X5, 1) <> 12 THEN 5713
+5706 IF H(X5, 1) <> 12 THEN 5714
 5708 GOSUB 5750
-5710 IF Y8 = 0 THEN 56100
+5710 IF Y8 = 0 THEN 5714
 5712 GOTO 20800
-5713 IF H(X5, 1) > 18 THEN 55190
 5714 IF K <> 24 THEN 5160
 5716 LET O5 = X
 5717 GOSUB 30900
@@ -591,6 +598,39 @@
 8718 IF F5 = 0 THEN 8722
 8720 LET B5 = T(Y7, 0) * T(Y7, 4) * S(E5)
 8722 RETURN
+8725 REM ---- 8730 (7b, at a fn): each .l local of sea.hirf of the function F0 a new local of its type
+8726 REM (a tptr: -e) and mut, U(u,0) its entry of A, U(u,3) -(its loc record row): its loc pos; its
+8727 REM entry of A cleared of 3000's mark; nl less by one, as 50800 does for a .p (DESIGN 2.12.3 (4))
+8730 LET L5 = G(F0, 2) + G(F0, 3)
+8732 FOR V1 = G(F0, 2) + 1 TO L5
+8734 LET R2 = G(F0, 6) + V1
+8736 IF SEG$(D$(R2), 1, 6) <> "loc .l" THEN 8758
+8738 LET L6 = G(F0, 1) + V1
+8740 LET U1 = A(L6) - 400000 * INT(A(L6) / 400000)
+8741 LET A(L6) = U1
+8742 IF A6 = 0 THEN 8746
+8743 IF U1 <= A6 THEN 8746
+8744 LET U1 = -T(U1, 2)
+8746 LET U2 = 0
+8748 IF POS(D$(R2), " for ") = 0 THEN 8752
+8750 LET U2 = 1
+8752 LET S7 = S7 - 1
+8753 GOSUB 8100
+8754 LET U(U0, 0) = L6
+8755 LET U(U0, 3) = -R2
+8756 LET G(F0, 3) = G(F0, 3) - 1
+8758 NEXT V1
+8760 LET U2 = 0
+8762 RETURN
+8765 REM ---- 8770 (7b, before the walk): the tptr types of sea.hirf (ids A6 + 1 ... Y9) used, renumbered
+8766 REM with sealoop's from A6 on (lp2out; T(id,2) keeps the elt of each old id)
+8770 LET T7 = A6 - 9
+8772 FOR J = A6 + 1 TO Y9
+8774 LET E3 = T(J, 2)
+8776 GOSUB 8150
+8778 NEXT J
+8780 LET Y9 = A6
+8782 RETURN
 8895 REM ---- 8900: the script S$ right after the subtree of node X4 (L8 its type: tmp of it) -------
 8900 LET C9 = H(X4, 8)
 8902 LET L8 = H(X4, 2)

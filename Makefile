@@ -7,7 +7,7 @@
 #                         and does not stop the parts that exist.
 #   make runtime          build/libsea.a from runtime/arm64_macos/*.s
 #   make tools            build/tools/gendata, build/tools/seaval from tools/*.bas
-#   make passes           build/<pass> for each of seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt
+#   make passes           build/<pass> for each of seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec
 #                         seagen_a64: build/gen/<pass>.bas (passes/<pass>/*.bas, then the modules
 #                         and DATA blocks of passes/<pass>/build.list, then 99999 END; DESIGN.md
 #                         2.6.3), compiled with $(BAYSICK)/build/baysick
@@ -76,7 +76,7 @@ BUILD   := build
 
 BSK      := $(BAYSICK)/build/baysick
 BSKRT    := $(BAYSICK)/build/libbaysickrt.a
-PASSES   := seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64 seagen_x64
+PASSES   := seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec seagen_a64 seagen_x64
 LIBS_CANON := io diag tables lirrw limb f64emu fltlit layout ralloc
 DATA_CANON := errors errno exits consts entries records mtab
 RT_EXPECTED := rt_main rt_out rt_err rt_fmt rt_clock rt_math rt_mem rt_arr rt_str rt_args rt_sort rt_file

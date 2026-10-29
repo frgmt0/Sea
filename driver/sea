@@ -3,13 +3,13 @@
 # mktemp, sed, awk, tail, cmp, rm, cat, env, (arm64-macos) as, ld, xcrun.
 #
 #   sea build <file.sea> [-o <out>] [--target arm64-macos|x86_64-linux] [-S]
-#                        [--emit ast|res|hir1|hir|hirl|lir1|lir2|lir] [--keep-temps] [--no-prelude]
+#                        [--emit ast|res|hir1|hir|hirf|hirl|lir1|lir2|lir3|lir] [--keep-temps] [--no-prelude]
 #   sea run <file.sea> [--keep-temps] [--no-prelude] [-- program arguments...]
 #   sea --version | --help
 #
 # Installation directory (DESIGN.md 2.10): the directory of this script, symlinks resolved
 # (or $SEA_HOME, which the test runners use). It holds the pass executables seaparse,
-# seaname, seacheck, seaexpand, sealoop, sealower, seaopt, sealopt, seagen_a64 (seagen_x64), std.sea, errors.inc,
+# seaname, seacheck, seaexpand, seafuse, sealoop, sealower, seaopt, sealopt, seavec, seagen_a64 (seagen_x64), std.sea, errors.inc,
 # limits.inc, libsea.a and libbaysickrt.a. Run from the source tree, errors.inc and limits.inc
 # are found in ../include when the directory has no copy.
 #
@@ -99,7 +99,7 @@ die() {
     exit "$_st"
 }
 
-USAGE='usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|res|hir1|hir|hirl|lir1|lir2|lir] [--keep-temps] [--no-prelude]
+USAGE='usage: sea build <file.sea> [-o out] [--target arm64-macos|x86_64-linux] [-S] [--emit ast|res|hir1|hir|hirf|hirl|lir1|lir2|lir3|lir] [--keep-temps] [--no-prelude]
        sea run <file.sea> [--keep-temps] [--no-prelude] [-- program arguments...]
        sea --version | --help'
 
@@ -158,7 +158,7 @@ arm64-macos | x86_64-linux) ;;
 *) die "$EX_USAGE" "unknown target '$TARGET'" ;;
 esac
 case $EMIT in
-"" | ast | res | hir1 | hir | hirl | lir1 | lir2 | lir) ;;
+"" | ast | res | hir1 | hir | hirf | hirl | lir1 | lir2 | lir3 | lir) ;;
 *) die "$EX_USAGE" "unknown emit kind '$EMIT'" ;;
 esac
 if [ "$ASM_ONLY" = 1 ] && [ -n "$EMIT" ]; then usage_error "-S and --emit cannot be combined"; fi
@@ -335,13 +335,17 @@ run_pass seacheck sea.res sea.hir1
 if [ "$EMIT" = hir1 ]; then finish sea.hir1; exit "$EX_OK"; fi
 run_pass seaexpand sea.hir1 sea.hir
 if [ "$EMIT" = hir ]; then finish sea.hir; exit "$EX_OK"; fi
-run_pass sealoop sea.hir sea.hirl
+run_pass seafuse sea.hir sea.hirf
+if [ "$EMIT" = hirf ]; then finish sea.hirf; exit "$EX_OK"; fi
+run_pass sealoop sea.hirf sea.hirl
 if [ "$EMIT" = hirl ]; then finish sea.hirl; exit "$EX_OK"; fi
 run_pass sealower sea.hirl sea.lir1
 if [ "$EMIT" = lir1 ]; then finish sea.lir1; exit "$EX_OK"; fi
 run_pass seaopt sea.lir1 sea.lir2
 if [ "$EMIT" = lir2 ]; then finish sea.lir2; exit "$EX_OK"; fi
-run_pass sealopt sea.lir2 sea.lir
+run_pass sealopt sea.lir2 sea.lir3
+if [ "$EMIT" = lir3 ]; then finish sea.lir3; exit "$EX_OK"; fi
+run_pass seavec sea.lir3 sea.lir
 if [ "$EMIT" = lir ]; then finish sea.lir; exit "$EX_OK"; fi
 case $TARGET in
 arm64-macos) run_pass seagen_a64 sea.lir sea.s ;;

@@ -4,29 +4,35 @@
 10015 REM declaring records (tmp, bind, hloop; rcnt its l then its e) in the output, named .l1 .l2
 10020 REM ...; U(.,5) lists them in that order, G(F,5) its first entry. The tptr types get the ids
 10025 REM after the last of sea.hir's table in order of first reference in the file: a function's
-10030 REM new locals (their loc records follow its own), then the ^e fields of its records.
+10030 REM new locals (their loc records follow its own), then the ^e fields of its records. 7b: a .l local
+10031 REM of sea.hirf is a new local too (8730), its tptr types renumbered so (10900-10990).
 10035 REM Then the header, the records in list order (the tptr records before the first fn; a fn
 10040 REM record with nl + its new locals, their loc records after its own), and #end.
 10045 REM ====================================================================================
-10046 IF A2 = 0 THEN 10050
+10046 IF A2 + A3 = 0 THEN 10050
 10047 GOSUB 52000
+10048 GOSUB 10990
 10050 LET U5 = 0
 10055 LET F0 = 0
 10060 LET J = O(0, 0)
 10065 IF J = 0 THEN 10165
-10070 IF O(J, 1) = 0 THEN 10095
+10070 IF O(J, 1) = 0 THEN 10101
 10075 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10092
 10080 LET F0 = P(O(J, 1), 1)
 10085 LET G(F0, 5) = U5 + 1
 10086 GOSUB 52050
 10090 GOTO 10155
+10091 REM a copied record: the .i it declares (52100); 7b: rewritten (10950) and scanned as a generated
 10092 LET Z$ = D$(O(J, 1))
 10093 GOSUB 52100
-10094 GOTO 10155
-10095 REM a generated record: tmp, bind, tbind, hloop or rcnt declares each new local @p it names
-10100 LET Z1$ = O$(J)
-10101 LET Z$ = Z1$
-10102 GOSUB 52100
+10094 IF A3 = 0 THEN 10155
+10096 GOSUB 10950
+10098 IF Z1$ = "" THEN 10155
+10099 GOTO 10105
+10100 REM a generated record: tmp, bind, tbind, hloop or rcnt declares each new local @p it names
+10101 LET Z1$ = O$(J)
+10102 LET Z$ = Z1$
+10103 GOSUB 52100
 10105 LET J3 = POS(Z1$, " ")
 10110 IF POS("|tmp|bind|tbind|hloop|rcnt|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
 10115 LET J3 = POS(Z1$, "@")
@@ -48,21 +54,27 @@
 10180 LET Y8 = Y9
 10182 LET J = O(0, 0)
 10184 IF J = 0 THEN 10220
-10186 IF O(J, 1) = 0 THEN 10204
-10188 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10216
+10186 IF O(J, 1) = 0 THEN 10203
+10188 IF R(P(O(J, 1), 0), 0) <> 33 THEN 10201
 10190 LET F0 = P(O(J, 1), 1)
+10191 GOSUB 52050
 10192 FOR K5 = G(F0, 5) TO G(F0, 5) + G(F0, 4) - 1
 10194 LET E3 = -U(U(K5, 5), 1)
 10196 GOSUB 10234
 10198 NEXT K5
 10200 GOTO 10216
-10204 LET J3 = POS(O$(J), "^")
-10206 IF J3 = 0 THEN 10216
-10207 LET J4 = POS(O$(J) & " ", " ", J3)
-10208 LET E3 = VAL(SEG$(O$(J), J3 + 1, J4 - 1))
+10201 IF A3 = 0 THEN 10216
+10202 GOSUB 10950
+10203 IF O(J, 1) = 0 THEN 10205
+10204 GOTO 10206
+10205 LET Z1$ = O$(J)
+10206 LET J3 = POS(Z1$, "^")
+10207 IF J3 = 0 THEN 10216
+10208 LET J4 = POS(Z1$ & " ", " ", J3)
+10209 LET E3 = VAL(SEG$(Z1$, J3 + 1, J4 - 1))
 10210 GOSUB 10234
-10212 LET J3 = POS(O$(J), "^", J3 + 1)
-10214 GOTO 10206
+10212 LET J3 = POS(Z1$, "^", J3 + 1)
+10213 GOTO 10207
 10216 LET J = O(J, 0)
 10218 GOTO 10184
 10220 FOR E3 = 1 TO Y8
@@ -89,7 +101,7 @@
 10280 LET R1 = O(J, 1)
 10285 LET K = R(P(R1, 0), 0)
 10290 IF K = 33 THEN 10320
-10292 IF A2 = 1 THEN 52200
+10292 IF A2 + A3 > 0 THEN 52200
 10295 CALL "io_put": 2, D$(R1)
 10300 IF K < 34 THEN 10370
 10305 IF K > 35 THEN 10370
@@ -130,6 +142,7 @@
 10535 IF U(V1, 2) = 0 THEN 10545
 10540 LET Z1$ = "for"
 10545 LET R2 = U(V1, 3)
+10546 IF R2 < 0 THEN 10890
 10550 GOSUB 8400
 10555 CALL "io_put": 2, "loc .l" & STR$(K5) & " " & Z$ & " " & Z1$ & " " & P9$
 10558 NEXT K5
@@ -171,3 +184,39 @@
 10875 LET J3 = J4 + 1
 10880 IF J4 <= LEN(Z1$) THEN 10815
 10885 RETURN
+10887 REM ---- 10890 (7b): the loc pos of a .l local of sea.hirf: that of its loc record -R2 (8730)
+10890 LET R2 = -R2
+10892 LET F9 = 5
+10894 GOSUB 8440
+10896 LET P9$ = F9$
+10898 GOTO 10555
+10899 REM ---- 10900 (7b): in the record Z$, a tptr id of sea.hirf (> A6) in its second field as ^e
+10900 IF A6 = 0 THEN 10918
+10902 LET J3 = POS(Z$ & " ", " ")
+10904 IF POS(Y6$, "|" & SEG$(Z$, 1, J3 - 1) & "|") = 0 THEN 10918
+10906 LET J4 = POS(Z$ & " ", " ", J3 + 1)
+10908 LET A7 = POS(Z$ & " ", " ", J4 + 1)
+10910 LET Z2$ = SEG$(Z$, J4 + 1, A7 - 1)
+10912 IF POS("0123456789", SEG$(Z2$, 1, 1)) = 0 THEN 10918
+10914 IF VAL(Z2$) <= A6 THEN 10918
+10916 LET Z$ = SEG$(Z$, 1, J4) & "^" & STR$(T(VAL(Z2$), 2)) & SEG$(Z$, A7, LEN(Z$))
+10918 RETURN
+10945 REM ---- 10950 (7b): Z1$ = the copied record of row J as written (52500, 10900) before its @p
+10946 REM and ^e are resolved; "" for the loc record of a .l local of sea.hirf (written by 10500)
+10950 LET Z$ = D$(O(J, 1))
+10952 LET Z1$ = ""
+10954 IF SEG$(Z$, 1, 6) = "loc .l" THEN 10964
+10956 LET V4 = 1
+10958 GOSUB 52500
+10960 GOSUB 10900
+10962 LET Z1$ = Z$
+10964 RETURN
+10985 REM ---- 10990 (7b): Y6$ = |name|... of the records of sea.hirf whose second field is a ty (10900)
+10990 LET Y6$ = "|"
+10992 FOR I = 1 TO Z(7)
+10993 IF R(I, 4) < 2 THEN 10999
+10994 IF POS("|2|4|7|", "|" & STR$(R(I, 1)) & "|") = 0 THEN 10999
+10996 IF F(R(I, 3) + 1, 1) <> 8 THEN 10999
+10998 LET Y6$ = Y6$ & R$(I) & "|"
+10999 NEXT I
+11000 RETURN

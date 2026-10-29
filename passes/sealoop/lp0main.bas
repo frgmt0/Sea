@@ -1,5 +1,5 @@
 100 REM ====================================================================================
-105 REM sealoop -- pass 3a, first program: sea.hir -> sea.hirl (docs/DESIGN.md 2.1, 2.7, 3.5.9)
+105 REM sealoop -- pass 3a, second program: sea.hirf -> sea.hirl (DESIGN.md 2.1, 2.7, 2.12.3, 3.5.9)
 110 REM Rewrites the array constructs into explicit scalar HIR: 4e-0's L1-L4 (zeros ones filled
 115 REM len rows cols numel, fore) and 4e's L5-L11 (selection reads and folded views, selection
 120 REM stores and compound stores, element-wise operations, range values, numeric literals and
@@ -7,11 +7,14 @@
 127 REM L16 match and the str cases of L2-L14 (lp8str), 4g-2's L15 projection, L17 (field paths,
 128 REM reference and aggregate elements) and the struct cases (lp9agg). Others
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main ... lpbelm (in name order), the modules io diag
+135 REM as DESIGN 2.6.3 says: the files lp0main ... lpainl (in name order), the modules io diag
 140 REM tables layout, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
-155 REM (A) lp0main reads and validates all of sea.hir; (B) lp1walk visits the records in file
+152 REM 7b (DESIGN 2.12.3): the input is seafuse's sea.hirf: no inst or emap (L19 is seafuse's), the HL
+153 REM records tptr xblk tmp hloop ext adat eld est anew wbin chkb chk rcnt cow mcpy validated
+154 REM (3000-3490) and kept; their .l locals and tptr types renumbered with sealoop's (lp2out).
+155 REM (A) lp0main reads and validates all of sea.hirf; (B) lp1walk visits the records in file
 160 REM order and builds the output as a linked list, the rewrites (lp1walk, lp3sel, lp4ew,
 165 REM lp5lit) inserting their records; (C) lp2out numbers the new locals and tptr types, writes.
 170 REM Tables: D$ the body records as read (r = 1..D0); P(r,0) its records row, P(r,1) its node
@@ -38,11 +41,12 @@
 236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd; 59 tmp 60 xblk 61 iblk 62 iret
 237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B);
 238 REM   6b: L20 (lpainl) the calls of fn kind inl as well (M then also its inline levels).
-239 REM   6c: 63 inst (dropped by L20) 64 emap; the calls of kind elem by L20, L19 (lpbelm) the emaps.
+239 REM   6c: the calls of kind elem by L20. 7b: 63 tptr (a type) and, after the j* records, the HL
 240 REM   6d: 65-73 jopen jclose jobj jarr jend jkey jval jvec jmat: kept statements (copied
 241 REM   after their children), validated in (A) (900-987; DESIGN 2.11.4).
+242 REM   nodes 74 ext 75 adat 76 eld 77 anew 78 wbin 79 hloop 80 est 81 chkb 82 chk 83 rcnt 84 cow 85 mcpy (DESIGN 2.12.3).
 243 REM ====================================================================================
-245 FILES "sea.hir"; "sea.hirl"
+245 FILES "sea.hirf"; "sea.hirl"
 250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 260 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
@@ -102,12 +106,12 @@
 465 LET K1$ = K1$ & K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
 466 LET A9 = 120008
 467 LET K1$ = K1$ & "|dyn=43|fix=44|view=45|all=46|arr=47|row=48|tfvec=49|tfmat=50|"
-468 LET K1$ = K1$ & "|match=51|arm=52|tstruct=53|trec=54|fd=55|fld=56|proj=57|slit=58|inst=63|emap=64|"
+468 LET K1$ = K1$ & "|match=51|arm=52|tstruct=53|trec=54|fd=55|fld=56|proj=57|slit=58|tmp=59|xblk=60|tptr=63|ext=74|adat=75|eld=76|anew=77|wbin=78|hloop=79|est=80|chkb=81|chk=82|rcnt=83|cow=84|mcpy=85|"
 469 CALL "ly_init": C(), K(), K$(), K0, T9, A9, P$
 470 FOR I = 1 TO Z(7)
 475 LET R(I, 0) = 0
 480 IF R(I, 1) = 2 THEN 490
-485 IF R(I, 1) <> 4 THEN 505
+485 IF ABS(R(I, 1) - 5.5) <> 1.5 THEN 505
 490 LET P1 = POS(K1$, "|" & R$(I) & "=")
 495 IF P1 = 0 THEN 505
 500 LET R(I, 0) = VAL(SEG$(K1$, P1 + LEN(R$(I)) + 2, P1 + LEN(R$(I)) + 3))
@@ -156,7 +160,7 @@
 675 LET P(D0, 0) = I0
 680 LET P(D0, 1) = 0
 685 IF K < 33 THEN 700
-686 IF K = 63 THEN 55870
+686 IF K = 63 THEN 3002
 690 IF K = 42 THEN 1310
 691 IF K > 55 THEN 700
 692 IF K > 52 THEN 1400
@@ -177,7 +181,8 @@
 755 IF K < 20 THEN 770
 760 IF K < 39 THEN 775
 762 IF ABS(K - 60.5) = 1.5 THEN 775
-763 IF K > 64 THEN 775
+763 IF K > 78 THEN 775
+764 IF ABS(K - 69) < 5 THEN 775
 765 IF K = 41 THEN 775
 766 IF K > 55 THEN 770
 767 IF K > 50 THEN 775
@@ -195,7 +200,7 @@
 820 LET W1 = W1 - P1 + 1
 825 LET W(W1) = H0
 826 IF K = 32 THEN 960
-827 IF K > 64 THEN 900
+827 IF ABS(K - 69) < 5 THEN 900
 828 IF E1 > 0 THEN 930
 829 IF D2 = 1 THEN 940
 830 REM fore: its loop variable; lib: its n; dol: pushed on the unclaimed dols; idx: claims the
@@ -210,7 +215,7 @@
 862 LET H(H0, 5) = D9
 864 LET D9 = H0
 866 GOTO 1290
-870 IF K <> 39 THEN 1290
+870 IF K <> 39 THEN 3052
 872 IF D9 <= H(H0, 3) THEN 1290
 874 LET Q5 = H(D9, 5)
 876 LET H(D9, 5) = H0
@@ -244,7 +249,7 @@
 925 REM a node other than a block whose children hold a j* record: bad record
 930 LET D5 = H(H0, 3)
 931 IF D5 = 0 THEN 936
-932 IF H(D5, 1) > 64 THEN 2900
+932 IF ABS(H(D5, 1) - 69) < 5 THEN 2900
 933 LET D5 = H(D5, 4)
 934 GOTO 931
 936 IF D2 = 0 THEN 835
@@ -258,7 +263,7 @@
 961 LET D4 = 0
 962 LET D5 = H(H0, 3)
 963 IF D5 = 0 THEN 985
-964 IF H(D5, 1) < 65 THEN 983
+964 IF ABS(H(D5, 1) - 69) > 4 THEN 983
 965 LET E1 = E1 - 1
 966 ON H(D5, 1) - 64 GOTO 968, 970, 975, 975, 978, 981, 983, 983, 983
 968 LET D4 = 1
@@ -288,7 +293,7 @@
 1300 REM ---- declarations: fn par loc end tvec ttuple (tmat tfvec tfmat: 1310) -----------------------
 1305 ON K - 32 GOTO 1430, 1550, 1585, 1650, 1310, 1360
 1310 REM types come first, ids from 10 in order (3.5.1): rank, element, fixed, n or rows, cols
-1315 IF G0 > 0 THEN 2900
+1315 IF G0 + A6 > 0 THEN 2900
 1320 IF I(1) <> Y9 + 1 THEN 2900
 1325 LET Y9 = I(1)
 1330 IF Y9 <= T9 THEN 1340
@@ -304,7 +309,7 @@
 1347 LET T(Y9, 4) = 1
 1348 GOTO 1381
 1355 REM ttuple: rank 0; its first two components (n >= 2) in 3 and 4
-1360 IF G0 > 0 THEN 2900
+1360 IF G0 + A6 > 0 THEN 2900
 1362 IF I(1) <> Y9 + 1 THEN 2900
 1364 LET Y9 = I(1)
 1366 IF Y9 <= T9 THEN 1372
@@ -334,7 +339,7 @@
 1397 IF W0 <> 0 THEN 2900
 1398 GOTO 1290
 1399 REM tstruct and trec: a type (rank 0, its element itself) opened for its n fd records (layout)
-1400 IF G0 > 0 THEN 2900
+1400 IF G0 + A6 > 0 THEN 2900
 1401 IF K = 55 THEN 1416
 1402 IF I(1) <> Y9 + 1 THEN 2900
 1403 LET Y9 = I(1)
@@ -367,7 +372,7 @@
 1435 IF I(1) <> G0 + 1 THEN 2900
 1440 LET Q2$ = "symbols"
 1445 IF G0 >= 49999 THEN 2920
-1450 REM 6c: kind elem accepted (an elemental function, inlined by L20 and L19)
+1450 REM 6c: kind elem accepted (an elemental function, inlined by L20)
 1455 LET G0 = G0 + 1
 1460 LET P(D0, 1) = G0
 1465 LET G(G0, 1) = A0
@@ -397,12 +402,16 @@
 1630 LET A(A0) = I(2)
 1632 IF POS("|.p |.q |.i |", "|" & G$(2) & " |") = 0 THEN 1640
 1634 LET G(G0, 0) = G(G0, 0) + 1
-1640 GOTO 1290
+1636 IF SEG$(G$(2), 1, 2) <> ".l" THEN 1290
+1638 REM 7b: a .l local of sea.hirf (renumbered on output, lp2out)
+1640 LET A3 = 1
+1642 GOTO 1290
 1645 REM end pops the body block; the stack is then empty (3.3)
 1650 IF F7 = 0 THEN 2905
 1655 IF P7 + L7 > 0 THEN 2905
 1660 IF W1 <> 1 THEN 2905
 1665 IF H(W(1), 1) <> 32 THEN 2905
+1667 GOSUB 3414
 1670 LET W1 = 0
 1672 LET D9 = 0
 1675 LET F7 = 0
@@ -534,3 +543,247 @@
 2928 REM program too large: Q2$, at P9$ (the position of the node a rewrite implements, 3.5.9)
 2930 CALL "io_pos": P9$, F1, L1, C1, W7
 2935 GOTO 2920
+2996 REM ==== 7b: the records of sea.hirf beyond sea.hir (DESIGN 2.12.3, 3.5.9 "What the passes validate")
+2998 REM ---- 3002: tptr id elt (rule (3)): after sea.hir's types (A6 their last id), before the
+3000 REM functions; elt str, a scalar, a struct or record, no two of one elt; T(id,2) its elt (A3 = 1)
+3002 IF G0 > 0 THEN 2900
+3004 IF I(1) <> Y9 + 1 THEN 2900
+3006 IF A6 > 0 THEN 3010
+3008 LET A6 = Y9
+3010 LET N5 = I(2)
+3012 IF N5 > A6 THEN 2900
+3014 IF N5 = 5 THEN 3020
+3016 IF C(N5, 0) = 1 THEN 3020
+3018 IF C(N5, 0) <> 4 THEN 2900
+3020 FOR J = A6 + 1 TO Y9
+3022 IF T(J, 2) = N5 THEN 2900
+3024 NEXT J
+3026 LET Y9 = I(1)
+3028 IF Y9 <= T9 THEN 3034
+3030 LET P8$ = "types"
+3032 GOTO 1290
+3034 FOR J = 0 TO 4
+3036 LET T(Y9, J) = 0
+3038 NEXT J
+3040 LET T(Y9, 2) = N5
+3042 LET A3 = 1
+3044 GOTO 1290
+3046 REM ---- the node H0 of kind K (rules (1)-(5), T1): the HL nodes, and the .l locals: A(e) +
+3048 REM 400000 m, m 1 declared by a tmp, hloop or rcnt, 2 by a bind or tbind, 3 read before its
+3050 REM declaration (only an hloop's local may be: its block precedes it); L5 the first child
+3052 LET L5 = H(H0, 3)
+3054 IF K = 5 THEN 3076
+3056 IF K = 11 THEN 3092
+3058 IF K = 20 THEN 3116
+3060 IF K = 21 THEN 3126
+3062 IF K = 23 THEN 3096
+3064 IF K = 24 THEN 3106
+3066 IF K = 59 THEN 3152
+3068 IF K = 60 THEN 3178
+3070 IF K < 74 THEN 1290
+3072 ON K - 73 GOTO 3190, 3208, 3232, 3258, 3278, 3296, 3236, 3324, 3330, 3354, 3384, 3398
+3074 REM lv of a .l local: its type; read before any declaration: mark 3
+3076 LET V1 = I(3)
+3078 GOSUB 3458
+3080 IF L0 = 0 THEN 1290
+3082 IF I(2) <> A7 THEN 2900
+3084 IF A8 > 0 THEN 1290
+3086 LET A(L6) = A(L6) + 1200000
+3088 GOTO 1290
+3090 REM rarg, asg (set, of a scalar), a tasg's targets: a .l local only one a bind or tbind declared
+3092 GOSUB 3428
+3094 GOTO 1290
+3096 GOSUB 3428
+3098 IF L0 = 0 THEN 1290
+3100 IF G$(3) <> "set" THEN 2900
+3102 IF A7 > 5 THEN 2900
+3104 GOTO 1290
+3106 IF H(L5, 4) = 0 THEN 1290
+3108 GOSUB 3428
+3110 LET L5 = H(L5, 4)
+3112 GOTO 3106
+3114 REM bind, tbind of .l locals: each declared here once (mark 2), a bind's of its child's type
+3116 LET V1 = I(2)
+3118 GOSUB 3458
+3120 IF L0 = 0 THEN 1290
+3122 IF H(L5, 2) <> A7 THEN 2900
+3124 GOTO 3140
+3126 FOR J = 4 TO C0
+3128 IF G$(J) = "-" THEN 3136
+3130 LET V1 = VAL(G$(J))
+3132 GOSUB 3458
+3134 IF L0 = 1 THEN 3140
+3136 NEXT J
+3138 GOTO 1290
+3140 IF A8 > 0 THEN 2900
+3142 LET A(L6) = A(L6) + 800000
+3144 IF K = 21 THEN 3136
+3146 GOTO 1290
+3148 REM tmp: of a .l local (in L18's stream also of a .p or .q), declared once, of its child's type;
+3150 REM of a tptr type only of an adat
+3152 LET V1 = I(2)
+3154 GOSUB 3458
+3156 IF L0 = 1 THEN 3162
+3158 IF A2 = 1 THEN 1290
+3160 GOTO 2900
+3162 IF A8 > 0 THEN 2900
+3164 IF H(L5, 2) <> A7 THEN 2900
+3166 LET A(L6) = A(L6) + 400000
+3168 GOSUB 3474
+3170 IF A8 = 0 THEN 1290
+3172 IF H(L5, 1) = 75 THEN 1290
+3174 GOTO 2900
+3176 REM xblk: ty its last child's
+3178 IF H(L5, 4) = 0 THEN 3184
+3180 LET L5 = H(L5, 4)
+3182 GOTO 3178
+3184 IF H(L5, 2) = I(2) THEN 1290
+3186 GOTO 2900
+3188 REM ext: ty 3, of a str (dim 0) or of an array (dim < its rank)
+3190 IF I(2) <> 3 THEN 2900
+3192 LET A7 = H(L5, 2)
+3194 IF A7 <> 5 THEN 3200
+3196 IF I(3) = 0 THEN 1290
+3198 GOTO 2900
+3200 IF A7 <= 9 THEN 2900
+3202 IF I(3) < T(A7, 1) THEN 1290
+3204 GOTO 2900
+3206 REM adat: ty a tptr whose elt is the array's element type (of a struct or record home: that type)
+3208 IF A6 = 0 THEN 2900
+3210 IF I(2) <= A6 THEN 2900
+3212 LET A7 = H(L5, 2)
+3214 IF A7 <= 9 THEN 2900
+3216 IF T(A7, 1) = 0 THEN 3222
+3218 IF T(I(2), 2) = T(A7, 2) THEN 1290
+3220 GOTO 2900
+3222 IF C(A7, 0) <> 4 THEN 2900
+3224 IF T(I(2), 2) = A7 THEN 1290
+3226 GOTO 2900
+3228 REM eld, est: an address of a tptr type whose elt is ty (eld) or the value's type (est), or a struct
+3230 REM or record (R24's fields; their offsets are seaval's to check), then an index of type 3
+3232 LET L6 = I(2)
+3234 GOTO 3240
+3236 LET L6 = H(L5, 2)
+3238 LET L5 = H(L5, 4)
+3240 GOSUB 3474
+3242 IF A8 = 0 THEN 2900
+3244 LET A7 = T(H(L5, 2), 2)
+3246 IF A7 = L6 THEN 3250
+3248 IF C(A7, 0) <> 4 THEN 2900
+3250 IF H(H(L5, 4), 2) = 3 THEN 1290
+3252 GOTO 2900
+3254 REM anew: a dynamic array type of rank r, z 0 or 1, r children of type 3; or a fixed-size, struct
+3256 REM or record type with r = 0 and z = 0
+3258 IF I(2) <= 9 THEN 2900
+3260 IF I(3) > 1 THEN 2900
+3262 IF T(I(2), 1) = 0 THEN 3270
+3264 IF T(I(2), 3) > 0 THEN 3272
+3266 IF I(4) <> T(I(2), 1) THEN 2900
+3268 GOTO 3374
+3270 IF C(I(2), 0) <> 4 THEN 2900
+3272 IF I(3) + I(4) = 0 THEN 1290
+3274 GOTO 2900
+3276 REM wbin: ty 3; add, sub, mul of two operands of type 2 or 3, and of two of type 3
+3278 IF I(2) <> 3 THEN 2900
+3280 LET A8 = 2
+3282 IF G$(4) <> "and" THEN 3286
+3284 LET A8 = 3
+3286 GOSUB 3450
+3288 LET L5 = H(L5, 4)
+3290 GOSUB 3450
+3292 GOTO 1290
+3294 REM hloop: its local a .l local of type 3 and mut for; three children of type 3, then a block
+3296 LET V1 = I(2)
+3298 GOSUB 3458
+3300 IF L0 = 0 THEN 2900
+3302 IF A7 <> 3 THEN 2900
+3304 IF ABS(A8 - 1.5) = .5 THEN 2900
+3306 IF POS(D$(G(G0, 6) + V1), " for ") = 0 THEN 2900
+3308 LET A(L6) = A7 + 400000
+3310 FOR J = 1 TO 3
+3312 IF H(L5, 2) <> 3 THEN 2900
+3314 LET L5 = H(L5, 4)
+3316 NEXT J
+3318 IF H(L5, 1) = 32 THEN 1290
+3320 GOTO 2900
+3322 REM chkb: dim 0 or 1, two children of type 3
+3324 IF I(2) > 1 THEN 2900
+3326 GOTO 3374
+3328 REM chk: a type-2 condition; err a run-time error whose arguments take n slots
+3330 IF H(L5, 2) <> 2 THEN 2900
+3332 CALL "dg_find": G$(3), E$(), E0, A8
+3334 IF A8 = 0 THEN 2900
+3336 IF E$(A8, 2) <> "R" THEN 2900
+3338 LET A7 = 0
+3340 IF E$(A8, 4) = "-" THEN 3348
+3342 FOR J = 1 TO LEN(E$(A8, 4))
+3344 LET A7 = A7 + 1 + POS("h", SEG$(E$(A8, 4), J, J))
+3346 NEXT J
+3348 IF A7 = I(3) THEN 1290
+3350 GOTO 2900
+3352 REM rcnt incl l e: l and e distinct .l locals of types 3 and 2, declared by it; three of type 3
+3354 IF I(2) > 1 THEN 2900
+3356 IF I(3) = I(4) THEN 2900
+3358 FOR J = 3 TO 4
+3360 LET V1 = I(J)
+3362 GOSUB 3458
+3364 IF L0 = 0 THEN 2900
+3366 IF A8 > 0 THEN 2900
+3368 IF A7 <> 5 - J THEN 2900
+3370 LET A(L6) = A7 + 400000
+3372 NEXT J
+3374 IF L5 = 0 THEN 1290
+3376 IF H(L5, 2) <> 3 THEN 2900
+3378 LET L5 = H(L5, 4)
+3380 GOTO 3374
+3382 REM cow: an lv or a fld chain of a dynamic array type
+3384 IF ABS(H(L5, 1) - 30.5) <> 25.5 THEN 2900
+3386 LET A7 = H(L5, 2)
+3388 IF A7 <= 9 THEN 2900
+3390 IF T(A7, 1) = 0 THEN 2900
+3392 IF T(A7, 3) = 0 THEN 1290
+3394 GOTO 2900
+3396 REM mcpy: two addresses of a tptr type, a count of type 3
+3398 GOSUB 3474
+3400 IF A8 = 0 THEN 2900
+3402 LET L5 = H(L5, 4)
+3404 GOSUB 3474
+3406 IF A8 = 0 THEN 2900
+3408 IF H(H(L5, 4), 2) = 3 THEN 1290
+3410 GOTO 2900
+3412 REM ---- (end, 1667): every .l local of the function G0 declared
+3414 FOR V1 = G(G0, 2) + 1 TO G(G0, 2) + G(G0, 3)
+3416 GOSUB 3458
+3418 IF L0 = 0 THEN 3422
+3420 IF ABS(A8 - 1.5) <> .5 THEN 2900
+3422 NEXT V1
+3424 RETURN
+3426 REM ---- the target L5 of a rarg, asg or tasg: an lv of a .l local only of one a bind declared
+3428 LET L0 = 0
+3430 IF H(L5, 1) <> 5 THEN 3446
+3432 LET R2 = H(L5, 6)
+3434 LET F9 = 4
+3436 GOSUB 8440
+3438 LET V1 = VAL(F9$)
+3440 GOSUB 3458
+3442 IF L0 = 0 THEN 3446
+3444 IF A8 <> 2 THEN 2900
+3446 RETURN
+3448 REM ---- the type of node L5 from A8 (2 or 3) to 3
+3450 IF H(L5, 2) < A8 THEN 2900
+3452 IF H(L5, 2) > 3 THEN 2900
+3454 RETURN
+3456 REM ---- local V1 of function G0: L6 its entry of A, A7 its type, A8 its mark, L0 1 if a .l local
+3458 LET L6 = G(G0, 1) + V1
+3460 LET A8 = INT(A(L6) / 400000)
+3462 LET A7 = A(L6) - 400000 * A8
+3464 LET L0 = 0
+3466 IF SEG$(D$(G(G0, 6) + V1), 1, 6) <> "loc .l" THEN 3470
+3468 LET L0 = 1
+3470 RETURN
+3472 REM ---- A8 = 1 if node L5 is of a tptr type (the types after A6), else 0
+3474 LET A8 = 0
+3476 IF A6 = 0 THEN 3482
+3478 IF H(L5, 2) <= A6 THEN 3482
+3480 LET A8 = 1
+3482 RETURN

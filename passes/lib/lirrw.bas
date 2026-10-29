@@ -12,7 +12,7 @@
 69055 REM   J$(299) Y(399) Y$(399,5) D(39) D$(39) B(399) A(399) I(199999,4) O(799999) R(99999,9)
 69060 REM   K(19999,4) C(199999,4) S$(199999) X(131071) T(10000) G$(300) U(40) L(4) H$(100) A$(2)
 69065 REM   M(301) P(262143) H(199999) V$(49999) U$(131071) G(199999,3) W(199999,4)
-69070 REM sets P$ (its name), V8 (its input: 1 sea.lir1, 2 sea.lir2 or sea.lir, L-bu) and FILES 1 = its input,
+69070 REM sets P$ (its name), V8 (its input: 1 sea.lir1, 2 sea.lir2, sea.lir3 or sea.lir, L-bu) and FILES 1 = its input,
 69075 REM 2 = its output, and leaves to this part the scalars listed in API.md (any entry may change any).
 69076 REM V8 = 1 keeps the two sea.lir1-only label rules (3.6.2: labels numbered by first use, none unused); 2 drops them.
 69080 REM It may use R(r,c) for c <> 1, 2 (column 2 is T10's), W between entries, the arrays S and V, other names.

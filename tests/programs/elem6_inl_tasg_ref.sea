@@ -1,0 +1,67 @@
+// elem6_inl_tasg_ref -- a tuple assignment of elemental results into whole `ref` array parameters and into the fields of a `ref` struct inside a loop,
+// each function called twice (the second time with the arguments swapped)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+struct S {
+    a: f64[]
+    b: f64[]
+    n: i64
+}
+fn setab(ref s: S, v: f64[]) {
+    for k in 0..1 {
+        (s.a, s.b) = two(v, 1.0)
+    }
+}
+fn setref(ref x: f64[], ref y: f64[], v: f64[]) {
+    for k in 0..1 {
+        (x, y) = two(v, 2.0)
+        x = sq(y)
+    }
+}
+fn setidx(ref x: i64[], ref y: i64[]) {
+    for k in 0..1 {
+        (x, y) = ind2sub([2, 2], [1, 2])
+    }
+}
+var s = S { a: [0.0], b: [0.0], n: 1 }
+let v = [1.0, 2.0]
+setab(ref s, v)
+pv(s.a)
+pv(s.b)
+var x = zeros(1)
+var y = zeros(1)
+setref(ref x, ref y, v)
+pv(x)
+pv(y)
+var ii = filled(0, 1)
+var jj = filled(0, 1)
+setidx(ref ii, ref jj)
+pvi(ii)
+pvi(jj)
+setab(ref s, v + 1.0)
+pv(s.a)
+pv(s.b)
+setref(ref y, ref x, v)
+pv(x)
+pv(y)
+setidx(ref jj, ref ii)
+pvi(ii)
+pvi(jj)

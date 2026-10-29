@@ -1,0 +1,28 @@
+// elem6_inl_tret -- `return two(v, v)` of an elemental application with two results (a tuple return of an emap) in a small function
+// called twice, so it is inlined at both call sites
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+fn many2(v: f64[]) -> (f64[], f64[]) {
+    return two(v, v)
+}
+let (p, q) = many2([1.0])
+pv(p)
+pv(q)
+let (p2, q2) = many2([2.0, 3.0])
+pv(p2)
+pv(q2)

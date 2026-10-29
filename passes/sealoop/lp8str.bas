@@ -95,6 +95,7 @@
 40512 LET P6 = H(X3, 0)
 40514 LET V6 = H(H(X3, 4), 2)
 40516 LET V5 = 1
+40517 GOSUB 40550
 40518 GOSUB 45400
 40520 LET N7 = N7 - 1
 40522 GOTO 5180
@@ -113,3 +114,24 @@
 40542 LET O6$ = "set"
 40544 LET V(7) = W3
 40546 GOTO 45400
+40547 REM ---- 40550 (7b): a set whose value is lv R of a .l local of sea.hirf (a home of L19's tasg
+40548 REM form, seafuse) holding counts is R25's store, as L12's store (40540) of that local: V5 = 0,
+40549 REM V(7) its new local, its lv row not written (the form the old L19 wrote, DESIGN 3.5.9 R25)
+40550 IF O6$ <> "set" THEN 40574
+40552 LET X5 = H(X3, 4)
+40554 IF H(X5, 1) <> 5 THEN 40574
+40556 LET R2 = H(X5, 6)
+40558 LET F9 = 4
+40560 GOSUB 8440
+40562 IF SEG$(D$(G(F0, 6) + VAL(F9$)), 1, 6) <> "loc .l" THEN 40574
+40564 FOR U4 = 1 TO U0
+40566 IF U(U4, 0) = G(F0, 1) + VAL(F9$) THEN 40570
+40568 NEXT U4
+40569 CALL "dg_bug": P$, "a .l local of sea.hirf is not a new local"
+40570 IF U(U4, 1) < 1 THEN 40574
+40571 IF C(U(U4, 1), 3) = 0 THEN 40574
+40572 LET V5 = 0
+40573 LET V(7) = U4
+40574 LET N7 = N7 - 1 + V5
+40576 LET R2 = H(X, 6)
+40578 RETURN

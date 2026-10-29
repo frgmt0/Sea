@@ -1,0 +1,8 @@
+# passes/seavec/build.list -- what make adds to the pass's own passes/seavec/*.bas (DESIGN.md 2.6.3, 2.12.6).
+#   lib <module>...   shared modules of passes/lib/ (io diag tables lirrw limb f64emu fltlit layout ralloc;
+#                     lirrw, a main-program part, never together with limb or f64emu)
+#   data <block>...   generated DATA blocks (errors errno exits consts entries records)
+# The build concatenates the parts in the canonical order of DESIGN.md 2.6.3 whatever the
+# order written here; a name outside the two sets is a build error.
+lib io diag tables lirrw
+data errors exits consts entries records

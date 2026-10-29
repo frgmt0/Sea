@@ -2586,7 +2586,7 @@ expect "seaval accepts the same unreferenced label as lir2 (T10 may delete the l
 # the format line is compared with its length (Baysick: trailing blanks are ignored by =)
 for f in "lir1 " "lir1  " "ast " ; do
     (printf '%s\n' "$f"; cat "$T/ex/lir1") > "$T/v.in"
-    printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1 or lir\n' > "$T/fmt.err"
+    printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirf, hirl, lir1, lir2, lir3 or lir\n' > "$T/fmt.err"
     runp "$T/seaval" "$T/v.in"
     if [ "$rc" -eq 11 ] && [ ! -s "$T/out" ] && grep -qF "the first input line must name the format" "$T/err"; then ok "seaval rejects the format line '$f' (trailing blank)"; else bad "seaval rejects the format line '$f'" "status $rc (wanted 11)" "stderr: $(head -c 200 "$T/err")"; fi
 done
@@ -2697,8 +2697,24 @@ awk '/^prog / { print "rtvec 16 4" } { print }' "$T/ex/res4" > "$T/mut/t9"
 rejects "a type table record after the tree began" res "$T/mut/t9" BAD_TREE "$(lineof "$T/mut/t9" '^rtvec 16 4$')" "after the tree began"
 rejects "an rtvec record in sea.ast (codes 64-72 are sea.res only)" ast "$T/ex/res4" BAD_RECORD "$(lineof "$T/ex/res4" '^rtst ')" "unknown opcode"
 
+# sea.hirf (DESIGN 2.12.3 rules 1 and 2) and sea.lir3 (= the old sea.lir, DESIGN 3.6): the goldens are valid; the
+# forbidden records are rejected (mutated copies of a golden: the record replaces one body line)
+HIRF=$SEA/tests/passes/elem6_vec.hirf
+valid "sea.hirf of tests/passes/elem6_vec.hirf" hirf "$HIRF"
+valid "the hirf golden read as hirl (a hirf is a hirl without inst, emap, cdat, iblk, iret)" hirl "$HIRF"
+for rec in 'inst 1 2 10 2 10 4' 'emap 0:8:9 10 1 2' 'cdat 0:2:11 12 257' 'iblk 0:8:9 4 1' 'iret 0:5:5 1'; do
+    mut_rep "$HIRF" '^ci 0:7:15 3 3$' "$rec" > "$T/mut/hf"
+    rejects "a '${rec%% *}' record in sea.hirf" hirf "$T/mut/hf" BAD_RECORD "$(lineof "$HIRF" '^ci 0:7:15 3 3$')" "record '${rec%% *}' may not stand in sea.hirf"
+done
+cp "$SEA/tests/passes/elem6_vec.hir" "$T/mut/hfin"
+rejects "the sea.hir of elem6_vec (its inst record) read as sea.hirf" hirf "$T/mut/hfin" BAD_RECORD "$(lineof "$T/mut/hfin" '^inst ')" "record 'inst' may not stand in sea.hirf"
+L3=$SEA/tests/passes/opt5_bce_dom.lir3
+valid "sea.lir3 of tests/passes/opt5_bce_dom.lir3" lir3 "$L3"
+mut_rep "$L3" '^li i3 8$' 'pdiff i9 p5 p5' > "$T/mut/l3"
+rejects "an LF record (pdiff) in sea.lir3" lir3 "$T/mut/l3" BAD_RECORD "$(lineof "$L3" '^li i3 8$')" "unknown opcode 'pdiff' for format lir3"
+
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
-printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir\n' > "$T/fmt.err"
+printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirf, hirl, lir1, lir2, lir3 or lir\n' > "$T/fmt.err"
 expect "seaval: an unknown format name is reported (status 11)" "$T/seaval" "$T/v.in" 11 /dev/null "$T/fmt.err"
 
 echo

@@ -1,0 +1,60 @@
+#sea 1
+#target arm64-macos
+#file opt5_fdiv.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+lf f1 #4008000000000000
+li i2 2
+call fdivs 1 f3 2 f1 i2
+lf f4 #BFF8000000000000
+li i5 3
+call fdivs 1 f6 2 f4 i5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:12 0 2 p8 p7
+ret 0
+endfunc
+func fdivs fn 0:1:1 2 f1 i2 1 f
+lf f3 #0000000000000000
+lf f4 #4000000000000000
+li i5 0
+li i6 1
+rcount i7 i8 i5 i2 i6 0 0:4
+if 1 i8
+lf f9 #3FD0000000000000
+fmul f10 f1 f9
+lf f11 #4000000000000000
+fmul f12 f1 f11
+lf f13 #BFE0000000000000
+fmul f14 f1 f13
+lf f15 #0008000000000000
+fmul f16 f1 f15
+lf f17 #7FD0000000000000
+fmul f18 f1 f17
+lf f19 #4008000000000000
+fdiv f20 f1 f19
+lf f21 #0000000000000001
+fdiv f22 f1 f21
+loop 2 i23 i5 i7 i6
+fadd f24 f3 f10
+fadd f25 f24 f12
+fadd f3 f25 f14
+fadd f26 f3 f16
+fadd f27 f26 f18
+fadd f3 f27 f20
+fadd f28 f3 f22
+fdiv f29 f1 f4
+fadd f3 f28 f29
+fmul f4 f4 f11
+endloop 2
+endif 1
+ret 1 f3
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

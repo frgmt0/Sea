@@ -1,0 +1,200 @@
+#sea 1
+#target arm64-macos
+#file opt5_unswitch.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 16 8
+li i1 3
+li i2 1
+rcall sea_arr_new 0:33 1 p3 4 i2 i2 i1 i2
+lf f4 #4000000000000000
+mov i5 i2
+ldi i6 p3 - 0 0
+icmp ne i7 i6 i2
+if 1 i7
+rcall sea_arr_unique 0:34 1 p8 1 p3
+mov p3 p8
+endif 1
+ldp p9 p3 - 0 40
+stf f4 p9 i5 8 0
+lf f10 #4008000000000000
+li i11 2
+ldi i12 p3 - 0 0
+li i13 1
+icmp ne i14 i12 i13
+if 2 i14
+rcall sea_arr_unique 0:35 1 p15 1 p3
+mov p3 p15
+endif 2
+ldp p16 p3 - 0 40
+stf f10 p16 i11 8 0
+li i17 1
+lf f18 #3FF8000000000000
+call mix 1 f19 4 p3 i17 i17 f18
+li i20 0
+call mix 1 f21 4 p3 i20 i20 f18
+li i22 6
+lf f23 #3FE0000000000000
+call mix 1 f24 4 p3 i22 i20 f23
+sa p25 s1
+stf f19 p25 - 0 0
+stf f21 p25 - 0 8
+stf f24 p25 - 0 16
+la p26 d1
+rcall sea_printf 0:36 0 2 p26 p25
+li i27 3
+call one 1 f28 2 p3 i27
+call one 1 f29 2 p3 i17
+sa p30 s2
+stf f28 p30 - 0 0
+stf f29 p30 - 0 8
+la p31 d2
+rcall sea_printf 0:37 0 2 p31 p30
+release p3
+ret 0
+endfunc
+func mix fn 0:1:1 4 p1 i2 i3 f4 1 f
+lf f5 #0000000000000000
+li i6 0
+ldi i7 p1 - 0 16
+li i8 1
+rcount i9 i10 i6 i7 i8 0 0:3
+if 1 i10
+ldi i11 p1 - 0 16
+li i12 0
+icmp gt i13 i2 i12
+ldp p14 p1 - 0 40
+icmp gt i15 i3 i12
+if 2 i13
+if 3 i15
+lf f16 #4000000000000000
+fmul f17 f4 f16
+lf f18 #3FF0000000000000
+li i19 5
+icmp gt i20 i2 i19
+lf f21 #3FE0000000000000
+loop 4 i22 i6 i9 i8
+chkb i22 i11 0 0:5
+ldf f23 p14 i22 8 0
+fmul f24 f23 f17
+fadd f5 f5 f24
+fadd f5 f5 f18
+if 5 i20
+fmul f5 f5 f21
+endif 5
+chkb i22 i11 0 0:15
+ldf f25 p14 i22 8 0
+fcmp gt i26 f25 f4
+if 6 i26
+fadd f5 f5 f4
+endif 6
+endloop 4
+else 3
+lf f27 #4000000000000000
+fmul f28 f4 f27
+li i29 5
+icmp gt i30 i2 i29
+lf f31 #3FE0000000000000
+loop 7 i32 i6 i9 i8
+chkb i32 i11 0 0:5
+ldf f33 p14 i32 8 0
+fmul f34 f33 f28
+fadd f5 f5 f34
+if 8 i30
+fmul f5 f5 f31
+endif 8
+chkb i32 i11 0 0:15
+ldf f35 p14 i32 8 0
+fcmp gt i36 f35 f4
+if 9 i36
+fadd f5 f5 f4
+endif 9
+endloop 7
+endif 3
+else 2
+if 10 i15
+lf f37 #3FF0000000000000
+li i38 5
+icmp gt i39 i2 i38
+lf f40 #3FE0000000000000
+loop 11 i41 i6 i9 i8
+chkb i41 i11 0 0:7
+ldf f42 p14 i41 8 0
+fsub f5 f5 f42
+fadd f5 f5 f37
+if 12 i39
+fmul f5 f5 f40
+endif 12
+chkb i41 i11 0 0:15
+ldf f43 p14 i41 8 0
+fcmp gt i44 f43 f4
+if 13 i44
+fadd f5 f5 f4
+endif 13
+endloop 11
+else 10
+li i45 5
+icmp gt i46 i2 i45
+lf f47 #3FE0000000000000
+loop 14 i48 i6 i9 i8
+chkb i48 i11 0 0:7
+ldf f49 p14 i48 8 0
+fsub f5 f5 f49
+if 15 i46
+fmul f5 f5 f47
+endif 15
+chkb i48 i11 0 0:15
+ldf f50 p14 i48 8 0
+fcmp gt i51 f50 f4
+if 16 i51
+fadd f5 f5 f4
+endif 16
+endloop 14
+endif 10
+endif 2
+endif 1
+ret 1 f5
+endfunc
+func one fn 0:21:1 2 p1 i2 1 f
+lf f3 #0000000000000000
+itof f4 i2
+lf f5 #3FD0000000000000
+fmul f6 f4 f5
+li i7 0
+ldi i8 p1 - 0 16
+li i9 1
+rcount i10 i11 i7 i8 i9 0 0:24
+if 1 i11
+ldi i12 p1 - 0 16
+li i13 2
+icmp gt i14 i2 i13
+ldp p15 p1 - 0 40
+if 2 i14
+loop 3 i16 i7 i10 i9
+fadd f3 f3 f6
+endloop 3
+else 2
+loop 4 i17 i7 i10 i9
+chkb i17 i12 0 0:28
+ldf f18 p15 i17 8 0
+fmul f19 f18 f6
+fadd f3 f3 f19
+endloop 4
+endif 2
+endif 1
+fadd f20 f3 f6
+ret 1 f20
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

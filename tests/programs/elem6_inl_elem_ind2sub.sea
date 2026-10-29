@@ -1,0 +1,21 @@
+// elem6_inl_elem_ind2sub -- an elemental function whose body calls ind2sub with a uniform i64[] array r (LANGUAGE.md 8.x, 10.7):
+// for each i, k = [i, i + 1] and the result is a[0] + b[1]
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+elemental fn e3(i: i64, d: i64[]) -> i64 {
+    let (a, b) = ind2sub(d, [i, i + 1])
+    return a[0] + b[1]
+}
+pvi(e3([0, 1, 2], [2, 2]))

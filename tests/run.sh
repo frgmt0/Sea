@@ -42,15 +42,15 @@
 #   succeeds, it is a run-time test: the program's stderr, status and (NAME.out, default
 #   empty) stdout are compared; .in, .args, .files/, .expect/ and .meta apply as above.
 #
-# tests/passes/NAME.sea    dump tests (DESIGN.md 3.8): for each NAME.X (X = ast res hir1 hir hirl lir1
-#   lir2 lir) present, `sea build --emit X --no-prelude NAME.sea` must exit 0 with empty stderr and
+# tests/passes/NAME.sea    dump tests (DESIGN.md 3.8): for each NAME.X (X = ast res hir1 hir hirf hirl lir1
+#   lir2 lir3 lir) present, `sea build --emit X --no-prelude NAME.sea` must exit 0 with empty stderr and
 #   write exactly NAME.X to stdout. If NAME.out exists, the program built with --no-prelude and
 #   run (no stdin, no arguments) must print exactly NAME.out, with empty stderr and status 0.
 #   NAME.prelude (an empty marker file, Decision 57): the test is built WITHOUT --no-prelude,
 #   so the real prelude std/std.sea is streamed and inlined (rule 37); the `#file` record of
 #   file 0 of each dump (the prelude, written with the absolute install path) is compared as
-#   `#file std.sea`. Allowed beside the dump kinds hir, hirl and lir1 and beside NAME.out only;
-#   a NAME.prelude beside ast, res, hir1, lir2 or lir is a corpus mistake (exit 2).
+#   `#file std.sea`. Allowed beside the dump kinds hir, hirf, hirl and lir1 and beside NAME.out only;
+#   a NAME.prelude beside ast, res, hir1, lir2, lir3 or lir is a corpus mistake (exit 2).
 #
 # Exit status: 0 if every selected test passed, 1 otherwise, 2 on setup error.
 
@@ -325,18 +325,18 @@ for src in "$ROOT"/tests/passes/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     base=${src%.sea}
-    # NAME.prelude (Decision 57): built with the real prelude; only the kinds hir, hirl, lir1
+    # NAME.prelude (Decision 57): built with the real prelude; only the kinds hir, hirf, hirl, lir1
     # and out may sit beside it (a corpus mistake otherwise, like an unknown .meta line).
     NOPRE=--no-prelude
     if [ -f "$base.prelude" ]; then
         NOPRE=
-        for x in ast res hir1 lir2 lir; do
+        for x in ast res hir1 lir2 lir3 lir; do
             if [ -f "$base.$x" ]; then
-                echo "run.sh: passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirl, .lir1 and .out)" >&2; exit 2
+                echo "run.sh: passes/$nm.prelude: not allowed beside a .$x dump (only .hir, .hirf, .hirl, .lir1 and .out)" >&2; exit 2
             fi
         done
     fi
-    for x in ast res hir1 hir hirl lir1 lir2 lir; do
+    for x in ast res hir1 hir hirf hirl lir1 lir2 lir3 lir; do
         [ -f "$base.$x" ] || continue
         name=passes/$nm.$x
         selected "$name" || continue

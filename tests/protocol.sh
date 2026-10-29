@@ -4,7 +4,7 @@
 #
 # 1. Truncated input. Each built pass is run on an input that has the header records but no
 #    final #end (pass 1: on standard input; the others: as sea.ast (seaname), sea.res (seacheck),
-#    sea.hir1, sea.hir, sea.lir1, sea.lir2 (sealopt), sea.lir in the working directory; seagen_x64
+#    sea.hir1, sea.hir, sea.lir1, sea.lir2, sea.lir3 (sealopt), sea.lir in the working directory; seagen_x64
 #    is a text-to-text pass and runs on the Mac too). It must exit with status 11
 #    (SEA_EXIT_PASS_INTERNAL) and write exactly the text of the error record TRUNCATED of
 #    errors.inc prefixed by the pass name (`<pass>: <text>`), followed by LF, to standard error, and nothing to standard output.
@@ -115,10 +115,12 @@ truncated seaparse stdin
 truncated seaname sea.ast
 truncated seacheck sea.res
 truncated seaexpand sea.hir1
-truncated sealoop sea.hir
+truncated seafuse sea.hir
+truncated sealoop sea.hirf
 truncated sealower sea.hirl
 truncated seaopt sea.lir1
 truncated sealopt sea.lir2
+truncated seavec sea.lir3
 truncated seagen_a64 sea.lir
 truncated seagen_x64 sea.lir
 
@@ -187,7 +189,7 @@ fake_home() {
     mkdir -p "$_h"
     cp "$ROOT/include/errors.inc" "$ROOT/include/limits.inc" "$_h/"
     : > "$_h/std.sea"
-    for spec in seaparse:sea.ast seaname:sea.res seacheck:sea.hir1 seaexpand:sea.hir sealoop:sea.hirl sealower:sea.lir1 seaopt:sea.lir2 sealopt:sea.lir seagen_a64:sea.s; do
+    for spec in seaparse:sea.ast seaname:sea.res seacheck:sea.hir1 seaexpand:sea.hir seafuse:sea.hirf sealoop:sea.hirl sealower:sea.lir1 seaopt:sea.lir2 sealopt:sea.lir3 seavec:sea.lir seagen_a64:sea.s; do
         _p=${spec%%:*}; _f=${spec##*:}
         {
             echo '#!/bin/sh'
@@ -211,13 +213,13 @@ fake_home() {
     done
 }
 
-order="seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64"
-file_of() { case $1 in seaparse) echo sea.ast ;; seaname) echo sea.res ;; seacheck) echo sea.hir1 ;; seaexpand) echo sea.hir ;; sealoop) echo sea.hirl ;; sealower) echo sea.lir1 ;; seaopt) echo sea.lir2 ;; sealopt) echo sea.lir ;; esac; }
+order="seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec seagen_a64"
+file_of() { case $1 in seaparse) echo sea.ast ;; seaname) echo sea.res ;; seacheck) echo sea.hir1 ;; seaexpand) echo sea.hir ;; seafuse) echo sea.hirf ;; sealoop) echo sea.hirl ;; sealower) echo sea.lir1 ;; seaopt) echo sea.lir2 ;; sealopt) echo sea.lir3 ;; seavec) echo sea.lir ;; esac; }
 
 if [ ! -x "$DRIVER" ]; then
     fail "protocol/driver" "driver '$DRIVER' not built (run make)"
 else
-    for bad in seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt; do
+    for bad in seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec; do
         for mode in noend nolf empty absent; do
             name=protocol/driver-rejects/$bad-$mode
             selected "$name" || continue

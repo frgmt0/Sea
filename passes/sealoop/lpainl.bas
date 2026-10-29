@@ -3,7 +3,7 @@
 50004 REM "What sealoop rewrites in 4h", 3.5.4, 3.6.6 rule 37; Decisions 53-57, L-u, L-v), and from
 50005 REM 6b L20, the inlining of the calls of fn kind inl (DESIGN 2.11.4; Decision 83, L-cf, L-cg).
 50006 REM A function whose fn pos is in file 0 of a stream of several files is a prelude function.
-50007 REM 6c: kind elem as inl; an emap as a call whose element call is inlined (lpbelm, L19).
+50007 REM 6c: kind elem as inl (7b: seafuse's L19 writes the element calls, inlined as any call).
 50008 REM After (A), if there is one or an inl function, the records are rebuilt into the list O
 50010 REM (text O$): each call of such a function F becomes its arguments, each followed by tmp P
 50012 REM q (q a new local .p of the parameter's type, .q for a ref parameter, whose argument is
@@ -60,14 +60,12 @@
 50088 GOSUB 51700
 50090 NEXT Y1
 50092 IF A4 > 0 THEN 50100
-50093 IF A5 > 0 THEN 2900
 50094 FOR Y1 = 1 TO G0
 50096 LET G(Y1, 0) = 0
 50098 NEXT Y1
 50099 GOTO 5000
 50100 REM ---- each call of a prelude function: H(X,8) its callee
 50102 FOR X = 1 TO H0
-50104 IF H(X, 1) = 64 THEN 55600
 50105 IF H(X, 1) <> 10 THEN 50115
 50106 LET R2 = H(X, 6)
 50108 LET F9 = 4
@@ -90,7 +88,6 @@
 50146 LET K = R(P(R0, 0), 0)
 50148 IF K = 33 THEN 50160
 50150 IF K = 36 THEN 50186
-50151 IF K = 63 THEN 50140
 50152 IF P(R0, 1) > 0 THEN 50300
 50154 LET Z$ = D$(R0)
 50156 GOSUB 51900
@@ -137,7 +134,6 @@
 50217 LET R0 = M(L4, 2)
 50218 LET R2 = H(X, 6)
 50219 LET F9 = 3
-50220 IF H(X, 1) = 64 THEN 55790
 50221 GOSUB 8440
 50222 LET T4 = VAL(F9$)
 50224 GOSUB 51700
@@ -145,7 +141,6 @@
 50228 GOSUB 51950
 50230 LET Z$ = "xblk " & A2$ & " " & STR$(T4) & " " & STR$(G(Y1, 2))
 50231 GOSUB 51950
-50232 IF H(X, 1) = 64 THEN 55750
 50233 IF L4 = 0 THEN 50330
 50234 GOSUB 51650
 50235 GOTO 50330
@@ -231,7 +226,7 @@
 50429 REM each argument (of its parameter's type) followed by tmp P q, q a new local .p (a ref
 50430 REM parameter's: .q, its argument a rarg, which no other parameter takes)
 50431 FOR Y4 = 1 TO G(Y1, 2)
-50432 IF H(X1, 2) <> A(G(Y1, 1) + Y4) THEN 55690
+50432 IF H(X1, 2) <> A(G(Y1, 1) + Y4) THEN 2900
 50433 LET Z$ = D$(G(Y1, 6) + Y4)
 50434 LET Z1$ = ".p "
 50435 IF SEG$(Z$, LEN(Z$) - 3, LEN(Z$)) <> " ref" THEN 50437
@@ -249,14 +244,13 @@
 50447 GOSUB 51910
 50448 LET X1 = H(X1, 4)
 50450 NEXT Y4
-50451 IF H(X, 1) = 64 THEN 55700
 50452 REM a new local .i for each other local of F (its type and mut, pos P), from M(s,1) + 1 on
 50454 LET U4 = H6
 50456 FOR Y4 = 1 TO G(Y1, 3)
 50458 LET R2 = G(Y1, 6) + G(Y1, 2) + Y4
 50460 LET F9 = 5
 50462 GOSUB 8440
-50464 LET Z$ = "loc .i" & SEG$(D$(R2), POS(D$(R2), " ", 5), J3) & A2$
+50464 GOSUB 51822
 50466 GOSUB 51800
 50468 NEXT Y4
 50469 LET M(L4, 2) = R0
@@ -296,6 +290,7 @@
 50722 LET G0 = 0
 50724 LET A0 = 0
 50726 LET Y9 = 9
+50727 LET A6 = 0
 50728 CALL "ly_init": C(), K(), K$(), K0, T9, A9, P$
 50730 LET J8 = 0
 50740 REM ---- the next record of the new stream (from 1290)
@@ -303,10 +298,12 @@
 50744 LET L$ = O$(J8)
 50746 GOTO 550
 50800 REM ---- the walk: tmp P q of a .p local q becomes tmp P @p of a new .l local p (3.5.9 L18)
+50801 REM (7b: a tmp of a .l local of sea.hirf is copied: that local is a new local from its fn, 8730)
 50802 LET R2 = R1
 50804 LET F9 = 3
 50806 GOSUB 8440
 50808 LET Y1 = VAL(F9$)
+50809 IF SEG$(D$(G(F0, 6) + Y1), 1, 6) = "loc .l" THEN 5160
 50810 LET S7 = S7 - 1
 50812 LET G(F0, 3) = G(F0, 3) - 1
 50814 LET G(F0, 0) = G(F0, 0) - 1
@@ -375,6 +372,15 @@
 51814 GOSUB 51910
 51816 LET L3 = O0
 51818 RETURN
+51819 REM ---- 51820: Z$ = the loc record of the local R2 of F in a copy: .i, pos P (A2$); 7b: a .l local
+51820 REM (seafuse's) a .l local of the caller, renumbered with its own (8730): pos P under L18, its own
+51821 REM under L20 (the pos of the old L19 local the copy of its emap made; DESIGN 2.12.3 (4), 109)
+51822 LET Z$ = "loc .i" & SEG$(D$(R2), POS(D$(R2), " ", 5), J3) & A2$
+51823 IF SEG$(D$(R2), 1, 6) <> "loc .l" THEN 51829
+51824 LET Z$ = "loc .l" & SEG$(D$(R2), POS(D$(R2), " ", 5), J3) & A2$
+51825 IF G(Y1, 0) = 0 THEN 51829
+51826 LET Z$ = "loc .l" & SEG$(D$(R2), POS(D$(R2), " ", 5), LEN(D$(R2)))
+51829 RETURN
 51895 REM ---- 51900: Z$ at the tail; 51910 after the row C9; 51950 a node at the tail, 51960 its
 51896 REM count against SEA_LIM_NODES (reported at P)
 51900 LET C9 = O9
@@ -402,22 +408,26 @@
 52102 IF A2 = 0 THEN 52056
 52104 LET V4 = 2
 52106 GOTO 52500
-52200 REM ---- 52200 (lp2out, A2 = 1): the record R1 written, but not a .p or .i loc (52400, 10500)
+52200 REM ---- 52200 (lp2out, A2 + A3 > 0): the record R1 written, but not a .p .i or .l loc (52400, 10500);
+52201 REM 7b: its tptr ids of sea.hirf as ^e (10900)
 52202 LET Z$ = D$(R1)
 52204 IF K <> 35 THEN 52208
 52206 IF POS("|.p |.q |.i |", "|" & SEG$(Z$, 5, 7) & "|") > 0 THEN 10300
+52207 IF SEG$(Z$, 5, 6) = ".l" THEN 10300
 52208 LET V4 = 1
 52210 GOSUB 52500
+52211 GOSUB 10900
 52212 LET Z1$ = Z$
 52214 GOSUB 10805
 52216 CALL "io_put": 2, Z$
 52218 GOTO 10300
-52300 REM ---- 52300: the generated record of row J as written (10800), its lids rewritten if A2 = 1
+52300 REM ---- 52300: the generated record of row J as written (10800), its lids (and 7b tptr ids) rewritten if A2 + A3 > 0
 52302 LET Z1$ = O$(J)
-52304 IF A2 = 0 THEN 10805
+52304 IF A2 + A3 = 0 THEN 10805
 52306 LET Z$ = Z1$
 52308 LET V4 = 1
 52310 GOSUB 52500
+52311 GOSUB 10900
 52312 LET Z1$ = Z$
 52314 GOTO 10805
 52400 REM ---- 52400: the loc records of the .i locals of F0, in lid order (after the .l locals)
@@ -434,9 +444,9 @@
 52500 REM ---- 52500: the record Z$ rewritten. V4 0: a node of the copy of level L4 (L18 pos P, ret as
 52502 REM iret, a call's fid renumbered, F's parameters the .p and its locals the .i from M(s,1) + 1);
 52504 REM 1: as written (a .p as @p, an .i numbered after the .l locals); 2: the .i it declares
-52506 REM numbered, Z$ kept. Lid fields (passes.txt): lv 4, bind forr fore tmp 3, tbind 4 on.
+52506 REM numbered, Z$ kept. Lid fields (passes.txt): lv 4, bind forr fore tmp hloop 3, tbind 4 on, rcnt 4 5.
 52508 LET J2 = POS(Z$ & " ", " ")
-52510 LET J2 = POS("|lv=4|bind=3|forr=3|fore=3|tmp=3|tbind=4|", "|" & SEG$(Z$, 1, J2 - 1) & "=")
+52510 LET J2 = POS("|lv=4|bind=3|forr=3|fore=3|tmp=3|tbind=4|hloop=3|rcnt=4|", "|" & SEG$(Z$, 1, J2 - 1) & "=")
 52512 IF V4 = 0 THEN 52520
 52514 IF J2 = 0 THEN 52590
 52516 IF V4 = 1 THEN 52520
@@ -450,10 +460,12 @@
 52530 IF G$(1) <> "call" THEN 52534
 52532 LET G$(4) = STR$(G(VAL(G$(4)), 0))
 52534 IF J2 = 0 THEN 52580
-52536 LET T4 = VAL(SEG$("|lv=4|bind=3|forr=3|fore=3|tmp=3|tbind=4|", J2 + LEN(G$(1)) + 2, J2 + LEN(G$(1)) + 2))
+52536 LET T4 = VAL(SEG$("|lv=4|bind=3|forr=3|fore=3|tmp=3|tbind=4|hloop=3|rcnt=4|", J2 + LEN(G$(1)) + 2, J2 + LEN(G$(1)) + 2))
 52538 LET T5 = T4
-52540 IF G$(1) <> "tbind" THEN 52546
+52540 IF G$(1) <> "tbind" THEN 52543
 52542 LET T5 = C0
+52543 IF G$(1) <> "rcnt" THEN 52546
+52544 LET T5 = 5
 52546 FOR I4 = T4 TO T5
 52548 IF POS("0123456789", SEG$(G$(I4), 1, 1)) = 0 THEN 52579
 52550 LET U4 = VAL(G$(I4))

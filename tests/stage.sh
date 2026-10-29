@@ -7,10 +7,12 @@
 #     pass 2a  seaname     NAME.ast  -> NAME.res
 #     pass 2a  seacheck    NAME.res  -> NAME.hir1
 #     pass 2b  seaexpand   NAME.hir1 -> NAME.hir
-#     pass 3a  sealoop     NAME.hir  -> NAME.hirl
+#     pass 3a  seafuse     NAME.hir  -> NAME.hirf     (NAME.hir itself when there is no NAME.hirf, L-ek)
+#     pass 3a  sealoop     NAME.hirf -> NAME.hirl     (NAME.hir when there is no NAME.hirf)
 #     pass 3a  sealower    NAME.hirl -> NAME.lir1
 #     pass 3b  seaopt      NAME.lir1 -> NAME.lir2
-#     pass 3c  sealopt     NAME.lir2 -> NAME.lir      (skipped when NAME.lir is absent)
+#     pass 3c  sealopt     NAME.lir2 -> NAME.lir3     (skipped when NAME.lir3 is absent)
+#     pass 3d  seavec      NAME.lir3 -> NAME.lir      (7b: a copy; skipped when NAME.lir is absent)
 #     pass 4   seagen_a64  NAME.lir  -> NAME.s     (golden assembly, optional)
 # the golden previous file is copied as sea.<prev> into a fresh directory, the pass runs there
 # (standard input /dev/null), must exit 0, and the sea.<next> it wrote must be byte-identical
@@ -41,11 +43,14 @@
 # A NAME.sea test with a NAME.lir1 and a NAME.lir2 but no NAME.hirl (the opt5_* dumps: .sea +
 # .lir1 + .lir2 [+ .lir], DESIGN.md 6.2) starts the chain at seaopt: the sealower pair skips it
 # (keyed on NAME.lir2, L-aw). With neither NAME.hirl nor NAME.lir2 the missing NAME.hirl is a
-# FAILURE. A hand-written seaopt test (NAME.lir1 + NAME.lir2, no NAME.sea, no NAME.lir) has no
-# sealopt golden: the pair sealopt lir2 lir is skipped whenever NAME.lir is absent (L-bj). A
+# FAILURE. A hand-written seaopt test (NAME.lir1 + NAME.lir2, no NAME.sea, no NAME.lir3) has no
+# sealopt golden: the pair sealopt lir2 lir3 is skipped whenever NAME.lir3 is absent (L-bj). A
 # NAME.lir2 with neither NAME.lir1 nor NAME.sea is a hand-written sealopt input: the seaopt pair
-# skips it. A NAME.lir that has a NAME.lir2 is a sealopt golden, never a pass-4 test.
+# skips it. A NAME.lir3 is the sealopt golden and a NAME.lir that has a NAME.lir3 or a NAME.lir2 the seavec
+# golden (equal to NAME.lir3 in 7b), never a pass-4 test. A NAME.lir3 with neither NAME.lir2 nor NAME.sea is a
+# hand-written seavec input: the sealopt pair skips it.
 # A NAME.lir with a NAME.lir1 but neither NAME.lir2 nor NAME.sea is neither: a setup FAILURE.
+# The pair seafuse hir hirf runs on every NAME.hir (golden NAME.hirf, else NAME.hir itself, L-ek).
 #
 # The ra5_live_* tests (Decision 75, DESIGN.md 6.2) also check the shape rule on the -S output of both
 # targets: seagen_a64 on the LIR, seagen_x64 on a copy retargeted as tests/cross_pack.sh does. Every
@@ -144,8 +149,12 @@ stage() {
         [ -e "$g" ] || continue
         nm=$(basename "$g" ".$_next")
         in=$ROOT/tests/passes/$nm.$_prev
+        pv=$_prev
+        # sealoop reads NAME.hirf where a test has one, else NAME.hir (L-ek)
+        if [ "$_p" = sealoop ] && [ ! -f "$in" ]; then in=$ROOT/tests/passes/$nm.hir; fi
         name=stage/$_p/$nm
         # a hand-written NAME.lir2 (no NAME.lir1, no NAME.sea) is a sealopt-only test: no seaopt golden
+        if [ "$_next" = lir3 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         if [ "$_next" = lir2 ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
         # a hand-written NAME.lir (no NAME.lir1, no NAME.sea) is a pass-4 test, not a golden
         if [ "$_next" = lir ] && [ ! -f "$in" ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ]; then continue; fi
@@ -164,10 +173,10 @@ stage() {
         # builds the dumps from the real prelude): no sealoop golden
         if [ "$_next" = hirl ] && [ ! -f "$in" ] && [ -f "$ROOT/tests/passes/$nm.prelude" ]; then continue; fi
         selected "$name" || continue
-        if [ ! -f "$in" ]; then fail "$name" "golden input $nm.$_prev missing"; continue; fi
+        if [ ! -f "$in" ]; then fail "$name" "golden input $(basename "$in") missing"; continue; fi
         if [ ! -x "$BUILD/$_p" ]; then fail "$name" "pass '$_p' not built ($BUILD/$_p)"; continue; fi
         w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
-        cp "$in" "$w/sea.$_prev"
+        cp "$in" "$w/sea.$pv"
         run_limited "$TIMEOUT" "$w" "$BUILD/$_p" >"$TMP/p.out" 2>"$TMP/p.err"
         st=$?
         ok=1
@@ -237,6 +246,7 @@ for g in "$ROOT"/tests/passes/*.lir; do
     fi
     [ -f "$ROOT/tests/passes/$nm.lir1" ] && continue
     [ -f "$ROOT/tests/passes/$nm.lir2" ] && continue
+    [ -f "$ROOT/tests/passes/$nm.lir3" ] && continue
     [ -f "$ROOT/tests/passes/$nm.sea" ] && continue
     name=stage/seagen_a64/$nm
     selected "$name" || continue
@@ -307,13 +317,46 @@ for g in "$ROOT"/tests/passes/*.lir; do
     [ $ok = 1 ] && pass
 done
 
+# stage_fuse : the pair seafuse hir hirf over every NAME.hir. The golden is NAME.hirf where a test
+# has one; a test without it holds none of the constructs seafuse rewrites, so seafuse must write
+# NAME.hir itself byte for byte (L-ek, DESIGN.md 2.12.3).
+stage_fuse() {
+    for g in "$ROOT"/tests/passes/*.hir; do
+        [ -e "$g" ] || continue
+        nm=$(basename "$g" .hir)
+        name=stage/seafuse/$nm
+        selected "$name" || continue
+        gold=$ROOT/tests/passes/$nm.hirf
+        [ -f "$gold" ] || gold=$g
+        if [ ! -x "$BUILD/seafuse" ]; then fail "$name" "pass 'seafuse' not built ($BUILD/seafuse)"; continue; fi
+        w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
+        cp "$g" "$w/sea.hir"
+        run_limited "$TIMEOUT" "$w" "$BUILD/seafuse" >"$TMP/p.out" 2>"$TMP/p.err"
+        st=$?
+        ok=1
+        [ $st -eq 0 ] || { fail "$name" "exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
+        [ $ok = 1 ] && [ ! -f "$w/sea.hirf" ] && { fail "$name" "no sea.hirf written"; ok=0; }
+        [ $ok = 1 ] && { same "$gold" "$w/sea.hirf" "sea.hirf" "$name" || ok=0; }
+        if [ $ok = 1 ]; then
+            if ! { cmp -s "$w/sea.hirf" "$TMP/end5" || tail -c 6 "$w/sea.hirf" | cmp -s - "$TMP/end6"; }; then
+                fail "$name" "sea.hirf does not end with #end"; ok=0
+            fi
+        fi
+        [ $ok = 1 ] && { same "$TMP/empty" "$TMP/p.err" "stderr" "$name" || ok=0; }
+        rm -rf "$w"
+        [ $ok = 1 ] && pass
+    done
+}
+
 stage seaname ast res
 stage seacheck res hir1
 stage seaexpand hir1 hir
-stage sealoop hir hirl
+stage_fuse
+stage sealoop hirf hirl
 stage sealower hirl lir1
 stage seaopt lir1 lir2
-stage sealopt lir2 lir
+stage sealopt lir2 lir3
+stage seavec lir3 lir
 stage seagen_a64 lir s
 
 echo "----"

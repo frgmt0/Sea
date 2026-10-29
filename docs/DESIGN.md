@@ -77,7 +77,11 @@ the user's agreement. Phase 0 (§8) did:
    specification (documents only, as 5a and 6a): sub-phase 7a is **done** (2026-10-29, §2.12, §2.7
    "Projected for phase 7", §6.2, §6.3, §6.6.1, §8 rows 7a–7f; revised after two independent
    reviews and agreed 2026-10-29: Decisions 94–113, each decided by the user as option (a), and lead
-   decisions L-eh–L-fl agreed with the text); next is 7b, WP-CONTRACT first. Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
+   decisions L-eh–L-fl agreed with the text); sub-phase 7b (the contract and the two new programs
+   `seafuse` and `seavec`, no change of behaviour) is **done** (2026-10-29; neutral by Decision 109
+   over the whole corpus; §2.7, "Measured after 7b"; lead decisions L-fm–L-fu); next are 7c
+   (fusion) and 7d (the vector forms of the elementary functions), and 7d may run in parallel with
+   7c. Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
    §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -519,7 +523,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Next: sub-phase 7b, WP-CONTRACT first.
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Next: 7c and 7d (7d may run in parallel with 7c).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3077,6 +3081,39 @@ the smallest of any program and an input to phase 7's specification: 488 lines u
 `seaparse` has no remaining work (Decision 93 keeps the grammar whole) and `seaexpand` only the 7 000
 condition, as the gate writes them.
 
+**Measured after 7b** (2026-10-29, the integrated 7b tree; `make` and `sh tools/passlines.sh limits`).
+Every verdict is ok. Sub-phase 7b is neutral (Decision 109); its increments are the two new
+programs, `sealoop`'s changes and the `DATA` lines of entries 39–50.
+
+| Pass | Built lines | After 6d | 7b increment | `FOR`s | String bytes | Longest line |
+|------|------------:|---------:|-------------:|-------:|-------------:|-------------:|
+| `seaparse` | 3 940 | 3 939 | +1 | 74 | 2 581 | 166 |
+| `seaname` | 5 556 | 5 555 | +1 | 135 | 3 162 | 210 |
+| `seacheck` | 6 920 | 6 919 | +1 | 197 | 5 457 | 194 |
+| `seaexpand` | 4 797 | 4 796 | +1 | 121 | 5 928 | 155 |
+| `seafuse` (new) | 3 164 | — | 3 164 | 67 | 4 236 | 160 |
+| `sealoop` | 6 396 | 6 512 | −116 | 103 | 11 970 | 208 |
+| `sealower` | 6 742 | 6 729 | +13 | 130 | 4 720 | 255 |
+| `seaopt` | 5 520 | 5 507 | +13 | 159 | 5 315 | 179 |
+| `sealopt` | 5 440 | 5 427 | +13 | 214 | 5 372 | 179 |
+| `seavec` (new) | 2 955 | — | 2 955 | 75 | 5 314 | 179 |
+| `seagen_a64` | 5 051 | 5 038 | +13 | 132 | 4 359 | 135 |
+| `seagen_x64` | 5 389 | 5 376 | +13 | 132 | 4 264 | 136 |
+
+The +1, +12 and +13 of the passes that changed no code are the generated `DATA` lines of entries
+39–50 (`sealower`, `seaopt`, `sealopt`, `seagen_a64` and `seagen_x64` +13, the four front
+passes +1). `seafuse` has 1 593 own lines (its base is `sealoop`'s
+modules and `DATA`; 3 164 built against the projected 3 220–4 170, 56 under the lower end).
+`sealoop` fell by 116 (6 512 to 6 396): L19's own lines went out, the `sea.hirf` reader
+and validator, L18's and L20's copying of `HL` records (Decision 110, built in 7b) and the `.l`
+renumbering came in.
+
+**Free numeric array letters after 7b:** `seafuse` **5** (`B D J S X`; `Y` holds the F1–F5 tables as
+`Y(99999, 7)` columns, Decision 112 (1); `H` could not be widened, Baysick reports "DIMENSION TOO
+LARGE"), `sealoop` **3** (`B X Y`), `seavec` **2** (`S V`). Decision 112 (1)'s packing is therefore
+**not needed** before 7c: `seafuse` has 5 free letters, at least the 2 required. The projection of
+"Free numeric array letters of `seafuse`" (3–6 free after 7b) held.
+
 **Projected for phase 7** (agreed with §2.12, 2026-10-29, re-estimated after the two reviews of
 the draft; estimates, not measurements; the bases are "Measured at the gate after phase 6").
 Increments by sub-phase (§8, rows 7b–7f):
@@ -3913,12 +3950,19 @@ difference is a defect of 7b, not a golden to re-derive.
 `HL` records it finds as §3.5.9 validates its own output (it rewrites the HIR subtrees under them
 like any expression: a leaf `tmp` of `seafuse` may hold a selection, a literal, a reduction, a
 prelude call); it writes them unchanged otherwise, and renumbers the `.l` locals on output. **L18
-and L20 from 7c** (Decision 110): the copy of a body (§3.5.9 L18, §2.11.4 L20) copies the `HL`
-records of `sea.hirf` like any record, with each local field (`tmp`, `hloop` and `rcnt`'s `l` and
-`e`, and the `lv` reading them) renamed: a callee's `.l` local becomes a new `.i` local of the
-caller (one per inlined call, its `loc` record as L18 writes it, position as L18 and L20 say), so
-§3.5.9's "one `.i` local for each local of an inlined function other than its parameters" includes
-the `.l` locals of `sea.hirf`; the other fields are copied as they are.
+and L20 from 7b** (Decision 110, built in 7b, not 7c, and amended 2026-10-29 by the user: 7b's
+`seafuse` already writes L19's `HL` records into `inl` and `elem` bodies): the copy of a body
+(§3.5.9 L18, §2.11.4 L20) copies the `HL` records of `sea.hirf` like any record, with each local
+field (`tmp`, `hloop` and `rcnt`'s `l` and `e`, and the `lv` reading them) renamed: a callee's
+`.l` local becomes a new caller **`.l`** local (not a `.i` local, which would change `sea.hirl`;
+one per inlined call, renumbered in declaring-record order with the caller's own; its `loc`
+record at position P under L18, at the callee local's own position under L20); the other fields
+are copied as they are. **Exception to Decision 109's byte identity** (agreed 2026-10-29): a
+`return` of an elemental application (a `tret` of an `emap`) inside an `inl` or `elem` function:
+`seafuse` writes L19's `tret` form, a block ending in `ret P k`, at the `emap`'s position, which
+L20 copies as `iret`, so `sea.hirl` and the sites of `sea.lir1` differ from before 7b, while
+`sea.lir`, the program output and the run-time diagnostics (which report the line only) are
+identical.
 
 **R33** (a refinement of R5, no record or field added): an `est` may store into an array whose
 `cow` the rewrite has done even when a `bind` of the rewrite holds a second count on it (F2 (6):
@@ -3929,9 +3973,11 @@ is declared by no record and read by no node, and rule 16 releases nothing for i
 **Capacity** (Decision 72's rule, L-el): a fusion whose nodes, locals or types would exceed
 `SEA_LIM_NODES`, `SEA_LIM_SYMBOLS` or `SEA_LIM_TYPES` is not applied (its statements are written
 unfused, for `sealoop` to rewrite one by one), so fusion never makes a compilation fail; L19 reports
-its limits at the `emap`'s position as before (`seafuse` counts the whole file as `sealoop` does,
-§3.5.9 "Capacity"); L18 and L20 count the copied `HL` records and `.i` locals as they count the
-others.
+its limits as before (`seafuse` counts the whole file as `sealoop` does, §3.5.9 "Capacity"); L18
+and L20 count the copied `HL` records and `.l` locals as they count the others. **Capacity
+positions** (agreed 2026-10-29): a "program too large: …" diagnostic keeps its message, but its
+position may move, because `seafuse` counts nodes as a pass of its own, without L20's inline cost;
+Decision 109's byte identity excludes capacity positions.
 
 #### 2.12.4 The fusion rewrites F1–F5
 
@@ -8393,8 +8439,8 @@ cell (where the table has one; else 0) starts with the pop expression below. Its
 * `head <name> <field> …` defines the header record written `#<name>` (§3.2).
 * `rec <set> <code> <op> <pops> <field> …` defines a record:
   * `<set>`: `A` (`sea.ast` and `sea.res`: codes 1–49 in both, codes 50–63 only in `sea.res`,
-    §3.4.1), `H` (every HIR file: `sea.hir1`, `sea.hir`, `sea.hirl`), `H1` (`sea.hir1` only), `HF`
-    (`sea.hir` and `sea.hirl`), `HL` (`sea.hirf` and `sea.hirl`: the records `seafuse` may write into `sea.hirf` and `sealoop` writes into `sea.hirl`, codes 72–89, §3.5.9, §2.12.3; which of them may stand in `sea.hirf` is a semantic rule, not a set), `L` (every LIR file: `sea.lir1`, `sea.lir2`, `sea.lir3`, `sea.lir`),
+    §3.4.1), `H` (every HIR file: `sea.hir1`, `sea.hir`, `sea.hirf`, `sea.hirl`), `H1` (`sea.hir1` only), `HF`
+    (`sea.hir`, `sea.hirf` and `sea.hirl`), `HL` (`sea.hirf` and `sea.hirl`: the records `seafuse` may write into `sea.hirf` and `sealoop` writes into `sea.hirl`, codes 72–89, §3.5.9, §2.12.3; which of them may stand in `sea.hirf` is a semantic rule, not a set), `L` (every LIR file: `sea.lir1`, `sea.lir2`, `sea.lir3`, `sea.lir`),
     `LF` (`sea.lir` only);
   * `<code>`: its opcode number, unique within `A`, within `H H1 HF HL`, and within `L LF`;
   * `<pops>`: the number of nodes it pops: a sum of terms joined by `+` (no spaces), each a
@@ -12507,8 +12553,8 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 6d | **`write_json`** (after 6c): pass 2b's step 4 (`jvec (dyn e)` for fixed-size values, L-ce), the `j*` statements through `sealoop` (validation, capacity) and `sealower` (rule 39's JSON rows), the runtime emitter of §2.11.6 (built and tested by 6b's WP-RT-A64 and WP-RT-X64 with the other entries). Work packages: **WP-CHECK** `passes/seacheck/*`; **WP-EXPAND** `passes/seaexpand/*`; **WP-LOOP** `passes/sealoop/*`; **WP-LOWER** `passes/sealower/*`; **T1** `tests/programs/json_*` with their `NAME.expect/` and `json_into_new_dir`, `tests/errors/r_json_*`, the retired `err_ns_lib_write_json`, `tests/CORPUS.md`; **T2** `tests/passes/json6_*` | the 6d tests of §6.2 pass on both targets; every earlier test passes; `make test` and `make cross` pass. **Done** (2026-10-28): `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 703, `test-protocol` 46, `test-programs` 1 667, `test-accept` 2), `make cross` 776 cases on the Linux host `desktop`, 0 failed; sizes in §2.7 ("Measured after 6d": `seacheck` 6 919, `seaexpand` 4 796, `sealoop` 6 512, `sealower` 6 729); lead decisions L-dr–L-ec (agreed 2026-10-28) record the readings the integration fixed; the independent review's defect (`seacheck`'s `hct` with an unbounded work list, L-dz) fixed before commit |
 | 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code. **Done** (2026-10-29): `tests/accept.sh` passes both ports on the Mac (22.7 s; W1 compiles in 13.8 s, W5 in 7.1 s; every JSON key passes, the reports are equivalent, §6.3); `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 703, `test-protocol` 46, `test-programs` 1 667, `test-accept` 2 + 2); `make cross` 778 cases on the Linux host `desktop` (both ports byte-identical but for the `Compute time` line), 0 failed; the gate after phase 6 applied (§2.7, "Measured at the gate after phase 6"): every program passes (`sealoop` with phase 7's fusion: 6 512, 8 012 and 8 762 with 3 free letters), so no relief is needed and fusion stays in `sealoop`; lead decisions L-ed–L-eg (agreed 2026-10-29) record the readings the integration fixed |
 | 7a | **Phase-7 specification** (documents only; proposed 2026-10-29, revised after two independent reviews, agreed 2026-10-29 with Decisions 94–113 and lead decisions L-eh–L-fl): §0, §2.7 ("Projected for phase 7", "The measurement after 7c", "The gate after phase 7"), §2.12 (scope and non-scope, the contract changes, the semantic contract with the out-of-memory sentence proposed for LANGUAGE.md §9.2, `seafuse` and `sea.hirf`, L19's rewrite, L18/L20's copying, F1–F5, `seavec`'s T11–T13, pass 4's vector code, entries 39–50, capacity, W4, the allocation count and the vector check, the goldens), §6.2 ("Phase-7 tests"), §6.3 ("Phase-7 acceptance"), §6.6.1 (both x86_64 variants), this table, §9; no contract file, intermediate format or code changes; LANGUAGE.md unchanged until agreement | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 94–113. **Done** (2026-10-29): the specification agreed, each Decision as option (a), with the LANGUAGE.md §9.2 sentence of §2.12.2 (5) for WP-CONTRACT; next 7b (WP-CONTRACT first and alone) |
-| 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2 |
-| 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34; L18 and L20 copying fused bodies. Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (L18's and L20's copying of `HL` records and their local fields, a callee's `.l` locals as caller `.i` locals, §2.12.3, Decision 110); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code |
+| 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
+| 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass |
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113): T11, T12, T13 with if-conversion (§2.12.6), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108): §2.12.10. Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
@@ -13844,6 +13890,9 @@ recommendation as (a), its reasons, the decision, and what it affects.
      passes from the order in which the two programs ran; (b) needs a renaming-aware comparison and
      re-derives goldens for no change of behaviour; (c) misuses `.t` locals, whose meaning
      `seaexpand` fixes (§3.5.8). **Decided: (a)** (the user, 2026-10-29). Affects §2.12.3, §3.5.9 "Locals", §6.2, §8 (row 7b).
+     **Built at 7b (2026-10-29):** "file order" is the order of the declaring records of the `.l`
+     locals (L-fn); two exceptions agreed by the user, 2026-10-29: a `tret` of an `emap` inside an
+     `inl`/`elem` function, and the positions of capacity diagnostics (§2.12.3).
 110. **Inlining of fused bodies** (`seafuse` runs before `sealoop`'s L18 (prelude) and L20 (§8.6);
      W4's `rb_half_sweep` is class (c) of §8.6 and inlined at both call sites, and `lpainl.bas`'s
      copier knows only the local fields of `lv bind forr fore tmp tbind`). Options: (a) **`seafuse`
@@ -13858,7 +13907,12 @@ recommendation as (a), its reasons, the decision, and what it affects.
      with their helpers) move out of `sealoop`, and `seafuse` grows by the same, over 7 000 at both
      ends. Recommended: (a); it is the smallest change that fuses W4 and keeps both programs within
      their projections; (b) fails row 7's done-when for W4; (c) does not fit `seafuse`. **Decided: (a)** (the user, 2026-10-29). Affects
-     §2.12.3, §3.5.9 (L18, L20, "Locals"), §2.7, §8 (row 7c).
+     §2.12.3, §3.5.9 (L18, L20, "Locals"), §2.7, §8 (row 7c). **Amended 2026-10-29 (agreed by the
+     user, at 7b):** the copying is built in 7b, not 7c, because 7b's `seafuse` already writes L19's
+     `HL` records into `inl` and `elem` bodies; and a copied callee `.l` local becomes a new caller
+     **`.l`** local (one per inlined call, renumbered in declaring-record order with the caller's own;
+     `loc` position P under L18, the callee local's own position under L20), not a `.i` local,
+     which keeps `sea.hirl` neutral. The 7c work package for it is therefore void.
 111. **Which trees `seafuse` rewrites; single-node matrix trees** (§2.12.4; the first draft left
      every one-node tree to L7, but L7 writes a matrix tree as one `mloop` with broadcast strides,
      which T7 cannot make unit-stride, and it leaves the value of an `asg set` to a temporary, so
@@ -14388,7 +14442,8 @@ reviews, and agreed by the user together with Decisions 94–113 on 2026-10-29);
   and a file holding none, byte for byte as read; the stage pair then compares with `NAME.hir`
   (§2.12.3).
 * **L-el** A fusion that would exceed a HIR capacity limit is not applied (Decision 72 for HIR);
-  L19's own limits are reported as before, at the `emap`'s position (§2.12.3).
+  L19's own limits are reported as before (§2.12.3); amended 2026-10-29: the position of a
+  capacity diagnostic may move with `seafuse` as a separate pass (§2.12.3 "Capacity").
 * **L-em** A vector tree with one fusible node and no folded leaf, which is not the value of an
   `asg set` to a whole array or selection nor of a group statement, is not rewritten by `seafuse`:
   `sealoop`'s L7 gives it exactly F1's form (one `loop`, the same checks, `anew`, nest); every
@@ -14468,3 +14523,36 @@ reviews, and agreed by the user together with Decisions 94–113 on 2026-10-29);
 * **L-fl** A `vector` shape line is satisfied by an innermost loop identified as the scalar shape
   lines identify theirs (L-ar: a record with a site in the line range), inlined code keeping its
   callee's lines; on `x86_64-linux` both the 4-lane and the 2-lane loop must be present (§2.12.10).
+
+Lead decisions of sub-phase 7b (found in its integration; the readings it fixed):
+
+* **L-fm** `seafuse` numbers the `.l` locals it creates in `sea.hirf` canonically, in the file order
+  of their declaring records, as `sealoop` does; T2's goldens fix it (§2.12.3).
+* **L-fn** Decision 109's "file order" is the order of the declaring records of the `.l` locals
+  (`tmp`, `bind`, `tbind`, `hloop`, `rcnt`), not the order of first reference; `tptr` types are
+  likewise renumbered by `sealoop` in order of first reference, `seafuse` appending its own from
+  `sea.hir`'s last type id (§2.12.3, §3.5.9 "Locals").
+* **L-fo** (agreed by the user, 2026-10-29) Decision 110's copying is built in 7b, not 7c, because
+  7b's `seafuse` already writes L19's `HL` records into `inl` and `elem` bodies; and, amending
+  Decision 110's text (§2.12.3, §9), a copied callee `.l` local becomes a new caller `.l` local (one
+  per inlined call, renumbered in declaring-record order with the caller's own; `loc` position P
+  under L18, the callee local's own position under L20), not a `.i` local, which keeps `sea.hirl`
+  neutral.
+* **L-fp** (agreed by the user, 2026-10-29) An exception to Decision 109's byte identity: a
+  `return` of an elemental application (a `tret` of an `emap`) inside an `inl` or `elem` function:
+  `sea.hirl` and the sites of `sea.lir1` differ (`seafuse` writes L19's `tret` form, a block ending
+  in `ret P k`, at the `emap`'s position, which L20 copies as `iret`), while `sea.lir`, the program
+  output and the run-time diagnostics are identical (run-time errors report the line only).
+* **L-fq** (agreed by the user, 2026-10-29) Capacity diagnostics ("program too large: …") keep
+  their message, but their position may move, `seafuse` counting nodes as a separate pass without
+  L20's inline cost; L-el, §2.12.3 "Capacity" and Decision 109's "every diagnostic" exclude capacity
+  positions.
+* **L-fr** `seafuse` writes a `tasg` target of L19 as `asg P set target (lv Rj)`, and `sealoop`'s
+  L6 and L17 store it; an `lv` of a `sea.hirf` `.l` home takes R25's V5 = 0 path in L17 (neutral).
+* **L-fs** `ind2sub` with an array `r` in `sea.hirf` is `BAD_RECORD` in `sealoop` (`seafuse`
+  rewrites it), as `inst` and `emap` are.
+* **L-ft** `seaval` checks `lir3` as `lir2` (set `L`, no `LF`, no `x`/`y`/`m`, the `lir1`-only label
+  rules off) and `hirf` as `hirl` without `inst emap cdat iblk iret`; `seafuse` checks that a
+  `tbind`'s `n` and a `tasg`'s target count equal `k` (`BAD_RECORD`).
+* **L-fu** `tests/protocol.sh` was edited by WP-PIPE: its fake chain needs the two new programs
+  (§8, row 7b).

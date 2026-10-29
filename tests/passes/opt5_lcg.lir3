@@ -1,0 +1,118 @@
+#sea 1
+#target arm64-macos
+#file opt5_lcg.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+slot s2 8 8
+slot s3 24 8
+li i1 42
+sa p2 s1
+sti i1 p2 - 0 0
+li i3 3
+call lcg_fill 1 p4 2 p2 i3
+ldi i1 p2 - 0 0
+li i5 2
+ldi i6 p4 - 0 16
+chkb i5 i6 0 0:10
+ldp p7 p4 - 0 40
+ldf f8 p7 i5 8 0
+release p4
+sa p9 s2
+sti i1 p9 - 0 0
+call lcg_fill 1 p10 2 p9 i5
+ldi i1 p9 - 0 0
+li i11 1
+ldi i12 p10 - 0 16
+chkb i11 i12 0 0:10
+ldp p13 p10 - 0 40
+ldf f14 p13 i11 8 0
+release p10
+sa p15 s3
+stf f8 p15 - 0 0
+stf f14 p15 - 0 8
+sti i1 p15 - 0 16
+la p16 d1
+rcall sea_printf 0:10 0 2 p16 p15
+ret 0
+endfunc
+func lcg_fill fn 0:1:1 2 p1 i2 1 p
+li i3 1
+rcall sea_arr_new 0:2 1 p4 4 i3 i3 i2 i3
+li i5 0
+mov i6 i3
+rcount i7 i8 i5 i2 i6 0 0:3
+if 1 i8
+ldi i9 p1 - 0 0
+ldi i10 p4 - 0 0
+li i11 1
+icmp eq i12 i10 i11
+if 2 i12
+li i13 16807
+li i14 #000000007FFFFFFF
+li i15 #8000000100000003
+li i16 30
+li i17 63
+li i18 0
+lf f19 #41DFFFFFFFC00000
+ldp p20 p4 - 0 40
+loop 3 i21 i5 i7 i6
+imulc i22 i13 i9 0:4
+imulh i23 i22 i15
+iadd i24 i23 i22
+isar i25 i24 i16
+isar i26 i22 i17
+isub i27 i25 i26
+imul i28 i27 i14
+isub i29 i22 i28
+iadd i30 i29 i14
+icmp lt i31 i29 i18
+isel i9 i31 i30 i29
+itof f32 i9
+fdiv f33 f32 f19
+stf f33 p20 i21 8 0
+endloop 3
+else 2
+li i34 16807
+li i35 #000000007FFFFFFF
+li i36 #8000000100000003
+li i37 30
+li i38 63
+li i39 0
+lf f40 #41DFFFFFFFC00000
+li i41 1
+loop 4 i42 i5 i7 i6
+imulc i43 i34 i9 0:4
+imulh i44 i43 i36
+iadd i45 i44 i43
+isar i46 i45 i37
+isar i47 i43 i38
+isub i48 i46 i47
+imul i49 i48 i35
+isub i50 i43 i49
+iadd i51 i50 i35
+icmp lt i52 i50 i39
+isel i9 i52 i51 i50
+itof f53 i9
+fdiv f54 f53 f40
+ldi i55 p4 - 0 0
+icmp ne i56 i55 i41
+if 5 i56
+rcall sea_arr_unique 0:5 1 p57 1 p4
+mov p4 p57
+endif 5
+ldp p58 p4 - 0 40
+stf f54 p58 i42 8 0
+endloop 4
+endif 2
+sti i9 p1 - 0 0
+endif 1
+ret 1 p4
+endfunc
+fmt d1 6
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

@@ -1,0 +1,26 @@
+#sea 1
+#target arm64-macos
+#file lx.sea
+func .main main 0:1:1 0 0
+li i1 10
+lf f2 #3FE0000000000000
+call tri 1 f3 2 i1 f2
+li i4 4
+call tri 1 f5 2 i4 f3
+ret 0
+endfunc
+func tri fn 0:1:1 2 i1 f2 1 f
+lf f3 #0000000000000000
+li i4 0
+li i5 1
+rcount i6 i7 i4 i1 i5 0 0:3
+if 1 i7
+loop 2 i8 i4 i6 i5
+itof f9 i8
+fmul f10 f2 f9
+fadd f3 f3 f10
+endloop 2
+endif 1
+ret 1 f3
+endfunc
+#end

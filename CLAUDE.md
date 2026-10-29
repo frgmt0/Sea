@@ -110,8 +110,12 @@ L-eh–L-fl; DESIGN.md §2.12, §2.7, §6.2, §6.3, §6.6.1, §8): fusion F1–F
 (`sea.lir3` → `sea.lir`: T11 unrolling, T12 scalar replacement, T13 if-conversion and
 vectorization), NEON/SSE2/AVX2 code in pass 4, runtime entries 39–50 (vector elementary
 functions), the W4 port, a run-time allocation count (`SEA_HEAP_CHECK=count`), and LANGUAGE.md
-§9.2's out-of-memory sentence (added by WP-CONTRACT). **Next:** sub-phase **7b**, WP-CONTRACT
-first and alone. Versions 0.y.z are alpha; 1.0.0 = v1
+§9.2's out-of-memory sentence (added by WP-CONTRACT). **7b is done** (2026-10-29: the
+contract changes, the new programs `seafuse` and `seavec`, `sealopt` writing `sea.lir3`, L19
+rewritten in `seafuse`, `sealoop` reading `sea.hirf`; neutral by Decision 109 over the whole corpus;
+lead decisions L-fm–L-fu; `seafuse` 3 164 built lines with 5 free letters, `sealoop` 6 396;
+DESIGN.md §2.7 "Measured after 7b"). **Next:** 7c (fusion) and 7d (vector elementary functions;
+may run in parallel with 7c). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first
@@ -130,7 +134,7 @@ first and alone. Versions 0.y.z are alpha; 1.0.0 = v1
   `build/gen/<pass>.bas` (its own files, the modules and `DATA` blocks of its `build.list`,
   `99999 END`; DESIGN.md §2.6.3) and compiled with Baysick (`BAYSICK=<dir>`, default `..`; run
   `make` there first). `build/` is the installation directory (DESIGN.md §2.10).
-- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|hirl|lir1|lir2|lir]
+- Use the compiler: `build/sea build <file.sea> [-o out] [-S] [--emit ast|res|hir1|hir|hirf|hirl|lir1|lir2|lir3|lir]
   [--no-prelude] [--keep-temps]`, `build/sea run <file.sea> [-- args…]` (DESIGN.md §2.2).
 - Tests: `make test` runs, after `make all` and `make check-contracts`, every group even if one
   fails: `test-driver` (`tests/driver_check.sh`), `check-data` (`tests/check_data.sh`, the DATA
@@ -164,9 +168,9 @@ first and alone. Versions 0.y.z are alpha; 1.0.0 = v1
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
-- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand sealoop sealower seaopt sealopt seagen_a64 seagen_x64`); `passes/lib/` the shared modules
+- `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec seagen_a64 seagen_x64`); `passes/lib/` the shared modules
   (`io diag tables lirrw limb f64emu fltlit layout ralloc`), interfaces in `passes/lib/API.md`, `API-arith.md`.
-- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirl lir1 lir2 lir`; `lir2` checked as `lir1` except its two lir1-only label rules, L-bu),
+- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirf hirl lir1 lir2 lir3 lir`; `lir2` and `lir3` checked as `lir1` except its two lir1-only label rules, L-bu; `hirf` as `hirl` without `inst emap cdat iblk iret`),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.

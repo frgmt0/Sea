@@ -1,0 +1,151 @@
+#sea 1
+#target arm64-macos
+#file opt5_bce_dom.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 2
+call pick 1 f3 2 i1 i2
+li i4 5
+call pick 1 f5 2 i4 i1
+sa p6 s1
+stf f3 p6 - 0 0
+stf f5 p6 - 0 8
+la p7 d1
+rcall sea_printf 0:31 0 2 p7 p6
+ret 0
+endfunc
+func pick fn 0:1:1 2 i1 i2 1 f
+li i3 8
+li i4 1
+rcall sea_arr_new 0:2 1 p5 4 i4 i4 i3 i4
+lf f6 #0000000000000000
+li i7 0
+mov i8 i4
+rcount i9 i10 i7 i2 i8 0 0:4
+if 1 i10
+li i11 0
+icmp ge i12 i1 i11
+li i13 8
+icmp lt i14 i1 i13
+ldp p15 p5 - 0 40
+ldi i16 p5 - 0 16
+if 2 i12
+if 3 i14
+icmp lt i17 i1 i11
+li i18 7
+icmp le i19 i1 i18
+li i20 3
+loop 4 i21 i7 i9 i8
+ldf f22 p15 i1 8 0
+fadd f6 f6 f22
+if 5 i17
+lf f6 #3FF0000000000000
+else 5
+if 6 i19
+ldf f23 p15 i1 8 0
+fadd f6 f6 f23
+endif 6
+endif 5
+chkb i1 i16 0 0:18
+ldf f24 p15 i1 8 0
+fadd f6 f6 f24
+imulc i25 i21 i20 0:20
+icmp lt i26 i25 i13
+if 7 i26
+icmp ge i27 i25 i11
+if 8 i27
+ldf f28 p15 i25 8 0
+fadd f6 f6 f28
+endif 8
+endif 7
+endloop 4
+else 3
+icmp lt i29 i1 i11
+li i30 7
+icmp le i31 i1 i30
+li i32 3
+loop 9 i33 i7 i9 i8
+if 10 i29
+lf f6 #3FF0000000000000
+else 10
+if 11 i31
+ldf f34 p15 i1 8 0
+fadd f6 f6 f34
+endif 11
+endif 10
+imulc i35 i33 i32 0:20
+icmp lt i36 i35 i13
+if 12 i36
+icmp ge i37 i35 i11
+if 13 i37
+ldf f38 p15 i35 8 0
+fadd f6 f6 f38
+endif 13
+endif 12
+endloop 9
+endif 3
+else 2
+if 14 i14
+icmp lt i39 i1 i11
+li i40 7
+icmp le i41 i1 i40
+li i42 3
+loop 15 i43 i7 i9 i8
+if 16 i39
+lf f6 #3FF0000000000000
+else 16
+if 17 i41
+ldf f44 p15 i1 8 0
+fadd f6 f6 f44
+endif 17
+endif 16
+chkb i1 i16 0 0:18
+ldf f45 p15 i1 8 0
+fadd f6 f6 f45
+imulc i46 i43 i42 0:20
+icmp lt i47 i46 i13
+if 18 i47
+icmp ge i48 i46 i11
+if 19 i48
+ldf f49 p15 i46 8 0
+fadd f6 f6 f49
+endif 19
+endif 18
+endloop 15
+else 14
+icmp lt i50 i1 i11
+li i51 7
+icmp le i52 i1 i51
+li i53 3
+loop 20 i54 i7 i9 i8
+if 21 i50
+lf f6 #3FF0000000000000
+else 21
+if 22 i52
+ldf f55 p15 i1 8 0
+fadd f6 f6 f55
+endif 22
+endif 21
+imulc i56 i54 i53 0:20
+icmp lt i57 i56 i13
+if 23 i57
+icmp ge i58 i56 i11
+if 24 i58
+ldf f59 p15 i56 8 0
+fadd f6 f6 f59
+endif 24
+endif 23
+endloop 20
+endif 14
+endif 2
+endif 1
+release p5
+ret 1 f6
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

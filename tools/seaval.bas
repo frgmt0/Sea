@@ -5,7 +5,7 @@
 50 REM consts records, and the line 99999 END.
 60 REM
 70 REM USAGE   the file to check is read on standard input. Its FIRST line (not part of the file)
-80 REM         names the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir. The rest is the file, verbatim.
+80 REM         names the format: ast, res, hir1, hir, hirf, hirl, lir1, lir2, lir3 or lir. The rest is the file, verbatim.
 90 REM         (Baysick has no command-line arguments: the options travel on standard input,
 100 REM         DESIGN 2.2 step 4.) Example: ( echo hir1; cat sea.hir1 ) | seaval
 110 REM EXIT    0 the file is valid (nothing is printed); 11 it is not (DESIGN 2.2: an internal
@@ -19,7 +19,9 @@
 190 REM         limit, or a wrong format name, is also reported with status 11.
 200 REM CHECKED header records (order, version = SEA_FILE_VERSION, target in enum target, #file
 210 REM         paths); every body byte in 0x20-0x7E; every record: opcode of the file's sets (ast:
-220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; hirl: H HF HL; lir1: L; lir2: L, checked as lir1 except the two lir1-only label rules (L-bu); lir: L LF), field count including the repeated
+220 REM         A with codes 1-49; res: A, the codes 50-63 as well; hir1: H H1; hir: H HF; 
+221 REM         hirf: H HF HL, but no inst emap cdat iblk iret (DESIGN 2.12.3 (1), (2)); 
+222 REM         hirl: H HF HL; lir1: L; lir2 lir3: L, as lir1 but not the two lir1-only label rules (L-bu); lir: L LF), field count including the repeated
 230 REM         fields, each field's type (u i f s pos site fl, enumerations, references, registers
 240 REM         with their class); the tree stack of DESIGN 3.3 (pops from the pops column; a
 250 REM         section end - prog, cn, end - leaves the stack empty; end pops a block); in the
@@ -42,7 +44,7 @@
 420 REM            current line; U values of the u-like fields of the record; L limb scratch;
 430 REM            S tree stack (record rows); Q register class by number; K block stack
 440 REM            (number, kind); H$ #file paths; A allowed record sets of this format
-450 REM   K7 1 in lir1 only (label rules)  P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir and hirl 4 lir1 and lir2 5 lir
+450 REM   K7 1 in lir1 only (label rules)  P$ pass name  K$ format name  K0 format 1 ast 2 hir1 3 hir hirf hirl 4 lir1 lir2 lir3 5 lir  K6 1 in hirf only (rules 1 and 2)
 460 REM   L$ current line  L0 its number  C0 its field count  I0 its record row  Y0 its special code
 470 REM   M$ what is wrong  D$ error name for the final message
 480 REM   S0 tree stack depth  H8 HIR section (1 types, 2 constants / instances, 3 functions)
@@ -131,15 +133,18 @@
 1140 REM the allowed record sets A(s) of each format; sets 1 A, 2 H, 3 H1, 4 HF, 5 L, 6 LF, 7 HL
 1150 LET K0 = 0
 1155 LET K7 = 0
+1156 LET K6 = 0
 1160 IF K$ = "ast" THEN 1220
 1165 IF K$ = "res" THEN 1226
 1170 IF K$ = "hir1" THEN 1250
 1180 IF K$ = "hir" THEN 1290
 1185 IF K$ = "hirl" THEN 1322
+1187 IF K$ = "hirf" THEN 1321
 1190 IF K$ = "lir1" THEN 1330
 1195 IF K$ = "lir2" THEN 1330
+1197 IF K$ = "lir3" THEN 1330
 1200 IF K$ = "lir" THEN 1360
-1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, hirl, lir1, lir2 or lir"
+1210 CALL "dg_bug": P$, "the first input line must name the format: ast, res, hir1, hir, hirf, hirl, lir1, lir2, lir3 or lir"
 1220 LET K0 = 1
 1221 LET R6 = 0
 1222 GOTO 1230
@@ -155,6 +160,7 @@
 1300 LET A(2) = 1
 1310 LET A(4) = 1
 1320 GOTO 1390
+1321 LET K6 = 1
 1322 LET K0 = 3
 1324 LET A(2) = 1
 1326 LET A(4) = 1
@@ -198,6 +204,14 @@
 1610 LET M$ = "unknown opcode '" & G$(1) & "' for format " & K$
 1620 GOTO 4910
 1630 LET Y0 = Y(I0)
+1631 REM hirf only (DESIGN 2.12.3 rules 1 and 2): no inst, emap (L19 has rewritten every elemental application) and none of the HL records cdat, iblk, iret
+1632 IF K6 = 0 THEN 1640
+1633 LET M$ = "record '" & G$(1) & "' may not stand in sea.hirf (DESIGN 2.12.3 rules 1 and 2)"
+1634 IF G$(1) = "inst" THEN 4910
+1635 IF G$(1) = "emap" THEN 4910
+1636 IF G$(1) = "cdat" THEN 4910
+1637 IF G$(1) = "iblk" THEN 4910
+1638 IF G$(1) = "iret" THEN 4910
 1640 REM a new LIR function numbers its registers, slots and blocks from 1 (before its fields)
 1650 IF Y0 <> 37 THEN 1710
 1660 LET M7 = 0
