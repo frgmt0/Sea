@@ -103,8 +103,15 @@ kind `ports`; lead decisions L-ed–L-eg; `tests/accept.sh` passes both, every J
 time` line; DESIGN.md §6.3 "Measured at 6e"). The gate after phase 6 passes every program with no
 relief (`sealoop` 6 512 built lines, 8 762 at the stress line with phase 7's fusion, 3 free letters:
 fusion stays in `sealoop`; DESIGN.md §2.7 "Measured at the gate after phase 6"). **Phase 6 is
-complete.** **Next:** **phase 7** (fusion and SIMD, DESIGN.md §8 row 7), starting with its
-specification. Versions 0.y.z are alpha; 1.0.0 = v1
+complete.** **Phase 7** (fusion and SIMD, DESIGN.md §8 row 7) **is specified** (7a, agreed
+2026-10-29 after two independent reviews: Decisions 94–113, each option (a), lead decisions
+L-eh–L-fl; DESIGN.md §2.12, §2.7, §6.2, §6.3, §6.6.1, §8): fusion F1–F5 in a new pass-3a program
+`seafuse` (`sea.hir` → `sea.hirf`, ahead of `sealoop`, also doing L19), pass 3d `seavec`
+(`sea.lir3` → `sea.lir`: T11 unrolling, T12 scalar replacement, T13 if-conversion and
+vectorization), NEON/SSE2/AVX2 code in pass 4, runtime entries 39–50 (vector elementary
+functions), the W4 port, a run-time allocation count (`SEA_HEAP_CHECK=count`), and LANGUAGE.md
+§9.2's out-of-memory sentence (added by WP-CONTRACT). **Next:** sub-phase **7b**, WP-CONTRACT
+first and alone. Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first
