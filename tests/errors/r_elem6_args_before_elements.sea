@@ -1,0 +1,9 @@
+// r_elem6_args_before_elements -- the arguments are evaluated in full, in order, before any element (DESIGN.md 2.11.4 L19 step 1, L-ck): the
+// second argument's index error (the call's line) is reported, not the body's error
+elemental fn always(x: f64, y: f64) -> f64 {
+    error("body ran")
+    return x
+}
+let v = zeros(3)
+let w = zeros(3)
+let r = always(v, w[10])

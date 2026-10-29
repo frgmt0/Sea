@@ -1,0 +1,82 @@
+// elem_uniform -- uniform parameters (LANGUAGE.md 8.5): a struct with str, array and scalar fields (W1's Params shape; a
+// record has no type syntax, so no parameter is a record), a str, a dynamic array, a fixed-size array and a
+// str[] are passed unchanged while the elemental arguments are broadcast; `$` in the body is the uniform array's
+// extent
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+struct Params {
+    ka: f64
+    name: str
+    w: f64[3]
+}
+elemental fn scale(x: f64, p: Params) -> f64 {
+    return x * p.ka + p.w[1] + f64(len(p.name))
+}
+elemental fn tag_len(i: i64, s: str) -> i64 {
+    return i + len(s)
+}
+elemental fn pick(i: i64, tbl: f64[]) -> f64 {
+    return tbl[i] * 2.0
+}
+elemental fn pick3(i: i64, tbl: f64[3]) -> f64 {
+    return tbl[i] + 1.0
+}
+elemental fn name_len(i: i64, names: str[]) -> i64 {
+    return len(names[i])
+}
+elemental fn last_plus(x: f64, off: f64[]) -> f64 {
+    return x + off[$ - 1]
+}
+let p = Params { ka: 2.0, name: "abc", w: [0.5, 1.5, 2.5] }
+let v = ramp(4)
+pv(scale(v, p))
+printf("%g\n", scale(2.0, p))
+pm(scale(lattice(2, 3), p))
+pvi(tag_len((0..4), "abcd"))
+printf("%d\n", tag_len(3, "xy"))
+let tbl = [1.5, 2.5, 3.5, 4.5]
+pv(pick((0..4), tbl))
+pv(pick([3, 0, 2], tbl))
+pv(pick3([2, 1, 0, 1], [1.0, 2.0, 3.0]))
+let names = ["a", "bcd", "ef"]
+pvi(name_len((0..3), names))
+pv(last_plus(v, tbl))
+printf("%g\n", last_plus(1.0, v))

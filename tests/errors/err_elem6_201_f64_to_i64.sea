@@ -1,0 +1,6 @@
+// err_elem6_201_f64_to_i64 -- 201 at an argument: an f64 array for an i64 elemental parameter (LANGUAGE.md 4.2: no implicit f64 to i64)
+elemental fn cube(i: i64) -> i64 {
+    return i * i * i
+}
+let v = zeros(3)
+let r = cube(v)

@@ -1,0 +1,4 @@
+// err_elem6_253_array -- 253 for an array result: results must be scalars (LANGUAGE.md 8.5), at the fn item
+elemental fn name(x: f64) -> f64[] {
+    return [x, x]
+}

@@ -1,0 +1,51 @@
+// elem_noresult -- an elemental function without results (Decision 92, LANGUAGE.md 8.5): called with scalars, vectors,
+// matrices, empty arrays and broadcasts it is run for its errors only and prints nothing; `error` stops at
+// the first failing element in increasing linear order: w[2] = -3 (not -5), at the error call's line;
+// status 1, standard output flushed first (9.2)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+elemental fn check(x: f64) {
+    if x < 0.0 {
+        error("negative value %g", x)
+    }
+}
+elemental fn check2(x: f64, lim: f64) {
+    if x > lim {
+        error("above %g: %g", lim, x)
+    }
+}
+check(1.0)
+printf("scalar ok\n")
+check(ramp(4))
+printf("vector ok\n")
+check2(lattice(2, 3), 100.0)
+check2(lattice(2, 3).T, 100.0)
+check2(ramp(3).col, 100.0)
+printf("matrix ok\n")
+check(zeros(0))
+check2(0.5, 1.0)
+let w = [1.0, 2.0, -3.0, 4.0, -5.0]
+printf("before\n")
+check(w)
+printf("unreachable\n")

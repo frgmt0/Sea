@@ -1,0 +1,7 @@
+// err_elem6_228_ref_after -- 228 at a ref parameter of an elemental function, at the param node (its ref keyword); the signature
+// the same program with an earlier error of seacheck (the first statement, `let early: i64 = 1.5`):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+let early: i64 = 1.5
+elemental fn bump(ref x: f64) -> f64 {
+    return x
+}

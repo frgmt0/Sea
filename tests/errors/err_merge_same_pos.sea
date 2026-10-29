@@ -1,6 +1,6 @@
-// err_merge_same_pos -- two errors at one fn keyword: seaname's elemental functions is found before seacheck's missing return (DESIGN.md 2.6.2, 3.4.1 rerr)
-elemental fn f(x: f64) -> f64 {
+// err_merge_same_pos -- two errors at one fn item: seaname's 253 (a str result, found in the signature step) is found before seacheck's missing return (DESIGN.md 2.6.2, 3.4.1 rerr)
+elemental fn f(x: f64) -> str {
     if x > 0.0 {
-        return x
+        return "a"
     }
 }

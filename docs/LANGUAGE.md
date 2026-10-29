@@ -1366,9 +1366,12 @@ outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
   (§8.1): no `ref` parameters, no output, and only calls of functions without effects
   (`effects in elemental function`). Recursion is not allowed in or through an
   elemental function: no cycle of calls (direct or through other functions) may contain an
-  elemental function (`elemental function cannot be recursive`); an elemental function may call an
-  ordinary recursive function whose cycle it is not on. `error` is allowed (it stops the program at
-  the first failing element in increasing linear order).
+  elemental function (`elemental function cannot be recursive`, reported at the first call in source
+  order between two functions of the elemental function's strongly connected component of the
+  call graph: a call whose caller is the elemental function or is reached from it by calls, and
+  whose callee is the elemental function or reaches it by calls; DESIGN.md §2.11.2); an elemental
+  function may call an ordinary recursive function whose cycle it is not on. `error` is allowed (it
+  stops the program at the first failing element in increasing linear order).
 * Elemental calls are always inlined into the loop that applies them, and fuse with the
   surrounding element-wise expression (DESIGN.md §5.1).
 * All built-in scalar math functions (`sqrt`, `exp`, `log`, `cos`, `min(a, b)`, `round`, `where`,

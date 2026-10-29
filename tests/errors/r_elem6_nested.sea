@@ -1,0 +1,12 @@
+// r_elem6_nested -- an error in an elemental function called by another elemental function is at the inner function's line
+// (LANGUAGE.md 8.5; DESIGN.md 3.6.4 "Sites"); element 1 of [1, 3] fails
+elemental fn inner(x: f64) -> f64 {
+    if x > 2.0 {
+        error("inner %g", x)
+    }
+    return x
+}
+elemental fn outer(x: f64) -> f64 {
+    return inner(x) + 1.0
+}
+let r = outer([1.0, 3.0])

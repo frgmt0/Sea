@@ -1,0 +1,8 @@
+// err_elem6_232_mutual -- 232 for a cycle through an elemental function, mutual: the ordinary function b calls the elemental a, and
+// a calls b; the first call in source order on the cycle is b's call of a (DESIGN.md 2.11.2 L-cq)
+fn b(x: f64) -> f64 {
+    return a(x - 1.0)
+}
+elemental fn a(x: f64) -> f64 {
+    return b(x)
+}

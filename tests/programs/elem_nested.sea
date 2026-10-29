@@ -1,0 +1,84 @@
+// elem_nested -- nested elemental calls and an elemental function calling another elemental function or an ordinary
+// function (LANGUAGE.md 8.5): sq(sq(v)), an elemental call as the argument of another with vectors, with
+// .col and .row, with matrices; every call inlined into one loop, results unchanged
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn f2(x: f64, y: f64) -> f64 {
+    return x * 10.0 + y
+}
+fn poly(x: f64) -> f64 {
+    return x * x * x - x
+}
+elemental fn hyp2(x: f64, y: f64) -> f64 {
+    return sqrt(sq(x) + sq(y))
+}
+elemental fn twice(x: f64) -> f64 {
+    return sq(sq(x))
+}
+elemental fn with_ord(x: f64) -> f64 {
+    return poly(x) + f2(x, 1.0)
+}
+elemental fn tri(i: i64) -> i64 {
+    return idiv(i * (i + 1), 2)
+}
+elemental fn tri_sq(i: i64) -> i64 {
+    return tri(i) * tri(i)
+}
+let v = ramp(5)
+pv(sq(sq(v)))
+pv(twice(v))
+let w = ramp(5) * 3.0
+pv(f2(sq(v), sq(w)))
+let a = [3.0, 5.0, 8.0]
+let c = [4.0, 12.0, 15.0]
+pv(hyp2(a, c))
+pv(hyp2([3.0, 0.0, -3.0], 4.0))
+printf("%g\n", hyp2(6.0, 8.0))
+pv(with_ord(v))
+pvi(tri_sq((0..6)))
+let A = lattice(2, 3)
+pm(f2(sq(A), A))
+pm(f2(sq(ramp(2).col), sq(ramp(3).row)))
+pm(sq(f2(A, A)))
+printf("%g\n", sq(sq(sq(2.0))))

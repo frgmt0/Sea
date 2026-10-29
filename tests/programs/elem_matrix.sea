@@ -1,0 +1,51 @@
+// elem_matrix -- an elemental function applied to matrices (LANGUAGE.md 8.5, 6.3): one, two and three matrix arguments,
+// a scalar on either side, a transposed view, a slice of a matrix, a 1 x 1 matrix, a reduction of a bool
+// matrix result; results are matrices of the broadcast shape
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn f2(x: f64, y: f64) -> f64 {
+    return x * 10.0 + y
+}
+elemental fn axpy(a: f64, x: f64, y: f64) -> f64 {
+    return a * x + y
+}
+elemental fn positive(x: f64) -> bool {
+    return x > 0.0
+}
+let A = lattice(3, 4)
+pm(sq(A))
+pm(f2(A, A))
+pm(f2(A, 2.0))
+pm(f2(0.5, A))
+let B = lattice(3, 4) * 0.5
+pm(f2(A, B))
+pm(axpy(A, B, 1.0))
+pm(axpy(2.0, A, B))
+pm(sq(A.T))
+let C = lattice(4, 3)
+pm(f2(A.T, C))
+pm(f2(A[1..3, 1..4], 1.0))
+let one = ones(1, 1)
+pm(f2(one, one))
+let mask = positive(A - 5.0)
+printf("%d\n", any(mask.flat))

@@ -17,12 +17,16 @@
 80 REM    overflow stays for run time), cvt of an i64 constant (FEFRI, ties to even). A folded
 85 REM    subtree is one ci/cf at its root's position. Never folded: comparisons, logic, %, pow,
 90 REM    i64 division, anything transcendental, conversion to i64.
-95 REM  5 reachability from .main through call records; functions renumbered densely in their
-100 REM    old order; types renumbered by first reference (3.5.1); unreferenced types dropped
-105 REM Steps 3 (elemental instantiation) and 4 (write_json expansion) belong to later phases
-110 REM (DESIGN 8, phase 6): pass 2a rejects elemental functions and write_json as not supported
-115 REM yet, so no emap, elem function or lib write_json can reach this pass in phase 1. Such a
-120 REM record is reported as an internal error (BAD_RECORD), never passed on.
+92 REM  3 (6c) elemental instantiation, at #end over every function in file order (5340): a call of an
+93 REM    elem function with an array argument at an elemental (f64 i64 bool) parameter becomes an emap of
+94 REM    the instance of its argument types (3.5.3), same position, type, arguments; G12 (2.11.3) checks
+95 REM    its count and types against the parameters, and (implementer reading) its type against the results
+96 REM  5 reachability from .main through call records and the instances of emap records; functions and
+97 REM    instances renumbered densely in their old order; types renumbered by first reference (3.5.1:
+98 REM    the inst records first, then the functions); unreferenced types dropped
+105 REM Step 4 (write_json expansion) belongs to sub-phase 6d (DESIGN 2.11.2): pass 2a rejects write_json
+110 REM until then, so no lib write_json can reach this pass. Such a record is reported as an internal
+115 REM error (BAD_RECORD), never passed on. The fn kinds elem (6c) and inl (6b) are kept unchanged.
 121 REM Phase 4d (G12, 3.5.7): array type records (element a scalar, str or struct; fixed extents fit LIM_FIXED_ELEMS),
 122 REM idx (n = rank of the base, or 1 for a bool-matrix mask; index kinds of LANGUAGE 5.2), dol (claimed by the idx it
 123 REM sits in, dim < n; none left at a function end), fore (vector iterable, loop variable of the element type) are
@@ -39,8 +43,11 @@
 150 REM  O$ out records  M out kind(0) high32(1) low32(2) row(3): kind 1 ci 2 cf 3 call 0 other
 155 REM  S stack of subtree starts (post-order trees)  Q$ J the const pool (the leaf of cid i in row i:
 160 REM  text, M-like)  L per cid: pool rows 0-1, ty 2  T P K$ Y$ types (kind, offset, count,
-165 REM  extents; component ids; field names; struct names)  K function table (first record, last
-170 REM  record, new fid)  Y new type id  O old type id of each new id  D work stack
+165 REM  extents; component ids; field names; struct names)  K function table (elem 1 (0), first record,
+170 REM  last record, new fid)  Y new type id  O old type id of each new id  D work stack  X elemental
+172 REM  instances (fid, rty, n, the P row before its argument types, new iid); P after the type components
+173 REM  also holds each call's argument types (from X7), M(.,2) of a call the P row before them
+174 REM  (M kind 4: an emap, M(.,1) its instance)
 175 REM
 180 REM SCALARS  P$ pass name  L$ record  L0 its line  C0 its fields  I0 its row  Y0 its code
 185 REM  S0 stack depth  O0 out records  N9 cn count  S7 T7 LIM_SYMBOLS LIM_TYPES  T9 types  F6 functions  F7 inside a function
@@ -56,7 +63,7 @@
 225 DIM C(299,4), C$(299), G$(300), U(300), H$(100), V(399), A(399), B(399), A$(1)
 230 DIM M(249999,3), O$(249999), S(249999)
 235 DIM T(20010,5), P(399999), K$(399999), Y$(20010), Y(20010), D(50010,1), K(50010,3), O(20010)
-240 DIM J(49999,3), Q$(49999), L(49999,2)
+240 DIM J(49999,3), Q$(49999), L(49999,2), X(49999,4)
 245 LET P$ = "seaexpand"
 250 REM ---- the tables ---------------------------------------------------------------------
 255 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -281,8 +288,6 @@
 1285 LET D$ = "BAD_RECORD"
 1290 LET M$ = "fn ids are not 1, 2, ..."
 1295 IF U(1) <> F6 + 1 THEN 2915
-1300 LET M$ = "elemental functions are a later phase: pass 2a rejects them, so pass 2b never sees one in phase 1"
-1305 IF G$(4) = "elem" THEN 2915
 1310 LET W9$ = "symbols"
 1315 IF F6 >= S7 THEN 2925
 1320 LET F6 = F6 + 1
@@ -292,6 +297,10 @@
 1336 LET H3 = X9
 1340 LET K(F6, 1) = O0 + 1
 1345 LET K(F6, 3) = 0
+1346 REM an elemental function (kind elem) is marked for step 3 (5340)
+1347 LET K(F6, 0) = 0
+1348 IF G$(4) <> "elem" THEN 1350
+1349 LET K(F6, 0) = 1
 1350 LET K1 = 0
 1355 LET T$ = L$
 1360 GOSUB 3070
@@ -420,9 +429,11 @@
 1875 GOTO 1915
 1880 REM ---- call: kind 3, the callee in M(.,1) ------------------------------------------------------------
 1885 GOSUB 2980
+1887 GOSUB 5300
 1890 LET K1 = 3
 1895 LET T$ = L$
 1900 GOSUB 3070
+1902 LET M(O0, 2) = X2
 1905 GOSUB 3150
 1910 GOTO 1920
 1915 GOSUB 3255
@@ -505,7 +516,8 @@
 2295 LET M$ = "no function"
 2300 IF F6 < 1 THEN 2915
 2305 CALL "io_end": 1, P$, E(), E$(), E0
-2310 REM reachable functions: marked in K(.,3), worklist in D(.,0)
+2306 GOSUB 5340
+2310 REM reachable functions: marked in K(.,3), worklist in D(.,0); an emap marks its instance in X(.,4) and keeps its function
 2315 LET K(1, 3) = 1
 2320 LET D(1, 0) = 1
 2325 LET W1 = 1
@@ -513,7 +525,11 @@
 2335 LET F1 = D(W1, 0)
 2340 LET W1 = W1 - 1
 2345 FOR I2 = K(F1, 1) TO K(F1, 2)
-2350 IF M(I2, 0) <> 3 THEN 2400
+2350 IF M(I2, 0) = 3 THEN 2355
+2351 IF M(I2, 0) <> 4 THEN 2400
+2352 LET X(M(I2, 1), 4) = 1
+2353 LET W2 = X(M(I2, 1), 0)
+2354 GOTO 2380
 2355 LET W2 = M(I2, 1)
 2360 LET D$ = "BAD_TREE"
 2365 LET M$ = "call of function " & STR$(W2) & " but the file has " & STR$(F6)
@@ -532,8 +548,19 @@
 2430 LET N8 = N8 + 1
 2435 LET K(I, 3) = N8
 2440 NEXT I
-2445 REM type numbering: the first reference in the records of the kept functions (3.5.1)
+2441 REM new instance ids, dense in the old order (the kept functions' emaps marked them)
+2442 LET I3 = 0
+2443 FOR I = 1 TO X4
+2444 IF X(I, 4) = 0 THEN 2447
+2445 LET I3 = I3 + 1
+2446 LET X(I, 4) = I3
+2447 NEXT I
+2448 REM type numbering: the first reference in the inst records, then in the records of the kept functions (3.5.1)
 2450 LET N8 = 0
+2451 FOR I = 1 TO X4
+2452 IF X(I, 4) = 0 THEN 2454
+2453 GOSUB 5470
+2454 NEXT I
 2455 FOR F1 = 1 TO F6
 2460 IF K(F1, 3) = 0 THEN 2535
 2465 FOR I2 = K(F1, 1) TO K(F1, 2)
@@ -595,6 +622,10 @@
 2745 CALL "io_put": 2, "fd " & K$(T(O1, 2) + K4) & " " & STR$(W1)
 2750 NEXT K4
 2755 NEXT K5
+2756 FOR I = 1 TO X4
+2757 IF X(I, 4) = 0 THEN 2759
+2758 GOSUB 5560
+2759 NEXT I
 2760 REM the kept functions, with their new function and type ids
 2765 FOR F1 = 1 TO F6
 2770 IF K(F1, 3) = 0 THEN 2895
@@ -617,7 +648,8 @@
 2855 LET Z9$ = STR$(K(F1, 3))
 2860 GOSUB 3395
 2865 GOTO 2805
-2870 LET T1 = 4
+2870 IF M(I2, 0) = 4 THEN 5580
+2872 LET T1 = 4
 2875 LET Z9$ = STR$(K(M(I2, 1), 3))
 2880 GOSUB 3395
 2885 GOTO 2805
@@ -986,7 +1018,7 @@
 4816 GOTO 1920
 4895 REM ---- 4900: Q5 = the type id of the out node Q4 (the field its record's ty names) ----
 4900 LET Q5 = M(Q4, 3)
-4902 LET M$ = "a node of an idx or a fore has no type"
+4902 LET M$ = "a node of an idx, of a fore or a call argument has no type"
 4904 IF A(Q5) = 0 THEN 2915
 4906 LET T$ = O$(Q4)
 4908 LET T1 = A(Q5) + 1
@@ -1121,3 +1153,200 @@
 5230 IF Q6 > 6 THEN 2915
 5232 IF U(3) <> T(Q5, 3) THEN 2915
 5234 GOTO 5150
+5295 REM ---- 5300 (6c): the argument types of the call being read into P(X2 + 1 ... X2 + n), past the type components (X7 the top) ----
+5300 IF X7 >= P9 THEN 5304
+5302 LET X7 = P9
+5304 LET X2 = X7
+5306 LET W9$ = "nodes"
+5308 IF X7 + U(4) > 399999 THEN 2925
+5310 FOR X3 = 1 TO U(4)
+5312 REM argument X3's root: the record before argument X3 + 1 starts; the last one's is the newest record
+5314 LET Q4 = O0
+5316 IF X3 >= U(4) THEN 5320
+5318 LET Q4 = S(S0 + 1 + X3) - 1
+5320 GOSUB 4900
+5322 LET P(X7 + X3) = Q5
+5324 NEXT X3
+5326 LET X7 = X7 + U(4)
+5328 RETURN
+5335 REM ---- 5340 (6c, step 3 of 3.5.7): every call, in file order, of an elem function with an array argument at an elemental
+5336 REM parameter (f64 i64 bool, LANGUAGE 8.5) becomes an emap: M kind 4, M(.,1) its instance (X: fid, rty, n, P row, new id;
+5337 REM X4 instances), shared by equal fid and argument types (3.5.3); G12 (2.11.3): count, argument and result types ----
+5340 LET X4 = 0
+5342 FOR F1 = 1 TO F6
+5344 FOR I2 = K(F1, 1) TO K(F1, 2)
+5346 IF M(I2, 0) <> 3 THEN 5456
+5348 LET W2 = M(I2, 1)
+5350 LET D$ = "BAD_TREE"
+5352 LET M$ = "call of function " & STR$(W2) & " but the file has " & STR$(F6)
+5354 IF W2 < 1 THEN 2915
+5356 IF W2 > F6 THEN 2915
+5358 IF K(W2, 0) = 0 THEN 5456
+5360 LET H5 = W2
+5362 REM H5 the callee (3345 takes W2); G5 G6 the call's n and ty, G8 the P row before its argument types; G9 the callee's fn record, G7 its np, H7 its rty
+5364 LET T$ = O$(I2)
+5366 LET T1 = 5
+5368 GOSUB 3345
+5370 LET G5 = VAL(Z$)
+5372 LET T1 = 3
+5374 GOSUB 3345
+5376 LET G6 = VAL(Z$)
+5378 LET G8 = M(I2, 2)
+5380 LET G9 = K(H5, 1)
+5382 LET T$ = O$(G9)
+5384 LET T1 = 6
+5386 GOSUB 3345
+5388 LET G7 = VAL(Z$)
+5390 LET T1 = 5
+5392 GOSUB 3345
+5394 LET H7 = VAL(Z$)
+5396 REM G1 = 1 when an argument at an elemental parameter is an array; else the call stays an ordinary call
+5398 LET G1 = 0
+5400 FOR G2 = 1 TO G5
+5401 IF G2 > G7 THEN 5410
+5402 LET Q5 = P(G8 + G2)
+5403 GOSUB 4950
+5404 IF Q6 = 0 THEN 5410
+5405 IF Q6 > 4 THEN 5410
+5406 GOSUB 5460
+5407 IF H4 < 2 THEN 5410
+5408 IF H4 > 4 THEN 5410
+5409 LET G1 = 1
+5410 NEXT G2
+5412 IF G1 = 0 THEN 5456
+5414 LET D$ = "BAD_RECORD"
+5416 LET M$ = "an elemental call with array arguments whose argument count is not its function's parameter count"
+5418 IF G5 <> G7 THEN 2915
+5420 REM each argument against its parameter: a val parameter; uniform exactly its type, elemental the scalar or an array of it
+5421 REM (G3 the rank shared by the array arguments, LANGUAGE 6.3: a vector with a matrix is pass 2a's 202)
+5422 LET G3 = 0
+5424 FOR G2 = 1 TO G5
+5426 LET M$ = "an elemental call's argument does not fit its parameter (elemental: the scalar or an array of it; uniform: its type)"
+5427 LET I1$ = M$
+5428 GOSUB 5460
+5430 IF Z$ <> "val" THEN 2915
+5432 LET Q5 = P(G8 + G2)
+5434 IF Q5 = H4 THEN 5444
+5436 IF H4 < 2 THEN 2915
+5438 IF H4 > 4 THEN 2915
+5440 LET H8 = H4
+5442 GOSUB 5483
+5444 NEXT G2
+5446 LET M$ = "the type of an elemental call with array arguments does not correspond to its function's results"
+5448 GOSUB 5500
+5450 GOSUB 5600
+5456 NEXT I2
+5457 NEXT F1
+5458 RETURN
+5459 REM ---- 5460: H4 = the type of parameter G2 of the callee (fn record G9), Z$ its mode ----
+5460 LET T$ = O$(G9 + G2)
+5462 LET T1 = 3
+5464 GOSUB 3345
+5466 LET H4 = VAL(Z$)
+5467 LET T1 = 4
+5468 GOSUB 3345
+5469 RETURN
+5470 REM ---- 5470: number the types of instance I (rty, then its argument types) not yet numbered (3435) ----
+5471 LET W3 = X(I, 1)
+5472 GOSUB 5477
+5473 FOR G2 = 1 TO X(I, 2)
+5474 LET W3 = P(X(I, 3) + G2)
+5475 GOSUB 5477
+5476 NEXT G2
+5477 IF W3 < 10 THEN 5482
+5478 LET D$ = "BAD_TREE"
+5479 LET M$ = "type " & STR$(W3) & " is not in the type table"
+5480 IF W3 > 9 + T9 THEN 2915
+5481 IF Y(W3) = 0 THEN 3435
+5482 RETURN
+5483 REM ---- 5483: type Q5 is an array (fixed-size or dynamic) of element type H8 and of the rank G3 (set by the first; I1$ the message) ----
+5484 GOSUB 4950
+5485 LET M$ = I1$
+5486 IF Q6 = 0 THEN 2915
+5487 IF Q6 > 4 THEN 2915
+5488 IF Q7 <> H8 THEN 2915
+5489 LET H6 = Q6 - 2 * INT((Q6 - 1) / 2)
+5490 IF G3 > 0 THEN 5492
+5491 LET G3 = H6
+5492 IF H6 <> G3 THEN 2915
+5493 RETURN
+5499 REM ---- 5500 (implementer reading of 3.5.3's rty): the call's type G6 is void for no result (Decision 92), else each result as an array ----
+5500 LET I1$ = M$
+5502 IF H7 <> 1 THEN 5508
+5504 IF G6 <> 1 THEN 2915
+5506 RETURN
+5508 IF H7 < 2 THEN 2915
+5510 IF H7 > 4 THEN 5518
+5512 LET H8 = H7
+5514 LET Q5 = G6
+5516 GOTO 5483
+5518 LET Q5 = H7
+5520 GOSUB 4950
+5522 LET M$ = I1$
+5524 IF Q6 <> 7 THEN 2915
+5526 LET Q5 = G6
+5528 GOSUB 4950
+5530 LET M$ = I1$
+5532 IF Q6 <> 7 THEN 2915
+5534 IF T(G6, 3) <> T(H7, 3) THEN 2915
+5536 FOR G4 = 0 TO T(H7, 3) - 1
+5538 LET H8 = P(T(H7, 2) + G4)
+5540 IF H8 < 2 THEN 2915
+5542 IF H8 > 4 THEN 2915
+5544 LET Q5 = P(T(G6, 2) + G4)
+5546 GOSUB 5483
+5548 NEXT G4
+5550 RETURN
+5559 REM ---- 5560: the inst record of instance I, with its new instance, function and type ids (3.5.3) ----
+5560 LET W1 = X(I, 1)
+5562 GOSUB 3415
+5564 LET T$ = "inst " & STR$(X(I, 4)) & " " & STR$(K(X(I, 0), 3)) & " " & STR$(W1) & " " & STR$(X(I, 2))
+5566 FOR G2 = 1 TO X(I, 2)
+5568 LET W1 = P(X(I, 3) + G2)
+5570 GOSUB 3415
+5572 LET T$ = T$ & " " & STR$(W1)
+5574 NEXT G2
+5576 CALL "io_put": 2, T$
+5578 RETURN
+5579 REM ---- 5580: an emap (M kind 4): the call record T$ written as emap with its instance's new id in place of the fid ----
+5580 LET T$ = "emap" & SEG$(T$, 5, LEN(T$))
+5582 LET T1 = 4
+5584 LET Z9$ = STR$(X(M(I2, 1), 4))
+5586 GOSUB 3395
+5588 GOTO 2805
+5599 REM ---- 5600: the instance of call I2 (function H5, n G5, argument types after P row G8, type G6): an equal one, else a new one ----
+5600 LET H9 = 0
+5602 FOR G2 = 1 TO X4
+5604 IF H9 > 0 THEN 5620
+5606 IF X(G2, 0) <> H5 THEN 5620
+5608 LET I1 = 1
+5610 FOR G4 = 1 TO G5
+5612 IF P(X(G2, 3) + G4) = P(G8 + G4) THEN 5616
+5614 LET I1 = 0
+5616 NEXT G4
+5618 IF I1 = 0 THEN 5620
+5619 LET H9 = G2
+5620 NEXT G2
+5622 IF H9 = 0 THEN 5630
+5624 LET M$ = "two applications of an elemental function with the same argument types and different types"
+5626 IF X(H9, 1) <> G6 THEN 2915
+5628 GOTO 5660
+5630 LET X4 = X4 + 1
+5632 IF X4 <= S7 THEN 5646
+5634 REM more instances than LIM_SYMBOLS: program too large, at the call
+5636 LET W9$ = "symbols"
+5638 LET T$ = O$(I2)
+5640 LET T1 = 2
+5642 GOSUB 3345
+5643 LET Z8$ = Z$
+5644 LET Z7 = 1
+5645 GOTO 2925
+5646 LET X(X4, 0) = H5
+5648 LET X(X4, 1) = G6
+5650 LET X(X4, 2) = G5
+5652 LET X(X4, 3) = G8
+5654 LET X(X4, 4) = 0
+5656 LET H9 = X4
+5660 LET M(I2, 0) = 4
+5662 LET M(I2, 1) = H9
+5664 RETURN

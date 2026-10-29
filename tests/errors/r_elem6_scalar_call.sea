@@ -1,0 +1,10 @@
+// r_elem6_scalar_call -- a scalar call of an elemental function is an ordinary call: the error is at the callee's line (LANGUAGE.md
+// 8.5, 9.3)
+elemental fn gate(x: f64) -> f64 {
+    if x > 2.5 {
+        error("too large: %g", x)
+    }
+    return x
+}
+printf("%g\n", gate(1.0))
+printf("%g\n", gate(3.5))

@@ -1,0 +1,6 @@
+// err_elem6_217_matrix -- 217 for fixed-size matrices of 2 x 2 and 2 x 3: per dimension 2 = 2 and 2 vs 3 (neither is 1), at the call
+// (LANGUAGE.md 6.3)
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let w = add([1.0, 2.0; 3.0, 4.0], [1.0, 2.0, 3.0; 4.0, 5.0, 6.0])

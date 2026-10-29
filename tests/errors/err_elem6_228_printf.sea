@@ -1,0 +1,6 @@
+// err_elem6_228_printf -- 228 at a printf inside an elemental body: the call that has effects (LANGUAGE.md 8.1, 8.5; DESIGN.md
+// 2.11.2 L-cq, the call pre-pass of seaname)
+elemental fn noisy(x: f64) -> f64 {
+    printf("%g\n", x)
+    return x
+}

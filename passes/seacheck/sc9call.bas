@@ -74,7 +74,7 @@
 23825 REM to the parameter's type (cv); a parameter already given is 225 at the narg, only for a value
 23830 REM without an error (its own, M(narg,3) > M(first node,3), or of cv), as in 4f; then the call:
 23835 REM a parameter neither given nor with a default is 226 at the call (not after a 224 in it: the
-23837 REM unknown name may be the parameter meant, implementer reading), and a ref argument must not
+23837 REM unknown name may be the parameter meant, implementer reading), an elemental call's broadcast (ebc), and a ref argument must not
 23840 REM share its root with another argument (LANGUAGE 8.3). Writing (em_uarg): a call with a named or
 23845 REM an omitted argument has its callee jump to the call (M(callee,8) = -J); when the source order
 23850 REM of its arguments differs from their parameter order (L-cp), M(J,9) = 1 + the number of values
@@ -85,6 +85,7 @@
 23875 DIM Q(64), G(64)
 23880 LET H = N(J, 1)
 23885 LET P0 = Y(R, 6)
+23888 LET X(42) = R
 23890 LET M(J, 1) = 1
 23895 IF Y(R, 7) = 0 THEN 23905
 23900 LET M(J, 1) = Y(R, 2)
@@ -136,7 +137,7 @@
 24110 CALL "er": N(), X(), X$(), V, "REF_NEEDED", S$(N(P, 6)), "", "", 1
 24115 CALL "fin": N(), M(), C(), X(), X$(), V
 24117 GOTO 24125
-24120 CALL "cv": N(), M(), T(), C(), X(), X$(), V, M(P, 1)
+24120 CALL "ecv": N(), M(), Y(), T(), C(), X(), X$(), V, M(P, 1)
 24125 IF G(K) = 0 THEN 24137
 24127 IF X(9) > E1 THEN 24145
 24130 IF M(A, 3) > M(M(V, 0), 3) THEN 24145
@@ -156,8 +157,10 @@
 24180 IF N(Q(K), 2) = 1 THEN 24195
 24182 IF Z6 = 1 THEN 24195
 24185 CALL "er": N(), X(), X$(), J, "MISSING_ARG", "", "", "", 0
-24190 GOTO 24200
+24190 GOTO 24197
 24195 NEXT K
+24197 IF Y(R, 4) <> 1 THEN 24200
+24198 CALL "ebc": N(), M(), Y(), T(), X(), X$(), J, R, Q(), G()
 24200 REM a ref argument must not share its root variable with another argument (LANGUAGE 8.3)
 24205 LET A = N(N(J, 7), 8)
 24210 FOR I = 1 TO H
@@ -207,7 +210,7 @@
 24395 IF K <> 37 THEN 24410
 24400 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", S$(N(P, 6)), "", "", 1
 24405 GOTO 24530
-24410 CALL "cv": N(), M(), T(), C(), X(), X$(), A, D
+24410 CALL "ecv": N(), M(), Y(), T(), C(), X(), X$(), A, D
 24415 GOTO 24530
 24420 IF K = 37 THEN 24435
 24425 CALL "er": N(), X(), X$(), A, "REF_NEEDED", S$(N(P, 6)), "", "", 1
@@ -410,3 +413,67 @@
 25230 CALL "pos": N(), J, P$
 25235 CALL "wr": X(), "bind " & P$ & " " & STR$(X(40) + M(J, 6))
 25240 SUBEND
+25245 REM ---- ecv: argument I for parameter type D of a call of Sea function X(42) (set by ck_ucall),
+25250 REM as cv stores it (LANGUAGE 8.5, 4.2; DESIGN 2.11.2 "Elemental calls"): to an elemental
+25255 REM parameter (f64, i64 or bool) of an elemental function an array converts element by element
+25260 REM and keeps its shape: cv to the array of its shape with element type D (an i64 array to f64
+25265 REM by an element-wise cvt, an untyped literal by rtf); other elements are 201 at the argument,
+25270 REM the parameter's type expected (implementer reading) ------------------------------------
+25275 SUB "ecv": N(), M(), Y(), T(), C(), X(), X$(), I, D
+25280 LET D1 = D
+25285 IF Y(X(42), 4) <> 1 THEN 25340
+25290 IF ABS(D - 3) > 1 THEN 25340
+25295 IF M(I, 4) = 5 THEN 25340
+25300 CALL "elt": T(), M(I, 1), E, K
+25305 IF K = 0 THEN 25340
+25310 IF E = D THEN 25335
+25315 IF E * 10 + D = 34 THEN 25335
+25320 CALL "tyn": T(), D, A$
+25325 CALL "tyn": T(), M(I, 1), B$
+25330 CALL "er": N(), X(), X$(), I, "TYPE_MISMATCH", A$, B$, "", 2
+25332 GOTO 25345
+25335 CALL "trel": T(), N(), X(), X$(), M(I, 1), D, D1
+25340 CALL "cv": N(), M(), T(), C(), X(), X$(), I, D1
+25345 SUBEND
+25350 REM ---- ebc: call J of elemental function R (LANGUAGE 8.5, 6.3; DESIGN 2.11.2 "Elemental calls",
+25355 REM 3.5.5 "Static shapes"): the arguments G(k) of its elemental parameters Q(k) (by value, f64,
+25360 REM i64 or bool; 0 for a default, a scalar) join one broadcast in parameter order, scalars skipped
+25365 REM (bcs; the order of L19's run-time checks): with no array it is an ordinary call; a vector
+25370 REM with a matrix is 202, a static mismatch 217, both at the call; else the result type (M(J,1)) as
+25375 REM the array of the broadcast shape, fixed-size exactly when every array argument is (bres), a
+25380 REM tuple of such arrays for several results, void for none. An argument of the error type leaves
+25385 REM the call's type an error, its shape unknown ------------------------------------------------
+25390 SUB "ebc": N(), M(), Y(), T(), X(), X$(), J, R, Q(), G()
+25395 DIM Z(4), U(64)
+25400 LET Z(1) = 0
+25405 LET Z(4) = 1
+25410 FOR K = 1 TO Y(R, 6)
+25415 LET A = G(K)
+25420 IF A = 0 THEN 25465
+25425 IF N(A, 0) <> 36 THEN 25435
+25430 LET A = N(A, 7)
+25435 IF N(Q(K), 1) = 1 THEN 25465
+25440 IF ABS(M(Q(K), 1) - 3) > 1 THEN 25465
+25445 IF M(A, 1) = 0 THEN 25545
+25450 CALL "bcs": T(), Z(), M(A, 1), E, A$, B$
+25455 IF E = 1 THEN 25535
+25460 IF E = 2 THEN 25540
+25465 NEXT K
+25470 IF Z(1) = 0 THEN 25550
+25475 LET D = M(J, 1)
+25480 IF D < 2 THEN 25550
+25485 IF D < 10 THEN 25525
+25490 IF T(D, 0) <> 7 THEN 25525
+25495 REM several results: the tuple of their arrays
+25500 FOR I = 1 TO T(D, 1)
+25505 CALL "bres": T(), N(), X(), X$(), Z(), T(D + 1 + INT((I - 1) / 9), I - 1 - 9 * INT((I - 1) / 9)), U(I)
+25510 NEXT I
+25515 CALL "ttup": T(), N(), X(), X$(), U(), T(D, 1), M(J, 1)
+25520 GOTO 25550
+25525 CALL "bres": T(), N(), X(), X$(), Z(), D, M(J, 1)
+25530 GOTO 25550
+25535 CALL "er": N(), X(), X$(), J, "VEC_MAT", "", "", "", 0
+25537 GOTO 25545
+25540 CALL "er": N(), X(), X$(), J, "SHAPE_MISMATCH_C", A$, B$, "", 2
+25545 LET M(J, 1) = 0
+25550 SUBEND

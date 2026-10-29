@@ -1,0 +1,8 @@
+// r_elem6_shape_matrices -- dynamic 3 x 4 and 3 x 5 matrices: per dimension 3 = 3 and 4 vs 5 (neither is 1), shape mismatch 3x4 vs 3x5
+// at the call's line (LANGUAGE.md 6.3)
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let A = zeros(3, 4)
+let B = zeros(3, 5)
+let r = add(A, B)

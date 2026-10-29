@@ -1,0 +1,52 @@
+// elem_empty -- empty arrays run no element (LANGUAGE.md 8.5, 6.3, 5.1): every body here raises an error at once, so the
+// program printing its results' shapes shows no call ran; 0-element vectors, 0 x 3 and 3 x 0 matrices, 0 x 1
+// with 1 x 3 broadcast to 0 x 3 (6.3: `0x3` with `1x3` is `0x3`), empty ranges, results bound to `_`, call
+// statements, a function without results (DESIGN.md 2.11.4 L19: an empty broadcast shape runs no element)
+elemental fn boom(x: f64) -> f64 {
+    if x < 100.0 {
+        error("boom %g", x)
+    }
+    return x
+}
+elemental fn boom2(x: f64, y: f64) -> (f64, f64) {
+    if x < 100.0 {
+        error("boom2 %g %g", x, y)
+    }
+    return (x, y)
+}
+elemental fn chk(x: f64) {
+    if x < 100.0 {
+        error("chk %g", x)
+    }
+}
+elemental fn tri(i: i64) -> i64 {
+    if i >= 0 {
+        error("tri %d", i)
+    }
+    return i
+}
+let e = zeros(0)
+printf("%d\n", len(boom(e)))
+boom(e)
+chk(e)
+let M0 = zeros(0, 3)
+let R0 = boom(M0)
+printf("%dx%d\n", rows(R0), cols(R0))
+chk(M0)
+let (R1, _) = boom2(M0, ones(1, 3))
+printf("%dx%d\n", rows(R1), cols(R1))
+let (r1a, r1b) = boom2(M0, ones(1, 3))
+printf("%dx%d %dx%d\n", rows(r1a), cols(r1a), rows(r1b), cols(r1b))
+let (r2a, r2b) = boom2(e.col, ones(3).row)
+printf("%dx%d %dx%d\n", rows(r2a), cols(r2a), rows(r2b), cols(r2b))
+let (r3a, _) = boom2(zeros(3, 0), ones(3, 1))
+printf("%dx%d\n", rows(r3a), cols(r3a))
+let (p, q) = boom2(e, e)
+printf("%d %d\n", len(p), len(q))
+let (p2, _) = boom2(e, 1.0)
+printf("%d\n", len(p2))
+printf("%d\n", len(tri((0..0))))
+printf("%d\n", len(tri((5..2))))
+let (_, _) = boom2(e, e)
+boom2(M0, ones(1, 3))
+printf("end\n")

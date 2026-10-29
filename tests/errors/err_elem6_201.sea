@@ -1,0 +1,5 @@
+// err_elem6_201 -- 201 at an argument: a str for an elemental f64 parameter (LANGUAGE.md 4.2, 8.5), at the argument
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+let r = sq("abc")

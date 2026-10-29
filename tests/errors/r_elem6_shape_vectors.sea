@@ -1,0 +1,10 @@
+// r_elem6_shape_vectors -- two dynamic vector arguments of 3 and 4 elements: shape mismatch 3 vs 4 at the call's line (LANGUAGE.md
+// 6.3, 8.5)
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let x = zeros(3)
+let y = zeros(4)
+printf("start\n")
+let r = add(x, y)
+printf("unreachable\n")

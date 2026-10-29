@@ -1,0 +1,5 @@
+// err_elem6_253_str -- 253 at the fn item (its first token, `elemental`) for a str result (LANGUAGE.md 8.5; DESIGN.md 2.11.2
+// L-cq: the signature step)
+elemental fn name(x: f64) -> str {
+    return "a"
+}

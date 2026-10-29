@@ -1,0 +1,8 @@
+// err_elem6_202 -- 202 for a vector and a matrix elemental argument, at the call (LANGUAGE.md 6.3, 8.5; DESIGN.md 2.11.2
+// "Elemental calls")
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let v = zeros(3)
+let A = zeros(3, 3)
+let w = add(v, A)

@@ -1,0 +1,42 @@
+// ind2sub_arr_scalar_k -- ind2sub with an array r and a scalar k (LANGUAGE.md 10.7: (k % r, idiv(k, r)), elemental; DESIGN.md 2.11.4
+// L-cl): a fixed vector, a dynamic vector, a range value, a matrix r, negative and zero k (floored, 6.6),
+// a result bound to `_`, an empty r
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let r = [3, 4, 5]
+let (i, j) = ind2sub(r, 7)
+pvi(i)
+pvi(j)
+let (a, c) = ind2sub(r, -1)
+pvi(a)
+pvi(c)
+let rs = filled(3, 4)
+let (i2, j2) = ind2sub(rs, 10)
+pvi(i2)
+pvi(j2)
+let (i3, _) = ind2sub(r, 0)
+pvi(i3)
+let (_, j3) = ind2sub((2..6), 11)
+pvi(j3)
+let R = [3, 4; 5, 6]
+let (Ri, Rj) = ind2sub(R, 17)
+pmi(Ri)
+pmi(Rj)
+let (_, _) = ind2sub(r, 7)
+let (e1, e2) = ind2sub(filled(3, 0), 5)
+printf("%d %d\n", len(e1), len(e2))

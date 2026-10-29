@@ -115,7 +115,7 @@
 20222 IF R4 = 1 THEN 20230
 20224 LET S$ = "L R,L C,anew P %0 0 2,= Q"
 20230 LET K8 = 0
-20232 GOSUB 9000
+20232 GOSUB 55900
 20234 IF R4 = 1 THEN 20244
 20235 REM (4) the strides of the matrix operands
 20236 FOR K8 = 1 TO N4
@@ -127,7 +127,7 @@
 20243 REM (5) the data of the result and of the array operands, (6) the loop nest and its body
 20244 LET K8 = 0
 20245 LET S$ = "D Q,= D"
-20246 GOSUB 9000
+20246 GOSUB 55950
 20247 FOR K8 = 1 TO N4
 20248 IF V(100 + 25 * K8 + 6) = 0 THEN 20251
 20249 LET S$ = "D a,= x"
@@ -137,7 +137,7 @@
 20253 LET S$ = "( G K"
 20254 IF R4 = 1 THEN 20256
 20255 LET S$ = "( C L,( R K"
-20256 GOSUB 9000
+20256 GOTO 55966
 20257 FOR K8 = 1 TO N4
 20258 LET Q0 = 100 + 25 * K8
 20259 LET S$ = "L a"

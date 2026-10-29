@@ -1,0 +1,68 @@
+// elem_calls_recursive -- an elemental function may call an ordinary recursive function whose cycle it is not on (LANGUAGE.md 8.5
+// as amended): factorial and Fibonacci (direct recursion), an even/odd pair (mutual recursion), called with
+// scalars and with arrays; the recursive functions stay calls (8.6), the elemental one is inlined
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn fact(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    return n * fact(n - 1)
+}
+fn fib(n: i64) -> i64 {
+    if n < 2 {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+fn is_even(n: i64) -> bool {
+    if n == 0 {
+        return true
+    }
+    return is_odd(n - 1)
+}
+fn is_odd(n: i64) -> bool {
+    if n == 0 {
+        return false
+    }
+    return is_even(n - 1)
+}
+elemental fn fact_f(n: i64) -> f64 {
+    return f64(fact(n))
+}
+elemental fn mixrec(n: i64, k: i64) -> i64 {
+    return fib(n) + fact(k)
+}
+elemental fn fibsq(n: i64) -> i64 {
+    let f = fib(n)
+    return f * f
+}
+elemental fn parity(n: i64) -> bool {
+    return is_even(n)
+}
+pv(fact_f((0..7)))
+pvi(mixrec((0..6), 3))
+pvi(mixrec(10, (0..4)))
+printf("%d\n", fibsq(10))
+pvi(fibsq((1..8)))
+printf("%d %d\n", parity(10), parity(7))
+pvb(parity((0..6)))

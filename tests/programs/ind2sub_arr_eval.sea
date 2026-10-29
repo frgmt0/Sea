@@ -1,0 +1,6 @@
+// ind2sub_arr_eval -- ind2sub with an array r used as a call statement (LANGUAGE.md 7.1, 10.7; DESIGN.md 2.11.4 L19 "under an eval
+// every result is discarded", L-cl): no effect and no output but the line after it
+let r = [3, 4, 5]
+let k = [7, 10, 24]
+ind2sub(r, k)
+printf("ok\n")

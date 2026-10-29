@@ -1,0 +1,11 @@
+// r_elem6_discard_all_error -- an elemental call whose every result is discarded still runs for its errors (DESIGN.md 2.11.4 L19 step 3,
+// Decision 84): the first failing element, 2, at the error call's line
+elemental fn two(x: f64) -> (f64, f64) {
+    if x > 1.5 {
+        error("two %g", x)
+    }
+    return (x, x)
+}
+printf("start\n")
+let (_, _) = two([1.0, 2.0, 3.0])
+printf("unreachable\n")

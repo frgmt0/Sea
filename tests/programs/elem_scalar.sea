@@ -1,0 +1,44 @@
+// elem_scalar -- elemental functions called with scalars are ordinary calls (LANGUAGE.md 8.5): f64, i64 and bool
+// parameters and results, an untyped literal and an i64 variable for an f64 parameter, floored idiv and %
+// of a two-result function (LANGUAGE.md 6.6, 8.4)
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn clampi(x: i64, lo: i64, hi: i64) -> i64 {
+    if x < lo {
+        return lo
+    }
+    if x > hi {
+        return hi
+    }
+    return x
+}
+elemental fn positive(x: f64) -> bool {
+    return x > 0.0
+}
+elemental fn divmod(a: i64, b: i64) -> (i64, i64) {
+    return (idiv(a, b), a % b)
+}
+elemental fn mix(a: f64, n: i64, flag: bool) -> f64 {
+    if flag {
+        return a * f64(n)
+    }
+    return a + f64(n)
+}
+printf("%g\n", sq(3.0))
+printf("%g\n", sq(-1.5))
+printf("%g\n", sq(4))
+let n = 7
+printf("%g\n", sq(n))
+printf("%g\n", sq(2.0) + sq(3.0))
+printf("%d %d %d\n", clampi(-5, 0, 10), clampi(15, 0, 10), clampi(7, 0, 10))
+printf("%d %d %d\n", positive(2.5), positive(-2.0), positive(0.0))
+let (q0, r0) = divmod(17, 5)
+printf("%d %d\n", q0, r0)
+let (q1, r1) = divmod(-17, 5)
+printf("%d %d\n", q1, r1)
+let (q2, r2) = divmod(17, -5)
+printf("%d %d\n", q2, r2)
+let (q3, r3) = divmod(-17, -5)
+printf("%d %d\n", q3, r3)
+printf("%g %g\n", mix(1.5, 4, true), mix(1.5, 4, false))

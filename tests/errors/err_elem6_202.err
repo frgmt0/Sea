@@ -1,0 +1,1 @@
+err_elem6_202.sea:8:9: error: cannot combine a vector with a matrix: use .col or .row

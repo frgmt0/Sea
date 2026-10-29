@@ -1,0 +1,8 @@
+// err_elem6_228_printf_after -- 228 at a printf inside an elemental body: the call that has effects (LANGUAGE.md 8.1, 8.5; DESIGN.md
+// the same program with an earlier error of seacheck (the first statement, `let early: i64 = 1.5`):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+let early: i64 = 1.5
+elemental fn noisy(x: f64) -> f64 {
+    printf("%g\n", x)
+    return x
+}

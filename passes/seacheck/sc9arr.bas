@@ -617,16 +617,11 @@
 19138 LET R = M(A, 1)
 19140 SUBEND
 19145 REM ---- lbc: the elemental library call J (class Z, scalar result type D) with the argument
-19150 REM types U(1..H) and ranks K(1..H): with an array argument the broadcast of its arguments (202,
-19155 REM 217 at the call) of element type D; ind2sub with an array first argument is the phase-rule
-19160 REM word ind2sub (Decision 33), with an array k two arrays of k's shape --------------------------
-19165 SUB "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), K(), H
+19150 REM types U(1..H): with an array argument the broadcast of its arguments (202,
+19155 REM 217 at the call) of element type D; ind2sub (from phase 6 also with an array r, L-cl) gives
+19160 REM two i64 arrays of the broadcast shape of r and k ------------------------------------------
+19165 SUB "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), H
 19170 DIM G(4), V(2)
-19175 IF Z <> 9 THEN 19190
-19180 IF K(1) = 0 THEN 19190
-19182 LET D = 0
-19185 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "ind2sub", "", "", 1
-19187 GOTO 19300
 19190 LET G(1) = 0
 19195 LET G(4) = 1
 19200 FOR I = 1 TO H

@@ -1,7 +1,6 @@
 #sea 1
 #target arm64-macos
 #file res6_class.sea
-rerr 0:5:1 259 1 elemental%20functions
 rtype 0:5:20 f64 s 0 4
 param 0:5:17 x 0 0
 rtype 0:5:28 f64 s 0 4

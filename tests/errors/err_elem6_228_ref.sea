@@ -1,0 +1,5 @@
+// err_elem6_228_ref -- 228 at a ref parameter of an elemental function, at the param node (its ref keyword); the signature
+// step of seaname (LANGUAGE.md 8.1, 8.5; DESIGN.md 2.11.2 L-cq)
+elemental fn bump(ref x: f64) -> f64 {
+    return x
+}

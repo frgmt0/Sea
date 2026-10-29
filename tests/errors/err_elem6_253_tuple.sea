@@ -1,0 +1,4 @@
+// err_elem6_253_tuple -- 253 for a tuple with a str component (LANGUAGE.md 8.5), at the fn item
+elemental fn name(x: f64) -> (f64, str) {
+    return (x, "a")
+}

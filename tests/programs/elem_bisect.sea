@@ -1,0 +1,20 @@
+// elem_bisect -- W1's vectorized bisection shape (LANGUAGE.md 2.1): a two-result elemental function applied to a vector in a
+// loop with one result discarded, `where` selecting the new bounds; 30 halvings of [0, 10] for the square
+// roots of 2, 9 and 16, printed with %.6f (the mirror performs the same IEEE operations in the same order)
+elemental fn resid(x: f64, t: f64) -> (f64, f64) {
+    return (x * x - t, x)
+}
+let t = [2.0, 9.0, 16.0]
+var lo = zeros(3)
+var hi = filled(10.0, 3)
+for it in 0..30 {
+    let mid = 0.5 * (lo + hi)
+    let (e, _) = resid(mid, t)
+    let up = e < 0.0
+    lo = where(up, mid, lo)
+    hi = where(up, hi, mid)
+}
+let root = 0.5 * (lo + hi)
+for i in 0..3 {
+    printf("%.6f\n", root[i])
+}

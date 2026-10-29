@@ -3,6 +3,7 @@
 50004 REM "What sealoop rewrites in 4h", 3.5.4, 3.6.6 rule 37; Decisions 53-57, L-u, L-v), and from
 50005 REM 6b L20, the inlining of the calls of fn kind inl (DESIGN 2.11.4; Decision 83, L-cf, L-cg).
 50006 REM A function whose fn pos is in file 0 of a stream of several files is a prelude function.
+50007 REM 6c: kind elem as inl; an emap as a call whose element call is inlined (lpbelm, L19).
 50008 REM After (A), if there is one or an inl function, the records are rebuilt into the list O
 50010 REM (text O$): each call of such a function F becomes its arguments, each followed by tmp P
 50012 REM q (q a new local .p of the parameter's type, .q for a ref parameter, whose argument is
@@ -37,7 +38,7 @@
 50058 LET V5 = 0
 50059 IF N1 < 2 THEN 50061
 50060 IF SEG$(F9$, 1, 2) = "0:" THEN 50064
-50061 IF Z1$ <> "inl" THEN 50090
+50061 IF POS("|inl|elem|", "|" & Z1$ & "|") = 0 THEN 50090
 50062 LET V5 = 1
 50063 REM a prelude function (V5 0) or an inl one (V5 1) is dropped
 50064 LET A4 = A4 + 1
@@ -59,13 +60,15 @@
 50088 GOSUB 51700
 50090 NEXT Y1
 50092 IF A4 > 0 THEN 50100
+50093 IF A5 > 0 THEN 2900
 50094 FOR Y1 = 1 TO G0
 50096 LET G(Y1, 0) = 0
 50098 NEXT Y1
 50099 GOTO 5000
 50100 REM ---- each call of a prelude function: H(X,8) its callee
 50102 FOR X = 1 TO H0
-50104 IF H(X, 1) <> 10 THEN 50115
+50104 IF H(X, 1) = 64 THEN 55600
+50105 IF H(X, 1) <> 10 THEN 50115
 50106 LET R2 = H(X, 6)
 50108 LET F9 = 4
 50110 GOSUB 8440
@@ -87,6 +90,7 @@
 50146 LET K = R(P(R0, 0), 0)
 50148 IF K = 33 THEN 50160
 50150 IF K = 36 THEN 50186
+50151 IF K = 63 THEN 50140
 50152 IF P(R0, 1) > 0 THEN 50300
 50154 LET Z$ = D$(R0)
 50156 GOSUB 51900
@@ -133,13 +137,15 @@
 50217 LET R0 = M(L4, 2)
 50218 LET R2 = H(X, 6)
 50219 LET F9 = 3
-50220 GOSUB 8440
+50220 IF H(X, 1) = 64 THEN 55790
+50221 GOSUB 8440
 50222 LET T4 = VAL(F9$)
 50224 GOSUB 51700
 50226 LET Z$ = "iblk " & A2$ & " " & STR$(T4) & " " & STR$(T5)
 50228 GOSUB 51950
 50230 LET Z$ = "xblk " & A2$ & " " & STR$(T4) & " " & STR$(G(Y1, 2))
-50232 GOSUB 51950
+50231 GOSUB 51950
+50232 IF H(X, 1) = 64 THEN 55750
 50233 IF L4 = 0 THEN 50330
 50234 GOSUB 51650
 50235 GOTO 50330
@@ -225,7 +231,7 @@
 50429 REM each argument (of its parameter's type) followed by tmp P q, q a new local .p (a ref
 50430 REM parameter's: .q, its argument a rarg, which no other parameter takes)
 50431 FOR Y4 = 1 TO G(Y1, 2)
-50432 IF H(X1, 2) <> A(G(Y1, 1) + Y4) THEN 2900
+50432 IF H(X1, 2) <> A(G(Y1, 1) + Y4) THEN 55690
 50433 LET Z$ = D$(G(Y1, 6) + Y4)
 50434 LET Z1$ = ".p "
 50435 IF SEG$(Z$, LEN(Z$) - 3, LEN(Z$)) <> " ref" THEN 50437
@@ -243,6 +249,7 @@
 50447 GOSUB 51910
 50448 LET X1 = H(X1, 4)
 50450 NEXT Y4
+50451 IF H(X, 1) = 64 THEN 55700
 50452 REM a new local .i for each other local of F (its type and mut, pos P), from M(s,1) + 1 on
 50454 LET U4 = H6
 50456 FOR Y4 = 1 TO G(Y1, 3)

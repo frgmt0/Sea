@@ -1,0 +1,14 @@
+// err_elem6_228_transitive_after -- 228 at a call of a function that calls a function with effects (transitive: LANGUAGE.md 8.1 "or calls a
+// the same program with an earlier error of seacheck (the first statement, `let early: i64 = 1.5`):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+let early: i64 = 1.5
+fn deep(x: f64) {
+    printf("%g\n", x)
+}
+fn mid(x: f64) -> f64 {
+    deep(x)
+    return x
+}
+elemental fn top(x: f64) -> f64 {
+    return mid(x) + 1.0
+}

@@ -1,0 +1,6 @@
+// err_elem6_201_uniform -- 201 at an argument of a uniform parameter: an f64 scalar for an f64[] table, uniform parameters are passed
+// unchanged (LANGUAGE.md 8.5), at the argument
+elemental fn pick(i: i64, tbl: f64[]) -> f64 {
+    return tbl[i]
+}
+let r = pick([0, 1, 2], 3.0)

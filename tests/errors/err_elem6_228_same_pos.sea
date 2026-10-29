@@ -1,0 +1,9 @@
+// err_elem6_228_same_pos -- 228 and seacheck's `missing argument` (226) stand at one call: the pre-pass is the first check a single
+// program makes at a call node, so 228 is reported (DESIGN.md 2.11.2 L-cq)
+fn report(a: f64) {
+    printf("%g\n", a)
+}
+elemental fn noisy(x: f64) -> f64 {
+    report()
+    return x
+}

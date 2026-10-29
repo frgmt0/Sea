@@ -1,0 +1,10 @@
+// err_elem6_232_mutual_after -- 232 for a cycle through an elemental function, mutual: the ordinary function b calls the elemental a, and
+// the same program with an earlier error of seacheck (the first statement, `let early: i64 = 1.5`):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+let early: i64 = 1.5
+fn b(x: f64) -> f64 {
+    return a(x - 1.0)
+}
+elemental fn a(x: f64) -> f64 {
+    return b(x)
+}

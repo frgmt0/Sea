@@ -1,0 +1,36 @@
+// elem_eval -- an elemental call used as a statement, or with every result bound to `_`, has no effect but its errors
+// (LANGUAGE.md 7.1, 7.2, 8.5): nothing is printed, and an argument expression is evaluated exactly once, in
+// full, before the elements (DESIGN.md 2.11.4 L19 step 1, L-ck)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+fn tv(k: i64, v: f64[]) -> f64[] {
+    printf("eval %d\n", k)
+    return v
+}
+let v = ramp(4)
+sq(v)
+two(v, 1.0)
+sq(3.0)
+let _ = sq(v)
+let (_, _) = two(v, v)
+sq(tv(1, v))
+let (_, _) = two(tv(2, v), tv(3, v))
+printf("done\n")

@@ -1,0 +1,86 @@
+// elem_results -- one result and five (W1's shaft_safety shape) (LANGUAGE.md 8.5, 2.1): scalars, vectors, matrices and a
+// broadcast; results bound to `_` keep the others' values and, bound all to `_`, produce no output and leave
+// nothing live (the heap check, DESIGN.md 2.11.4 L19 step 3)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+struct Params {
+    ka: f64
+    ke: f64
+    sut: f64
+    sy: f64
+}
+elemental fn shaft(d: f64, M: f64, T: f64, p: Params) -> (f64, f64, f64, f64, f64) {
+    let a = d * p.ka
+    let b = M * p.ke
+    let c = T + p.sut
+    return (a + b, a * b, c - d, p.sy / (d + 1.0), a + b + c)
+}
+elemental fn one(x: f64) -> f64 {
+    return x + 1.0
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+let p = Params { ka: 2.0, ke: 0.5, sut: 100.0, sy: 40.0 }
+let v = ramp(4)
+pv(one(v))
+let (s1, s2, s3, s4, s5) = shaft(0.5, 2.0, 4.0, p)
+printf("%g %g %g %g %g\n", s1, s2, s3, s4, s5)
+let T = v * 2.0
+let (n1, n2, n3, n4, n5) = shaft(v, 2.0, T, p)
+pv(n1)
+pv(n2)
+pv(n3)
+pv(n4)
+pv(n5)
+let (k1, _, _, k4, _) = shaft(v, 2.0, T, p)
+pv(k1)
+pv(k4)
+let (_, _, _, _, z5) = shaft(v, 2.0, T, p)
+pv(z5)
+let (_, _, _, _, _) = shaft(v, 2.0, T, p)
+let _ = one(v)
+let (_, _) = two(v, v)
+let G = lattice(2, 3)
+let (g1, g2, g3, g4, g5) = shaft(G, 1.0, 0.0, p)
+pm(g1)
+pm(g2)
+pm(g3)
+pm(g4)
+pm(g5)
+let (u1, u2) = two(ramp(2).col, ramp(3).row)
+pm(u1)
+pm(u2)
+let (_, u3) = two(ramp(2).col, ramp(3).row)
+pm(u3)

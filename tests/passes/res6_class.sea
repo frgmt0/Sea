@@ -1,5 +1,5 @@
 // res6_class -- the 8.6 class in rfn's el (DESIGN.md 2.11.3, 3.4.1; LANGUAGE.md 8.6): sq 1
-// (elemental; 259 until 6c), once 2 (one call site, a loop), twice 0 (a loop; two sites, one in
+// (elemental, accepted from 6c), once 2 (one site, a loop), twice 0 (a loop; two sites, one in
 // unreached, which .main never reaches), unreached 2 (no site, one statement), s50 2 and s51 0
 // (50 and 51 statements: the if chain 1, the bare block 1), even and odd 0 (a recursive pair)
 elemental fn sq(x: f64) -> f64 {

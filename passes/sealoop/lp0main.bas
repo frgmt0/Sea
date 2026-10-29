@@ -7,7 +7,7 @@
 127 REM L16 match and the str cases of L2-L14 (lp8str), 4g-2's L15 projection, L17 (field paths,
 128 REM reference and aggregate elements) and the struct cases (lp9agg). Others
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
-135 REM as DESIGN 2.6.3 says: the files lp0main ... lpainl (in name order), the modules io diag
+135 REM as DESIGN 2.6.3 says: the files lp0main ... lpbelm (in name order), the modules io diag
 140 REM tables layout, the DATA blocks errors exits consts records, 99999 END. Exit:
 145 REM 0; 10 program too large (nodes, symbols, types of sea.hirl as a whole, 3.5.9); 11
 150 REM internal error (truncated input, bad header, bad record, bad tree; DESIGN 2.2). Steps:
@@ -37,12 +37,13 @@
 236 REM   ttuple 42 tmat 49 tfvec 50 tfmat 53 tstruct 54 trec 55 fd; 59 tmp 60 xblk 61 iblk 62 iret
 237 REM   (the stream of L18 only). 4h: L18 (lpainl) inlines the prelude calls between (A) and (B);
 238 REM   6b: L20 (lpainl) the calls of fn kind inl as well (M then also its inline levels).
+239 REM   6c: 63 inst (dropped by L20) 64 emap; the calls of kind elem by L20, L19 (lpbelm) the emaps.
 240 REM ====================================================================================
 245 FILES "sea.hir"; "sea.hirl"
 250 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2), S(20008)
 255 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 260 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
-265 DIM O(449999,1), O$(449999), U(49999,5), V(499), M(49999,3), D(64,1)
+265 DIM O(449999,1), O$(449999), U(49999,5), V(1699), M(49999,3), D(64,1)
 266 DIM C(120008,6), J(99999,5)
 270 LET P$ = "sealoop"
 275 REM ---- the tables (canonical order: errors exits consts records) --------------------------
@@ -97,7 +98,7 @@
 465 LET K1$ = K1$ & K2$ & "|idx=39|dol=40|fore=41|tmat=42|"
 466 LET A9 = 120008
 467 LET K1$ = K1$ & "|dyn=43|fix=44|view=45|all=46|arr=47|row=48|tfvec=49|tfmat=50|"
-468 LET K1$ = K1$ & "|match=51|arm=52|tstruct=53|trec=54|fd=55|fld=56|proj=57|slit=58|"
+468 LET K1$ = K1$ & "|match=51|arm=52|tstruct=53|trec=54|fd=55|fld=56|proj=57|slit=58|inst=63|emap=64|"
 469 CALL "ly_init": C(), K(), K$(), K0, T9, A9, P$
 470 FOR I = 1 TO Z(7)
 475 LET R(I, 0) = 0
@@ -151,6 +152,7 @@
 675 LET P(D0, 0) = I0
 680 LET P(D0, 1) = 0
 685 IF K < 33 THEN 700
+686 IF K = 63 THEN 55870
 690 IF K = 42 THEN 1310
 691 IF K > 55 THEN 700
 692 IF K > 52 THEN 1400
@@ -291,7 +293,7 @@
 1435 IF I(1) <> G0 + 1 THEN 2900
 1440 LET Q2$ = "symbols"
 1445 IF G0 >= 49999 THEN 2920
-1450 IF G$(4) = "elem" THEN 2900
+1450 REM 6c: kind elem accepted (an elemental function, inlined by L20 and L19)
 1455 LET G0 = G0 + 1
 1460 LET P(D0, 1) = G0
 1465 LET G(G0, 1) = A0

@@ -1,0 +1,6 @@
+// err_elem6_217 -- 217 for two fixed-size vectors of 3 and 2 elements with a scalar between them (scalars are skipped):
+// a mismatch of compile-time extents, at the call (LANGUAGE.md 6.3, 4.10; DESIGN.md 3.5.5 "Static shapes")
+elemental fn fma3(a: f64, b: f64, c: f64) -> f64 {
+    return a * b + c
+}
+let w = fma3([1.0, 2.0, 3.0], 2.0, [1.0, 2.0])

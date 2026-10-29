@@ -1492,10 +1492,6 @@ err_c('err_view_rank_fixed', ['.row of a fixed matrix: the type written as in Se
 
 # ============================================================ errors: phase-rule words after step 4e (2.6.2)
 NS = 'not supported yet: %s'
-err_c('err_ns_ind2sub_array', ['ind2sub with an array first argument stays the word ind2sub until phase 6, at the',
-                               'call (DESIGN.md 2.6.2 step 4e; Decision 33)'],
-      'let rs = filled(3, 2)\nlet k = filled(4, 2)\nlet (i, j) = ind2sub(rs, k)\n', 'let (i', 'ind2sub',
-      NS % 'ind2sub')
 err_c('err_ns_str_literal', ['a literal of str elements is strings, at the array node (DESIGN.md 2.6.2 step 4e)'],
       'let names = ["a", "b"]\n', 'let names', '[', NS % 'strings')
 err_c('err_ns_str_fixed_type', ['a fixed-size type of str elements is strings, at its type node (DESIGN.md 2.6.2',

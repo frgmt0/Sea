@@ -1,0 +1,10 @@
+// err_elem6_228_call -- 228 at a call of a function with effects inside an elemental body; two such calls, the first in source
+// order is reported (DESIGN.md 2.11.2 L-cq)
+fn report(x: f64) {
+    printf("%g\n", x)
+}
+elemental fn noisy(x: f64) -> f64 {
+    report(x)
+    report(x + 1.0)
+    return x
+}

@@ -1,0 +1,8 @@
+// r_elem6_shape_scalar_skipped -- scalars are skipped when the shapes combine (LANGUAGE.md 6.3): a vector of 3, a scalar and a vector of 4
+// report 3 vs 4
+elemental fn fma3(a: f64, b: f64, c: f64) -> f64 {
+    return a * b + c
+}
+let a = zeros(3)
+let c = zeros(4)
+let r = fma3(a, 2.0, c)

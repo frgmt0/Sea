@@ -1,0 +1,13 @@
+// elem6_k5 -- an elemental function of five results (W1's shape) applied to a vector (DESIGN.md
+// 3.5.9 L19 with L11's statement forms for k = 5): a tbind with two results discarded (no array
+// allocated for them), a tasg with three discarded, and an eval with every result discarded
+elemental fn g(x: f64) -> (f64, f64, f64, f64, f64) {
+    return (x, x + 1.0, x + 2.0, x + 3.0, x + 4.0)
+}
+let v = zeros(2)
+let (a, _, c, _, e) = g(v)
+var p = zeros(1)
+var q = zeros(1)
+(p, _, _, q, _) = g(v)
+g(v)
+printf("%g %g %g %g %g %d %d\n", a[1], c[1], e[1], p[1], q[1], len(a), len(p))

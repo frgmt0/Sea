@@ -1,0 +1,71 @@
+// elem_i64_to_f64 -- an i64 array for an f64 elemental parameter converts element by element (LANGUAGE.md 4.2 (c), 8.5): a
+// range value, a fixed i64 vector, an i64 matrix, mixed with f64 scalars and arrays; an i64 parameter given
+// an i64 array is not converted
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn halve(x: f64) -> f64 {
+    return x / 2.0
+}
+elemental fn add2(x: f64, y: f64) -> f64 {
+    return x + y
+}
+elemental fn cube(i: i64) -> i64 {
+    return i * i * i
+}
+pv(halve((0..5)))
+let k = [3, 1, 4]
+pv(halve(k))
+pv(add2(k, 0.5))
+pv(add2(k, ramp(3)))
+pv(add2(2, k))
+let I = filled(0, 2, 3)
+var J = filled(0, 2, 3)
+for j in 0..3 {
+    for i in 0..2 {
+        J[i, j] = i * 3 + j
+    }
+}
+pm(halve(J))
+pm(add2(J, I))
+pm(add2(J, 0.25))
+pvi(cube((0..5)))
+pv(halve(cube((0..4))))

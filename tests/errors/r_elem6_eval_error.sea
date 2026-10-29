@@ -1,0 +1,11 @@
+// r_elem6_eval_error -- an elemental call used as a statement runs for its errors (LANGUAGE.md 7.1, 8.5): the first failing
+// element, 3, at the error call's line
+elemental fn gate(x: f64) -> f64 {
+    if x > 2.5 {
+        error("too large: %g", x)
+    }
+    return x
+}
+printf("start\n")
+gate([1.0, 2.0, 3.0, 4.0])
+printf("unreachable\n")

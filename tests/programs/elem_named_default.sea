@@ -1,0 +1,44 @@
+// elem_named_default -- named and default arguments of elemental functions (LANGUAGE.md 8.1, 8.5): defaults of f64, str and i64
+// parameters, named arguments in any order with scalars and arrays, a default broadcast against an array,
+// argument expressions evaluated once, in source order, before any element (DESIGN.md 2.11.4 L19, L-ck, L-cp)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn lerp(a: f64, b: f64, t: f64 = 0.5) -> f64 {
+    return a + (b - a) * t
+}
+elemental fn scaled(x: f64, k: f64 = 2.0, tag: str = "x", off: i64 = 1) -> f64 {
+    return x * k + f64(off + len(tag))
+}
+fn tv(k: i64, v: f64[]) -> f64[] {
+    printf("eval %d\n", k)
+    return v
+}
+let v = ramp(4)
+let w = ramp(4) * 4.0
+printf("%g\n", lerp(1.0, 3.0))
+printf("%g\n", lerp(1.0, 3.0, t: 0.25))
+pv(lerp(v, 3.0))
+pv(lerp(v, w, t: 0.25))
+pv(lerp(0.0, b: w, t: v))
+pv(lerp(b: w, a: 0.0, t: v))
+pv(lerp(t: v, b: w, a: 1.0))
+pv(lerp(a: tv(1, v), t: tv(2, w), b: tv(3, v)))
+pv(lerp(tv(1, v), t: tv(2, w), b: tv(3, v)))
+pv(scaled(v))
+pv(scaled(v, tag: "abc"))
+pv(scaled(v, off: 10, k: 4.0))
+pv(scaled(v, w))
+pv(scaled(1.0, k: w))
+printf("%g\n", scaled(1.5, tag: "ab", off: 0))

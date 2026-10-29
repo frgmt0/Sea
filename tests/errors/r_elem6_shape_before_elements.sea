@@ -1,0 +1,9 @@
+// r_elem6_shape_before_elements -- the broadcast extents and their shape check come before any element is computed (DESIGN.md 2.11.4 L19 step
+// 2): the body would fail at its first element, but the program reports the shape mismatch 3 vs 2
+elemental fn always(x: f64, y: f64) -> f64 {
+    error("body ran")
+    return x
+}
+let x = zeros(3)
+let y = zeros(2)
+let r = always(x, y)

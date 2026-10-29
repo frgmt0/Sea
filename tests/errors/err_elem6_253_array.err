@@ -1,0 +1,1 @@
+err_elem6_253_array.sea:2:1: error: elemental function result must be f64, i64 or bool

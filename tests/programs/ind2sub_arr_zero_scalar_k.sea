@@ -1,0 +1,7 @@
+// ind2sub_arr_zero_scalar_k -- ind2sub with an array r holding a 0 at element 1 and a scalar k: integer division by zero (LANGUAGE.md 6.6,
+// 10.7), reported at the call's line (DESIGN.md 2.11.4: P's site for every check); status 1, standard
+// output flushed first (9.2)
+let r = [3, 0, 5]
+printf("start\n")
+let (i, j) = ind2sub(r, 7)
+printf("unreachable\n")

@@ -1,0 +1,9 @@
+// r_elem6_mixed_dynamic -- a fixed and a dynamic argument give a dynamic result (LANGUAGE.md 4.5, 8.5; DESIGN.md 2.11.2 "Elemental
+// calls"): bound to f64[4] the 3-element result passes the run-time shape check and fails it, `expected 4,
+// got 3`, at the line of the binding (a fixed result would be a compile error: err_elem6_fixed_result)
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let a = [1.0, 2.0, 3.0]
+let d = zeros(3)
+let r: f64[4] = add(a, d)

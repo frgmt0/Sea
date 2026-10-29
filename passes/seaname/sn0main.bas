@@ -7,7 +7,8 @@
 35 REM declaration errors, as the rerr record (DESIGN 2.6.2 "Which program reports it"), and ends
 40 REM with status 10 on a capacity limit of its own (symbols, types; nodes, strings, constants of
 45 REM literals). Files: 1 sea.ast (input), 2 sea.res (output). Built with io diag tables limb f64emu.
-47 REM From 6b it resolves parameter defaults and classes every fn by LANGUAGE 8.6 (sn9cls, rfn el 2).
+47 REM From 6b it resolves parameter defaults and classes every fn by LANGUAGE 8.6 (sn9cls, rfn el 2);
+48 REM from 6c it checks elemental fns: 228 and 253 in the signatures, 228 and 232 in the call pre-pass.
 50 REM Tables (passed to every SUB): N M nodes, Y symbols, T types, W work stack, C literal limbs,
 55 REM S$ strings, X X$ state, H the hash of C, O that of S$, Q the mtab words, D$ the records read.
 60 REM Layouts: the REM block of sn2util. Much of the code is phase 1's seacheck, moved (DESIGN 2.7).

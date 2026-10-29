@@ -1,0 +1,10 @@
+// elem6_vec -- elemental functions (DESIGN.md 2.11, 3.5.7 step 3, 3.5.9 L19 and L20): f of a
+// vector and a scalar is an emap of instance 1 (k = 1: one result array, the inline call in the
+// loop body stored by est), f of two scalars an ordinary call that L20 inlines; f is dropped
+elemental fn f(x: f64, k: f64) -> f64 {
+    return x * k + 1.0
+}
+let v = zeros(3)
+let w = f(v, 2.0)
+let s = f(0.5, 4.0)
+printf("%g %g\n", w[2], s)

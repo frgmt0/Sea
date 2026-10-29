@@ -1,0 +1,10 @@
+// err_elem6_201_after -- 201 at an argument: a str for an elemental f64 parameter (LANGUAGE.md 4.2, 8.5), at the argument
+// the same program after an earlier error of seaname (line 2, found in the signature step):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+elemental fn early(ref x: f64) -> f64 {
+    return x
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+let r = sq("abc")

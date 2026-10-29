@@ -1,0 +1,11 @@
+// r_elem6_error_matrix_order -- the first failing element is the first in column-major (linear) order (LANGUAGE.md 8.5, 4.5): in
+// [1, 2; 3, 4; 5, 6] the elements above 1.5 are 3, 5, 2, 4, 6 in that order, so 3 fails (a row-major scan
+// would meet 2)
+elemental fn gate(x: f64) -> f64 {
+    if x > 1.5 {
+        error("bad %g", x)
+    }
+    return x
+}
+let A = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0]
+let R = gate(A)

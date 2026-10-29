@@ -1,0 +1,23 @@
+// elem6_inst -- pass 2b's step 3 (DESIGN.md 3.5.3, 3.5.7): h's applications with array arguments
+// become emaps of four instances, numbered by first use; an i64[] argument converted to f64[]
+// shares instance 1; a vector .col with a matrix, a fixed-size vector with a scalar (a fixed-size
+// result) and with a dynamic vector (a dynamic result); the uniform str argument unchanged; the
+// scalar call stays a call; unused is unreachable and dropped, and the instances' types number
+// first in sea.hir's type table
+elemental fn h(x: f64, y: f64, s: str) -> f64 {
+    return x * y
+}
+elemental fn unused(x: f64) -> f64 {
+    return x
+}
+let a = filled(2.0, 2)
+let k = filled(3, 2)
+let m = zeros(2, 3)
+let f = [1.5, 2.5]
+let r1 = h(a, 2.0, "u")
+let r2 = h(k, 2.0, "u")
+let r3 = h(m, a.col, "u")
+let r4 = h(f, 2.0, "u")
+let r5 = h(f, a, "u")
+let r6 = h(1.0, 2.0, "u")
+printf("%g %g %g %g %g %g\n", r1[1], r2[1], r3[1, 2], r4[1], r5[0], r6)

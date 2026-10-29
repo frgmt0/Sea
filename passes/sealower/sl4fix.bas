@@ -709,13 +709,28 @@
 42038 LET Z0 = 1
 42040 NEXT K6
 42042 IF Z0 = 1 THEN 42050
-42044 IF L6 + ABS(H(X, 1) - 49) = 0 THEN 2360
+42044 IF L6 + ABS(H(X, 1) - 49) = 0 THEN 42060
 42046 GOTO 10230
 42050 FOR K6 = X + 1 TO G(F0, 8)
 42052 IF H(K6, 1) <> 5 THEN 42056
 42054 IF H(K6, 5) = L3 THEN 2360
 42056 NEXT K6
 42058 RETURN
+42060 REM ---- est of lv Li, a .l local of the tbind that begins the est's own block (L19 k >= 2 body: tbind, then one est per kept result), Li of no counts: nothing to move, the plain est (10230); any other est of a marked local stays an error
+42062 LET T3 = H(X0, 4)
+42064 GOSUB 9802
+42066 IF U3 = 1 THEN 2360
+42068 LET L8 = W(W0 - 6)
+42070 IF H(L8, 1) <> 32 THEN 2360
+42072 LET L8 = H(L8, 7)
+42074 IF H(L8, 1) <> 21 THEN 2360
+42076 FOR K6 = 1 TO H(L8, 6)
+42078 IF M(H(L8, 0) + K6 - 1) <> L3 THEN 42080
+42079 LET Z0 = 1
+42080 NEXT K6
+42082 IF Z0 = 0 THEN 2360
+42084 LET Z0 = 0
+42086 GOTO 10230
 42090 REM ---- 42100: rcall of the entry Q1$ into D2 with the Z5 (0-2) arguments V3 V4 ------------
 42100 LET Q9 = FNE(Q1$, "")
 42102 GOSUB 5590

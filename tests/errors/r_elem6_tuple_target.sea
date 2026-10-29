@@ -1,0 +1,13 @@
+// r_elem6_tuple_target -- an error in the body while the results are bound by a tuple assignment into selection targets (LANGUAGE.md
+// 7.3, 8.5): nothing is stored, the callee's line is reported; earlier output is flushed
+elemental fn three(x: f64) -> (f64, f64, f64) {
+    if x > 0.75 {
+        error("three %g", x)
+    }
+    return (x, x, x)
+}
+var A = zeros(2, 3)
+var B = zeros(2, 3)
+printf("start\n")
+(A[0, :], B[1, :], _) = three([0.5, 1.0, 1.5])
+printf("unreachable\n")

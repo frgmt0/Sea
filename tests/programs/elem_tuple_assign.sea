@@ -1,0 +1,61 @@
+// elem_tuple_assign -- a tuple assignment of an elemental call's results into selection targets (LANGUAGE.md 7.3, 8.5):
+// (A[1, :], B[:, 2], _) = f(...), element targets with a scalar call, whole-variable targets that take the
+// results' shape and convert i64 to f64 (4.2), `_` skipping a result, a scalar result stored into every
+// element of a selection (5.5)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn three(x: f64, s: f64) -> (f64, f64, f64) {
+    return (x + s, x * s, x - s)
+}
+elemental fn mixr(i: i64) -> (i64, f64) {
+    return (i * 2, f64(i) + 0.5)
+}
+elemental fn two(x: f64, y: f64) -> (f64, f64) {
+    return (x + y, x - y)
+}
+var A = zeros(3, 3)
+var B = zeros(3, 3)
+let v = ramp(3)
+(A[1, :], B[:, 2], _) = three(v, 2.0)
+pm(A)
+pm(B)
+(A[0, :], _, B[2, :]) = three(v + 1.0, 0.5)
+pm(A)
+pm(B)
+(A[2, 0], _, B[0, 0]) = three(1.0, 2.0)
+printf("%g %g\n", A[2, 0], B[0, 0])
+var P = zeros(2)
+var Q = zeros(2)
+(P, Q) = mixr((0..4))
+pv(P)
+pv(Q)
+var x1 = 0.0
+var x2 = 0.0
+(x1, x2) = two(1.0, 2.0)
+printf("%g %g\n", x1, x2)
+(P, _) = mixr((0..2))
+pv(P)
+(_, B[1, :]) = two(1.0, 2.0)
+pm(B)

@@ -1,0 +1,12 @@
+// err_elem6_228_call_after -- 228 at a call of a function with effects inside an elemental body; two such calls, the first in source
+// the same program with an earlier error of seacheck (the first statement, `let early: i64 = 1.5`):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+let early: i64 = 1.5
+fn report(x: f64) {
+    printf("%g\n", x)
+}
+elemental fn noisy(x: f64) -> f64 {
+    report(x)
+    report(x + 1.0)
+    return x
+}

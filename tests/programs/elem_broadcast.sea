@@ -1,0 +1,64 @@
+// elem_broadcast -- broadcasting of the elemental arguments (LANGUAGE.md 6.3, 8.5): a scalar with a vector, .col with .row in
+// both orders, .col or .row with a matrix, three operands combined left to right with the scalars skipped,
+// a 1 x 1 matrix, a 1-element vector as .col and .row
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+fn lattice(r: i64, c: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 10 + j)
+        }
+    }
+    return A
+}
+elemental fn f2(x: f64, y: f64) -> f64 {
+    return x * 10.0 + y
+}
+elemental fn axpy(a: f64, x: f64, y: f64) -> f64 {
+    return a * x + y
+}
+let a = ramp(3)
+let b = ramp(4)
+let A = lattice(3, 4)
+pm(f2(a.col, b.row))
+pm(f2(b.row, a.col))
+pm(f2(a.col, A))
+pm(f2(b.row, A))
+pm(f2(A, a.col))
+pm(f2(A, b.row))
+pm(f2(a.col, 1.0))
+pm(f2(2.0, b.row))
+pm(axpy(a.col, 2.0, b.row))
+pm(axpy(2.0, a.col, b.row))
+pm(axpy(a.col, b.row, A))
+pm(axpy(A, a.col, b.row))
+let c = ramp(1)
+pm(f2(c.col, A))
+pm(f2(c.row, b.col))
+pv(f2(a, 1.0))
+pv(f2(1.0, a))
+pv(axpy(1.0, a, 2.0))
+printf("%g\n", f2(2.0, 3.0))

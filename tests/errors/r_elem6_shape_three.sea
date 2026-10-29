@@ -1,0 +1,9 @@
+// r_elem6_shape_three -- three dynamic vectors of 5, 5 and 2: the shapes combine left to right and the mismatch reports the shape
+// combined so far, then the operand's: 5 vs 2 (LANGUAGE.md 6.3)
+elemental fn fma3(a: f64, b: f64, c: f64) -> f64 {
+    return a * b + c
+}
+let a = zeros(5)
+let b = zeros(5)
+let c = zeros(2)
+let r = fma3(a, b, c)

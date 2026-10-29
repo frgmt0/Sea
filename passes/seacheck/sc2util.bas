@@ -41,7 +41,10 @@
 2815 REM file X(19) current node X(20)-X(25) LIM SYMBOLS TYPES CONSTS NODES STRINGS POWK X(27)
 2820 REM emission mode X(28) types written X(29) top-level statements X(30) last fn row X(31) row
 2825 REM before the constants X(26) a bad record (BAD_RECORD) X(32) last id of the type table of sea.res X(33) last item row X(34) FILE_VERSION X(35)
-2830 REM LIM_DEC_FIELD X(36) X(37) the position of the rerr error X(38) types X(39) LIM_FIXED_ELEMS; C(r,0) 3 i64 4 f64,
+2830 REM LIM_DEC_FIELD X(36) X(37) the position of the rerr error X(38) types X(39) LIM_FIXED_ELEMS X(40) the
+2831 REM lid before the first .t local of the function being written (em_fn; .t local k is lid X(40) + k)
+2832 REM X(41) M(J,9) of the call J whose ref argument em_uarg is writing (erep), else 0 X(42) the row
+2833 REM of the Sea function whose call ck_ucall is checking (ecv); C(r,0) 3 i64 4 f64,
 2835 REM C(r,1..4) limbs; X$(1) error name, X$(2)-X$(4) its arguments, X$(10) predeclared names,
 2840 REM X$(11) the target (header).
 2845 REM ---- er: record error Q$ at node I (K arguments); the first in source order is kept ------

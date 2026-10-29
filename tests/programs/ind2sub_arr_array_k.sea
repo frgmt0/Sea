@@ -1,0 +1,52 @@
+// ind2sub_arr_array_k -- ind2sub with an array r and an array k (LANGUAGE.md 10.7, 6.3; DESIGN.md 2.11.4 L-cl): element by element,
+// a range value pair, negative and zero k, `.col` with `.row` broadcast to a matrix, two matrices, either
+// result bound to `_`, a tuple assignment into whole-variable targets, both results discarded
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pmi(A: i64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %d", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let r = [3, 4, 5]
+let k = [7, 10, 24]
+let (i, j) = ind2sub(r, k)
+pvi(i)
+pvi(j)
+let (a, c) = ind2sub((3..6), (7..10))
+pvi(a)
+pvi(c)
+let kn = [-1, -5, 0]
+let (n1, n2) = ind2sub(r, kn)
+pvi(n1)
+pvi(n2)
+let r3 = (3..6)
+let k4 = [7, 8, 9, 10]
+let (m1, m2) = ind2sub(r3.col, k4.row)
+pmi(m1)
+pmi(m2)
+let (p1, _) = ind2sub(r, k)
+pvi(p1)
+let (_, p2) = ind2sub(r, k)
+pvi(p2)
+var I = filled(0, 1)
+var J = filled(0, 1)
+(I, J) = ind2sub(r, k)
+pvi(I)
+pvi(J)
+let Rm = [3, 4; 5, 6]
+let Km = [7, 8; 9, 10]
+let (q1, q2) = ind2sub(Rm, Km)
+pmi(q1)
+pmi(q2)
+let (_, _) = ind2sub(r, k)

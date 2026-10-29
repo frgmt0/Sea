@@ -1,0 +1,9 @@
+// r_elem6_oob_index -- an out-of-bounds index inside the body at a known element (LANGUAGE.md 5.4, 8.5): i = [0, 1, 7, 9] into a
+// 3-element table; element 2 fails first: index 7, at the callee's line
+elemental fn pick(i: i64, tbl: f64[]) -> f64 {
+    return tbl[i] * 2.0
+}
+let tbl = [1.0, 2.0, 3.0]
+printf("start\n")
+let r = pick([0, 1, 7, 9], tbl)
+printf("unreachable\n")

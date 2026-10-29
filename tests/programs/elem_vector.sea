@@ -1,0 +1,63 @@
+// elem_vector -- an elemental function applied to a vector (LANGUAGE.md 8.5, 6.3): one, two and three array arguments,
+// scalars mixed in, an f64 result vector, a bool result vector, an i64 function over a range value, a fixed i64
+// vector and an expression, a vector of length 1
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvi(v: i64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn f2(x: f64, y: f64) -> f64 {
+    return x * 10.0 + y
+}
+elemental fn axpy(a: f64, x: f64, y: f64) -> f64 {
+    return a * x + y
+}
+elemental fn positive(x: f64) -> bool {
+    return x > 0.0
+}
+elemental fn tri(i: i64) -> i64 {
+    return idiv(i * (i + 1), 2)
+}
+let v = ramp(5)
+pv(sq(v))
+pv(axpy(2.0, v, v))
+pv(axpy(v, 3.0, 1.0))
+pv(axpy(v, v, v))
+pv(axpy(1.5, 2.0, v))
+let w = ramp(5) * 2.0
+pv(axpy(v, w, 0.25))
+pv(f2(w, v))
+pvb(positive(v - 1.0))
+pvb(positive(v))
+pvi(tri((0..6)))
+let k = [3, 1, 2]
+pvi(tri(k))
+pvi(tri(k * 2))
+let one = ramp(1)
+pv(sq(one))

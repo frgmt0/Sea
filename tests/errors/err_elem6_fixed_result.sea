@@ -1,0 +1,7 @@
+// err_elem6_fixed_result -- two fixed-size arguments give a fixed-size result (DESIGN.md 2.11.2 "Elemental calls"): bound to f64[4] the
+// 3-element result is the static shape mismatch 4 vs 3 (the target's shape first, LANGUAGE.md 4.10), at the
+// value (the call)
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let r: f64[4] = add([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])

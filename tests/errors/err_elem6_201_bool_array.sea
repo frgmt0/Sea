@@ -1,0 +1,6 @@
+// err_elem6_201_bool_array -- 201 at an argument: a bool array is not converted to f64 (LANGUAGE.md 4.2: bool converts to neither
+// implicitly), at the argument
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+let r = sq([true, false])

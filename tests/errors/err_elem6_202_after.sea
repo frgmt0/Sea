@@ -1,0 +1,12 @@
+// err_elem6_202_after -- 202 for a vector and a matrix elemental argument, at the call (LANGUAGE.md 6.3, 8.5; DESIGN.md 2.11.2
+// the same program after an earlier error of seaname (line 2, found in the signature step):
+// in source order the earlier one is reported (DESIGN.md 2.6.2 "Order across the two programs", L-cq)
+elemental fn early(x: f64) -> str {
+    return "a"
+}
+elemental fn add(x: f64, y: f64) -> f64 {
+    return x + y
+}
+let v = zeros(3)
+let A = zeros(3, 3)
+let w = add(v, A)

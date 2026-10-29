@@ -90,9 +90,11 @@ lead decisions L-bw–L-cx; DESIGN.md §2.11, §2.7, §6.2, §6.3, §8): named a
 figures; `seacheck` gated as `sealower` is (Decision 82). **6b is done** (2026-10-28: named and
 default arguments, §8.6 inlining, `f64` `%`, `format`, `print`, `make_dir`, runtime entries 23–38;
 lead decisions L-cy–L-dh; `make test` and `make cross` (700) pass; `seacheck` 6 798 built lines,
-`sealoop` 5 936, `sealower` 6 637, `seaname` 5 424, DESIGN.md §2.7 "Measured after 6b"). **Next:**
-**6c** (elemental functions, `ind2sub` with an array `r`); 6b-0, the conditional `seacheck`
-compaction, only if the measurement after 6c triggers it (Decision 87). Versions 0.y.z are alpha; 1.0.0 = v1
+`sealoop` 5 936, `sealower` 6 637, `seaname` 5 424, DESIGN.md §2.7 "Measured after 6b"). **6c is
+done** (2026-10-28: elemental functions, `ind2sub` with an array `r`; lead decisions L-di–L-dq;
+`make test` and `make cross` (742) pass; `seacheck` 6 863 built lines, `sealoop` 6 438, `seaexpand` 4 359, `seaname` 5 555, DESIGN.md §2.7
+"Measured after 6c"; the measurement after 6c calls for no relief, so 6b-0 is not run, Decision 87).
+**Next:** **6d** (`write_json`). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first

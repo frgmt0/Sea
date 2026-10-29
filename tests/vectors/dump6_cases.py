@@ -22,7 +22,10 @@ res_err_default.res (6.2 "Existing tests that phase 6 changes", 6b, T2).
 
 Part 2, res6_default and res6_class (.sea .ast .res): the .ast by hand (3.4), the .res by the
 oracle res_gen.py with the 6b edits (res_gen6) and the 8.6 class, checked against CLASS and, for
-res6_default, against a hand-written .res.
+res6_default, against a hand-written .res. From sub-phase 6c (2.11.2's table: `elemental
+functions` is no longer reported) res_gen6 also drops the rerr 259 `elemental functions` at an
+`elemental fn` item, so res6_class.res has no rerr (6.2, 6c; DESIGN 8 row 6c, package T2,
+dump6c_cases.py); its .ast is unchanged and its header comment says so.
 
 Part 3, inl6_* (6.2 "6b, calls"): inl6_count50/51 (the 50/51-statement limit of 8.6 (c), seen in
 the .hirl), inl6_basic (el 2, kind inl, L20, R27, the dropped and renumbered functions), inl6_ref
@@ -407,13 +410,18 @@ const K = 1
 # which must equal CLASS.
 
 def res_gen6():
-    """res_gen.py with the 6b edits; each replaced text must occur exactly once."""
+    """res_gen.py with the 6b edits and 6c's (no 259 `elemental functions`); each replaced
+    text must occur exactly once."""
     import types
     path = os.path.join(HERE, 'res_gen.py')
     src = read(path)
     edits = [
         ("""            if p.f[3] == '1':
                 err(p.pos, 259, ['default arguments'])
+""", ''),
+        # 6c: `elemental functions` leaves the phase-rule table (2.11.2), the item is accepted
+        ("""        if it.op == 'fn' and it.f[2] == '1':
+            err(it.pos, 259, ['elemental functions'])
 """, ''),
         ("""        resolve(it.kids[-1], [psc], Fn(np_))
     nfn = len(powk_sites)
@@ -634,7 +642,7 @@ block 0:{9}:5 1
 
 
 RES6_CLASS_HEAD = """// res6_class -- the 8.6 class in rfn's el (DESIGN.md 2.11.3, 3.4.1; LANGUAGE.md 8.6): sq 1
-// (elemental; 259 until 6c), once 2 (one call site, a loop), twice 0 (a loop; two sites, one in
+// (elemental, accepted from 6c), once 2 (one site, a loop), twice 0 (a loop; two sites, one in
 // unreached, which .main never reaches), unreached 2 (no site, one statement), s50 2 and s51 0
 // (50 and 51 statements: the if chain 1, the bare block 1), even and odd 0 (a recursive pair)
 elemental fn sq(x: f64) -> f64 {
@@ -863,7 +871,7 @@ def part2():
     ast = ast_text('res6_class', a)
     check_ast_positions('res6_class', src, ast)
     res = gen_res(rg, 'res6_class', ast)
-    assert res.split('\n')[3] == 'rerr 0:5:1 259 1 elemental%20functions', res.split('\n')[3]
+    assert 'rerr' not in res, res.split('\n')[3]     # 6c: no 259 `elemental functions`
     write('res6_class.sea', src)
     write('res6_class.ast', ast)
     write('res6_class.res', res)

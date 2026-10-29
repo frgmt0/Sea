@@ -249,9 +249,9 @@
 13445 CALL "acv": N(), M(), T(), X(), X$(), A
 13450 LET A = N(A, 8)
 13455 NEXT I
-13460 REM an elemental function with array arguments: their broadcast (lbc; ind2sub of an array r is
-13462 REM the phase-rule word ind2sub)
-13465 CALL "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), K(), H
+13460 REM an elemental function with array arguments: their broadcast (lbc; ind2sub with an array r too,
+13462 REM L-cl)
+13465 CALL "lbc": N(), M(), T(), X(), X$(), J, Z, D, U(), H
 13540 GOTO 13605
 13545 REM no overload: the argument types as written (a named one name: T)
 13550 LET B$ = ""

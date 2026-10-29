@@ -1,0 +1,8 @@
+// err_elem6_232_direct -- 232 at the first call, in source order, of an elemental function to itself (LANGUAGE.md 8.5; DESIGN.md
+// 2.11.2 L-cq): the call on line 4, not the one on line 6
+elemental fn f(x: f64) -> f64 {
+    if x > 0.0 {
+        return f(x - 1.0)
+    }
+    return f(x + 1.0)
+}

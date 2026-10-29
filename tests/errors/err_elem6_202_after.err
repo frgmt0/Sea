@@ -1,0 +1,1 @@
+err_elem6_202_after.sea:4:1: error: elemental function result must be f64, i64 or bool

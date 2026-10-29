@@ -45,8 +45,8 @@
 3618 NEXT S
 3625 CALL "rs_fn": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), 1
 3627 CALL "tyfin": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
-3628 REM the call pre-pass (DESIGN 2.11.2, 2.11.3), after every body is resolved
-3629 CALL "sn_cls": N(), M(), Y(), W(), X()
+3628 REM the call pre-pass (DESIGN 2.11.2, 2.11.3), after every body is resolved: classes, 228, 232
+3629 CALL "sn_cls": N(), M(), Y(), W(), S$(), X(), X$()
 3630 SUBEND
 3635 REM ---- ck_item: one top-level item I becomes a symbol (fn 1, const 2, struct 3) ---------------
 3638 REM An item of file 0 of a stream of more than one #file (the prelude) is exempt (L-s).
@@ -79,9 +79,7 @@
 3755 LET Y(R, 6) = N(I, 2)
 3760 LET Y(R, 7) = N(I, 3)
 3765 LET Y(R, 4) = N(I, 1)
-3770 IF N(I, 1) = 0 THEN 3815
-3775 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", "elemental functions", "", "", 1
-3780 GOTO 3815
+3770 GOTO 3815
 3785 LET Y(R, 0) = 2
 3790 LET X(31) = X(31) + 1
 3795 LET Y(R, 5) = X(31)
@@ -101,7 +99,8 @@
 3855 SUBEND
 3960 REM ---- ck_sig: the signature of fn S: parameter types in M(param,1), result types in
 3965 REM M(type,1), the result type in Y(S,2) (1 none, a type, or a ttuple; 0 after an error); the
-3967 REM structural checks of the defaults (236, 227) and their names resolved (rsdef; DESIGN 2.11.2) --
+3967 REM structural checks of the defaults (236, 227) and their names resolved (rsdef; DESIGN 2.11.2);
+3968 REM of an elemental fn its ref parameters (228, at the param) and its result type (253, L-cq) --
 3970 SUB "ck_sig": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), S
 3975 DIM U(70)
 3980 LET F = Y(S, 3)
@@ -128,10 +127,14 @@
 4074 IF N(I, 1) = 0 THEN 4095
 4075 REM a ref parameter with a default: 227 at the default expression (LANGUAGE 8.1, L-bw)
 4076 CALL "er": N(), X(), X$(), N(N(I, 7), 8), "REF_TARGET", "", "", "", 0
-4080 GOTO 4095
+4080 GOTO 4091
 4085 REM after a parameter with a default, one without: 236 at its param (L-bx)
-4088 IF D9 = 0 THEN 4095
+4088 IF D9 = 0 THEN 4091
 4090 CALL "er": N(), X(), X$(), I, "DEFAULT_MISSING", "", "", "", 0
+4091 REM a ref parameter of an elemental fn: 228 at its param, after 235, 213, 236 (L-cq)
+4092 IF N(I, 1) = 0 THEN 4095
+4093 IF Y(S, 4) = 0 THEN 4095
+4094 CALL "er": N(), X(), X$(), I, "ELEM_EFFECTS", "", "", "", 0
 4095 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), N(I, 7), D
 4100 LET M(I, 1) = D
 4102 IF N(I, 2) = 0 THEN 4105
@@ -140,6 +143,7 @@
 4110 NEXT J
 4115 REM the result types follow the parameters
 4120 LET Z = 0
+4122 LET Z5 = 0
 4125 FOR J = 1 TO R0
 4145 CALL "tyof": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), I, D
 4150 IF J > 1 THEN 4155
@@ -147,18 +151,25 @@
 4155 LET U(J) = D
 4157 IF D < 10 THEN 4160
 4158 LET U(J) = T(D, 9)
-4160 IF D <> 0 THEN 4170
+4160 IF D <> 0 THEN 4168
 4165 LET Z = 1
+4166 GOTO 4170
+4167 REM a result type other than f64, i64, bool (an error type aside): 253 for an elemental fn
+4168 IF POS("|2|3|4|", "|" & STR$(D) & "|") > 0 THEN 4170
+4169 LET Z5 = 1
 4170 LET I = N(I, 8)
 4175 NEXT J
 4180 LET Y(S, 2) = 1
-4185 IF R0 = 0 THEN 4220
+4185 IF R0 = 0 THEN 4217
 4190 LET Y(S, 2) = V0
-4195 IF R0 = 1 THEN 4220
+4195 IF R0 = 1 THEN 4217
 4200 LET Y(S, 2) = 0
-4205 IF Z = 1 THEN 4220
+4205 IF Z = 1 THEN 4217
 4210 CALL "ttup": T(), N(), X(), X$(), U(), R0, R
 4215 LET Y(S, 2) = R
+4217 REM 253 at the fn item, after its parameters and result types (L-cq, Decision 92)
+4218 IF Z + (1 - Z5) + (1 - SGN(Y(S, 4))) > 0 THEN 4220
+4219 CALL "er": N(), X(), X$(), F, "ELEM_RESULT", "", "", "", 0
 4220 SUBEND
 4225 REM ---- sn_const: const item S on its well-typed path (DESIGN 3.4.1 "Constants"): resolve and
 4230 REM type its expression (rs_expr), then its annotation (f64 i64 bool) or the i64 of an untyped

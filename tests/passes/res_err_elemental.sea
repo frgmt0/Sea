@@ -1,5 +1,5 @@
-// res_err_elemental -- rerr 259 elemental functions at the fn item (at elemental); rfn el 1
-// (DESIGN.md 3.4.1, 2.6.2)
+// res_err_elemental -- from sub-phase 6c an elemental fn item is accepted: no rerr (6b reported
+// 259 elemental functions at the item); rfn el 1 (DESIGN.md 3.4.1, 2.11.2, 2.11.3)
 elemental fn sq(x: f64) -> f64 {
     return x * x
 }

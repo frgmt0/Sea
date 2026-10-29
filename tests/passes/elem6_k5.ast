@@ -1,0 +1,91 @@
+#sea 1
+#target arm64-macos
+#file elem6_k5.sea
+type 0:4:19 f64 s 0
+param 0:4:16 x 0 0
+type 0:4:28 f64 s 0
+type 0:4:33 f64 s 0
+type 0:4:38 f64 s 0
+type 0:4:43 f64 s 0
+type 0:4:48 f64 s 0
+name 0:5:13 x
+name 0:5:16 x
+float 0:5:20 #3FF0000000000000
+bin 0:5:16 add
+name 0:5:25 x
+float 0:5:29 #4000000000000000
+bin 0:5:25 add
+name 0:5:34 x
+float 0:5:38 #4008000000000000
+bin 0:5:34 add
+name 0:5:43 x
+float 0:5:47 #4010000000000000
+bin 0:5:43 add
+return 0:5:5 5
+block 0:4:53 1
+fn 0:4:1 g 1 1 5
+pname 0:7:5 v
+name 0:7:9 zeros
+int 0:7:15 2
+call 0:7:9 1
+let 0:7:1 0
+pname 0:8:6 a
+pskip 0:8:9
+pname 0:8:12 c
+pskip 0:8:15
+pname 0:8:18 e
+ptuple 0:8:5 5
+name 0:8:23 g
+name 0:8:25 v
+call 0:8:23 1
+let 0:8:1 0
+pname 0:9:5 p
+name 0:9:9 zeros
+int 0:9:15 1
+call 0:9:9 1
+var 0:9:1 0
+pname 0:10:5 q
+name 0:10:9 zeros
+int 0:10:15 1
+call 0:10:9 1
+var 0:10:1 0
+name 0:11:2 p
+pskip 0:11:5
+pskip 0:11:8
+name 0:11:11 q
+pskip 0:11:14
+name 0:11:19 g
+name 0:11:21 v
+call 0:11:19 1
+tasg 0:11:1 5
+name 0:12:1 g
+name 0:12:3 v
+call 0:12:1 1
+cstmt 0:12:1
+name 0:13:1 printf
+str 0:13:8 %25g%20%25g%20%25g%20%25g%20%25g%20%25d%20%25d%0A
+name 0:13:34 a
+int 0:13:36 1
+index 0:13:34 1
+name 0:13:40 c
+int 0:13:42 1
+index 0:13:40 1
+name 0:13:46 e
+int 0:13:48 1
+index 0:13:46 1
+name 0:13:52 p
+int 0:13:54 1
+index 0:13:52 1
+name 0:13:58 q
+int 0:13:60 1
+index 0:13:58 1
+name 0:13:64 len
+name 0:13:68 a
+call 0:13:64 1
+name 0:13:72 len
+name 0:13:76 p
+call 0:13:72 1
+call 0:13:1 8
+cstmt 0:13:1
+prog 8
+#end

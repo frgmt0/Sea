@@ -1,4 +1,0 @@
-// err_ns_elemental -- phase 1: an elemental fn (at the item, its elemental keyword)
-elemental fn sq(x: f64) -> f64 {
-    return x * x
-}

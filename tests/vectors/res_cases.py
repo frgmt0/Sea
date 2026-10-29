@@ -398,22 +398,6 @@ name 0:5:9 A
 let 0:5:1 0
 prog 3''')
 
-case('res_err_elemental', ('rerr 259 elemental functions at the fn item (at elemental); rfn el 1',
-                           '(DESIGN.md 3.4.1, 2.6.2)'),
-     '''elemental fn sq(x: f64) -> f64 {
-    return x * x
-}
-''', '''type 0:3:20 f64 s 0
-param 0:3:17 x 0 0
-type 0:3:28 f64 s 0
-name 0:4:12 x
-name 0:4:16 x
-bin 0:4:12 mul
-return 0:4:5 1
-block 0:3:32 1
-fn 0:3:1 sq 1 1 1
-prog 1''')
-
 case('res_err_param_redef', ('rerr 235 at the later of two parameters of one name (DESIGN.md 3.4.1,',
                              '2.6.2)'),
      '''fn g(a: i64, a: i64) {
@@ -759,10 +743,6 @@ err_case('err_merge_check_first', 'a seacheck error (undeclared, 2:9) before a s
 err_case('err_merge_name_first', 'a seaname error (2:1) before a seacheck error (5:9) in source order '
          'is reported (DESIGN.md 2.6.2 order across the two programs)',
          'fn len() {\n    printf("x\\n")\n}\nlet x = y\n', 2, 1, 'redefinition of predeclared name')
-err_case('err_merge_same_pos', 'two errors at one fn keyword: seaname\'s elemental functions is found '
-         'before seacheck\'s missing return (DESIGN.md 2.6.2, 3.4.1 rerr)',
-         'elemental fn f(x: f64) -> f64 {\n    if x > 0.0 {\n        return x\n    }\n}\n', 2, 1,
-         'not supported yet: elemental functions')
 err_case('err_merge_const_first', 'a constant\'s integer overflow (rcne, 2:11) before a seaname error '
          '(3:1) is reported (DESIGN.md 2.6.2, 3.4.1)',
          'const A = 9223372036854775807 + 1\nfn len() {\n    printf("x\\n")\n}\n', 2, 11,

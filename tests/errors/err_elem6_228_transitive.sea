@@ -1,0 +1,12 @@
+// err_elem6_228_transitive -- 228 at a call of a function that calls a function with effects (transitive: LANGUAGE.md 8.1 "or calls a
+// function with effects"; DESIGN.md 2.11.2 L-cq, a fixpoint over the call graph): mid has effects through deep
+fn deep(x: f64) {
+    printf("%g\n", x)
+}
+fn mid(x: f64) -> f64 {
+    deep(x)
+    return x
+}
+elemental fn top(x: f64) -> f64 {
+    return mid(x) + 1.0
+}

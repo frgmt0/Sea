@@ -1,0 +1,12 @@
+// r_elem6_error_vector -- error() in an elemental body: the first failing element in increasing linear order (LANGUAGE.md 8.5):
+// the elements 3, 4 and 5 fail the test, 3 is the first, at the error call's line in the callee
+elemental fn gate(x: f64) -> f64 {
+    if x > 2.5 {
+        error("too large: %g", x)
+    }
+    return x * 2.0
+}
+let v = [1.0, 2.0, 3.0, 4.0, 5.0]
+printf("start\n")
+let r = gate(v)
+printf("unreachable\n")

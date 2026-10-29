@@ -1,0 +1,51 @@
+// elem_expr -- an elemental call inside larger expressions (LANGUAGE.md 8.5: calls fuse with the surrounding element-wise
+// expression): a reduction, an operand of + and *, `where`, a comparison, an element loop, a slice, `=` and
+// `+=` into a variable
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %g", x)
+    }
+    printf("\n")
+}
+fn pvb(v: bool[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %d", x)
+    }
+    printf("\n")
+}
+fn ramp(n: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64(i) * 0.5
+    }
+    return v
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn f2(x: f64, y: f64) -> f64 {
+    return x * 10.0 + y
+}
+elemental fn positive(x: f64) -> bool {
+    return x > 0.0
+}
+let v = ramp(5)
+printf("%g\n", sum(sq(v)))
+printf("%g\n", max(sq(v)))
+pv(sq(v) + 1.0)
+pv(sq(v) * f2(v, 1.0))
+pv(where(positive(v - 1.0), sq(v), v))
+pvb(sq(v) > 1.0)
+let s = sq(v)
+printf("%g\n", s[3])
+for x in sq(v) {
+    printf(" %g", x)
+}
+printf("\n")
+pv(sq(v[1..4]))
+var acc = zeros(5)
+acc = sq(v)
+acc += f2(v, v)
+pv(acc)

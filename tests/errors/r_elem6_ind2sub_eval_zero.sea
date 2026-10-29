@@ -1,0 +1,7 @@
+// r_elem6_ind2sub_eval_zero -- ind2sub with an array r holding a 0, used as a call statement: the call still runs for its errors (LANGUAGE.md
+// 6.6, 7.1, 10.7; DESIGN.md 2.11.4 L19, Decision 84): integer division by zero at the call's line
+let r = [3, 4, 0]
+let k = [7, 10, 24]
+printf("start\n")
+ind2sub(r, k)
+printf("unreachable\n")

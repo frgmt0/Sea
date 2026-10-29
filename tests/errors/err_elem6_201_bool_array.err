@@ -1,0 +1,1 @@
+err_elem6_201_bool_array.sea:6:12: error: type mismatch: expected f64, found bool[2]

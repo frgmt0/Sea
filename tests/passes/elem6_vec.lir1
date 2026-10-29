@@ -1,0 +1,65 @@
+#sea 1
+#target arm64-macos
+#file elem6_vec.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+li i2 1
+li i3 1
+li i4 1
+rcall sea_arr_new 0:7 1 p5 4 i2 i3 i1 i4
+lf f6 #4000000000000000
+ldi i7 p5 - 0 16
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new_u 0:8 1 p11 4 i8 i9 i7 i10
+ldp p12 p11 - 0 40
+ldp p13 p5 - 0 40
+li i14 0
+icmp gt i15 i7 i14
+if 1 i15
+li i16 1
+isub i17 i7 i16
+loop 2 i18 i14 i17 i16
+ldf f19 p13 i18 8 0
+do 3
+fmul f20 f19 f6
+lf f21 #3FF0000000000000
+fadd f22 f20 f21
+mov f23 f22
+exit 3
+enddo 3
+stf f23 p12 i18 8 0
+endloop 2
+endif 1
+lf f24 #3FE0000000000000
+lf f25 #4010000000000000
+do 4
+fmul f26 f24 f25
+lf f27 #3FF0000000000000
+fadd f28 f26 f27
+mov f29 f28
+exit 4
+enddo 4
+mov f30 f29
+li i31 2
+ldi i32 p11 - 0 16
+chkb i31 i32 0 0:10
+ldp p33 p11 - 0 40
+ldf f34 p33 i31 8 0
+sa p35 s1
+stf f34 p35 - 0 0
+stf f30 p35 - 0 8
+la p36 d1
+rcall sea_printf 0:10 0 2 p36 p35
+release p11
+release p5
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end
