@@ -523,13 +523,13 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Next: 7c and 7d (7d may run in parallel with 7c).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Next: 7c and 7d (7d may run in parallel with 7c). The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
 
-**Scope of Sea v1.** LANGUAGE.md §1.2: what the five acceptance workloads (`sea/workloads/`)
+**Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
 
-**Sources.** `sea/README.md`, `sea/CLAUDE.md`, `sea/workloads/README.md` and the five
+**Sources.** `sea/README.md`, `sea/CLAUDE.md`, `sea/workloads/README.md` and the six acceptance
 `w*.m` scripts; Baysick's `docs/LANGUAGE.md` (0.6.0), `docs/DESIGN.md`, `docs/IR.md`,
 `docs/BENCH.md`, `docs/SEA_BOOTSTRAP.md`.
 
@@ -563,9 +563,11 @@ elemental function, view, COW, prelude, intrinsic, handle type, port).
 3. **Free, tiny, portable.** Standalone native binaries, no giant runtime; targets
    `arm64-macos` and `x86_64-linux`, mirroring Baysick.
 
-### 1.2 Measured by the five workloads
+### 1.2 Measured by the six workloads
 
-Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc`, a Sea port (§6.3):
+Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc` and `w7_drivetrain`
+(the user added W7, an off-road buggy drivetrain study, to the acceptance set on 2026-10-29;
+Decision 114), a Sea port (§6.3):
 
 1. **reproduces the numbers**: its JSON export passes `compare.py`'s rules (`RULES` in
    `sea/workloads/reference_py/compare.py`) against the MATLAB reference
@@ -577,7 +579,7 @@ Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc`, a Sea 
 4. **writes its figures** as SVG files (LANGUAGE.md §12) when asked to.
 
 **Versions** (Decision 79): every Sea version 0.y.z is an alpha; 1.0.0 is the general-availability
-version and means v1 is done by the definition above (all five workloads, phase 10 of §8). No git
+version and means v1 is done by the definition above (all six workloads, phase 10 of §8). No git
 tag or release procedure is required, so the driver's `sea 0.1.0` (§2.2) already denotes an alpha.
 
 **The MATLAB baseline.** `reference/baseline_timings_matlab.json` (Decision 7, sea commit
@@ -605,6 +607,20 @@ reported next to Sea's numbers (§6.5), not compared:
 | w3_quarter_car | 0.806 | 0.744 | 0.737 | 0.710 | 0.651 | 0.646 |
 | w4_heat_plate | 1.104 | 0.861 | 0.851 | 1.091 | 0.856 | 0.846 |
 | w5_tolerance_mc | 1.627 | 1.565 | 1.539 | 1.617 | 1.561 | 1.533 |
+
+**W7's baseline (decided 2026-10-29).** The committed files above stay W1–W5 only. W7's MATLAB
+timing is the separate file `reference/baseline_timings_matlab_w7_drivetrain.json`, written by
+`run_all(false, 5, 'default', {'w7_drivetrain'})` (MATLAB `26.1.0.3346908 (R2026a) Update 5`,
+`maca64`, Apple M2 Pro `Mac14,9`, `maxNumCompThreads` = 10, five repetitions), the same run that
+wrote `reference/w7_drivetrain.json` and `.txt`:
+
+| Workload | total, first | total, median | **total, best** | compute, first | compute, median | **compute, best** |
+|----------|-------------:|--------------:|----------------:|---------------:|----------------:|------------------:|
+| w7_drivetrain | 9.356 | 8.712 | 8.625 | 9.086 | 8.687 | 8.602 |
+
+Its bests (total 8.625 s, compute 8.602 s) are W7's pass criterion: wherever "faster than MATLAB"
+(below) and §6.5 name the baseline's best, W7's is this file's. No single-threaded W7 file exists
+(the single-threaded table is reported, not compared).
 
 The comparison is valid only on the machine the files name (the user's M2 Pro); §6.5 requires
 the Sea measurement to name its machine.
@@ -12048,7 +12064,7 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
 
 ### 6.3 Workload acceptance
 
-`sea/ports/w1_shaft_design.sea` … `w5_tolerance_mc.sea` are the ports. `sea/tests/accept.sh`
+`sea/ports/w1_shaft_design.sea` … `w5_tolerance_mc.sea` and `w7_drivetrain.sea` are the ports. `sea/tests/accept.sh`
 (both targets) for each port:
 
 1. builds it; runs it in a fresh directory with `--export-reference`, capturing stdout;
@@ -12126,6 +12142,44 @@ and the `vector` lines of `tests/shape/w1_shaft_design.shape` and `tests/shape/w
 pass on both targets (Decision 108); (3) `make cross` passes all three ports under both x86_64
 variants, each byte-identical to the Mac's output but for the `Compute time` line. W4's compile time
 is recorded here at 7f, as W1's was at 6e.
+
+**W7 acceptance** (decided 2026-10-29, Decision 114; specified by decision, written as part of
+sub-phase 7g when 7f is done, §8). The port is `sea/ports/w7_drivetrain.sea` without figures,
+written from `sea/workloads/w7_drivetrain.m` (a port defect found in a pass is reported, not
+worked around in the port), with its token map `sea/ports/w7_drivetrain.tokens` (§6.4).
+`tests/accept.sh` takes it with no change, as it takes every `sea/ports/NAME.sea`: built under
+`SEA_COMPILE_TIMEOUT`, run with `--export-reference` under `SEA_HEAP_CHECK=1`, `compare.py
+--candidate` passing every key of `workloads/reference/w7_drivetrain.json` by W7's `RULES`
+(indices, tooth counts, face widths, counts and the gear table exact; times and speeds 1e-9
+relative; step counts ±1, region counts ±2, the first upshift one 1 ms step; top speed 2e-6 m/s;
+refined reductions 1e-7 relative) and `compare_report.py` finding the report equivalent; `make
+cross` runs it as a `ports` case (byte-identical to the Mac's output but for the `Compute time`
+line) under both x86_64 variants. The MATLAB reference `reference/w7_drivetrain.json` and `.txt`
+exist (§1.2). The port must keep MATLAB's operation order in the time step (the linearly implicit
+wheel step, the CVT ratio update, the vehicle update), the clutch and CVT branches, the tire slip
+curve, both bisections, the parabola vertex and the gear search (each written out in the script;
+the README's tolerance table gives the decision margins measured on the NumPy cross-check). It
+writes its own linear interpolation for MATLAB's `interp1` (LANGUAGE.md has none, see the gaps
+below): with the pinned formula `(1-s)*y0 + s*y1`, which matches MATLAB's `interp1` bit for bit
+(measured 2026-10-29; `np.interp`'s formula differs by 1 ulp on about 25% of inputs), so only the
+last bits of `sin`, `cos` and the real power differ from MATLAB's, which the rules above absorb.
+W7's compile time is recorded here when it is accepted, as W1's was at 6e.
+
+**Feature gaps W7 meets** (the list that 7g's specification takes up; none is a phase-7 work item,
+and a LANGUAGE.md change needs the user's agreement). (1) `interp1` (linear table lookup; about
+2.2M calls per run for the engine torque and 33k for the Lewis form factor) is in neither
+LANGUAGE.md nor §10.13: the port writes it as a function (as Appendix D writes `prctile_mid`) with
+the formula above; a library `interp1(x: f64[], y: f64[], xq: f64) -> f64`, class E with that
+formula pinned and NaN outside the table (as MATLAB), is the candidate. (2) Growing arrays
+`v(end+1) = x`: Sea has no in-place append; today the port preallocates to the 326,700 candidates
+and keeps a count (or concatenates `[v, x]`, O(n) per append), and `push(ref v, x)` with
+amortized growth (§10.13) is the candidate if the MATLAB idiom should be fast. (3) `diff`
+(§10.13 "later"): a loop or slices today. (4) Floating-point ranges `1.5:0.25:3.5`: Sea's ranges
+are `i64` (§5.1); `linspace(1.5, 3.5, 9)` gives the same values. (5) Rank-3 arrays
+(`tDist(nCfg, nG, nCrr)`): a v1 non-goal (LANGUAGE.md §1.3), one matrix per rolling-resistance
+case today (`t_dist`, `t_dist_lo`, `t_dist_hi` are the exported keys). Not gaps: `argsort`
+(stable) with index selection, `argmin`, `find_last`, `inf` with `min(a, b)`, early `return` in a
+multi-result function, and each `printf` format written as one string literal.
 
 **Phase-4 acceptance** (Decision 19; the "done when" of phase 4, §8). Until phase 6 brings
 `write_json`, the acceptance programs write a JSON subset with `printf` and are checked on the
@@ -12555,7 +12609,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse (specified in sub-phase 7a, agreed 2026-10-29: Decisions 94–113, §2.12; built in the sub-phases 7b–7f below; under Decision 94 (a) fusion runs in a new program of pass 3a, `seafuse`, ahead of `sealoop`; under Decision 105 (a) the "no temporaries" of the next column is checked by the run-time allocation count of §2.12.10) | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
-| 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all five workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
+| 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all six workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
 
 **Phase 4 sub-phases** (decided 2026-10-21, Decisions 17–24). They run in this order, because each
 touches the passes the next one extends; inside a sub-phase the passes are written in parallel
@@ -12593,6 +12647,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113): T11, T12, T13 with if-conversion (§2.12.6), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108): §2.12.10. Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
+| 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change expected; **specified by decision, not started: written when 7f is done**): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass |
 
 ## 9. Decisions (agreed)
 
@@ -13459,7 +13514,7 @@ living in its existing block tables; `sealoop` at most one, leaving at least 2) 
 79. **What is an alpha, and what is GA.** Options: (a) an alpha release after phase 6 (W1 and W5
     end to end) plus release work (license, README, release notes, a version suffix, tags); (b)
     an alpha after phase 8; (c) **version-based: every Sea version 0.y.z is an alpha, and 1.0.0
-    is GA, given when v1 is done (§1.2: all five workloads, phase 10); no git tag or release
+    is GA, given when v1 is done (§1.2: all six workloads, phase 10); no git tag or release
     procedure is required**. **Decided: (c)** (the user, 2026-10-25); (c) needs no milestone or
     release step of its own, and the driver's `sea 0.1.0` (§2.2) already denotes an alpha; (a)
     and (b) add a release step and a version suffix to maintain. Affects §1.2 (one sentence); no
@@ -13994,6 +14049,23 @@ recommendation as (a), its reasons, the decision, and what it affects.
      record table's handling; (c) leaves `seavec`'s output unchecked until pass 4, against §3's rule
      that each pass validates what it reads and writes what it validates. **Decided: (a)** (the user, 2026-10-29). Affects §2.7, §2.12.6, §8
      (row 7e), `passes/lib/API.md`.
+
+114. **W7 joins the acceptance set; where its port is built; which MATLAB baseline times it**
+    (2026-10-29; §1.2, §6.3, §8). The user added the workload `sea/workloads/w7_drivetrain.m` (an
+    off-road buggy drivetrain study, written and verified with its MATLAB reference) to Sea v1's
+    acceptance. Options: (a) **W7 joins the acceptance set, which becomes W1–W5 and W7**, (b) W7
+    stays outside as W6 does. **Decided: (a)** (the user, 2026-10-29). Second, where its port and
+    acceptance are built. Options: (a) **a new sub-phase 7g after 7f, the agreed 7f row unchanged**,
+    (b) inside 7f, (c) a later phase. **Decided: (a)** (the user, 2026-10-29): W7 needs only scalar
+    code of phases 1–6 and nothing of phases 7–9 (§6.3), so it cannot hold 7f's close-out back, and
+    the agreed 7f row stays as agreed. Third, its timing baseline. Options: (a) **the committed
+    MATLAB baseline stays W1–W5, and W7's timing is the separate file
+    `reference/baseline_timings_matlab_w7_drivetrain.json` (compute best 8.602 s, total best 8.625 s)**,
+    (b) rerun all six into `baseline_timings_matlab.json`. **Decided: (a)** (the user,
+    2026-10-29): the committed W1–W5 baseline and the numbers built on it stay as they are, and
+    W7's own run already exists. Affects §0, §1.2 (the set, the versions paragraph and Decision 79's
+    "all six workloads", W7's baseline), §6.3 ("W7 acceptance" and the list of feature gaps), §8
+    (row 7g, row 10), LANGUAGE.md §1.2, §4.2 and §10; no contract file, no code.
 
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its

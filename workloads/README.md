@@ -1,17 +1,17 @@
 # Sea acceptance workloads
 
-Six MATLAB scripts that look like everyday engineering work. W1-W5 are the acceptance targets
-of Sea v1 (DESIGN.md §1.2): a Sea port of each script must produce the same numbers and an
-equivalent text report, and should run much faster than MATLAB does. W6 (topology
-optimisation) is an additional reference workload for phase 8 or later; it is not part of the
-v1 acceptance set unless the user decides so.
+Seven MATLAB scripts that look like everyday engineering work. W1-W5 and W7 are the acceptance
+targets of Sea v1 (DESIGN.md §1.2; the user added W7 to the set): a Sea port of each script must
+produce the same numbers and an equivalent text report, and should run much faster than MATLAB
+does. W6 (topology optimisation) is an additional reference workload for phase 8 or later; it is
+not part of the v1 acceptance set unless the user decides so.
 
 **Originality rule.** Every script here is original. The hardware, materials, loads, geometry,
 tolerances and catalogs are invented for this benchmark. The methods are public textbook ones
 (DE-Goodman fatigue, Marin factors, direct-stiffness truss FEM, RK4, finite differences, SOR,
-Box-Muller, and so on). Nothing here is derived from any user-supplied, team-internal or
-third-party script, and nothing may be added that is. The workloads are meant to be published
-with Sea.
+Box-Muller, semi-implicit Euler, Lewis bending, and so on). Nothing here is derived from any
+user-supplied, team-internal or third-party script, and nothing may be added that is. The
+workloads are meant to be published with Sea.
 
 ## The workloads
 
@@ -23,6 +23,7 @@ with Sea.
 | `w4_heat_plate.m` | Steady temperature of a 300 x 200 mm aluminium plate with a heat source, a coolant channel, two fixed-temperature edges and two insulated edges | 241 x 161 grid (37,662 unknowns), 5-point finite differences. **Scalar-loop SOR** (lexicographic, about 830 sweeps, 31M point updates) and a **vectorized red-black SOR** (about 760 sweeps) to a 1e-8 K tolerance. Residuals, a conservative heat-flow balance, the flux field, and centerline profiles |
 | `w5_tolerance_mc.m` | Axial end play of a bearing/gear stack in an aluminium housing, cold and at operating temperature | 7-member tolerance chain. Worst-case and RSS limits, then 1,000,000-sample **Monte Carlo** from an in-script Park-Miller LCG (11M scalar LCG steps), with Box-Muller normals, uniform and triangular (inverse-CDF) distributions, and thermal expansion. Reports mean/std/Cpk, rejects, a 60-bin histogram via `accumarray`, percentiles, variance shares, and a 25-step tolerance-scaling yield sweep |
 | `w6_topopt.m` | Find the stiffest layout of half the material in an MBB half-beam (two filters) and a cantilever | 2D **SIMP** minimum compliance: Q4 plane-stress elements, sparse assembly and sparse direct `K\f` per iteration, density or sensitivity filter (`conv2`), **optimality criteria** with a 0.2 move limit and bisection on the Lagrange multiplier (to 1e-9 relative). Meshes 120 x 40, 120 x 40, 100 x 50 (9,922 / 9,922 / 10,302 DOF); 94-158 design iterations per case (376 solves and ~18k filter applications and ~23k bisection steps in all) |
+| `w7_drivetrain.m` | Off-road racing buggy drivetrain: choose the gearbox reduction for three CVT configurations by a 45 m acceleration run, then design the two-stage spur reduction for the chosen ratio | Two mechanical states (vehicle speed, rear wheel speed) plus the CVT ratio, fixed step dt = 1 ms in an event-ended `while` loop (distance reached, crossing interpolated; 12 s cap): driveline inertia reflected through the current ratio (with the ratio-change term), weight transfer m*a*h/L, a piecewise-linear tire slip curve with the wheel advanced by a **linearly implicit Euler** step, a centrifugal clutch, a load-sensitive CVT (flyweight force against spring and torque-feedback helix sets the shift rate), an `interp1` engine torque table and a governor droop; 46 reductions x 3 CVTs x 3 rolling-resistance cases = 414 runs, about 2.5M steps; grid minimum with parabola-vertex refinement; top speed from the steady force balance by bisection with an inner bisection for the CVT ratio. Gear search: nested loops over 3 pressure angles x 9 x 11 modules x 10 x 10 pinion teeth x 11 stage splits = 326,700 candidates (no-undercut minimum teeth, ratio-error control by one-tooth adjustment, Lewis stress with an `interp1` form factor and a Barth velocity factor, face width grown in 0.5 mm steps, centre-distance and diameter limits), about 6.6k feasible designs in growing arrays sorted by blank volume; a banded backlash lookup with `find` |
 
 Each script:
 
@@ -45,38 +46,42 @@ Toolbox.
 This table is input to Sea's language design document. It lists what a Sea port of each
 workload has to express, and what has to be fast.
 
-| Feature | W1 | W2 | W3 | W4 | W5 |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Many named scalar inputs, units in comments | **x** | x | **x** | x | x |
-| Structs (scalar struct, fields as config) | **x** | | **x** | | |
-| Struct arrays, `[s.field]`, `{s.field}` | **x** | | | | **x** |
-| Cell arrays of strings (labels), `sprintf` into cells | **x** | x | | x | x |
-| String `switch` / `otherwise` + `error()` validation | **x** | | | | **x** |
-| `error()` on invalid configuration or geometry | x | x | | x | x |
-| Multi-output local functions, `~` outputs | **x** | x | **x** | x | x |
-| Scalar `while` loop with convergence test | **x** (bisection) | **x** (FSD) | | **x** (SOR) | |
-| Tight scalar `for` loops (hot path) | **x** | **x** (assembly) | **x** (RK4) | **x** (SOR) | **x** (LCG) |
-| Small fixed-size vectors in a hot loop (4x1 state, 4x4 `ke`) | | **x** | **x** | | |
-| Many small function calls in a hot loop | **x** | x | **x** | | |
-| `linspace`, `meshgrid`, ranges `a:b:c` | **x** | x | **x** | **x** | x |
-| Element-wise expression chains (fusion targets) | **x** | x | **x** | **x** | **x** |
-| Implicit expansion (column op row) | | x | **x** | | |
-| Logical masks, `x(mask) = ...`, `any`, `nnz`, `find(...,1[,'last'])` | **x** | **x** | **x** | **x** | **x** |
-| Whole-array shifted-slice stencils, `[A, B]` concatenation | | | | **x** | |
-| Dense matrix assembly with index vectors `K(idx,idx) += ke` | | **x** | | | |
-| Dense linear solve `A\b`, many RHS, `rcond` | | **x** | x (3x3) | | |
-| `eig` (small) | | | x | | |
-| Matrix-vector and matrix-matrix products | | **x** | **x** | | |
-| Reductions `sum`/`mean`/`std`/`var`/`max`/`min` with index outputs | **x** | **x** | **x** | **x** | **x** |
-| `sort` (1M elements; with index output, `'descend'`) | | | | | **x** |
-| `accumarray`, `floor`-binning | | | | | **x** |
-| `mod`, exact integer arithmetic in doubles (LCG) | | | x | | **x** |
-| `log`, `cos`, `sin`, `sqrt`, `hypot`, `^` with real exponent | **x** | x | **x** | x | **x** |
-| `ind2sub`/`sub2ind`, column-major linear indexing | **x** | | | **x** | |
-| `round` (half away from zero) | x | | x | x | |
-| Formatted text report (`fprintf`, `%-12s`, `%8.3f`, `%+d`, `%e`) | **x** | **x** | **x** | **x** | **x** |
-| Figures: `plot`, `bar`, `barh`, `contour`, `imagesc`, `subplot`, `tiledlayout`, `yyaxis`, `legend` | x | x | x | x | x |
-| File output: `mkdir`, `fopen`/`fprintf`/`fclose`, `jsonencode`, `exportgraphics` | x | x | x | x | x |
+| Feature | W1 | W2 | W3 | W4 | W5 | W7 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| Many named scalar inputs, units in comments | **x** | x | **x** | x | x | **x** |
+| Structs (scalar struct, fields as config) | **x** | | **x** | | | **x** |
+| Struct arrays, `[s.field]`, `{s.field}` | **x** | | | | **x** | x |
+| Cell arrays of strings (labels), `sprintf` into cells | **x** | x | | x | x | x |
+| String `switch` / `otherwise` + `error()` validation | **x** | | | | **x** | |
+| `error()` on invalid configuration or geometry | x | x | | x | x | x |
+| Multi-output local functions, `~` outputs | **x** | x | **x** | x | x | **x** |
+| Scalar `while` loop with convergence test | **x** (bisection) | **x** (FSD) | | **x** (SOR) | | **x** (nested bisection, face width) |
+| Tight scalar `for` loops (hot path) | **x** | **x** (assembly) | **x** (RK4) | **x** (SOR) | **x** (LCG) | **x** (gear search) |
+| Small fixed-size vectors in a hot loop (4x1 state, 4x4 `ke`) | | **x** | **x** | | | |
+| Many small function calls in a hot loop | **x** | x | **x** | | | **x** |
+| `linspace`, `meshgrid`, ranges `a:b:c` | **x** | x | **x** | **x** | x | x |
+| Element-wise expression chains (fusion targets) | **x** | x | **x** | **x** | **x** | |
+| Implicit expansion (column op row) | | x | **x** | | | |
+| Logical masks, `x(mask) = ...`, `any`, `nnz`, `find(...,1[,'last'])` | **x** | **x** | **x** | **x** | **x** | x |
+| Whole-array shifted-slice stencils, `[A, B]` concatenation | | | | **x** | | |
+| Dense matrix assembly with index vectors `K(idx,idx) += ke` | | **x** | | | | |
+| Dense linear solve `A\b`, many RHS, `rcond` | | **x** | x (3x3) | | | |
+| `eig` (small) | | | x | | | |
+| Matrix-vector and matrix-matrix products | | **x** | **x** | | | |
+| Reductions `sum`/`mean`/`std`/`var`/`max`/`min` with index outputs | **x** | **x** | **x** | **x** | **x** | x |
+| `sort` (1M elements; with index output, `'descend'`) | | | | | **x** | x (4k, index output) |
+| `accumarray`, `floor`-binning | | | | | **x** | |
+| `mod`, exact integer arithmetic in doubles (LCG) | | | x | | **x** | x (tooth counts) |
+| `log`, `cos`, `sin`, `sqrt`, `hypot`, `^` with real exponent | **x** | x | **x** | x | **x** | x |
+| `ind2sub`/`sub2ind`, column-major linear indexing | **x** | | | **x** | | |
+| `round` (half away from zero) | x | | x | x | | **x** |
+| Formatted text report (`fprintf`, `%-12s`, `%8.3f`, `%+d`, `%e`) | **x** | **x** | **x** | **x** | **x** | **x** |
+| Figures: `plot`, `bar`, `barh`, `contour`, `imagesc`, `subplot`, `tiledlayout`, `yyaxis`, `legend` | x | x | x | x | x | x |
+| File output: `mkdir`, `fopen`/`fprintf`/`fclose`, `jsonencode`, `exportgraphics` | x | x | x | x | x | x |
+| Event-ended `while` loop (stop at a distance, maximum-time cap, linear interpolation of the crossing) | | | | | | **x** |
+| Piecewise `if`/`elseif` control inside a hot loop | | | x (damper, bump stop, lift-off) | | | **x** (clutch, CVT limits, tire slip curve, governor) |
+| `interp1` table lookup (linear) inside a hot loop | | | | | | **x** |
+| Discrete nested design search (`continue`/`break`), growing arrays `v(end+1) = ...`, a table sorted by one key | | | | | | **x** |
 
 **x** = a central, performance-relevant use; x = used.
 
@@ -91,21 +96,31 @@ Open MATLAB R2026a and set the current folder to `sea/workloads` (any folder wor
 paths are taken from the files' own locations). Then:
 
 ```matlab
-run_all               % each workload 5 times, no figures; writes reference/* + timings
+run_all               % W1-W5 and W7, 5 times each, no figures; writes reference/* + timings
 run_all(true)         % same, plus figures saved to output/
 run_all(false, 5)     % 5 repetitions for timing (the default)
 run_all(false, 5, 1)  % the same with MATLAB limited to one computational thread
 w3_quarter_car        % one workload on its own: report + figures, writes nothing
+run_all(false, 5, 'default', {'w7_drivetrain'})  % W7 only: reference/w7_drivetrain.json + .txt
 run_all(false, 5, 1, {'w6_topopt'})          % W6 only (single thread), then:
 run_all(false, 5, 'default', {'w6_topopt'})  % W6 only: reference/w6_topopt.json + .txt
 ```
 
-A fourth argument `names` (a cell array of workload names, or `'all'` for W1-W6) selects the
-workloads; without it `run_all` runs W1-W5 exactly as before. With any other set the timing file
-name carries the suffix `_<name>...` (`baseline_timings_matlab_w6_topopt.json`,
-`baseline_timings_matlab_1thread_w6_topopt.json`), so the committed W1-W5 baseline is not
+A fourth argument `names` (a cell array of workload names, or `'all'` for W1-W7) selects the
+workloads; without it `run_all` runs the v1 acceptance set, W1-W5 and W7. With any other set the
+timing file name carries the suffix `_<name>...` (`baseline_timings_matlab_w6_topopt.json`,
+`baseline_timings_matlab_1thread_w6_topopt.json`), so the committed default baseline is not
 overwritten. With a single workload `jsonencode` writes the timing fields as flat arrays and
 plain numbers rather than arrays of rows.
+
+**W7's baseline is a separate file (decided).** The committed W1-W5 baseline files
+(`baseline_timings_matlab.json`, `baseline_timings_matlab_1thread.json`) stay as they are. W7's
+MATLAB timing is `reference/baseline_timings_matlab_w7_drivetrain.json`, written beside them by
+`run_all(false, 5, 'default', {'w7_drivetrain'})` (MATLAB R2026a Update 5 via `matlab -batch`,
+Apple M2 Pro Mac14,9, default threads): compute time first 9.086 s, median 8.687 s, best 8.602 s;
+total best 8.625 s. That run also wrote `reference/w7_drivetrain.json` and `w7_drivetrain.txt`.
+A plain `run_all` (the default set W1-W5 and W7) would write all six into the main baseline file;
+it is not needed.
 
 `run_all(makePlots, nRepeat, threads)` runs each script in its own function workspace with
 `SEA_EXPORT_REFERENCE = true`. Arguments: `makePlots` (default `false`), `nRepeat` (default
@@ -162,6 +177,7 @@ Produce or refresh the NumPy values, and compare them with MATLAB's:
 ```sh
 cd sea/workloads
 uv run --no-project --with numpy python reference_py/run_all.py   # writes *.py.json
+uv run --no-project --with numpy python reference_py/run_all.py w7_drivetrain   # only W7
 uv run --no-project --with numpy python reference_py/compare.py   # MATLAB vs NumPy
 ```
 
@@ -333,13 +349,28 @@ The rule for each key is in `reference_py/compare.py` (`RULES`). In summary:
 | W6 `gray`, `n_solid` | 5e-4 absolute, +-20 elements | +-2 iterations: 1.5e-4 and 5 |
 | W6 density fields `x_*` | `field` rule: <= 1 % of elements on the other side of 0.5 and mean \|diff\| <= 5e-3 | +-2 iterations: 0.33 % and 2.4e-3; ulp-level changes: 0 and <= 2e-11 |
 | W6 `vol_final`, `vol_err_max` | 1e-8 absolute / below 1e-8 | The bisection holds the volume to ~3e-10 |
+| W7 indices, configuration pick, gear ratio target, tooth counts, face widths, centre distances, search counts, backlash bands and values | exact | Decided on IEEE `+ - * /` of the same values, except `interp1`, `sin`, `cos`, `sqrt` and the real power; the NumPy run's margins: grid minima lead by >= 4.3e-5 relative, Lewis stress comparisons are >= 3.7e-6 relative from the limit, rounded power-based values are >= 3e-3 from a half-integer, `100*G_best` of the picked configuration is 0.45 from a rounding boundary |
+| W7 times, trap speeds, speed trace | 1e-9 relative | Scaling the engine and Lewis table lookups by (1 +- 2^-52) moves them by <= 1.3e-15 relative and no discrete key: the slip, clutch and CVT dynamics do not amplify rounding |
+| W7 step counts per run, total steps, region step counts | +-1, +-20, +-2 | A crossing (>= 5e-4 of a step from a step boundary in the NumPy run) or a region boundary moved by a last-bit difference |
+| W7 first upshift `t_shift` | one 1 ms step | The CVT force balance at the onset decision is >= 2.4e-6*F0 from zero |
+| W7 top speed, its bisection iterations | 2e-6 m/s absolute, +-1 | Bisection tolerance 1e-6 m/s |
+| W7 refined reductions `G_best*` | 1e-7 relative | Parabola vertex through three times (as W3's `c_best`) |
+| W7 gear stresses, blank volumes, ratio errors | 1e-12 relative | `interp1`, `sin`, `cos`, power: a few ulps |
 
 ### Verification already done
 
 Done without MATLAB:
 
-* All five NumPy cross-checks run (`reference_py/run_all.py`) and pass the `compare.py`
+* All NumPy cross-checks (W1-W7) run (`reference_py/run_all.py`) and pass the `compare.py`
   self-test.
+* W7: MATLAB's `reference/w7_drivetrain.json` passes `compare.py` against the NumPy file on
+  every key; the largest differences are 3.6e-15 s in `t_dist` and 1.5e-13 in `G_best_lo`, every
+  discrete key identical.
+* W7: the decision margins quoted in the tolerance table above were measured on the NumPy run
+  (a scratch script instrumenting `reference_py/w7_drivetrain.py`, outside the repo). Every
+  `round()` whose argument comes only from `+ - * /` (the compensating stage-2 tooth count) is
+  bit-identical in any IEEE implementation, so its exact half-integer cases (there are some)
+  round the same way (half away from zero) in MATLAB, NumPy and Sea.
 * W4: the discrete system was also solved directly with a sparse LU solver (SciPy, in a
   scratch script outside the repo). The maximum difference from the SOR solution was 8.3e-8 K
   over the exported field, and the hot spot agreed to 2e-8 K.
@@ -375,6 +406,7 @@ MATLAB R2026a, compute time per workload is expected to be about 0.5-5 s:
 | W4 | 31M scalar SOR updates plus ~1500 vectorized half-sweeps | 1-3 s |
 | W5 | 11M scalar LCG steps, 1M-element sort and vector arithmetic | 0.5-2 s |
 | W6 | 376 sparse assemblies and Cholesky solves of ~10k DOF, ~18k `conv2` filter calls | 3-8 s |
+| W7 | ~2.5M time steps (wheel, vehicle and CVT ratio), each calling four small functions and `interp1` (scalar `interp1` calls are slow in MATLAB); 327k gear candidates in nested loops | measured: 8.6 s compute (best of 5, M2 Pro) |
 
 For comparison, the NumPy cross-checks take 0.5-4 s each on an M2 Pro (Python 3.12,
 NumPy 2.5). Those times are not a baseline for Sea.
@@ -385,11 +417,11 @@ NumPy 2.5). Those times are not a baseline for Sea.
 workloads/
   README.md               this file
   run_all.m               MATLAB driver: export references and report texts, time everything
-  w1_shaft_design.m       ... w6_topopt.m: the workloads
+  w1_shaft_design.m       ... w7_drivetrain.m: the workloads
   reference/              <name>.json (MATLAB, authority), <name>.txt (MATLAB report),
                           <name>.py.json (NumPy cross-check), baseline_timings_matlab.json and
                           baseline_timings_matlab_1thread.json (from run_all.m)
-  reference_py/           common.py, w1..w6 *.py, run_all.py, compare.py (also --candidate),
+  reference_py/           common.py, w1..w7 *.py, run_all.py, compare.py (also --candidate),
                           compare_report.py (report comparison with token maps),
                           w6_validate.py (W6 physics checks), w6_roundoff.py (W6 tolerance
                           evidence)

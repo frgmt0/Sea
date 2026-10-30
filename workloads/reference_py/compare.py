@@ -150,6 +150,49 @@ RULES = {
         "min_hot": ("num", 1e-14, 0.0), "max_hot": ("num", 1e-14, 0.0),
         "pct_cold": ("num", 1e-14, 0.0), "pct_hot": ("num", 1e-14, 0.0),
     },
+    # W7: the time-stepping and gear-search decisions use only IEEE + - * / on the same values,
+    # except interp1, sin, cos, sqrt and the real power (last-bit differences between
+    # libraries). Margins measured on the NumPy run: every grid minimum leads its runner-up by
+    # >= 4.3e-5 relative, every crossing lies >= 5e-4 of a step from a step boundary, every
+    # Lewis stress comparison is >= 3.7e-6 relative from the limit, every CVT force balance
+    # tested at rLow is >= 2.4e-6*F0 from zero, every round() of a power-based value is >= 3e-3
+    # from a half-integer, and 100*G_best of the picked configuration is 0.45 from a rounding
+    # boundary. Scaling the engine and Lewis table lookups by (1 +- 2^-52) moves no discrete
+    # key and the times by <= 1.3e-15 relative (the slip, clutch and CVT dynamics do not
+    # amplify rounding). So indices, tooth counts, face widths, counts and the gear table are
+    # exact; step counts allow one step (a crossing), region counts two, the first upshift one.
+    "w7_drivetrain": {
+        "workload": ("exact",), "cfg_name": ("exact",), "G": ("num", 0.0, 1e-15),
+        "t_dist": ("num", 0.0, 1e-9), "t_dist_lo": ("num", 0.0, 1e-9),
+        "t_dist_hi": ("num", 0.0, 1e-9),
+        "v_trap": ("num", 0.0, 1e-9), "v_trap_lo": ("num", 0.0, 1e-9),
+        "v_trap_hi": ("num", 0.0, 1e-9),
+        "steps": ("int", 1), "steps_lo": ("int", 1), "steps_hi": ("int", 1),
+        "total_steps": ("int", 20),
+        "v_top": ("num", 2e-6, 0.0),               # bisection tolerance 1e-6 m/s
+        "top_iters": ("int", 1),
+        "i_best": ("exact",), "i_best_lo": ("exact",), "i_best_hi": ("exact",),
+        "t_best": ("num", 0.0, 1e-9), "t_best_lo": ("num", 0.0, 1e-9),
+        "t_best_hi": ("num", 0.0, 1e-9),
+        "G_best": ("num", 0.0, 1e-7), "G_best_lo": ("num", 0.0, 1e-7),
+        "G_best_hi": ("num", 0.0, 1e-7),           # parabola vertex, as W3's c_best
+        "region_steps": ("int", 2), "trace_v": ("num", 0.0, 1e-9),
+        "t_shift": ("num", 1.001e-3, 0.0),         # first upshift, quantised to the 1 ms step
+        "cfg_pick": ("exact",), "G_target": ("exact",), "n_min": ("exact",),
+        "y_scale": ("num", 0.0, 1e-13),
+        "n_cand": ("exact",), "n_dup": ("exact",), "n_rej_ratio": ("exact",),
+        "n_rej_geom": ("exact",), "n_rej_stress": ("exact",), "n_feasible": ("exact",),
+        "feasible_per_phi": ("exact",),
+        "mass_sorted": ("num", 0.0, 1e-12),
+        "top_phi": ("exact",), "top_m1": ("exact",), "top_m2": ("exact",),
+        "top_split": ("num", 0.0, 1e-15), "top_Np1": ("exact",), "top_Ng1": ("exact",),
+        "top_Np2": ("exact",), "top_Ng2": ("exact",), "top_F1": ("exact",),
+        "top_F2": ("exact",), "top_a1": ("exact",), "top_a2": ("exact",),
+        "top_err": ("num", 0.0, 1e-12), "top_s1": ("num", 0.0, 1e-12),
+        "top_s2": ("num", 0.0, 1e-12), "top_mass": ("num", 0.0, 1e-12),
+        "backlash_band_a": ("exact",), "backlash_band_m": ("exact",),
+        "backlash_min": ("exact",), "backlash_max": ("exact",),
+    },
 }
 
 NAMES = list(RULES)

@@ -45,7 +45,7 @@ and deliberately not MATLAB-compatible; and free, tiny, portable native binaries
 
 ### 1.2 Scope of Sea v1
 
-What the five acceptance workloads (`sea/workloads/`) need, done well,
+What the six acceptance workloads (W1–W5 and W7, `sea/workloads/`) need, done well,
 plus the small amount of generality that keeps the language coherent. Every feature in this
 specification is required by at least one workload or by the language's own consistency (where a
 library function is included for consistency, §10 says why); features that no workload needs
@@ -508,7 +508,7 @@ or stored in arrays; they may be struct fields, parameters, results and locals.
 
 ### 4.2 Numbers: `f64` and `i64`
 
-**Rationale.** All five workloads compute in `f64`, and their integers (counts, indices, the
+**Rationale.** All six acceptance workloads compute in `f64`, and their integers (counts, indices, the
 LCG state, grid sizes) are exact integers that MATLAB keeps in doubles. Sea gives integers
 their own type because indices and counts are integers by nature, integer loops and address
 arithmetic are faster than conversions, the LCG is exact in `i64` without relying on the
@@ -1380,7 +1380,7 @@ outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 **Rationale.** MATLAB code is shape-polymorphic because everything is a matrix; W1's
 `shaft_safety` is written with masks (`kb(m1) = …`) precisely so that it works for any shape.
 An elemental function is that code written as plain scalar logic, which is clearer and is also
-the form a compiler can fuse and vectorize. It covers every shape-polymorphic use in the five
+the form a compiler can fuse and vectorize. It covers every shape-polymorphic use in the six acceptance
 workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
 
 ### 8.6 Recursion and inlining
@@ -1495,7 +1495,7 @@ The library is specified to the level the workloads need, with its exactness cla
 "Elemental" means the function accepts arrays with broadcasting (§8.5). Where a MATLAB function
 is replaced, its name is given. Every function here is class E unless marked **R**.
 
-**Scope rule (§1.2).** v1 contains what the five workloads use, plus a small core whose
+**Scope rule (§1.2).** v1 contains what the six acceptance workloads (W1–W5 and W7) use, plus a small core whose
 inclusion is justified in the table where it is not obvious. Everything else that a numerical
 language will eventually want is listed in §10.13 ("Later") and is not part of v1: no partial
 specification of it exists in this document.

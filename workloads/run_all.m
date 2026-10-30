@@ -7,8 +7,9 @@ function run_all(makePlots, nRepeat, threads, names)
 %   run_all(false, N, 1)       the same with MATLAB limited to one computational thread
 %   run_all(false, N, 'default')  the default (all threads); same as leaving it out
 %   run_all(false, N, T, NAMES)   only the workloads in the cell array NAMES, e.g.
-%                                 {'w6_topopt'}; 'all' = W1-W6. Leaving NAMES out runs the
-%                                 five v1 acceptance workloads W1-W5 (DESIGN.md §1.2).
+%                                 {'w6_topopt'}; 'all' = W1-W7. Leaving NAMES out runs the
+%                                 six v1 acceptance workloads W1-W5 and W7 (DESIGN.md
+%                                 §1.2).
 %
 %   Works from any current folder: all paths are relative to this file. Each workload runs
 %   in its own workspace with SEA_EXPORT_REFERENCE = true, so reference/<name>.json is
@@ -25,10 +26,11 @@ function run_all(makePlots, nRepeat, threads, names)
 %   reference/baseline_timings_matlab_1thread.json. With N < 5 (a quick run) no timing file is
 %   written. The timing file records the MATLAB version, architecture, the number of
 %   computational threads in effect (max_num_comp_threads), the machine model and CPU brand,
-%   and all timings. When NAMES is not the default W1-W5 set, the timing file name gets the
-%   suffix _<name1>_<name2>... (baseline_timings_matlab_w6_topopt.json,
-%   baseline_timings_matlab_1thread_w6_topopt.json), so the committed W1-W5 baseline is not
-%   overwritten.
+%   and all timings. When NAMES is not the default set (W1-W5 and W7), the timing file name
+%   gets the suffix _<name1>_<name2>... (baseline_timings_matlab_w6_topopt.json,
+%   baseline_timings_matlab_1thread_w6_topopt.json), so the committed default baseline is not
+%   overwritten. The committed baseline files cover W1-W5; W7's timing is the separate file
+%   baseline_timings_matlab_w7_drivetrain.json, from run_all(false, 5, 'default', {'w7_drivetrain'}).
 %   With a single workload, jsonencode writes the per-workload timing fields as flat arrays
 %   (total_seconds, compute_seconds) and plain numbers (the medians and bests) instead of
 %   arrays of rows.
@@ -50,9 +52,9 @@ minBaselineRepeat = 5;
 if nargin < 1, makePlots = false; end
 if nargin < 2, nRepeat = 5; end
 if nargin < 3, threads = 'default'; end
-v1Names = {'w1_shaft_design', 'w2_truss_fem', 'w3_quarter_car', 'w4_heat_plate', ...
-           'w5_tolerance_mc'};
-allNames = [v1Names, {'w6_topopt'}];
+allNames = {'w1_shaft_design', 'w2_truss_fem', 'w3_quarter_car', 'w4_heat_plate', ...
+            'w5_tolerance_mc', 'w6_topopt', 'w7_drivetrain'};
+v1Names = allNames([1:5, 7]);     % the v1 acceptance set: W1-W5 and W7
 if nargin < 4
     names = v1Names;
 elseif (ischar(names) && strcmp(names, 'all')) ...

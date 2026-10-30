@@ -1,0 +1,31 @@
+{
+  "matlab_version": "26.1.0.3346908 (R2026a) Update 5",
+  "arch": "maca64",
+  "n_repeat": 5,
+  "threads_mode": "default",
+  "max_num_comp_threads": 10,
+  "machine_model": "Mac14,9",
+  "cpu_brand": "Apple M2 Pro",
+  "machine_note": "",
+  "workloads": [
+    "w7_drivetrain"
+  ],
+  "total_seconds": [
+    9.3563256666666668,
+    8.6832287916666662,
+    8.7533475,
+    8.6250477916666668,
+    8.7119849166666672
+  ],
+  "compute_seconds": [
+    9.085980666666666,
+    8.6582914583333341,
+    8.7297254583333341,
+    8.601566291666666,
+    8.686500875
+  ],
+  "total_seconds_median": 8.7119849166666672,
+  "compute_seconds_median": 8.686500875,
+  "total_seconds_best": 8.6250477916666668,
+  "compute_seconds_best": 8.601566291666666
+}
