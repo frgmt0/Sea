@@ -25,7 +25,9 @@
 #   make test-lib         tests/lib_check.sh    the shared pass modules
 #   make test-arith       tests/arith_check.sh  the exact-arithmetic modules
 #   make test-math        tests/math/math_check.c (xcrun cc) against build/libsea.a and
-#                         tests/math/*.vec: log exp sin cos pow hypot, bit for bit (4.10.6)
+#                         tests/math/*.vec: log exp sin cos pow hypot, bit for bit (4.10.6), and the
+#                         vector entries sea_*_x in every lane position and on 2^24 random calls per
+#                         lane pattern (2.12.8)
 #   make math-tables      uv run tools/math_tables.py --check (timeout 120): the committed
 #                         include/math_tables.inc equals its definitions; developer tool,
 #                         not part of make test

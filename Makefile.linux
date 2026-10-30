@@ -81,8 +81,10 @@ ifeq ($(origin CC),default)
 CC := gcc
 endif
 test-math: all
-	@if [ ! -f tests/math/math_check.c ]; then echo "make: tests/math/math_check.c not found" >&2; exit 1; fi
-	$(CC) -O1 -ffp-contract=off -o $(BUILD)/obj/math_check tests/math/math_check.c $(BUILD)/libsea.a -lm
+	@if [ ! -f tests/math/math_check.c ] || [ ! -f tests/math/math_check_y.c ]; then echo "make: tests/math/math_check.c or math_check_y.c not found" >&2; exit 1; fi
+	$(CC) -O1 -ffp-contract=off -c -o $(BUILD)/obj/math_check.o tests/math/math_check.c
+	$(CC) -O1 -ffp-contract=off -mavx2 -c -o $(BUILD)/obj/math_check_y.o tests/math/math_check_y.c
+	$(CC) -o $(BUILD)/obj/math_check $(BUILD)/obj/math_check.o $(BUILD)/obj/math_check_y.o $(BUILD)/libsea.a -lm -lpthread
 	$(BUILD)/obj/math_check tests/math
 
 # Same comment rule and grep as the Mac Makefile (Baysick DESIGN.md 3.4).

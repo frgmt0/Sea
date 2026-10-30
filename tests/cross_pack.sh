@@ -322,11 +322,12 @@ done
 # math/math_check: the elementary-function harness and its vectors (DESIGN.md 4.10.6)
 if selected "math/math_check"; then
     [ -f "$ROOT/tests/math/math_check.c" ] || setup_fail "tests/math/math_check.c missing"
+    [ -f "$ROOT/tests/math/math_check_y.c" ] || setup_fail "tests/math/math_check_y.c missing"
     for fn in log exp sin cos pow hypot; do
         [ -f "$ROOT/tests/math/$fn.vec" ] || setup_fail "tests/math/$fn.vec missing"
     done
     mkdir -p "$BUNDLE/tests/math" || setup_fail "cannot create $BUNDLE/tests/math"
-    cp "$ROOT/tests/math/math_check.c" "$ROOT"/tests/math/*.vec "$BUNDLE/tests/math/" \
+    cp "$ROOT/tests/math/math_check.c" "$ROOT/tests/math/math_check_y.c" "$ROOT"/tests/math/*.vec "$BUNDLE/tests/math/" \
         || setup_fail "cannot copy tests/math"
     PACKED=$((PACKED + 1))
 fi

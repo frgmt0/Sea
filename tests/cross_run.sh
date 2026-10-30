@@ -358,7 +358,11 @@ if [ ! -f "$BUNDLE/tests/math/math_check.c" ]; then
     if [ -z "$(cat "$BUNDLE/PATTERNS" 2>/dev/null)" ]; then fail math/math_check "the bundle lacks the math case"; fi
 else
     name=math/math_check
-    "$CC" -O1 -ffp-contract=off -o "$TMP/math_check" "$BUNDLE/tests/math/math_check.c" "$LIBSEA" -lm \
+    # two translation units: the 4-lane part is compiled with -mavx2 and runs only when the CPU
+    # reports AVX2 (DESIGN.md 2.12.8)
+    { "$CC" -O1 -ffp-contract=off -c -o "$TMP/math_check.o" "$BUNDLE/tests/math/math_check.c" &&
+      "$CC" -O1 -ffp-contract=off -mavx2 -c -o "$TMP/math_check_y.o" "$BUNDLE/tests/math/math_check_y.c" &&
+      "$CC" -o "$TMP/math_check" "$TMP/math_check.o" "$TMP/math_check_y.o" "$LIBSEA" -lm -lpthread; } \
         >"$TMP/m.cc" 2>&1
     if [ $? -ne 0 ] || [ -s "$TMP/m.cc" ]; then
         fail "$name" "build failed: $(head -3 "$TMP/m.cc" | tr '\n' ' ')"

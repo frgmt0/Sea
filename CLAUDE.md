@@ -114,8 +114,9 @@ functions), the W4 port, a run-time allocation count (`SEA_HEAP_CHECK=count`), a
 contract changes, the new programs `seafuse` and `seavec`, `sealopt` writing `sea.lir3`, L19
 rewritten in `seafuse`, `sealoop` reading `sea.hirf`; neutral by Decision 109 over the whole corpus;
 lead decisions L-fm–L-fu; `seafuse` 3 164 built lines with 5 free letters, `sealoop` 6 396;
-DESIGN.md §2.7 "Measured after 7b"). **Next:** 7c (fusion) and 7d (vector elementary functions;
-may run in parallel with 7c). Versions 0.y.z are alpha; 1.0.0 = v1
+DESIGN.md §2.7 "Measured after 7b"). **7d is done** (2026-10-29: the vector forms of the
+elementary functions, entries 39–50, `rt_vmath.s` per runtime; DESIGN.md §2.12.8). **Next:** 7c
+(fusion). Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first
@@ -143,7 +144,7 @@ may run in parallel with 7c). Versions 0.y.z are alpha; 1.0.0 = v1
   (`tests/stage.sh`, each pass on the previous pass's golden), `test-shape` (`tests/shape.sh`, the
   instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
-  (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`),
+  (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`, and their vector entries against the scalar ones in every lane position and on random inputs),
   `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the phase-6 ports W1 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run

@@ -3166,7 +3166,9 @@ Increments by sub-phase (§8, rows 7b–7f):
   230–470: **6 048–6 658**.
 * `seaparse`, `seaname`, `seacheck`, `seaexpand`: none (no language change). `tools/seaval.bas`: the
   formats `hirf` and `lir3`, 40–80 (a tool, not gated). The runtimes (no Baysick limit):
-  `rt_vmath.s` arm64 1 200–2 000, x86_64 2 000–3 500 lines; the heap check's count mode (§4.5,
+  `rt_vmath.s` arm64 1 200–2 000, x86_64 2 000–3 500 lines (**measured after 7d**: arm64 751,
+  x86_64 1 084, both below the projection because the rare lanes call the scalar entries and the
+  x86_64 `_x` and `_y` entries share their macros); the heap check's count mode (§4.5,
   Decision 105) 20–40 lines per target.
 
 **Free numeric array letters of `seafuse`** (projected now, counted at 7b and after 7c): its reader
@@ -4348,13 +4350,23 @@ never references one.
 **Algorithm**: §4.10's text per lane, as §4.10.1 "Vector forms" says: branches become per-lane
 selects, table lookups per-lane loads, and the *rare* paths (special inputs, `exp` with |x| ≥ 512,
 the Payne–Hanek reduction for |x| ≥ 2²³, subnormal inputs) call the scalar entry for each lane that
-needs one (the lanes tested with one vector compare; the common case calls nothing). Every operation
-is one of §4.10's (no FMA, no approximate instruction), so each lane's bits are the scalar entry's.
+needs one: the rare lanes are found by vector compares into one lane mask, which is tested once (the
+common case calls nothing scalar). Two sets are found only after the common computation: `pow`'s
+lanes whose step-10 |ehi| ≥ 512 (`exp_core`'s rare and huge paths) and `hypot`'s lanes whose
+scaling-up branch holds step 6's subnormal rounding (max(|x|, |y|) < 2⁻⁵⁰⁰). The rare sets are per
+target where an instruction is missing: the `x86_64` SSE2 forms treat `pow` with finite x < 0 as rare
+(no per-lane variable shift), the arm64 forms compute the negative bases of an integer y in vector;
+the results are bit-identical either way, since a rare lane's result is the scalar entry's. Every
+operation is one of §4.10's (no FMA, no approximate instruction), so each lane's bits are the scalar
+entry's.
 SSE2 has no `pcmpgtq`, `roundpd`, `pinsrq` or 64-bit packed conversion and NEON no 64 × 64-bit
 multiply: where §4.10's step needs one, the vector form uses an exact sequence or the scalar entry
-for that lane. Files: `rt_vmath.s` per target (beside `rt_math.s`, whose internal helpers it may call
-under their non-contract names); both Makefiles take the runtime sources by wildcard, so no object
-list changes.
+for that lane. Files: `rt_vmath.s` per target (beside `rt_math.s`); it calls only the scalar contract
+entries (`rt_math.s`'s helpers are assembler-local labels, so it cannot call them) and emits its own
+copy of the tables with `SEA_EMIT_MATH_TABLES` (the `sea_mt_*` labels are file-local, §4.10.3); both
+Makefiles take the runtime sources by wildcard, so no object list changes. As built: arm64 751 lines
+(the `_x` entries), x86_64 1 084 lines (the `_x` entries in SSE2 and the `_y` entries in AVX2, both
+instantiated from shared macros).
 
 **Tests** (§6.2, "Phase-7 tests"): `tests/math/math_check.c` gains the vector entries: (1) every
 committed vector of `tests/math/*.vec` in every lane position of a 2-lane (and on x86_64, with AVX2
@@ -4364,7 +4376,16 @@ fixed-seed xorshift generator over all bit patterns and over each function's int
 (|x| near 2²³ and 512, subnormals, ±0, ±∞, NaN payloads), each vector result lane compared bit for
 bit with the scalar entry; built as before (`-O1 -ffp-contract=off`; the 4-lane part in a second
 translation unit with `-mavx2`, run only when the CPU reports AVX2, which the Linux host does,
-Decision 104).
+Decision 104). As built: the lane patterns of (2) are *mixed* (every lane drawn from all inputs),
+*all-common*, *one-rare* (exactly one rare lane, its position rotating with the call index) and
+*all-rare*, 2²⁴ vector calls per function and pattern, each lane of each call checked against the
+scalar entry; the rare inputs that fill the other lanes in (1) are the cases of the same file whose
+arguments are zero, subnormal, infinite, NaN, |x| ≥ 2²³ or 256 ≤ |x| < 1 024. The tests run on a
+thread pool (`-lpthread` on Linux) with their output buffered per task and printed in a fixed order,
+so the output is deterministic and the case fits `cross_run.sh`'s 60 s limit (measured: 5 s on the
+Mac, 33 s on the Linux host). `tests/rt/<target>/rt_vmath_abi.s` checks each target's own ABI
+(registers, FPCR / MXCSR, the 512-byte stack bound) and `tests/rt/x86_64_linux/rt_vmath_abi_y.s` the
+`_y` entries (AVX2; it reports a host without AVX2 and fails).
 
 #### 2.12.9 Capacity and limits
 
@@ -8771,6 +8792,10 @@ Makefile.linux` (`build-x86_64-linux/libbaysickrt.a`). Runtime tests are
 program defining `sea_main` and `sea_sites`), with the same sidecars and the same expected bytes,
 except for these tests, whose subject is target-dependent by this section and §4.4:
 
+* `rt_vmath_abi` (in both directories, with different text: the subject is the target's own ABI,
+  §2.12.8 — the preserved registers, FPCR on arm64 and the MXCSR control bits and direction flag
+  on x86_64, the 512-byte stack bound) and `rt_vmath_abi_y` (`x86_64` only: the 4-lane `_y`
+  entries, which need AVX2);
 * `rt_err_errno_darwin`, `rt_err_errno_linux` (in both directories): the errno table is the
   host's column (§2.6.2), so the host's own value prints its text and the other host's value
   for the same error, absent from this column, prints record 0's text (`unknown error`);
@@ -9728,8 +9753,12 @@ a program that links `libsea.a` pulls in only `rt_math.o` for them. They share i
 section: the branches of the scalar text become per-lane selects, table lookups become per-lane
 loads, and the paths marked *rare* below (special inputs, `exp` with |x| ≥ 512, the Payne–Hanek
 reduction of `sin`/`cos` for |x| ≥ 2²³, subnormal inputs) may be done by calling the scalar
-entry for the lanes that need them (NEON and SSE2 have no 64 × 64-bit vector multiply). Their
-entry points and register conventions are added to `rt.inc` and §4.8 by phase 7; their results
+entry for the lanes that need them (NEON and SSE2 have no 64 × 64-bit vector multiply). The rare
+lanes are found by vector compares into one mask, tested once, so the common case calls nothing
+scalar; `pow`'s lanes with step 10's |ehi| ≥ 512 and `hypot`'s lanes holding step 6's subnormal
+rounding (max(|x|, |y|) < 2⁻⁵⁰⁰) are found after the common computation, and the rare sets differ
+by target where an instruction is missing (§2.12.8: SSE2 treats `pow` with finite x < 0 as rare,
+arm64 does not). Their entry points and register conventions are added to `rt.inc` and §4.8 by phase 7; their results
 are bit-identical to the scalar entries for every input, which the tests of §4.10.6 check.
 
 #### 4.10.2 Notation and shared primitives
@@ -9762,8 +9791,8 @@ even; v is the exact mathematical value.
 
 The tables are generated by `tools/math_tables.py` (§4.10.6), which computes every entry from
 its definition with mpmath at 600 bits and rounds it as stated, and writes
-`include/math_tables.inc`. The file is committed and is included by both runtimes'
-`rt_math.s`; it is shared by Apple `as` and GNU `as` under the rules of §2.6 (Baysick DESIGN.md
+`include/math_tables.inc`. The file is committed and is included by `rt_math.s` and `rt_vmath.s` of
+each runtime, each of which emits its own file-local copy; it is shared by Apple `as` and GNU `as` under the rules of §2.6 (Baysick DESIGN.md
 §3.4: `//` comments only at the start of a line, no trailing comments, guarded by
 `.ifndef SEA_MATH_TABLES_INC` / `.equiv SEA_MATH_TABLES_INC, 1` / `.endif`). It defines one
 macro, `SEA_EMIT_MATH_TABLES`, which the including file invokes once in its read-only data
@@ -11999,8 +12028,14 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     under `sse2` and `avx2` (Decision 104).
   * **Runtime tests** (7d: WP-VMATH-A64, WP-VMATH-X64, WP-MATHT): `tests/math/math_check.c`
     extended as §2.12.8 says (every `.vec` value in every lane position, and the seeded random
-    differential test, L-fj, bit for bit against the scalar entry), and
-    `tests/rt/<target>/rt_vmath_abi.s` (the preserved registers of §2.12.8's ABI, the stack bound);
+    differential test, L-fj, bit for bit against the scalar entry: the lane patterns mixed,
+    all-common, one-rare (rotating) and all-rare, 2²⁴ vector calls per pattern and function, each
+    lane checked; the other lanes of part 1 hold the same file's zero, subnormal, infinite, NaN,
+    |x| ≥ 2²³ and 256 ≤ |x| < 1 024 cases; a thread pool, so the case fits `cross_run.sh`'s 60 s
+    limit: measured 5 s on the Mac, 33 s on the Linux host), its 4-lane translation unit
+    `tests/math/math_check_y.c` (`-mavx2`), and `tests/rt/<target>/rt_vmath_abi.s` (the preserved
+    registers of §2.12.8's ABI, the stack bound) with `tests/rt/x86_64_linux/rt_vmath_abi_y.s` (the
+    `_y` entries);
     (7f: WP-HEAP) `tests/rt/<target>/` cases for `SEA_HEAP_CHECK=count` (a known number of
     allocations and copies on write), and `heap_env_other` unchanged.
   * **Allocation counts** (7f: WP-FUSIONT, §2.12.10): `tests/fusion/w1_bisect.sea`,
@@ -12555,7 +12590,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7a | **Phase-7 specification** (documents only; proposed 2026-10-29, revised after two independent reviews, agreed 2026-10-29 with Decisions 94–113 and lead decisions L-eh–L-fl): §0, §2.7 ("Projected for phase 7", "The measurement after 7c", "The gate after phase 7"), §2.12 (scope and non-scope, the contract changes, the semantic contract with the out-of-memory sentence proposed for LANGUAGE.md §9.2, `seafuse` and `sea.hirf`, L19's rewrite, L18/L20's copying, F1–F5, `seavec`'s T11–T13, pass 4's vector code, entries 39–50, capacity, W4, the allocation count and the vector check, the goldens), §6.2 ("Phase-7 tests"), §6.3 ("Phase-7 acceptance"), §6.6.1 (both x86_64 variants), this table, §9; no contract file, intermediate format or code changes; LANGUAGE.md unchanged until agreement | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 94–113. **Done** (2026-10-29): the specification agreed, each Decision as option (a), with the LANGUAGE.md §9.2 sentence of §2.12.2 (5) for WP-CONTRACT; next 7b (WP-CONTRACT first and alone) |
 | 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
 | 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code |
-| 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass |
+| 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113): T11, T12, T13 with if-conversion (§2.12.6), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108): §2.12.10. Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
 

@@ -1,0 +1,48 @@
+sea_exp_x common 1 ok
+sea_exp_x common 2 ok
+sea_exp_x rare lane 0 ok
+sea_exp_x rare lane 1 ok
+sea_exp_x rare lane 0 b ok
+sea_exp_x rare lane 1 b ok
+sea_exp_x rare 1 ok
+sea_exp_x rare 2 ok
+sea_log_x common 1 ok
+sea_log_x common 2 ok
+sea_log_x rare lane 0 ok
+sea_log_x rare lane 1 ok
+sea_log_x rare lane 0 b ok
+sea_log_x rare lane 1 b ok
+sea_log_x rare 1 ok
+sea_log_x rare 2 ok
+sea_sin_x common 1 ok
+sea_sin_x common 2 ok
+sea_sin_x rare lane 0 ok
+sea_sin_x rare lane 1 ok
+sea_sin_x rare lane 0 b ok
+sea_sin_x rare lane 1 b ok
+sea_sin_x rare 1 ok
+sea_sin_x rare 2 ok
+sea_cos_x common 1 ok
+sea_cos_x common 2 ok
+sea_cos_x rare lane 0 ok
+sea_cos_x rare lane 1 ok
+sea_cos_x rare lane 0 b ok
+sea_cos_x rare lane 1 b ok
+sea_cos_x rare 1 ok
+sea_cos_x rare 2 ok
+sea_pow_x common 1 ok
+sea_pow_x common 2 ok
+sea_pow_x rare lane 0 ok
+sea_pow_x rare lane 1 ok
+sea_pow_x rare lane 0 b ok
+sea_pow_x rare lane 1 b ok
+sea_pow_x rare 1 ok
+sea_pow_x rare 2 ok
+sea_hypot_x common 1 ok
+sea_hypot_x common 2 ok
+sea_hypot_x rare lane 0 ok
+sea_hypot_x rare lane 1 ok
+sea_hypot_x rare lane 0 b ok
+sea_hypot_x rare lane 1 b ok
+sea_hypot_x rare 1 ok
+sea_hypot_x rare 2 ok
