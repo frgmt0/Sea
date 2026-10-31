@@ -1,0 +1,8 @@
+// r_fuse_group_printf -- a statement with an effect ends a group (DESIGN.md 2.12.2 (3), F2 (1)): the `printf` between `let a` and `let b`
+// writes its line before `let b`'s shape mismatch (3 against 2) is reported
+let x: f64[] = [1.0, 2.0, 3.0]
+let y: f64[] = [1.0, 2.0]
+let a = x * 2.0 + 0.5
+printf("a1 %.17g\n", a[1])
+let b = a + y
+printf("%.17g\n", b[0])

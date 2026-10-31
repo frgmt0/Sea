@@ -1,0 +1,7 @@
+// fuse_reg_dollar_mat -- F1 (DESIGN.md 2.12.4), 7c regression: the matrix form of fuse_reg_dollar_selstore. In
+// `T[:, 1..$] = A * 2.0` the `$` of the column range is cols(T) = 4, so the 3 x 3 product lands in columns 1..3:
+// T[0,1] = 2 * A[0,0] = 2 and T[2,3] = 2 * A[2,2] = 18.
+var T = zeros(3, 4)
+let A: f64[,] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0; 7.0, 8.0, 9.0]
+T[:, 1..$] = A * 2.0
+printf("%.17g %.17g\n", T[0, 1], T[2, 3])

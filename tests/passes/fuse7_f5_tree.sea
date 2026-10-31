@@ -1,0 +1,8 @@
+// fuse7_f5_tree -- DESIGN.md 2.12.4 F5: an elemental application inside a tree (f(x, 2.0) + 1.0)
+// is a fusible node: its element is the per-element call of L19 (4), inlined later by L20
+elemental fn f(x: f64, k: f64) -> f64 {
+    return x * k + 1.0
+}
+let x: f64[] = [1.0, 2.0, 3.0]
+let y = f(x, 2.0) + 1.0
+printf("%g %g %g\n", y[0], y[1], y[2])

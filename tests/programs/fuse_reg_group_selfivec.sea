@@ -1,0 +1,8 @@
+// fuse_reg_group_selfivec -- F2 (DESIGN.md 2.12.4), 7c regression: as fuse_reg_group_selfslice, with the target read
+// through an index vector (`V = V[[3, 2, 1, 0]] + 1.0`) before the independent `let g = x + 1.0`. The right side is
+// the whole reversed V plus one, [5, 4, 3, 2], computed before V is replaced; g[0] = 2.
+let x: f64[] = [1.0, 2.0, 3.0, 4.0]
+var V: f64[] = x
+V = V[[3, 2, 1, 0]] + 1.0
+let g = x + 1.0
+printf("%.17g %.17g %.17g %.17g %.17g\n", V[0], V[1], V[2], V[3], g[0])

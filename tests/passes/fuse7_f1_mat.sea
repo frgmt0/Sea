@@ -1,0 +1,6 @@
+// fuse7_f1_mat -- DESIGN.md 2.12.4 F1 (4) on a dynamic matrix tree (A * 2.0 + A): the plain copy
+// (one linear loop over R*C, L-eo) and the broadcast copy (mloop with L7's strides) under the
+// quiet test Pl of every leaf's extents against the space (L-ep)
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let B = A * 2.0 + A
+printf("%g %g %g %g\n", B[0, 0], B[1, 0], B[0, 1], B[1, 1])

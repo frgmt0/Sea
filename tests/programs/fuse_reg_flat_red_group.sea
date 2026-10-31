@@ -1,0 +1,7 @@
+// fuse_reg_flat_red_group -- F2, F3 (DESIGN.md 2.12.4), 7c regression: a reduction of the .flat of a matrix tree
+// (`sum((A * 2.0).flat)`) directly after an unrelated matrix `let g = A + 1.0`. The reduction must not be glued
+// into the group with g: sum = 2 * (1 + ... + 6) = 42 and g[0,0] = 2.
+let A: f64[,] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let g = A + 1.0
+let s = sum((A * 2.0).flat)
+printf("%.17g %.17g\n", s, g[0, 0])

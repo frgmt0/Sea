@@ -1,0 +1,8 @@
+// fuse7c2_grp_mask -- DESIGN.md 2.12.4 F2 (2), (3) with F3 masked: max(d[m]) reads the group's d
+// through a same-shape mask; the mask's count and EMPTY_REDUCE in the leaf phase, the mask's extent
+// in the space test, the masked step under the mask's if (L-et)
+let x: f64[] = [3.0, 1.0, 4.0, 1.0]
+let m: bool[] = [true, true, false, true]
+let d = x * 2.0
+let s = max(d[m])
+printf("%g\n", s)

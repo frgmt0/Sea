@@ -1,0 +1,9 @@
+// fuse7_inl -- DESIGN.md 2.12.3 (Decision 110 as amended, L-fo): g (one call site, inlined by L20)
+// has its body fused by seafuse; L20 copies the HL records, each .l local of g becoming a new
+// .l local of the caller
+fn g(v: f64[]) -> f64[] {
+    return v * 2.0 + 1.0
+}
+let x: f64[] = [1.0, 2.0, 3.0]
+let y = g(x)
+printf("%g %g %g\n", y[0], y[1], y[2])

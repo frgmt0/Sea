@@ -190,7 +190,7 @@
 10894 GOSUB 8440
 10896 LET P9$ = F9$
 10898 GOTO 10555
-10899 REM ---- 10900 (7b): in the record Z$, a tptr id of sea.hirf (> A6) in its second field as ^e
+10899 REM ---- 10900 (7b): in the record Z$, a tptr id of sea.hirf (> A6) in its second field as ^e (F8: ^1)
 10900 IF A6 = 0 THEN 10918
 10902 LET J3 = POS(Z$ & " ", " ")
 10904 IF POS(Y6$, "|" & SEG$(Z$, 1, J3 - 1) & "|") = 0 THEN 10918
@@ -199,7 +199,7 @@
 10910 LET Z2$ = SEG$(Z$, J4 + 1, A7 - 1)
 10912 IF POS("0123456789", SEG$(Z2$, 1, 1)) = 0 THEN 10918
 10914 IF VAL(Z2$) <= A6 THEN 10918
-10916 LET Z$ = SEG$(Z$, 1, J4) & "^" & STR$(T(VAL(Z2$), 2)) & SEG$(Z$, A7, LEN(Z$))
+10916 LET Z$ = SEG$(Z$, 1, J4) & "^" & STR$(T(VAL(Z2$), 2) + T(VAL(Z2$), 3) * (1 - T(VAL(Z2$), 2))) & SEG$(Z$, A7, LEN(Z$))
 10918 RETURN
 10945 REM ---- 10950 (7b): Z1$ = the copied record of row J as written (52500, 10900) before its @p
 10946 REM and ^e are resolved; "" for the loc record of a .l local of sea.hirf (written by 10500)

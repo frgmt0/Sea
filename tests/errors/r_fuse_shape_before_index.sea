@@ -1,0 +1,8 @@
+// r_fuse_shape_before_index -- the first failing check in reference order (DESIGN.md 2.12.2 (2)): in `(a + b) * v[99]` the shape check of a + b
+// (lengths 3 and 4) comes before the leaf v[99] is evaluated, so `shape mismatch: 3 vs 4`, not the index
+let a = zeros(3) + 1.5
+let b = zeros(4) + 2.0
+let v = zeros(5)
+printf("start %.17g\n", a[0] + b[3])
+let r = (a + b) * v[99]
+printf("%.17g\n", r[0])

@@ -1,0 +1,7 @@
+// r_fuse_abs_min -- `abs` of the i64 -2^63 inside a tree (LANGUAGE.md 10.4: `integer overflow`; DESIGN.md 2.12.2 "failing"): its loop
+// runs before the shape check of the `+` (3 against 4) that follows it in reference order
+let a: i64[] = [5, -9223372036854775807 - 1, 7]
+let x = zeros(4)
+printf("start %d\n", a[0])
+let r = f64(abs(a)) * 0.5 + x
+printf("%.17g\n", r[0])

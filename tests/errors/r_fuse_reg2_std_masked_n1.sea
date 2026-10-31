@@ -1,0 +1,5 @@
+// r_fuse_reg2_std_masked_n1 -- `std` of a one-element mask selection whose element fails (k[m] % k[m] = 0, then 3 % 0:
+// `integer division by zero`, LANGUAGE.md 10.4) before the n = 1 result 0 (10.5); DESIGN.md 2.12.4 F3, F4
+let k = [1, 12, 0, -30, 7]
+let m: bool[] = [false, true, false, false, false]
+printf("v %.17g\n", std(3 % (k[m] % k[m])))

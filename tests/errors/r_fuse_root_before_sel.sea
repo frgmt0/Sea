@@ -1,0 +1,8 @@
+// r_fuse_root_before_sel -- a failing root before a selection store (DESIGN.md 2.12.4 F1 (2), L-en; LANGUAGE.md 5.5: the right side first):
+// `v[0..5] = f64(a + 1) * 2.0` with v of length 3 and a + 1 overflowing at element 0: `integer overflow`, not the index
+var v = zeros(3)
+var a = filled(1, 5)
+a[0] = 9223372036854775807
+printf("start %.17g\n", v[2])
+v[0..5] = f64(a + 1) * 2.0
+printf("%.17g\n", v[0])

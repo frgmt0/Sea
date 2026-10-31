@@ -1,0 +1,36 @@
+// fuse_group_reuse -- F2 (6) buffer reuse (DESIGN.md 2.12.4): `lo` reused in every iteration (same shape), `hi` of length 3
+// replaced by length 5 in the first iteration (the fallback allocation) and reused after; a 2 x 2 matrix target
+// replaced by a 2 x 3 value, then updated in place
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let x: f64[] = [0.5, 1.5, -2.0, 4.0, 1e-08]
+var lo = zeros(5)
+var hi = filled(9.0, 3)
+for it in 0..4 {
+    let mid = x * f64(it) + 0.125
+    lo = lo + mid * 1e-3
+    hi = mid - lo * 3.0
+    pv(hi)
+}
+pv(lo)
+var B = zeros(2, 2)
+let Cm: f64[,] = [1.0, -2.5, 0.75; 3.0, 1e+16, -0.5]
+B = Cm * 2.0 + 1.0
+pm(B)
+B = B * B - Cm
+pm(B)

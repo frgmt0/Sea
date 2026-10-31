@@ -125,110 +125,128 @@ ldi i88 p5 - 0 24
 li i89 3
 li i90 2
 rcall sea_arr_new_u 0:7 1 p91 4 i89 i90 i87 i88
-li i92 1
-icmp ne i93 i87 i92
-icmp ne i94 i88 i92
-imul i95 i94 i87
-ldp p96 p91 - 0 40
-ldp p97 p5 - 0 40
+ldp p92 p91 - 0 40
+ldp p93 p5 - 0 40
+icmp eq i94 i87 i87
+icmp eq i95 i88 i88
+iand i96 i94 i95
+if 11 i96
+imul i97 i87 i88
 li i98 0
-icmp gt i99 i88 i98
-if 11 i99
+icmp gt i99 i97 i98
+if 12 i99
 li i100 1
-isub i101 i88 i100
-loop 12 i102 i98 i101 i100
-li i103 0
-icmp gt i104 i87 i103
-if 13 i104
+isub i101 i97 i100
+loop 13 i102 i98 i101 i100
+ldf f103 p93 i102 8 0
+fcmp gt i104 f103 f86
+stb i104 p92 i102 1 0
+endloop 13
+endif 12
+else 11
 li i105 1
-isub i106 i87 i105
-loop 14 i107 i103 i106 i105
-imul i108 i107 i93
-imul i109 i102 i95
-iadd i110 i108 i109
-ldf f111 p97 i110 8 0
-fcmp gt i112 f111 f86
-imul i113 i102 i87
-iadd i114 i107 i113
-stb i112 p96 i114 1 0
-endloop 14
-endif 13
-endloop 12
+icmp ne i106 i87 i105
+icmp ne i107 i88 i105
+imul i108 i107 i87
+li i109 0
+icmp gt i110 i88 i109
+if 14 i110
+li i111 1
+isub i112 i88 i111
+loop 15 i113 i109 i112 i111
+li i114 0
+icmp gt i115 i87 i114
+if 16 i115
+li i116 1
+isub i117 i87 i116
+loop 17 i118 i114 i117 i116
+imul i119 i118 i106
+imul i120 i113 i108
+iadd i121 i119 i120
+ldf f122 p93 i121 8 0
+fcmp gt i123 f122 f86
+imul i124 i113 i87
+iadd i125 i118 i124
+stb i123 p92 i125 1 0
+endloop 17
+endif 16
+endloop 15
+endif 14
 endif 11
-ldi i115 p5 - 0 16
-ldi i116 p5 - 0 24
-ldi i117 p91 - 0 16
-ldi i118 p91 - 0 24
-icmp ne i119 i115 i117
-icmp ne i120 i116 i118
-ior i121 i119 i120
-chk i121 SHAPE_MISMATCH 0:8 4 i115 i116 i117 i118
-imul i122 i115 i116
-li i123 0
-ldp p124 p91 - 0 40
-li i125 0
-icmp gt i126 i122 i125
-if 15 i126
-li i127 1
-isub i128 i122 i127
-loop 16 i129 i125 i128 i127
-ldb i130 p124 i129 1 0
-iadd i123 i123 i130
-endloop 16
-endif 15
-li i131 1
-li i132 1
-li i133 1
-rcall sea_arr_new_u 0:8 1 p134 4 i131 i132 i123 i133
-ldp p135 p134 - 0 40
-ldp p136 p5 - 0 40
-ldp p137 p91 - 0 40
-li i138 0
-li i139 1
-li i140 0
-icmp gt i141 i122 i140
-if 17 i141
+ldi i126 p5 - 0 16
+ldi i127 p5 - 0 24
+ldi i128 p91 - 0 16
+ldi i129 p91 - 0 24
+icmp ne i130 i126 i128
+icmp ne i131 i127 i129
+ior i132 i130 i131
+chk i132 SHAPE_MISMATCH 0:8 4 i126 i127 i128 i129
+imul i133 i126 i127
+li i134 0
+ldp p135 p91 - 0 40
+li i136 0
+icmp gt i137 i133 i136
+if 18 i137
+li i138 1
+isub i139 i133 i138
+loop 19 i140 i136 i139 i138
+ldb i141 p135 i140 1 0
+iadd i134 i134 i141
+endloop 19
+endif 18
 li i142 1
-isub i143 i122 i142
-loop 18 i144 i140 i143 i142
-ldb i145 p137 i144 1 0
-if 19 i145
-ldf f146 p136 i144 8 0
-stf f146 p135 i138 8 0
-iadd i138 i138 i139
-endif 19
-endloop 18
-endif 17
-li i147 0
-ldi i148 p36 - 0 16
-chkb i147 i148 0 0:9
-ldp p149 p36 - 0 40
-ldf f150 p149 i147 8 0
-li i151 1
-ldi i152 p36 - 0 16
-chkb i151 i152 0 0:9
-ldp p153 p36 - 0 40
-ldf f154 p153 i151 8 0
-li i155 0
-ldi i156 p73 - 0 16
-chkb i155 i156 0 0:9
-ldp p157 p73 - 0 40
-ldf f158 p157 i155 8 0
-ldi i159 p73 - 0 16
-li i160 0
-ldi i161 p134 - 0 16
-chkb i160 i161 0 0:9
-ldp p162 p134 - 0 40
-ldf f163 p162 i160 8 0
-sa p164 s1
-stf f150 p164 - 0 0
-stf f154 p164 - 0 8
-stf f158 p164 - 0 16
-sti i159 p164 - 0 24
-stf f163 p164 - 0 32
-la p165 d1
-rcall sea_printf 0:9 0 2 p165 p164
-release p134
+li i143 1
+li i144 1
+rcall sea_arr_new_u 0:8 1 p145 4 i142 i143 i134 i144
+ldp p146 p145 - 0 40
+ldp p147 p5 - 0 40
+ldp p148 p91 - 0 40
+li i149 0
+li i150 1
+li i151 0
+icmp gt i152 i133 i151
+if 20 i152
+li i153 1
+isub i154 i133 i153
+loop 21 i155 i151 i154 i153
+ldb i156 p148 i155 1 0
+if 22 i156
+ldf f157 p147 i155 8 0
+stf f157 p146 i149 8 0
+iadd i149 i149 i150
+endif 22
+endloop 21
+endif 20
+li i158 0
+ldi i159 p36 - 0 16
+chkb i158 i159 0 0:9
+ldp p160 p36 - 0 40
+ldf f161 p160 i158 8 0
+li i162 1
+ldi i163 p36 - 0 16
+chkb i162 i163 0 0:9
+ldp p164 p36 - 0 40
+ldf f165 p164 i162 8 0
+li i166 0
+ldi i167 p73 - 0 16
+chkb i166 i167 0 0:9
+ldp p168 p73 - 0 40
+ldf f169 p168 i166 8 0
+ldi i170 p73 - 0 16
+li i171 0
+ldi i172 p145 - 0 16
+chkb i171 i172 0 0:9
+ldp p173 p145 - 0 40
+ldf f174 p173 i171 8 0
+sa p175 s1
+stf f161 p175 - 0 0
+stf f165 p175 - 0 8
+stf f169 p175 - 0 16
+sti i170 p175 - 0 24
+stf f174 p175 - 0 32
+la p176 d1
+rcall sea_printf 0:9 0 2 p176 p175
+release p145
 release p91
 release p73
 release p54

@@ -1,0 +1,5 @@
+// fuse7_f3_sum -- DESIGN.md 2.12.4 F3: sum of an element-wise tree: the tree's leaf and check
+// phase, then L13's sum8 with X(K) the element expression (no temporary array)
+let x: f64[] = [1.0, 2.0, 3.0]
+let s = sum(x * 2.0 + 1.0)
+printf("%g\n", s)

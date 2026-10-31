@@ -1,0 +1,51 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_grp_mat.sea
+pname 0:4:5 T
+type 0:4:8 f64 m 0
+float 0:4:18 #3FF0000000000000
+float 0:4:23 #4000000000000000
+row 0:4:18 2
+float 0:4:28 #4008000000000000
+float 0:4:33 #4010000000000000
+row 0:4:28 2
+float 0:4:38 #4014000000000000
+float 0:4:43 #4018000000000000
+row 0:4:38 2
+array 0:4:17 3
+let 0:4:1 1
+pname 0:5:5 Tc
+name 0:5:10 T
+int 0:5:12 1
+int 0:5:15 3
+range 0:5:12 0 0
+all 0:5:18
+index 0:5:10 2
+let 0:5:1 0
+pname 0:6:5 Tn
+name 0:6:10 Tc
+float 0:6:15 #4000000000000000
+bin 0:6:10 mul
+let 0:6:1 0
+name 0:7:1 printf
+str 0:7:8 %25g%20%25g%20%25g%20%25g%0A
+name 0:7:25 Tn
+int 0:7:28 0
+int 0:7:31 0
+index 0:7:25 2
+name 0:7:35 Tn
+int 0:7:38 1
+int 0:7:41 0
+index 0:7:35 2
+name 0:7:45 Tn
+int 0:7:48 0
+int 0:7:51 1
+index 0:7:45 2
+name 0:7:55 Tn
+int 0:7:58 1
+int 0:7:61 1
+index 0:7:55 2
+call 0:7:1 5
+cstmt 0:7:1
+prog 4
+#end

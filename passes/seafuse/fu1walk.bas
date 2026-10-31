@@ -27,6 +27,7 @@
 5106 LET X1 = H(X1, 4)
 5108 GOTO 5102
 5110 NEXT X
+5112 GOSUB 30000
 5115 FOR R1 = 1 TO D0
 5120 LET X = P(R1, 1)
 5125 LET R7 = R1
@@ -49,6 +50,7 @@
 5166 IF X1 = 0 THEN 5170
 5168 LET H(X, 0) = H(X1, 0)
 5170 LET C9 = O9
+5171 IF Y(X, 1) > 0 THEN 30800
 5172 IF K = 64 THEN 5300
 5174 IF K = 12 THEN 5400
 5176 IF K = 22 THEN 5500
@@ -59,7 +61,9 @@
 5186 GOTO 5190
 5187 REM ---- not written (an emap or ind2sub that its holder statement rewrites)
 5188 LET N7 = N7 - 1
-5190 REM ---- every node: the first and last output rows of its subtree
+5189 REM ---- every node: a limit passed inside its fusion runs the walk again (fu0main 2940); the first and last output rows of its subtree
+5190 IF O1 = 1 THEN 2940
+5191 LET I9 = 0
 5192 LET H(X, 7) = O(H(X, 0), 0)
 5194 LET H(X, 8) = O9
 5195 NEXT R1
@@ -149,13 +153,15 @@
 8045 REM ---- 8050: the generated node Z$ after the cursor; it counts against SEA_LIM_NODES -------
 8050 LET N7 = N7 + 1
 8052 LET Q2$ = "nodes"
-8054 IF N7 > N8 THEN 2930
+8054 IF N7 <= N8 THEN 8056
+8055 GOSUB 8088
 8056 GOSUB 8060
 8057 LET O(O0, 1) = 0
 8058 LET O$(O0) = Z$
 8059 GOTO 8080
 8060 REM ---- 8060: a new row O0 linked after C9; the cursor moves to it (the tail too, if C9 was it)
 8062 IF O0 < 449999 THEN 8066
+8063 IF O1 = 1 THEN 8078
 8064 CALL "dg_bug": P$, "the output list is full"
 8066 LET O0 = O0 + 1
 8068 LET O(O0, 0) = O(C9, 0)
@@ -167,14 +173,25 @@
 8079 REM ---- 8080: a statement counts in the innermost block a script has open (9000)
 8080 IF Z0 = 0 THEN 8086
 8081 LET J3 = POS(Z$, " ")
-8082 IF POS("|tmp|bind|est|chk|if|asg|eval|hloop|mcpy|ret|", "|" & SEG$(Z$, 1, J3 - 1) & "|") = 0 THEN 8086
+8082 IF POS("|tmp|bind|est|chkb|chk|if|cow|mcpy|asg|eval|hloop|rcnt|ret|", "|" & SEG$(Z$, 1, J3 - 1) & "|") = 0 THEN 8086
 8084 LET M(Z0, 1) = M(Z0, 1) + 1
 8086 RETURN
+8087 REM ---- 8088: (8054 8110 8165, fu6grp 52214, fu7red 55652) a limit passed: outside a fusion (I9 = 0) reported (2930); inside one O1 = 1
+8088 IF I9 = 0 THEN 2930
+8089 IF O1 = 1 THEN 8093
+8090 LET O1 = 1
+8091 LET O3$ = P9$
+8092 LET O4$ = Q2$
+8093 RETURN
+8094 REM (the first position and name kept, O3$ O4$) and the fusion runs to its end, its output discarded at 5190 (no GOSUB is left pending)
 8095 REM ---- 8100: U0 = a new local of type U1 (-e: the tptr of e) and mut U2 (0 let, 1 for) of the
 8097 REM function F0, its loc pos that of record R7; it counts against SEA_LIM_SYMBOLS --------
 8100 LET S7 = S7 + 1
 8105 LET Q2$ = "symbols"
-8110 IF S7 > S8 THEN 2930
+8110 IF S7 <= S8 THEN 8115
+8111 GOSUB 8088
+8112 IF U0 < 49999 THEN 8115
+8113 RETURN
 8115 LET U0 = U0 + 1
 8120 LET U(U0, 1) = U1
 8125 LET U(U0, 2) = U2
@@ -182,16 +199,20 @@
 8135 LET U(U0, 4) = 0
 8140 LET G(F0, 4) = G(F0, 4) + 1
 8145 RETURN
-8146 REM ---- 8150: the tptr of element type E3 is used; a new type counts against SEA_LIM_TYPES ----
+8146 REM ---- 8150: the tptr of element type E3 is used (logged in I7$ for a walk run again, 2940); a new type counts against SEA_LIM_TYPES ----
 8150 IF C(E3, 6) > 0 THEN 8175
 8155 LET T7 = T7 + 1
 8160 LET Q2$ = "types"
-8165 IF T7 > T9 - 9 THEN 2930
+8165 IF T7 <= T9 - 9 THEN 8170
+8166 GOSUB 8088
 8170 LET C(E3, 6) = 1
+8172 LET I7$ = I7$ & "|" & STR$(E3)
 8175 RETURN
 8395 REM ---- 8400: P9$ = the position field of record R2 ------------------------------------------
 8400 LET J3 = POS(D$(R2), " ")
 8405 LET J4 = POS(D$(R2), " ", J3 + 1)
+8407 IF J4 > 0 THEN 8410
+8408 LET J4 = LEN(D$(R2)) + 1
 8410 LET P9$ = SEG$(D$(R2), J3 + 1, J4 - 1)
 8415 RETURN
 8435 REM ---- 8440: F9$ = field F9 of the record D$(R2); J3, J4 the blanks around it ---------------
@@ -226,9 +247,12 @@
 8734 LET V5 = V(53 + E5)
 8736 RETURN
 8895 REM ---- 8900: the script S$ right after the subtree of node X4 (L8 its type: tmp of it) -------
-8900 LET C9 = H(X4, 8)
+8900 IF H4 > 0 THEN 8906
+8901 LET C9 = H(X4, 8)
 8902 LET L8 = H(X4, 2)
 8904 GOTO 9000
+8906 GOSUB 52200
+8908 GOTO 8902
 8990 REM ==== 9000: the script interpreter ========================================================
 8991 REM S$ holds records separated by commas, each written after the cursor C9 at P9$ by 8050,
 8992 REM which counts the statements of the innermost open block M(Z0,1). A name is one character:
@@ -250,12 +274,12 @@
 9018 REM ---- 9020: one record S3$ (its command, the variable S5$ it names)
 9020 LET S4$ = SEG$(S3$, 1, 1)
 9022 LET S5$ = SEG$(S3$, 3, 3)
-9024 LET S3 = POS("L=BCXDK(?){}]", S4$)
+9024 LET S3 = POS("L=BCXDK(?){}]R|>", S4$)
 9026 IF S3 = 0 THEN 9200
 9028 IF S3 = 4 THEN 9034
 9030 IF S3 > 7 THEN 9034
 9032 GOSUB 9300
-9034 ON S3 GOTO 9040, 9050, 9050, 9070, 9075, 9080, 9060, 9090, 9110, 9120, 9115, 9140, 9150
+9034 ON S3 GOTO 9040, 9050, 9050, 9070, 9075, 9080, 9060, 9090, 9110, 9120, 9115, 9140, 9150, 9160, 9190, 9180
 9038 REM L x: lv of x (L8 = its type)
 9040 GOSUB 9325
 9042 LET Z$ = "lv " & P9$ & " " & S9$ & " " & S8$
@@ -313,11 +337,15 @@
 9121 LET S6 = M(Z0, 2)
 9122 GOSUB 9135
 9123 IF S6 = 0 THEN 9127
-9124 LET Z$ = "hloop " & P9$ & " @" & STR$(S6)
-9125 GOSUB 8050
-9126 GOSUB 9135
+9124 IF S6 < 0 THEN 9131
+9125 LET Z$ = "hloop " & P9$ & " @" & STR$(S6)
+9126 GOSUB 9133
 9127 LET Z$ = "if " & P9$ & " 0"
 9128 GOTO 8050
+9129 REM ---- 9131: an else arm closed (M = -2): if P 1; 9133: a record, then the block closed
+9131 LET Z$ = "if " & P9$ & " 1"
+9132 GOTO 8050
+9133 GOSUB 8050
 9134 REM ---- 9135: block P n of the innermost open block, which is closed
 9135 LET Z$ = "block " & P9$ & " " & STR$(M(Z0, 1))
 9136 LET Z0 = Z0 - 1
@@ -330,6 +358,35 @@
 9150 LET Z$ = "xblk " & P9$ & " " & STR$(L8) & " " & STR$(M(Z0, 1))
 9151 LET Z0 = Z0 - 1
 9152 GOTO 8050
+9159 REM R i l e: rcnt (at Q9$) of incl i into new locals l (i64), e (bool); their loc pos R6's
+9160 LET S6 = R7
+9161 LET R7 = R6
+9162 LET S5$ = SEG$(S3$, 5, 5)
+9163 GOSUB 9300
+9164 LET U1 = 3
+9165 LET U2 = 0
+9166 GOSUB 8100
+9167 LET V(S5) = U0
+9168 LET S8$ = "rcnt " & Q9$ & " " & SEG$(S3$, 3, 3) & " @" & STR$(U0)
+9169 LET S5$ = SEG$(S3$, 7, 7)
+9170 GOSUB 9300
+9171 LET U1 = 2
+9172 GOSUB 8100
+9173 LET V(S5) = U0
+9174 LET R7 = S6
+9175 LET Z$ = S8$ & " @" & STR$(U0)
+9176 GOTO 8050
+9179 REM >: a loop closed that stands in no if (sum8): block, hloop
+9180 LET S6 = M(Z0, 2)
+9181 GOSUB 9135
+9182 LET Z$ = "hloop " & P9$ & " @" & STR$(S6)
+9183 GOTO 8050
+9189 REM |: the then-block of an if closed, its else-block opened (M(Z0,2) = -2, closed by ')')
+9190 GOSUB 9135
+9191 LET Z0 = Z0 + 1
+9192 LET M(Z0, 1) = 0
+9193 LET M(Z0, 2) = -2
+9194 RETURN
 9195 REM ---- 9200: a record, its fields substituted (L8 = the third field when it is a type)
 9200 LET Z$ = ""
 9201 LET Q6 = 1
@@ -340,12 +397,13 @@
 9206 LET S6$ = SEG$(S3$, Q6, Q7 - 1)
 9207 LET Q5 = Q5 + 1
 9208 LET S5$ = SEG$(S6$, 2, 2)
-9209 LET S3 = POS("P@^%", SEG$(S6$, 1, 1))
+9209 LET S3 = POS("P@^%Q", SEG$(S6$, 1, 1))
 9210 IF S3 = 0 THEN 9240
-9211 IF S3 > 1 THEN 9218
-9212 IF LEN(S6$) > 1 THEN 9240
-9213 LET S6$ = P9$
-9214 GOTO 9240
+9211 IF S3 = 5 THEN 9255
+9212 IF S3 > 1 THEN 9218
+9213 IF LEN(S6$) > 1 THEN 9240
+9214 LET S6$ = P9$
+9215 GOTO 9240
 9218 IF S3 <> 3 THEN 9224
 9219 IF POS("0123456789", S5$) = 0 THEN 9224
 9220 LET E3 = VAL(S5$)
@@ -361,6 +419,10 @@
 9231 LET S6$ = "^" & STR$(E3)
 9232 GOTO 9240
 9234 LET S6$ = STR$(V(S5))
+9235 IF S5 <> 54 THEN 9240
+9236 IF V(S5) <> -20008 THEN 9240
+9237 LET S6$ = "^20008"
+9238 GOTO 9240
 9240 IF Q5 = 1 THEN 9244
 9241 LET Z$ = Z$ & " " & S6$
 9242 GOTO 9245
@@ -373,6 +435,10 @@
 9250 LET Q6 = Q7 + 1
 9251 IF Q6 <= LEN(S3$) THEN 9203
 9252 GOTO 8050
+9254 REM a Q field: the position Q9$ (a chk's or chkb's node, an rcnt's rng, RES's root)
+9255 IF LEN(S6$) > 1 THEN 9240
+9256 LET S6$ = Q9$
+9257 GOTO 9240
 9295 REM ---- 9300: S5 = the index in V of the name S5$ (Z5$: of the slot K8; Z4$: global) -----------
 9300 LET S5 = POS(Z5$, S5$)
 9301 IF S5 = 0 THEN 9304
@@ -384,9 +450,13 @@
 9320 REM ---- 9325: the local V(S5): S4 its type, S9$ that as a field, S8$ the local as a field
 9325 LET S6 = V(S5)
 9326 IF S6 > 0 THEN 9329
-9327 CALL "dg_bug": P$, "script name " & S5$ & " is unset"
+9327 IF S6 < 0 THEN 9332
+9328 CALL "dg_bug": P$, "script name " & S5$ & " is unset"
 9329 LET S4 = U(S6, 1)
 9330 LET S8$ = "@" & STR$(S6)
+9331 GOTO 9336
+9332 LET S4 = A(G(F0, 1) - S6)
+9333 LET S8$ = STR$(-S6)
 9336 LET S9$ = STR$(S4)
 9337 IF S4 > 0 THEN 9339
 9338 LET S9$ = "^" & STR$(-S4)

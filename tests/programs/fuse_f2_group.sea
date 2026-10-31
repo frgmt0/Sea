@@ -1,0 +1,55 @@
+// fuse_f2_group -- F2 (DESIGN.md 2.12.4): two groups of adjacent element-wise statements: a stored local read after the group,
+// unstored locals, an elemental application with a discarded result, `where` into a reused target; a matrix group
+// over broadcast inputs ending in a target and `sum` of a `.flat` tree; x * 1e16 + f64(y) - x * 1e16 shows reassociation
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+struct Coef {
+    a: f64
+    b: f64
+}
+elemental fn lin2(x: f64, y: f64, c: Coef) -> (f64, f64) {
+    let p = c.a * x + y
+    return (p, p * c.b - x)
+}
+let cf = Coef { a: 1e16, b: 0.5 }
+let x: f64[] = [0.3, -1.25, 2.5, 7.0, -0.001, 0.001]
+let y = [7, -3, 12, 0, 5, -8]
+var lo = filled(0.5, 6)
+let a = x * 1e16 + f64(y)
+let b = a - x * 1e16
+let (e, _) = lin2(b, x, cf)
+lo = where(e > 1.0, e, lo - 1.0) + sqrt(abs(x))
+pv(a)
+pv(lo)
+var A = zeros(2, 3)
+for j in 0..3 {
+    for i in 0..2 {
+        A[i, j] = f64(i - j) * 0.7 + 0.05
+    }
+}
+let rowv = [0.25, -4.0, 1e-09]
+let colv: f64[] = [3.0, -0.5]
+var P = filled(1.0, 2, 3)
+let G1 = A * rowv.row + 0.25
+let G2 = sqrt(abs(G1)) - colv.col
+let (_, G3) = lin2(G2, G1, cf)
+P = G3 * P - G1
+let tot = sum((G3 - P).flat)
+pm(G1)
+pm(P)
+printf("%.17g\n", tot)

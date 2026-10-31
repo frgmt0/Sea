@@ -1,0 +1,42 @@
+// fuse_f4_views -- F4 (DESIGN.md 2.12.4): folded leaves: `.T`, `.flat`, `.row`, `.col`, a row, a column and a reversed
+// range, ranges with a step, a view of a selection, an index vector with a repeat, same-mask selections of a vector
+// and of a matrix and its transpose (LANGUAGE.md 5.2, 5.6): every leaf read at its own index map
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let A: f64[,] = [1.5, -2.0, 3.25, 0.5; 7.0, 0.001, -0.75, 11.0; -4.5, 6.0, 2.5, -8.0]
+let B: f64[,] = [0.25, 9.0, -1.0; 3.5, -6.5, 2.0; 1e+16, 0.5, 4.0; -2.0, 7.5, -0.125]
+let v: f64[] = [2.0, -3.5, 0.125, 10.0]
+let u = [1.0, -1.0, 4.0]
+let u2: f64[] = [0.5, 1.5, -2.5, 3.5]
+let m = [true, false, true, true]
+let w: i64[] = [3, 0, 0, 2]
+let M = [true, false, true, false; false, true, true, false; true, true, false, true]
+let P = A * B.T + v.row - u.col * 0.5
+let q = A.flat * 2.0 - B.T.flat
+let s = A[1, :] * v + A[2, 0..4] - v[w]
+let t = A[0..3 step 2, 1..3] * 10.0 + B[1..3, 0..2].T
+let k = v[m] * 3.0 - u2[m]
+let mm = A[M] + B.T[M]
+let cc = A[:, 3] - A.T[1, 0..3] + A[$-1..=0 step -1, 0]
+pm(P)
+pv(q)
+pv(s)
+pm(t)
+pv(k)
+pv(mm)
+pv(cc)

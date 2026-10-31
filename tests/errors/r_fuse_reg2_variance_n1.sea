@@ -1,0 +1,5 @@
+// r_fuse_reg2_variance_n1 -- `variance` of one element whose value fails (LANGUAGE.md 10.5: n = 1 gives 0, but the element
+// is still evaluated: 3 % 0 is `integer division by zero`, 10.4); DESIGN.md 2.12.4 F3 fuses only a quiet tree under variance/std
+let z: i64[] = [0]
+printf("start %d\n", len(z))
+printf("r %.17g\n", variance(3 % z))

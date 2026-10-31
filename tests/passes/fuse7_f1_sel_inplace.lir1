@@ -1,0 +1,109 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_sel_inplace.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 24 8
+slot s3 24 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+li i4 2
+li i5 1
+li i6 1
+li i7 1
+rcall sea_arr_new_u 0:4 1 p8 4 i5 i6 i4 i7
+ldp p9 p8 - 0 40
+li i10 16
+mcopy p9 p1 i10
+sa p11 s2
+lf f12 #0000000000000000
+stf f12 p11 - 0 0
+lf f13 #0000000000000000
+stf f13 p11 - 0 8
+lf f14 #0000000000000000
+stf f14 p11 - 0 16
+li i15 3
+li i16 1
+li i17 1
+li i18 1
+rcall sea_arr_new_u 0:5 1 p19 4 i16 i17 i15 i18
+ldp p20 p19 - 0 40
+li i21 24
+mcopy p20 p11 i21
+lf f22 #4000000000000000
+ldi i23 p8 - 0 16
+lf f24 #3FF0000000000000
+li i25 1
+li i26 3
+li i27 1
+rcount i28 i29 i25 i26 i27 0 0:6
+ldi i30 p19 - 0 16
+if 1 i29
+chkb i25 i30 0 0:6
+imul i31 i28 i27
+iadd i32 i25 i31
+chkb i32 i30 0 0:6
+endif 1
+li i33 1
+iadd i34 i28 i33
+li i35 0
+isel i36 i29 i34 i35
+icmp ne i37 i36 i23
+li i38 -1
+chk i37 SHAPE_MISMATCH 0:6 4 i36 i38 i23 i38
+ldi i39 p19 - 0 0
+li i40 1
+icmp ne i41 i39 i40
+if 2 i41
+rcall sea_arr_unique 0:6 1 p42 1 p19
+mov p19 p42
+endif 2
+ldp p43 p19 - 0 40
+ldp p44 p8 - 0 40
+li i45 0
+li i46 1
+if 3 i29
+loop 4 i47 i25 i28 i27
+ldf f48 p44 i45 8 0
+fmul f49 f48 f22
+fadd f50 f49 f24
+stf f50 p43 i47 8 0
+iadd i45 i45 i46
+endloop 4
+endif 3
+li i51 0
+ldi i52 p19 - 0 16
+chkb i51 i52 0 0:7
+ldp p53 p19 - 0 40
+ldf f54 p53 i51 8 0
+li i55 1
+ldi i56 p19 - 0 16
+chkb i55 i56 0 0:7
+ldp p57 p19 - 0 40
+ldf f58 p57 i55 8 0
+li i59 2
+ldi i60 p19 - 0 16
+chkb i59 i60 0 0:7
+ldp p61 p19 - 0 40
+ldf f62 p61 i59 8 0
+sa p63 s3
+stf f54 p63 - 0 0
+stf f58 p63 - 0 8
+stf f62 p63 - 0 16
+la p64 d1
+rcall sea_printf 0:7 0 2 p64 p63
+release p19
+release p8
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

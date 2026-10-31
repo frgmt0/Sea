@@ -50,7 +50,7 @@
 5120 IF K = 42 THEN 5126
 5121 IF K > 52 THEN 5126
 5122 IF K > 50 THEN 5135
-5123 IF K > 48 THEN 5126
+5123 IF K > 48 THEN 8790
 5124 IF K > 38 THEN 5135
 5126 REM a declaration (a type, fn par loc end): copied; fn opens the function F0 (its .l locals
 5127 REM new locals, 8730); a tptr record (7b) is not copied: lp2out writes the tptr types
@@ -610,7 +610,7 @@
 8741 LET A(L6) = U1
 8742 IF A6 = 0 THEN 8746
 8743 IF U1 <= A6 THEN 8746
-8744 LET U1 = -T(U1, 2)
+8744 LET U1 = -(T(U1, 2) + T(U1, 3) * (1 - T(U1, 2)))
 8746 LET U2 = 0
 8748 IF POS(D$(R2), " for ") = 0 THEN 8752
 8750 LET U2 = 1
@@ -623,14 +623,23 @@
 8760 LET U2 = 0
 8762 RETURN
 8765 REM ---- 8770 (7b, before the walk): the tptr types of sea.hirf (ids A6 + 1 ... Y9) used, renumbered
-8766 REM with sealoop's from A6 on (lp2out; T(id,2) keeps the elt of each old id)
+8766 REM with sealoop's from A6 on (lp2out; T(id,2) keeps the elt of each old id; an appended F8 (fixed) is
+8767 REM sealoop's own F8, the pseudo element 1, 9340, D-1)
 8770 LET T7 = A6 - 9
 8772 FOR J = A6 + 1 TO Y9
-8774 LET E3 = T(J, 2)
+8774 LET E3 = T(J, 2) + T(J, 3) * (1 - T(J, 2))
 8776 GOSUB 8150
 8778 NEXT J
 8780 LET Y9 = A6
 8782 RETURN
+8789 REM ---- 8790: (from 5123) seafuse's appended F8 (a tfvec after the tptrs, D-1) is not copied: lp2out writes it
+8790 IF K <> 49 THEN 5126
+8791 IF A6 = 0 THEN 5126
+8792 LET R2 = R1
+8793 LET F9 = 2
+8794 GOSUB 8440
+8795 IF VAL(F9$) <= A6 THEN 5126
+8796 GOTO 5195
 8895 REM ---- 8900: the script S$ right after the subtree of node X4 (L8 its type: tmp of it) -------
 8900 LET C9 = H(X4, 8)
 8902 LET L8 = H(X4, 2)

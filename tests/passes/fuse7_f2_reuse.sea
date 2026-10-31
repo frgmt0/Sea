@@ -1,0 +1,8 @@
+// fuse7_f2_reuse -- DESIGN.md 2.12.4 F2 (6): a group whose second statement assigns a whole var
+// array: its reuse prologue (the test E, cow, the old value O, the fallback anew) and the nest
+// storing into y's buffer; a is not read after the group (never stored)
+let x: f64[] = [1.0, 2.0, 3.0]
+var y: f64[] = [0.0, 0.0, 0.0]
+let a = x + 1.0
+y = a * 2.0
+printf("%g %g %g\n", y[0], y[1], y[2])

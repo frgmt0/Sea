@@ -1,0 +1,33 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_vec.sea
+pname 0:3:5 x
+type 0:3:8 f64 v 0
+float 0:3:17 #3FF0000000000000
+float 0:3:22 #4000000000000000
+float 0:3:27 #4008000000000000
+row 0:3:17 3
+array 0:3:16 1
+let 0:3:1 1
+pname 0:4:5 y
+name 0:4:9 x
+float 0:4:13 #4000000000000000
+bin 0:4:9 mul
+name 0:4:19 x
+bin 0:4:9 add
+let 0:4:1 0
+name 0:5:1 printf
+str 0:5:8 %25g%20%25g%20%25g%0A
+name 0:5:22 y
+int 0:5:24 0
+index 0:5:22 1
+name 0:5:28 y
+int 0:5:30 1
+index 0:5:28 1
+name 0:5:34 y
+int 0:5:36 2
+index 0:5:34 1
+call 0:5:1 4
+cstmt 0:5:1
+prog 3
+#end

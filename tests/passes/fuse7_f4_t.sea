@@ -1,0 +1,6 @@
+// fuse7_f4_t -- DESIGN.md 2.12.4 F4, L-eo: F.T of a fixed-size matrix folded into the nest (the
+// extents swapped, (i, j) read at lin(j, i, X1)); fixed-size: one copy, an mloop since a leaf is
+// folded
+let F: f64[2,3] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let G = F.T * 2.0
+printf("%g %g %g\n", G[0, 1], G[2, 0], G[2, 1])

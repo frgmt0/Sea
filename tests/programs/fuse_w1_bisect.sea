@@ -1,0 +1,59 @@
+// fuse_w1_bisect -- W1's grid bisection in miniature (LANGUAGE.md 2.1; DESIGN.md 2.12.4 "Example"): a three-result elemental
+// function with `if` expressions, `min`, `sqrt`, `^ -0.107` (pow) and `^ 3` over a 3 x 4 grid, results discarded, `where`
+// into reused targets, 40 iterations; the final bounds and two results printed
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+struct Params {
+    ka: f64
+    Sut: f64
+    Sy: f64
+    a: f64
+    Kt: f64
+}
+elemental fn safety(d: f64, Mx: f64, T: f64, p: Params) -> (f64, f64, f64) {
+    let dmm = d * 1e3
+    let kb = if dmm > 2.79 && dmm <= 51 { 1.24 * dmm ^ -0.107 }
+             else if dmm > 51 { 1.51 * min(dmm, 254) ^ -0.157 }
+             else { 1.0 }
+    let Se = p.ka * kb * p.Sut * 0.5
+    let q = 1 / (1 + p.a / d)
+    let Kf = 1 + q * (p.Kt - 1)
+    let c32 = 32 / (pi * d ^ 3)
+    let sb = c32 * Kf * Mx
+    let nf = Se / sb
+    let st = 16 / (pi * d ^ 3) * T
+    let ny = p.Sy / sqrt(sb ^ 2 + 3 * st ^ 2)
+    return (nf, ny, Kf)
+}
+let pr = Params { ka: 0.82, Sut: 620e6, Sy: 530e6, a: 0.00025, Kt: 1.9 }
+let nT = 2.2
+var MG = zeros(3, 4)
+var TG = zeros(3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        MG[i, j] = 120.0 + f64(i * 4 + j) * 23.5
+        TG[i, j] = 60.0 + f64(j * 3 + i) * 11.25
+    }
+}
+var lo = filled(0.005, 3, 4)
+var hi = filled(0.2, 3, 4)
+for it in 0..40 {
+    let mid = 0.5 * (lo + hi)
+    let (nfv, nyv, _) = safety(mid, MG, TG, pr)
+    let up = min(nfv, nyv) < nT
+    lo = where(up, mid, lo)
+    hi = where(up, hi, mid)
+}
+pm(lo)
+pm(hi)
+let (nf, _, Kf) = safety(lo, MG, TG, pr)
+pm(nf)
+pm(Kf)

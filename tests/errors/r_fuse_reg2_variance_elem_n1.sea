@@ -1,0 +1,8 @@
+// r_fuse_reg2_variance_elem_n1 -- `variance` of an elemental function whose body fails (7 % 0: `integer division by zero`,
+// LANGUAGE.md 10.4) on a one-element argument: the element is evaluated before the n = 1 result (10.5); DESIGN.md 2.12.4 F3, F5
+elemental fn md(a: i64) -> i64 {
+    return 7 % a
+}
+let z: i64[] = [0]
+printf("start\n")
+printf("r %.17g\n", variance(md(z)))

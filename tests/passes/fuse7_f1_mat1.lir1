@@ -1,0 +1,129 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_mat1.sea
+func .main main 0:1:1 0 0
+slot s1 48 8
+slot s2 24 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 16
+lf f4 #4008000000000000
+stf f4 p1 - 0 32
+lf f5 #4010000000000000
+stf f5 p1 - 0 8
+lf f6 #4014000000000000
+stf f6 p1 - 0 24
+lf f7 #4018000000000000
+stf f7 p1 - 0 40
+li i8 2
+li i9 3
+li i10 1
+li i11 2
+rcall sea_arr_new_u 0:3 1 p12 4 i10 i11 i8 i9
+ldp p13 p12 - 0 40
+li i14 48
+mcopy p13 p1 i14
+lf f15 #4000000000000000
+ldi i16 p12 - 0 16
+ldi i17 p12 - 0 24
+li i18 1
+li i19 2
+rcall sea_arr_new_u 0:4 1 p20 4 i18 i19 i16 i17
+ldp p21 p20 - 0 40
+ldp p22 p12 - 0 40
+icmp eq i23 i16 i16
+icmp eq i24 i17 i17
+iand i25 i23 i24
+if 1 i25
+imul i26 i16 i17
+li i27 0
+icmp gt i28 i26 i27
+if 2 i28
+li i29 1
+isub i30 i26 i29
+loop 3 i31 i27 i30 i29
+ldf f32 p22 i31 8 0
+fmul f33 f32 f15
+stf f33 p21 i31 8 0
+endloop 3
+endif 2
+else 1
+li i34 1
+icmp ne i35 i16 i34
+icmp ne i36 i17 i34
+imul i37 i36 i16
+li i38 0
+icmp gt i39 i17 i38
+if 4 i39
+li i40 1
+isub i41 i17 i40
+loop 5 i42 i38 i41 i40
+li i43 0
+icmp gt i44 i16 i43
+if 6 i44
+li i45 1
+isub i46 i16 i45
+loop 7 i47 i43 i46 i45
+imul i48 i47 i35
+imul i49 i42 i37
+iadd i50 i48 i49
+ldf f51 p22 i50 8 0
+fmul f52 f51 f15
+imul i53 i42 i16
+iadd i54 i47 i53
+stf f52 p21 i54 8 0
+endloop 7
+endif 6
+endloop 5
+endif 4
+endif 1
+li i55 1
+li i56 0
+ldi i57 p20 - 0 16
+chkb i55 i57 0 0:5
+ldi i58 p20 - 0 24
+chkb i56 i58 1 0:5
+ldp p59 p20 - 0 40
+imul i60 i56 i57
+iadd i61 i55 i60
+ldf f62 p59 i61 8 0
+li i63 0
+li i64 2
+ldi i65 p20 - 0 16
+chkb i63 i65 0 0:5
+ldi i66 p20 - 0 24
+chkb i64 i66 1 0:5
+ldp p67 p20 - 0 40
+imul i68 i64 i65
+iadd i69 i63 i68
+ldf f70 p67 i69 8 0
+li i71 1
+li i72 2
+ldi i73 p20 - 0 16
+chkb i71 i73 0 0:5
+ldi i74 p20 - 0 24
+chkb i72 i74 1 0:5
+ldp p75 p20 - 0 40
+imul i76 i72 i73
+iadd i77 i71 i76
+ldf f78 p75 i77 8 0
+sa p79 s2
+stf f62 p79 - 0 0
+stf f70 p79 - 0 8
+stf f78 p79 - 0 16
+la p80 d1
+rcall sea_printf 0:5 0 2 p80 p79
+release p20
+release p12
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

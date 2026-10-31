@@ -1,0 +1,15 @@
+// r_fuse_sel_bad_index -- a selection store with a bad index after a fused value (LANGUAGE.md 5.4, 5.5: the value first, then the index
+// checks; nothing stored): v[2..6] on a length-4 v names its last position 5
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var v: f64[] = [1.0, 2.0, 3.0, 4.0]
+let a: f64[] = [0.5, 1.5, 2.5, 3.5]
+let b: f64[] = [1.0, 1.0, 1.0, 1.0]
+pv(v)
+v[2..6] = a * 2.0 + b
+pv(v)

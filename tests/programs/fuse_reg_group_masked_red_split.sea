@@ -1,0 +1,9 @@
+// fuse_reg_group_masked_red_split -- F2, F3 (DESIGN.md 2.12.4), 7c regression: the group `let g = y * 2.0` (5
+// elements) followed by a reduction over a selection tree of another length, `sum(x[mk] * 1.0)` (x and mk have 4
+// elements). The reduction must split off from the group: it sums the selected elements 1 + 3 = 4, g[0] = 2.
+let x: f64[] = [1.0, 2.0, 3.0, 4.0]
+let mk: bool[] = [true, false, true, false]
+let y: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0]
+let g = y * 2.0
+let s = sum(x[mk] * 1.0)
+printf("%.17g %.17g\n", s, g[0])

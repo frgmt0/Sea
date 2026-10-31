@@ -1,0 +1,93 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f4_range.sea
+func .main main 0:1:1 0 0
+slot s1 40 8
+slot s2 24 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+lf f5 #4010000000000000
+stf f5 p1 - 0 24
+lf f6 #4014000000000000
+stf f6 p1 - 0 32
+li i7 5
+li i8 1
+li i9 1
+li i10 1
+rcall sea_arr_new_u 0:3 1 p11 4 i8 i9 i7 i10
+ldp p12 p11 - 0 40
+li i13 40
+mcopy p12 p1 i13
+li i14 1
+li i15 4
+li i16 1
+rcount i17 i18 i14 i15 i16 0 0:4
+ldi i19 p11 - 0 16
+if 1 i18
+chkb i14 i19 0 0:4
+imul i20 i17 i16
+iadd i21 i14 i20
+chkb i21 i19 0 0:4
+endif 1
+lf f22 #4000000000000000
+li i23 1
+iadd i24 i17 i23
+li i25 0
+isel i26 i18 i24 i25
+li i27 1
+li i28 1
+li i29 1
+rcall sea_arr_new_u 0:4 1 p30 4 i27 i28 i26 i29
+ldp p31 p30 - 0 40
+ldp p32 p11 - 0 40
+li i33 0
+icmp gt i34 i26 i33
+if 2 i34
+li i35 1
+isub i36 i26 i35
+loop 3 i37 i33 i36 i35
+imul i38 i37 i16
+iadd i39 i14 i38
+ldf f40 p32 i39 8 0
+fmul f41 f40 f22
+stf f41 p31 i37 8 0
+endloop 3
+endif 2
+li i42 0
+ldi i43 p30 - 0 16
+chkb i42 i43 0 0:5
+ldp p44 p30 - 0 40
+ldf f45 p44 i42 8 0
+li i46 1
+ldi i47 p30 - 0 16
+chkb i46 i47 0 0:5
+ldp p48 p30 - 0 40
+ldf f49 p48 i46 8 0
+li i50 2
+ldi i51 p30 - 0 16
+chkb i50 i51 0 0:5
+ldp p52 p30 - 0 40
+ldf f53 p52 i50 8 0
+sa p54 s2
+stf f45 p54 - 0 0
+stf f49 p54 - 0 8
+stf f53 p54 - 0 16
+la p55 d1
+rcall sea_printf 0:5 0 2 p55 p54
+release p30
+release p11
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

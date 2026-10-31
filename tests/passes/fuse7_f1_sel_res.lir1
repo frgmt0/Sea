@@ -1,0 +1,126 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_sel_res.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+li i5 3
+li i6 1
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:4 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 24
+mcopy p10 p1 i11
+li i12 0
+li i13 2
+li i14 1
+rcount i15 i16 i12 i13 i14 0 0:5
+ldi i17 p9 - 0 16
+if 1 i16
+chkb i12 i17 0 0:5
+imul i18 i15 i14
+iadd i19 i12 i18
+chkb i19 i17 0 0:5
+endif 1
+lf f20 #4024000000000000
+li i21 1
+iadd i22 i15 i21
+li i23 0
+isel i24 i16 i22 i23
+li i25 1
+li i26 1
+li i27 1
+rcall sea_arr_new_u 0:5 1 p28 4 i25 i26 i24 i27
+ldp p29 p28 - 0 40
+ldp p30 p9 - 0 40
+li i31 0
+icmp gt i32 i24 i31
+if 2 i32
+li i33 1
+isub i34 i24 i33
+loop 3 i35 i31 i34 i33
+imul i36 i35 i14
+iadd i37 i12 i36
+ldf f38 p30 i37 8 0
+fmul f39 f38 f20
+stf f39 p29 i35 8 0
+endloop 3
+endif 2
+li i40 1
+li i41 3
+li i42 1
+rcount i43 i44 i40 i41 i42 0 0:5
+ldi i45 p9 - 0 16
+if 4 i44
+chkb i40 i45 0 0:5
+imul i46 i43 i42
+iadd i47 i40 i46
+chkb i47 i45 0 0:5
+endif 4
+li i48 1
+iadd i49 i43 i48
+li i50 0
+isel i51 i44 i49 i50
+ldi i52 p28 - 0 16
+icmp ne i53 i51 i52
+li i54 -1
+chk i53 SHAPE_MISMATCH 0:5 4 i51 i54 i52 i54
+ldi i55 p9 - 0 0
+li i56 1
+icmp ne i57 i55 i56
+if 5 i57
+rcall sea_arr_unique 0:5 1 p58 1 p9
+mov p9 p58
+endif 5
+ldp p59 p9 - 0 40
+ldp p60 p28 - 0 40
+li i61 0
+li i62 1
+if 6 i44
+loop 7 i63 i40 i43 i42
+ldf f64 p60 i61 8 0
+stf f64 p59 i63 8 0
+iadd i61 i61 i62
+endloop 7
+endif 6
+release p28
+li i65 0
+ldi i66 p9 - 0 16
+chkb i65 i66 0 0:6
+ldp p67 p9 - 0 40
+ldf f68 p67 i65 8 0
+li i69 1
+ldi i70 p9 - 0 16
+chkb i69 i70 0 0:6
+ldp p71 p9 - 0 40
+ldf f72 p71 i69 8 0
+li i73 2
+ldi i74 p9 - 0 16
+chkb i73 i74 0 0:6
+ldp p75 p9 - 0 40
+ldf f76 p75 i73 8 0
+sa p77 s2
+stf f68 p77 - 0 0
+stf f72 p77 - 0 8
+stf f76 p77 - 0 16
+la p78 d1
+rcall sea_printf 0:6 0 2 p78 p77
+release p9
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

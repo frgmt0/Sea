@@ -1,0 +1,30 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_grp_sum.sea
+pname 0:4:5 x
+type 0:4:8 f64 v 0
+float 0:4:17 #3FF0000000000000
+float 0:4:22 #4000000000000000
+float 0:4:27 #4008000000000000
+row 0:4:17 3
+array 0:4:16 1
+let 0:4:1 1
+pname 0:5:5 d
+name 0:5:9 x
+float 0:5:13 #4000000000000000
+bin 0:5:9 mul
+let 0:5:1 0
+pname 0:6:5 s
+name 0:6:9 sum
+name 0:6:13 d
+float 0:6:17 #3FF0000000000000
+bin 0:6:13 add
+call 0:6:9 1
+let 0:6:1 0
+name 0:7:1 printf
+str 0:7:8 %25g%0A
+name 0:7:16 s
+call 0:7:1 2
+cstmt 0:7:1
+prog 4
+#end

@@ -1,0 +1,5 @@
+// fuse7c2_f3_flat -- DESIGN.md 2.12.4 F3 over .flat of a matrix tree: sum8 over N = R*C with the
+// element at linear position K (one array leaf)
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let s = sum((A * 2.0 + 1.0).flat)
+printf("%g\n", s)

@@ -1,0 +1,44 @@
+// fuse_group_ref -- F2 with `ref` array parameter targets (LANGUAGE.md 8.3, DESIGN.md 2.12.4 F2 (1), (6)): `T = T * 0.5 + g` after
+// `let g` and before `sum(T - g)`, called twice; a matrix `M = h - r.row`; the caller's other copies keep the old
+// values
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn advance(ref T: f64[], x: f64[], w: f64) -> f64 {
+    let g = x * w + 1.0
+    T = T * 0.5 + g
+    let d = sum(T - g)
+    return d
+}
+fn advancem(ref M: f64[,], r: f64[]) {
+    let h = M * 2.0
+    M = h - r.row
+}
+var T: f64[] = [1.0, 2.0, -3.0, 4.5, 0.001]
+let keep = T
+let x: f64[] = [0.5, -1.0, 2.0, 1e+16, 0.125]
+let d1 = advance(ref T, x, 0.25)
+pv(T)
+pv(keep)
+let d2 = advance(ref T, x, -3.0)
+pv(T)
+printf("%.17g %.17g\n", d1, d2)
+var M: f64[,] = [1.0, 2.0, 3.0; -4.0, 0.5, 1e+16]
+let keepM = M
+advancem(ref M, [0.25, -1.5, 1000000000000000.0])
+pm(M)
+pm(keepM)

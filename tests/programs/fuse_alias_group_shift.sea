@@ -1,0 +1,16 @@
+// fuse_alias_group_shift -- F2 (3), L-er (DESIGN.md 2.12.4): a later statement reads the target of an earlier one shifted
+// (`x[1..6] - x[0..5]`), so the group ends before it; it reads the new `x` everywhere
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var x: f64[] = [0.5, -1.0, 3.0, 1e+16, 0.25, 7.0]
+x = x * 2.0 + 1.0
+let y = x[1..6] - x[0..5]
+let u = y * 0.5
+pv(x)
+pv(y)
+pv(u)

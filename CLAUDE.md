@@ -115,8 +115,15 @@ contract changes, the new programs `seafuse` and `seavec`, `sealopt` writing `se
 rewritten in `seafuse`, `sealoop` reading `sea.hirf`; neutral by Decision 109 over the whole corpus;
 lead decisions L-fm–L-fu; `seafuse` 3 164 built lines with 5 free letters, `sealoop` 6 396;
 DESIGN.md §2.7 "Measured after 7b"). **7d is done** (2026-10-29: the vector forms of the
-elementary functions, entries 39–50, `rt_vmath.s` per runtime; DESIGN.md §2.12.8). **Next:** 7c
-(fusion). Versions 0.y.z are alpha; 1.0.0 = v1
+elementary functions, entries 39–50, `rt_vmath.s` per runtime; DESIGN.md §2.12.8). **7c is done**
+(2026-10-30: fusion F1–F5 in `seafuse`, with buffer reuse, in-place selection stores, `tbind`
+groups, fused masked and `.flat` reductions and folded concatenation parts in stacks and mixed
+rows; the user's D1–D3 and the concatenation decision, lead decisions L-fv–L-gj, DESIGN.md
+§2.12.3, §2.12.4 "Readings fixed by 7c"; `make test` and `make cross` (876) pass; two independent
+reviews with differential fuzzing against the pre-7c compiler, every defect fixed; the measurement
+after 7c passes with no relief: `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431
+with 3, DESIGN.md §2.7 "Measured after 7c"). **Next:** 7e (`seavec` and vector code in pass 4).
+Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
 ## Read first

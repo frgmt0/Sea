@@ -79,10 +79,13 @@ the user's agreement. Phase 0 (§8) did:
    reviews and agreed 2026-10-29: Decisions 94–113, each decided by the user as option (a), and lead
    decisions L-eh–L-fl agreed with the text); sub-phase 7b (the contract and the two new programs
    `seafuse` and `seavec`, no change of behaviour) is **done** (2026-10-29; neutral by Decision 109
-   over the whole corpus; §2.7, "Measured after 7b"; lead decisions L-fm–L-fu); next are 7c
-   (fusion) and 7d (the vector forms of the elementary functions), and 7d may run in parallel with
-   7c. Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79,
-   §1.2).
+   over the whole corpus; §2.7, "Measured after 7b"; lead decisions L-fm–L-fu); sub-phase 7d
+   (the vector forms of the elementary functions, run in parallel with 7c) is **done** (2026-10-29;
+   §2.12.8, §8 row 7d); sub-phase 7c (fusion: F1–F5 in `seafuse`) is **done** (2026-10-30; §2.12.3
+   and §2.12.4 amended with its readings, §2.7 "Measured after 7c", whose measurement passes with no
+   relief; lead decisions L-fv–L-gj, of which L-fv–L-fy record the user's decisions); next is 7e
+   (`seavec` and vector code in pass 4). Every 0.y.z version is an alpha; 1.0.0 means v1 is done
+   (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
 §4.9.2's first loop-extension rule a temporary first written inside an `if` part of a loop (not at the loop body's
@@ -523,7 +526,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Next: 7c and 7d (7d may run in parallel with 7c). The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Next: 7e (`seavec` and vector code in pass 4, after 7c and 7d). The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3242,6 +3245,27 @@ letters. A failure calls for the relief of Decision 112, specified and agreed wi
 7e's code (7d may continue). `seafuse`'s letters are also counted after 7b; fewer than 2 free then
 calls for Decision 112's letter relief before 7c's code.
 
+**Measured after 7c** (2026-10-30, the integrated 7c tree after both reviews' fixes; `make` and `sh
+tools/passlines.sh limits`). Every verdict is ok. 7c changed `seafuse` (F1–F5) and `sealoop` (the
+reader of F8 among the appended types, L-fw; the `rcnt` type check, L-gj; the numbering of an
+inlined callee's undeclared `.i` local after the declared ones, R34); no other pass changed
+(`sealower` 6 742, as after 7b).
+
+| Pass | Built lines | After 7b | 7c increment | `FOR`s | String bytes | Longest line | Free numeric array letters |
+|------|------------:|---------:|-------------:|-------:|-------------:|-------------:|------|
+| `seafuse` | 6 427 | 3 164 | +3 263 | 151 | 12 983 | 234 | 5 (`B D J S X`) |
+| `sealoop` | 6 431 | 6 396 | +35 | 103 | 11 985 | 208 | 3 (`B X Y`) |
+
+**The measurement after 7c passes** for both programs, so Decision 112 (2) calls for no relief:
+`seafuse` 6 427 ≤ 7 000 (573 under), 6 427 + 1 500 = 7 927 ≤ 9 000 (1 073 to spare), 5 free
+letters ≥ 2; `sealoop` 6 431 ≤ 7 000 (569 under), 6 431 + 1 500 = 7 931 ≤ 9 000 (1 069 to spare),
+3 free letters ≥ 2. Against "Projected for phase 7": `seafuse`'s 7c increment (+3 263) is 283
+lines (9.5 %) over the upper end of F1–F5's 1 650–2 980 (the concatenation stacks and mixed rows,
+L-fy, the `tbind` groups and both reviews' fixes among it), and its total lies inside the projected
+4 870–7 150 after phase 7; its free letters are at the upper end of the projected 0–5 (F1–F5's
+tables went into `Y`'s columns and the one-dimensional `V`, widened to `V(37000)`, with no new
+letter); `sealoop` is inside its projected 6 292–6 892.
+
 **The gate after phase 7** (Decision 71's form, applied after 7f's integration and recorded here
 as "Measured at the gate after phase 7"): `make check-limits` and the free numeric array letters of
 every main program; each program passes with its remaining work above when built ≤ 7 000, built +
@@ -3793,6 +3817,9 @@ introduction (its count of text files: eight today, ten after phase 7), §3.4's 
 vectorized loop twice), §4.5 (the heap check's count mode), §4.8, §4.9, §4.10.1, §5.1, §5.3, §5.4,
 §6.6.1, and LANGUAGE.md §9.2 (the sentence of §2.12.2 (5), agreed with the text); until each is
 edited, this section is the agreed specification and those sections describe the code as built.
+At 7c's integration (2026-10-30) §2.12.3 and §2.12.4 were amended with the readings 7c fixed (the
+user's D1–D3 of 2026-10-29 and the concatenation decision of 2026-10-30, and the lead decisions
+L-fv–L-gj), marked "as built in 7c" where they narrow a rule; they describe `seafuse` as built.
 
 #### 2.12.1 Scope
 
@@ -3944,7 +3971,11 @@ it writes the per-element calls as `call` records of the elemental function, whi
 inlines, so the `fn` records of kind `elem` stay, and so do their `call`s); (2) of the `HL` records
 only `tptr xblk tmp hloop ext adat eld est anew wbin chkb chk rcnt cow mcpy` (no `cdat`, `iblk`,
 `iret`: literals and inlining stay `sealoop`'s); (3) `tptr` records appended to the type table as
-§3.5.9 "Types" says, numbered on from `sea.hir`'s last id; (4) the locals `seafuse` creates are
+§3.5.9 "Types" says, numbered on from `sea.hir`'s last id, and, when F3 writes sum8 and `sea.hir`'s
+table has no `tfvec` of `f64` with n 8, the type F8 appended with them (one that `sea.hir` has is
+used instead), numbered with the `tptr` records in the same order of first reference (a masked
+sum's mask `tptr` therefore precedes F8), so `sealoop`'s reader accepts F8 anywhere among the
+appended records and its writer renumbers it with them (L-fw); (4) the locals `seafuse` creates are
 `.l` locals, and `sealoop` renumbers every `.l` local of its output in file order (§3.5.9
 "Locals"), so `sea.hirl`'s numbering stays canonical whichever program created a local (Decision
 109); (5) T1–T3 of §3.5.9 and the refinements R1–R16 hold for every `HL` record of `sea.hirf` as for
@@ -3992,7 +4023,17 @@ is declared by no record and read by no node, and rule 16 releases nothing for i
 `SEA_LIM_NODES`, `SEA_LIM_SYMBOLS` or `SEA_LIM_TYPES` is not applied (its statements are written
 unfused, for `sealoop` to rewrite one by one), so fusion never makes a compilation fail; L19 reports
 its limits as before (`seafuse` counts the whole file as `sealoop` does, §3.5.9 "Capacity"); L18
-and L20 count the copied `HL` records and `.l` locals as they count the others. **Capacity
+and L20 count the copied `HL` records and `.l` locals as they count the others. **As built in 7c**
+(L-gh): a fused unit (a tree, reduction, concatenation or group) also has an implementation
+capacity of 1 180 of its 1 187 slots, counted exactly before the unit is built (1 per fused node
+and per leaf, 3 per S, R, A or V selection leaf, per selection target and per concatenation part);
+a unit over it is left unfused, and a group stops growing before the statement that would pass it,
+like L-el. When `SEA_LIM_NODES`, `SEA_LIM_SYMBOLS` or `SEA_LIM_TYPES` is passed inside a fusion,
+that fusion runs to its end on throwaway output, and the walk then re-runs once, with every walk
+flag reset, under a threshold: that fusion and every later one in walk order are written unfused.
+A limit passed outside any fusion (L19 included), or a second overflow inside a fusion, is reported
+as before (the second at the first one's position). A fusion left unfused this way can move a later
+capacity position, as below. **Capacity
 positions** (agreed 2026-10-29): a "program too large: …" diagnostic keeps its message, but its
 position may move, because `seafuse` counts nodes as a pass of its own, without L20's inline cost;
 Decision 109's byte identity excludes capacity positions.
@@ -4050,8 +4091,13 @@ gives exactly F1's form for it (L-em).
      NN = R·C reading every whole-array leaf at I when no leaf is folded, else `mloop(R, C; I, J)`
      reading whole-array leaves at `lin(I, J, R)` and folded ones by their maps (L-eo), so its inner
      accesses are unit-stride for T13; and the *broadcast copy*, `mloop(R, C; I, J)` reading every
-     array leaf at L7's index `I·SIk + J·SJk`; when no leaf can broadcast (every array leaf
-     fixed-size with the space's static shape) the broadcast copy and the test are omitted. The body
+     array leaf at L7's index `I·SIk + J·SJk`, and every folded leaf through its own map at row
+     I·[rows ≠ 1] and column J·[cols ≠ 1] of the leaf (its SI and t, no SJ; L-fx); when no leaf can
+     broadcast (every array leaf fixed-size with the space's static shape) the broadcast copy and
+     the test are omitted. `tmp Pl` stands right before its `if`, after the data loads, folding `bin
+     band` left to right over every array leaf in leaf order, rows before columns; the plain copy's
+     NN is written in its arm before its loop, the broadcast copy's strides (L7 (4)) in its arm
+     before its `mloop` (L-ga). The body
      computes the element expression F: E with each array leaf replaced by its element (`eld Ek sk 0
      (lv Dk) index`), each scalar leaf by `lv Lk`, each folded leaf by F4's element read, each inner
      node by its scalar operation (and an `emap` by F5's per-element call); then `est s 0 F (lv DR)
@@ -4064,7 +4110,10 @@ gives exactly F1's form for it (L-em).
      leaf read at the element being written (identical index maps: no broadcast, the same selection),
      and (iii) no read of it goes through a call or a field of a different path (L-fe); otherwise E
      is not fused with that store: the value is computed into RES first (fused if it qualifies) and
-     stored as before (L6, rule 21).
+     stored as before (L6, rule 21). As built in 7c (L-gc), a selection store is in place only when
+     its value reads no `lv` of the target's root at all (the strict form of (ii)); a whole-array
+     target that its value reads other than as whole-array leaves at the element is never in place
+     and starts no group: its tree is fused into RES and stored as before.
   6. *Value*: `lv RES` (owned) as L7's, its owned leaves temporaries of the `xblk` released after
      the nest (T2). Sites: each check at its node's line (1); the `anew` at the root's line.
 
@@ -4076,7 +4125,10 @@ gives exactly F1's form for it (L-em).
      application (F5), or a reduction F3 fuses other than `variance` and `std` (which need the mean
      before their second pass, so they are fused standalone only); or a `bind` of a scalar from such
      a reduction; with no effect anywhere in it (no call with effects, no `printf`, `print`,
-     `write_json`, `make_dir`);
+     `write_json`, `make_dir`); as built in 7c (L-gc, L-gd), a selection-store statement is fused
+     alone (F1 (3), (5)) and is not a group member, a masked reduction does not start a group, and
+     every statement of a group has one rank (a statement whose root has another rank ends it; a
+     `.flat` reduction's space is a vector of R·C);
   2. *one space, no added check*: each Si keeps exactly its own reference checks (F1 (1)); the
      group adds one quiet run-time test, `tmp Gs` = the conjunction of `bin eq` of every Si's root
      extents with S1's (and of every mask of a masked reduction with S1's root extents): when it
@@ -4095,16 +4147,20 @@ gives exactly F1's form for it (L-em).
      failing root (F1 (2)), or be a failing reduction (`sum`, `mean` of `i64`) when nothing that can
      fail follows it.
 
-  The group is rewritten as one `block P n` (P S1's position): (a) each Si's leaf and check phase
-  in statement order (F1 (1)), and, for a masked reduction, its mask's count as L5's IX 3 and its
-  `EMPTY_REDUCE` check where L13 makes it; (b) for each whole-array target its reuse prologue (6);
-  for each stored local its result array (`anew` at Si's position); (c) the space test (2) and, in
-  its first part, one nest over the space (F1 (4)) whose body computes, per element, each Si's
-  element value into a new scalar `.l` local Ei (`bind`), in statement order, a read of X bound or
-  assigned by an earlier Si reading Ei instead of memory, then the element stores of the targets
-  and stored locals and the reduction steps of F3; in its second part the split copy; (d) after it,
-  the reductions' final values (F3) bound to their locals, the stored locals bound to their arrays,
-  and the release of the group's own temporaries. **Which results are stored**: a whole-array or
+  The group is rewritten (P S1's position; L-fv, agreed by the user 2026-10-29): (a) each Si's leaf
+  and check phase in statement order (F1 (1)), and, for a masked reduction, its mask's count as L5's
+  IX 3 and its `EMPTY_REDUCE` check where L13 makes it, and (b) for each stored local its result
+  array, bound there (`bind X = anew` at Si's position), then the accumulators of the group's
+  reductions (F3), all standing directly in the enclosing block, since a `block` is a scope and a
+  local bound inside it would be released at its end while a later statement reads it; then one
+  `block P n` holding, for each whole-array target, its reuse prologue (6), and (c) the space test
+  (2) and, in its first part, one nest over the space (F1 (4)) whose body computes, per element,
+  each Si's element value into a new scalar `.l` local Ei (`bind`), in statement order, a read of X
+  bound or assigned by an earlier Si reading Ei instead of memory, then the element stores of the
+  targets and stored locals and the reduction steps of F3 (a `tbind` component's element store
+  follows its `tbind` in that `tbind`'s block, L-ge); in its second part the split copy; (d) after
+  the block, at each reduction Si's position, its final value (F3) bound to its local, and the
+  release of the group's own temporaries. **Which results are stored**: a whole-array or
   selection target always; a local bound by Si only when a statement after the group in the same
   block reads it (any node; the block is the local's scope); a local not read after the group is
   never stored in the fused nest (W1's `mid`, `nfv`, `nyv`, `up`), keeps its `loc` record, and its
@@ -4133,9 +4189,11 @@ gives exactly F1's form for it (L-em).
   lane `Q & 7` of `sum`'s sum8 and the index `argmax` and `argmin` return (`argmax(v[m])` with v =
   [9, 1, 5], m = [false, true, true] is 1, the position in the selection) (L-et). `variance` and
   `std` (standalone only, F2 (1)) compute the tree's elements twice (once per sum8, as L13 reads the
-  vector twice; the tree is quiet). In a group the reduction's loop is the group's nest; its
-  accumulators are bound before the nest and its final combination follows it. A failing
-  reduction (`sum`, `mean` of `i64`) follows F2 (4).
+  vector twice). `variance` and `std` are fused only when every node of the tree is quiet: a
+  failing root is then a barrier, the tree is fused by F1 into RES (which evaluates every element
+  and raises its errors in order) and L13 reduces RES (L-gf). In a group the reduction's loop is the
+  group's nest; its accumulators are bound before the nest and its final combination follows it.
+  A failing reduction (`sum`, `mean` of `i64`) follows F2 (4).
 
 * **F4 (folded views and selections)**. As leaves of a fused tree, a fused reduction or an F2 group:
   `.T`, `.flat`, `.col`, `.row` of an array leaf (rule 28's folding of §3.5.9 "Folded views", with
@@ -4148,13 +4206,96 @@ gives exactly F1's form for it (L-em).
   L9 (c)'s copy pass, a part that is a range or `:` selection or a view of an array is copied from
   its base by its index map instead of being materialized first (its IX 1 and IX 2 at the part's
   place in the part order), which `seafuse` writes as L9 (c) with that part's loop reading the base
-  (L-eu).
+  (L-eu). This holds for every row of a stack, and for rows of matrices and scalars and rows of
+  scalars and vectors alike (decided by the user 2026-10-30, L-fy): a scalar part is written as one
+  element store at its place; a vector part of a row of scalars and vectors is copied as a 1 × n
+  block. A part folds when it is a view (`.T`, `.flat` of a matrix, `.col`, `.row` of a vector) of
+  an operand that is not a view, or a selection of an array that is not a view whose every index is
+  a range or `:`; a selection with a scalar index (`A[1, :]`), a view of a selection (`v[0..4].row`:
+  the view folds, the selection is materialized) or a selection of a view (`B.T[1..3, :]`) is not a
+  folded part. A vector concatenation folds its `v[:]` and `A.flat` parts too. One folded part
+  makes the whole concatenation `seafuse`'s; a concatenation with none stays with `sealoop`'s L9.
 
 * **F5 (elemental applications)**. L19 (in `seafuse`, §2.12.3) rewrites every `emap`; an `emap`
   inside an element-wise tree or an F2 group is a fusible k-result node: its arguments are leaves or
   subtrees of the tree, its checks are L19's (2) at its node, and its element is the per-element
   `call` of L19 (4) (inlined by `sealoop`'s L20), whose kept results are scalar `.l` locals of the
   body; a result nothing reads is discarded (L19 (3)).
+
+**Readings fixed by 7c** (the forms F1–F5 leave open, as built and as T2's goldens write them; lead
+decisions L-fz–L-gg, §9). Normative with the rules above:
+
+1. *Positions* (L-fz): every node a rewrite writes takes P, the position of the rewritten
+   statement (the ancestor whose parent is a block, so a call written as a statement is the
+   statement; for a group S1's), except: a `chk` or `chkb` takes the position of the node whose
+   check it is (the tree node, the `idx` of a folded selection, the `asg` of a target's own checks,
+   the `lib` of `EMPTY_REDUCE`); an `rcnt` its `rng`'s; F1's RES `anew` the root's; a stored group
+   local's `anew` its statement's; F5's per-element `call` the `emap`'s; a concatenation written as
+   L9 (c) the `arr`'s; a reduction's final its statement's.
+2. *Order of a leaf and check phase* (L-fz): at each node its operands left to right, a leaf as
+   `tmp Lk`, an inner node recursively; then every array operand's extents of the node, all loaded
+   before its checks; then its L7 (2) checks. `tmp V = ci SEA_SHAPE_VEC` is written once per
+   rewrite at its first vector check and `tmp O = ci 1` once at its first use. A folded range or
+   mask selection's kept extent (IX 3) is written where its node loads its operands' extents; its
+   IX 1 and IX 2 are the leaf's evaluation. Each extent of a folded `.col` is a `tmp` loaded at its
+   node (`ext(B, 0)`, `ci 1`; `.row`: `ci 1`, `ext(B, 0)`), its `tmp Lk` being its base.
+3. *Which trees* (L-gb): a bare leaf (a whole-array `lv`, a folded selection or view alone) is no
+   element-wise tree: F1 and F3 need at least one fusible node (F2 (1) lists a folded selection or
+   view separately); `ind2sub` with a scalar `r` is no fusible node (L11's form). With a single
+   dynamic array leaf in a matrix space the test Pl and the broadcast copy are kept as F1 (4)
+   writes them, though Pl always holds (L-ga). A fixed-size root's static extents are `ci` `tmp`s
+   at P; a fixed-size value stored in place takes the extents of its first array leaf (a fixed
+   vector its static n) (L-ga).
+4. *Stores in place* (L-gc): a whole-array target by F2 (6) (a single statement is the `block P n`
+   of its leaf and check phase, the prologue `tmp X = ext(V, d)`, `tmp E = bin eq (lv X) (lv N)` per
+   dimension folded by `bin band`, the data loads and the nest; O always bound, `data(O)` loaded in
+   leaf order in place of the leaf's own data only where the tree reads V); a fixed-size whole
+   target has no prologue and no O and is written in its home. A selection target (kinds S, R, A,
+   M, MM): L6 steps 2–5 after the value's leaf and check phase, the value's extent being the
+   space's; step 6 loads `data(T)`, then the leaves' data in leaf order, then `bind O = ci 0`, `tmp
+   One = ci 1`; step 7's nest computes the element at the value index O; the target's index records
+   are copied, a `$` that the target's `idx` claims written as L6 and IX 1 write it (`lv` of the
+   base at the `idx`'s position, `ext` at the `$`'s); in a dynamic matrix's broadcast copy O and One
+   stand before the test, the plain arm reads at the linear O and the broadcast arm reads each leaf
+   at `K·SI + L·SJ`, K the value's row counter (`K += One` per stored element, reset after the inner
+   loop) and L its column counter (`bind L = 0`, `L += One` after the inner loop).
+5. *Groups* (L-gd): the space test compares S2 … Sn with S1 (`bin eq` of Si's extent and S1's,
+   rows then columns for a matrix space, folded by `bin band`); a read of a local bound by an
+   earlier group statement is no leaf (its extents are that statement's root extents, its element
+   that statement's Ei). The fused nest loads first the data of every stored local and target in
+   statement order, then of every array leaf in leaf order; a matrix group's fused arm holds the
+   test Pl with the plain and broadcast copies over all the group's array leaves (reads of
+   group-bound locals excluded). The split copy runs each statement's own F1 (4) nest, loading its
+   own data (its result, then its leaves), a read of a group-bound local being a whole-array leaf of
+   the earlier statement's split array and an unstored local stored into a `tmp` of a new array in
+   the split copy's block (R11); a masked reduction's split nest runs over its mask's base positions
+   with a counter J of the selected elements.
+6. *A `tbind` in a group* (L-ge): a k ≥ 2 `emap` is fusible only as the direct value of a `tbind`
+   (not under `eval`, `tasg`, `tret` or a `seq`), with every component an array of `bool`, `i64` or
+   `f64`; its arguments are leaves of its tree (a subtree argument is fused as its own tree into
+   RES and read as a whole-array leaf); a `tbind` outside a group stays with L19. In the fused nest
+   the `tbind` of `.l` locals opens a `block` holding the rest of the element body (R8), each kept
+   (named) component's element store following it in that block; in the split copy the statement
+   is L19's block form, with an array for each kept component; a kept component is stored before
+   the group only when read after it. A group's `tbind` components total at most 499; a `tbind`
+   past that is not groupable.
+7. *Reductions* (L-gf): **masked** (not `sum`): `bind Q = ci 0` and `tmp One = ci 1` after the data
+   loads, the nest loop(X; K) over the base with `if` of the mask element, Q replacing K in L13's
+   body and `Q += lv One` the last statement of the `if`'s block; the mask's data is loaded again
+   for the nest after the base's. **Masked `sum`**: sum8's H, A, M and lane stores, the data loads,
+   `bind Qc = ci 0`, `tmp One = ci 1`, `tmp Q = ci 7`, then loop(X; K) { `if` (mask element at K) {
+   W = Qc & Q; G; Y; `asg` G; `est`; Qc += One } } in place of sum8's direct `hloop` (the lane is
+   the selected count, L-et). **`.flat`**: fused with a single array leaf only, one loop over N = R·C
+   at the linear position K, N's `tmp` after the leaf and check phase; in a group its space is a
+   vector of R·C. **In a group**: only over a space of the group's rank; its accumulators stand in
+   the enclosing block after the stored locals, its steps follow the stores in the nest, its final
+   is bound after the group's block (`sum`: `tmp Z`, `bind s = ifx(N > 0, xblk{…}, cf 0)`; `max`:
+   `bind s = lv R`); a masked reduction's count and `EMPTY_REDUCE` stand in (a), its mask extent in
+   the space test. **`variance`/`std` of `i64`**: their deviations are `f64`, so they use F8; the
+   mean is the checked `i64` sum converted. In a same-mask tree (`A[m] - B[m]`) the mask's data is
+   loaded once, with its first leaf.
+8. *F5 with k = 1* (L-gg): the per-element `call` stands in the element expression in place of the
+   `emap` (no `.l` local is bound for its one result).
 
 **Example** (W1's bisection body, `ports/w1_shaft_design.sea` lines 251–257, LANGUAGE.md §2.1).
 `mid`, the `tbind` of `shaft_safety(mid, MG, TG, pGrid)`, `up`, `lo = where(up, mid, lo)` and `hi =
@@ -4174,6 +4315,12 @@ validation readings it accepts. It validates as before otherwise. `seaopt` (pass
 but for `lirrw`'s vector validation, which it loads and never exercises (Decision 113). `sealopt`
 (pass 3c) writes **`sea.lir3`** instead of `sea.lir` (its output file name, one line; no
 transformation changes), which pass 3d reads (Decision 98); `--emit lir3` dumps it.
+
+**Observed at 7c** (a follow-up for the later phases, not a decision): fused output can make
+`sealopt` much slower although its `sea.lir2` is smaller. In 7c's second review one fuzz program
+took 239 s to `--emit lir3` against 101 s before 7c, with byte-identical output; several programs
+with long groups passed the review's 120 s timeout for this reason. `sealopt`'s compile time on
+fused code is to be looked at when 7e and 7f measure the passes and W4's compile time (§6.3).
 
 #### 2.12.6 Pass 3d: `seavec`
 
@@ -4491,7 +4638,10 @@ L-ei (quiet elemental bodies), L-ek (the identity file), L-em (vector single-nod
 L-ep (the plain and broadcast copies), L-eq (the space test and split copy), L-er (where a group
 ends), L-es (unstored locals), L-et (positions in masked reductions), L-ex (independence by kind),
 L-fa (the derivation of the counts), L-fe (root paths), L-fg (if-conversion) and L-fk (the count
-mode of the heap check).
+mode of the heap check). The readings 7c fixed are the lead decisions L-fv – L-gj (§9, "Lead
+decisions of sub-phase 7c"): the forms F1–F5 leave open are in §2.12.4, "Readings fixed by 7c";
+the narrowing of F1 (5), F2 (1) and F3 and the concatenation parts of F4 stand in the rules
+themselves; F8 and the capacity fallback in §2.12.3.
 
 ## 3. Intermediate files
 
@@ -12014,8 +12164,13 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     group with its space test and split copy, its end at a dependence, an unstored and a stored
     local, buffer reuse; F3 for `sum` (sum8 over a tree) and `max` and `argmax` over a same-mask
     selection; F4 for `.flat`, `.T`, a range selection, an index vector, a concatenation part; F5
-    inside a tree; an inlined function whose body was fused (L20 copying `HL` records, `.l` to `.i`,
-    Decision 110) and a prelude call; and the re-derived goldens of Decision 97 (L-fb's list).
+    inside a tree; an inlined function whose body was fused (L20 copying `HL` records, a callee `.l`
+    local becoming a caller `.l` local, Decision 110 as amended by L-fo) and a prelude call; and the
+    re-derived goldens of Decision 97 (L-fb's list). As built in 7c, 12 `fuse7c2_*` dumps of the
+    same kind add the forms of §2.12.4's "Readings fixed by 7c" (in-place selection stores of kinds
+    R, M, MM and a broadcasting leaf, a masked `sum`, a `tbind` group, a one-row matrix
+    concatenation, among them), and `fuse_reg_*`, `fuse_cat_*`, `r_fuse_cat_*`, `r_fuse_reg2_*`
+    and `err_fuse_reg2_*` hold the reviews' regressions and the concatenation stacks.
   * **`vec_*` programs** (T1 of 7e): loops T13 vectorizes with trip counts 0, 1, 7, 8, 9, 15, 16, 17,
     1 000 (tail lengths 0–7), `f64` arithmetic, `sqrt`, `min`/`max` with NaN and ±0 lanes, `where`
     with masks from comparisons and from `bool` arrays, `bool` results stored and then counted with
@@ -12643,7 +12798,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 6e | **Ports, acceptance; close-out** (after 6d): W1 and W5 without figures (§2.11.8, Decision 80). Work packages: **WP-PORT** `sea/ports/w1_shaft_design.sea`, `sea/ports/w5_tolerance_mc.sea` (from the MATLAB sources and LANGUAGE.md Appendix D; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/*.tokens` (from the MATLAB `fprintf` formats and the RULES of `compare_report.py`, §6.4); **WP-ACCEPT** `tests/accept.sh`, the `Makefile` group `test-accept` and its entry in `sea/CLAUDE.md`'s `make test` list, the port cases of `tests/cross_pack.sh` and `tests/cross_run.sh` with the new case attribute `filter=compute-time` (L-cn, §6.3); W1's compile time recorded in §6.3; then the gate after phase 6 (§2.7) | the phase's "done when" (row 6): `tests/accept.sh` passes both ports on the Mac, `make cross` passes them on the host (stdout byte-identical but for the `Compute time` line, JSON byte-identical); `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 6 applied, a failing program getting a relief agreed with the user before phase 7's code. **Done** (2026-10-29): `tests/accept.sh` passes both ports on the Mac (22.7 s; W1 compiles in 13.8 s, W5 in 7.1 s; every JSON key passes, the reports are equivalent, §6.3); `make test` passes in every group (`test-driver` 112, `test-rt` 114, `test-stage` 703, `test-protocol` 46, `test-programs` 1 667, `test-accept` 2 + 2); `make cross` 778 cases on the Linux host `desktop` (both ports byte-identical but for the `Compute time` line), 0 failed; the gate after phase 6 applied (§2.7, "Measured at the gate after phase 6"): every program passes (`sealoop` with phase 7's fusion: 6 512, 8 012 and 8 762 with 3 free letters), so no relief is needed and fusion stays in `sealoop`; lead decisions L-ed–L-eg (agreed 2026-10-29) record the readings the integration fixed |
 | 7a | **Phase-7 specification** (documents only; proposed 2026-10-29, revised after two independent reviews, agreed 2026-10-29 with Decisions 94–113 and lead decisions L-eh–L-fl): §0, §2.7 ("Projected for phase 7", "The measurement after 7c", "The gate after phase 7"), §2.12 (scope and non-scope, the contract changes, the semantic contract with the out-of-memory sentence proposed for LANGUAGE.md §9.2, `seafuse` and `sea.hirf`, L19's rewrite, L18/L20's copying, F1–F5, `seavec`'s T11–T13, pass 4's vector code, entries 39–50, capacity, W4, the allocation count and the vector check, the goldens), §6.2 ("Phase-7 tests"), §6.3 ("Phase-7 acceptance"), §6.6.1 (both x86_64 variants), this table, §9; no contract file, intermediate format or code changes; LANGUAGE.md unchanged until agreement | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 94–113. **Done** (2026-10-29): the specification agreed, each Decision as option (a), with the LANGUAGE.md §9.2 sentence of §2.12.2 (5) for WP-CONTRACT; next 7b (WP-CONTRACT first and alone) |
 | 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
-| 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code |
+| 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code. **Done** (2026-10-30): F1–F5 in `seafuse` with buffer reuse, in-place selection stores of kinds S, R, A, M, MM, groups with `tbind`s of k-result elemental applications, fused, masked and `.flat` reductions in and out of groups, and folded concatenation parts in stacks and mixed rows (decided by the user 2026-10-30, L-fy); the user's D1–D3 (2026-10-29: the group's leaf phase and stored binds in the enclosing block, F8 appended in `sea.hirf`, the broadcast copy reading a folded leaf by its map) and the readings of the work packages and both reviews' fixes recorded in §2.12.3, §2.12.4 ("Readings fixed by 7c") and as lead decisions L-fv–L-gj; `sealoop`'s share: the F8 reader and renumbering (L-fw), the `rcnt` type check (L-gj), an inlined callee's undeclared `.i` local (R34); `sealower` unchanged; tests: 39 `fuse_*` programs (T1's 26, 11 `fuse_reg_*` regressions, 2 concatenation programs), 19 `r_fuse_*`/`err_fuse_*` error tests, 22 `fuse7_*` and 12 `fuse7c2_*` dumps (`dump7_cases.py` part 4), the re-derived goldens `ew_colrow`, `sel_reads` and the subject test `elem6_inst` (L-fb's list in `tests/CORPUS.md`); `make test` passes in every group (`test-programs` 2 034, `test-stage` 1 067) and `make cross` 876 of 876 on the Linux host; two independent reviews with differential fuzzing against the pre-7c compiler (stdout, stderr, status and heap check compared byte for byte; review 1: 1 566 programs, 9 defects, all fixed, with two more found by the fixer's fuzzing; review 2: 577 programs and capacity scans, 5 defects, all fixed), the final fuzz runs (1 000, 400 and 400 programs on fresh seeds: all MATCH; 300 concatenation programs: no mismatch, those 37 that fail to compile failing on both compilers); the measurement after 7c passes with no relief (§2.7, "Measured after 7c": `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431 with 3); observed: fused output can slow `sealopt` (§2.12.5); next 7e |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113): T11, T12, T13 with if-conversion (§2.12.6), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108): §2.12.10. Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
@@ -14663,3 +14818,72 @@ Lead decisions of sub-phase 7b (found in its integration; the readings it fixed)
   `tbind`'s `n` and a `tasg`'s target count equal `k` (`BAD_RECORD`).
 * **L-fu** `tests/protocol.sh` was edited by WP-PIPE: its fake chain needs the two new programs
   (§8, row 7b).
+
+Lead decisions of sub-phase 7c (found in its integration and its two reviews; the readings it fixed,
+recorded 2026-10-30; L-fv–L-fy record decisions of the user):
+
+* **L-fv** (agreed by the user, 2026-10-29: D1) A group's leaf and check phases, its stored locals'
+  `bind X = anew` and its reductions' accumulators stand directly in the enclosing block, ahead of
+  the group's `block P n` (a `block` is a scope; a local bound in it would be released at its end
+  while a later statement reads it); the finals are bound after that block (§2.12.4 F2).
+* **L-fw** (agreed by the user, 2026-10-29: D2; numbering a lead decision) F3's sum8 type F8 is
+  appended to `sea.hirf`'s type table (§2.12.3 (3)), numbered with the `tptr` records in order of
+  first reference, so a masked sum's mask `tptr` precedes it; `sealoop`'s reader accepts F8 among
+  the appended records, does not take it for a duplicate `tptr` of `f64` or treat it as a `tptr`,
+  and its writer renumbers it with them (fixed in 7c; §2.12.3, §3.5.9 "Types").
+* **L-fx** (agreed by the user, 2026-10-29: D3) The broadcast copy reads a folded leaf through its
+  own map at row I·[rows ≠ 1] and column J·[cols ≠ 1] (its SI and t, no SJ); a folded `.col` or
+  `.row` reads at `lin(I·s, J·t, r)` with the strides of a whole array (§2.12.4 F1 (4)).
+* **L-fy** (decided by the user, 2026-10-30) Concatenation parts fold in every row of a stack and in
+  rows mixing scalars, vectors and matrices, with the foldability rule and the vector-result
+  folding of `v[:]` and `A.flat` of §2.12.4 F4; this supersedes WP-FUSE3's reading that only one
+  row of matrix parts folds.
+* **L-fz** Positions and the order of the leaf and check phase are §2.12.4 "Readings fixed by 7c"
+  (1) and (2) (T2a's R-a, R-b, R-c, R-T2b-4; all of a node's operand extents loaded before its
+  checks, WP-FUSE3's reading 4); F8 reuses `sea.hir`'s `tfvec` of `f64` with n 8 when it has one.
+* **L-ga** F1 (4)'s test Pl, NN and strides are placed as §2.12.4 F1 (4) says (R-d); with a single
+  dynamic array leaf in a matrix space the always-true Pl and the broadcast copy are kept as written
+  (R-T2b-5); a fixed-size in-place value's extents are its first array leaf's, a fixed vector's its
+  static n (R-n), and a fixed-size root's static extents are `ci` `tmp`s at P (§2.12.4 "Readings
+  fixed by 7c" (3)).
+* **L-gb** A bare leaf is no element-wise tree, and `ind2sub` with a scalar `r` no fusible node
+  (R-T2b-1, R-T2b-3), so the L13 dumps and `ew_ind2sub` are unchanged (§2.12.4 "Readings fixed by
+  7c" (3)).
+* **L-gc** Stores in place: a selection store only when its value reads no `lv` of the target's
+  root (F1 (5) (ii) read strictly), never of kind V, and alone, never a group member; a whole-array
+  target that its value reads other than as whole-array leaves at the element starts no group and
+  is fused into RES (review 1, finding 1); the forms of R-f, R-g and of the dynamic matrix's
+  broadcast copy, and `$` in a target index, are §2.12.4 "Readings fixed by 7c" (4) (F1 (3), (5),
+  F2 (1)).
+* **L-gd** Groups have one rank (R-T2b-2; a `.flat` reduction's space is a vector of R·C, finding
+  6); a masked reduction does not start a group; the space test, data order, matrix groups and
+  the split copy (with a masked reduction's split nest over its mask's base positions with counter
+  J, finding 2) are §2.12.4 "Readings fixed by 7c" (5) (R-e, R-o).
+* **L-ge** A `tbind` of a k ≥ 2 elemental application in a group is §2.12.4 "Readings fixed by 7c"
+  (6) (R-m; WP-FUSE3's readings 1–3 and 6): direct `tbind` value only, leaf arguments, kept
+  components only, at most 499 components per group; a `tbind` component's element store follows
+  its `tbind` in that `tbind`'s block (review 1, finding 7: `sealower` accepts an `est` of a `tbind`'s
+  `.l` local only in the block it begins).
+* **L-gf** Reductions are §2.12.4 "Readings fixed by 7c" (7): masked forms (R-h; masked `sum` by
+  R-l, the selected count as lane, not sum8's direct `hloop`), `.flat` with a single leaf (R-k),
+  in groups (R-q, matching rank, the final at its statement's position after the block), same-mask
+  data loaded once (R-r), `variance`/`std` of `i64` with F8 (review 1, finding 5); `variance` and
+  `std` fused only over quiet trees, a failing root a barrier (review 2, finding 1; §2.12.4 F3).
+* **L-gg** F5 with k = 1 writes its per-element `call` in the element expression (R-i; §2.12.4
+  "Readings fixed by 7c" (8)).
+* **L-gh** The slot cap (1 180 of a unit's 1 187 slots) is an implementation capacity: a unit over
+  it is left unfused, like L-el; a node, symbol or type limit passed inside a fusion runs that
+  fusion to its end on throwaway output and re-runs the walk once with every walk flag reset and a
+  threshold that leaves that fusion and every later one unfused (coarser than "only the fusions
+  that would exceed", allowed by §2.12.3); a second overflow, or one outside a fusion, is reported
+  as before (§2.12.3 "Capacity"; review 1, findings 8 and 9; review 2, findings 2–5).
+* **L-gi** Tests: `elem6_inst` is a subject test of L19, rewritten with `printf` separators so that
+  no group forms (R-T2b-6; its `.out` gains `4 6 0 3`); §6.2's description of `fuse7_inl` follows
+  L-fo (a callee `.l` local becomes a caller `.l` local, not a `.i` local); the expected outputs of
+  `fuse_cat_*` and `r_fuse_cat_*` come from Python mirrors of LANGUAGE.md §6.9, those of the
+  regression tests from LANGUAGE.md (§10.4, §10.5) and §2.12.3, each also identical to the pre-7c
+  compiler's output (the reference of §2.12.2), capacity positions excepted (L-fq).
+* **L-gj** `sealoop`'s reader requires an `rcnt`'s `l` of type 3 and `e` of type 2, as §3.5.9
+  "Locals" says (`passes/sealoop/lp0main.bas` compared `5 − J`, now `6 − J`): a 7b defect never
+  exercised, because 7b's `seafuse` wrote no `rcnt`; and an inlined callee's `.i` local that no
+  record declares (a group local whose `bind` F2 dropped, R34) is numbered after the declared ones.

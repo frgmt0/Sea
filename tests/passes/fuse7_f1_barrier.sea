@@ -1,0 +1,7 @@
+// fuse7_f1_barrier -- DESIGN.md 2.12.4 F1 (2): the i64 product a * 2 is a failing node that is
+// not the root, so it is a barrier (a leaf, rewritten by L7 later); the rest (the conversion and
+// the add) qualifies and is fused
+let a: i64[] = [1, 2, 3]
+let x: f64[] = [0.5, 0.25, 0.125]
+let y = f64(a * 2) + x
+printf("%g %g %g\n", y[0], y[1], y[2])

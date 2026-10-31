@@ -1,0 +1,17 @@
+// fuse_alias_group_same -- F2 (3) (DESIGN.md 2.12.4): a group whose later statements read the target of an earlier one at the
+// same element: `y` and `u` see the new `x`
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var x: f64[] = [0.5, -1.0, 3.0, 1e+16, 0.25]
+let z: f64[] = [2.0, 0.125, -4.0, 1.0, 0.001]
+x = x * 2.0 + z
+let y = x * x - z
+let u = y + x
+pv(x)
+pv(y)
+pv(u)

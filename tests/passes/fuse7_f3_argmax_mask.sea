@@ -1,0 +1,6 @@
+// fuse7_f3_argmax_mask -- DESIGN.md 2.12.4 F3, L-et: argmax over a same-mask selection returns the
+// position in the selection, counted by Q (v = [9, 1, 5], m = [false, true, true]: 1)
+let v: f64[] = [9.0, 1.0, 5.0]
+let m: bool[] = [false, true, true]
+let k = argmax(v[m])
+printf("%d\n", k)

@@ -1,0 +1,47 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f5_tree.sea
+type 0:3:19 f64 s 0
+param 0:3:16 x 0 0
+type 0:3:27 f64 s 0
+param 0:3:24 k 0 0
+type 0:3:35 f64 s 0
+name 0:4:12 x
+name 0:4:16 k
+bin 0:4:12 mul
+float 0:4:20 #3FF0000000000000
+bin 0:4:12 add
+return 0:4:5 1
+block 0:3:39 1
+fn 0:3:1 f 1 2 1
+pname 0:6:5 x
+type 0:6:8 f64 v 0
+float 0:6:17 #3FF0000000000000
+float 0:6:22 #4000000000000000
+float 0:6:27 #4008000000000000
+row 0:6:17 3
+array 0:6:16 1
+let 0:6:1 1
+pname 0:7:5 y
+name 0:7:9 f
+name 0:7:11 x
+float 0:7:14 #4000000000000000
+call 0:7:9 2
+float 0:7:21 #3FF0000000000000
+bin 0:7:9 add
+let 0:7:1 0
+name 0:8:1 printf
+str 0:8:8 %25g%20%25g%20%25g%0A
+name 0:8:22 y
+int 0:8:24 0
+index 0:8:22 1
+name 0:8:28 y
+int 0:8:30 1
+index 0:8:28 1
+name 0:8:34 y
+int 0:8:36 2
+index 0:8:34 1
+call 0:8:1 4
+cstmt 0:8:1
+prog 4
+#end

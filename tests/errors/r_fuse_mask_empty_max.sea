@@ -1,0 +1,10 @@
+// r_fuse_mask_empty_max -- `max` of an empty same-mask selection inside a group (DESIGN.md 2.12.4 F3: EMPTY_REDUCE where L13 checks it;
+// LANGUAGE.md 10.5): `max of an empty array` before the next statement's shape mismatch
+let Tc: f64[] = [1.0, 2.0, 3.0]
+let m = [false, false, false]
+let y: f64[] = [1.0, 2.0]
+printf("start %d\n", len(Tc))
+let Tn = Tc * 2.0 + 1.0
+let d = max(abs(Tn[m] - Tc[m]))
+let e = Tn + y
+printf("%.17g %.17g\n", d, e[0])

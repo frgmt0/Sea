@@ -1,0 +1,17 @@
+// fuse_group_locals -- F2 (DESIGN.md 2.12.4, L-es): a group of four `let`s: `a` stored (read after the group), `t` and `u` read
+// only inside the group (never stored), `v` stored; each later statement reads the earlier locals at the same element
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x: f64[] = [0.1, -2.5, 3.75, 0.001, 42.0]
+let z: f64[] = [7.0, 0.3, -1.5, 2.0, -0.25]
+let a = x * 1e16 + z
+let t = a - x * 1e16
+let u = t * t - z
+let v = where(u > 0.0, sqrt(u), u * 3.0)
+pv(a)
+pv(v)

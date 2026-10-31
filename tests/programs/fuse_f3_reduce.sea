@@ -1,0 +1,38 @@
+// fuse_f3_reduce -- F3 (DESIGN.md 2.12.4): sum mean variance std max min argmax argmin over an f64 tree, over `.flat` of a
+// matrix tree and over a same-mask selection `x[m] * 2.0 - z[m]` (9 of 11 selected: lanes and indices by position in
+// the selection); the i64 forms and nnz any all over bool trees (LANGUAGE.md 10.5); data whose 8-lane sums differ
+// from left-to-right sums
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x: f64[] = [0.5, -1e+16, 3.25, 1.0, 1e+16, 7.5, 2.0, -0.75, 1000000000000000.0, 4.0, -2.5]
+let z = [0.1, 2.0, -3.0, 0.5, 1.5, -1.0, 2.5, 3.0, -0.5, 1.25, 0.75]
+let y = [5, -3, 12, 7, 12, -8, 0, 4, 12, -1, 3]
+let m = [true, true, false, true, true, true, true, false, true, true, true]
+let A: f64[,] = [0.125, 0.25, -3.5, 2.0; 7.0, -1e+16, 1e+16, 9.5; -0.5, 3.0, 1000000000000000.0, -2.25]
+let B = [0.5, 1.0, -1.0, 2.5; 6.5, 0.0, 0.5, 9.5; 1.0, -3.0, 2.0, -2.0]
+let K: i64[,] = [4, -7, 0, 2; 9, 1, -5, 3; 8, 8, -2, 6]
+printf("sum %.17g %.17g %.17g\n", sum(x * 3.0 + z * z - 0.5), sum((A * 2.0 - B).flat), sum(x[m] * 2.0 - z[m]))
+printf("mean %.17g %.17g %.17g\n", mean(x * 3.0 + z * z - 0.5), mean((A * 2.0 - B).flat), mean(x[m] * 2.0 - z[m]))
+printf("variance %.17g %.17g %.17g\n", variance(x * 3.0 + z * z - 0.5), variance((A * 2.0 - B).flat), variance(x[m] * 2.0 - z[m]))
+printf("std %.17g %.17g %.17g\n", std(x * 3.0 + z * z - 0.5), std((A * 2.0 - B).flat), std(x[m] * 2.0 - z[m]))
+printf("max %.17g %.17g %.17g\n", max(x * 3.0 + z * z - 0.5), max((A * 2.0 - B).flat), max(x[m] * 2.0 - z[m]))
+printf("min %.17g %.17g %.17g\n", min(x * 3.0 + z * z - 0.5), min((A * 2.0 - B).flat), min(x[m] * 2.0 - z[m]))
+printf("argmax %d %d %d\n", argmax(x * 3.0 + z * z - 0.5), argmax((A * 2.0 - B).flat), argmax(x[m] * 2.0 - z[m]))
+printf("argmin %d %d %d\n", argmin(x * 3.0 + z * z - 0.5), argmin((A * 2.0 - B).flat), argmin(x[m] * 2.0 - z[m]))
+printf("isum %d %d %d\n", sum(y * 3 - 2), sum((K * 2 + 1).flat), sum(y[m] * 3 - 2))
+printf("imean %.17g %.17g %.17g\n", mean(y * 3 - 2), mean((K * 2 + 1).flat), mean(y[m] * 3 - 2))
+printf("ivariance %.17g %.17g %.17g\n", variance(y * 3 - 2), variance((K * 2 + 1).flat), variance(y[m] * 3 - 2))
+printf("imax %d %d %d\n", max(y * 3 - 2), max((K * 2 + 1).flat), max(y[m] * 3 - 2))
+printf("imin %d %d %d\n", min(y * 3 - 2), min((K * 2 + 1).flat), min(y[m] * 3 - 2))
+printf("iargmax %d %d %d\n", argmax(y * 3 - 2), argmax((K * 2 + 1).flat), argmax(y[m] * 3 - 2))
+printf("iargmin %d %d %d\n", argmin(y * 3 - 2), argmin((K * 2 + 1).flat), argmin(y[m] * 3 - 2))
+printf("nnz %d %d %d\n", nnz(x > z), nnz((A > B).flat), nnz(x[m] > z[m]))
+printf("any %d %d %d\n", any(x > z + 1e17), any((A > B + 1e17).flat), any(x[m] > z[m] + 1e17))
+printf("all %d %d %d\n", all(x > z - 1e17), all((A > B - 1e17).flat), all(x[m] > z[m] - 1e17))
+printf("any2 %d %d %d\n", any(x > z), any((A > B).flat), any(x[m] > z[m]))
+printf("all2 %d %d %d\n", all(x > z), all((A > B).flat), all(x[m] > z[m]))

@@ -1,0 +1,41 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f4_t.sea
+pname 0:4:5 F
+int 0:4:12 2
+int 0:4:14 3
+type 0:4:8 f64 fm 2
+float 0:4:20 #3FF0000000000000
+float 0:4:25 #4000000000000000
+float 0:4:30 #4008000000000000
+row 0:4:20 3
+float 0:4:35 #4010000000000000
+float 0:4:40 #4014000000000000
+float 0:4:45 #4018000000000000
+row 0:4:35 3
+array 0:4:19 2
+let 0:4:1 1
+pname 0:5:5 G
+name 0:5:9 F
+dot 0:5:9 T
+float 0:5:15 #4000000000000000
+bin 0:5:9 mul
+let 0:5:1 0
+name 0:6:1 printf
+str 0:6:8 %25g%20%25g%20%25g%0A
+name 0:6:22 G
+int 0:6:24 0
+int 0:6:27 1
+index 0:6:22 2
+name 0:6:31 G
+int 0:6:33 2
+int 0:6:36 0
+index 0:6:31 2
+name 0:6:40 G
+int 0:6:42 2
+int 0:6:45 1
+index 0:6:40 2
+call 0:6:1 4
+cstmt 0:6:1
+prog 3
+#end

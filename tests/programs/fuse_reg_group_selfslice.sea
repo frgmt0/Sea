@@ -1,0 +1,9 @@
+// fuse_reg_group_selfslice -- F2 (DESIGN.md 2.12.4), 7c regression: a statement group whose first statement reads a
+// slice of its own target (`V = V[1..4] + 1.0`), followed by an independent `let g = x[0..3] + 1.0`. The group must
+// not fuse the two statements into one loop that overwrites V before it is read: V becomes [3, 4, 5] (length 3,
+// from the old V[1..4] = [2, 3, 4]) and g[0] = 2.
+let x: f64[] = [1.0, 2.0, 3.0, 4.0]
+var V: f64[] = x
+V = V[1..4] + 1.0
+let g = x[0..3] + 1.0
+printf("%.17g %.17g %.17g %.17g\n", V[0], V[1], V[2], g[0])

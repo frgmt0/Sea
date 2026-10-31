@@ -5,5 +5,6 @@ b[2] = 5.0
 let P = a.col * b.row
 printf("%g %g %d %d\n", P[1, 0], P[1, 2], rows(P), cols(P))
 // ew_colrow -- DESIGN.md 3.5.9 L7 (rule 22) of two matrices with broadcasting: a.col (2 x 1)
-// times b.row (1 x 3) is 2 x 3; both views are operands, not index bases, so each is
-// materialized first (L10: anew and mcpy); the shape checks combine the extents (R, C)
+// times b.row (1 x 3) is 2 x 3; the shape checks combine the extents (R, C). From 7c (2.12.4
+// F1, F4, Decision 111) the tree is fused by seafuse: both views are folded leaves (no anew,
+// no mcpy), the plain copy reads them by their maps and the broadcast copy by L7's strides

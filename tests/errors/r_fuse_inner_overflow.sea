@@ -1,0 +1,10 @@
+// r_fuse_inner_overflow -- a failing inner node is a barrier (DESIGN.md 2.12.4 F1 (2)): in `(i + j) + k` the loop of i + j overflows at element 3
+// before k (length 4 against 5) is checked: `integer overflow`
+var i = filled(0, 5)
+var j = filled(0, 5)
+i[3] = 4611686018427387904
+j[3] = 4611686018427387904
+let k = filled(1, 4)
+printf("start %d\n", i[3] - j[3] + len(k))
+let r = (i + j) + k
+printf("%d\n", r[0])

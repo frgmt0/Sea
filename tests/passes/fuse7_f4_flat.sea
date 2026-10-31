@@ -1,0 +1,5 @@
+// fuse7_f4_flat -- DESIGN.md 2.12.4 F4: A.flat folded into the nest (3.5.9 "Folded views": the
+// extent R*C, k mapped to k), no materialized view
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let y = A.flat * 2.0
+printf("%g %g %g %g\n", y[0], y[1], y[2], y[3])

@@ -1,0 +1,8 @@
+// fuse7_f2_group -- DESIGN.md 2.12.4 F2 (2): a group of two independent statements over vectors
+// of different lengths: no check added, the quiet space test fails at run time and the split copy
+// runs each statement's own nest; both locals are read after the group, so both are stored
+let x: f64[] = [1.0, 2.0, 3.0]
+let y: f64[] = [1.0, 2.0, 3.0, 4.0]
+let a = x * 2.0
+let b = y * 3.0
+printf("%g %g %g %g\n", a[0], a[2], b[0], b[3])

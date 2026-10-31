@@ -1,0 +1,7 @@
+// r_fuse_cat_row_first -- F4 concatenation parts (DESIGN.md 2.12.4 F4, L-eu; LANGUAGE.md 6.9): each row is joined and
+// checked before it is stacked, so the second row's parts B[0..2, :] (2x3) and A[0..1, :] (1x4) fail, not the stack
+let A = zeros(3, 4) + 1.5
+let B = zeros(4, 3) + 0.5
+printf("start %g\n", A[2, 3] + B[3, 2])
+let C = [A.T; B[0..2, :], A[0..1, :]]
+printf("%g\n", C[0, 0])

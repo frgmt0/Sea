@@ -1,0 +1,11 @@
+// r_fuse_group_isum -- an `i64` `sum` overflowing in a group (DESIGN.md 2.12.4 F2 (4), F3; LANGUAGE.md 10.5: every partial sum checked):
+// where(m, a, c) = [2^62, 2^62, 3, 3] overflows at its second element, before the next statement's shape mismatch
+let a: i64[] = [4611686018427387904, 4611686018427387904, -4611686018427387904, 3]
+let c: i64[] = [1, 2, 3, 4]
+let m = [true, true, false, true]
+let x = zeros(3)
+let y = zeros(2)
+printf("start %d\n", c[3])
+let s = sum(where(m, a, c))
+let d = x * 2.0 + y
+printf("%d %.17g\n", s, d[0])

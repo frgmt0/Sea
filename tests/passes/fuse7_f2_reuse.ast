@@ -1,0 +1,44 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f2_reuse.sea
+pname 0:4:5 x
+type 0:4:8 f64 v 0
+float 0:4:17 #3FF0000000000000
+float 0:4:22 #4000000000000000
+float 0:4:27 #4008000000000000
+row 0:4:17 3
+array 0:4:16 1
+let 0:4:1 1
+pname 0:5:5 y
+type 0:5:8 f64 v 0
+float 0:5:17 #0000000000000000
+float 0:5:22 #0000000000000000
+float 0:5:27 #0000000000000000
+row 0:5:17 3
+array 0:5:16 1
+var 0:5:1 1
+pname 0:6:5 a
+name 0:6:9 x
+float 0:6:13 #3FF0000000000000
+bin 0:6:9 add
+let 0:6:1 0
+name 0:7:1 y
+name 0:7:5 a
+float 0:7:9 #4000000000000000
+bin 0:7:5 mul
+asg 0:7:1 set
+name 0:8:1 printf
+str 0:8:8 %25g%20%25g%20%25g%0A
+name 0:8:22 y
+int 0:8:24 0
+index 0:8:22 1
+name 0:8:28 y
+int 0:8:30 1
+index 0:8:28 1
+name 0:8:34 y
+int 0:8:36 2
+index 0:8:34 1
+call 0:8:1 4
+cstmt 0:8:1
+prog 5
+#end

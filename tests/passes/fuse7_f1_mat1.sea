@@ -1,0 +1,5 @@
+// fuse7_f1_mat1 -- DESIGN.md 2.12.4 "Which trees seafuse rewrites" (Decision 111): a matrix tree
+// of one fusible node (A * 2.0) is rewritten (plain and broadcast copies), not left to L7
+let A: f64[,] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let B = A * 2.0
+printf("%g %g %g\n", B[1, 0], B[0, 2], B[1, 2])

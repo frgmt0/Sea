@@ -1,0 +1,17 @@
+// fuse_alias_index_vec -- F1 (5) (i) (DESIGN.md 2.12.4; LANGUAGE.md 5.5): an index-vector target is never written in place:
+// `v[w] = v[w] * 2.0 + 1.0` with w = [0, 0] leaves v[0] = 3; `v[w3] = v[w3] * 10.0` with w3 = [1, 2, 1] reads
+// every old element, the last store winning
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var v: f64[] = [1.0, 10.0, 100.0]
+let w = [0, 0]
+v[w] = v[w] * 2.0 + 1.0
+pv(v)
+let w3 = [1, 2, 1]
+v[w3] = v[w3] * 10.0
+pv(v)

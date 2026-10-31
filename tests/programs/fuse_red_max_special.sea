@@ -1,0 +1,20 @@
+// fuse_red_max_special -- F3 `max min argmax argmin` over trees whose values hold ties, NaN and signed zeros (LANGUAGE.md 10.5:
+// the first extreme in index order, NaN ignored, all NaN gives NaN and 0; -0 and +0 compare equal), over a
+// `.flat` matrix tree and over a same-mask selection (the index in the selection)
+let a1: f64[] = [inf, 1.5, 3.0, -0.5, 0.0, 2.5, 1.0, -0.5]
+let b1: f64[] = [-inf, 0.0, 1.0, 0.0, nan, 2.0, 0.0, 0.0]
+let a2 = [-0.0, 0.0, -2.0, -0.0]
+let b2 = [-0.0, -0.0, -1.0, -0.0]
+let a3: f64[] = [0.0, -0.0, 0.0]
+let b3: f64[] = [0.0, -0.0, -0.0]
+let a4 = [nan, inf]
+let b4 = [1.0, -inf]
+let m1 = [true, true, false, true, true, true, true, true]
+let Am: f64[,] = [inf, 3.0, 0.0, 1.0; 1.5, -0.5, 2.5, -0.5]
+let Bm = [-inf, 1.0, nan, 0.0; 0.0, 0.0, 2.0, 0.0]
+printf("t1 %.17g %d %.17g %d\n", max(a1 * 2.0 + b1), argmax(a1 * 2.0 + b1), min(a1 * 2.0 + b1), argmin(a1 * 2.0 + b1))
+printf("t2 %.17g %d %.17g %d\n", max(a2 * 2.0 + b2), argmax(a2 * 2.0 + b2), min(a2 * 2.0 + b2), argmin(a2 * 2.0 + b2))
+printf("t3 %.17g %d %.17g %d\n", max(a3 * 2.0 + b3), argmax(a3 * 2.0 + b3), min(a3 * 2.0 + b3), argmin(a3 * 2.0 + b3))
+printf("t4 %.17g %d %.17g %d\n", max(a4 * 2.0 + b4), argmax(a4 * 2.0 + b4), min(a4 * 2.0 + b4), argmin(a4 * 2.0 + b4))
+printf("flat %.17g %d %.17g %d\n", max((Am * 2.0 + Bm).flat), argmax((Am * 2.0 + Bm).flat), min((Am * 2.0 + Bm).flat), argmin((Am * 2.0 + Bm).flat))
+printf("mask %.17g %d %.17g %d\n", max(a1[m1] * 2.0 + b1[m1]), argmax(a1[m1] * 2.0 + b1[m1]), min(a1[m1] * 2.0 + b1[m1]), argmin(a1[m1] * 2.0 + b1[m1]))

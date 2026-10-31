@@ -1,0 +1,106 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f3_max_mask.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 8 8
+slot s3 8 8
+sa p1 s1
+lf f2 #4008000000000000
+stf f2 p1 - 0 0
+lf f3 #3FF0000000000000
+stf f3 p1 - 0 8
+lf f4 #4010000000000000
+stf f4 p1 - 0 16
+lf f5 #3FF0000000000000
+stf f5 p1 - 0 24
+li i6 4
+li i7 1
+li i8 1
+li i9 1
+rcall sea_arr_new_u 0:3 1 p10 4 i7 i8 i6 i9
+ldp p11 p10 - 0 40
+li i12 32
+mcopy p11 p1 i12
+sa p13 s2
+li i14 1
+stb i14 p13 - 0 0
+li i15 0
+stb i15 p13 - 0 1
+li i16 1
+stb i16 p13 - 0 2
+li i17 0
+stb i17 p13 - 0 3
+li i18 4
+li i19 3
+li i20 1
+li i21 1
+rcall sea_arr_new_u 0:4 1 p22 4 i19 i20 i18 i21
+ldp p23 p22 - 0 40
+li i24 4
+mcopy p23 p13 i24
+ldi i25 p10 - 0 16
+ldi i26 p22 - 0 16
+icmp ne i27 i25 i26
+li i28 -1
+chk i27 SHAPE_MISMATCH 0:5 4 i25 i28 i26 i28
+lf f29 #4000000000000000
+li i30 0
+ldp p31 p22 - 0 40
+li i32 0
+icmp gt i33 i25 i32
+if 1 i33
+li i34 1
+isub i35 i25 i34
+loop 2 i36 i32 i35 i34
+ldb i37 p31 i36 1 0
+iadd i30 i30 i37
+endloop 2
+endif 1
+li i38 0
+icmp eq i39 i30 i38
+la p40 d1
+chk i39 EMPTY_REDUCE 0:5 1 p40
+lf f41 #7FF8000000000000
+li i42 0
+li i43 0
+ldp p44 p10 - 0 40
+ldp p45 p22 - 0 40
+li i46 0
+li i47 1
+li i48 0
+icmp gt i49 i25 i48
+if 3 i49
+li i50 1
+isub i51 i25 i50
+loop 4 i52 i48 i51 i50
+ldb i53 p45 i52 1 0
+if 5 i53
+ldf f54 p44 i52 8 0
+fmul f55 f54 f29
+fnan i56 f55
+bnot i57 i56
+fcmp gt i58 f55 f41
+bnot i59 i42
+ior i60 i59 i58
+iand i61 i57 i60
+fsel f41 i61 f55 f41
+isel i43 i61 i46 i43
+ior i42 i42 i61
+iadd i46 i46 i47
+endif 5
+endloop 4
+endif 3
+sa p62 s3
+stf f41 p62 - 0 0
+la p63 d2
+rcall sea_printf 0:6 0 2 p63 p62
+release p22
+release p10
+ret 0
+endfunc
+str d1 max
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

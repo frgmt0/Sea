@@ -64,117 +64,127 @@ stf f33 p40 i34 8 0
 ldi i41 p5 - 0 16
 li i42 1
 li i43 1
-li i44 2
-rcall sea_arr_new_u 0:5 1 p45 4 i43 i44 i41 i42
-ldp p46 p45 - 0 40
-ldp p47 p5 - 0 40
-li i48 8
-imul i49 i41 i48
-mcopy p46 p47 i49
-ldi i50 p25 - 0 16
-li i51 1
-li i52 1
-li i53 2
-rcall sea_arr_new_u 0:5 1 p54 4 i52 i53 i51 i50
-ldp p55 p54 - 0 40
-ldp p56 p25 - 0 40
-li i57 8
-imul i58 i50 i57
-mcopy p55 p56 i58
-ldi i59 p45 - 0 16
-ldi i60 p45 - 0 24
-ldi i61 p54 - 0 16
-ldi i62 p54 - 0 24
-li i63 1
-icmp eq i64 i59 i61
-icmp eq i65 i59 i63
-icmp eq i66 i61 i63
-ior i64 i64 i65
-ior i64 i64 i66
-icmp eq i67 i60 i62
-icmp eq i68 i60 i63
-icmp eq i69 i62 i63
-ior i67 i67 i68
-ior i67 i67 i69
-iand i64 i64 i67
-bnot i70 i64
-chk i70 SHAPE_MISMATCH 0:5 4 i59 i60 i61 i62
-icmp eq i71 i59 i63
-isel i72 i71 i61 i59
-icmp eq i73 i60 i63
-isel i74 i73 i62 i60
-li i75 1
-li i76 2
-rcall sea_arr_new_u 0:5 1 p77 4 i75 i76 i72 i74
-icmp ne i78 i59 i63
-icmp ne i79 i60 i63
-imul i80 i79 i59
-icmp ne i81 i61 i63
-icmp ne i82 i62 i63
-imul i83 i82 i61
-ldp p84 p77 - 0 40
-ldp p85 p45 - 0 40
-ldp p86 p54 - 0 40
-li i87 0
-icmp gt i88 i74 i87
-if 7 i88
-li i89 1
-isub i90 i74 i89
-loop 8 i91 i87 i90 i89
-li i92 0
-icmp gt i93 i72 i92
-if 9 i93
-li i94 1
-isub i95 i72 i94
-loop 10 i96 i92 i95 i94
-imul i97 i96 i78
-imul i98 i91 i80
-iadd i99 i97 i98
-ldf f100 p85 i99 8 0
-imul i101 i96 i81
-imul i102 i91 i83
+ldi i44 p25 - 0 16
+li i45 1
+icmp eq i46 i41 i43
+icmp eq i47 i41 i45
+icmp eq i48 i43 i45
+ior i46 i46 i47
+ior i46 i46 i48
+icmp eq i49 i42 i44
+icmp eq i50 i42 i45
+icmp eq i51 i44 i45
+ior i49 i49 i50
+ior i49 i49 i51
+iand i46 i46 i49
+bnot i52 i46
+chk i52 SHAPE_MISMATCH 0:5 4 i41 i42 i43 i44
+icmp eq i53 i41 i45
+isel i54 i53 i43 i41
+icmp eq i55 i42 i45
+isel i56 i55 i44 i42
+li i57 1
+li i58 2
+rcall sea_arr_new_u 0:5 1 p59 4 i57 i58 i54 i56
+ldp p60 p59 - 0 40
+ldp p61 p5 - 0 40
+ldp p62 p25 - 0 40
+icmp eq i63 i41 i54
+icmp eq i64 i42 i56
+iand i65 i63 i64
+icmp eq i66 i43 i54
+iand i67 i65 i66
+icmp eq i68 i44 i56
+iand i69 i67 i68
+if 7 i69
+li i70 0
+icmp gt i71 i56 i70
+if 8 i71
+li i72 1
+isub i73 i56 i72
+loop 9 i74 i70 i73 i72
+li i75 0
+icmp gt i76 i54 i75
+if 10 i76
+li i77 1
+isub i78 i54 i77
+loop 11 i79 i75 i78 i77
+ldf f80 p61 i79 8 0
+ldf f81 p62 i74 8 0
+fmul f82 f80 f81
+imul i83 i74 i54
+iadd i84 i79 i83
+stf f82 p60 i84 8 0
+endloop 11
+endif 10
+endloop 9
+endif 8
+else 7
+icmp ne i85 i41 i45
+icmp ne i86 i42 i45
+imul i87 i86 i41
+icmp ne i88 i43 i45
+icmp ne i89 i44 i45
+imul i90 i89 i43
+li i91 0
+icmp gt i92 i56 i91
+if 12 i92
+li i93 1
+isub i94 i56 i93
+loop 13 i95 i91 i94 i93
+li i96 0
+icmp gt i97 i54 i96
+if 14 i97
+li i98 1
+isub i99 i54 i98
+loop 15 i100 i96 i99 i98
+imul i101 i100 i85
+imul i102 i95 i87
 iadd i103 i101 i102
-ldf f104 p86 i103 8 0
-fmul f105 f100 f104
-imul i106 i91 i72
-iadd i107 i96 i106
-stf f105 p84 i107 8 0
-endloop 10
-endif 9
-endloop 8
+ldf f104 p61 i103 8 0
+imul i105 i100 i88
+imul i106 i95 i90
+iadd i107 i105 i106
+ldf f108 p62 i107 8 0
+fmul f109 f104 f108
+imul i110 i95 i54
+iadd i111 i100 i110
+stf f109 p60 i111 8 0
+endloop 15
+endif 14
+endloop 13
+endif 12
 endif 7
-release p45
-release p54
-li i108 1
-li i109 0
-ldi i110 p77 - 0 16
-chkb i108 i110 0 0:6
-ldi i111 p77 - 0 24
-chkb i109 i111 1 0:6
-ldp p112 p77 - 0 40
-imul i113 i109 i110
-iadd i114 i108 i113
-ldf f115 p112 i114 8 0
-li i116 1
-li i117 2
-ldi i118 p77 - 0 16
-chkb i116 i118 0 0:6
-ldi i119 p77 - 0 24
-chkb i117 i119 1 0:6
-ldp p120 p77 - 0 40
-imul i121 i117 i118
-iadd i122 i116 i121
-ldf f123 p120 i122 8 0
-ldi i124 p77 - 0 16
-ldi i125 p77 - 0 24
-sa p126 s1
-stf f115 p126 - 0 0
-stf f123 p126 - 0 8
-sti i124 p126 - 0 16
-sti i125 p126 - 0 24
-la p127 d1
-rcall sea_printf 0:6 0 2 p127 p126
-release p77
+li i112 1
+li i113 0
+ldi i114 p59 - 0 16
+chkb i112 i114 0 0:6
+ldi i115 p59 - 0 24
+chkb i113 i115 1 0:6
+ldp p116 p59 - 0 40
+imul i117 i113 i114
+iadd i118 i112 i117
+ldf f119 p116 i118 8 0
+li i120 1
+li i121 2
+ldi i122 p59 - 0 16
+chkb i120 i122 0 0:6
+ldi i123 p59 - 0 24
+chkb i121 i123 1 0:6
+ldp p124 p59 - 0 40
+imul i125 i121 i122
+iadd i126 i120 i125
+ldf f127 p124 i126 8 0
+ldi i128 p59 - 0 16
+ldi i129 p59 - 0 24
+sa p130 s1
+stf f119 p130 - 0 0
+stf f127 p130 - 0 8
+sti i128 p130 - 0 16
+sti i129 p130 - 0 24
+la p131 d1
+rcall sea_printf 0:6 0 2 p131 p130
+release p59
 release p25
 release p5
 ret 0

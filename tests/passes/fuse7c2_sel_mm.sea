@@ -1,0 +1,7 @@
+// fuse7c2_sel_mm -- DESIGN.md 2.12.4 F1 (3): a whole-matrix mask selection store (kind MM) in place:
+// L6's one loop over the linear positions under the mask's if
+var A: f64[,] = [0.0, 0.0; 0.0, 0.0]
+let m: bool[,] = [true, false; false, true]
+let x: f64[] = [1.0, 2.0]
+A[m] = x * 2.0 + 1.0
+printf("%g %g %g %g\n", A[0, 0], A[1, 0], A[0, 1], A[1, 1])

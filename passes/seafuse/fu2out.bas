@@ -20,7 +20,7 @@
 10095 REM a generated record: tmp, bind, tbind or hloop declares each new local @u it names
 10100 LET Z1$ = O$(J)
 10105 LET J3 = POS(Z1$, " ")
-10110 IF POS("|tmp|bind|tbind|hloop|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
+10110 IF POS("|tmp|bind|tbind|hloop|rcnt|", "|" & SEG$(Z1$, 1, J3 - 1) & "|") = 0 THEN 10155
 10115 LET J3 = POS(Z1$, "@")
 10120 IF J3 = 0 THEN 10155
 10125 LET J4 = POS(Z1$, " ", J3)
@@ -124,8 +124,11 @@
 10555 CALL "io_put": 2, "loc .l" & STR$(K5) & " " & Z$ & " " & Z1$ & " " & P9$
 10558 NEXT K5
 10560 RETURN
-10595 REM ---- 10600: the tptr records, in id order -----------------------------------------------------
+10595 REM ---- 10600: the tptr records, in id order (an appended F8, the pseudo element 20008, as its tfvec: D-1)
 10600 FOR K5 = Y8 + 1 TO Y9
+10605 IF C(K5, 6) <> 20008 THEN 10615
+10610 CALL "io_put": 2, "tfvec " & STR$(K5) & " 4 8"
+10612 GOTO 10625
 10615 CALL "io_put": 2, "tptr " & STR$(K5) & " " & STR$(C(K5, 6))
 10625 NEXT K5
 10630 RETURN

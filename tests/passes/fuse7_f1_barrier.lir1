@@ -1,0 +1,116 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_barrier.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 24 8
+sa p1 s1
+li i2 1
+sti i2 p1 - 0 0
+li i3 2
+sti i3 p1 - 0 8
+li i4 3
+sti i4 p1 - 0 16
+li i5 3
+li i6 2
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:4 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 24
+mcopy p10 p1 i11
+sa p12 s2
+lf f13 #3FE0000000000000
+stf f13 p12 - 0 0
+lf f14 #3FD0000000000000
+stf f14 p12 - 0 8
+lf f15 #3FC0000000000000
+stf f15 p12 - 0 16
+li i16 3
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:5 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+li i22 24
+mcopy p21 p12 i22
+li i23 2
+ldi i24 p9 - 0 16
+li i25 2
+li i26 1
+li i27 1
+rcall sea_arr_new_u 0:6 1 p28 4 i25 i26 i24 i27
+ldp p29 p28 - 0 40
+ldp p30 p9 - 0 40
+li i31 0
+icmp gt i32 i24 i31
+if 1 i32
+li i33 1
+isub i34 i24 i33
+loop 2 i35 i31 i34 i33
+ldi i36 p30 i35 8 0
+imulc i37 i36 i23 0:6
+sti i37 p29 i35 8 0
+endloop 2
+endif 1
+ldi i38 p28 - 0 16
+ldi i39 p20 - 0 16
+icmp ne i40 i38 i39
+li i41 -1
+chk i40 SHAPE_MISMATCH 0:6 4 i38 i41 i39 i41
+li i42 1
+li i43 1
+li i44 1
+rcall sea_arr_new_u 0:6 1 p45 4 i42 i43 i38 i44
+ldp p46 p45 - 0 40
+ldp p47 p28 - 0 40
+ldp p48 p20 - 0 40
+li i49 0
+icmp gt i50 i38 i49
+if 3 i50
+li i51 1
+isub i52 i38 i51
+loop 4 i53 i49 i52 i51
+ldi i54 p47 i53 8 0
+itof f55 i54
+ldf f56 p48 i53 8 0
+fadd f57 f55 f56
+stf f57 p46 i53 8 0
+endloop 4
+endif 3
+release p28
+li i58 0
+ldi i59 p45 - 0 16
+chkb i58 i59 0 0:7
+ldp p60 p45 - 0 40
+ldf f61 p60 i58 8 0
+li i62 1
+ldi i63 p45 - 0 16
+chkb i62 i63 0 0:7
+ldp p64 p45 - 0 40
+ldf f65 p64 i62 8 0
+li i66 2
+ldi i67 p45 - 0 16
+chkb i66 i67 0 0:7
+ldp p68 p45 - 0 40
+ldf f69 p68 i66 8 0
+sa p70 s3
+stf f61 p70 - 0 0
+stf f65 p70 - 0 8
+stf f69 p70 - 0 16
+la p71 d1
+rcall sea_printf 0:7 0 2 p71 p70
+release p45
+release p20
+release p9
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

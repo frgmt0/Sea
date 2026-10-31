@@ -1,0 +1,18 @@
+// r_fuse_elem_error_group -- an elemental function calling `error` at element 5 of a group (DESIGN.md 2.12.4 F2 (4); LANGUAGE.md 8.5: the first
+// failing element in linear order): reported before the next statement's shape mismatch, at the `error` call's line
+elemental fn chk(x: f64) -> f64 {
+    if x > 4.5 {
+        error("bad element %g", x)
+    }
+    return x * 2.0
+}
+var v = zeros(9)
+for i in 0..9 {
+    v[i] = f64(i)
+}
+let p = zeros(3)
+let q = zeros(4)
+printf("start %g\n", v[8])
+let a = chk(v)
+let b = p + q
+printf("%g %g\n", a[0], b[0])

@@ -1,0 +1,22 @@
+// fuse_group_shared -- F2 (6) with a shared buffer (LANGUAGE.md 4.5, DESIGN.md 2.12.4): `p` shares its buffer with `keep` and `p2`
+// before the group `p = p * 3.0 + x; let s = p - keep`: `keep` and `p2` keep the old values, `s` reads both
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x: f64[] = [1.0, -0.5, 2.25, 1e+16, 3.0]
+var p: f64[] = [4.0, 0.25, -7.5, 1.0, 0.001]
+let keep = p
+var p2 = p
+p = p * 3.0 + x
+let s = p - keep
+pv(p)
+pv(keep)
+pv(p2)
+pv(s)
+p2 = p2 - 1.0
+pv(p2)
+pv(keep)

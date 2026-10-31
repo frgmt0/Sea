@@ -1,0 +1,41 @@
+// fuse_cat_stack -- F4 concatenation parts in stacks (DESIGN.md 2.12.4 F4, L-eu; LANGUAGE.md 6.9): 2- and 3-row stacks
+// of matrices whose parts are folded views (`.T`, `.col`, `.row`) and range and `:` selections (steps, reversed, `$`), a
+// row vector stacked under matrices, stacks of row vectors, rows mixing scalars with matrices, empty parts, i64 elements, a fixed-size result
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+let v: f64[] = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5]
+var A = zeros(3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        A[i, j] = f64(10 * i + j) + 0.25
+    }
+}
+let B = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0; 7.0, 8.0, 9.0; 10.0, 11.0, 12.0]
+let w = zeros(3) + 4.0
+pm([A[0..$ step 2, :]; B.T])
+pm([A[:, 1..3], B[1..4, 0..2]; v[0..4].row; A[1, :]])
+pm([A.T; B; v[$-1..=0 step -3]])
+pm([v[0..3]; v[$-3..$]; v[1..=5 step 2]])
+pm([A[1..2, :], -1.0, v[0..2].row; v[1..$]])
+pm([2.5, B[3..4, 1..3]; A[2..3, 0..3]])
+pm([w.col, A[:, 1..3]; v[4..7].row])
+pm([A[0..0, :]; A[1..$, :]])
+pm([A[:, 0..0], A[:, 3..4]; v[5..5], 1.0])
+pm([v[3..3]; v[2..2]])
+pm([A[:, :]; B[$-1..=0 step -1, 0..2].T])
+let iv: i64[] = [1, 2, 3, 4, 5]
+let IM = [iv[0..2].row, 9; iv[$-3..$ step 1]]
+printf("%dx%d %d %d %d %d %d %d\n", rows(IM), cols(IM), IM[0, 0], IM[0, 1], IM[0, 2], IM[1, 0], IM[1, 1], IM[1, 2])
+let F = [1.0, 2.0; 3.0, 4.0]
+let G = [F.T, F; 5.0, F.T[1..2, :], 6.0]
+pm(G)
+let H = [F.T, F; F, F.T; 7.0, 8.0, 9.0, 0.5]
+printf("%d %d %g %g %g %g %g\n", rows(H), cols(H), H[0, 1], H[1, 3], H[2, 2], H[3, 0], H[4, 2])

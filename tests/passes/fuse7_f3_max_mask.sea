@@ -1,0 +1,6 @@
+// fuse7_f3_max_mask -- DESIGN.md 2.12.4 F3, F4, L-et: max over a tree whose leaf is a mask
+// selection x[m]: IX 1-3 of the mask (its count), EMPTY_REDUCE, then one loop under the mask's if
+let x: f64[] = [3.0, 1.0, 4.0, 1.0]
+let m: bool[] = [true, false, true, false]
+let s = max(x[m] * 2.0)
+printf("%g\n", s)

@@ -1,0 +1,6 @@
+// fuse_reg_i64x18_sum -- F3 (DESIGN.md 2.12.4), 7c regression: a program that holds a fixed-size i64 array of
+// exactly 18 elements (the literal k) and also fuses the reduction `sum(y * 2.0)` = 2 + 5 = 7. The extra array
+// type must not disturb the fused loop or its operands; k[0] stays 1.
+let k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0]
+let y: f64[] = [1.0, 2.5]
+printf("%.17g %d\n", sum(y * 2.0), k[0])

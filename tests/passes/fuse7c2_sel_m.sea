@@ -1,0 +1,7 @@
+// fuse7c2_sel_m -- DESIGN.md 2.12.4 F1 (3): a mask selection store (kind M) in place: L6's nest over
+// the mask, the value's element at the value index O
+var v: f64[] = [0.0, 0.0, 0.0, 0.0]
+let m: bool[] = [true, false, false, true]
+let x: f64[] = [1.0, 2.0]
+v[m] = x * 2.0 + 1.0
+printf("%g %g %g %g\n", v[0], v[1], v[2], v[3])

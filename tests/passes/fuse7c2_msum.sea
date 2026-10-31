@@ -1,0 +1,7 @@
+// fuse7c2_msum -- DESIGN.md 2.12.4 F3, F4: a masked sum alone (R-l): the count loop takes the mask's
+// data first, so its tptr is numbered before the type F8 of sum8's home (3.5.9 "Types": F8 numbered
+// with the tptr records in order of first reference)
+let x: f64[] = [3.0, 1.0, 4.0, 1.0]
+let m: bool[] = [true, false, true, false]
+let s = sum(x[m] * 2.0)
+printf("%g\n", s)

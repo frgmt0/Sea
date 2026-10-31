@@ -292,8 +292,11 @@
 1295 GOTO 550
 1300 REM ---- declarations: fn par loc end tvec ttuple (tmat tfvec tfmat: 1310) -----------------------
 1305 ON K - 32 GOTO 1430, 1550, 1585, 1650, 1310, 1360
-1310 REM types come first, ids from 10 in order (3.5.1): rank, element, fixed, n or rows, cols
-1315 IF G0 + A6 > 0 THEN 2900
+1310 REM types come first, ids from 10 in order (3.5.1): rank, element, fixed, n or rows, cols; among
+1311 REM sea.hirf's tptrs only seafuse's appended F8, a tfvec (3.5.9 "Types", 2.12.3 (3), D-1)
+1315 IF G0 > 0 THEN 2900
+1316 IF A6 = 0 THEN 1320
+1317 IF K <> 49 THEN 2900
 1320 IF I(1) <> Y9 + 1 THEN 2900
 1325 LET Y9 = I(1)
 1330 IF Y9 <= T9 THEN 1340
@@ -556,6 +559,7 @@
 3016 IF C(N5, 0) = 1 THEN 3020
 3018 IF C(N5, 0) <> 4 THEN 2900
 3020 FOR J = A6 + 1 TO Y9
+3021 IF T(J, 3) = 1 THEN 3024
 3022 IF T(J, 2) = N5 THEN 2900
 3024 NEXT J
 3026 LET Y9 = I(1)
@@ -729,7 +733,7 @@
 3362 GOSUB 3458
 3364 IF L0 = 0 THEN 2900
 3366 IF A8 > 0 THEN 2900
-3368 IF A7 <> 5 - J THEN 2900
+3368 IF A7 <> 6 - J THEN 2900
 3370 LET A(L6) = A7 + 400000
 3372 NEXT J
 3374 IF L5 = 0 THEN 1290
@@ -781,9 +785,10 @@
 3466 IF SEG$(D$(G(G0, 6) + V1), 1, 6) <> "loc .l" THEN 3470
 3468 LET L0 = 1
 3470 RETURN
-3472 REM ---- A8 = 1 if node L5 is of a tptr type (the types after A6), else 0
+3472 REM ---- A8 = 1 if node L5 is of a tptr type (the types after A6, F8 excepted), else 0
 3474 LET A8 = 0
 3476 IF A6 = 0 THEN 3482
 3478 IF H(L5, 2) <= A6 THEN 3482
+3479 IF T(H(L5, 2), 3) = 1 THEN 3482
 3480 LET A8 = 1
 3482 RETURN

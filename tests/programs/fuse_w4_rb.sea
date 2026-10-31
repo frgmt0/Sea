@@ -1,0 +1,48 @@
+// fuse_w4_rb -- W4's red-black half sweep in miniature (LANGUAGE.md 2.4, verbatim `rb_half_sweep`): a 6 x 5 plate, a
+// concatenation of slices, shifted slices, `max` of a same-mask selection tree and a `where` into a
+// `ref` parameter's selection; three red and black sweeps, dMax and the plate printed
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn rb_half_sweep(ref T: f64[,], src: f64[,], colorIn: bool[,], omega: f64) -> f64 {
+    let ny = rows(T)
+    let Tp = [T[1..ny-1, 1..2], T[1..ny-1, :], T[1..ny-1, $-2..$-1]]
+    let Tc = T[1..ny-1, :]
+    let tgs = (Tp[:, 0..$-2] + Tp[:, 2..$] + T[0..ny-2, :] + T[2..ny, :] + src[1..ny-1, :]) / 4
+    let Tn = Tc + omega * (tgs - Tc)
+    let dMax = max(abs(Tn[colorIn] - Tc[colorIn]))
+    T[1..ny-1, :] = where(colorIn, Tn, Tc)
+    return dMax
+}
+var T = zeros(6, 5)
+var src = zeros(6, 5)
+for j in 0..5 {
+    T[0, j] = 100.0
+    T[5, j] = 20.0 + 3.0 * f64(j)
+    for i in 1..5 {
+        T[i, j] = f64(i * 7 + j * 3) * 0.5
+    }
+    for i in 0..6 {
+        src[i, j] = 0.25 * f64((i + 2 * j) % 5) - 0.3
+    }
+}
+var redIn = filled(false, 4, 5)
+for j in 0..5 {
+    for i in 0..4 {
+        redIn[i, j] = (i + 1 + j) % 2 == 0
+    }
+}
+let blackIn = !redIn
+for it in 0..3 {
+    let d1 = rb_half_sweep(ref T, src, redIn, 1.6)
+    let d2 = rb_half_sweep(ref T, src, blackIn, 1.6)
+    printf("%d %.17g %.17g\n", it, d1, d2)
+}
+pm(T)

@@ -15,9 +15,16 @@ let k = filled(3, 2)
 let m = zeros(2, 3)
 let f = [1.5, 2.5]
 let r1 = h(a, 2.0, "u")
+printf("%g\n", r1[0])
 let r2 = h(k, 2.0, "u")
+printf("%g\n", r2[0])
 let r3 = h(m, a.col, "u")
+printf("%g\n", r3[0, 0])
 let r4 = h(f, 2.0, "u")
+printf("%g\n", r4[0])
 let r5 = h(f, a, "u")
 let r6 = h(1.0, 2.0, "u")
 printf("%g %g %g %g %g %g\n", r1[1], r2[1], r3[1, 2], r4[1], r5[0], r6)
+// 7c (DESIGN.md 2.12.10, Decision 97): a printf of one element follows r1 ... r4, which ends any
+// F2 group, so r1, r4 and r5 keep L19's form in sea.hirf; r2 (a cvt under the emap: two fusible
+// nodes) and r3 (a matrix space with the folded leaf a.col) are F1 trees with an F5 root

@@ -1,0 +1,9 @@
+// fuse7_f2_end -- DESIGN.md 2.12.4 F2 (3), (4), L-er, L-es: a and b form a group (b reads a at the
+// same element: the new value from the scalar E1); c reads b through a selection, which ends the
+// group before it (c is fused alone); a is not read after the group (never stored, its bind
+// dropped, R34), b is (stored)
+let x: f64[] = [1.0, 2.0, 3.0]
+let a = x + 1.0
+let b = a * 2.0
+let c = b[0..2] * 3.0
+printf("%g %g\n", c[0], c[1])

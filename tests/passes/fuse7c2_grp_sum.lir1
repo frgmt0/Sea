@@ -1,0 +1,122 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_grp_sum.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 64 8
+slot s3 8 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+li i5 3
+li i6 1
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:4 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 24
+mcopy p10 p1 i11
+lf f12 #4000000000000000
+ldi i13 p9 - 0 16
+lf f14 #3FF0000000000000
+sa p15 s2
+lf f16 #8000000000000000
+stf f16 p15 - 0 0
+stf f16 p15 - 0 8
+stf f16 p15 - 0 16
+stf f16 p15 - 0 24
+stf f16 p15 - 0 32
+stf f16 p15 - 0 40
+stf f16 p15 - 0 48
+stf f16 p15 - 0 56
+li i17 7
+icmp eq i18 i13 i13
+if 1 i18
+ldp p19 p9 - 0 40
+li i20 0
+icmp gt i21 i13 i20
+if 2 i21
+li i22 1
+isub i23 i13 i22
+loop 3 i24 i20 i23 i22
+ldf f25 p19 i24 8 0
+fmul f26 f25 f12
+fadd f27 f26 f14
+iand i28 i24 i17
+ldf f29 p15 i28 8 0
+fadd f29 f29 f27
+stf f29 p15 i28 8 0
+endloop 3
+endif 2
+else 1
+li i30 1
+li i31 1
+li i32 1
+rcall sea_arr_new_u 0:5 1 p33 4 i30 i31 i13 i32
+ldp p34 p33 - 0 40
+ldp p35 p9 - 0 40
+li i36 0
+icmp gt i37 i13 i36
+if 4 i37
+li i38 1
+isub i39 i13 i38
+loop 5 i40 i36 i39 i38
+ldf f41 p35 i40 8 0
+fmul f42 f41 f12
+stf f42 p34 i40 8 0
+endloop 5
+endif 4
+ldp p43 p33 - 0 40
+li i44 0
+icmp gt i45 i13 i44
+if 6 i45
+li i46 1
+isub i47 i13 i46
+loop 7 i48 i44 i47 i46
+iand i49 i48 i17
+ldf f50 p15 i49 8 0
+ldf f51 p43 i48 8 0
+fadd f52 f51 f14
+fadd f50 f50 f52
+stf f50 p15 i49 8 0
+endloop 7
+endif 6
+release p33
+endif 1
+li i53 0
+icmp gt i54 i13 i53
+if 8 i54
+ldf f55 p15 - 0 0
+ldf f56 p15 - 0 8
+ldf f57 p15 - 0 16
+ldf f58 p15 - 0 24
+ldf f59 p15 - 0 32
+ldf f60 p15 - 0 40
+ldf f61 p15 - 0 48
+ldf f62 p15 - 0 56
+fadd f63 f55 f56
+fadd f64 f57 f58
+fadd f65 f63 f64
+fadd f66 f59 f60
+fadd f67 f61 f62
+fadd f68 f66 f67
+fadd f69 f65 f68
+else 8
+lf f69 #0000000000000000
+endif 8
+mov f70 f69
+sa p71 s3
+stf f70 p71 - 0 0
+la p72 d1
+rcall sea_printf 0:7 0 2 p72 p71
+release p9
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,5 @@
+// fuse7_f1_fixed -- DESIGN.md 2.12.4 F1 (4) on a fixed-size matrix tree (F * 2.0 + F): no leaf
+// can broadcast, so there is no test and no broadcast copy, only the plain copy into the home
+let F: f64[2,2] = [1.0, 2.0; 3.0, 4.0]
+let G = F * 2.0 + F
+printf("%g %g %g %g\n", G[0, 0], G[1, 0], G[0, 1], G[1, 1])

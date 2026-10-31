@@ -1,0 +1,80 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f3_sum.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 64 8
+slot s3 8 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+li i5 3
+li i6 1
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:3 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 24
+mcopy p10 p1 i11
+lf f12 #4000000000000000
+ldi i13 p9 - 0 16
+lf f14 #3FF0000000000000
+li i15 0
+icmp gt i16 i13 i15
+if 1 i16
+sa p17 s2
+lf f18 #8000000000000000
+stf f18 p17 - 0 0
+stf f18 p17 - 0 8
+stf f18 p17 - 0 16
+stf f18 p17 - 0 24
+stf f18 p17 - 0 32
+stf f18 p17 - 0 40
+stf f18 p17 - 0 48
+stf f18 p17 - 0 56
+ldp p19 p9 - 0 40
+li i20 7
+li i21 1
+isub i22 i13 i21
+loop 2 i23 i15 i22 i21
+iand i24 i23 i20
+ldf f25 p17 i24 8 0
+ldf f26 p19 i23 8 0
+fmul f27 f26 f12
+fadd f28 f27 f14
+fadd f25 f25 f28
+stf f25 p17 i24 8 0
+endloop 2
+ldf f29 p17 - 0 0
+ldf f30 p17 - 0 8
+ldf f31 p17 - 0 16
+ldf f32 p17 - 0 24
+ldf f33 p17 - 0 32
+ldf f34 p17 - 0 40
+ldf f35 p17 - 0 48
+ldf f36 p17 - 0 56
+fadd f37 f29 f30
+fadd f38 f31 f32
+fadd f39 f37 f38
+fadd f40 f33 f34
+fadd f41 f35 f36
+fadd f42 f40 f41
+fadd f43 f39 f42
+else 1
+lf f43 #0000000000000000
+endif 1
+sa p44 s3
+stf f43 p44 - 0 0
+la p45 d1
+rcall sea_printf 0:5 0 2 p45 p44
+release p9
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

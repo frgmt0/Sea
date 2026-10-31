@@ -1,0 +1,48 @@
+// fuse_f5_elemental -- F5 (DESIGN.md 2.12.4): elemental applications as nodes of trees and groups: two results with either one
+// discarded, an `i64` array for an `f64` parameter, a uniform struct, a `.row` broadcast against a matrix, an `i64`
+// scalar and a `bool` matrix argument, one-result applications inside larger trees (LANGUAGE.md 8.5)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+struct Coef {
+    a: f64
+    b: f64
+}
+elemental fn lin2(x: f64, y: f64, c: Coef) -> (f64, f64) {
+    let p = c.a * x + y
+    return (p, p * c.b - x)
+}
+elemental fn sq(x: f64) -> f64 {
+    return x * x
+}
+elemental fn mix(x: f64, n: i64, on: bool) -> f64 {
+    return if on { x * f64(n) } else { x / f64(n) - x }
+}
+let cf = Coef { a: 1e16, b: 0.5 }
+let v: f64[] = [0.5, -1.25, 3.0, 1e-08, 2.75]
+let k = [3, -2, 7, 1, 4]
+let on = [true, false, true, true, false]
+let (r1, _) = lin2(v * 2.0, k, cf)
+let A: f64[,] = [1.5, -0.5, 4.0; -2.25, 0.125, 6.5]
+let rowv = [1.5, -0.25, 1e-08]
+let (_, r2) = lin2(A, rowv.row, cf)
+let z = sq(v) - mix(v, k, on) * 2.0 + sq(r1 - v * 2e16)
+let Z = sq(A * rowv.row) + mix(A, 3, A > 0.0) / 3.0
+pv(r1)
+pm(r2)
+pv(z)
+pm(Z)

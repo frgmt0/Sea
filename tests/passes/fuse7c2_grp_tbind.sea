@@ -1,0 +1,13 @@
+// fuse7c2_grp_tbind -- DESIGN.md 2.12.4 F2, F5 (W1's shape in miniature): mid, the tbind of an
+// elemental function of two results (the second discarded), up and the reused target lo form one
+// group; the per-element call's kept result is a scalar .l local of a tbind (R-m)
+elemental fn two(x: f64, k: f64) -> (f64, f64) {
+    return (x * k, x + k)
+}
+var lo: f64[] = [0.0, 1.0, 2.0]
+let hi: f64[] = [1.0, 2.0, 4.0]
+let mid = (lo + hi) * 0.5
+let (a, _) = two(mid, 2.0)
+let up = a > 2.5
+lo = where(up, mid, lo)
+printf("%g %g %g\n", lo[0], lo[1], lo[2])

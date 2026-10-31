@@ -1,0 +1,7 @@
+// r_fuse_cat_stack_cols -- F4 concatenation parts (DESIGN.md 2.12.4 F4, L-eu; LANGUAGE.md 6.9): a row vector stacks as
+// a 1 x n row, so v[0..2] (1x2) stacked over A[1..3, :] (2x4) is a shape mismatch at the stack
+let A = zeros(3, 4) + 1.5
+let v = zeros(5) + 2.0
+printf("start %g\n", A[0, 0] + v[4])
+let C = [v[0..2]; A[1..3, :]]
+printf("%g\n", C[0, 0])

@@ -1,0 +1,56 @@
+// fuse_f1_tree -- F1 (DESIGN.md 2.12.4): a vector tree and matrix trees of every fusible node kind: scalars, dynamic and
+// fixed-size vectors and matrices, `.row` and `.col` broadcast in each dimension, `where`, `f64()`, `sqrt abs exp min
+// hypot log cos`, `^ 2`, elemental functions (one of two results discarded); u * c + f64(w) with c = 1e16 shows any reassociation
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(A: f64[,]) {
+    printf("%dx%d", rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+elemental fn split2(x: f64, y: f64) -> (f64, f64) {
+    let s = x + y
+    return (s * 0.5, s - x)
+}
+elemental fn damp(x: f64, k: i64) -> f64 {
+    return if x > 0.25 { x / f64(k) } else { x * 3.0 - 0.1 }
+}
+var u = zeros(9)
+for i in 0..9 {
+    u[i] = f64(i) * 0.1 - 0.35
+}
+let w = [3, -1, 4, -1, 5, -9, 2, -6, 5]
+let m = [true, false, true, true, false, false, true, false, true]
+let c = 1.0e16
+let (h, _) = split2(u, f64(w) * 0.25)
+let r = sqrt(abs(u * c + f64(w))) - c * 1e-16 + where(m, exp(u), f64(w) / 3.0) * damp(h, 2) + min(u, 0.0) ^ 2
+pv(h)
+pv(r)
+var A = zeros(3, 4)
+for j in 0..4 {
+    for i in 0..3 {
+        A[i, j] = f64(i * 4 + j) * 0.3 - 1.1
+    }
+}
+let rowv = [0.5, -2.0, 1e-17, 7.25]
+var colv = zeros(3)
+for i in 0..3 {
+    colv[i] = 1.0 / f64(i + 3)
+}
+let F = [1.0, 2.0, 3.0, 4.0; -1.0, -2.0, -3.0, -4.0; 0.1, 0.2, 0.3, 0.4]
+let K = [1, 2, 3, 4; 5, 6, 7, 8; 9, 10, 11, 12]
+let M = A * rowv.row + colv.col * rowv.row - F / 3.0 + where(A > 0.0, hypot(A, F), -A) + f64(K) * 1e-3
+pm(M)
+let (G, _) = split2(A * c, colv.col)
+let N = G - A * c + log(abs(A) + 1.0) * cos(F)
+pm(N)

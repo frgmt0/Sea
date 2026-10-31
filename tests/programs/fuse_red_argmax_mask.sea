@@ -1,0 +1,14 @@
+// fuse_red_argmax_mask -- F3 over a same-mask selection (DESIGN.md 2.12.4 F3, L-et): `argmax(v[m])` with v = [9, 1, 5],
+// m = [false, true, true] is 1, the position in the selection; argmin, max, min of selection trees, the `i64`
+// forms and a matrix mask (column-major selection order)
+let v = [9.0, 1.0, 5.0]
+let m = [false, true, true]
+printf("%d\n", argmax(v[m]))
+let w = [0.0, 4.0, 0.5]
+printf("%d %d %.17g %.17g\n", argmin(v[m]), argmax(v[m] * 2.0 - w[m]), max(v[m] * 2.0 - w[m]), min(v[m]))
+let iv: i64[] = [9, 1, 5]
+printf("%d %d %d\n", argmax(iv[m] * 2 - 1), argmin(iv[m] * 2 - 1), max(iv[m] * 2 - 1))
+let A: f64[,] = [9.0, 2.0; 1.0, 8.0]
+let B = [0.0, 0.5; 0.25, 0.0]
+let M = [false, true; true, true]
+printf("%d %.17g\n", argmax(A[M] + B[M]), max(A[M] + B[M]))

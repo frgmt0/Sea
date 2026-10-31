@@ -1,0 +1,5 @@
+// fuse_reg_variance_i64 -- F3 (DESIGN.md 2.12.4), 7c regression: `variance` of an i64 tree. k * 2 = [2, 10, 4, 14],
+// mean 7.5, squared deviations 30.25 + 6.25 + 12.25 + 42.25 = 91, divided by n - 1 = 3 (LANGUAGE.md 10.5), so the
+// reduction must convert the i64 elements to f64 before subtracting the mean: 91 / 3 = 30.333333333333332.
+let k: i64[] = [1, 5, 2, 7]
+printf("%.17g\n", variance(k * 2))

@@ -431,6 +431,7 @@
 52312 LET Z1$ = Z$
 52314 GOTO 10805
 52400 REM ---- 52400: the loc records of the .i locals of F0, in lid order (after the .l locals)
+52401 GOSUB 52430
 52402 FOR I5 = 1 TO G(F0, 0)
 52404 LET U4 = D1
 52406 LET U4 = U4 + 1
@@ -441,6 +442,26 @@
 52416 CALL "io_put": 2, "loc .i" & STR$(I5) & SEG$(D$(R2), 7, LEN(D$(R2)))
 52418 NEXT I5
 52420 RETURN
+52425 REM ---- 52430: R34 (7c): an .i local with no declaring record (a local of a fused group that
+52426 REM is never stored, its bind dropped by seafuse) is numbered after the declared ones (I5 the
+52427 REM highest so far), in lid order among the loc records after the function's own
+52430 LET I5 = 0
+52431 LET I8 = D1
+52432 LET I8 = I8 + 1
+52433 IF SEG$(D$(G(F0, 6) + I8), 1, 4) <> "loc " THEN 52436
+52434 IF A(G(F0, 1) + I8) <= 100000 + I5 THEN 52432
+52435 LET I5 = A(G(F0, 1) + I8) - 100000
+52436 IF SEG$(D$(G(F0, 6) + I8), 1, 4) = "loc " THEN 52432
+52437 LET I8 = D1
+52438 LET I8 = I8 + 1
+52439 IF SEG$(D$(G(F0, 6) + I8), 1, 4) <> "loc " THEN 52448
+52440 IF SEG$(D$(G(F0, 6) + I8), 5, 7) <> ".i " THEN 52438
+52441 IF A(G(F0, 1) + I8) > 100000 THEN 52438
+52442 IF A(G(F0, 1) + I8) < 0 THEN 52438
+52444 LET I5 = I5 + 1
+52446 LET A(G(F0, 1) + I8) = 100000 + I5
+52447 GOTO 52438
+52448 RETURN
 52500 REM ---- 52500: the record Z$ rewritten. V4 0: a node of the copy of level L4 (L18 pos P, ret as
 52502 REM iret, a call's fid renumbered, F's parameters the .p and its locals the .i from M(s,1) + 1);
 52504 REM 1: as written (a .p as @p, an .i numbered after the .l locals); 2: the .i it declares

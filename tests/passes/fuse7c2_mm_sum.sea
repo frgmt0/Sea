@@ -1,0 +1,12 @@
+// fuse7c2_mm_sum -- DESIGN.md 2.12.4 F3, F4: sum over the same-mask selection tree A[m] - B[m] with a
+// whole-matrix mask (MM): each leaf's IX 1-IX 3, the node's vector check of the two counts, one
+// loop over the linear positions under the mask's if, sum8's lane Q & 7 (L-et). The plain sum
+// before it references F8 ahead of every tptr (3.5.9 "Types": order of first reference).
+let A: f64[,] = [1.0, 2.0; 3.0, 4.0]
+let B: f64[,] = [0.5, 0.5; 0.5, 0.5]
+let m: bool[,] = [true, false; true, true]
+let v: f64[] = [1.0, 2.0, 3.0]
+let s0 = sum(v * 2.0)
+printf("%g\n", s0)
+let s = sum(A[m] - B[m])
+printf("%g\n", s)

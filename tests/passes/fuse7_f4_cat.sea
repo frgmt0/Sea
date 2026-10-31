@@ -1,0 +1,5 @@
+// fuse7_f4_cat -- DESIGN.md 2.12.4 F4 "Concatenation parts", L-eu: the part x[1..3] is copied from
+// its base in L9 (c)'s copy pass (IX 1, IX 2 at the part's place), never materialized
+let x: f64[] = [1.0, 2.0, 3.0]
+let c = [x[1..3], 5.0]
+printf("%g %g %g\n", c[0], c[1], c[2])

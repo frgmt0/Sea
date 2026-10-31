@@ -1,0 +1,6 @@
+// fuse7_f4_idxvec -- DESIGN.md 2.12.4 F4: an index vector x[k] folded: its chkb loop in the leaf
+// phase, the element read through the vector's element (an indexed load)
+let x: f64[] = [1.0, 2.0, 3.0]
+let k: i64[] = [2, 0]
+let y = x[k] * 2.0
+printf("%g %g\n", y[0], y[1])

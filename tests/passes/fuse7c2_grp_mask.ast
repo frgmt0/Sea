@@ -1,0 +1,40 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_grp_mask.sea
+pname 0:4:5 x
+type 0:4:8 f64 v 0
+float 0:4:17 #4008000000000000
+float 0:4:22 #3FF0000000000000
+float 0:4:27 #4010000000000000
+float 0:4:32 #3FF0000000000000
+row 0:4:17 4
+array 0:4:16 1
+let 0:4:1 1
+pname 0:5:5 m
+type 0:5:8 bool v 0
+true 0:5:18
+true 0:5:24
+false 0:5:30
+true 0:5:37
+row 0:5:18 4
+array 0:5:17 1
+let 0:5:1 1
+pname 0:6:5 d
+name 0:6:9 x
+float 0:6:13 #4000000000000000
+bin 0:6:9 mul
+let 0:6:1 0
+pname 0:7:5 s
+name 0:7:9 max
+name 0:7:13 d
+name 0:7:15 m
+index 0:7:13 1
+call 0:7:9 1
+let 0:7:1 0
+name 0:8:1 printf
+str 0:8:8 %25g%0A
+name 0:8:16 s
+call 0:8:1 2
+cstmt 0:8:1
+prog 5
+#end

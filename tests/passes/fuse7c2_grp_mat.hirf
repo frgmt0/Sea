@@ -1,0 +1,612 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_grp_mat.sea
+tmat 10 4
+tfvec 11 4 2
+tfmat 12 4 3 2
+tvec 13 3
+tptr 14 4
+fn 1 .main main 1 0 86 0:1:1
+loc T 10 let 0:4:5
+loc Tc 10 let 0:5:5
+loc Tn 10 let 0:6:5
+loc .l1 10 let 0:5:1
+loc .l2 3 let 0:5:1
+loc .l3 3 let 0:5:1
+loc .l4 3 let 0:5:1
+loc .l5 3 let 0:5:12
+loc .l6 2 let 0:5:12
+loc .l7 3 let 0:5:1
+loc .l8 3 let 0:5:1
+loc .l9 3 let 0:5:1
+loc .l10 3 let 0:5:1
+loc .l11 3 let 0:5:1
+loc .l12 3 let 0:5:1
+loc .l13 4 let 0:5:1
+loc .l14 2 let 0:5:1
+loc .l15 14 let 0:5:1
+loc .l16 14 let 0:5:1
+loc .l17 2 let 0:5:1
+loc .l18 3 let 0:5:1
+loc .l19 3 let 0:5:1
+loc .l20 3 let 0:5:1
+loc .l21 3 let 0:5:1
+loc .l22 3 let 0:5:1
+loc .l23 3 let 0:5:1
+loc .l24 4 let 0:5:1
+loc .l25 4 let 0:5:1
+loc .l26 3 for 0:5:1
+loc .l27 3 for 0:5:1
+loc .l28 3 let 0:5:1
+loc .l29 2 let 0:5:1
+loc .l30 2 let 0:5:1
+loc .l31 3 let 0:5:1
+loc .l32 3 let 0:5:1
+loc .l33 3 let 0:5:1
+loc .l34 3 let 0:5:1
+loc .l35 3 let 0:5:1
+loc .l36 3 let 0:5:1
+loc .l37 4 let 0:5:1
+loc .l38 4 let 0:5:1
+loc .l39 3 for 0:5:1
+loc .l40 3 for 0:5:1
+loc .l41 10 let 0:5:1
+loc .l42 14 let 0:5:1
+loc .l43 14 let 0:5:1
+loc .l44 2 let 0:5:1
+loc .l45 3 let 0:5:1
+loc .l46 3 let 0:5:1
+loc .l47 3 let 0:5:1
+loc .l48 3 let 0:5:1
+loc .l49 3 let 0:5:1
+loc .l50 3 let 0:5:1
+loc .l51 3 for 0:5:1
+loc .l52 3 for 0:5:1
+loc .l53 3 let 0:5:1
+loc .l54 2 let 0:5:1
+loc .l55 2 let 0:5:1
+loc .l56 3 let 0:5:1
+loc .l57 3 let 0:5:1
+loc .l58 3 let 0:5:1
+loc .l59 3 let 0:5:1
+loc .l60 3 let 0:5:1
+loc .l61 3 let 0:5:1
+loc .l62 3 for 0:5:1
+loc .l63 3 for 0:5:1
+loc .l64 14 let 0:5:1
+loc .l65 14 let 0:5:1
+loc .l66 2 let 0:5:1
+loc .l67 3 let 0:5:1
+loc .l68 3 let 0:5:1
+loc .l69 3 let 0:5:1
+loc .l70 3 let 0:5:1
+loc .l71 3 for 0:5:1
+loc .l72 3 let 0:5:1
+loc .l73 2 let 0:5:1
+loc .l74 2 let 0:5:1
+loc .l75 3 let 0:5:1
+loc .l76 3 let 0:5:1
+loc .l77 3 let 0:5:1
+loc .l78 3 let 0:5:1
+loc .l79 3 let 0:5:1
+loc .l80 3 let 0:5:1
+loc .l81 3 let 0:5:1
+loc .l82 3 for 0:5:1
+loc .l83 3 for 0:5:1
+cf 0:4:18 4 #3FF0000000000000
+cf 0:4:23 4 #4000000000000000
+row 0:4:18 11 2
+cf 0:4:28 4 #4008000000000000
+cf 0:4:33 4 #4010000000000000
+row 0:4:28 11 2
+cf 0:4:38 4 #4014000000000000
+cf 0:4:43 4 #4018000000000000
+row 0:4:38 11 2
+arr 0:4:17 12 3
+dyn 0:4:17 10
+bind 0:4:1 1
+lv 0:5:10 10 1
+tmp 0:5:1 4
+ci 0:5:12 3 1
+tmp 0:5:1 5
+ci 0:5:15 3 3
+tmp 0:5:1 6
+ci 0:5:1 3 1
+tmp 0:5:1 7
+lv 0:5:1 3 5
+lv 0:5:1 3 6
+lv 0:5:1 3 7
+rcnt 0:5:12 0 8 9
+lv 0:5:1 10 4
+ext 0:5:1 3 0
+tmp 0:5:1 10
+lv 0:5:1 2 9
+lv 0:5:1 3 5
+lv 0:5:1 3 10
+chkb 0:5:10 0
+lv 0:5:1 3 5
+lv 0:5:1 3 8
+lv 0:5:1 3 7
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+lv 0:5:1 3 10
+chkb 0:5:10 0
+block 0:5:1 2
+if 0:5:1 0
+lv 0:5:1 10 4
+ext 0:5:1 3 1
+tmp 0:5:1 11
+ci 0:5:1 3 1
+tmp 0:5:1 12
+lv 0:5:1 3 8
+lv 0:5:1 3 12
+wbin 0:5:1 3 add
+tmp 0:5:1 13
+ci 0:5:1 3 0
+tmp 0:5:1 14
+lv 0:5:1 2 9
+lv 0:5:1 3 13
+lv 0:5:1 3 14
+lib 0:5:1 3 where 3
+tmp 0:5:1 15
+cf 0:6:15 4 #4000000000000000
+tmp 0:5:1 16
+lv 0:5:1 3 15
+lv 0:5:1 3 11
+anew 0:6:1 10 0 2
+bind 0:6:1 3
+lv 0:5:1 3 15
+lv 0:5:1 3 15
+bin 0:5:1 2 eq
+lv 0:5:1 3 11
+lv 0:5:1 3 11
+bin 0:5:1 2 eq
+bin 0:5:1 2 band
+tmp 0:5:1 17
+lv 0:5:1 2 17
+lv 0:5:1 10 3
+adat 0:5:1 14
+tmp 0:5:1 18
+lv 0:5:1 10 4
+adat 0:5:1 14
+tmp 0:5:1 19
+lv 0:5:1 3 15
+lv 0:5:1 3 15
+bin 0:5:1 2 eq
+lv 0:5:1 3 11
+lv 0:5:1 3 11
+bin 0:5:1 2 eq
+bin 0:5:1 2 band
+tmp 0:5:1 20
+lv 0:5:1 2 20
+ci 0:5:1 3 0
+tmp 0:5:1 21
+lv 0:5:1 3 11
+lv 0:5:1 3 21
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 22
+lv 0:5:1 3 11
+lv 0:5:1 3 22
+wbin 0:5:1 3 sub
+tmp 0:5:1 23
+lv 0:5:1 3 21
+lv 0:5:1 3 23
+lv 0:5:1 3 22
+ci 0:5:1 3 0
+tmp 0:5:1 24
+lv 0:5:1 3 15
+lv 0:5:1 3 24
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 25
+lv 0:5:1 3 15
+lv 0:5:1 3 25
+wbin 0:5:1 3 sub
+tmp 0:5:1 26
+lv 0:5:1 3 24
+lv 0:5:1 3 26
+lv 0:5:1 3 25
+lv 0:5:1 14 19
+lv 0:5:1 3 5
+lv 0:5:1 3 29
+lv 0:5:1 3 7
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+lv 0:5:1 3 30
+lv 0:5:1 3 10
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+eld 0:5:1 4 8 0
+bind 0:5:1 27
+lv 0:5:1 4 27
+lv 0:5:1 4 16
+bin 0:6:10 4 mul
+bind 0:5:1 28
+lv 0:5:1 4 28
+lv 0:5:1 14 18
+lv 0:5:1 3 29
+lv 0:5:1 3 30
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+est 0:5:1 8 0
+block 0:5:1 3
+hloop 0:5:1 29
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+hloop 0:5:1 30
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+ci 0:5:1 3 1
+tmp 0:5:1 31
+lv 0:5:1 3 15
+lv 0:5:1 3 31
+bin 0:5:1 2 ne
+tmp 0:5:1 32
+lv 0:5:1 3 11
+lv 0:5:1 3 31
+bin 0:5:1 2 ne
+tmp 0:5:1 33
+ci 0:5:1 3 0
+tmp 0:5:1 34
+lv 0:5:1 3 11
+lv 0:5:1 3 34
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 35
+lv 0:5:1 3 11
+lv 0:5:1 3 35
+wbin 0:5:1 3 sub
+tmp 0:5:1 36
+lv 0:5:1 3 34
+lv 0:5:1 3 36
+lv 0:5:1 3 35
+ci 0:5:1 3 0
+tmp 0:5:1 37
+lv 0:5:1 3 15
+lv 0:5:1 3 37
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 38
+lv 0:5:1 3 15
+lv 0:5:1 3 38
+wbin 0:5:1 3 sub
+tmp 0:5:1 39
+lv 0:5:1 3 37
+lv 0:5:1 3 39
+lv 0:5:1 3 38
+lv 0:5:1 14 19
+lv 0:5:1 3 5
+lv 0:5:1 3 42
+lv 0:5:1 2 32
+wbin 0:5:1 3 mul
+lv 0:5:1 3 7
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+lv 0:5:1 3 43
+lv 0:5:1 2 33
+wbin 0:5:1 3 mul
+lv 0:5:1 3 10
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+eld 0:5:1 4 8 0
+bind 0:5:1 40
+lv 0:5:1 4 40
+lv 0:5:1 4 16
+bin 0:6:10 4 mul
+bind 0:5:1 41
+lv 0:5:1 4 41
+lv 0:5:1 14 18
+lv 0:5:1 3 42
+lv 0:5:1 3 43
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+est 0:5:1 8 0
+block 0:5:1 3
+hloop 0:5:1 42
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+hloop 0:5:1 43
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 5
+if 0:5:1 1
+block 0:5:1 4
+lv 0:5:1 3 15
+lv 0:5:1 3 11
+anew 0:5:1 10 0 2
+tmp 0:5:1 44
+lv 0:5:1 10 44
+adat 0:5:1 14
+tmp 0:5:1 45
+lv 0:5:1 10 4
+adat 0:5:1 14
+tmp 0:5:1 46
+lv 0:5:1 3 15
+lv 0:5:1 3 15
+bin 0:5:1 2 eq
+lv 0:5:1 3 11
+lv 0:5:1 3 11
+bin 0:5:1 2 eq
+bin 0:5:1 2 band
+tmp 0:5:1 47
+lv 0:5:1 2 47
+ci 0:5:1 3 0
+tmp 0:5:1 48
+lv 0:5:1 3 11
+lv 0:5:1 3 48
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 49
+lv 0:5:1 3 11
+lv 0:5:1 3 49
+wbin 0:5:1 3 sub
+tmp 0:5:1 50
+lv 0:5:1 3 48
+lv 0:5:1 3 50
+lv 0:5:1 3 49
+ci 0:5:1 3 0
+tmp 0:5:1 51
+lv 0:5:1 3 15
+lv 0:5:1 3 51
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 52
+lv 0:5:1 3 15
+lv 0:5:1 3 52
+wbin 0:5:1 3 sub
+tmp 0:5:1 53
+lv 0:5:1 3 51
+lv 0:5:1 3 53
+lv 0:5:1 3 52
+lv 0:5:1 14 46
+lv 0:5:1 3 5
+lv 0:5:1 3 54
+lv 0:5:1 3 7
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+lv 0:5:1 3 55
+lv 0:5:1 3 10
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+eld 0:5:1 4 8 0
+lv 0:5:1 14 45
+lv 0:5:1 3 54
+lv 0:5:1 3 55
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+est 0:5:1 8 0
+block 0:5:1 1
+hloop 0:5:1 54
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+hloop 0:5:1 55
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+ci 0:5:1 3 1
+tmp 0:5:1 56
+lv 0:5:1 3 15
+lv 0:5:1 3 56
+bin 0:5:1 2 ne
+tmp 0:5:1 57
+lv 0:5:1 3 11
+lv 0:5:1 3 56
+bin 0:5:1 2 ne
+tmp 0:5:1 58
+ci 0:5:1 3 0
+tmp 0:5:1 59
+lv 0:5:1 3 11
+lv 0:5:1 3 59
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 60
+lv 0:5:1 3 11
+lv 0:5:1 3 60
+wbin 0:5:1 3 sub
+tmp 0:5:1 61
+lv 0:5:1 3 59
+lv 0:5:1 3 61
+lv 0:5:1 3 60
+ci 0:5:1 3 0
+tmp 0:5:1 62
+lv 0:5:1 3 15
+lv 0:5:1 3 62
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 63
+lv 0:5:1 3 15
+lv 0:5:1 3 63
+wbin 0:5:1 3 sub
+tmp 0:5:1 64
+lv 0:5:1 3 62
+lv 0:5:1 3 64
+lv 0:5:1 3 63
+lv 0:5:1 14 46
+lv 0:5:1 3 5
+lv 0:5:1 3 65
+lv 0:5:1 2 57
+wbin 0:5:1 3 mul
+lv 0:5:1 3 7
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+lv 0:5:1 3 66
+lv 0:5:1 2 58
+wbin 0:5:1 3 mul
+lv 0:5:1 3 10
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+eld 0:5:1 4 8 0
+lv 0:5:1 14 45
+lv 0:5:1 3 65
+lv 0:5:1 3 66
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+est 0:5:1 8 0
+block 0:5:1 1
+hloop 0:5:1 65
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+hloop 0:5:1 66
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 5
+if 0:5:1 1
+lv 0:5:1 10 3
+adat 0:5:1 14
+tmp 0:5:1 67
+lv 0:5:1 10 44
+adat 0:5:1 14
+tmp 0:5:1 68
+lv 0:5:1 3 15
+lv 0:5:1 3 15
+bin 0:5:1 2 eq
+lv 0:5:1 3 11
+lv 0:5:1 3 11
+bin 0:5:1 2 eq
+bin 0:5:1 2 band
+tmp 0:5:1 69
+lv 0:5:1 2 69
+lv 0:5:1 3 15
+lv 0:5:1 3 11
+wbin 0:5:1 3 mul
+tmp 0:5:1 70
+ci 0:5:1 3 0
+tmp 0:5:1 71
+lv 0:5:1 3 70
+lv 0:5:1 3 71
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 72
+lv 0:5:1 3 70
+lv 0:5:1 3 72
+wbin 0:5:1 3 sub
+tmp 0:5:1 73
+lv 0:5:1 3 71
+lv 0:5:1 3 73
+lv 0:5:1 3 72
+lv 0:5:1 14 68
+lv 0:5:1 3 74
+eld 0:5:1 4 8 0
+lv 0:5:1 4 16
+bin 0:6:10 4 mul
+lv 0:5:1 14 67
+lv 0:5:1 3 74
+est 0:5:1 8 0
+block 0:5:1 1
+hloop 0:5:1 74
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 3
+ci 0:5:1 3 1
+tmp 0:5:1 75
+lv 0:5:1 3 15
+lv 0:5:1 3 75
+bin 0:5:1 2 ne
+tmp 0:5:1 76
+lv 0:5:1 3 11
+lv 0:5:1 3 75
+bin 0:5:1 2 ne
+tmp 0:5:1 77
+lv 0:5:1 2 77
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+tmp 0:5:1 78
+ci 0:5:1 3 0
+tmp 0:5:1 79
+lv 0:5:1 3 11
+lv 0:5:1 3 79
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 80
+lv 0:5:1 3 11
+lv 0:5:1 3 80
+wbin 0:5:1 3 sub
+tmp 0:5:1 81
+lv 0:5:1 3 79
+lv 0:5:1 3 81
+lv 0:5:1 3 80
+ci 0:5:1 3 0
+tmp 0:5:1 82
+lv 0:5:1 3 15
+lv 0:5:1 3 82
+bin 0:5:1 2 gt
+ci 0:5:1 3 1
+tmp 0:5:1 83
+lv 0:5:1 3 15
+lv 0:5:1 3 83
+wbin 0:5:1 3 sub
+tmp 0:5:1 84
+lv 0:5:1 3 82
+lv 0:5:1 3 84
+lv 0:5:1 3 83
+lv 0:5:1 14 68
+lv 0:5:1 3 85
+lv 0:5:1 2 76
+wbin 0:5:1 3 mul
+lv 0:5:1 3 86
+lv 0:5:1 3 78
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+eld 0:5:1 4 8 0
+lv 0:5:1 4 16
+bin 0:6:10 4 mul
+lv 0:5:1 14 67
+lv 0:5:1 3 85
+lv 0:5:1 3 86
+lv 0:5:1 3 15
+wbin 0:5:1 3 mul
+wbin 0:5:1 3 add
+est 0:5:1 8 0
+block 0:5:1 1
+hloop 0:5:1 85
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 2
+hloop 0:5:1 86
+block 0:5:1 3
+if 0:5:1 0
+block 0:5:1 6
+if 0:5:1 1
+block 0:5:1 9
+if 0:5:1 1
+block 0:5:1 2
+lv 0:7:25 10 3
+ci 0:7:28 3 0
+ci 0:7:31 3 0
+idx 0:7:25 4 2
+fconv 0:7:8 1 - - - g
+ftext 0:7:8 1 %20
+lv 0:7:35 10 3
+ci 0:7:38 3 1
+ci 0:7:41 3 0
+idx 0:7:35 4 2
+fconv 0:7:8 1 - - - g
+ftext 0:7:8 1 %20
+lv 0:7:45 10 3
+ci 0:7:48 3 0
+ci 0:7:51 3 1
+idx 0:7:45 4 2
+fconv 0:7:8 1 - - - g
+ftext 0:7:8 1 %20
+lv 0:7:55 10 3
+ci 0:7:58 3 1
+ci 0:7:61 3 1
+idx 0:7:55 4 2
+fconv 0:7:8 1 - - - g
+ftext 0:7:8 1 %0A
+fmt 0:7:8 1 8
+lib 0:7:1 1 printf 1
+eval 0:7:1
+block 0:1:1 17
+end
+#end

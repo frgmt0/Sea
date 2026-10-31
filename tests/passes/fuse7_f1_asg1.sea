@@ -1,0 +1,6 @@
+// fuse7_f1_asg1 -- DESIGN.md 2.12.4 F1 (3) and F2 (6) (Decision 111): the value of an asg set to a
+// whole array is rewritten even with one fusible node; y = y * 2.0 writes y's own buffer after
+// the reuse prologue (cow under the test E, the old value held in O and read through it, R33)
+var y: f64[] = [1.0, 2.0, 3.0]
+y = y * 2.0
+printf("%g %g %g\n", y[0], y[1], y[2])

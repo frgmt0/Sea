@@ -1,0 +1,80 @@
+#sea 1
+#target arm64-macos
+#file fuse7_f1_vec.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+sa p1 s1
+lf f2 #3FF0000000000000
+stf f2 p1 - 0 0
+lf f3 #4000000000000000
+stf f3 p1 - 0 8
+lf f4 #4008000000000000
+stf f4 p1 - 0 16
+li i5 3
+li i6 1
+li i7 1
+li i8 1
+rcall sea_arr_new_u 0:3 1 p9 4 i6 i7 i5 i8
+ldp p10 p9 - 0 40
+li i11 24
+mcopy p10 p1 i11
+lf f12 #4000000000000000
+ldi i13 p9 - 0 16
+ldi i14 p9 - 0 16
+icmp ne i15 i13 i14
+li i16 -1
+chk i15 SHAPE_MISMATCH 0:4 4 i13 i16 i14 i16
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:4 1 p20 4 i17 i18 i13 i19
+ldp p21 p20 - 0 40
+ldp p22 p9 - 0 40
+ldp p23 p9 - 0 40
+li i24 0
+icmp gt i25 i13 i24
+if 1 i25
+li i26 1
+isub i27 i13 i26
+loop 2 i28 i24 i27 i26
+ldf f29 p22 i28 8 0
+fmul f30 f29 f12
+ldf f31 p23 i28 8 0
+fadd f32 f30 f31
+stf f32 p21 i28 8 0
+endloop 2
+endif 1
+li i33 0
+ldi i34 p20 - 0 16
+chkb i33 i34 0 0:5
+ldp p35 p20 - 0 40
+ldf f36 p35 i33 8 0
+li i37 1
+ldi i38 p20 - 0 16
+chkb i37 i38 0 0:5
+ldp p39 p20 - 0 40
+ldf f40 p39 i37 8 0
+li i41 2
+ldi i42 p20 - 0 16
+chkb i41 i42 0 0:5
+ldp p43 p20 - 0 40
+ldf f44 p43 i41 8 0
+sa p45 s2
+stf f36 p45 - 0 0
+stf f40 p45 - 0 8
+stf f44 p45 - 0 16
+la p46 d1
+rcall sea_printf 0:5 0 2 p46 p45
+release p20
+release p9
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

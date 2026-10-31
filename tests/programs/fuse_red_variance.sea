@@ -1,0 +1,13 @@
+// fuse_red_variance -- F3 `variance` and `std` of trees (standalone, DESIGN.md 2.12.4 F2 (1), F3): two passes over x * 1e9 + y
+// (the mean first, LANGUAGE.md 10.5), of a `.flat` matrix tree, of an `i64` tree, of one element (0) and none (NaN)
+let x: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+let y: f64[] = [0.1, 0.7, 0.3, 0.9, 0.2, 0.4, 0.8, 0.6, 0.5, 0.05]
+let A: f64[,] = [100000000.0, 300000000.0, 500000000.0; 200000000.0, 400000000.0, 600000000.0]
+let B = [0.3, 0.1, 0.4; 0.1, 0.5, 0.9]
+let iv = [7, -3, 12, 5, 0]
+let v = variance(x * 1e9 + y)
+let s = std(x * 1e9 + y)
+printf("%.17g %.17g %.17g\n", v, s, mean(x * 1e9 + y))
+printf("%.17g %.17g\n", variance((A * 3.0 + B).flat), std((A * 3.0 + B).flat))
+printf("%.17g %.17g\n", variance(iv * 3 - 1), std(iv * 3 - 1))
+printf("%.17g %.17g\n", variance(x[0..1] * 2.0 + y[0..1]), variance(x[0..0] * 2.0 + y[0..0]))

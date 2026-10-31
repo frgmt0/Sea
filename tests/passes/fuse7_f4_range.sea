@@ -1,0 +1,5 @@
+// fuse7_f4_range -- DESIGN.md 2.12.4 F4: a range selection x[1..4] folded into the nest: IX 1 and
+// IX 2 in the leaf phase, read at lo + I * st
+let x: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0]
+let y = x[1..4] * 2.0
+printf("%g %g %g\n", y[0], y[1], y[2])

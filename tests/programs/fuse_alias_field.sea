@@ -1,0 +1,20 @@
+// fuse_alias_field -- F1 (5) on a root path (DESIGN.md 2.12.4, L-fe): `s.v[1..3] = s.v[0..2] + 1.0` on a struct field reads the old
+// elements; the copy `s2` keeps its values; `s.v = s.v * 2.0 - s2.v` reads the field at the element written
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+struct S {
+    v: f64[]
+    n: i64
+}
+var s = S { v: [1.0, 5.0, 9.0, 13.0, 17.0], n: 5 }
+var s2 = s
+s.v[1..3] = s.v[0..2] + 1.0
+pv(s.v)
+pv(s2.v)
+s.v = s.v * 2.0 - s2.v
+pv(s.v)

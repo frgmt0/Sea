@@ -1,0 +1,7 @@
+// fuse7c2_grp_sum -- DESIGN.md 2.12.4 F2 with F3: a group whose second statement is a sum over a tree
+// reading the first's local; sum8's home and lanes are set up before the nest, the reduction step
+// follows the element binds in the nest, the final combination is bound after the group (R-e, R-q)
+let x: f64[] = [1.0, 2.0, 3.0]
+let d = x * 2.0
+let s = sum(d + 1.0)
+printf("%g\n", s)

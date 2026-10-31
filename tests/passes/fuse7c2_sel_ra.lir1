@@ -1,0 +1,242 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_sel_ra.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 8 8
+slot s3 8 8
+slot s4 48 8
+slot s5 48 8
+slot s6 48 8
+slot s7 48 8
+slot s8 56 8
+sa p1 s1
+lf f2 #0000000000000000
+stf f2 p1 - 0 0
+lf f3 #0000000000000000
+stf f3 p1 - 0 24
+lf f4 #0000000000000000
+stf f4 p1 - 0 48
+lf f5 #0000000000000000
+stf f5 p1 - 0 8
+lf f6 #0000000000000000
+stf f6 p1 - 0 32
+lf f7 #0000000000000000
+stf f7 p1 - 0 56
+lf f8 #0000000000000000
+stf f8 p1 - 0 16
+lf f9 #0000000000000000
+stf f9 p1 - 0 40
+lf f10 #0000000000000000
+stf f10 p1 - 0 64
+li i11 3
+li i12 3
+li i13 1
+li i14 2
+rcall sea_arr_new_u 0:4 1 p15 4 i13 i14 i11 i12
+ldp p16 p15 - 0 40
+li i17 72
+mcopy p16 p1 i17
+sa p18 s2
+sa p19 s3
+li i20 1
+stb i20 p19 - 0 0
+li i21 0
+stb i21 p19 - 0 2
+li i22 1
+stb i22 p19 - 0 4
+li i23 0
+stb i23 p19 - 0 1
+li i24 1
+stb i24 p19 - 0 3
+li i25 0
+stb i25 p19 - 0 5
+li i26 6
+mcopy p18 p19 i26
+sa p27 s4
+sa p28 s5
+lf f29 #3FF0000000000000
+stf f29 p28 - 0 0
+lf f30 #4000000000000000
+stf f30 p28 - 0 16
+lf f31 #4008000000000000
+stf f31 p28 - 0 32
+lf f32 #4010000000000000
+stf f32 p28 - 0 8
+lf f33 #4014000000000000
+stf f33 p28 - 0 24
+lf f34 #4018000000000000
+stf f34 p28 - 0 40
+li i35 48
+mcopy p27 p28 i35
+sa p36 s6
+sa p37 s7
+lf f38 #BFF0000000000000
+stf f38 p37 - 0 0
+lf f39 #C000000000000000
+stf f39 p37 - 0 16
+lf f40 #C008000000000000
+stf f40 p37 - 0 32
+lf f41 #C010000000000000
+stf f41 p37 - 0 8
+lf f42 #C014000000000000
+stf f42 p37 - 0 24
+lf f43 #C018000000000000
+stf f43 p37 - 0 40
+li i44 48
+mcopy p36 p37 i44
+li i45 2
+li i46 3
+li i47 2
+li i48 3
+li i49 2
+li i50 3
+li i51 1
+li i52 3
+li i53 1
+rcount i54 i55 i51 i52 i53 0 0:8
+ldi i56 p15 - 0 16
+if 1 i55
+chkb i51 i56 0 0:8
+imul i57 i54 i53
+iadd i58 i51 i57
+chkb i58 i56 0 0:8
+endif 1
+ldi i59 p15 - 0 24
+li i60 1
+iadd i61 i54 i60
+li i62 0
+isel i63 i55 i61 i62
+icmp ne i64 i63 i45
+icmp ne i65 i59 i46
+ior i66 i64 i65
+chk i66 SHAPE_MISMATCH 0:8 4 i63 i59 i45 i46
+ldi i67 p15 - 0 0
+li i68 1
+icmp ne i69 i67 i68
+if 2 i69
+rcall sea_arr_unique 0:8 1 p70 1 p15
+mov p15 p70
+endif 2
+ldp p71 p15 - 0 40
+li i72 0
+li i73 1
+li i74 0
+icmp gt i75 i59 i74
+if 3 i75
+li i76 1
+isub i77 i59 i76
+loop 4 i78 i74 i77 i76
+if 5 i55
+loop 6 i79 i51 i54 i53
+ldb i80 p18 i72 1 0
+ldf f81 p27 i72 8 0
+ldf f82 p36 i72 8 0
+fsel f83 i80 f81 f82
+imul i84 i78 i56
+iadd i85 i79 i84
+stf f83 p71 i85 8 0
+iadd i72 i72 i73
+endloop 6
+endif 5
+endloop 4
+endif 3
+li i86 0
+li i87 0
+ldi i88 p15 - 0 16
+chkb i86 i88 0 0:9
+ldi i89 p15 - 0 24
+chkb i87 i89 1 0:9
+ldp p90 p15 - 0 40
+imul i91 i87 i88
+iadd i92 i86 i91
+ldf f93 p90 i92 8 0
+li i94 1
+li i95 0
+ldi i96 p15 - 0 16
+chkb i94 i96 0 0:9
+ldi i97 p15 - 0 24
+chkb i95 i97 1 0:9
+ldp p98 p15 - 0 40
+imul i99 i95 i96
+iadd i100 i94 i99
+ldf f101 p98 i100 8 0
+li i102 2
+li i103 0
+ldi i104 p15 - 0 16
+chkb i102 i104 0 0:9
+ldi i105 p15 - 0 24
+chkb i103 i105 1 0:9
+ldp p106 p15 - 0 40
+imul i107 i103 i104
+iadd i108 i102 i107
+ldf f109 p106 i108 8 0
+li i110 1
+li i111 1
+ldi i112 p15 - 0 16
+chkb i110 i112 0 0:9
+ldi i113 p15 - 0 24
+chkb i111 i113 1 0:9
+ldp p114 p15 - 0 40
+imul i115 i111 i112
+iadd i116 i110 i115
+ldf f117 p114 i116 8 0
+li i118 2
+li i119 1
+ldi i120 p15 - 0 16
+chkb i118 i120 0 0:9
+ldi i121 p15 - 0 24
+chkb i119 i121 1 0:9
+ldp p122 p15 - 0 40
+imul i123 i119 i120
+iadd i124 i118 i123
+ldf f125 p122 i124 8 0
+li i126 1
+li i127 2
+ldi i128 p15 - 0 16
+chkb i126 i128 0 0:9
+ldi i129 p15 - 0 24
+chkb i127 i129 1 0:9
+ldp p130 p15 - 0 40
+imul i131 i127 i128
+iadd i132 i126 i131
+ldf f133 p130 i132 8 0
+li i134 2
+li i135 2
+ldi i136 p15 - 0 16
+chkb i134 i136 0 0:9
+ldi i137 p15 - 0 24
+chkb i135 i137 1 0:9
+ldp p138 p15 - 0 40
+imul i139 i135 i136
+iadd i140 i134 i139
+ldf f141 p138 i140 8 0
+sa p142 s8
+stf f93 p142 - 0 0
+stf f101 p142 - 0 8
+stf f109 p142 - 0 16
+stf f117 p142 - 0 24
+stf f125 p142 - 0 32
+stf f133 p142 - 0 40
+stf f141 p142 - 0 48
+la p143 d1
+rcall sea_printf 0:9 0 2 p143 p142
+release p15
+ret 0
+endfunc
+fmt d1 14
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

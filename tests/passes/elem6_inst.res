@@ -52,62 +52,91 @@ float 0:17:15 #4000000000000000
 str 0:17:20 u
 call 0:17:10 3
 let 0:17:1 0
-rpname 0:18:5 r2 6
-rname 0:18:10 h fn 2
-rname 0:18:12 k loc 2
-float 0:18:15 #4000000000000000
-str 0:18:20 u
-call 0:18:10 3
-let 0:18:1 0
-rpname 0:19:5 r3 7
+rname 0:18:1 printf pd 0
+str 0:18:8 %25g%0A
+rname 0:18:16 r1 loc 5
+rint 0:18:19 0 #0000000000000000
+index 0:18:16 1
+call 0:18:1 2
+cstmt 0:18:1
+rpname 0:19:5 r2 6
 rname 0:19:10 h fn 2
-rname 0:19:12 m loc 3
-rname 0:19:15 a loc 1
-dot 0:19:15 col
-str 0:19:22 u
+rname 0:19:12 k loc 2
+float 0:19:15 #4000000000000000
+str 0:19:20 u
 call 0:19:10 3
 let 0:19:1 0
-rpname 0:20:5 r4 8
-rname 0:20:10 h fn 2
-rname 0:20:12 f loc 4
-float 0:20:15 #4000000000000000
-str 0:20:20 u
-call 0:20:10 3
-let 0:20:1 0
-rpname 0:21:5 r5 9
+rname 0:20:1 printf pd 0
+str 0:20:8 %25g%0A
+rname 0:20:16 r2 loc 6
+rint 0:20:19 0 #0000000000000000
+index 0:20:16 1
+call 0:20:1 2
+cstmt 0:20:1
+rpname 0:21:5 r3 7
 rname 0:21:10 h fn 2
-rname 0:21:12 f loc 4
+rname 0:21:12 m loc 3
 rname 0:21:15 a loc 1
-str 0:21:18 u
+dot 0:21:15 col
+str 0:21:22 u
 call 0:21:10 3
 let 0:21:1 0
-rpname 0:22:5 r6 10
-rname 0:22:10 h fn 2
-float 0:22:12 #3FF0000000000000
-float 0:22:17 #4000000000000000
-str 0:22:22 u
-call 0:22:10 3
-let 0:22:1 0
-rname 0:23:1 printf pd 0
-str 0:23:8 %25g%20%25g%20%25g%20%25g%20%25g%20%25g%0A
-rname 0:23:31 r1 loc 5
-rint 0:23:34 1 #3FF0000000000000
-index 0:23:31 1
-rname 0:23:38 r2 loc 6
-rint 0:23:41 1 #3FF0000000000000
-index 0:23:38 1
-rname 0:23:45 r3 loc 7
-rint 0:23:48 1 #3FF0000000000000
-rint 0:23:51 2 #4000000000000000
-index 0:23:45 2
-rname 0:23:55 r4 loc 8
-rint 0:23:58 1 #3FF0000000000000
-index 0:23:55 1
-rname 0:23:62 r5 loc 9
-rint 0:23:65 0 #0000000000000000
-index 0:23:62 1
-rname 0:23:69 r6 loc 10
-call 0:23:1 7
-cstmt 0:23:1
-prog 13
+rname 0:22:1 printf pd 0
+str 0:22:8 %25g%0A
+rname 0:22:16 r3 loc 7
+rint 0:22:19 0 #0000000000000000
+rint 0:22:22 0 #0000000000000000
+index 0:22:16 2
+call 0:22:1 2
+cstmt 0:22:1
+rpname 0:23:5 r4 8
+rname 0:23:10 h fn 2
+rname 0:23:12 f loc 4
+float 0:23:15 #4000000000000000
+str 0:23:20 u
+call 0:23:10 3
+let 0:23:1 0
+rname 0:24:1 printf pd 0
+str 0:24:8 %25g%0A
+rname 0:24:16 r4 loc 8
+rint 0:24:19 0 #0000000000000000
+index 0:24:16 1
+call 0:24:1 2
+cstmt 0:24:1
+rpname 0:25:5 r5 9
+rname 0:25:10 h fn 2
+rname 0:25:12 f loc 4
+rname 0:25:15 a loc 1
+str 0:25:18 u
+call 0:25:10 3
+let 0:25:1 0
+rpname 0:26:5 r6 10
+rname 0:26:10 h fn 2
+float 0:26:12 #3FF0000000000000
+float 0:26:17 #4000000000000000
+str 0:26:22 u
+call 0:26:10 3
+let 0:26:1 0
+rname 0:27:1 printf pd 0
+str 0:27:8 %25g%20%25g%20%25g%20%25g%20%25g%20%25g%0A
+rname 0:27:31 r1 loc 5
+rint 0:27:34 1 #3FF0000000000000
+index 0:27:31 1
+rname 0:27:38 r2 loc 6
+rint 0:27:41 1 #3FF0000000000000
+index 0:27:38 1
+rname 0:27:45 r3 loc 7
+rint 0:27:48 1 #3FF0000000000000
+rint 0:27:51 2 #4000000000000000
+index 0:27:45 2
+rname 0:27:55 r4 loc 8
+rint 0:27:58 1 #3FF0000000000000
+index 0:27:55 1
+rname 0:27:62 r5 loc 9
+rint 0:27:65 0 #0000000000000000
+index 0:27:62 1
+rname 0:27:69 r6 loc 10
+call 0:27:1 7
+cstmt 0:27:1
+prog 17
 #end

@@ -1,0 +1,8 @@
+// fuse_reg_dollar_selstore -- F1 (DESIGN.md 2.12.4), 7c regression: a selection store whose range ends in `$`
+// (`V[1..$] = y * 2.0`). `$` means len(V) = 3 inside the index, so the store writes V[1] and V[2]; fusing the
+// right side into the store loop must keep reading `$` as the target's length, not as the length of the operand y.
+// Expected: V = [1, 10, 12].
+let y: f64[] = [5.0, 6.0]
+var V: f64[] = [1.0, 2.0, 3.0]
+V[1..$] = y * 2.0
+printf("%.17g %.17g %.17g\n", V[0], V[1], V[2])

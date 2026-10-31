@@ -1,0 +1,252 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file fuse7_prel.sea
+tvec 10 4
+tvec 11 3
+tptr 12 4
+fn 1 .main main 1 0 23 1:1:1
+loc y 10 let 1:4:5
+loc .l1 4 let 1:4:9
+loc .l2 4 let 1:4:9
+loc .l3 3 let 1:4:9
+loc .l4 10 let 1:4:1
+loc .l5 4 let 1:4:1
+loc .l6 3 let 1:4:1
+loc .l7 4 let 1:4:1
+loc .l8 10 let 1:4:1
+loc .l9 12 let 1:4:1
+loc .l10 12 let 1:4:1
+loc .l11 3 let 1:4:1
+loc .l12 3 let 1:4:1
+loc .l13 3 let 1:4:1
+loc .l14 3 for 1:4:1
+loc .i1 10 var 1:4:9
+loc .i2 3 let 1:4:9
+loc .i3 4 let 1:4:9
+loc .i4 3 for 1:4:9
+loc .i5 3 for 1:4:9
+loc .i6 4 let 1:4:9
+loc .i7 4 let 1:4:9
+loc .i8 3 for 1:4:9
+cf 1:4:18 4 #0000000000000000
+tmp 1:4:9 2
+cf 1:4:23 4 #3FF0000000000000
+tmp 1:4:9 3
+ci 1:4:28 3 3
+tmp 1:4:9 4
+lv 1:4:9 3 4
+ci 1:4:9 3 1
+bin 1:4:9 2 lt
+ci 1:4:9 3 0
+lv 1:4:9 3 4
+ifx 1:4:9 3
+anew 1:4:9 10 1 1
+bind 1:4:9 16
+lv 1:4:9 3 4
+ci 1:4:9 3 1
+bin 1:4:9 2 lt
+lv 1:4:9 10 16
+iret 1:4:9 1
+block 1:4:9 1
+if 1:4:9 0
+lv 1:4:9 3 4
+ci 1:4:9 3 1
+bin 1:4:9 2 eq
+lv 1:4:9 10 16
+ci 1:4:9 3 0
+idx 1:4:9 4 1
+lv 1:4:9 4 3
+asg 1:4:9 set
+lv 1:4:9 10 16
+iret 1:4:9 1
+block 1:4:9 2
+if 1:4:9 0
+lv 1:4:9 3 4
+ci 1:4:9 3 1
+bin 1:4:9 3 sub
+bind 1:4:9 17
+lv 1:4:9 4 2
+lv 1:4:9 4 3
+un 1:4:9 4 neg
+bin 1:4:9 2 eq
+lv 1:4:9 3 4
+ci 1:4:9 3 2
+bin 1:4:9 2 gt
+bin 1:4:9 2 and
+lv 1:4:9 4 3
+lv 1:4:9 3 17
+lib 1:4:9 4 f64 1
+bin 1:4:9 4 div
+bind 1:4:9 18
+ci 1:4:9 3 0
+lv 1:4:9 3 4
+rng 1:4:9 11 0 0
+lv 1:4:9 10 16
+lv 1:4:9 3 19
+idx 1:4:9 4 1
+lv 1:4:9 3 17
+un 1:4:9 3 neg
+ci 1:4:9 3 2
+lv 1:4:9 3 19
+bin 1:4:9 3 mul
+bin 1:4:9 3 add
+lib 1:4:9 4 f64 1
+lv 1:4:9 4 18
+bin 1:4:9 4 mul
+asg 1:4:9 set
+block 1:4:9 1
+forr 1:4:9 19
+lv 1:4:9 10 16
+ci 1:4:9 3 0
+idx 1:4:9 4 1
+lv 1:4:9 4 2
+asg 1:4:9 set
+lv 1:4:9 10 16
+lv 1:4:9 3 17
+idx 1:4:9 4 1
+lv 1:4:9 4 3
+asg 1:4:9 set
+lv 1:4:9 3 17
+ci 1:4:9 3 2
+bin 1:4:9 3 mod
+ci 1:4:9 3 0
+bin 1:4:9 2 eq
+lv 1:4:9 10 16
+lv 1:4:9 3 17
+ci 1:4:9 3 2
+lib 1:4:9 3 idiv 2
+idx 1:4:9 4 1
+cf 1:4:9 4 #0000000000000000
+asg 1:4:9 set
+block 1:4:9 1
+if 1:4:9 0
+lv 1:4:9 10 16
+iret 1:4:9 1
+block 1:4:9 6
+if 1:4:9 0
+lv 1:4:9 4 2
+lv 1:4:9 4 3
+bin 1:4:9 2 eq
+ci 1:4:9 3 0
+lv 1:4:9 3 4
+rng 1:4:9 11 0 0
+lv 1:4:9 10 16
+lv 1:4:9 3 20
+idx 1:4:9 4 1
+lv 1:4:9 4 2
+asg 1:4:9 set
+block 1:4:9 1
+forr 1:4:9 20
+lv 1:4:9 10 16
+iret 1:4:9 1
+block 1:4:9 2
+if 1:4:9 0
+lv 1:4:9 4 3
+lv 1:4:9 4 2
+bin 1:4:9 4 sub
+bind 1:4:9 21
+lv 1:4:9 3 17
+lib 1:4:9 4 f64 1
+bind 1:4:9 22
+ci 1:4:9 3 0
+lv 1:4:9 3 4
+rng 1:4:9 11 0 0
+lv 1:4:9 10 16
+lv 1:4:9 3 23
+idx 1:4:9 4 1
+lv 1:4:9 4 2
+lv 1:4:9 3 23
+lib 1:4:9 4 f64 1
+lv 1:4:9 4 21
+bin 1:4:9 4 mul
+lv 1:4:9 4 22
+bin 1:4:9 4 div
+bin 1:4:9 4 add
+asg 1:4:9 set
+block 1:4:9 1
+forr 1:4:9 23
+lv 1:4:9 10 16
+ci 1:4:9 3 0
+idx 1:4:9 4 1
+lv 1:4:9 4 2
+asg 1:4:9 set
+lv 1:4:9 10 16
+lv 1:4:9 3 17
+idx 1:4:9 4 1
+lv 1:4:9 4 3
+asg 1:4:9 set
+lv 1:4:9 10 16
+iret 1:4:9 1
+block 1:4:9 12
+iblk 1:4:9 10 1
+xblk 1:4:9 10 3
+tmp 1:4:1 5
+cf 1:4:33 4 #4000000000000000
+tmp 1:4:1 6
+lv 1:4:1 10 5
+ext 1:4:1 3 0
+tmp 1:4:1 7
+cf 1:4:39 4 #3FF0000000000000
+tmp 1:4:1 8
+lv 1:4:1 3 7
+anew 1:4:9 10 0 1
+tmp 1:4:1 9
+lv 1:4:1 10 9
+adat 1:4:1 12
+tmp 1:4:1 10
+lv 1:4:1 10 5
+adat 1:4:1 12
+tmp 1:4:1 11
+ci 1:4:1 3 0
+tmp 1:4:1 12
+lv 1:4:1 3 7
+lv 1:4:1 3 12
+bin 1:4:1 2 gt
+ci 1:4:1 3 1
+tmp 1:4:1 13
+lv 1:4:1 3 7
+lv 1:4:1 3 13
+wbin 1:4:1 3 sub
+tmp 1:4:1 14
+lv 1:4:1 3 12
+lv 1:4:1 3 14
+lv 1:4:1 3 13
+lv 1:4:1 12 11
+lv 1:4:1 3 15
+eld 1:4:1 4 8 0
+lv 1:4:1 4 6
+bin 1:4:9 4 mul
+lv 1:4:1 4 8
+bin 1:4:9 4 add
+lv 1:4:1 12 10
+lv 1:4:1 3 15
+est 1:4:1 8 0
+block 1:4:1 1
+hloop 1:4:1 15
+block 1:4:1 3
+if 1:4:1 0
+lv 1:4:1 10 9
+xblk 1:4:1 10 9
+bind 1:4:1 1
+lv 1:5:22 10 1
+ci 1:5:24 3 0
+idx 1:5:22 4 1
+fconv 1:5:8 1 - - - g
+ftext 1:5:8 1 %20
+lv 1:5:28 10 1
+ci 1:5:30 3 1
+idx 1:5:28 4 1
+fconv 1:5:8 1 - - - g
+ftext 1:5:8 1 %20
+lv 1:5:34 10 1
+ci 1:5:36 3 2
+idx 1:5:34 4 1
+fconv 1:5:8 1 - - - g
+ftext 1:5:8 1 %0A
+fmt 1:5:8 1 6
+lib 1:5:1 1 printf 1
+eval 1:5:1
+block 1:1:1 2
+end
+#end

@@ -1,0 +1,263 @@
+#sea 1
+#target arm64-macos
+#file std.sea
+#file fuse7_prel.sea
+func .main main 1:1:1 0 0
+slot s1 24 8
+lf f1 #0000000000000000
+lf f2 #3FF0000000000000
+li i3 3
+do 1
+li i4 1
+icmp lt i5 i3 i4
+if 2 i5
+li i6 0
+else 2
+mov i6 i3
+endif 2
+li i7 1
+li i8 1
+li i9 1
+rcall sea_arr_new 1:4 1 p10 4 i7 i8 i6 i9
+li i11 1
+icmp lt i12 i3 i11
+if 3 i12
+retain p10
+release p10
+mov p13 p10
+exit 1
+endif 3
+li i14 1
+icmp eq i15 i3 i14
+if 4 i15
+li i16 0
+ldi i17 p10 - 0 16
+chkb i16 i17 0 1:4
+ldi i18 p10 - 0 0
+li i19 1
+icmp ne i20 i18 i19
+if 5 i20
+rcall sea_arr_unique 1:4 1 p21 1 p10
+mov p10 p21
+endif 5
+ldp p22 p10 - 0 40
+stf f2 p22 i16 8 0
+retain p10
+release p10
+mov p13 p10
+exit 1
+endif 4
+li i23 1
+isubc i24 i3 i23 1:4
+fneg f25 f2
+fcmp eq i26 f1 f25
+if 6 i26
+li i27 2
+icmp gt i26 i3 i27
+endif 6
+if 7 i26
+itof f28 i24
+fdiv f29 f2 f28
+li i30 0
+li i31 1
+rcount i32 i33 i30 i3 i31 0 1:4
+if 8 i33
+loop 9 i34 i30 i32 i31
+inegc i35 i24 1:4
+li i36 2
+imulc i37 i36 i34 1:4
+iaddc i38 i35 i37 1:4
+itof f39 i38
+fmul f40 f39 f29
+ldi i41 p10 - 0 16
+chkb i34 i41 0 1:4
+ldi i42 p10 - 0 0
+li i43 1
+icmp ne i44 i42 i43
+if 10 i44
+rcall sea_arr_unique 1:4 1 p45 1 p10
+mov p10 p45
+endif 10
+ldp p46 p10 - 0 40
+stf f40 p46 i34 8 0
+endloop 9
+endif 8
+li i47 0
+ldi i48 p10 - 0 16
+chkb i47 i48 0 1:4
+ldi i49 p10 - 0 0
+li i50 1
+icmp ne i51 i49 i50
+if 11 i51
+rcall sea_arr_unique 1:4 1 p52 1 p10
+mov p10 p52
+endif 11
+ldp p53 p10 - 0 40
+stf f1 p53 i47 8 0
+ldi i54 p10 - 0 16
+chkb i24 i54 0 1:4
+ldi i55 p10 - 0 0
+li i56 1
+icmp ne i57 i55 i56
+if 12 i57
+rcall sea_arr_unique 1:4 1 p58 1 p10
+mov p10 p58
+endif 12
+ldp p59 p10 - 0 40
+stf f2 p59 i24 8 0
+li i60 2
+imodf i61 i24 i60 1:4
+li i62 0
+icmp eq i63 i61 i62
+if 13 i63
+lf f64 #0000000000000000
+li i65 2
+idivf i66 i24 i65 1:4
+ldi i67 p10 - 0 16
+chkb i66 i67 0 1:4
+ldi i68 p10 - 0 0
+li i69 1
+icmp ne i70 i68 i69
+if 14 i70
+rcall sea_arr_unique 1:4 1 p71 1 p10
+mov p10 p71
+endif 14
+ldp p72 p10 - 0 40
+stf f64 p72 i66 8 0
+endif 13
+retain p10
+release p10
+mov p13 p10
+exit 1
+endif 7
+fcmp eq i73 f1 f2
+if 15 i73
+li i74 0
+li i75 1
+rcount i76 i77 i74 i3 i75 0 1:4
+if 16 i77
+loop 17 i78 i74 i76 i75
+ldi i79 p10 - 0 16
+chkb i78 i79 0 1:4
+ldi i80 p10 - 0 0
+li i81 1
+icmp ne i82 i80 i81
+if 18 i82
+rcall sea_arr_unique 1:4 1 p83 1 p10
+mov p10 p83
+endif 18
+ldp p84 p10 - 0 40
+stf f1 p84 i78 8 0
+endloop 17
+endif 16
+retain p10
+release p10
+mov p13 p10
+exit 1
+endif 15
+fsub f85 f2 f1
+itof f86 i24
+li i87 0
+li i88 1
+rcount i89 i90 i87 i3 i88 0 1:4
+if 19 i90
+loop 20 i91 i87 i89 i88
+itof f92 i91
+fmul f93 f92 f85
+fdiv f94 f93 f86
+fadd f95 f1 f94
+ldi i96 p10 - 0 16
+chkb i91 i96 0 1:4
+ldi i97 p10 - 0 0
+li i98 1
+icmp ne i99 i97 i98
+if 21 i99
+rcall sea_arr_unique 1:4 1 p100 1 p10
+mov p10 p100
+endif 21
+ldp p101 p10 - 0 40
+stf f95 p101 i91 8 0
+endloop 20
+endif 19
+li i102 0
+ldi i103 p10 - 0 16
+chkb i102 i103 0 1:4
+ldi i104 p10 - 0 0
+li i105 1
+icmp ne i106 i104 i105
+if 22 i106
+rcall sea_arr_unique 1:4 1 p107 1 p10
+mov p10 p107
+endif 22
+ldp p108 p10 - 0 40
+stf f1 p108 i102 8 0
+ldi i109 p10 - 0 16
+chkb i24 i109 0 1:4
+ldi i110 p10 - 0 0
+li i111 1
+icmp ne i112 i110 i111
+if 23 i112
+rcall sea_arr_unique 1:4 1 p113 1 p10
+mov p10 p113
+endif 23
+ldp p114 p10 - 0 40
+stf f2 p114 i24 8 0
+retain p10
+release p10
+mov p13 p10
+exit 1
+enddo 1
+lf f115 #4000000000000000
+ldi i116 p13 - 0 16
+lf f117 #3FF0000000000000
+li i118 1
+li i119 1
+li i120 1
+rcall sea_arr_new_u 1:4 1 p121 4 i118 i119 i116 i120
+ldp p122 p121 - 0 40
+ldp p123 p13 - 0 40
+li i124 0
+icmp gt i125 i116 i124
+if 24 i125
+li i126 1
+isub i127 i116 i126
+loop 25 i128 i124 i127 i126
+ldf f129 p123 i128 8 0
+fmul f130 f129 f115
+fadd f131 f130 f117
+stf f131 p122 i128 8 0
+endloop 25
+endif 24
+release p13
+li i132 0
+ldi i133 p121 - 0 16
+chkb i132 i133 0 1:5
+ldp p134 p121 - 0 40
+ldf f135 p134 i132 8 0
+li i136 1
+ldi i137 p121 - 0 16
+chkb i136 i137 0 1:5
+ldp p138 p121 - 0 40
+ldf f139 p138 i136 8 0
+li i140 2
+ldi i141 p121 - 0 16
+chkb i140 i141 0 1:5
+ldp p142 p121 - 0 40
+ldf f143 p142 i140 8 0
+sa p144 s1
+stf f135 p144 - 0 0
+stf f139 p144 - 0 8
+stf f143 p144 - 0 16
+la p145 d1
+rcall sea_printf 1:5 0 2 p145 p144
+release p121
+ret 0
+endfunc
+fmt d1 6
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

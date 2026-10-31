@@ -1,0 +1,9 @@
+// fuse7c2_sel_ra -- DESIGN.md 2.12.4 F1 (3), (4), (5): T[1..3, :] = where(m, X, Y) stored in place
+// (kinds R and A on a matrix: L6's nest, dimension 1 outside), the value's leaves fixed-size (one
+// copy, no test)
+var T: f64[,] = [0.0, 0.0, 0.0; 0.0, 0.0, 0.0; 0.0, 0.0, 0.0]
+let m: bool[2,3] = [true, false, true; false, true, false]
+let X: f64[2,3] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let Y: f64[2,3] = [-1.0, -2.0, -3.0; -4.0, -5.0, -6.0]
+T[1..3, :] = where(m, X, Y)
+printf("%g %g %g %g %g %g %g\n", T[0, 0], T[1, 0], T[2, 0], T[1, 1], T[2, 1], T[1, 2], T[2, 2])

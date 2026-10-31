@@ -42,7 +42,7 @@
 305 DIM E(299), E$(299,5), Q(20), Q$(20), K(299,4), K$(299), Z(8), I(40), L(4), A$(2)
 310 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), G$(300), H$(100)
 315 DIM H(99999,8), G(49999,6), A(99999), T(20008,4), W(99999), P(349999,1), D$(349999)
-320 DIM O(449999,1), O$(449999), U(49999,5), V(1899), M(99,2), C(120008,6), Y(99999,7)
+320 DIM O(449999,1), O$(449999), U(49999,5), V(37000), M(99,2), C(120008,6), Y(99999,7)
 325 LET P$ = "seafuse"
 330 REM ---- the tables (canonical order: errors exits consts records) --------------------------
 335 CALL "tb_errors": P$, E(), E$(), 299, E0
@@ -422,3 +422,49 @@
 2928 REM program too large: Q2$, at P9$ (the position of the node a rewrite implements, 3.5.9)
 2930 CALL "io_pos": P9$, F1, L1, C1, W7
 2935 GOTO 2920
+2937 REM ---- 2940: (fu1walk 5190, at the end of a node, no GOSUB pending) a limit passed inside the fusion I9 (fu1walk 8088): that fusion
+2938 REM and every later one in walk order are not applied (L-el, 2.12.3): O2 = the first node of I9's subtree, fu4fan 30900 denies
+2939 REM every unit whose node is O2 or later; the walk's changes are restored and it runs once more (5045); a second time: reported (2990)
+2940 IF O2 > 0 THEN 2990
+2941 LET I4 = I9
+2942 IF H(I4, 3) = 0 THEN 2945
+2943 LET I4 = H(I4, 3)
+2944 GOTO 2942
+2945 LET O2 = I4
+2946 LET O1 = 0
+2947 LET I9 = 0
+2948 FOR X = 1 TO H0
+2949 IF H(X, 1) <> 32 THEN 2951
+2950 LET H(X, 5) = 0
+2951 NEXT X
+2952 FOR X = 1 TO G0
+2953 LET G(X, 4) = 0
+2954 LET G(X, 5) = 0
+2955 NEXT X
+2956 IF LEN(I7$) = 0 THEN 2964
+2957 GOTO 2977
+2964 LET I7$ = ""
+2965 LET C(20008, 6) = 0
+2966 LET G6 = 0
+2967 LET G5 = 0
+2968 REM the modes a unit sets and clears (52026 H4, 56409 G3, 51004 H7, 51044 H6) and the script's state, cleared
+2969 LET H4 = 0
+2970 LET G3 = 0
+2971 LET H6 = 0
+2972 LET H7 = 0
+2973 LET Z7 = 0
+2974 LET Z8 = 0
+2975 LET K8 = 0
+2976 GOTO 5045
+2977 LET O5$ = SEG$(I7$, 2, LEN(I7$))
+2978 LET J = POS(O5$, "|")
+2979 IF J > 0 THEN 2982
+2980 LET C(VAL(O5$), 6) = 0
+2981 GOTO 2964
+2982 LET C(VAL(SEG$(O5$, 1, J - 1)), 6) = 0
+2983 LET I7$ = SEG$(O5$, J, LEN(O5$))
+2984 GOTO 2956
+2988 REM ---- 2990: a limit passed again inside a fusion after the run again (not expected: every later fusion is denied): reported where it was first met
+2990 LET P9$ = O3$
+2991 LET Q2$ = O4$
+2992 GOTO 2930

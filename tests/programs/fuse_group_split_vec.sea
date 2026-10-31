@@ -1,0 +1,17 @@
+// fuse_group_split_vec -- F2 (2) the split copy (DESIGN.md 2.12.4, L-eq): `let a = x * 2.0; let b = y * 3.0` with lengths 3 and 4
+// and `let c = a * a + 0.1`: no error, each statement over its own space
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x: f64[] = [0.1, 0.2, 0.3]
+let y: f64[] = [1.0, 1e+16, -2.5, 3.0]
+let a = x * 2.0
+let b = y * 3.0
+let c = a * a + 0.1
+pv(a)
+pv(b)
+pv(c)

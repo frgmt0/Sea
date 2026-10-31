@@ -1,0 +1,6 @@
+// fuse7_f1_sel_res -- DESIGN.md 2.12.4 F1 (5): the tree reads the target's root shifted
+// (v[0..2] stored to v[1..3]), so it is computed into RES first (fused: a folded range leaf, F4)
+// and stored as before by L6
+var v: f64[] = [1.0, 2.0, 3.0]
+v[1..3] = v[0..2] * 10.0
+printf("%g %g %g\n", v[0], v[1], v[2])

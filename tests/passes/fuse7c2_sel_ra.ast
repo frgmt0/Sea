@@ -1,0 +1,113 @@
+#sea 1
+#target arm64-macos
+#file fuse7c2_sel_ra.sea
+pname 0:4:5 T
+type 0:4:8 f64 m 0
+float 0:4:18 #0000000000000000
+float 0:4:23 #0000000000000000
+float 0:4:28 #0000000000000000
+row 0:4:18 3
+float 0:4:33 #0000000000000000
+float 0:4:38 #0000000000000000
+float 0:4:43 #0000000000000000
+row 0:4:33 3
+float 0:4:48 #0000000000000000
+float 0:4:53 #0000000000000000
+float 0:4:58 #0000000000000000
+row 0:4:48 3
+array 0:4:17 3
+var 0:4:1 1
+pname 0:5:5 m
+int 0:5:13 2
+int 0:5:15 3
+type 0:5:8 bool fm 2
+true 0:5:21
+false 0:5:27
+true 0:5:34
+row 0:5:21 3
+false 0:5:40
+true 0:5:47
+false 0:5:53
+row 0:5:40 3
+array 0:5:20 2
+let 0:5:1 1
+pname 0:6:5 X
+int 0:6:12 2
+int 0:6:14 3
+type 0:6:8 f64 fm 2
+float 0:6:20 #3FF0000000000000
+float 0:6:25 #4000000000000000
+float 0:6:30 #4008000000000000
+row 0:6:20 3
+float 0:6:35 #4010000000000000
+float 0:6:40 #4014000000000000
+float 0:6:45 #4018000000000000
+row 0:6:35 3
+array 0:6:19 2
+let 0:6:1 1
+pname 0:7:5 Y
+int 0:7:12 2
+int 0:7:14 3
+type 0:7:8 f64 fm 2
+float 0:7:21 #3FF0000000000000
+neg 0:7:20
+float 0:7:27 #4000000000000000
+neg 0:7:26
+float 0:7:33 #4008000000000000
+neg 0:7:32
+row 0:7:20 3
+float 0:7:39 #4010000000000000
+neg 0:7:38
+float 0:7:45 #4014000000000000
+neg 0:7:44
+float 0:7:51 #4018000000000000
+neg 0:7:50
+row 0:7:38 3
+array 0:7:19 2
+let 0:7:1 1
+name 0:8:1 T
+int 0:8:3 1
+int 0:8:6 3
+range 0:8:3 0 0
+all 0:8:9
+index 0:8:1 2
+name 0:8:14 where
+name 0:8:20 m
+name 0:8:23 X
+name 0:8:26 Y
+call 0:8:14 3
+asg 0:8:1 set
+name 0:9:1 printf
+str 0:9:8 %25g%20%25g%20%25g%20%25g%20%25g%20%25g%20%25g%0A
+name 0:9:34 T
+int 0:9:36 0
+int 0:9:39 0
+index 0:9:34 2
+name 0:9:43 T
+int 0:9:45 1
+int 0:9:48 0
+index 0:9:43 2
+name 0:9:52 T
+int 0:9:54 2
+int 0:9:57 0
+index 0:9:52 2
+name 0:9:61 T
+int 0:9:63 1
+int 0:9:66 1
+index 0:9:61 2
+name 0:9:70 T
+int 0:9:72 2
+int 0:9:75 1
+index 0:9:70 2
+name 0:9:79 T
+int 0:9:81 1
+int 0:9:84 2
+index 0:9:79 2
+name 0:9:88 T
+int 0:9:90 2
+int 0:9:93 2
+index 0:9:88 2
+call 0:9:1 8
+cstmt 0:9:1
+prog 6
+#end

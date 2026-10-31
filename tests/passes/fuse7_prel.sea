@@ -1,0 +1,5 @@
+// fuse7_prel -- DESIGN.md 2.12.1, 2.12.4: a prelude call (linspace) is a leaf of the fused tree
+// (no fusion through prelude calls); L18 inlines it inside the leaf's tmp; linspace's body holds
+// no construct seafuse rewrites
+let y = linspace(0.0, 1.0, 3) * 2.0 + 1.0
+printf("%g %g %g\n", y[0], y[1], y[2])

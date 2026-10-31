@@ -1,0 +1,8 @@
+// r_fuse_cat_part_first -- F4 concatenation parts (DESIGN.md 2.12.4 F4, L-eu; LANGUAGE.md 6.9): every part's index checks
+// come before the shapes, so in the stack below the range v[0..99] (last index 98, extent 5) fails before the row
+// v[1..4] (1x3) meets the stack's 4 columns
+let A = zeros(3, 4) + 1.5
+let v = zeros(5) + 2.0
+printf("start %g\n", A[0, 0] + v[4])
+let C = [A[0..2, :]; v[1..4]; v[0..99]]
+printf("%g\n", C[0, 0])
