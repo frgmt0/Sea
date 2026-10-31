@@ -8,14 +8,23 @@
 #   PATTERN   only cases whose name contains one of the patterns (literally)
 #
 # Environment:
-#   SEA, BAYSICK          used by cross_pack.sh
+#   SEA, BAYSICK, LIRCHK  used by cross_pack.sh (LIRCHK: the sea.lir validator, default
+#                         build/tools/lirchk beside the driver; every x86_64 sea.lir is checked)
 #   SEA_TEST_TIMEOUT      seconds per program, forwarded (default 10)
-#   SEA_KERNELS           if set, forwarded to the remote runs (letters, digits, underscores)
+#   SEA_KERNELS           if set, forwarded to the remote runs, which then use that one variant
+#                         (letters, digits, underscores); if unset, every case runs under both
+#                         x86_64 variants, the default (avx2) and sse2 (Decision 104), and the
+#                         summary reports the counts of each; the host must offer AVX2
 #   SEA_CROSS_HOST        default host
 #
 # Packs a bundle (tests/cross_pack.sh) into a local temp directory, streams it as tar into ONE
 # ssh call that unpacks it into a remote mktemp -d directory (removed on exit; HUP/INT/TERM/PIPE
 # clean up and exit 2) and runs tests/cross_run.sh there.
+#
+# The output of cross_run.sh is passed through as it is: `FAIL <name>: ...` (first variant) and
+# `FAIL <name> [sse2]: ...` lines (with -v, their diffs), then one `variant <v>: passed: P  failed: F`
+# line per variant, the line of the once-only cases (build failures, rt/, math/math_check) and the
+# totals.
 #
 # Exit status: that of cross_run.sh (0 all passed, 1 failures, 2 setup error); 2 also if packing
 # fails, ssh fails (255) or the remote status is anything else.

@@ -1,0 +1,54 @@
+#sea 1
+#target arm64-macos
+#file vec7_p1_ret.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 24 8
+slot s4 24 8
+slot s5 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+sa p7 s3
+sa p8 s4
+li i9 3
+li i10 0
+icmp gt i11 i9 i10
+if 1 i11
+li i12 1
+isub i13 i9 i12
+loop 2 i14 i10 i13 i12
+ldf f15 p1 i14 8 0
+do 3
+lf f16 #4000000000000000
+fmul f17 f15 f16
+lf f18 #3FF0000000000000
+fadd f19 f17 f18
+mov f20 f19
+exit 3
+enddo 3
+stf f20 p8 i14 8 0
+endloop 2
+endif 1
+li i21 24
+mcopy p7 p8 i21
+li i22 2
+ldf f23 p7 i22 8 0
+sa p24 s5
+stf f23 p24 - 0 0
+la p25 d1
+rcall sea_printf 0:10 0 2 p25 p24
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

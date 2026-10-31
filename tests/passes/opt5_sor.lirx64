@@ -1,0 +1,633 @@
+#sea 1
+#target x86_64-linux
+#file opt5_sor.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+lf f1 #3FA999999999999A
+lf f2 #3FD0000000000000
+fdiv f3 f2 f1
+fround f4 f3
+ftoi i5 f4 0:2
+li i6 1
+iaddc i7 i5 i6 0:2
+lf f8 #3FC999999999999A
+fdiv f9 f8 f1
+fround f10 f9
+ftoi i11 f10 0:3
+iaddc i12 i11 i6 0:3
+lf f13 #3FF8000000000000
+lf f14 #3E45798EE2308C3A
+li i15 200
+li i16 0
+li i17 3
+li i18 2
+rcall sea_arr_new_u 0:7 1 p19 4 i17 i18 i12 i7
+imul i20 i12 i7
+ldp p21 p19 - 0 40
+mov i22 i16
+icmp gt i23 i20 i22
+if 1 i23
+li i24 1
+isub i25 i20 i24
+loop 2 i26 i22 i25 i24
+stb i16 p21 i26 1 0
+endloop 2
+endif 1
+li i27 1
+li i28 2
+rcall sea_arr_new 0:8 1 p29 4 i27 i28 i12 i7
+lf f30 #4034000000000000
+rcall sea_arr_new_u 0:9 1 p31 4 i27 i28 i12 i7
+imul i32 i12 i7
+ldp p33 p31 - 0 40
+li i34 0
+icmp gt i35 i32 i34
+if 3 i35
+li i36 1
+isub i37 i32 i36
+li i38 7
+isub i39 i37 i38
+li i40 3
+ishr i41 i39 i40
+ishr i42 i37 i40
+icmp le i43 i41 i42
+if 4 i43
+vfeat i44 avx2
+if 5 i44
+ysplat y45 f30
+li i46 8
+loop 6 i47 i34 i41 i46
+sty y45 p33 i47 8 0
+sty y45 p33 i47 8 32
+endloop 6
+li i48 7
+iand i49 i39 i48
+li i50 0
+icmp gt i51 i49 i50
+if 7 i51
+li i52 3
+ishl i53 i41 i52
+iadd i54 i34 i53
+li i55 8
+iadd i56 i54 i55
+isub i57 i49 i36
+loop 8 i58 i56 i57 i36
+stf f30 p33 i58 8 0
+endloop 8
+endif 7
+else 5
+xsplat x59 f30
+li i60 8
+loop 9 i61 i34 i41 i60
+stx x59 p33 i61 8 0
+stx x59 p33 i61 8 16
+stx x59 p33 i61 8 32
+stx x59 p33 i61 8 48
+endloop 9
+li i62 7
+iand i63 i39 i62
+li i64 0
+icmp gt i65 i63 i64
+if 10 i65
+li i66 3
+ishl i67 i41 i66
+iadd i68 i34 i67
+li i69 8
+iadd i70 i68 i69
+isub i71 i63 i36
+loop 11 i72 i70 i71 i36
+stf f30 p33 i72 8 0
+endloop 11
+endif 10
+endif 5
+else 4
+loop 12 i73 i34 i37 i36
+stf f30 p33 i73 8 0
+endloop 12
+endif 4
+endif 3
+li i74 0
+li i75 1
+rcount i76 i77 i74 i7 i75 0 0:10
+if 13 i77
+ldi i78 p19 - 0 0
+ldi i79 p29 - 0 0
+ldi i80 p31 - 0 0
+li i81 1
+icmp eq i82 i78 i81
+icmp eq i83 i79 i81
+icmp eq i84 i80 i81
+iand i85 i82 i83
+iand i86 i85 i84
+if 14 i86
+li i87 0
+li i88 1
+isub i89 i12 i88
+li i90 3
+li i91 2
+ldi i92 p19 - 0 16
+ldp p93 p19 - 0 40
+lf f94 #3FC0000000000000
+ldi i95 p29 - 0 16
+ldp p96 p29 - 0 40
+lf f97 #4044000000000000
+lf f98 #4014000000000000
+ldi i99 p31 - 0 16
+ldp p100 p31 - 0 40
+li i101 -8
+imul i102 i99 i101
+padd p103 p100 i102
+li i104 8
+imul i105 i99 i104
+loop 15 i106 i74 i76 i75
+padd p103 p103 i105
+rcount i107 i108 i87 i12 i88 0 0:11
+if 16 i108
+imul i109 i106 i92
+imul i110 i106 i95
+padd p111 p93 i109
+imul i112 i110 i104
+padd p113 p96 i112
+loop 17 i114 i87 i107 i88
+icmp eq i115 i114 i87
+ifz 18 i115
+icmp eq i115 i114 i89
+endif 18
+ifz 19 i115
+icmp eq i115 i106 i90
+if 20 i115
+icmp eq i115 i114 i91
+endif 20
+endif 19
+stb i115 p111 i114 1 0
+iadd i116 i106 i114
+itof f117 i116
+fmul f118 f94 f117
+stf f118 p113 i114 8 0
+endloop 17
+endif 16
+itof f119 i106
+fmul f120 f98 f119
+fadd f121 f97 f120
+chkb i87 i99 0 0:15
+stf f121 p103 - 0 0
+endloop 15
+else 14
+li i122 0
+li i123 1
+isub i124 i12 i123
+li i125 3
+li i126 2
+lf f127 #3FC0000000000000
+lf f128 #4044000000000000
+lf f129 #4014000000000000
+loop 21 i130 i74 i76 i75
+rcount i131 i132 i122 i12 i123 0 0:11
+if 22 i132
+loop 23 i133 i122 i131 i123
+icmp eq i134 i133 i122
+ifz 24 i134
+icmp eq i134 i133 i124
+endif 24
+ifz 25 i134
+icmp eq i134 i130 i125
+if 26 i134
+icmp eq i134 i133 i126
+endif 26
+endif 25
+ldi i135 p19 - 0 16
+ldi i136 p19 - 0 0
+icmp ne i137 i136 i123
+if 27 i137
+rcall sea_arr_unique 0:12 1 p138 1 p19
+mov p19 p138
+endif 27
+ldp p139 p19 - 0 40
+imul i140 i130 i135
+iadd i141 i133 i140
+stb i134 p139 i141 1 0
+iadd i142 i130 i133
+itof f143 i142
+fmul f144 f127 f143
+ldi i145 p29 - 0 16
+ldi i146 p29 - 0 0
+icmp ne i147 i146 i123
+if 28 i147
+rcall sea_arr_unique 0:13 1 p148 1 p29
+mov p29 p148
+endif 28
+ldp p149 p29 - 0 40
+imul i150 i130 i145
+iadd i151 i133 i150
+stf f144 p149 i151 8 0
+endloop 23
+endif 22
+itof f152 i130
+fmul f153 f129 f152
+fadd f154 f128 f153
+ldi i155 p31 - 0 16
+chkb i122 i155 0 0:15
+ldi i156 p31 - 0 0
+icmp ne i157 i156 i123
+if 29 i157
+rcall sea_arr_unique 0:15 1 p158 1 p31
+mov p31 p158
+endif 29
+ldp p159 p31 - 0 40
+imul i160 i130 i155
+iadd i161 i122 i160
+stf f154 p159 i161 8 0
+endloop 21
+endif 14
+endif 13
+li i162 0
+lf f163 #7FF0000000000000
+ldi i164 p31 - 0 0
+li i165 1
+icmp eq i166 i164 i165
+if 30 i166
+li i167 1
+li i168 0
+mov i169 i167
+isub i170 i12 i167
+ldi i171 p19 - 0 16
+ldp p172 p19 - 0 40
+ldi i173 p31 - 0 16
+ldi i174 p31 - 0 24
+ldp p175 p31 - 0 40
+isub i176 i7 i167
+ldi i177 p29 - 0 16
+ldp p178 p29 - 0 40
+do 31
+fcmp gt i179 f163 f14
+if 32 i179
+icmp lt i179 i162 i15
+endif 32
+ifz 33 i179
+exit 31
+endif 33
+iaddc i162 i162 i167 0:20
+lf f163 #0000000000000000
+rcount i180 i181 i168 i7 i169 0 0:22
+if 34 i181
+loop 35 i182 i168 i180 i169
+rcount i183 i184 i167 i170 i169 0 0:23
+if 36 i184
+icmp eq i185 i182 i168
+icmp eq i186 i182 i176
+if 37 i185
+if 38 i186
+imul i187 i167 i173
+li i188 2
+isub i189 i7 i188
+imul i190 i189 i173
+lf f191 #3FD0000000000000
+li i192 8
+imul i193 i187 i192
+padd p194 p175 i193
+imul i195 i190 i192
+padd p196 p175 i195
+li i197 -8
+imul i198 i182 i171
+imul i199 i182 i173
+imul i200 i182 i177
+padd p201 p172 i198
+imul i202 i199 i192
+padd p203 p175 i202
+padd p204 p203 i197
+padd p205 p203 i192
+imul i206 i200 i192
+padd p207 p178 i206
+loop 39 i208 i167 i183 i169
+ldb i209 p201 i208 1 0
+if 40 i209
+next 39
+endif 40
+chkb i167 i174 1 0:25
+ldf f210 p194 i208 8 0
+mov f211 f210
+chkb i189 i174 1 0:26
+ldf f212 p196 i208 8 0
+fadd f213 f211 f212
+ldf f214 p204 i208 8 0
+fadd f215 f213 f214
+ldf f216 p205 i208 8 0
+fadd f217 f215 f216
+ldf f218 p207 i208 8 0
+fadd f219 f217 f218
+fmul f220 f219 f191
+ldf f221 p203 i208 8 0
+fsub f222 f220 f221
+fmul f223 f13 f222
+fadd f224 f221 f223
+fsub f225 f224 f221
+fabs f226 f225
+fcmp gt i227 f226 f163
+fsel f163 i227 f226 f163
+stf f224 p203 i208 8 0
+endloop 39
+else 38
+imul i228 i167 i173
+lf f229 #3FD0000000000000
+li i230 8
+imul i231 i228 i230
+padd p232 p175 i231
+li i233 -8
+imul i234 i182 i171
+iadd i235 i182 i167
+imul i236 i235 i173
+imul i237 i182 i173
+imul i238 i182 i177
+padd p239 p172 i234
+imul i240 i236 i230
+padd p241 p175 i240
+imul i242 i237 i230
+padd p243 p175 i242
+padd p244 p243 i233
+padd p245 p243 i230
+imul i246 i238 i230
+padd p247 p178 i246
+loop 41 i248 i167 i183 i169
+ldb i249 p239 i248 1 0
+if 42 i249
+next 41
+endif 42
+chkb i167 i174 1 0:25
+ldf f250 p232 i248 8 0
+mov f251 f250
+ldf f252 p241 i248 8 0
+fadd f253 f251 f252
+ldf f254 p244 i248 8 0
+fadd f255 f253 f254
+ldf f256 p245 i248 8 0
+fadd f257 f255 f256
+ldf f258 p247 i248 8 0
+fadd f259 f257 f258
+fmul f260 f259 f229
+ldf f261 p243 i248 8 0
+fsub f262 f260 f261
+fmul f263 f13 f262
+fadd f264 f261 f263
+fsub f265 f264 f261
+fabs f266 f265
+fcmp gt i267 f266 f163
+fsel f163 i267 f266 f163
+stf f264 p243 i248 8 0
+endloop 41
+endif 38
+else 37
+if 43 i186
+li i268 2
+isub i269 i7 i268
+imul i270 i269 i173
+lf f271 #3FD0000000000000
+li i272 8
+imul i273 i270 i272
+padd p274 p175 i273
+li i275 -8
+imul i276 i182 i171
+isub i277 i182 i167
+imul i278 i277 i173
+imul i279 i182 i173
+imul i280 i182 i177
+padd p281 p172 i276
+imul i282 i278 i272
+padd p283 p175 i282
+imul i284 i279 i272
+padd p285 p175 i284
+padd p286 p285 i275
+padd p287 p285 i272
+imul i288 i280 i272
+padd p289 p178 i288
+loop 44 i290 i167 i183 i169
+ldb i291 p281 i290 1 0
+if 45 i291
+next 44
+endif 45
+ldf f292 p283 i290 8 0
+mov f293 f292
+chkb i269 i174 1 0:26
+ldf f294 p274 i290 8 0
+fadd f295 f293 f294
+ldf f296 p286 i290 8 0
+fadd f297 f295 f296
+ldf f298 p287 i290 8 0
+fadd f299 f297 f298
+ldf f300 p289 i290 8 0
+fadd f301 f299 f300
+fmul f302 f301 f271
+ldf f303 p285 i290 8 0
+fsub f304 f302 f303
+fmul f305 f13 f304
+fadd f306 f303 f305
+fsub f307 f306 f303
+fabs f308 f307
+fcmp gt i309 f308 f163
+fsel f163 i309 f308 f163
+stf f306 p285 i290 8 0
+endloop 44
+else 43
+lf f310 #3FD0000000000000
+li i311 8
+li i312 -8
+imul i313 i182 i171
+isub i314 i182 i167
+imul i315 i314 i173
+iadd i316 i182 i167
+imul i317 i316 i173
+imul i318 i182 i173
+imul i319 i182 i177
+padd p320 p172 i313
+imul i321 i315 i311
+padd p322 p175 i321
+imul i323 i317 i311
+padd p324 p175 i323
+imul i325 i318 i311
+padd p326 p175 i325
+padd p327 p326 i312
+padd p328 p326 i311
+imul i329 i319 i311
+padd p330 p178 i329
+loop 46 i331 i167 i183 i169
+ldb i332 p320 i331 1 0
+if 47 i332
+next 46
+endif 47
+ldf f333 p322 i331 8 0
+mov f334 f333
+ldf f335 p324 i331 8 0
+fadd f336 f334 f335
+ldf f337 p327 i331 8 0
+fadd f338 f336 f337
+ldf f339 p328 i331 8 0
+fadd f340 f338 f339
+ldf f341 p330 i331 8 0
+fadd f342 f340 f341
+fmul f343 f342 f310
+ldf f344 p326 i331 8 0
+fsub f345 f343 f344
+fmul f346 f13 f345
+fadd f347 f344 f346
+fsub f348 f347 f344
+fabs f349 f348
+fcmp gt i350 f349 f163
+fsel f163 i350 f349 f163
+stf f347 p326 i331 8 0
+endloop 46
+endif 43
+endif 37
+endif 36
+endloop 35
+endif 34
+enddo 31
+else 30
+li i351 1
+li i352 0
+mov i353 i351
+isub i354 i12 i351
+ldi i355 p19 - 0 16
+ldp p356 p19 - 0 40
+isub i357 i7 i351
+li i358 2
+isub i359 i7 i358
+ldi i360 p29 - 0 16
+ldp p361 p29 - 0 40
+lf f362 #3FD0000000000000
+li i363 8
+do 48
+fcmp gt i364 f163 f14
+if 49 i364
+icmp lt i364 i162 i15
+endif 49
+ifz 50 i364
+exit 48
+endif 50
+iaddc i162 i162 i351 0:20
+lf f163 #0000000000000000
+rcount i365 i366 i352 i7 i353 0 0:22
+if 51 i366
+loop 52 i367 i352 i365 i353
+rcount i368 i369 i351 i354 i353 0 0:23
+if 53 i369
+imul i370 i367 i355
+icmp eq i371 i367 i352
+isub i372 i367 i351
+icmp eq i373 i367 i357
+iadd i374 i367 i351
+imul i375 i367 i360
+padd p376 p356 i370
+imul i377 i375 i363
+padd p378 p361 i377
+loop 54 i379 i351 i368 i353
+ldb i380 p376 i379 1 0
+if 55 i380
+next 54
+endif 55
+if 56 i371
+ldi i381 p31 - 0 16
+ldi i382 p31 - 0 24
+chkb i351 i382 1 0:25
+ldp p383 p31 - 0 40
+imul i384 i351 i381
+iadd i385 i379 i384
+ldf f386 p383 i385 8 0
+else 56
+ldi i387 p31 - 0 16
+ldp p388 p31 - 0 40
+imul i389 i372 i387
+iadd i390 i379 i389
+ldf f386 p388 i390 8 0
+endif 56
+mov f391 f386
+if 57 i373
+ldi i392 p31 - 0 16
+ldi i393 p31 - 0 24
+chkb i359 i393 1 0:26
+ldp p394 p31 - 0 40
+imul i395 i359 i392
+iadd i396 i379 i395
+ldf f397 p394 i396 8 0
+else 57
+ldi i398 p31 - 0 16
+ldp p399 p31 - 0 40
+imul i400 i374 i398
+iadd i401 i379 i400
+ldf f397 p399 i401 8 0
+endif 57
+fadd f402 f391 f397
+isub i403 i379 i351
+ldi i404 p31 - 0 16
+ldp p405 p31 - 0 40
+imul i406 i367 i404
+iadd i407 i403 i406
+ldf f408 p405 i407 8 0
+fadd f409 f402 f408
+iadd i410 i379 i351
+iadd i411 i410 i406
+ldf f412 p405 i411 8 0
+fadd f413 f409 f412
+ldf f414 p378 i379 8 0
+fadd f415 f413 f414
+fmul f416 f415 f362
+iadd i417 i379 i406
+ldf f418 p405 i417 8 0
+fsub f419 f416 f418
+fmul f420 f13 f419
+fadd f421 f418 f420
+fsub f422 f421 f418
+fabs f423 f422
+fcmp gt i424 f423 f163
+fsel f163 i424 f423 f163
+ldi i425 p31 - 0 16
+ldi i426 p31 - 0 0
+icmp ne i427 i426 i351
+if 58 i427
+rcall sea_arr_unique 0:31 1 p428 1 p31
+mov p31 p428
+endif 58
+ldp p429 p31 - 0 40
+imul i430 i367 i425
+iadd i431 i379 i430
+stf f421 p429 i431 8 0
+endloop 54
+endif 53
+endloop 52
+endif 51
+enddo 48
+endif 30
+li i432 1
+li i433 2
+ldi i434 p31 - 0 16
+chkb i432 i434 0 0:35
+ldi i435 p31 - 0 24
+chkb i433 i435 1 0:35
+ldp p436 p31 - 0 40
+imul i437 i433 i434
+iadd i438 i432 i437
+ldf f439 p436 i438 8 0
+li i440 3
+li i441 5
+chkb i440 i434 0 0:35
+chkb i441 i435 1 0:35
+imul i442 i441 i434
+iadd i443 i440 i442
+ldf f444 p436 i443 8 0
+sa p445 s1
+sti i162 p445 - 0 0
+stf f439 p445 - 0 8
+stf f444 p445 - 0 16
+la p446 d1
+rcall sea_printf 0:35 0 2 p446 p445
+release p31
+release p29
+release p19
+ret 0
+endfunc
+fmt d1 6
+fconv - - - d i
+ftext %20
+fconv - - 17 g f
+ftext %20
+fconv - - 17 g f
+ftext %0A
+#end

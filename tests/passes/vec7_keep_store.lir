@@ -1,0 +1,144 @@
+#sea 1
+#target arm64-macos
+#file vec7_keep_store.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4004000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:14 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+ldp p14 p9 - 0 40
+li i15 0
+icmp gt i16 i12 i15
+isub i17 i12 i13
+lf f18 #4000000000000000
+do 1
+rcall sea_arr_new_u 0:5 1 p19 4 i13 i13 i12 i13
+ldp p20 p19 - 0 40
+if 2 i16
+li i21 7
+isub i22 i17 i21
+li i23 3
+ishr i24 i22 i23
+ishr i25 i17 i23
+icmp le i26 i24 i25
+li i27 0
+li i28 64
+li i29 -64
+pdiff i30 p14 p20
+icmp ge i31 i30 i28
+icmp le i32 i30 i29
+icmp eq i33 i30 i27
+ior i34 i31 i32
+ior i35 i34 i33
+iand i36 i26 i35
+if 3 i36
+xsplat x37 f11
+li i38 8
+loop 4 i39 i15 i24 i38
+ldx x40 p14 i39 8 0
+ldx x41 p14 i39 8 16
+ldx x42 p14 i39 8 32
+ldx x43 p14 i39 8 48
+xmul x44 x40 x37
+xmul x45 x41 x37
+xmul x46 x42 x37
+xmul x47 x43 x37
+stx x44 p20 i39 8 0
+stx x45 p20 i39 8 16
+stx x46 p20 i39 8 32
+stx x47 p20 i39 8 48
+endloop 4
+li i48 7
+iand i49 i22 i48
+li i50 0
+icmp gt i51 i49 i50
+if 5 i51
+li i52 3
+ishl i53 i24 i52
+iadd i54 i15 i53
+li i55 8
+iadd i56 i54 i55
+isub i57 i49 i13
+loop 6 i58 i56 i57 i13
+ldf f59 p14 i58 8 0
+fmul f60 f59 f11
+stf f60 p20 i58 8 0
+endloop 6
+endif 5
+else 3
+loop 7 i61 i15 i17 i13
+ldf f62 p14 i61 8 0
+fmul f63 f62 f11
+stf f63 p20 i61 8 0
+endloop 7
+endif 3
+endif 2
+ldi i64 p19 - 0 16
+rcount i65 i66 i15 i64 i13 0 0:6
+if 8 i66
+ldi i67 p19 - 0 0
+icmp eq i68 i67 i13
+if 9 i68
+ldp p69 p19 - 0 40
+loop 10 i70 i15 i65 i13
+ldf f71 p69 i70 8 0
+fcmp gt i72 f71 f18
+if 11 i72
+stf f18 p69 i70 8 0
+endif 11
+endloop 10
+else 9
+loop 12 i73 i15 i65 i13
+ldp p74 p19 - 0 40
+ldf f75 p74 i73 8 0
+fcmp gt i76 f75 f18
+if 13 i76
+ldi i77 p19 - 0 0
+icmp ne i78 i77 i13
+if 14 i78
+rcall sea_arr_unique 0:8 1 p79 1 p19
+mov p19 p79
+endif 14
+ldp p80 p19 - 0 40
+stf f18 p80 i73 8 0
+endif 13
+endloop 12
+endif 9
+endif 8
+mov p81 p19
+exit 1
+enddo 1
+release p9
+li i82 2
+ldi i83 p81 - 0 16
+chkb i82 i83 0 0:15
+ldp p84 p81 - 0 40
+ldf f85 p84 i82 8 0
+sa p86 s3
+stf f85 p86 - 0 0
+la p87 d1
+rcall sea_printf 0:15 0 2 p87 p86
+release p81
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

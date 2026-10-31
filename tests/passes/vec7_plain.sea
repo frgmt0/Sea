@@ -1,0 +1,9 @@
+// vec7_plain -- DESIGN.md 2.12.6 T13 on a plain loop: the fused x + y over fixed-size operands is a
+// step-1 loop of unit accesses (conditions 1-5 hold); the split, the independence test of two
+// pairs (x and y each against the store), the 2-lane part (4-lane and 2-lane under vfeat on
+// x86_64-linux), each part's tail and the scalar else loop
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+let y = [4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+let r = x + y
+printf("%g %g\n", r[2], r[8])

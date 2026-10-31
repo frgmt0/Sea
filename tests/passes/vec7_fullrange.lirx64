@@ -1,0 +1,105 @@
+#sea 1
+#target x86_64-linux
+#file vec7_fullrange.sea
+func .main main 0:1:1 0 0
+li i1 1
+rcall sea_arr_new 0:1 1 p2 4 i1 i1 i1 i1
+rcall sea_arr_new 0:1 1 p3 4 i1 i1 i1 i1
+ldp p4 p2 - 0 40
+ldp p5 p3 - 0 40
+li i6 0
+li i7 -1
+lf f8 #3FF0000000000000
+li i9 7
+isub i10 i7 i9
+li i11 3
+ishr i12 i10 i11
+ishr i13 i7 i11
+icmp le i14 i12 i13
+li i15 0
+li i16 64
+li i17 -64
+pdiff i18 p4 p5
+icmp ge i19 i18 i16
+icmp le i20 i18 i17
+icmp eq i21 i18 i15
+ior i22 i19 i20
+ior i23 i22 i21
+iand i24 i14 i23
+if 1 i24
+vfeat i25 avx2
+if 2 i25
+ysplat y26 f8
+li i27 8
+loop 3 i28 i6 i12 i27
+ldy y29 p4 i28 8 0
+ldy y30 p4 i28 8 32
+yadd y31 y29 y26
+yadd y32 y30 y26
+sty y31 p5 i28 8 0
+sty y32 p5 i28 8 32
+endloop 3
+li i33 7
+iand i34 i10 i33
+li i35 0
+icmp gt i36 i34 i35
+if 4 i36
+li i37 3
+ishl i38 i12 i37
+iadd i39 i6 i38
+li i40 8
+iadd i41 i39 i40
+isub i42 i34 i1
+loop 5 i43 i41 i42 i1
+ldf f44 p4 i43 8 0
+fadd f45 f44 f8
+stf f45 p5 i43 8 0
+endloop 5
+endif 4
+else 2
+xsplat x46 f8
+li i47 8
+loop 6 i48 i6 i12 i47
+ldx x49 p4 i48 8 0
+ldx x50 p4 i48 8 16
+ldx x51 p4 i48 8 32
+ldx x52 p4 i48 8 48
+xadd x53 x49 x46
+xadd x54 x50 x46
+xadd x55 x51 x46
+xadd x56 x52 x46
+stx x53 p5 i48 8 0
+stx x54 p5 i48 8 16
+stx x55 p5 i48 8 32
+stx x56 p5 i48 8 48
+endloop 6
+li i57 7
+iand i58 i10 i57
+li i59 0
+icmp gt i60 i58 i59
+if 7 i60
+li i61 3
+ishl i62 i12 i61
+iadd i63 i6 i62
+li i64 8
+iadd i65 i63 i64
+isub i66 i58 i1
+loop 8 i67 i65 i66 i1
+ldf f68 p4 i67 8 0
+fadd f69 f68 f8
+stf f69 p5 i67 8 0
+endloop 8
+endif 7
+endif 2
+else 1
+loop 9 i70 i6 i7 i1
+ldf f71 p4 i70 8 0
+fadd f72 f71 f8
+stf f72 p5 i70 8 0
+endloop 9
+endif 1
+release p3
+release p2
+ret 0
+endfunc
+#end

@@ -1,0 +1,6 @@
+// sr7_keep_arr -- DESIGN.md 2.12.6 T12 keeps a slot copied into array data (Decision 117): q's slot
+// is the source of an mcopy into the data of `d` (not a slot copy), so it is refused, and its
+// literal's slot, whose slot copy's partner is then outside the set, is refused too
+let q: f64[4] = [1.0, 2.0, 3.0, 4.0]
+let d: f64[] = q
+printf("%g %g\n", d[3], q[1])

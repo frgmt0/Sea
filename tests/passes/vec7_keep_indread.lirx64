@@ -1,0 +1,29 @@
+#sea 1
+#target x86_64-linux
+#file vec7_keep_indread.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 12
+li i2 1
+rcall sea_arr_new 0:1 1 p3 4 i2 i2 i1 i2
+ldp p4 p3 - 0 40
+li i5 0
+li i6 11
+lf f7 #4000000000000000
+loop 1 i8 i5 i6 i2
+ldf f9 p4 i8 8 0
+fmul f10 f9 f7
+stf f10 p4 i8 8 0
+endloop 1
+itof f11 i8
+sa p12 s1
+stf f11 p12 - 0 0
+la p13 d1
+rcall sea_printf 0:1 0 2 p13 p12
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

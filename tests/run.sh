@@ -10,6 +10,14 @@
 #   SEA                   the driver to test      (default: build/sea; BUILD overrides build/)
 #   SEA_TEST_TIMEOUT      seconds per program run (default: 10)
 #   SEA_COMPILE_TIMEOUT   seconds per compilation (default: 120)
+#   LIRCHK                the sea.lir validator   (default: build/tools/lirchk)
+#
+# Every sea.lir the driver writes is validated with lirchk (Decision 116, DESIGN.md 2.12.6, the
+# vector classes and LF records included): every compilation runs with --keep-temps, the driver's
+# line `sea: temporary files kept in DIR` is removed from the standard error before any
+# comparison, DIR/sea.lir (present when the compilation got as far as pass 3d) is checked in DIR
+# and DIR is removed. A rejection is the FAIL `lirchk: ...` of that test. No second compilation
+# is needed; the --emit lir dump tests are checked the same way, for the target compiled for.
 #
 # Every test is compiled with the driver run in the test's own directory with the bare file
 # name (`sea build NAME.sea`), so diagnostics read `NAME.sea:LINE:COL: error: ...` and
@@ -66,6 +74,11 @@ PATTERNS="$*"
 
 if [ ! -x "$SEA" ]; then
     echo "run.sh: driver '$SEA' not found or not executable; run 'make' first" >&2
+    exit 2
+fi
+LIRCHK=${LIRCHK:-$BUILD/tools/lirchk}
+if [ ! -x "$LIRCHK" ]; then
+    echo "run.sh: validator '$LIRCHK' not found or not executable; run 'make' first" >&2
     exit 2
 fi
 
@@ -169,10 +182,33 @@ check_files() {
     return 0
 }
 
-# sea_build DIR ARGS... : run the driver in DIR; stdout to $TMP/c.out, stderr to $TMP/c.err.
+# sea_build DIR ARGS... : run the driver in DIR with --keep-temps; stdout to $TMP/c.out, stderr to
+# $TMP/c.err without the driver's "kept" line; the temporary directory is KEPT (empty when none).
 sea_build() {
     _d=$1; shift
-    run_limited "$CTIMEOUT" /dev/null "$_d" "$SEA" build "$@" >"$TMP/c.out" 2>"$TMP/c.err"
+    run_limited "$CTIMEOUT" /dev/null "$_d" "$SEA" build --keep-temps "$@" >"$TMP/c.out" 2>"$TMP/c.err.raw"
+    _st=$?
+    KEPT=$(sed -n 's/^sea: temporary files kept in //p' "$TMP/c.err.raw" | head -1)
+    grep -v '^sea: temporary files kept in ' "$TMP/c.err.raw" > "$TMP/c.err"
+    return $_st
+}
+
+# lirchk_kept NAME : validate the sea.lir of the compilation just run, if it got as far as writing one,
+# and remove its temporary directory. Returns 1 (after the FAIL) when lirchk rejects the file.
+lirchk_kept() {
+    [ -n "$KEPT" ] && [ -d "$KEPT" ] || return 0
+    _kd=$KEPT; KEPT=
+    if [ -f "$_kd/sea.lir" ]; then
+        run_limited "$CTIMEOUT" /dev/null "$_kd" "$LIRCHK" >"$TMP/k.out" 2>"$TMP/k.err"
+        _kst=$?
+        if [ $_kst -ne 0 ]; then
+            rm -rf "$_kd"
+            fail "$1" "lirchk rejects sea.lir (status $_kst): $(cat "$TMP/k.err" "$TMP/k.out" | head -3 | tr '\n' ' ')"
+            return 1
+        fi
+    fi
+    rm -rf "$_kd"
+    return 0
 }
 
 # heap_begin BASE : the SEA_HEAP_CHECK value of this run (DESIGN.md 6.2): heap=off in BASE.meta
@@ -256,6 +292,7 @@ for src in "$ROOT"/tests/programs/*.sea; do
     exe=$TMP/prog; rm -f "$exe"
     sea_build "$ROOT/tests/programs" "$nm.sea" -o "$exe"
     bst=$?
+    lirchk_kept "$name" || continue
     if [ $bst -ne 0 ]; then
         fail "$name" "compile failed (status $bst): $(head -3 "$TMP/c.err" | tr '\n' ' ')"
         continue
@@ -291,6 +328,7 @@ for src in "$ROOT"/tests/errors/*.sea; do
     exe=$TMP/prog; rm -f "$exe"
     sea_build "$ROOT/tests/errors" "$nm.sea" -o "$exe"
     bst=$?
+    lirchk_kept "$name" || continue
     if [ $bst -ne 0 ]; then
         # compile-time test
         if [ -d "$base.files" ] || [ -d "$base.expect" ]; then
@@ -342,6 +380,7 @@ for src in "$ROOT"/tests/passes/*.sea; do
         selected "$name" || continue
         sea_build "$ROOT/tests/passes" --emit "$x" $NOPRE "$nm.sea"
         bst=$?
+        lirchk_kept "$name" || continue
         ok=1
         [ $bst -eq 0 ] || { fail "$name" "--emit $x exit status $bst: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; ok=0; }
         if [ $ok = 1 ] && [ -z "$NOPRE" ]; then
@@ -358,7 +397,9 @@ for src in "$ROOT"/tests/passes/*.sea; do
         selected "$name" || continue
         exe=$TMP/prog; rm -f "$exe"
         sea_build "$ROOT/tests/passes" $NOPRE "$nm.sea" -o "$exe"
-        if [ $? -ne 0 ]; then fail "$name" "compile failed: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; continue; fi
+        bst=$?
+        lirchk_kept "$name" || continue
+        if [ $bst -ne 0 ]; then fail "$name" "compile failed: $(head -3 "$TMP/c.err" | tr '\n' ' ')"; continue; fi
         WORK=$(mktemp -d "$TMP/work.XXXXXX")
         heap_begin "$base"
         run_limited "$TIMEOUT" /dev/null "$WORK" "$exe" >"$TMP/r.out" 2>"$TMP/r.err"

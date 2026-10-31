@@ -1,0 +1,13 @@
+// vec7_mask -- DESIGN.md 2.12.6 T13, condition 2's mask registers: a bool array loaded (ldb ->
+// ldm2/ldm4), negated (bnot -> mnot), a comparison (fcmp -> xcmp/ycmp), & and | (iand/ior ->
+// mand/mor) and a bool result stored (stb -> stm2/stm4), with the byte pair of the independence
+// test; a where on a loaded mask (fsel -> xsel/ysel); nnz's i64 count stays scalar (an i64
+// carried value)
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+let y = [3.0, 2.0, 1.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0]
+let m = [true, false, true, false, true, false, true, false, true]
+let b = !m | x > y & m
+printf("%d\n", nnz(b))
+let r = where(m, x, y)
+printf("%g %g\n", r[2], r[8])

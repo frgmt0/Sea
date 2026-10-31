@@ -1,0 +1,11 @@
+// vec7_and -- DESIGN.md 2.12.6 the if-conversion of an && condition: the lowering writes the
+// condition register in the part (`fcmp gt c`, `if B c`, `fcmp lt c`, `endif B`), which writes a
+// renamed register, and c is merged as a mask by iand, bnot, iand, ior (mand, mnot, mand, mor in
+// the vector body); then the if expression's block is merged by fsel; P1 dissolves the do
+elemental fn m(v: f64, w: f64) -> f64 {
+    return if v > 1.5 && w < 5.5 { v * 2.0 } else { w + 1.0 }
+}
+let x = [1.0, 2.0, 3.0]
+let y = [4.0, 5.0, 6.0]
+let r = m(x, y)
+printf("%g\n", r[2])

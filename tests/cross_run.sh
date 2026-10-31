@@ -9,11 +9,22 @@
 #   SEA_TEST_TIMEOUT  seconds per program run (default 10)
 #   AS                GNU assembler (default as)
 #   CC                C compiler driver, used to link (default gcc)
-#   SEA_KERNELS       passed to the programs when set
+#   SEA_KERNELS       when set, the one kernel variant every program runs under (letters, digits,
+#                     underscores); when unset, both x86_64 variants (DESIGN.md 6.6.1, Decision 104)
 #
 # Builds Baysick's x86_64 runtime and Sea's from the bundle, then for every case assembles and
 # links the compiler's .s and compares the run exactly like tests/run.sh (same sidecars, .meta
 # keys, output format and exit status: 0 all passed, 1 any failed, 2 setup error).
+#
+# Variants (Decision 104): every program, error, passes, accept and ports case is built once and
+# run twice, first with SEA_KERNELS unset (the best usable variant, avx2 on a host that passes the
+# setup check) and then with SEA_KERNELS=sse2, against the same expected files; a failure of the
+# second run is named `FAIL <name> [sse2]: ...`. The setup requires AVX2 (`grep -qw avx2
+# /proc/cpuinfo`) whatever is asked for, else exit 2: the 4-lane code (the y-class tests run AVX2
+# instructions unconditionally) cannot be tested, and a run never passes with only the sse2 arm
+# executed. An rt/ case keeps its own env= lines and runs once, as does math/math_check. The
+# summary names the counts of each variant: `variant <v>: passed P  failed F`, then
+# `once (build, rt, math): passed P  failed F`, then the totals.
 
 AS=${AS:-as}
 CC=${CC:-gcc}
@@ -46,6 +57,18 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 command -v "$AS" >/dev/null 2>&1 || { echo "cross_run.sh: assembler '$AS' not found" >&2; exit 2; }
 command -v "$CC" >/dev/null 2>&1 || { echo "cross_run.sh: C compiler '$CC' not found (needed to link)" >&2; exit 2; }
 command -v make >/dev/null 2>&1 || { echo "cross_run.sh: make not found" >&2; exit 2; }
+# the AVX2 setup check (Decision 104): without it the 4-lane copies cannot run
+if ! grep -qw avx2 /proc/cpuinfo 2>/dev/null; then
+    echo "cross_run.sh: host lacks avx2: the 4-lane code cannot be tested" >&2
+    exit 2
+fi
+# the variants every program case runs under: the user's SEA_KERNELS alone, else default and sse2
+case "${SEA_KERNELS:-}" in
+'') VARIANTS="default sse2" ;;
+*[!A-Za-z0-9_]*) echo "cross_run.sh: SEA_KERNELS must contain only letters, digits and underscores" >&2; exit 2 ;;
+*) VARIANTS=$SEA_KERNELS ;;
+esac
+unset SEA_KERNELS
 SETSID=; if command -v setsid >/dev/null 2>&1; then SETSID=1; fi
 
 # ---- setup: build both runtimes from the bundle ---------------------------------
@@ -69,6 +92,11 @@ done
 PASS=0
 FAIL=0
 FAILED=""
+# per variant counters (VI is the index of the variant being run, empty outside the program cases):
+# P1/F1 the first variant, P2/F2 the second (when there is one); VSUF is the label of a failure.
+VI=
+VSUF=
+P1=0; F1=0; P2=0; F2=0
 
 # run_limited SECONDS INFILE WORKDIR CMD... : status of CMD run in WORKDIR (137 if killed).
 # With setsid the command runs in its own process group, and the whole group is killed on
@@ -100,8 +128,16 @@ run_limited() {
 }
 
 stdin_for() { if [ -f "$1.in" ]; then echo "$1.in"; else echo /dev/null; fi; }
-pass() { PASS=$((PASS + 1)); }
-fail() { FAIL=$((FAIL + 1)); FAILED="$FAILED $1"; echo "FAIL $1: $2"; }
+pass() {
+    PASS=$((PASS + 1))
+    case $VI in 1) P1=$((P1 + 1)) ;; 2) P2=$((P2 + 1)) ;; esac
+}
+fail() {
+    FAIL=$((FAIL + 1))
+    case $VI in 1) F1=$((F1 + 1)) ;; 2) F2=$((F2 + 1)) ;; esac
+    FAILED="$FAILED $1$VSUF"
+    echo "FAIL $1$VSUF: $2"
+}
 
 same() { # same EXPECTED ACTUAL LABEL NAME
     if cmp -s "$1" "$2"; then return 0; fi
@@ -263,11 +299,34 @@ do_case() {
     ports) [ -f "$base.out" ] && [ -f "$base.expect/$_n.json" ] || { fail "$name" "missing $_n.out or $_n.expect/$_n.json"; return; } ;;
     esac
     asm_link "$name" "$base.s" "" || return
+    # the one build is run under every variant (Decision 104); a failure of the second is labelled
     _savet=$TIMEOUT
     case $_kind in accept | ports) TIMEOUT=${SEA_ACCEPT_TIMEOUT:-120} ;; esac
+    _vi=0
+    for _v in $VARIANTS; do
+        _vi=$((_vi + 1))
+        VI=$_vi
+        VSUF=
+        if [ "$_v" = default ]; then
+            unset SEA_KERNELS
+        else
+            SEA_KERNELS=$_v; export SEA_KERNELS
+            if [ $_vi -gt 1 ]; then VSUF=" [$_v]"; fi
+        fi
+        run_variant "$name" "$base" "$_kind"
+    done
+    unset SEA_KERNELS
+    VI=
+    VSUF=
+    TIMEOUT=$_savet
+}
+
+# run_variant NAME BASE KIND : run the program built in $TMP/prog (under the SEA_KERNELS the caller
+# set) and compare it with the expected files of BASE; counts one pass or the failures.
+run_variant() {
+    name=$1; base=$2; _kind=$3
     if ! newwork "$base"; then fail "$name" "cannot prepare the work directory"; rm -rf "$WORK"; return; fi
     run_prog "$base" "$TMP/prog"
-    TIMEOUT=$_savet
     experr=$TMP/empty; [ -f "$base.err" ] && experr=$base.err
     expout=$TMP/empty; [ -f "$base.out" ] && expout=$base.out
     want=$(want_status "$base")
@@ -380,6 +439,15 @@ fi
 
 if [ $((PASS + FAIL)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi
 echo "----"
+_vi=0
+for _v in $VARIANTS; do
+    _vi=$((_vi + 1))
+    case $_vi in 1) _p=$P1; _f=$F1 ;; *) _p=$P2; _f=$F2 ;; esac
+    _l=$_v
+    if [ "$_v" = default ]; then _l="default (SEA_KERNELS unset, avx2)"; fi
+    echo "variant $_l: passed: $_p  failed: $_f"
+done
+echo "once (build, rt, math): passed: $((PASS - P1 - P2))  failed: $((FAIL - F1 - F2))"
 echo "passed: $PASS  failed: $FAIL"
 if [ $FAIL -ne 0 ]; then
     echo "failed tests:$FAILED"

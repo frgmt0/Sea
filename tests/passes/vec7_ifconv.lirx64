@@ -1,0 +1,323 @@
+#sea 1
+#target x86_64-linux
+#file vec7_ifconv.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4004000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:19 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+ldp p14 p9 - 0 40
+li i15 0
+icmp gt i16 i12 i15
+isub i17 i12 i13
+lf f18 #4000000000000000
+lf f19 #3FE0000000000000
+do 1
+rcall sea_arr_new_u 0:6 1 p20 4 i13 i13 i12 i13
+ldp p21 p20 - 0 40
+if 2 i16
+li i22 7
+isub i23 i17 i22
+li i24 3
+ishr i25 i23 i24
+ishr i26 i17 i24
+icmp le i27 i25 i26
+li i28 0
+li i29 64
+li i30 -64
+pdiff i31 p14 p21
+icmp ge i32 i31 i29
+icmp le i33 i31 i30
+icmp eq i34 i31 i28
+ior i35 i32 i33
+ior i36 i35 i34
+iand i37 i27 i36
+if 3 i37
+vfeat i38 avx2
+if 4 i38
+ysplat y39 f11
+li i40 8
+loop 5 i41 i15 i25 i40
+ldy y42 p14 i41 8 0
+ldy y43 p14 i41 8 32
+ymul y44 y42 y39
+ymul y45 y43 y39
+sty y44 p21 i41 8 0
+sty y45 p21 i41 8 32
+endloop 5
+li i46 7
+iand i47 i23 i46
+li i48 0
+icmp gt i49 i47 i48
+if 6 i49
+li i50 3
+ishl i51 i25 i50
+iadd i52 i15 i51
+li i53 8
+iadd i54 i52 i53
+isub i55 i47 i13
+loop 7 i56 i54 i55 i13
+ldf f57 p14 i56 8 0
+fmul f58 f57 f11
+stf f58 p21 i56 8 0
+endloop 7
+endif 6
+else 4
+xsplat x59 f11
+li i60 8
+loop 8 i61 i15 i25 i60
+ldx x62 p14 i61 8 0
+ldx x63 p14 i61 8 16
+ldx x64 p14 i61 8 32
+ldx x65 p14 i61 8 48
+xmul x66 x62 x59
+xmul x67 x63 x59
+xmul x68 x64 x59
+xmul x69 x65 x59
+stx x66 p21 i61 8 0
+stx x67 p21 i61 8 16
+stx x68 p21 i61 8 32
+stx x69 p21 i61 8 48
+endloop 8
+li i70 7
+iand i71 i23 i70
+li i72 0
+icmp gt i73 i71 i72
+if 9 i73
+li i74 3
+ishl i75 i25 i74
+iadd i76 i15 i75
+li i77 8
+iadd i78 i76 i77
+isub i79 i71 i13
+loop 10 i80 i78 i79 i13
+ldf f81 p14 i80 8 0
+fmul f82 f81 f11
+stf f82 p21 i80 8 0
+endloop 10
+endif 9
+endif 4
+else 3
+loop 11 i83 i15 i17 i13
+ldf f84 p14 i83 8 0
+fmul f85 f84 f11
+stf f85 p21 i83 8 0
+endloop 11
+endif 3
+endif 2
+ldi i86 p20 - 0 16
+rcount i87 i88 i15 i86 i13 0 0:7
+if 12 i88
+ldi i89 p20 - 0 0
+icmp eq i90 i89 i13
+if 13 i90
+ldp p91 p20 - 0 40
+li i92 7
+isub i93 i87 i92
+li i94 3
+ishr i95 i93 i94
+ishr i96 i87 i94
+icmp le i97 i95 i96
+if 14 i97
+vfeat i98 avx2
+if 15 i98
+lf f99 #0000000000000000
+ysplat y100 f99
+ysplat y101 f18
+ysplat y102 f19
+ysplat y103 f11
+li i104 8
+loop 16 i105 i15 i95 i104
+mov y106 y100
+mov y107 y100
+ldy y108 p91 i105 8 0
+ldy y109 p91 i105 8 32
+ycmp gt m110 y108 y101
+ycmp gt m111 y109 y101
+ldy y112 p91 i105 8 0
+ldy y113 p91 i105 8 32
+ymul y114 y112 y102
+ymul y115 y113 y102
+ldy y116 p91 i105 8 0
+ldy y117 p91 i105 8 32
+yadd y118 y116 y103
+yadd y119 y117 y103
+ysel y106 m110 y114 y118
+ysel y107 m111 y115 y119
+sty y106 p91 i105 8 0
+sty y107 p91 i105 8 32
+endloop 16
+li i120 7
+iand i121 i93 i120
+li i122 0
+icmp gt i123 i121 i122
+if 17 i123
+li i124 3
+ishl i125 i95 i124
+iadd i126 i15 i125
+li i127 8
+iadd i128 i126 i127
+isub i129 i121 i13
+loop 18 i130 i128 i129 i13
+lf f131 #0000000000000000
+ldf f132 p91 i130 8 0
+fcmp gt i133 f132 f18
+if 19 i133
+ldf f134 p91 i130 8 0
+fmul f131 f134 f19
+else 19
+ldf f135 p91 i130 8 0
+fadd f131 f135 f11
+endif 19
+stf f131 p91 i130 8 0
+endloop 18
+endif 17
+else 15
+lf f136 #0000000000000000
+xsplat x137 f136
+xsplat x138 f18
+xsplat x139 f19
+xsplat x140 f11
+li i141 8
+loop 20 i142 i15 i95 i141
+mov x143 x137
+mov x144 x137
+mov x145 x137
+mov x146 x137
+ldx x147 p91 i142 8 0
+ldx x148 p91 i142 8 16
+ldx x149 p91 i142 8 32
+ldx x150 p91 i142 8 48
+xcmp gt m151 x147 x138
+xcmp gt m152 x148 x138
+xcmp gt m153 x149 x138
+xcmp gt m154 x150 x138
+ldx x155 p91 i142 8 0
+ldx x156 p91 i142 8 16
+ldx x157 p91 i142 8 32
+ldx x158 p91 i142 8 48
+xmul x159 x155 x139
+xmul x160 x156 x139
+xmul x161 x157 x139
+xmul x162 x158 x139
+ldx x163 p91 i142 8 0
+ldx x164 p91 i142 8 16
+ldx x165 p91 i142 8 32
+ldx x166 p91 i142 8 48
+xadd x167 x163 x140
+xadd x168 x164 x140
+xadd x169 x165 x140
+xadd x170 x166 x140
+xsel x143 m151 x159 x167
+xsel x144 m152 x160 x168
+xsel x145 m153 x161 x169
+xsel x146 m154 x162 x170
+stx x143 p91 i142 8 0
+stx x144 p91 i142 8 16
+stx x145 p91 i142 8 32
+stx x146 p91 i142 8 48
+endloop 20
+li i171 7
+iand i172 i93 i171
+li i173 0
+icmp gt i174 i172 i173
+if 21 i174
+li i175 3
+ishl i176 i95 i175
+iadd i177 i15 i176
+li i178 8
+iadd i179 i177 i178
+isub i180 i172 i13
+loop 22 i181 i179 i180 i13
+lf f182 #0000000000000000
+ldf f183 p91 i181 8 0
+fcmp gt i184 f183 f18
+if 23 i184
+ldf f185 p91 i181 8 0
+fmul f182 f185 f19
+else 23
+ldf f186 p91 i181 8 0
+fadd f182 f186 f11
+endif 23
+stf f182 p91 i181 8 0
+endloop 22
+endif 21
+endif 15
+else 14
+loop 24 i187 i15 i87 i13
+lf f188 #0000000000000000
+ldf f189 p91 i187 8 0
+fcmp gt i190 f189 f18
+if 25 i190
+ldf f191 p91 i187 8 0
+fmul f188 f191 f19
+else 25
+ldf f192 p91 i187 8 0
+fadd f188 f192 f11
+endif 25
+stf f188 p91 i187 8 0
+endloop 24
+endif 14
+else 13
+loop 26 i193 i15 i87 i13
+lf f194 #0000000000000000
+ldp p195 p20 - 0 40
+ldf f196 p195 i193 8 0
+fcmp gt i197 f196 f18
+if 27 i197
+ldp p198 p20 - 0 40
+ldf f199 p198 i193 8 0
+fmul f194 f199 f19
+else 27
+ldp p200 p20 - 0 40
+ldf f201 p200 i193 8 0
+fadd f194 f201 f11
+endif 27
+ldi i202 p20 - 0 0
+icmp ne i203 i202 i13
+if 28 i203
+rcall sea_arr_unique 0:14 1 p204 1 p20
+mov p20 p204
+endif 28
+ldp p205 p20 - 0 40
+stf f194 p205 i193 8 0
+endloop 26
+endif 13
+endif 12
+mov p206 p20
+exit 1
+enddo 1
+release p9
+li i207 2
+ldi i208 p206 - 0 16
+chkb i207 i208 0 0:20
+ldp p209 p206 - 0 40
+ldf f210 p209 i207 8 0
+sa p211 s3
+stf f210 p211 - 0 0
+la p212 d1
+rcall sea_printf 0:20 0 2 p212 p211
+release p206
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

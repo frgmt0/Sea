@@ -1,0 +1,17 @@
+#sea 1
+#target arm64-macos
+#file sr7_keep_overlap.sea
+func .main main 0:1:1 0 0
+lf f1 #4000000000000000
+call part 1 f2 1 f1
+ret 0
+endfunc
+func part fn 0:1:1 1 f1 1 f
+slot s1 16 8
+sa p2 s1
+stf f1 p2 - 0 0
+stf f1 p2 - 0 8
+ldf f3 p2 - 0 4
+ret 1 f3
+endfunc
+#end

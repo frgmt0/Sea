@@ -1,0 +1,36 @@
+#sea 1
+#target x86_64-linux
+#file sr7_t11_rule17.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+lf f1 #3FF0000000000000
+mov f2 f1
+lf f3 #4000000000000000
+lf f4 #4010000000000000
+mov f5 f4
+mov f6 f2
+mov f7 f5
+mov f8 f3
+mov f9 f6
+fmul f10 f9 f8
+mov f11 f10
+mov f12 f7
+fmul f13 f12 f8
+mov f14 f13
+mov f15 f11
+mov f16 f14
+mov f17 f15
+mov f18 f16
+sa p19 s1
+stf f17 p19 - 0 0
+stf f18 p19 - 0 8
+la p20 d1
+rcall sea_printf 0:7 0 2 p20 p19
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

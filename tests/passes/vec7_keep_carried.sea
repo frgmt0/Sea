@@ -1,0 +1,13 @@
+// vec7_keep_carried -- DESIGN.md 2.12.6 condition 3: s is read in each iteration before the
+// iteration writes it (a carried value other than the sum8 group), so the accumulating loop stays
+// scalar; the fused copy x * 1.0 before it is vectorized
+fn total(x: f64[]) -> f64 {
+    let u = x * 1.0
+    var s = 0.0
+    for i in 0..len(u) {
+        s = s + u[i]
+    }
+    return s
+}
+let x = [1.0, 3.0, 2.0]
+printf("%g\n", total(x))

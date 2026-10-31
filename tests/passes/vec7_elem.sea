@@ -1,0 +1,8 @@
+// vec7_elem -- DESIGN.md 2.12.6 T13 with elementary functions: sqrt (fsqrt -> xsqrt/ysqrt) and the
+// runtime entries sea_exp and sea_pow (rcall without a site -> rcall sea_exp_x/_y and
+// sea_pow_x/_y with the same field layout, DESIGN.md 2.12.8)
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+let y = [0.5, 1.5, 2.5, 0.5, 1.5, 2.5, 0.5, 1.5, 2.5]
+let r = sqrt(x) + exp(y) * pow(x, y)
+printf("%g\n", r[2])

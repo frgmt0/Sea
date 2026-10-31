@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file vec7_prepfail.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4008000000000000
+stf f4 p2 - 0 8
+lf f5 #4000000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 0
+icmp eq i9 i7 i8
+la p10 d1
+chk i9 EMPTY_REDUCE 0:9 1 p10
+lf f11 #7FF8000000000000
+li i12 0
+li i13 0
+li i14 0
+icmp gt i15 i7 i14
+if 1 i15
+li i16 1
+isub i17 i7 i16
+loop 2 i18 i14 i17 i16
+ldf f19 p1 i18 8 0
+do 3
+lf f20 #4000000000000000
+fmul f21 f19 f20
+lf f22 #3FF0000000000000
+fadd f23 f21 f22
+mov f24 f23
+exit 3
+enddo 3
+fnan i25 f24
+bnot i26 i25
+fcmp gt i27 f24 f11
+bnot i28 i12
+ior i29 i28 i27
+iand i30 i26 i29
+fsel f11 i30 f24 f11
+isel i13 i30 i18 i13
+ior i12 i12 i30
+endloop 2
+endif 1
+sa p31 s3
+stf f11 p31 - 0 0
+la p32 d2
+rcall sea_printf 0:9 0 2 p32 p31
+ret 0
+endfunc
+str d1 max
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

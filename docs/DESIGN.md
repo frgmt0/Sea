@@ -83,8 +83,11 @@ the user's agreement. Phase 0 (§8) did:
    (the vector forms of the elementary functions, run in parallel with 7c) is **done** (2026-10-29;
    §2.12.8, §8 row 7d); sub-phase 7c (fusion: F1–F5 in `seafuse`) is **done** (2026-10-30; §2.12.3
    and §2.12.4 amended with its readings, §2.7 "Measured after 7c", whose measurement passes with no
-   relief; lead decisions L-fv–L-gj, of which L-fv–L-fy record the user's decisions); next is 7e
-   (`seavec` and vector code in pass 4). Every 0.y.z version is an alpha; 1.0.0 means v1 is done
+   relief; lead decisions L-fv–L-gj, of which L-fv–L-fy record the user's decisions); sub-phase 7e
+   (`seavec`: T11, T12, T13 with if-conversion and its preparation, and the vector code of pass 4,
+   with `tools/lirchk` and both x86_64 variants in the cross run) is **done** (2026-10-31; sizes in
+   §2.7 "Measured after 7e"; lead decisions L-gk–L-hp of §9, Decisions 115–117 decided
+   by the user); next is 7f. Every 0.y.z version is an alpha; 1.0.0 means v1 is done
    (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -526,7 +529,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Next: 7e (`seavec` and vector code in pass 4, after 7c and 7d). The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Next: 7f. The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3285,6 +3288,45 @@ L-fy, the `tbind` groups and both reviews' fixes among it), and its total lies i
 tables went into `Y`'s columns and the one-dimensional `V`, widened to `V(37000)`, with no new
 letter); `sealoop` is inside its projected 6 292–6 892.
 
+**Measured after 7e** (2026-10-31, the integrated 7e tree; `make BUILD=<dir> passes tools` and `sh
+tools/passlines.sh limits <dir>` on a fresh build, by the lead for `seavec`, `seagen_a64` and
+`seagen_x64`, again by the close-out for the others). Every verdict is ok. 7e changed `seavec`
+(T11–T13), `seagen_a64` and `seagen_x64` (the vector code), and, through the shared modules
+`lirrw` and `ralloc` (WP-LIB: the classes `x y m` and the `LF` records of `sea.lir`), `seaopt`,
+`sealopt`, `seavec` and both code generators; no other pass changed (`seafuse` 6 427, `sealoop`
+6 431, `sealower` 6 742, as after 7c). `tools/lirchk.bas` is a tool and is not gated (§2.6.3).
+
+| Pass | Built lines | Projected (Decisions 115, 117; this section) | `FOR`s | String bytes | Longest line | Free numeric array letters |
+|------|------------:|---------------------------------------------:|-------:|-------------:|-------------:|------|
+| `seavec` | 5 825 | 5 260–6 960 (5 613–5 718 with Decision 117) | 213 | 6 424 | 179 | 0 (`S V` used; waived, Decision 98) |
+| `seagen_a64` | 5 254 | 5 530–5 960 | 136 | 4 817 | 135 | none set (L-ac) |
+| `seagen_x64` | 6 103 | 6 048–6 658 | 144 | 5 814 | 189 | none set (L-ac) |
+| `seaopt` | 5 625 | 5 579–5 639 | 162 | 6 174 | 179 | 2 (`S V`) |
+| `sealopt` | 5 545 | 5 500–5 560 | 217 | 6 231 | 179 | 0 (waived, Decision 78) |
+
+**The §2.7 gate for the 7e passes is met by these numbers** (the gate after phase 7 itself is
+applied after 7f, below; the conditions of its table, applied to the 7e measurement, hold):
+`seavec` 5 825 ≤ 7 000 (1 175 under), 5 825 + 1 000 = 6 825 ≤ 9 000 and 5 825 + 1 500 = 7 325 ≤
+9 000, so no relief; `seagen_a64` 5 254 ≤ 7 000, 5 254 + 200 = 5 454 and 5 254 + 300 = 5 554 ≤
+9 000; `seagen_x64` 6 103 ≤ 7 000 (897 under), 6 303 and 6 403 ≤ 9 000; `seaopt` 5 625 and
+`sealopt` 5 545 are inside their projections. The checkpoint after T13's legality code (5 055 built
+lines with the rewrite as a two-line stand-in, projected total 5 705–5 955) stayed under about 6 500,
+so the relief of the section above was not called for. Against the projections: `seavec`'s 5 825
+lies inside Decision 115's 5 260–6 960 and 107 lines above Decision 117's 5 613–5 718 (T12's decided
+guards and classless locations, L-gz and L-ha, its `do` exit join, L-hb, and the review fixes of
+L-hm and L-hn came after that estimate: 5 498 after WP-VEC's first build, 5 766 with L-gz and L-ha,
+5 808 with L-hb, 5 825 with the review fixes); `seagen_a64` is 276 lines under the lower end of its
+projection (216 over the 5 038 of the gate after phase 6, the projected increment being 492–922; the
+vector instructions' templates are rows of the table in `a64data.bas`); `seagen_x64` is inside it (727 over 5 376,
+projected 672–1 282). The free numeric array letters are those of the projection: none new (`seavec`
+took the `S` and `V` that `lirrw` leaves, `seagen_*` have none to count).
+
+**Measured test counts after 7e** (2026-10-31, the final tree, by the lead). `make test`: every
+group passes (stage 1 235, shape 4, protocol 56, programs 2 191, accept 2 + 2, with the other groups
+as before); `sh tests/cross.sh -H desktop`: 941 cases packed, variant default (`avx2`) 822 passed
+and 0 failed, `sse2` 822 and 0, once-only (build, `rt/`, `math/math_check`) 119 and 0, total 1 763
+and 0.
+
 **The gate after phase 7** (Decision 71's form, applied after 7f's integration and recorded here
 as "Measured at the gate after phase 7"): `make check-limits` and the free numeric array letters of
 every main program; each program passes with its remaining work above when built ≤ 7 000, built +
@@ -4941,7 +4983,10 @@ L-fa (the derivation of the counts), L-fe (root paths), L-fg (if-conversion) and
 mode of the heap check). The readings 7c fixed are the lead decisions L-fv – L-gj (§9, "Lead
 decisions of sub-phase 7c"): the forms F1–F5 leave open are in §2.12.4, "Readings fixed by 7c";
 the narrowing of F1 (5), F2 (1) and F3 and the concatenation parts of F4 stand in the rules
-themselves; F8 and the capacity fallback in §2.12.3.
+themselves; F8 and the capacity fallback in §2.12.3. The readings 7e fixed are the lead decisions
+L-gk – L-hp (§9, "Lead decisions of sub-phase 7e"): the `seavec` ones (L-gq – L-hb, L-hm – L-ho) are
+written into §2.12.6 or §2.12.10 as their entries say, the pass-4 ones (L-gl – L-go, L-hc – L-hf)
+into §2.12.7 and §4.9.2, the harness and cross ones (L-hh – L-hl) into §6.2 and §6.6.1.
 
 ## 3. Intermediate files
 
@@ -12851,7 +12896,13 @@ the same files the Mac uses (one set for both targets).
   skipped silently; any other failure is a pack failure.
 * `passes/NAME` with a `NAME.out`: the program built with `--no-prelude` and run (§6.2).
 * `passes/NAME.lir` pass-4 tests (hand-written LIR, §6.2): the file with its `#target` record
-  replaced by `#target x86_64-linux`, run through `seagen_x64` on the Mac.
+  replaced by `#target x86_64-linux`, run through `seagen_x64` on the Mac (not a `NAME.lir` beside a
+  `NAME.lir3`: that is a `seavec` golden, as in `stage.sh`, L-fc).
+* `passes/NAME.lirx64` with a `NAME.out` and no `NAME.sea` (7e, L-fc, L-hj): the x86_64-linux-only
+  pass-4 tests. Without a `NAME.lir3` the file is the input of `seagen_x64` as it is (`gen7_y*`,
+  `gen7_vfeat`); with a hand-written `NAME.lir3` the case is `seavec` on the `.lir3` retargeted to
+  `x86_64-linux`, then `seagen_x64` on that live output (the `.lirx64` golden is `stage.sh`'s). A
+  `NAME.lirx64` without a `NAME.out` is only a golden and no case.
 * `accept/NAME`: every phase-4 acceptance program `tests/accept/NAME.sea`, built and checked on
   the Mac by `tests/accept4.sh --save-out`, its standard output packed as `NAME.out` (§6.3).
 * `ports/NAME`: every phase-6 port `ports/NAME.sea` (from 6e, L-ef): `cross_pack.sh` runs
@@ -12908,20 +12959,28 @@ run only on the Mac (`make test`).
 **`tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]`** (Mac). `BUNDLE_DIR` must not exist or be
 empty (else exit 2); PATTERN selects cases whose name contains it, as in `tests/run.sh`.
 Environment: `SEA` (the driver, default `build/sea`), `BAYSICK` (the Baysick checkout, default
-the parent of the Sea repository). Each case is compiled with the driver run in the test's own
+the parent of the Sea repository), `LIRCHK` (the `sea.lir` validator `tools/lirchk`, default
+`build/tools/lirchk` beside the driver, 7e). Each case is compiled with the driver run in the test's own
 directory with the bare file name, exactly as `tests/run.sh` does (so the site table names
 `NAME.sea`): `sea build --target x86_64-linux -S -o <bundle>/cases/<kind>/NAME.s NAME.sea`
 (`--no-prelude` for passes/); a pass-4 test runs `seagen_x64` on the retargeted LIR in a scratch
-directory (the pass's file protocol, §2.2). The compile must exit 0 with empty standard output
+directory (the pass's file protocol, §2.2). Since 7e (Decision 116, L-hj) the driver runs with
+`--keep-temps` (its line `sea: temporary files kept in DIR` is removed from the standard error
+before the check below, and DIR is removed), and the x86_64 `sea.lir` of every case, the kept one of
+a driver compilation or the input of a hand-written pass-4 test (after `seavec`, for a `.lirx64`
+with a `.lir3`), is validated with `lirchk` (the vector classes and `LF` records included) before
+it goes to `seagen_x64`: a rejection is a pack failure of the case (`NAME.packfail`, `lirchk
+rejects sea.lir (status n)` and its first lines). The compile must exit 0 with empty standard output
 and standard error, else `NAME.packfail` is written (the errors/ rule above decides first). It
 prints `packed: <n> cases (<m> failed to compile)` and exits 0 when the bundle is complete, 2
-on a setup error (driver or `seagen_x64` missing, bad `-o`, copy failure). `make cross-pack`
+on a setup error (driver, `seavec`, `seagen_x64` or `lirchk` missing, bad `-o`, copy failure). `make cross-pack`
 writes `build/x86_64-linux-bundle` (removed first).
 
 **`tests/cross_run.sh [-v] [BUNDLE_DIR]`** (Linux; default the directory above the script).
 Environment: `SEA_TEST_TIMEOUT` (seconds per run, default 10), `AS` (default `as`), `CC`
-(default `gcc`), `SEA_KERNELS` (passed to the programs when set). Setup (failure → message,
-exit 2): the `BUNDLE` line; `make -C BUNDLE_DIR/baysick -f Makefile.linux all AS="$AS"`; `make
+(default `gcc`), `SEA_KERNELS` (when set, the one variant the programs run under, else both x86_64 variants, see
+Phase 7 below). Setup (failure → message,
+exit 2): the `BUNDLE` line; the host's `avx2` (Phase 7 below); `make -C BUNDLE_DIR/baysick -f Makefile.linux all AS="$AS"`; `make
 -C BUNDLE_DIR -f Makefile.linux check-includes all BAYSICK=baysick AS="$AS"`. Per case, in a
 `mktemp -d` directory: a `NAME.packfail` is a FAIL (`compile (on the Mac) failed`); otherwise
 `$AS --64 -o prog.o NAME.s` and `$CC -no-pie -o prog prog.o <libsea.a> <libbaysickrt.a> -lm` (an
@@ -12945,7 +13004,8 @@ into a local `mktemp -d` directory, streams it as `tar -C <bundle> -cf - .` into
 whose remote `sh -c` script (no single quote in it) unpacks into a remote `mktemp -d` directory,
 removed on exit and on HUP/INT/TERM/PIPE, and runs `SEA_TEST_TIMEOUT=<value> [SEA_KERNELS=<value>]
 sh "$d/tests/cross_run.sh" [-v] "$d"`; `SEA_KERNELS`, when set, must be letters, digits and
-underscores (else exit 2). Exit: the status of `cross_run.sh`; 2 if packing or `ssh` fails or
+underscores (else exit 2), and is then the one variant run; when unset the host runs both (Phase 7
+below), and `cross.sh` passes its output through unchanged. Exit: the status of `cross_run.sh`; 2 if packing or `ssh` fails or
 the remote status is anything else. Nothing is left on the host. All three scripts treat
 HUP/INT/TERM/PIPE by removing their temporary directory and exiting 2, and match patterns
 literally.
@@ -12980,6 +13040,21 @@ executed the 4-lane copies; a `SEA_KERNELS` value given to `cross.sh` replaces t
 variant (as before). The `math/math_check` case runs its 4-lane part (§2.12.8). The bundle takes
 `runtime/x86_64_linux/rt_vmath.s` by its existing wildcard. Phase 7 is done (§8) when `make cross`
 passes every case under both variants, with `make test` passing on the Mac.
+
+**As built in 7e** (L-hj, L-hl; `cross_run.sh`, `cross_pack.sh`, `cross.sh`). The program, error,
+passes, accept and ports cases are assembled and linked once and run per variant: first with
+`SEA_KERNELS` unset (the default variant, `avx2` on a host that passes the check), then with
+`SEA_KERNELS=sse2`; a failure of the second run is `FAIL <name> [sse2]: …`. A `SEA_KERNELS` value
+given to `cross.sh` (or to `cross_run.sh`) replaces the pair by that one variant, unlabelled. The
+AVX2 check applies in that case too, because the 4-lane tests (`gen7_y*`) execute AVX2
+instructions whatever the variant. The runs of `rt/` cases (which keep their own `env=` lines),
+`math/math_check` and the build failures are counted once. After `----` the script prints one line
+`variant <v>: passed: P  failed: F` per variant (the first labelled `default (SEA_KERNELS unset,
+avx2)`), the line `once (build, rt, math): passed: P  failed: F`, then the totals `passed: P  failed:
+F` and, with failures, `failed tests: …`; the exit status is as before. `cross_pack.sh` validates
+every x86_64 `sea.lir` with `lirchk` and packs the `.lirx64` cases (the case list above). At
+7e's close the host run packed 941 cases: default (`avx2`) 822 passed, 0 failed; `sse2` 822 and 0;
+once-only 119 and 0; total 1 763 and 0.
 
 ## 7. What Baysick must grow
 
@@ -13116,7 +13191,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
 | 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code. **Done** (2026-10-30): F1–F5 in `seafuse` with buffer reuse, in-place selection stores of kinds S, R, A, M, MM, groups with `tbind`s of k-result elemental applications, fused, masked and `.flat` reductions in and out of groups, and folded concatenation parts in stacks and mixed rows (decided by the user 2026-10-30, L-fy); the user's D1–D3 (2026-10-29: the group's leaf phase and stored binds in the enclosing block, F8 appended in `sea.hirf`, the broadcast copy reading a folded leaf by its map) and the readings of the work packages and both reviews' fixes recorded in §2.12.3, §2.12.4 ("Readings fixed by 7c") and as lead decisions L-fv–L-gj; `sealoop`'s share: the F8 reader and renumbering (L-fw), the `rcnt` type check (L-gj), an inlined callee's undeclared `.i` local (R34); `sealower` unchanged; tests: 39 `fuse_*` programs (T1's 26, 11 `fuse_reg_*` regressions, 2 concatenation programs), 19 `r_fuse_*`/`err_fuse_*` error tests, 22 `fuse7_*` and 12 `fuse7c2_*` dumps (`dump7_cases.py` part 4), the re-derived goldens `ew_colrow`, `sel_reads` and the subject test `elem6_inst` (L-fb's list in `tests/CORPUS.md`); `make test` passes in every group (`test-programs` 2 034, `test-stage` 1 067) and `make cross` 876 of 876 on the Linux host; two independent reviews with differential fuzzing against the pre-7c compiler (stdout, stderr, status and heap check compared byte for byte; review 1: 1 566 programs, 9 defects, all fixed, with two more found by the fixer's fuzzing; review 2: 577 programs and capacity scans, 5 defects, all fixed), the final fuzz runs (1 000, 400 and 400 programs on fresh seeds: all MATCH; 300 concatenation programs: no mismatch, those 37 that fail to compile failing on both compilers); the measurement after 7c passes with no relief (§2.7, "Measured after 7c": `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431 with 3); observed: fused output can slow `sealopt` (§2.12.5); next 7e |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
-| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115–117): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
+| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115–117): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7  **Done** (2026-10-31): `seavec` with T11 (unrolling with the known counts of Decision 117), T12 (scalar replacement with slot copies, the guards decided in the walk and the `do` exit join, L-gz–L-hb), T13 with P1–P3, if-conversion with mask merges and the legality conditions, and T10 last; vector code in `seagen_a64` (NEON, 2 lanes) and `seagen_x64` (SSE2 2 lanes, AVX2 4 lanes under `vfeat`, L-hc–L-hf); the vector classes of `lirrw` and `ralloc` (WP-LIB); `tools/lirchk` and its use by `run.sh`, `stage.sh` and `cross_pack.sh` (Decision 116, L-hh–L-hj); `shape.sh` taking its candidate loops per target (L-hk); both x86_64 variants in the cross run, with the AVX2 setup check (L-hl); the `vec_*`, `vec7_*`, `sr7_*`, `vec7_alias_*` and `gen7_*` tests and the regression tests `vec_reg_param_tail` and `sr7_reg_bigslots` of the review fixes (L-hn); lead decisions L-gk–L-hp and Decisions 115–117 (§9); `make test` (stage 1 235, shape 4, protocol 56, programs 2 191, accept 2 + 2) and `make cross` (941 cases, default variant 822/0, `sse2` 822/0, once-only 119/0, total 1 763/0) pass; every `sea.lir` of the corpus passes `lirchk`; sizes in §2.7 "Measured after 7e": `seavec` 5 825 built lines, `seagen_a64` 5 254, `seagen_x64` 6 103; next 7f |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
 | 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change expected; **specified by decision, not started: written when 7f is done**): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass |
 
@@ -15360,3 +15435,91 @@ Lead decisions of sub-phase 7e (T2's and WP-VEC's readings, found in their build
   `enddo` loops back, so only the `exit`s leave, and a `do` with no `exit` leaves nothing reachable
   after it. An implementation may bound the nesting it tracks and fall back to the `do`'s entry
   state beyond it, which is conservative (a walk state only gains written locations) (§2.12.6 T12).
+
+Lead decisions of sub-phase 7e (the readings of pass 4, the harness, the cross run and `seavec`'s
+review fixes, found in the packages' builds and recorded 2026-10-31 at the integration; each is
+written into §2.12.6, §2.12.7 or §6.6.1 or is a reading of a test, and decides byte-level output or
+legality, never a language feature; Decisions 115–117 were decided by the user):
+
+* **L-hc** (WP-GEN-A64) On arm64 `v31` is the vector scratch register: `stm2`'s temporary,
+  `xmin`/`xmax`'s temporary, the scratch of a memory-to-memory vector move and the cycle scratch of
+  a parallel move (§4.9.2); `v30` serves `xmin`/`xmax` only when the destination is the operand
+  `b`, and spilled operands are loaded into `v29`, `v30`, `v31` by their position. `xlane`'s `k` is
+  0 or 1 (every vector has 2 lanes): another value is `BAD_RECORD`. A `y` register, a `y` instruction,
+  `ldm4`, `stm4` and `vfeat` are `BAD_RECORD` in `seagen_a64`, `y` by class at the decoding and the
+  others for lack of a template (L-go; §2.12.7).
+* **L-hd** (WP-GEN-X64) The SSE2 forms of `xcmp`, `xsel` and `xmin`/`xmax` use a spilled operand
+  directly as a 16-byte memory operand, so the vector spill slots are 16-byte aligned (L-fh): the
+  spill area starts at a 16-aligned offset whenever `ra_sa` reports a vector slot and `%rsp` is
+  16-byte aligned at the body; an offset of 2^31 or more is formed in `%r11` just before the
+  instruction. Moves and saves stay unaligned (`movupd`, `vmovupd`) (§2.12.7, §4.9.2).
+* **L-he** (WP-GEN-X64) `vzeroupper` (L-fd) is emitted only where no `y` or 4-lane `m` value is
+  live: a `_y` entry returns with its upper halves live, and a `vzeroupper` there would destroy a
+  live `ymm` value. "Every exit from a 4-lane loop's code" is therefore placed conservatively, with
+  the extents of the `y`/`m4` values widened to their outermost enclosing loop; it is also executed
+  after the saves of a `call`, `rcall` and `release`, and not before a `_y` entry. The rule decides
+  performance only, never a result (§2.12.7).
+* **L-hf** (WP-GEN-A64, WP-GEN-X64) `xfloor xceil xtrunc xround` and their `y` forms are
+  `BAD_RECORD` in both code generators (Decision 100: no pass writes them, so pass 4 has no
+  template); a vector or mask `func` parameter, `call` argument or result and `chk` argument is
+  `BAD_RECORD` in both, as `lirrw` rejects it (§2.12.7, §3.6.4); an `rcall` of the entries 39–50
+  does take vector arguments and results (in the first vector registers).
+* **L-hg** (WP-GEN-A64, WP-GEN-X64) The `gen7_*` expected outputs print a NaN lane as the canonical
+  quiet NaN (a NaN lane's bits are not observable, LANGUAGE.md §6.1), so one `NAME.out` serves both
+  targets: the six arm64 `gen7_*.lir` are the x86_64 2-lane coverage through `cross_pack.sh`'s
+  retargeting, and the 4-lane forms are `gen7_y*.lirx64` and `gen7_vfeat.lirx64`, which execute AVX2
+  instructions unconditionally (only `gen7_vfeat` dispatches on `vfeat`), so they need an AVX2 host
+  under both variants (L-hl; §6.2).
+* **L-hh** (WP-HARNESS; Decision 116, L-gk) `tools/lirchk` reads one `sea.lir` through `lirrw` at
+  `V8 = 3` and writes nothing, but `lirrw` copies the header and `DATA` records to its file 2 as it
+  reads, so `lirchk` binds file 2 to `/dev/null`. It is silent with status 0 for a valid file, else
+  `lirrw`'s own failure (`BAD_RECORD`, status 11, a capacity limit status 10). A missing `lirchk`
+  binary is a setup error (status 2) of `run.sh`, `stage.sh` and `cross_pack.sh`, never a skip
+  (§2.12.6).
+* **L-hi** (WP-HARNESS) `tests/run.sh` validates the `sea.lir` of the one compilation it does for
+  each test, with `--keep-temps` (its line `sea: temporary files kept in DIR` is removed from the
+  standard error it compares); an earlier dump kind leaves no `sea.lir`, so nothing is checked
+  there. `tests/stage.sh` validates every `seavec` output and every hand-written pass-4 input, and
+  handles the x86_64 files of L-fc: a `NAME.lirx64` with a `NAME.lir3` is `seavec` on the `.lir3`
+  retargeted to `x86_64-linux`, compared with the golden; a hand-written `.lir3` with a `.out` is
+  also generated through `seagen_x64` (which must write a non-empty `sea.s`; its run is the cross
+  run's); a `NAME.lirx64` without `.lir3` and `.sea` is an x86_64-only pass-4 test, generated by
+  `stage.sh` and run by the cross run only; one with a `.sea` and no `.lir3` is a setup failure
+  (§6.2, §6.6.1).
+* **L-hj** (the lead, 2026-10-31; WP-CROSS) `cross_pack.sh` validates the x86_64 `sea.lir` of every
+  case with `lirchk` (the driver's, `seavec`'s output, a hand-written pass-4 input): a rejection is
+  a pack failure of the case (`NAME.packfail`). It skips a `passes/NAME.lir` beside a `NAME.lir3`
+  (a `seavec` golden, as in `stage.sh`), packs a `passes/NAME.lirx64` that has a `NAME.out` and no
+  `NAME.sea` (L-fc), and for one with a `NAME.lir3` runs the live `seavec` output through
+  `seagen_x64`, not the committed golden (§6.6.1).
+* **L-hk** (the lead, 2026-10-31; found by WP-GEN-X64, fixed in `tests/shape.sh`) The two targets'
+  `sea.lir` are numbered differently once T13 is on (the x86_64 file has the `vfeat` and its two
+  parts), so `shape.sh` takes the candidate loops of the x86_64 lines from a second compilation,
+  `--target x86_64-linux --emit lir`, not from the arm64 file; the shape bounds are unchanged
+  (§5.2, §6.2).
+* **L-hl** (WP-CROSS) `cross_run.sh`'s AVX2 check (`grep -qw avx2 /proc/cpuinfo`, else exit 2) applies
+  also when `SEA_KERNELS` is given, because the 4-lane tests run AVX2 instructions whatever the
+  variant (L-hg); a given `SEA_KERNELS` replaces the pair by that one variant, unlabelled. The
+  program, error, passes, accept and ports cases are built once and run per variant; build
+  failures, `rt/` cases and `math/math_check` run once; the summary has one `variant <v>: passed: P
+  failed: F` line per variant, an `once (build, rt, math)` line and the totals (§6.6.1).
+* **L-hm** (the lead, 2026-10-31; review fix of WP-VEC) `seavec`'s scratch regions of the array `S`
+  are disjoint while in use, each with a bound, and a transformation that would pass one is not
+  applied (Decision 72): the counters (at most 9 999), the merges of if-conversion (at most 9 999,
+  past which if-conversion refuses), the sum8 groups (at most 4 999), the other lists and T12's
+  class, register and walk-frame rows as the header comment of `passes/seavec/ve0main.bas` lists
+  (the table is there, not here, and is normative with this decision).
+* **L-hn** (the lead, 2026-10-31; review fix of WP-VEC) A register is *local* to a loop L (§2.12.6
+  "Registers", L-bl) when L writes it, nothing outside L references it and it is not a parameter:
+  "written in L and read only in L" as the text says, and never a parameter, whatever the loop does
+  with it. A parameter is therefore the same register in every copy of L (the review's
+  miscompile: `fillsel3`, `param2`; tests `vec_reg_param_tail`, `sr7_reg_bigslots`).
+* **L-ho** (the lead, 2026-10-31; review fix of WP-VEC) In T12's first-access walk, a path after an
+  `if` whose two parts both end dead is dead (it holds no state), not the entry state restored as
+  live (§2.12.6 T12; with L-gz and L-hb).
+* **L-hp** (T1) The `vec_*` programs bind a slice (`let dn = d[0..n]`) before calling an elemental
+  function on it, because a range argument folds into a moving pointer and is no unit access at
+  `J`; `vec_ifexpr_pow` clamps with `min(d, 1e300)` and has no boundary lane at 2.79 or 51, since
+  `tests/math/pow.vec` has no base 254 (the `&&` boundaries are in `vec_ifexpr_w1`); the `exp`
+  rare-path argument is 600.2654583649127, a row of `exp.vec`. Their `.out` come from the committed
+  bit patterns of `tests/math/*.vec` and Python mirrors of LANGUAGE.md §10.4–§10.5 (§6.2).

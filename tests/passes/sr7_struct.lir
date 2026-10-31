@@ -1,0 +1,72 @@
+#sea 1
+#target arm64-macos
+#file sr7_struct.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:17 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+call tally 1 f11 2 p9 i7
+release p9
+rcall sea_arr_new_u 0:17 1 p12 4 i8 i8 i7 i8
+ldp p13 p12 - 0 40
+mcopy p13 p1 i6
+li i14 2
+call tally 1 f15 2 p12 i14
+release p12
+sa p16 s3
+stf f11 p16 - 0 0
+stf f15 p16 - 0 8
+la p17 d1
+rcall sea_printf 0:17 0 2 p17 p16
+ret 0
+endfunc
+func tally fn 0:8:1 2 p1 i2 1 f
+lf f3 #0000000000000000
+mov f4 f3
+li i5 0
+mov i6 i5
+mov i7 i5
+li i8 1
+rcount i9 i10 i7 i2 i8 0 0:10
+if 1 i10
+mov f11 f4
+ldi i12 p1 - 0 16
+mov i13 i6
+ldp p14 p1 - 0 40
+li i15 1
+loop 2 i16 i7 i9 i8
+chkb i16 i12 0 0:11
+ldf f17 p14 i16 8 0
+fadd f11 f11 f17
+iaddc i13 i13 i15 0:12
+endloop 2
+mov f4 f11
+mov i6 i13
+endif 1
+mov f18 f4
+mov i19 i6
+itof f20 i19
+fadd f21 f18 f20
+ret 1 f21
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

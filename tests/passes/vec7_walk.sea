@@ -1,0 +1,10 @@
+// vec7_walk -- DESIGN.md 2.12.6 P2, a walked base: the unit-step slice x[1..$] gives T7's
+// invariant-stride Q (its step a mov of an li 1, so T7 took it for a register) with `padd Q Q D`
+// first in the body and D = 8 a constant in T13's sense; P2 rewrites the access to `D' J 8 0` with
+// D' = Q + 8 (S the constant 0) and deletes the padd
+var x = zeros(6)
+for i in 0..6 {
+    x[i] = f64(i)
+}
+let r = x[1..$] * 2.0
+printf("%g\n", r[2])

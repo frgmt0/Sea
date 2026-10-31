@@ -1,0 +1,9 @@
+// vec7_keep_stride -- DESIGN.md 2.12.6 P2 and condition 2: a slice with step 2 gives T7's walked
+// base whose step is 16 bytes, not the element size, so P2 leaves its access `Q - 0 0` and the
+// loop stays scalar (a non-unit access)
+var x = zeros(6)
+for i in 0..6 {
+    x[i] = f64(i)
+}
+let r = x[0..$ step 2] * 2.0
+printf("%g\n", r[2])

@@ -13,9 +13,10 @@
 #                             count in that range.
 # Every line also requires no frame access in the range (arm64 `[sp`, `[x29`; x86_64 `(%rsp)`,
 # `(%rbp)`) and no call (`bl`, `blr`, `call`, `callq`). The loop is identified by its properties
-# (lead decision L-ar): from `--emit lir` the function number f (its position among the `func`
+# (lead decision L-ar): from the target's `--emit lir` the function number f (its position among the `func`
 # records) and the block numbers b of the `loop` and `do` blocks of FUNC that contain no other
-# loop; each candidate is measured in the -S text and the line passes when at least one meets every
+# loop (the LIR of the target: `--emit lir` for arm64, `--target x86_64-linux --emit lir` for x86_64, since
+# seavec writes different blocks per target); each candidate is measured in the -S text and the line passes when at least one meets every
 # requirement; the block that did is printed. A failing line prints every candidate's measurement.
 #
 # usage: sh tests/shape.sh [-v] [PATTERN...]      PATTERN: a substring of the test name
@@ -169,6 +170,10 @@ for sf in "$ROOT"/tests/shape/*.shape; do
     run_limited "$CTIMEOUT" "$pdir" "$SEA" build --emit lir "$pfile" >"$w/sea.lir" 2>"$w/c.err"
     [ $? -eq 0 ] || { fail "shape/$nm" "--emit lir failed: $(head -3 "$w/c.err" | tr '\n' ' ')"; ok=0; }
     if [ $ok = 1 ]; then
+        run_limited "$CTIMEOUT" "$pdir" "$SEA" build --target x86_64-linux --emit lir "$pfile" >"$w/x86_64.lir" 2>"$w/c.err"
+        [ $? -eq 0 ] || { fail "shape/$nm" "x86_64 --emit lir failed: $(head -3 "$w/c.err" | tr '\n' ' ')"; ok=0; }
+    fi
+    if [ $ok = 1 ]; then
         run_limited "$CTIMEOUT" "$pdir" "$SEA" build -S -o "$w/arm64.s" "$pfile" >/dev/null 2>"$w/c.err"
         [ $? -eq 0 ] && [ -s "$w/arm64.s" ] || { fail "shape/$nm" "arm64 -S failed: $(head -3 "$w/c.err" | tr '\n' ' ')"; ok=0; }
     fi
@@ -182,7 +187,8 @@ for sf in "$ROOT"/tests/shape/*.shape; do
         case $tgt in arm64|x86_64) ;; *) continue ;; esac
         name=shape/$nm:$tgt:$fn
         selected "$name" || continue
-        cands=$(candidates "$w/sea.lir" "$fn")
+        lf=$w/sea.lir; [ "$tgt" = x86_64 ] && lf=$w/x86_64.lir
+        cands=$(candidates "$lf" "$fn")
         if [ -z "$cands" ]; then fail "$name" "no function '$fn' with an innermost loop in --emit lir"; continue; fi
         won=
         report=

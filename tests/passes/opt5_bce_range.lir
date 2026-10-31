@@ -46,63 +46,95 @@ icmp eq i11 i9 i10
 if 2 i11
 lf f12 #3FF8000000000000
 ldp p13 p4 - 0 40
-loop 3 i14 i5 i7 i6
-stf f12 p13 i14 8 0
-endloop 3
-else 2
-lf f15 #3FF8000000000000
-li i16 1
-loop 4 i17 i5 i7 i6
-ldi i18 p4 - 0 0
-icmp ne i19 i18 i16
-if 5 i19
-rcall sea_arr_unique 0:4 1 p20 1 p4
-mov p4 p20
-endif 5
-ldp p21 p4 - 0 40
-stf f15 p21 i17 8 0
+li i14 7
+isub i15 i7 i14
+li i16 3
+ishr i17 i15 i16
+ishr i18 i7 i16
+icmp le i19 i17 i18
+if 3 i19
+xsplat x20 f12
+li i21 8
+loop 4 i22 i5 i17 i21
+stx x20 p13 i22 8 0
+stx x20 p13 i22 8 16
+stx x20 p13 i22 8 32
+stx x20 p13 i22 8 48
 endloop 4
+li i23 7
+iand i24 i15 i23
+li i25 0
+icmp gt i26 i24 i25
+if 5 i26
+li i27 3
+ishl i28 i17 i27
+iadd i29 i5 i28
+li i30 8
+iadd i31 i29 i30
+isub i32 i24 i6
+loop 6 i33 i31 i32 i6
+stf f12 p13 i33 8 0
+endloop 6
+endif 5
+else 3
+loop 7 i34 i5 i7 i6
+stf f12 p13 i34 8 0
+endloop 7
+endif 3
+else 2
+lf f35 #3FF8000000000000
+li i36 1
+loop 8 i37 i5 i7 i6
+ldi i38 p4 - 0 0
+icmp ne i39 i38 i36
+if 9 i39
+rcall sea_arr_unique 0:4 1 p40 1 p4
+mov p4 p40
+endif 9
+ldp p41 p4 - 0 40
+stf f35 p41 i37 8 0
+endloop 8
 endif 2
 endif 1
-li i22 0
-li i23 1
-rcount i24 i25 i22 i2 i23 1 0:6
-if 6 i25
-ldi i26 p4 - 0 0
-li i27 1
-icmp eq i28 i26 i27
-if 7 i28
-ldi i29 p4 - 0 16
-ldp p30 p4 - 0 40
-lf f31 #4000000000000000
-loop 8 i32 i22 i24 i23
-chkb i32 i29 0 0:7
-ldf f33 p30 i32 8 0
-fadd f34 f33 f31
-chkb i32 i29 0 0:7
-stf f34 p30 i32 8 0
-endloop 8
-else 7
-lf f35 #4000000000000000
-li i36 1
-loop 9 i37 i22 i24 i23
-ldi i38 p4 - 0 16
-chkb i37 i38 0 0:7
-ldp p39 p4 - 0 40
-ldf f40 p39 i37 8 0
-fadd f41 f40 f35
-chkb i37 i38 0 0:7
-ldi i42 p4 - 0 0
-icmp ne i43 i42 i36
-if 10 i43
-rcall sea_arr_unique 0:7 1 p44 1 p4
-mov p4 p44
+li i42 0
+li i43 1
+rcount i44 i45 i42 i2 i43 1 0:6
+if 10 i45
+ldi i46 p4 - 0 0
+li i47 1
+icmp eq i48 i46 i47
+if 11 i48
+ldi i49 p4 - 0 16
+ldp p50 p4 - 0 40
+lf f51 #4000000000000000
+loop 12 i52 i42 i44 i43
+chkb i52 i49 0 0:7
+ldf f53 p50 i52 8 0
+fadd f54 f53 f51
+chkb i52 i49 0 0:7
+stf f54 p50 i52 8 0
+endloop 12
+else 11
+lf f55 #4000000000000000
+li i56 1
+loop 13 i57 i42 i44 i43
+ldi i58 p4 - 0 16
+chkb i57 i58 0 0:7
+ldp p59 p4 - 0 40
+ldf f60 p59 i57 8 0
+fadd f61 f60 f55
+chkb i57 i58 0 0:7
+ldi i62 p4 - 0 0
+icmp ne i63 i62 i56
+if 14 i63
+rcall sea_arr_unique 0:7 1 p64 1 p4
+mov p4 p64
+endif 14
+ldp p65 p4 - 0 40
+stf f61 p65 i57 8 0
+endloop 13
+endif 11
 endif 10
-ldp p45 p4 - 0 40
-stf f41 p45 i37 8 0
-endloop 9
-endif 7
-endif 6
 ret 1 p4
 endfunc
 func back fn 0:11:1 1 f1 1 f

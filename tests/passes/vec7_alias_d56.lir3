@@ -1,0 +1,40 @@
+#sea 1
+#target arm64-macos
+#file vec7_alias_d56.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 24
+li i2 1
+rcall sea_arr_new 0:1 1 p3 4 i2 i2 i1 i2
+ldp p4 p3 - 0 40
+li i5 0
+li i6 23
+loop 1 i7 i5 i6 i2
+itof f8 i7
+stf f8 p4 i7 8 0
+endloop 1
+li i9 8
+padd p10 p4 i9
+li i11 56
+padd p12 p10 i11
+li i13 11
+lf f14 #4000000000000000
+loop 2 i15 i5 i13 i2
+ldf f16 p10 i15 8 0
+fmul f17 f16 f14
+stf f17 p12 i15 8 0
+endloop 2
+sa p18 s1
+la p19 d1
+loop 3 i20 i5 i6 i2
+ldf f21 p4 i20 8 0
+stf f21 p18 - 0 0
+rcall sea_printf 0:1 0 2 p19 p18
+endloop 3
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,14 @@
+// sr7_state4 -- DESIGN.md 2.12.6 T12 on a fixed-size f64[4] state updated in a loop (W3's shape):
+// the state is filled from its literal's slot by a slot copy (Decision 117); both slots are
+// replaced by four registers each, the copy becoming four movs; the loop stays scalar (carried)
+fn run(n: i64, dt: f64) -> f64 {
+    var q: f64[4] = [1.0, 0.0, 0.0, 1.0]
+    for k in 0..n {
+        q[0] = q[0] + dt * q[1]
+        q[1] = q[1] - dt * q[0]
+        q[2] = q[2] + dt * q[3]
+        q[3] = q[3] - dt * q[2]
+    }
+    return q[0] + q[1] + q[2] + q[3]
+}
+printf("%g %g\n", run(3, 0.5), run(1, 0.25))

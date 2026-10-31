@@ -1,0 +1,10 @@
+// vec7_p1_ret -- DESIGN.md 2.12.6 P1: the inlined elemental f leaves `do D` / `exit D` /
+// `enddo D` in the loop (L20); its body ends in its exit, which is in tail position, so P1
+// deletes the do, the exit and the enddo, and the loop is vectorized
+elemental fn f(v: f64) -> f64 {
+    let t = v * 2.0
+    return t + 1.0
+}
+let x = [1.0, 2.0, 3.0]
+let r = f(x)
+printf("%g\n", r[2])

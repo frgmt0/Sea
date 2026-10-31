@@ -1,0 +1,20 @@
+// vec7_p1_kept -- DESIGN.md 2.12.6 P1 keeps a do: after T9's two splits the copy for both
+// conditions holds two nested ifs with an exit inside and the final return after them; no part
+// of the outer if ends in exit D, so that exit is not in tail position, D stays and the loop is
+// written exactly as before P1 (its .lir equals its .lir3)
+elemental fn k(v: f64, w: f64) -> f64 {
+    if v > 1.5 {
+        if w > 4.5 {
+            if v < 2.5 {
+                if w < 5.5 {
+                    return v * 2.0
+                }
+            }
+        }
+    }
+    return v + 1.0
+}
+let x = [1.0, 2.0, 3.0]
+let y = [4.0, 5.0, 6.0]
+let r = k(x, y)
+printf("%g\n", r[1])

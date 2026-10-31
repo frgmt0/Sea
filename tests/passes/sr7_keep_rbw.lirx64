@@ -1,0 +1,24 @@
+#sea 1
+#target x86_64-linux
+#file sr7_keep_rbw.sea
+func .main main 0:1:1 0 0
+li i1 1
+call half 1 f2 1 i1
+ret 0
+endfunc
+func half fn 0:1:1 1 i1 1 f
+slot s1 16 8
+sa p2 s1
+lf f3 #4000000000000000
+stf f3 p2 - 0 8
+li i4 0
+icmp gt i5 i1 i4
+if 1 i5
+stf f3 p2 - 0 0
+endif 1
+ldf f6 p2 - 0 0
+ldf f7 p2 - 0 8
+fadd f8 f6 f7
+ret 1 f8
+endfunc
+#end

@@ -1,0 +1,479 @@
+15000 REM ====================================================================================
+15005 REM T12: scalar replacement (DESIGN 2.12.6, 5.3, Decisions 102, 117, L-ew, L-gr). A slot s of at
+15010 REM most 2048 bytes whose every sa register (R(r,5) = s for each sa of s) is read only as the base
+15015 REM of ldi ldf sti stf with idx - or a constant (R(idx,6)), at offsets off + idx*scale that are
+15020 REM multiples of 8 inside the slot, or as an operand of a slot copy (16000), each 8-byte location
+15025 REM with one class (1 i, 2 f; propagated through slot copies), and whose every location is surely
+15030 REM stored (or copied into) before it is loaded or copied from (a forward walk with F6's joins: a
+15035 REM part ending in exit, next or ret joins nothing, a loop's state after it is its entry state, a
+15036 REM do's the join of its exits' states (L-hb, 16800);
+15037 REM a decided guard's part on no path is dead: KNOWN 16600, L-gz; a location no access reaches has
+15038 REM no class and no register, L-ha), in the greatest set closed under slot copies (16100), is
+15040 REM replaced (decided blocks holding its accesses resolved, 16700): each location a register, a
+15045 REM load a mov from it, a store a mov into it, a slot copy movs for o ascending, the sa records and
+15050 REM the slot record deleted, the slots renumbered densely. Tables: S(830000+s) 1 while s qualifies;
+15055 REM S(890000+s) its first row g of S(100000+g) (class) and S(150000+g) (register), at most 49999
+15060 REM rows; S(970000+4c) the slot copies (S(200000+n) c at record n); S(840000+l) the walk's state,
+15062 REM frames of 600 at S(400000+600f) (f <= 600): state, then-part state (+300), kind +595, dead
+15065 REM +596, else +597, then-dead +598, decision +599; D7 the depth (the dead flag is H1); S(200000+n)
+15067 REM of an if/ifz: -1, -2 its decision (KNOWN), -100 a record a resolved block drops.
+15070 REM ====================================================================================
+15075 LET G1 = 0
+15077 LET F4 = 0
+15080 FOR D4 = 1 TO S6
+15085 LET S(830000 + D4) = 0
+15090 IF K(10000 + D4, 1) > 2048 THEN 15115
+15095 IF G1 + K(10000 + D4, 1) / 8 > 49999 THEN 15115
+15100 LET S(830000 + D4) = 1
+15105 LET S(890000 + D4) = G1
+15110 LET G1 = G1 + INT(K(10000 + D4, 1) / 8) + 1
+15115 NEXT D4
+15120 FOR D4 = 0 TO G1
+15125 LET S(100000 + D4) = 0
+15130 LET S(150000 + D4) = 0
+15135 NEXT D4
+15140 FOR N0 = 1 TO A0
+15141 LET S(200000 + N0) = 0
+15142 IF FNC(N0) <> 55 THEN 15145
+15143 GOSUB 16000
+15144 IF F0 = 1 THEN 15215
+15145 LET V0 = 15
+15150 GOSUB 1315
+15151 GOSUB 16600
+15152 LET X8 = N0
+15155 IF FNC(N0) <> 4 THEN 15170
+15160 IF R(FNO(N0, 0), 5) = FNO(N0, 1) THEN 15170
+15165 LET S(830000 + FNO(N0, 1)) = 0
+15170 GOSUB 15500
+15175 IF D5 = 0 THEN 15215
+15180 IF S(830000 + D5) = 0 THEN 15215
+15185 IF D6 < 0 THEN 15210
+15190 LET X4 = S(890000 + D5) + D6
+15200 IF S(100000 + X4) = 0 THEN 15206
+15202 IF S(100000 + X4) = D0 THEN 15215
+15204 GOTO 15210
+15206 LET S(100000 + X4) = D0
+15208 GOTO 15215
+15210 LET S(830000 + D5) = 0
+15215 NEXT N0
+15220 REM the greatest set closed under slot copies (16100), then the walk of each slot in it, again
+15222 REM until no walk drops a slot
+15223 GOSUB 16100
+15225 LET G2 = 0
+15227 LET G0 = 0
+15230 FOR D1 = 1 TO S6
+15235 IF S(830000 + D1) = 0 THEN 15250
+15240 GOSUB 15600
+15242 IF S(830000 + D1) = 1 THEN 15245
+15243 LET G0 = 1
+15245 LET G2 = G2 + S(830000 + D1)
+15250 NEXT D1
+15252 IF G0 = 1 THEN 15223
+15255 IF G2 = 0 THEN 1399
+15257 GOSUB 16700
+15260 REM the rewrite: the whole function as a list, spliced in place of itself
+15265 LET T3 = A0 + 1
+15270 LET T4 = A1 + 1
+15275 LET O0 = 0
+15280 LET W3 = M7
+15285 LET D2 = 0
+15290 FOR D1 = 1 TO S6
+15295 IF S(830000 + D1) = 1 THEN 15310
+15300 LET D2 = D2 + 1
+15306 LET S(880000 + D1) = D2
+15310 NEXT D1
+15315 FOR X8 = 1 TO A0
+15317 IF S(200000 + X8) = -100 THEN 15370
+15318 IF S(200000 + X8) > 0 THEN 16300
+15320 GOSUB 15500
+15325 IF D5 = 0 THEN 15340
+15330 IF S(830000 + D5) = 1 THEN 15380
+15340 IF FNC(X8) <> 4 THEN 15360
+15345 IF S(830000 + FNO(X8, 1)) = 1 THEN 15370
+15350 GOSUB 2600
+15355 LET O(I(H7, 2) + 1) = S(880000 + FNO(X8, 1))
+15357 GOTO 15370
+15360 GOSUB 2600
+15370 NEXT X8
+15375 GOTO 15430
+15380 LET X4 = S(890000 + D5) + D6
+15385 IF S(150000 + X4) > 0 THEN 15400
+15390 LET Z4 = D0
+15392 GOSUB 2300
+15395 LET S(150000 + X4) = Z5
+15400 LET H3 = 5
+15405 LET O3 = S(150000 + X4)
+15410 LET O4 = FNO(X8, 0)
+15415 IF Q(I(X8, 1), 7) = 4 THEN 15425
+15420 LET O4 = O3
+15422 LET O3 = FNO(X8, 0)
+15425 GOSUB 2500
+15427 GOTO 15370
+15430 LET U0 = T3 - A0 - 1 - A0
+15435 LET U1 = 0
+15440 LET U3 = 0
+15445 GOSUB 3100
+15450 IF O0 = 1 THEN 15460
+15455 IF F0 = 1 THEN 15475
+15460 LET M7 = W3
+15472 RETURN
+15475 FOR D1 = 1 TO S6
+15476 IF S(830000 + D1) = 1 THEN 15479
+15477 LET K(10000 + S(880000 + D1), 1) = K(10000 + D1, 1)
+15478 LET K(10000 + S(880000 + D1), 2) = K(10000 + D1, 2)
+15479 NEXT D1
+15480 LET S6 = D2
+15481 LET J5 = 1
+15482 LET J6 = A0
+15484 LET J7 = A0 + 1
+15486 LET J8 = T3 - 1
+15488 GOSUB 2800
+15490 GOSUB 1900
+15492 LET D9 = D9 + 1
+15494 RETURN
+15495 REM ---- ACC: record X8 as an access of T12: D5 its slot
+15497 REM (0 none), D6 its location (offset / 8, -1 out of the rules), D0 the class (1 i, 2 f)
+15500 LET D5 = 0
+15505 LET X3 = FNC(X8)
+15510 IF X3 < 47 THEN 1399
+15515 IF X3 > 53 THEN 1399
+15520 IF FNB(X3, 1) = 0 THEN 1399
+15535 LET D5 = R(FNO(X8, 1), 5)
+15540 IF D5 <= 0 THEN 15595
+15545 LET D0 = 1 + (X3 - 47) / 2 - 2 * INT((X3 - 47) / 4)
+15555 LET D6 = -1
+15560 LET V2 = 0
+15565 IF FNO(X8, 2) = 0 THEN 15575
+15570 LET V2 = R(FNO(X8, 2), 6)
+15572 IF V2 = N8 THEN 1399
+15575 LET G9 = FNO(X8, 4)
+15577 GOSUB 2240
+15580 IF V5 = N8 THEN 1399
+15582 LET V5 = V5 + V2 * FNO(X8, 3)
+15584 IF V5 <> 8 * INT(V5 / 8) THEN 1399
+15586 IF V5 < 0 THEN 1399
+15588 IF V5 > K(10000 + D5, 1) - 8 THEN 1399
+15590 LET D6 = V5 / 8
+15592 RETURN
+15595 LET D5 = 0
+15597 RETURN
+15600 REM ---- WALK: S(830000+D1) = 0 when a location of slot D1 may be loaded before it is stored
+15605 LET D7 = 0
+15610 LET H1 = 0
+15615 LET D2 = INT(K(10000 + D1, 1) / 8)
+15620 FOR D3 = 0 TO D2
+15625 LET S(840000 + D3) = 0
+15630 NEXT D3
+15635 FOR X8 = 1 TO A0
+15640 LET X3 = FNC(X8)
+15645 IF X3 < 56 THEN 15800
+15650 IF X3 > 66 THEN 15800
+15655 LET X5 = 400000 + 600 * D7
+15660 IF X3 > 63 THEN 15790
+15665 IF X3 = 62 THEN 15730
+15670 IF X3 = 63 THEN 15745
+15675 IF X3 = 57 THEN 15715
+15680 IF X3 = 59 THEN 16850
+15685 IF D7 >= 600 THEN 15795
+15690 LET D7 = D7 + 1
+15692 LET X5 = 400000 + 600 * D7
+15694 LET S(X5 + 595) = X3
+15696 LET S(X5 + 596) = H1
+15697 LET S(X5 + 594) = FNO(X8, 0)
+15698 LET S(X5 + 597) = 0
+15699 GOSUB 16560
+15700 FOR D3 = 0 TO D2
+15702 LET S(X5 + D3) = S(840000 + D3)
+15704 NEXT D3
+15706 GOTO 15850
+15715 LET H1 = S(X5 + 596)
+15717 GOSUB 15900
+15719 LET D7 = D7 - 1
+15721 GOTO 15850
+15730 GOSUB 15950
+15735 LET S(X5 + 597) = 1
+15737 LET H1 = S(X5 + 596)
+15739 GOSUB 15900
+15740 GOSUB 16580
+15741 GOTO 15850
+15745 IF S(X5 + 597) = 1 THEN 15760
+15750 GOSUB 15950
+15752 LET H1 = S(X5 + 596)
+15754 GOSUB 15900
+15756 GOSUB 16580
+15760 IF S(X5 + 598) = 1 THEN 15782
+15762 IF H1 = 1 THEN 15776
+15764 FOR D3 = 0 TO D2
+15766 LET S(840000 + D3) = S(840000 + D3) * S(X5 + 300 + D3)
+15768 NEXT D3
+15770 GOTO 15782
+15776 LET H1 = 0
+15778 FOR D3 = 0 TO D2
+15779 LET S(840000 + D3) = S(X5 + 300 + D3)
+15780 NEXT D3
+15782 IF S(X5 + 598) * H1 = 0 THEN 15786
+15784 LET H1 = 1
+15785 GOSUB 15900
+15786 LET D7 = D7 - 1
+15788 GOTO 15850
+15790 IF X3 = 64 THEN 16800
+15791 LET H1 = 1
+15792 GOTO 15850
+15795 LET S(830000 + D1) = 0
+15797 RETURN
+15800 IF X3 = 55 THEN 16200
+15801 GOSUB 15500
+15805 IF D5 <> D1 THEN 15850
+15810 IF Q(I(X8, 1), 7) = 4 THEN 15840
+15815 IF H1 = 1 THEN 15850
+15820 IF S(840000 + D6) = 0 THEN 15795
+15825 GOTO 15850
+15840 LET S(840000 + D6) = 1
+15850 NEXT X8
+15855 RETURN
+15895 REM the state from frame X5 (at the opening record)
+15900 FOR D3 = 0 TO D2
+15905 LET S(840000 + D3) = S(X5 + D3)
+15910 NEXT D3
+15915 RETURN
+15945 REM the then part's end into frame X5 (+300, its dead flag +598)
+15950 FOR D3 = 0 TO D2
+15955 LET S(X5 + 300 + D3) = S(840000 + D3)
+15960 NEXT D3
+15965 LET S(X5 + 598) = H1
+15970 RETURN
+15995 REM ---- SLOTCP: F0 = 1 when the mcopy N0 is a slot copy (Decision 117): d and s sa registers of two
+15997 REM different slots, n a constant, a multiple of 8, 8 <= n <= each slot's size; then it is entry F4
+15998 REM of S(970000+4c+0..3): the record, d's slot, s's slot, n / 8 (S(200000+N0) = c; at most 5999)
+16000 LET F0 = 0
+16005 LET D5 = R(FNO(N0, 0), 5)
+16010 LET D6 = R(FNO(N0, 1), 5)
+16015 IF D5 <= 0 THEN 1399
+16020 IF D6 <= 0 THEN 1399
+16025 IF D5 = D6 THEN 1399
+16030 LET V2 = R(FNO(N0, 2), 6)
+16035 IF V2 = N8 THEN 1399
+16040 IF V2 < 8 THEN 1399
+16045 IF V2 <> 8 * INT(V2 / 8) THEN 1399
+16050 IF V2 > K(10000 + D5, 1) THEN 1399
+16055 IF V2 > K(10000 + D6, 1) THEN 1399
+16060 IF F4 >= 5999 THEN 1399
+16065 LET F4 = F4 + 1
+16070 LET S(970000 + 4 * F4) = N0
+16072 LET S(970001 + 4 * F4) = D5
+16074 LET S(970002 + 4 * F4) = D6
+16076 LET S(970003 + 4 * F4) = V2 / 8
+16078 LET S(200000 + N0) = F4
+16080 LET F0 = 1
+16085 RETURN
+16095 REM ---- CLOSE: drop a slot whose slot copy has its other slot out of the set, and propagate the
+16097 REM locations' classes through the copies (two classes for one location drop both slots), until
+16098 REM nothing changes (F5 the change flag)
+16100 LET F5 = 0
+16105 FOR D3 = 1 TO F4
+16110 LET D5 = S(970001 + 4 * D3)
+16115 LET D6 = S(970002 + 4 * D3)
+16120 IF S(830000 + D5) + S(830000 + D6) = 2 THEN 16145
+16125 IF S(830000 + D5) + S(830000 + D6) = 0 THEN 16190
+16130 LET S(830000 + D5) = 0
+16135 LET S(830000 + D6) = 0
+16140 GOTO 16185
+16145 FOR D4 = 0 TO S(970003 + 4 * D3) - 1
+16150 LET V2 = S(890000 + D5) + D4
+16152 LET V3 = S(890000 + D6) + D4
+16154 IF S(100000 + V2) = S(100000 + V3) THEN 16180
+16156 IF S(100000 + V2) = 0 THEN 16170
+16158 IF S(100000 + V3) = 0 THEN 16175
+16160 LET S(830000 + D5) = 0
+16162 LET S(830000 + D6) = 0
+16164 GOTO 16185
+16170 LET S(100000 + V2) = S(100000 + V3)
+16172 GOTO 16178
+16175 LET S(100000 + V3) = S(100000 + V2)
+16178 LET F5 = 1
+16180 NEXT D4
+16182 GOTO 16190
+16185 LET F5 = 1
+16190 NEXT D3
+16195 IF F5 = 1 THEN 16100
+16197 RETURN
+16198 REM ---- the walk at a slot copy X8 (slot D1): its source locations read (each surely stored unless
+16199 REM the path is dead), then its destination locations written
+16200 LET X4 = S(200000 + X8)
+16205 IF X4 = 0 THEN 15850
+16210 LET X6 = 970000 + 4 * X4
+16215 IF S(X6 + 2) <> D1 THEN 16240
+16220 IF H1 = 1 THEN 16240
+16225 FOR D3 = 0 TO S(X6 + 3) - 1
+16228 IF S(100000 + S(890000 + D1) + D3) = 0 THEN 16235
+16230 IF S(840000 + D3) = 0 THEN 15795
+16235 NEXT D3
+16240 IF S(X6 + 1) <> D1 THEN 15850
+16245 FOR D3 = 0 TO S(X6 + 3) - 1
+16250 LET S(840000 + D3) = 1
+16255 NEXT D3
+16260 GOTO 15850
+16295 REM ---- the rewrite of slot copy X8 when its slots are replaced: mov Rd,o Rs,o for o ascending
+16300 LET X6 = 970000 + 4 * S(200000 + X8)
+16302 IF S(830000 + S(X6 + 1)) = 0 THEN 15360
+16304 FOR D4 = 0 TO S(X6 + 3) - 1
+16305 IF S(100000 + S(890000 + S(X6 + 1)) + D4) = 0 THEN 16324
+16306 LET X4 = S(890000 + S(X6 + 2)) + D4
+16308 GOSUB 16400
+16310 LET V3 = Z5
+16312 LET X4 = S(890000 + S(X6 + 1)) + D4
+16314 GOSUB 16400
+16316 LET H3 = 5
+16318 LET O3 = Z5
+16320 LET O4 = V3
+16322 GOSUB 2500
+16324 NEXT D4
+16326 GOTO 15370
+16395 REM ---- GREG: Z5 = the register of location row X4, made on first use
+16397 REM of its class (L-ha: a location with none gets no register)
+16400 IF S(150000 + X4) > 0 THEN 16420
+16405 LET Z4 = S(100000 + X4)
+16414 GOSUB 2300
+16416 LET S(150000 + X4) = Z5
+16420 LET Z5 = S(150000 + X4)
+16425 RETURN
+16555 REM ---- the walk at an opening record (frame X5): S(X5+599) its decision (0, 1 the first part
+16557 REM runs, 2 the second); a first part on no path is dead (H1 = 1)
+16560 LET S(X5 + 599) = 0
+16561 IF X3 = 58 THEN 16590
+16562 IF X3 < 60 THEN 1399
+16564 IF X3 > 61 THEN 1399
+16566 LET S(X5 + 599) = -S(200000 + X8)
+16568 IF S(X5 + 599) <> 2 THEN 1399
+16570 LET H1 = 1
+16572 RETURN
+16575 REM at the else, or at an endif without one: a second part on no path is dead
+16580 IF S(X5 + 599) <> 1 THEN 1399
+16582 LET H1 = 1
+16584 RETURN
+16586 REM a do (L-hb): +599 0 no exit yet, 1 an exit state joined at S(760600+260*D7), -1 beyond the
+16588 REM bound (D7 > 40): its enddo keeps the entry state
+16590 IF D7 <= 40 THEN 1399
+16591 LET S(X5 + 599) = -1
+16592 RETURN
+16595 REM ---- KNOWN (L-gz): S(200000+N0) = -1 (the first part runs) or -2 (the second) for an if/ifz N0
+16597 REM whose condition's only definition folds: icmp cc of two constants (signed), or the flag of an
+16598 REM rcount of constant lo hi st (st <> 0), true when the range has an element
+16600 IF FNC(N0) < 60 THEN 1399
+16602 IF FNC(N0) > 61 THEN 1399
+16604 LET X6 = FNO(N0, 1)
+16606 IF R(X6, 3) <> 1 THEN 1399
+16608 LET X4 = R(X6, 4)
+16610 IF X4 <= 0 THEN 1399
+16612 IF FNC(X4) = 28 THEN 16660
+16614 IF FNC(X4) <> 24 THEN 1399
+16616 IF FNO(X4, 1) <> X6 THEN 1399
+16618 LET V2 = R(FNO(X4, 2), 6)
+16620 LET V3 = R(FNO(X4, 3), 6)
+16622 IF V2 = N8 THEN 1399
+16624 IF V3 = N8 THEN 1399
+16626 LET V4 = FNO(X4, 0)
+16628 LET V5 = 0
+16630 IF V4 = C4 THEN 16645
+16632 IF V4 = C5 THEN 16647
+16634 IF V4 = C6 THEN 16649
+16636 IF V4 = C7 THEN 16651
+16638 IF V4 = C8 THEN 16653
+16640 IF V2 < V3 THEN 16692
+16642 GOTO 16690
+16645 IF V2 <> V3 THEN 16692
+16646 GOTO 16690
+16647 IF V2 = V3 THEN 16692
+16648 GOTO 16690
+16649 IF V2 >= V3 THEN 16692
+16650 GOTO 16690
+16651 IF V2 > V3 THEN 16692
+16652 GOTO 16690
+16653 IF V2 <= V3 THEN 16692
+16654 GOTO 16690
+16660 IF FNO(X4, 1) <> X6 THEN 1399
+16662 LET V2 = R(FNO(X4, 2), 6)
+16664 LET V3 = R(FNO(X4, 3), 6)
+16666 LET V4 = R(FNO(X4, 4), 6)
+16668 IF V2 = N8 THEN 1399
+16670 IF V3 = N8 THEN 1399
+16672 IF V4 = N8 THEN 1399
+16674 IF V4 = 0 THEN 1399
+16676 IF V2 = V3 THEN 16686
+16678 IF V4 < 0 THEN 16684
+16680 IF V2 < V3 THEN 16690
+16682 GOTO 16692
+16684 IF V2 > V3 THEN 16690
+16685 GOTO 16692
+16686 IF FNO(X4, 5) = 0 THEN 16692
+16690 LET V5 = 1
+16692 LET S(200000 + N0) = -2 + V5
+16694 IF FNC(N0) = 60 THEN 1399
+16696 LET S(200000 + N0) = -1 - V5
+16698 RETURN
+16699 REM ---- RESOLVE (L-gz): a decided block holding an access to, or a slot copy of, a replaced slot:
+16700 REM its opening, else and endif records and its dead part marked S(200000+r) = -100 (dropped)
+16702 FOR N0 = 1 TO A0
+16704 LET D1 = S(200000 + N0)
+16706 IF D1 >= 0 THEN 16790
+16708 IF D1 = -100 THEN 16790
+16710 LET V3 = FNO(N0, 0)
+16712 LET V4 = 0
+16714 FOR X8 = N0 + 1 TO K(V3, 4) - 1
+16716 GOSUB 15500
+16718 IF D5 = 0 THEN 16722
+16720 IF S(830000 + D5) = 1 THEN 16736
+16722 IF FNC(X8) <> 55 THEN 16730
+16724 IF S(200000 + X8) <= 0 THEN 16730
+16726 IF S(830000 + S(970001 + 4 * S(200000 + X8))) = 1 THEN 16736
+16730 NEXT X8
+16732 GOTO 16790
+16736 LET S(200000 + N0) = -100
+16738 LET S(200000 + K(V3, 4)) = -100
+16740 LET D3 = K(V3, 4) - 1
+16742 IF K(V3, 3) = 0 THEN 16748
+16744 LET S(200000 + K(V3, 3)) = -100
+16746 LET D3 = K(V3, 3) - 1
+16748 LET D4 = N0 + 1
+16750 IF D1 = -2 THEN 16760
+16752 IF K(V3, 3) = 0 THEN 16790
+16754 LET D4 = K(V3, 3) + 1
+16756 LET D3 = K(V3, 4) - 1
+16760 FOR X8 = D4 TO D3
+16762 LET S(200000 + X8) = -100
+16764 NEXT X8
+16790 NEXT N0
+16795 RETURN
+16797 REM ---- EXIT (L-hb): a live exit to a do joins its state into the do's exit state (S(760600+260f),
+16798 REM f the do's frame; the first exit copies, later ones intersect), then the path is dead
+16800 IF H1 = 1 THEN 15791
+16802 FOR D3 = D7 TO 1 STEP -1
+16804 LET X6 = 400000 + 600 * D3
+16806 IF S(X6 + 594) = FNO(X8, 0) THEN 16812
+16808 NEXT D3
+16810 GOTO 15791
+16812 IF S(X6 + 595) <> 58 THEN 15791
+16814 IF S(X6 + 599) < 0 THEN 15791
+16816 LET X4 = 760600 + 260 * D3
+16818 IF S(X6 + 599) = 1 THEN 16830
+16820 LET S(X6 + 599) = 1
+16822 FOR D4 = 0 TO D2
+16824 LET S(X4 + D4) = S(840000 + D4)
+16826 NEXT D4
+16828 GOTO 15791
+16830 FOR D4 = 0 TO D2
+16832 LET S(X4 + D4) = S(X4 + D4) * S(840000 + D4)
+16834 NEXT D4
+16836 GOTO 15791
+16845 REM ---- ENDDO (L-hb): the state after a do is its exits' join; with no exit nothing follows (dead);
+16847 REM beyond the bound the entry state (15715)
+16850 IF S(X5 + 599) < 0 THEN 15715
+16852 IF S(X5 + 599) = 1 THEN 16860
+16854 LET H1 = 1
+16856 LET D7 = D7 - 1
+16858 GOTO 15850
+16860 LET H1 = S(X5 + 596)
+16862 FOR D4 = 0 TO D2
+16864 LET S(840000 + D4) = S(760600 + 260 * D7 + D4)
+16866 NEXT D4
+16868 GOTO 16856

@@ -1,0 +1,9 @@
+// vec7_walk_rev -- DESIGN.md 2.12.6 P2 refuses a reverse walk: the slice with step -1 gives a
+// walked base whose step is -8 (the negative element size), its access stays `Q - 0 0`, and the
+// loop fails condition 2 (its .lir equals its .lir3)
+var x = zeros(6)
+for i in 0..6 {
+    x[i] = f64(i)
+}
+let s = x[$-1..=0 step -1] * 2.0
+printf("%g\n", s[0])

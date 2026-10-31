@@ -1,0 +1,2204 @@
+#sea 1
+#target x86_64-linux
+#file gen7_yminmax.sea
+func .main main 0:1:1 0 0
+slot s1 512 16
+slot s2 64 16
+slot s3 64 8
+sa p1 s1
+sa p2 s2
+sa p3 s3
+li i4 #7FF8000000000000
+lf f5 #8000000000000000
+lf f6 #0000000000000000
+lf f7 #7FF8000000000000
+lf f8 #3FF0000000000000
+stf f5 p1 - 0 0
+stf f6 p1 - 0 8
+stf f7 p1 - 0 16
+stf f8 p1 - 0 24
+ldy y9 p1 - 0 0
+lf f10 #0000000000000000
+lf f11 #8000000000000000
+lf f12 #3FF0000000000000
+lf f13 #7FF8000000000000
+stf f10 p1 - 0 0
+stf f11 p1 - 0 8
+stf f12 p1 - 0 16
+stf f13 p1 - 0 24
+ldy y14 p1 - 0 0
+ymin y15 y9 y14
+sty y15 p2 - 0 0
+ldf f16 p2 - 0 0
+fnan i17 f16
+ldi i18 p2 - 0 0
+isel i19 i17 i4 i18
+ldf f20 p2 - 0 8
+fnan i21 f20
+ldi i22 p2 - 0 8
+isel i23 i21 i4 i22
+ldf f24 p2 - 0 16
+fnan i25 f24
+ldi i26 p2 - 0 16
+isel i27 i25 i4 i26
+ldf f28 p2 - 0 24
+fnan i29 f28
+ldi i30 p2 - 0 24
+isel i31 i29 i4 i30
+sti i19 p3 - 0 0
+sti i23 p3 - 0 8
+sti i27 p3 - 0 16
+sti i31 p3 - 0 24
+la p32 d1
+rcall sea_printf 0:2 0 2 p32 p3
+ymax y33 y9 y14
+sty y33 p2 - 0 0
+ldf f34 p2 - 0 0
+fnan i35 f34
+ldi i36 p2 - 0 0
+isel i37 i35 i4 i36
+ldf f38 p2 - 0 8
+fnan i39 f38
+ldi i40 p2 - 0 8
+isel i41 i39 i4 i40
+ldf f42 p2 - 0 16
+fnan i43 f42
+ldi i44 p2 - 0 16
+isel i45 i43 i4 i44
+ldf f46 p2 - 0 24
+fnan i47 f46
+ldi i48 p2 - 0 24
+isel i49 i47 i4 i48
+sti i37 p3 - 0 0
+sti i41 p3 - 0 8
+sti i45 p3 - 0 16
+sti i49 p3 - 0 24
+la p50 d2
+rcall sea_printf 0:2 0 2 p50 p3
+lf f51 #8000000000000000
+lf f52 #0000000000000000
+lf f53 #7FF8000000000000
+lf f54 #3FF0000000000000
+stf f51 p1 - 0 0
+stf f52 p1 - 0 8
+stf f53 p1 - 0 16
+stf f54 p1 - 0 24
+ldy y55 p1 - 0 0
+lf f56 #0000000000000000
+lf f57 #8000000000000000
+lf f58 #3FF0000000000000
+lf f59 #7FF8000000000000
+stf f56 p1 - 0 0
+stf f57 p1 - 0 8
+stf f58 p1 - 0 16
+stf f59 p1 - 0 24
+ldy y60 p1 - 0 0
+ymin y60 y55 y60
+sty y60 p2 - 0 0
+ldf f61 p2 - 0 0
+fnan i62 f61
+ldi i63 p2 - 0 0
+isel i64 i62 i4 i63
+ldf f65 p2 - 0 8
+fnan i66 f65
+ldi i67 p2 - 0 8
+isel i68 i66 i4 i67
+ldf f69 p2 - 0 16
+fnan i70 f69
+ldi i71 p2 - 0 16
+isel i72 i70 i4 i71
+ldf f73 p2 - 0 24
+fnan i74 f73
+ldi i75 p2 - 0 24
+isel i76 i74 i4 i75
+sti i64 p3 - 0 0
+sti i68 p3 - 0 8
+sti i72 p3 - 0 16
+sti i76 p3 - 0 24
+la p77 d3
+rcall sea_printf 0:2 0 2 p77 p3
+lf f78 #8000000000000000
+lf f79 #0000000000000000
+lf f80 #7FF8000000000000
+lf f81 #3FF0000000000000
+stf f78 p1 - 0 0
+stf f79 p1 - 0 8
+stf f80 p1 - 0 16
+stf f81 p1 - 0 24
+ldy y82 p1 - 0 0
+lf f83 #0000000000000000
+lf f84 #8000000000000000
+lf f85 #3FF0000000000000
+lf f86 #7FF8000000000000
+stf f83 p1 - 0 0
+stf f84 p1 - 0 8
+stf f85 p1 - 0 16
+stf f86 p1 - 0 24
+ldy y87 p1 - 0 0
+ymin y82 y82 y87
+sty y82 p2 - 0 0
+ldf f88 p2 - 0 0
+fnan i89 f88
+ldi i90 p2 - 0 0
+isel i91 i89 i4 i90
+ldf f92 p2 - 0 8
+fnan i93 f92
+ldi i94 p2 - 0 8
+isel i95 i93 i4 i94
+ldf f96 p2 - 0 16
+fnan i97 f96
+ldi i98 p2 - 0 16
+isel i99 i97 i4 i98
+ldf f100 p2 - 0 24
+fnan i101 f100
+ldi i102 p2 - 0 24
+isel i103 i101 i4 i102
+sti i91 p3 - 0 0
+sti i95 p3 - 0 8
+sti i99 p3 - 0 16
+sti i103 p3 - 0 24
+la p104 d4
+rcall sea_printf 0:2 0 2 p104 p3
+lf f105 #8000000000000000
+lf f106 #0000000000000000
+lf f107 #7FF8000000000000
+lf f108 #3FF0000000000000
+stf f105 p1 - 0 0
+stf f106 p1 - 0 8
+stf f107 p1 - 0 16
+stf f108 p1 - 0 24
+ldy y109 p1 - 0 0
+lf f110 #0000000000000000
+lf f111 #8000000000000000
+lf f112 #3FF0000000000000
+lf f113 #7FF8000000000000
+stf f110 p1 - 0 0
+stf f111 p1 - 0 8
+stf f112 p1 - 0 16
+stf f113 p1 - 0 24
+ldy y114 p1 - 0 0
+ymax y114 y109 y114
+sty y114 p2 - 0 0
+ldf f115 p2 - 0 0
+fnan i116 f115
+ldi i117 p2 - 0 0
+isel i118 i116 i4 i117
+ldf f119 p2 - 0 8
+fnan i120 f119
+ldi i121 p2 - 0 8
+isel i122 i120 i4 i121
+ldf f123 p2 - 0 16
+fnan i124 f123
+ldi i125 p2 - 0 16
+isel i126 i124 i4 i125
+ldf f127 p2 - 0 24
+fnan i128 f127
+ldi i129 p2 - 0 24
+isel i130 i128 i4 i129
+sti i118 p3 - 0 0
+sti i122 p3 - 0 8
+sti i126 p3 - 0 16
+sti i130 p3 - 0 24
+la p131 d5
+rcall sea_printf 0:2 0 2 p131 p3
+lf f132 #8000000000000000
+lf f133 #0000000000000000
+lf f134 #7FF8000000000000
+lf f135 #3FF0000000000000
+stf f132 p1 - 0 0
+stf f133 p1 - 0 8
+stf f134 p1 - 0 16
+stf f135 p1 - 0 24
+ldy y136 p1 - 0 0
+lf f137 #0000000000000000
+lf f138 #8000000000000000
+lf f139 #3FF0000000000000
+lf f140 #7FF8000000000000
+stf f137 p1 - 0 0
+stf f138 p1 - 0 8
+stf f139 p1 - 0 16
+stf f140 p1 - 0 24
+ldy y141 p1 - 0 0
+ymax y136 y136 y141
+sty y136 p2 - 0 0
+ldf f142 p2 - 0 0
+fnan i143 f142
+ldi i144 p2 - 0 0
+isel i145 i143 i4 i144
+ldf f146 p2 - 0 8
+fnan i147 f146
+ldi i148 p2 - 0 8
+isel i149 i147 i4 i148
+ldf f150 p2 - 0 16
+fnan i151 f150
+ldi i152 p2 - 0 16
+isel i153 i151 i4 i152
+ldf f154 p2 - 0 24
+fnan i155 f154
+ldi i156 p2 - 0 24
+isel i157 i155 i4 i156
+sti i145 p3 - 0 0
+sti i149 p3 - 0 8
+sti i153 p3 - 0 16
+sti i157 p3 - 0 24
+la p158 d6
+rcall sea_printf 0:2 0 2 p158 p3
+ymin y159 y9 y9
+sty y159 p2 - 0 0
+ldf f160 p2 - 0 0
+fnan i161 f160
+ldi i162 p2 - 0 0
+isel i163 i161 i4 i162
+ldf f164 p2 - 0 8
+fnan i165 f164
+ldi i166 p2 - 0 8
+isel i167 i165 i4 i166
+ldf f168 p2 - 0 16
+fnan i169 f168
+ldi i170 p2 - 0 16
+isel i171 i169 i4 i170
+ldf f172 p2 - 0 24
+fnan i173 f172
+ldi i174 p2 - 0 24
+isel i175 i173 i4 i174
+sti i163 p3 - 0 0
+sti i167 p3 - 0 8
+sti i171 p3 - 0 16
+sti i175 p3 - 0 24
+la p176 d7
+rcall sea_printf 0:2 0 2 p176 p3
+ymax y177 y9 y9
+sty y177 p2 - 0 0
+ldf f178 p2 - 0 0
+fnan i179 f178
+ldi i180 p2 - 0 0
+isel i181 i179 i4 i180
+ldf f182 p2 - 0 8
+fnan i183 f182
+ldi i184 p2 - 0 8
+isel i185 i183 i4 i184
+ldf f186 p2 - 0 16
+fnan i187 f186
+ldi i188 p2 - 0 16
+isel i189 i187 i4 i188
+ldf f190 p2 - 0 24
+fnan i191 f190
+ldi i192 p2 - 0 24
+isel i193 i191 i4 i192
+sti i181 p3 - 0 0
+sti i185 p3 - 0 8
+sti i189 p3 - 0 16
+sti i193 p3 - 0 24
+la p194 d8
+rcall sea_printf 0:2 0 2 p194 p3
+sty y9 p2 - 0 0
+ldf f195 p2 - 0 0
+fnan i196 f195
+ldi i197 p2 - 0 0
+isel i198 i196 i4 i197
+ldf f199 p2 - 0 8
+fnan i200 f199
+ldi i201 p2 - 0 8
+isel i202 i200 i4 i201
+ldf f203 p2 - 0 16
+fnan i204 f203
+ldi i205 p2 - 0 16
+isel i206 i204 i4 i205
+ldf f207 p2 - 0 24
+fnan i208 f207
+ldi i209 p2 - 0 24
+isel i210 i208 i4 i209
+sti i198 p3 - 0 0
+sti i202 p3 - 0 8
+sti i206 p3 - 0 16
+sti i210 p3 - 0 24
+la p211 d9
+rcall sea_printf 0:2 0 2 p211 p3
+sty y14 p2 - 0 0
+ldf f212 p2 - 0 0
+fnan i213 f212
+ldi i214 p2 - 0 0
+isel i215 i213 i4 i214
+ldf f216 p2 - 0 8
+fnan i217 f216
+ldi i218 p2 - 0 8
+isel i219 i217 i4 i218
+ldf f220 p2 - 0 16
+fnan i221 f220
+ldi i222 p2 - 0 16
+isel i223 i221 i4 i222
+ldf f224 p2 - 0 24
+fnan i225 f224
+ldi i226 p2 - 0 24
+isel i227 i225 i4 i226
+sti i215 p3 - 0 0
+sti i219 p3 - 0 8
+sti i223 p3 - 0 16
+sti i227 p3 - 0 24
+la p228 d10
+rcall sea_printf 0:2 0 2 p228 p3
+lf f229 #7FF8000000000000
+lf f230 #FFF8000000000001
+lf f231 #7FF0000000000000
+lf f232 #FFF0000000000000
+stf f229 p1 - 0 0
+stf f230 p1 - 0 8
+stf f231 p1 - 0 16
+stf f232 p1 - 0 24
+ldy y233 p1 - 0 0
+lf f234 #FFF8000000000001
+lf f235 #7FF8000000000000
+lf f236 #FFF0000000000000
+lf f237 #7FF0000000000000
+stf f234 p1 - 0 0
+stf f235 p1 - 0 8
+stf f236 p1 - 0 16
+stf f237 p1 - 0 24
+ldy y238 p1 - 0 0
+ymin y239 y233 y238
+sty y239 p2 - 0 0
+ldf f240 p2 - 0 0
+fnan i241 f240
+ldi i242 p2 - 0 0
+isel i243 i241 i4 i242
+ldf f244 p2 - 0 8
+fnan i245 f244
+ldi i246 p2 - 0 8
+isel i247 i245 i4 i246
+ldf f248 p2 - 0 16
+fnan i249 f248
+ldi i250 p2 - 0 16
+isel i251 i249 i4 i250
+ldf f252 p2 - 0 24
+fnan i253 f252
+ldi i254 p2 - 0 24
+isel i255 i253 i4 i254
+sti i243 p3 - 0 0
+sti i247 p3 - 0 8
+sti i251 p3 - 0 16
+sti i255 p3 - 0 24
+la p256 d11
+rcall sea_printf 0:2 0 2 p256 p3
+ymax y257 y233 y238
+sty y257 p2 - 0 0
+ldf f258 p2 - 0 0
+fnan i259 f258
+ldi i260 p2 - 0 0
+isel i261 i259 i4 i260
+ldf f262 p2 - 0 8
+fnan i263 f262
+ldi i264 p2 - 0 8
+isel i265 i263 i4 i264
+ldf f266 p2 - 0 16
+fnan i267 f266
+ldi i268 p2 - 0 16
+isel i269 i267 i4 i268
+ldf f270 p2 - 0 24
+fnan i271 f270
+ldi i272 p2 - 0 24
+isel i273 i271 i4 i272
+sti i261 p3 - 0 0
+sti i265 p3 - 0 8
+sti i269 p3 - 0 16
+sti i273 p3 - 0 24
+la p274 d12
+rcall sea_printf 0:2 0 2 p274 p3
+lf f275 #7FF8000000000000
+lf f276 #FFF8000000000001
+lf f277 #7FF0000000000000
+lf f278 #FFF0000000000000
+stf f275 p1 - 0 0
+stf f276 p1 - 0 8
+stf f277 p1 - 0 16
+stf f278 p1 - 0 24
+ldy y279 p1 - 0 0
+lf f280 #FFF8000000000001
+lf f281 #7FF8000000000000
+lf f282 #FFF0000000000000
+lf f283 #7FF0000000000000
+stf f280 p1 - 0 0
+stf f281 p1 - 0 8
+stf f282 p1 - 0 16
+stf f283 p1 - 0 24
+ldy y284 p1 - 0 0
+ymin y284 y279 y284
+sty y284 p2 - 0 0
+ldf f285 p2 - 0 0
+fnan i286 f285
+ldi i287 p2 - 0 0
+isel i288 i286 i4 i287
+ldf f289 p2 - 0 8
+fnan i290 f289
+ldi i291 p2 - 0 8
+isel i292 i290 i4 i291
+ldf f293 p2 - 0 16
+fnan i294 f293
+ldi i295 p2 - 0 16
+isel i296 i294 i4 i295
+ldf f297 p2 - 0 24
+fnan i298 f297
+ldi i299 p2 - 0 24
+isel i300 i298 i4 i299
+sti i288 p3 - 0 0
+sti i292 p3 - 0 8
+sti i296 p3 - 0 16
+sti i300 p3 - 0 24
+la p301 d13
+rcall sea_printf 0:2 0 2 p301 p3
+lf f302 #7FF8000000000000
+lf f303 #FFF8000000000001
+lf f304 #7FF0000000000000
+lf f305 #FFF0000000000000
+stf f302 p1 - 0 0
+stf f303 p1 - 0 8
+stf f304 p1 - 0 16
+stf f305 p1 - 0 24
+ldy y306 p1 - 0 0
+lf f307 #FFF8000000000001
+lf f308 #7FF8000000000000
+lf f309 #FFF0000000000000
+lf f310 #7FF0000000000000
+stf f307 p1 - 0 0
+stf f308 p1 - 0 8
+stf f309 p1 - 0 16
+stf f310 p1 - 0 24
+ldy y311 p1 - 0 0
+ymin y306 y306 y311
+sty y306 p2 - 0 0
+ldf f312 p2 - 0 0
+fnan i313 f312
+ldi i314 p2 - 0 0
+isel i315 i313 i4 i314
+ldf f316 p2 - 0 8
+fnan i317 f316
+ldi i318 p2 - 0 8
+isel i319 i317 i4 i318
+ldf f320 p2 - 0 16
+fnan i321 f320
+ldi i322 p2 - 0 16
+isel i323 i321 i4 i322
+ldf f324 p2 - 0 24
+fnan i325 f324
+ldi i326 p2 - 0 24
+isel i327 i325 i4 i326
+sti i315 p3 - 0 0
+sti i319 p3 - 0 8
+sti i323 p3 - 0 16
+sti i327 p3 - 0 24
+la p328 d14
+rcall sea_printf 0:2 0 2 p328 p3
+lf f329 #7FF8000000000000
+lf f330 #FFF8000000000001
+lf f331 #7FF0000000000000
+lf f332 #FFF0000000000000
+stf f329 p1 - 0 0
+stf f330 p1 - 0 8
+stf f331 p1 - 0 16
+stf f332 p1 - 0 24
+ldy y333 p1 - 0 0
+lf f334 #FFF8000000000001
+lf f335 #7FF8000000000000
+lf f336 #FFF0000000000000
+lf f337 #7FF0000000000000
+stf f334 p1 - 0 0
+stf f335 p1 - 0 8
+stf f336 p1 - 0 16
+stf f337 p1 - 0 24
+ldy y338 p1 - 0 0
+ymax y338 y333 y338
+sty y338 p2 - 0 0
+ldf f339 p2 - 0 0
+fnan i340 f339
+ldi i341 p2 - 0 0
+isel i342 i340 i4 i341
+ldf f343 p2 - 0 8
+fnan i344 f343
+ldi i345 p2 - 0 8
+isel i346 i344 i4 i345
+ldf f347 p2 - 0 16
+fnan i348 f347
+ldi i349 p2 - 0 16
+isel i350 i348 i4 i349
+ldf f351 p2 - 0 24
+fnan i352 f351
+ldi i353 p2 - 0 24
+isel i354 i352 i4 i353
+sti i342 p3 - 0 0
+sti i346 p3 - 0 8
+sti i350 p3 - 0 16
+sti i354 p3 - 0 24
+la p355 d15
+rcall sea_printf 0:2 0 2 p355 p3
+lf f356 #7FF8000000000000
+lf f357 #FFF8000000000001
+lf f358 #7FF0000000000000
+lf f359 #FFF0000000000000
+stf f356 p1 - 0 0
+stf f357 p1 - 0 8
+stf f358 p1 - 0 16
+stf f359 p1 - 0 24
+ldy y360 p1 - 0 0
+lf f361 #FFF8000000000001
+lf f362 #7FF8000000000000
+lf f363 #FFF0000000000000
+lf f364 #7FF0000000000000
+stf f361 p1 - 0 0
+stf f362 p1 - 0 8
+stf f363 p1 - 0 16
+stf f364 p1 - 0 24
+ldy y365 p1 - 0 0
+ymax y360 y360 y365
+sty y360 p2 - 0 0
+ldf f366 p2 - 0 0
+fnan i367 f366
+ldi i368 p2 - 0 0
+isel i369 i367 i4 i368
+ldf f370 p2 - 0 8
+fnan i371 f370
+ldi i372 p2 - 0 8
+isel i373 i371 i4 i372
+ldf f374 p2 - 0 16
+fnan i375 f374
+ldi i376 p2 - 0 16
+isel i377 i375 i4 i376
+ldf f378 p2 - 0 24
+fnan i379 f378
+ldi i380 p2 - 0 24
+isel i381 i379 i4 i380
+sti i369 p3 - 0 0
+sti i373 p3 - 0 8
+sti i377 p3 - 0 16
+sti i381 p3 - 0 24
+la p382 d16
+rcall sea_printf 0:2 0 2 p382 p3
+ymin y383 y233 y233
+sty y383 p2 - 0 0
+ldf f384 p2 - 0 0
+fnan i385 f384
+ldi i386 p2 - 0 0
+isel i387 i385 i4 i386
+ldf f388 p2 - 0 8
+fnan i389 f388
+ldi i390 p2 - 0 8
+isel i391 i389 i4 i390
+ldf f392 p2 - 0 16
+fnan i393 f392
+ldi i394 p2 - 0 16
+isel i395 i393 i4 i394
+ldf f396 p2 - 0 24
+fnan i397 f396
+ldi i398 p2 - 0 24
+isel i399 i397 i4 i398
+sti i387 p3 - 0 0
+sti i391 p3 - 0 8
+sti i395 p3 - 0 16
+sti i399 p3 - 0 24
+la p400 d17
+rcall sea_printf 0:2 0 2 p400 p3
+ymax y401 y233 y233
+sty y401 p2 - 0 0
+ldf f402 p2 - 0 0
+fnan i403 f402
+ldi i404 p2 - 0 0
+isel i405 i403 i4 i404
+ldf f406 p2 - 0 8
+fnan i407 f406
+ldi i408 p2 - 0 8
+isel i409 i407 i4 i408
+ldf f410 p2 - 0 16
+fnan i411 f410
+ldi i412 p2 - 0 16
+isel i413 i411 i4 i412
+ldf f414 p2 - 0 24
+fnan i415 f414
+ldi i416 p2 - 0 24
+isel i417 i415 i4 i416
+sti i405 p3 - 0 0
+sti i409 p3 - 0 8
+sti i413 p3 - 0 16
+sti i417 p3 - 0 24
+la p418 d18
+rcall sea_printf 0:2 0 2 p418 p3
+sty y233 p2 - 0 0
+ldf f419 p2 - 0 0
+fnan i420 f419
+ldi i421 p2 - 0 0
+isel i422 i420 i4 i421
+ldf f423 p2 - 0 8
+fnan i424 f423
+ldi i425 p2 - 0 8
+isel i426 i424 i4 i425
+ldf f427 p2 - 0 16
+fnan i428 f427
+ldi i429 p2 - 0 16
+isel i430 i428 i4 i429
+ldf f431 p2 - 0 24
+fnan i432 f431
+ldi i433 p2 - 0 24
+isel i434 i432 i4 i433
+sti i422 p3 - 0 0
+sti i426 p3 - 0 8
+sti i430 p3 - 0 16
+sti i434 p3 - 0 24
+la p435 d19
+rcall sea_printf 0:2 0 2 p435 p3
+sty y238 p2 - 0 0
+ldf f436 p2 - 0 0
+fnan i437 f436
+ldi i438 p2 - 0 0
+isel i439 i437 i4 i438
+ldf f440 p2 - 0 8
+fnan i441 f440
+ldi i442 p2 - 0 8
+isel i443 i441 i4 i442
+ldf f444 p2 - 0 16
+fnan i445 f444
+ldi i446 p2 - 0 16
+isel i447 i445 i4 i446
+ldf f448 p2 - 0 24
+fnan i449 f448
+ldi i450 p2 - 0 24
+isel i451 i449 i4 i450
+sti i439 p3 - 0 0
+sti i443 p3 - 0 8
+sti i447 p3 - 0 16
+sti i451 p3 - 0 24
+la p452 d20
+rcall sea_printf 0:2 0 2 p452 p3
+lf f453 #0000000000000001
+lf f454 #800FFFFFFFFFFFFF
+lf f455 #3FF0000000000000
+lf f456 #4000000000000000
+stf f453 p1 - 0 0
+stf f454 p1 - 0 8
+stf f455 p1 - 0 16
+stf f456 p1 - 0 24
+ldy y457 p1 - 0 0
+lf f458 #800FFFFFFFFFFFFF
+lf f459 #0000000000000001
+lf f460 #4000000000000000
+lf f461 #3FF0000000000000
+stf f458 p1 - 0 0
+stf f459 p1 - 0 8
+stf f460 p1 - 0 16
+stf f461 p1 - 0 24
+ldy y462 p1 - 0 0
+ymin y463 y457 y462
+sty y463 p2 - 0 0
+ldf f464 p2 - 0 0
+fnan i465 f464
+ldi i466 p2 - 0 0
+isel i467 i465 i4 i466
+ldf f468 p2 - 0 8
+fnan i469 f468
+ldi i470 p2 - 0 8
+isel i471 i469 i4 i470
+ldf f472 p2 - 0 16
+fnan i473 f472
+ldi i474 p2 - 0 16
+isel i475 i473 i4 i474
+ldf f476 p2 - 0 24
+fnan i477 f476
+ldi i478 p2 - 0 24
+isel i479 i477 i4 i478
+sti i467 p3 - 0 0
+sti i471 p3 - 0 8
+sti i475 p3 - 0 16
+sti i479 p3 - 0 24
+la p480 d21
+rcall sea_printf 0:2 0 2 p480 p3
+ymax y481 y457 y462
+sty y481 p2 - 0 0
+ldf f482 p2 - 0 0
+fnan i483 f482
+ldi i484 p2 - 0 0
+isel i485 i483 i4 i484
+ldf f486 p2 - 0 8
+fnan i487 f486
+ldi i488 p2 - 0 8
+isel i489 i487 i4 i488
+ldf f490 p2 - 0 16
+fnan i491 f490
+ldi i492 p2 - 0 16
+isel i493 i491 i4 i492
+ldf f494 p2 - 0 24
+fnan i495 f494
+ldi i496 p2 - 0 24
+isel i497 i495 i4 i496
+sti i485 p3 - 0 0
+sti i489 p3 - 0 8
+sti i493 p3 - 0 16
+sti i497 p3 - 0 24
+la p498 d22
+rcall sea_printf 0:2 0 2 p498 p3
+lf f499 #0000000000000001
+lf f500 #800FFFFFFFFFFFFF
+lf f501 #3FF0000000000000
+lf f502 #4000000000000000
+stf f499 p1 - 0 0
+stf f500 p1 - 0 8
+stf f501 p1 - 0 16
+stf f502 p1 - 0 24
+ldy y503 p1 - 0 0
+lf f504 #800FFFFFFFFFFFFF
+lf f505 #0000000000000001
+lf f506 #4000000000000000
+lf f507 #3FF0000000000000
+stf f504 p1 - 0 0
+stf f505 p1 - 0 8
+stf f506 p1 - 0 16
+stf f507 p1 - 0 24
+ldy y508 p1 - 0 0
+ymin y508 y503 y508
+sty y508 p2 - 0 0
+ldf f509 p2 - 0 0
+fnan i510 f509
+ldi i511 p2 - 0 0
+isel i512 i510 i4 i511
+ldf f513 p2 - 0 8
+fnan i514 f513
+ldi i515 p2 - 0 8
+isel i516 i514 i4 i515
+ldf f517 p2 - 0 16
+fnan i518 f517
+ldi i519 p2 - 0 16
+isel i520 i518 i4 i519
+ldf f521 p2 - 0 24
+fnan i522 f521
+ldi i523 p2 - 0 24
+isel i524 i522 i4 i523
+sti i512 p3 - 0 0
+sti i516 p3 - 0 8
+sti i520 p3 - 0 16
+sti i524 p3 - 0 24
+la p525 d23
+rcall sea_printf 0:2 0 2 p525 p3
+lf f526 #0000000000000001
+lf f527 #800FFFFFFFFFFFFF
+lf f528 #3FF0000000000000
+lf f529 #4000000000000000
+stf f526 p1 - 0 0
+stf f527 p1 - 0 8
+stf f528 p1 - 0 16
+stf f529 p1 - 0 24
+ldy y530 p1 - 0 0
+lf f531 #800FFFFFFFFFFFFF
+lf f532 #0000000000000001
+lf f533 #4000000000000000
+lf f534 #3FF0000000000000
+stf f531 p1 - 0 0
+stf f532 p1 - 0 8
+stf f533 p1 - 0 16
+stf f534 p1 - 0 24
+ldy y535 p1 - 0 0
+ymin y530 y530 y535
+sty y530 p2 - 0 0
+ldf f536 p2 - 0 0
+fnan i537 f536
+ldi i538 p2 - 0 0
+isel i539 i537 i4 i538
+ldf f540 p2 - 0 8
+fnan i541 f540
+ldi i542 p2 - 0 8
+isel i543 i541 i4 i542
+ldf f544 p2 - 0 16
+fnan i545 f544
+ldi i546 p2 - 0 16
+isel i547 i545 i4 i546
+ldf f548 p2 - 0 24
+fnan i549 f548
+ldi i550 p2 - 0 24
+isel i551 i549 i4 i550
+sti i539 p3 - 0 0
+sti i543 p3 - 0 8
+sti i547 p3 - 0 16
+sti i551 p3 - 0 24
+la p552 d24
+rcall sea_printf 0:2 0 2 p552 p3
+lf f553 #0000000000000001
+lf f554 #800FFFFFFFFFFFFF
+lf f555 #3FF0000000000000
+lf f556 #4000000000000000
+stf f553 p1 - 0 0
+stf f554 p1 - 0 8
+stf f555 p1 - 0 16
+stf f556 p1 - 0 24
+ldy y557 p1 - 0 0
+lf f558 #800FFFFFFFFFFFFF
+lf f559 #0000000000000001
+lf f560 #4000000000000000
+lf f561 #3FF0000000000000
+stf f558 p1 - 0 0
+stf f559 p1 - 0 8
+stf f560 p1 - 0 16
+stf f561 p1 - 0 24
+ldy y562 p1 - 0 0
+ymax y562 y557 y562
+sty y562 p2 - 0 0
+ldf f563 p2 - 0 0
+fnan i564 f563
+ldi i565 p2 - 0 0
+isel i566 i564 i4 i565
+ldf f567 p2 - 0 8
+fnan i568 f567
+ldi i569 p2 - 0 8
+isel i570 i568 i4 i569
+ldf f571 p2 - 0 16
+fnan i572 f571
+ldi i573 p2 - 0 16
+isel i574 i572 i4 i573
+ldf f575 p2 - 0 24
+fnan i576 f575
+ldi i577 p2 - 0 24
+isel i578 i576 i4 i577
+sti i566 p3 - 0 0
+sti i570 p3 - 0 8
+sti i574 p3 - 0 16
+sti i578 p3 - 0 24
+la p579 d25
+rcall sea_printf 0:2 0 2 p579 p3
+lf f580 #0000000000000001
+lf f581 #800FFFFFFFFFFFFF
+lf f582 #3FF0000000000000
+lf f583 #4000000000000000
+stf f580 p1 - 0 0
+stf f581 p1 - 0 8
+stf f582 p1 - 0 16
+stf f583 p1 - 0 24
+ldy y584 p1 - 0 0
+lf f585 #800FFFFFFFFFFFFF
+lf f586 #0000000000000001
+lf f587 #4000000000000000
+lf f588 #3FF0000000000000
+stf f585 p1 - 0 0
+stf f586 p1 - 0 8
+stf f587 p1 - 0 16
+stf f588 p1 - 0 24
+ldy y589 p1 - 0 0
+ymax y584 y584 y589
+sty y584 p2 - 0 0
+ldf f590 p2 - 0 0
+fnan i591 f590
+ldi i592 p2 - 0 0
+isel i593 i591 i4 i592
+ldf f594 p2 - 0 8
+fnan i595 f594
+ldi i596 p2 - 0 8
+isel i597 i595 i4 i596
+ldf f598 p2 - 0 16
+fnan i599 f598
+ldi i600 p2 - 0 16
+isel i601 i599 i4 i600
+ldf f602 p2 - 0 24
+fnan i603 f602
+ldi i604 p2 - 0 24
+isel i605 i603 i4 i604
+sti i593 p3 - 0 0
+sti i597 p3 - 0 8
+sti i601 p3 - 0 16
+sti i605 p3 - 0 24
+la p606 d26
+rcall sea_printf 0:2 0 2 p606 p3
+ymin y607 y457 y457
+sty y607 p2 - 0 0
+ldf f608 p2 - 0 0
+fnan i609 f608
+ldi i610 p2 - 0 0
+isel i611 i609 i4 i610
+ldf f612 p2 - 0 8
+fnan i613 f612
+ldi i614 p2 - 0 8
+isel i615 i613 i4 i614
+ldf f616 p2 - 0 16
+fnan i617 f616
+ldi i618 p2 - 0 16
+isel i619 i617 i4 i618
+ldf f620 p2 - 0 24
+fnan i621 f620
+ldi i622 p2 - 0 24
+isel i623 i621 i4 i622
+sti i611 p3 - 0 0
+sti i615 p3 - 0 8
+sti i619 p3 - 0 16
+sti i623 p3 - 0 24
+la p624 d27
+rcall sea_printf 0:2 0 2 p624 p3
+ymax y625 y457 y457
+sty y625 p2 - 0 0
+ldf f626 p2 - 0 0
+fnan i627 f626
+ldi i628 p2 - 0 0
+isel i629 i627 i4 i628
+ldf f630 p2 - 0 8
+fnan i631 f630
+ldi i632 p2 - 0 8
+isel i633 i631 i4 i632
+ldf f634 p2 - 0 16
+fnan i635 f634
+ldi i636 p2 - 0 16
+isel i637 i635 i4 i636
+ldf f638 p2 - 0 24
+fnan i639 f638
+ldi i640 p2 - 0 24
+isel i641 i639 i4 i640
+sti i629 p3 - 0 0
+sti i633 p3 - 0 8
+sti i637 p3 - 0 16
+sti i641 p3 - 0 24
+la p642 d28
+rcall sea_printf 0:2 0 2 p642 p3
+sty y457 p2 - 0 0
+ldf f643 p2 - 0 0
+fnan i644 f643
+ldi i645 p2 - 0 0
+isel i646 i644 i4 i645
+ldf f647 p2 - 0 8
+fnan i648 f647
+ldi i649 p2 - 0 8
+isel i650 i648 i4 i649
+ldf f651 p2 - 0 16
+fnan i652 f651
+ldi i653 p2 - 0 16
+isel i654 i652 i4 i653
+ldf f655 p2 - 0 24
+fnan i656 f655
+ldi i657 p2 - 0 24
+isel i658 i656 i4 i657
+sti i646 p3 - 0 0
+sti i650 p3 - 0 8
+sti i654 p3 - 0 16
+sti i658 p3 - 0 24
+la p659 d29
+rcall sea_printf 0:2 0 2 p659 p3
+sty y462 p2 - 0 0
+ldf f660 p2 - 0 0
+fnan i661 f660
+ldi i662 p2 - 0 0
+isel i663 i661 i4 i662
+ldf f664 p2 - 0 8
+fnan i665 f664
+ldi i666 p2 - 0 8
+isel i667 i665 i4 i666
+ldf f668 p2 - 0 16
+fnan i669 f668
+ldi i670 p2 - 0 16
+isel i671 i669 i4 i670
+ldf f672 p2 - 0 24
+fnan i673 f672
+ldi i674 p2 - 0 24
+isel i675 i673 i4 i674
+sti i663 p3 - 0 0
+sti i667 p3 - 0 8
+sti i671 p3 - 0 16
+sti i675 p3 - 0 24
+la p676 d30
+rcall sea_printf 0:2 0 2 p676 p3
+lf f677 #BFF0000000000000
+lf f678 #BFF0000000000000
+lf f679 #FFF0000000000000
+lf f680 #7FF8000000000000
+stf f677 p1 - 0 0
+stf f678 p1 - 0 8
+stf f679 p1 - 0 16
+stf f680 p1 - 0 24
+ldy y681 p1 - 0 0
+lf f682 #BFF0000000000000
+lf f683 #8000000000000000
+lf f684 #7FF8000000000000
+lf f685 #0000000000000000
+stf f682 p1 - 0 0
+stf f683 p1 - 0 8
+stf f684 p1 - 0 16
+stf f685 p1 - 0 24
+ldy y686 p1 - 0 0
+ymin y687 y681 y686
+sty y687 p2 - 0 0
+ldf f688 p2 - 0 0
+fnan i689 f688
+ldi i690 p2 - 0 0
+isel i691 i689 i4 i690
+ldf f692 p2 - 0 8
+fnan i693 f692
+ldi i694 p2 - 0 8
+isel i695 i693 i4 i694
+ldf f696 p2 - 0 16
+fnan i697 f696
+ldi i698 p2 - 0 16
+isel i699 i697 i4 i698
+ldf f700 p2 - 0 24
+fnan i701 f700
+ldi i702 p2 - 0 24
+isel i703 i701 i4 i702
+sti i691 p3 - 0 0
+sti i695 p3 - 0 8
+sti i699 p3 - 0 16
+sti i703 p3 - 0 24
+la p704 d31
+rcall sea_printf 0:2 0 2 p704 p3
+ymax y705 y681 y686
+sty y705 p2 - 0 0
+ldf f706 p2 - 0 0
+fnan i707 f706
+ldi i708 p2 - 0 0
+isel i709 i707 i4 i708
+ldf f710 p2 - 0 8
+fnan i711 f710
+ldi i712 p2 - 0 8
+isel i713 i711 i4 i712
+ldf f714 p2 - 0 16
+fnan i715 f714
+ldi i716 p2 - 0 16
+isel i717 i715 i4 i716
+ldf f718 p2 - 0 24
+fnan i719 f718
+ldi i720 p2 - 0 24
+isel i721 i719 i4 i720
+sti i709 p3 - 0 0
+sti i713 p3 - 0 8
+sti i717 p3 - 0 16
+sti i721 p3 - 0 24
+la p722 d32
+rcall sea_printf 0:2 0 2 p722 p3
+lf f723 #BFF0000000000000
+lf f724 #BFF0000000000000
+lf f725 #FFF0000000000000
+lf f726 #7FF8000000000000
+stf f723 p1 - 0 0
+stf f724 p1 - 0 8
+stf f725 p1 - 0 16
+stf f726 p1 - 0 24
+ldy y727 p1 - 0 0
+lf f728 #BFF0000000000000
+lf f729 #8000000000000000
+lf f730 #7FF8000000000000
+lf f731 #0000000000000000
+stf f728 p1 - 0 0
+stf f729 p1 - 0 8
+stf f730 p1 - 0 16
+stf f731 p1 - 0 24
+ldy y732 p1 - 0 0
+ymin y732 y727 y732
+sty y732 p2 - 0 0
+ldf f733 p2 - 0 0
+fnan i734 f733
+ldi i735 p2 - 0 0
+isel i736 i734 i4 i735
+ldf f737 p2 - 0 8
+fnan i738 f737
+ldi i739 p2 - 0 8
+isel i740 i738 i4 i739
+ldf f741 p2 - 0 16
+fnan i742 f741
+ldi i743 p2 - 0 16
+isel i744 i742 i4 i743
+ldf f745 p2 - 0 24
+fnan i746 f745
+ldi i747 p2 - 0 24
+isel i748 i746 i4 i747
+sti i736 p3 - 0 0
+sti i740 p3 - 0 8
+sti i744 p3 - 0 16
+sti i748 p3 - 0 24
+la p749 d33
+rcall sea_printf 0:2 0 2 p749 p3
+lf f750 #BFF0000000000000
+lf f751 #BFF0000000000000
+lf f752 #FFF0000000000000
+lf f753 #7FF8000000000000
+stf f750 p1 - 0 0
+stf f751 p1 - 0 8
+stf f752 p1 - 0 16
+stf f753 p1 - 0 24
+ldy y754 p1 - 0 0
+lf f755 #BFF0000000000000
+lf f756 #8000000000000000
+lf f757 #7FF8000000000000
+lf f758 #0000000000000000
+stf f755 p1 - 0 0
+stf f756 p1 - 0 8
+stf f757 p1 - 0 16
+stf f758 p1 - 0 24
+ldy y759 p1 - 0 0
+ymin y754 y754 y759
+sty y754 p2 - 0 0
+ldf f760 p2 - 0 0
+fnan i761 f760
+ldi i762 p2 - 0 0
+isel i763 i761 i4 i762
+ldf f764 p2 - 0 8
+fnan i765 f764
+ldi i766 p2 - 0 8
+isel i767 i765 i4 i766
+ldf f768 p2 - 0 16
+fnan i769 f768
+ldi i770 p2 - 0 16
+isel i771 i769 i4 i770
+ldf f772 p2 - 0 24
+fnan i773 f772
+ldi i774 p2 - 0 24
+isel i775 i773 i4 i774
+sti i763 p3 - 0 0
+sti i767 p3 - 0 8
+sti i771 p3 - 0 16
+sti i775 p3 - 0 24
+la p776 d34
+rcall sea_printf 0:2 0 2 p776 p3
+lf f777 #BFF0000000000000
+lf f778 #BFF0000000000000
+lf f779 #FFF0000000000000
+lf f780 #7FF8000000000000
+stf f777 p1 - 0 0
+stf f778 p1 - 0 8
+stf f779 p1 - 0 16
+stf f780 p1 - 0 24
+ldy y781 p1 - 0 0
+lf f782 #BFF0000000000000
+lf f783 #8000000000000000
+lf f784 #7FF8000000000000
+lf f785 #0000000000000000
+stf f782 p1 - 0 0
+stf f783 p1 - 0 8
+stf f784 p1 - 0 16
+stf f785 p1 - 0 24
+ldy y786 p1 - 0 0
+ymax y786 y781 y786
+sty y786 p2 - 0 0
+ldf f787 p2 - 0 0
+fnan i788 f787
+ldi i789 p2 - 0 0
+isel i790 i788 i4 i789
+ldf f791 p2 - 0 8
+fnan i792 f791
+ldi i793 p2 - 0 8
+isel i794 i792 i4 i793
+ldf f795 p2 - 0 16
+fnan i796 f795
+ldi i797 p2 - 0 16
+isel i798 i796 i4 i797
+ldf f799 p2 - 0 24
+fnan i800 f799
+ldi i801 p2 - 0 24
+isel i802 i800 i4 i801
+sti i790 p3 - 0 0
+sti i794 p3 - 0 8
+sti i798 p3 - 0 16
+sti i802 p3 - 0 24
+la p803 d35
+rcall sea_printf 0:2 0 2 p803 p3
+lf f804 #BFF0000000000000
+lf f805 #BFF0000000000000
+lf f806 #FFF0000000000000
+lf f807 #7FF8000000000000
+stf f804 p1 - 0 0
+stf f805 p1 - 0 8
+stf f806 p1 - 0 16
+stf f807 p1 - 0 24
+ldy y808 p1 - 0 0
+lf f809 #BFF0000000000000
+lf f810 #8000000000000000
+lf f811 #7FF8000000000000
+lf f812 #0000000000000000
+stf f809 p1 - 0 0
+stf f810 p1 - 0 8
+stf f811 p1 - 0 16
+stf f812 p1 - 0 24
+ldy y813 p1 - 0 0
+ymax y808 y808 y813
+sty y808 p2 - 0 0
+ldf f814 p2 - 0 0
+fnan i815 f814
+ldi i816 p2 - 0 0
+isel i817 i815 i4 i816
+ldf f818 p2 - 0 8
+fnan i819 f818
+ldi i820 p2 - 0 8
+isel i821 i819 i4 i820
+ldf f822 p2 - 0 16
+fnan i823 f822
+ldi i824 p2 - 0 16
+isel i825 i823 i4 i824
+ldf f826 p2 - 0 24
+fnan i827 f826
+ldi i828 p2 - 0 24
+isel i829 i827 i4 i828
+sti i817 p3 - 0 0
+sti i821 p3 - 0 8
+sti i825 p3 - 0 16
+sti i829 p3 - 0 24
+la p830 d36
+rcall sea_printf 0:2 0 2 p830 p3
+ymin y831 y681 y681
+sty y831 p2 - 0 0
+ldf f832 p2 - 0 0
+fnan i833 f832
+ldi i834 p2 - 0 0
+isel i835 i833 i4 i834
+ldf f836 p2 - 0 8
+fnan i837 f836
+ldi i838 p2 - 0 8
+isel i839 i837 i4 i838
+ldf f840 p2 - 0 16
+fnan i841 f840
+ldi i842 p2 - 0 16
+isel i843 i841 i4 i842
+ldf f844 p2 - 0 24
+fnan i845 f844
+ldi i846 p2 - 0 24
+isel i847 i845 i4 i846
+sti i835 p3 - 0 0
+sti i839 p3 - 0 8
+sti i843 p3 - 0 16
+sti i847 p3 - 0 24
+la p848 d37
+rcall sea_printf 0:2 0 2 p848 p3
+ymax y849 y681 y681
+sty y849 p2 - 0 0
+ldf f850 p2 - 0 0
+fnan i851 f850
+ldi i852 p2 - 0 0
+isel i853 i851 i4 i852
+ldf f854 p2 - 0 8
+fnan i855 f854
+ldi i856 p2 - 0 8
+isel i857 i855 i4 i856
+ldf f858 p2 - 0 16
+fnan i859 f858
+ldi i860 p2 - 0 16
+isel i861 i859 i4 i860
+ldf f862 p2 - 0 24
+fnan i863 f862
+ldi i864 p2 - 0 24
+isel i865 i863 i4 i864
+sti i853 p3 - 0 0
+sti i857 p3 - 0 8
+sti i861 p3 - 0 16
+sti i865 p3 - 0 24
+la p866 d38
+rcall sea_printf 0:2 0 2 p866 p3
+sty y681 p2 - 0 0
+ldf f867 p2 - 0 0
+fnan i868 f867
+ldi i869 p2 - 0 0
+isel i870 i868 i4 i869
+ldf f871 p2 - 0 8
+fnan i872 f871
+ldi i873 p2 - 0 8
+isel i874 i872 i4 i873
+ldf f875 p2 - 0 16
+fnan i876 f875
+ldi i877 p2 - 0 16
+isel i878 i876 i4 i877
+ldf f879 p2 - 0 24
+fnan i880 f879
+ldi i881 p2 - 0 24
+isel i882 i880 i4 i881
+sti i870 p3 - 0 0
+sti i874 p3 - 0 8
+sti i878 p3 - 0 16
+sti i882 p3 - 0 24
+la p883 d39
+rcall sea_printf 0:2 0 2 p883 p3
+sty y686 p2 - 0 0
+ldf f884 p2 - 0 0
+fnan i885 f884
+ldi i886 p2 - 0 0
+isel i887 i885 i4 i886
+ldf f888 p2 - 0 8
+fnan i889 f888
+ldi i890 p2 - 0 8
+isel i891 i889 i4 i890
+ldf f892 p2 - 0 16
+fnan i893 f892
+ldi i894 p2 - 0 16
+isel i895 i893 i4 i894
+ldf f896 p2 - 0 24
+fnan i897 f896
+ldi i898 p2 - 0 24
+isel i899 i897 i4 i898
+sti i887 p3 - 0 0
+sti i891 p3 - 0 8
+sti i895 p3 - 0 16
+sti i899 p3 - 0 24
+la p900 d40
+rcall sea_printf 0:2 0 2 p900 p3
+lf f901 #0000000000000000
+lf f902 #0000000000000000
+lf f903 #8000000000000000
+lf f904 #8000000000000000
+stf f901 p1 - 0 0
+stf f902 p1 - 0 8
+stf f903 p1 - 0 16
+stf f904 p1 - 0 24
+ldy y905 p1 - 0 0
+lf f906 #0000000000000000
+lf f907 #8000000000000000
+lf f908 #0000000000000000
+lf f909 #8000000000000000
+stf f906 p1 - 0 0
+stf f907 p1 - 0 8
+stf f908 p1 - 0 16
+stf f909 p1 - 0 24
+ldy y910 p1 - 0 0
+ymin y911 y905 y910
+sty y911 p2 - 0 0
+ldf f912 p2 - 0 0
+fnan i913 f912
+ldi i914 p2 - 0 0
+isel i915 i913 i4 i914
+ldf f916 p2 - 0 8
+fnan i917 f916
+ldi i918 p2 - 0 8
+isel i919 i917 i4 i918
+ldf f920 p2 - 0 16
+fnan i921 f920
+ldi i922 p2 - 0 16
+isel i923 i921 i4 i922
+ldf f924 p2 - 0 24
+fnan i925 f924
+ldi i926 p2 - 0 24
+isel i927 i925 i4 i926
+sti i915 p3 - 0 0
+sti i919 p3 - 0 8
+sti i923 p3 - 0 16
+sti i927 p3 - 0 24
+la p928 d41
+rcall sea_printf 0:2 0 2 p928 p3
+ymax y929 y905 y910
+sty y929 p2 - 0 0
+ldf f930 p2 - 0 0
+fnan i931 f930
+ldi i932 p2 - 0 0
+isel i933 i931 i4 i932
+ldf f934 p2 - 0 8
+fnan i935 f934
+ldi i936 p2 - 0 8
+isel i937 i935 i4 i936
+ldf f938 p2 - 0 16
+fnan i939 f938
+ldi i940 p2 - 0 16
+isel i941 i939 i4 i940
+ldf f942 p2 - 0 24
+fnan i943 f942
+ldi i944 p2 - 0 24
+isel i945 i943 i4 i944
+sti i933 p3 - 0 0
+sti i937 p3 - 0 8
+sti i941 p3 - 0 16
+sti i945 p3 - 0 24
+la p946 d42
+rcall sea_printf 0:2 0 2 p946 p3
+lf f947 #0000000000000000
+lf f948 #0000000000000000
+lf f949 #8000000000000000
+lf f950 #8000000000000000
+stf f947 p1 - 0 0
+stf f948 p1 - 0 8
+stf f949 p1 - 0 16
+stf f950 p1 - 0 24
+ldy y951 p1 - 0 0
+lf f952 #0000000000000000
+lf f953 #8000000000000000
+lf f954 #0000000000000000
+lf f955 #8000000000000000
+stf f952 p1 - 0 0
+stf f953 p1 - 0 8
+stf f954 p1 - 0 16
+stf f955 p1 - 0 24
+ldy y956 p1 - 0 0
+ymin y956 y951 y956
+sty y956 p2 - 0 0
+ldf f957 p2 - 0 0
+fnan i958 f957
+ldi i959 p2 - 0 0
+isel i960 i958 i4 i959
+ldf f961 p2 - 0 8
+fnan i962 f961
+ldi i963 p2 - 0 8
+isel i964 i962 i4 i963
+ldf f965 p2 - 0 16
+fnan i966 f965
+ldi i967 p2 - 0 16
+isel i968 i966 i4 i967
+ldf f969 p2 - 0 24
+fnan i970 f969
+ldi i971 p2 - 0 24
+isel i972 i970 i4 i971
+sti i960 p3 - 0 0
+sti i964 p3 - 0 8
+sti i968 p3 - 0 16
+sti i972 p3 - 0 24
+la p973 d43
+rcall sea_printf 0:2 0 2 p973 p3
+lf f974 #0000000000000000
+lf f975 #0000000000000000
+lf f976 #8000000000000000
+lf f977 #8000000000000000
+stf f974 p1 - 0 0
+stf f975 p1 - 0 8
+stf f976 p1 - 0 16
+stf f977 p1 - 0 24
+ldy y978 p1 - 0 0
+lf f979 #0000000000000000
+lf f980 #8000000000000000
+lf f981 #0000000000000000
+lf f982 #8000000000000000
+stf f979 p1 - 0 0
+stf f980 p1 - 0 8
+stf f981 p1 - 0 16
+stf f982 p1 - 0 24
+ldy y983 p1 - 0 0
+ymin y978 y978 y983
+sty y978 p2 - 0 0
+ldf f984 p2 - 0 0
+fnan i985 f984
+ldi i986 p2 - 0 0
+isel i987 i985 i4 i986
+ldf f988 p2 - 0 8
+fnan i989 f988
+ldi i990 p2 - 0 8
+isel i991 i989 i4 i990
+ldf f992 p2 - 0 16
+fnan i993 f992
+ldi i994 p2 - 0 16
+isel i995 i993 i4 i994
+ldf f996 p2 - 0 24
+fnan i997 f996
+ldi i998 p2 - 0 24
+isel i999 i997 i4 i998
+sti i987 p3 - 0 0
+sti i991 p3 - 0 8
+sti i995 p3 - 0 16
+sti i999 p3 - 0 24
+la p1000 d44
+rcall sea_printf 0:2 0 2 p1000 p3
+lf f1001 #0000000000000000
+lf f1002 #0000000000000000
+lf f1003 #8000000000000000
+lf f1004 #8000000000000000
+stf f1001 p1 - 0 0
+stf f1002 p1 - 0 8
+stf f1003 p1 - 0 16
+stf f1004 p1 - 0 24
+ldy y1005 p1 - 0 0
+lf f1006 #0000000000000000
+lf f1007 #8000000000000000
+lf f1008 #0000000000000000
+lf f1009 #8000000000000000
+stf f1006 p1 - 0 0
+stf f1007 p1 - 0 8
+stf f1008 p1 - 0 16
+stf f1009 p1 - 0 24
+ldy y1010 p1 - 0 0
+ymax y1010 y1005 y1010
+sty y1010 p2 - 0 0
+ldf f1011 p2 - 0 0
+fnan i1012 f1011
+ldi i1013 p2 - 0 0
+isel i1014 i1012 i4 i1013
+ldf f1015 p2 - 0 8
+fnan i1016 f1015
+ldi i1017 p2 - 0 8
+isel i1018 i1016 i4 i1017
+ldf f1019 p2 - 0 16
+fnan i1020 f1019
+ldi i1021 p2 - 0 16
+isel i1022 i1020 i4 i1021
+ldf f1023 p2 - 0 24
+fnan i1024 f1023
+ldi i1025 p2 - 0 24
+isel i1026 i1024 i4 i1025
+sti i1014 p3 - 0 0
+sti i1018 p3 - 0 8
+sti i1022 p3 - 0 16
+sti i1026 p3 - 0 24
+la p1027 d45
+rcall sea_printf 0:2 0 2 p1027 p3
+lf f1028 #0000000000000000
+lf f1029 #0000000000000000
+lf f1030 #8000000000000000
+lf f1031 #8000000000000000
+stf f1028 p1 - 0 0
+stf f1029 p1 - 0 8
+stf f1030 p1 - 0 16
+stf f1031 p1 - 0 24
+ldy y1032 p1 - 0 0
+lf f1033 #0000000000000000
+lf f1034 #8000000000000000
+lf f1035 #0000000000000000
+lf f1036 #8000000000000000
+stf f1033 p1 - 0 0
+stf f1034 p1 - 0 8
+stf f1035 p1 - 0 16
+stf f1036 p1 - 0 24
+ldy y1037 p1 - 0 0
+ymax y1032 y1032 y1037
+sty y1032 p2 - 0 0
+ldf f1038 p2 - 0 0
+fnan i1039 f1038
+ldi i1040 p2 - 0 0
+isel i1041 i1039 i4 i1040
+ldf f1042 p2 - 0 8
+fnan i1043 f1042
+ldi i1044 p2 - 0 8
+isel i1045 i1043 i4 i1044
+ldf f1046 p2 - 0 16
+fnan i1047 f1046
+ldi i1048 p2 - 0 16
+isel i1049 i1047 i4 i1048
+ldf f1050 p2 - 0 24
+fnan i1051 f1050
+ldi i1052 p2 - 0 24
+isel i1053 i1051 i4 i1052
+sti i1041 p3 - 0 0
+sti i1045 p3 - 0 8
+sti i1049 p3 - 0 16
+sti i1053 p3 - 0 24
+la p1054 d46
+rcall sea_printf 0:2 0 2 p1054 p3
+ymin y1055 y905 y905
+sty y1055 p2 - 0 0
+ldf f1056 p2 - 0 0
+fnan i1057 f1056
+ldi i1058 p2 - 0 0
+isel i1059 i1057 i4 i1058
+ldf f1060 p2 - 0 8
+fnan i1061 f1060
+ldi i1062 p2 - 0 8
+isel i1063 i1061 i4 i1062
+ldf f1064 p2 - 0 16
+fnan i1065 f1064
+ldi i1066 p2 - 0 16
+isel i1067 i1065 i4 i1066
+ldf f1068 p2 - 0 24
+fnan i1069 f1068
+ldi i1070 p2 - 0 24
+isel i1071 i1069 i4 i1070
+sti i1059 p3 - 0 0
+sti i1063 p3 - 0 8
+sti i1067 p3 - 0 16
+sti i1071 p3 - 0 24
+la p1072 d47
+rcall sea_printf 0:2 0 2 p1072 p3
+ymax y1073 y905 y905
+sty y1073 p2 - 0 0
+ldf f1074 p2 - 0 0
+fnan i1075 f1074
+ldi i1076 p2 - 0 0
+isel i1077 i1075 i4 i1076
+ldf f1078 p2 - 0 8
+fnan i1079 f1078
+ldi i1080 p2 - 0 8
+isel i1081 i1079 i4 i1080
+ldf f1082 p2 - 0 16
+fnan i1083 f1082
+ldi i1084 p2 - 0 16
+isel i1085 i1083 i4 i1084
+ldf f1086 p2 - 0 24
+fnan i1087 f1086
+ldi i1088 p2 - 0 24
+isel i1089 i1087 i4 i1088
+sti i1077 p3 - 0 0
+sti i1081 p3 - 0 8
+sti i1085 p3 - 0 16
+sti i1089 p3 - 0 24
+la p1090 d48
+rcall sea_printf 0:2 0 2 p1090 p3
+sty y905 p2 - 0 0
+ldf f1091 p2 - 0 0
+fnan i1092 f1091
+ldi i1093 p2 - 0 0
+isel i1094 i1092 i4 i1093
+ldf f1095 p2 - 0 8
+fnan i1096 f1095
+ldi i1097 p2 - 0 8
+isel i1098 i1096 i4 i1097
+ldf f1099 p2 - 0 16
+fnan i1100 f1099
+ldi i1101 p2 - 0 16
+isel i1102 i1100 i4 i1101
+ldf f1103 p2 - 0 24
+fnan i1104 f1103
+ldi i1105 p2 - 0 24
+isel i1106 i1104 i4 i1105
+sti i1094 p3 - 0 0
+sti i1098 p3 - 0 8
+sti i1102 p3 - 0 16
+sti i1106 p3 - 0 24
+la p1107 d49
+rcall sea_printf 0:2 0 2 p1107 p3
+sty y910 p2 - 0 0
+ldf f1108 p2 - 0 0
+fnan i1109 f1108
+ldi i1110 p2 - 0 0
+isel i1111 i1109 i4 i1110
+ldf f1112 p2 - 0 8
+fnan i1113 f1112
+ldi i1114 p2 - 0 8
+isel i1115 i1113 i4 i1114
+ldf f1116 p2 - 0 16
+fnan i1117 f1116
+ldi i1118 p2 - 0 16
+isel i1119 i1117 i4 i1118
+ldf f1120 p2 - 0 24
+fnan i1121 f1120
+ldi i1122 p2 - 0 24
+isel i1123 i1121 i4 i1122
+sti i1111 p3 - 0 0
+sti i1115 p3 - 0 8
+sti i1119 p3 - 0 16
+sti i1123 p3 - 0 24
+la p1124 d50
+rcall sea_printf 0:2 0 2 p1124 p3
+ret 0
+endfunc
+fmt d1 10
+ftext ymin0
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 10
+ftext ymax0
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 10
+ftext ymin0_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 10
+ftext ymin0_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d5 10
+ftext ymax0_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d6 10
+ftext ymax0_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d7 10
+ftext ymin0_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d8 10
+ftext ymax0_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d9 10
+ftext a0
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d10 10
+ftext b0
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d11 10
+ftext ymin1
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d12 10
+ftext ymax1
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d13 10
+ftext ymin1_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d14 10
+ftext ymin1_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d15 10
+ftext ymax1_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d16 10
+ftext ymax1_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d17 10
+ftext ymin1_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d18 10
+ftext ymax1_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d19 10
+ftext a1
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d20 10
+ftext b1
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d21 10
+ftext ymin2
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d22 10
+ftext ymax2
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d23 10
+ftext ymin2_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d24 10
+ftext ymin2_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d25 10
+ftext ymax2_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d26 10
+ftext ymax2_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d27 10
+ftext ymin2_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d28 10
+ftext ymax2_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d29 10
+ftext a2
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d30 10
+ftext b2
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d31 10
+ftext ymin3
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d32 10
+ftext ymax3
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d33 10
+ftext ymin3_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d34 10
+ftext ymin3_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d35 10
+ftext ymax3_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d36 10
+ftext ymax3_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d37 10
+ftext ymin3_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d38 10
+ftext ymax3_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d39 10
+ftext a3
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d40 10
+ftext b3
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d41 10
+ftext ymin4
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d42 10
+ftext ymax4
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d43 10
+ftext ymin4_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d44 10
+ftext ymin4_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d45 10
+ftext ymax4_db
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d46 10
+ftext ymax4_da
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d47 10
+ftext ymin4_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d48 10
+ftext ymax4_aa
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d49 10
+ftext a4
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d50 10
+ftext b4
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

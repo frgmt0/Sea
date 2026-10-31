@@ -1,0 +1,7 @@
+// vec7_keep_i64 -- DESIGN.md 2.12.6 condition 2: an i64 comparison (ldi and icmp) is outside the
+// vector set, so the loop of a > b over i64 operands stays scalar; only nnz's count follows
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+let a = [1, 5, 3, 7, 2, 8, 4, 6, 9]
+let b = [2, 4, 3, 6, 3, 7, 5, 6, 1]
+let c = a > b
+printf("%d\n", nnz(c))

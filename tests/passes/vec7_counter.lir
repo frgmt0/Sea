@@ -1,0 +1,143 @@
+#sea 1
+#target arm64-macos
+#file vec7_counter.sea
+func .main main 0:1:1 0 0
+slot s1 80 8
+slot s2 80 8
+slot s3 72 8
+slot s4 72 8
+slot s5 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #0000000000000000
+stf f3 p2 - 0 0
+stf f3 p2 - 0 8
+stf f3 p2 - 0 16
+stf f3 p2 - 0 24
+stf f3 p2 - 0 32
+stf f3 p2 - 0 40
+stf f3 p2 - 0 48
+stf f3 p2 - 0 56
+stf f3 p2 - 0 64
+stf f3 p2 - 0 72
+li i4 80
+mcopy p1 p2 i4
+sa p5 s3
+sa p6 s4
+lf f7 #3FF0000000000000
+stf f7 p6 - 0 0
+lf f8 #4000000000000000
+stf f8 p6 - 0 8
+lf f9 #4008000000000000
+stf f9 p6 - 0 16
+lf f10 #4010000000000000
+stf f10 p6 - 0 24
+lf f11 #4014000000000000
+stf f11 p6 - 0 32
+lf f12 #4018000000000000
+stf f12 p6 - 0 40
+lf f13 #401C000000000000
+stf f13 p6 - 0 48
+lf f14 #4020000000000000
+stf f14 p6 - 0 56
+lf f15 #4022000000000000
+stf f15 p6 - 0 64
+li i16 72
+mcopy p5 p6 i16
+mov f17 f8
+li i18 9
+li i19 1
+li i20 10
+mov i21 i19
+rcount i22 i23 i19 i20 i21 0 0:8
+mov i24 i20
+if 1 i23
+imul i25 i22 i21
+iadd i26 i19 i25
+chkb i26 i24 0 0:8
+endif 1
+li i27 1
+iadd i28 i22 i27
+li i29 0
+isel i30 i23 i28 i29
+icmp ne i31 i30 i18
+li i32 -1
+chk i31 SHAPE_MISMATCH 0:8 4 i30 i32 i18 i32
+mov i33 i29
+if 2 i23
+isub i34 i33 i19
+li i35 8
+imul i36 i34 i35
+padd p37 p5 i36
+li i38 7
+isub i39 i22 i38
+li i40 3
+ishr i41 i39 i40
+ishr i42 i22 i40
+icmp le i43 i41 i42
+li i44 0
+li i45 64
+li i46 -64
+pdiff i47 p37 p1
+icmp ge i48 i47 i45
+icmp le i49 i47 i46
+icmp eq i50 i47 i44
+ior i51 i48 i49
+ior i52 i51 i50
+iand i53 i43 i52
+if 3 i53
+xsplat x54 f17
+li i55 8
+loop 4 i56 i19 i41 i55
+ldx x57 p37 i56 8 0
+ldx x58 p37 i56 8 16
+ldx x59 p37 i56 8 32
+ldx x60 p37 i56 8 48
+xmul x61 x57 x54
+xmul x62 x58 x54
+xmul x63 x59 x54
+xmul x64 x60 x54
+stx x61 p1 i56 8 0
+stx x62 p1 i56 8 16
+stx x63 p1 i56 8 32
+stx x64 p1 i56 8 48
+endloop 4
+li i65 7
+iand i66 i39 i65
+li i67 0
+icmp gt i68 i66 i67
+if 5 i68
+li i69 3
+ishl i70 i41 i69
+iadd i71 i19 i70
+li i72 8
+iadd i73 i71 i72
+isub i74 i66 i21
+loop 6 i75 i73 i74 i21
+ldf f76 p37 i75 8 0
+fmul f77 f76 f17
+stf f77 p1 i75 8 0
+endloop 6
+endif 5
+else 3
+loop 7 i78 i19 i22 i21
+ldf f79 p37 i78 8 0
+fmul f80 f79 f17
+stf f80 p1 i78 8 0
+endloop 7
+endif 3
+iadd i33 i33 i22
+iadd i33 i33 i21
+endif 2
+li i81 3
+ldf f82 p1 i81 8 0
+sa p83 s5
+stf f82 p83 - 0 0
+la p84 d1
+rcall sea_printf 0:9 0 2 p84 p83
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

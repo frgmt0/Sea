@@ -1,0 +1,22 @@
+#sea 1
+#target arm64-macos
+#file vec7_fullrange.sea
+func .main main 0:1:1 0 0
+li i1 1
+rcall sea_arr_new 0:1 1 p2 4 i1 i1 i1 i1
+rcall sea_arr_new 0:1 1 p3 4 i1 i1 i1 i1
+ldp p4 p2 - 0 40
+ldp p5 p3 - 0 40
+li i6 0
+li i7 -1
+lf f8 #3FF0000000000000
+loop 1 i9 i6 i7 i1
+ldf f10 p4 i9 8 0
+fadd f11 f10 f8
+stf f11 p5 i9 8 0
+endloop 1
+release p3
+release p2
+ret 0
+endfunc
+#end

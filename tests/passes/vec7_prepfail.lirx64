@@ -1,0 +1,60 @@
+#sea 1
+#target x86_64-linux
+#file vec7_prepfail.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4008000000000000
+stf f4 p2 - 0 8
+lf f5 #4000000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 0
+icmp eq i9 i7 i8
+la p10 d1
+chk i9 EMPTY_REDUCE 0:9 1 p10
+lf f11 #7FF8000000000000
+mov i12 i8
+mov i13 i8
+icmp gt i14 i7 i13
+if 1 i14
+li i15 1
+isub i16 i7 i15
+lf f17 #4000000000000000
+lf f18 #3FF0000000000000
+loop 2 i19 i13 i16 i15
+ldf f20 p1 i19 8 0
+fmul f21 f20 f17
+fadd f22 f21 f18
+mov f23 f22
+do 3
+exit 3
+enddo 3
+fnan i24 f23
+bnot i25 i24
+fcmp gt i26 f23 f11
+bnot i27 i12
+ior i28 i27 i26
+iand i29 i25 i28
+fsel f11 i29 f23 f11
+ior i12 i12 i29
+endloop 2
+endif 1
+sa p30 s3
+stf f11 p30 - 0 0
+la p31 d2
+rcall sea_printf 0:9 0 2 p31 p30
+ret 0
+endfunc
+str d1 max
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

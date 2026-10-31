@@ -1,0 +1,22 @@
+// vec7_p3 -- DESIGN.md 2.12.6 P3: the loads of p's fields come from a slot that is also a call
+// argument (so T8 does not move them past the loop's sea_exp call); they are invariant loads, one
+// before the do and one in an if-converted arm; each becomes one load and a splat before each
+// vector loop and stays where it is in the scalar loops; P1 dissolves the inlined return
+struct P {
+    a: f64
+    b: f64
+}
+fn show(p: P, k: i64) -> f64 {
+    var s = 0.0
+    for i in 0..k {
+        s = s + p.a
+    }
+    return s
+}
+elemental fn q(v: f64, p: P) -> f64 {
+    return if v > p.a { exp(v) * p.b } else { v }
+}
+let p = P { a: 1.5, b: 3.0 }
+let x = [1.0, 2.0, 3.0]
+let r = q(x, p)
+printf("%g %g %g\n", r[2], show(p, 1), show(p, 2))

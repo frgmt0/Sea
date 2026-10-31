@@ -1,0 +1,74 @@
+#sea 1
+#target arm64-macos
+#file vec7_fullrange.sea
+func .main main 0:1:1 0 0
+li i1 1
+rcall sea_arr_new 0:1 1 p2 4 i1 i1 i1 i1
+rcall sea_arr_new 0:1 1 p3 4 i1 i1 i1 i1
+ldp p4 p2 - 0 40
+ldp p5 p3 - 0 40
+li i6 0
+li i7 -1
+lf f8 #3FF0000000000000
+li i9 7
+isub i10 i7 i9
+li i11 3
+ishr i12 i10 i11
+ishr i13 i7 i11
+icmp le i14 i12 i13
+li i15 0
+li i16 64
+li i17 -64
+pdiff i18 p4 p5
+icmp ge i19 i18 i16
+icmp le i20 i18 i17
+icmp eq i21 i18 i15
+ior i22 i19 i20
+ior i23 i22 i21
+iand i24 i14 i23
+if 1 i24
+xsplat x25 f8
+li i26 8
+loop 2 i27 i6 i12 i26
+ldx x28 p4 i27 8 0
+ldx x29 p4 i27 8 16
+ldx x30 p4 i27 8 32
+ldx x31 p4 i27 8 48
+xadd x32 x28 x25
+xadd x33 x29 x25
+xadd x34 x30 x25
+xadd x35 x31 x25
+stx x32 p5 i27 8 0
+stx x33 p5 i27 8 16
+stx x34 p5 i27 8 32
+stx x35 p5 i27 8 48
+endloop 2
+li i36 7
+iand i37 i10 i36
+li i38 0
+icmp gt i39 i37 i38
+if 3 i39
+li i40 3
+ishl i41 i12 i40
+iadd i42 i6 i41
+li i43 8
+iadd i44 i42 i43
+isub i45 i37 i1
+loop 4 i46 i44 i45 i1
+ldf f47 p4 i46 8 0
+fadd f48 f47 f8
+stf f48 p5 i46 8 0
+endloop 4
+endif 3
+else 1
+loop 5 i49 i6 i7 i1
+ldf f50 p4 i49 8 0
+fadd f51 f50 f8
+stf f51 p5 i49 8 0
+endloop 5
+endif 1
+release p3
+release p2
+ret 0
+endfunc
+#end

@@ -1,0 +1,64 @@
+#sea 1
+#target arm64-macos
+#file vec7_keep_carried.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4008000000000000
+stf f4 p2 - 0 8
+lf f5 #4000000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:13 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+ldp p14 p9 - 0 40
+li i15 0
+icmp gt i16 i12 i15
+isub i17 i12 i13
+do 1
+rcall sea_arr_new_u 0:5 1 p18 4 i13 i13 i12 i13
+ldp p19 p18 - 0 40
+if 2 i16
+loop 3 i20 i15 i17 i13
+ldf f21 p14 i20 8 0
+fmul f22 f21 f11
+stf f22 p19 i20 8 0
+endloop 3
+endif 2
+lf f23 #0000000000000000
+ldi i24 p18 - 0 16
+rcount i25 i26 i15 i24 i13 0 0:7
+if 4 i26
+ldp p27 p18 - 0 40
+loop 5 i28 i15 i25 i13
+ldf f29 p27 i28 8 0
+fadd f23 f23 f29
+endloop 5
+endif 4
+release p18
+mov f30 f23
+exit 1
+enddo 1
+release p9
+sa p31 s3
+stf f30 p31 - 0 0
+la p32 d1
+rcall sea_printf 0:13 0 2 p32 p31
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

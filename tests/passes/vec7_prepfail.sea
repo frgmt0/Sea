@@ -1,0 +1,9 @@
+// vec7_prepfail -- DESIGN.md 2.12.6: a loop that fails after its preparation: P1 dissolves the
+// inlined return of f inside the fused max, then condition 3 fails (max's carried value), so the
+// loop and the do are written exactly as they stood before P1 (its .lir equals its .lir3)
+elemental fn f(v: f64) -> f64 {
+    let t = v * 2.0
+    return t + 1.0
+}
+let x = [1.0, 3.0, 2.0]
+printf("%g\n", max(f(x)))

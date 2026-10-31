@@ -1,0 +1,15 @@
+// vec7_keep_store -- DESIGN.md 2.12.6 the if-conversion refuses a block that holds a store, so
+// the clipping loop stays scalar (condition 1: a block remains); the fused copy x * 1.0 before it
+// is vectorized
+fn clip(x: f64[]) -> f64[] {
+    var u = x * 1.0
+    for i in 0..len(u) {
+        if u[i] > 2.0 {
+            u[i] = 2.0
+        }
+    }
+    return u
+}
+let x = [1.0, 2.5, 3.0]
+let r = clip(x)
+printf("%g\n", r[2])

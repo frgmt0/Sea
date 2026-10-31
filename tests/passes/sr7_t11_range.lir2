@@ -1,0 +1,52 @@
+#sea 1
+#target arm64-macos
+#file sr7_t11_range.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+li i7 32
+mcopy p1 p2 i7
+lf f8 #0000000000000000
+li i9 0
+li i10 4
+li i11 1
+rcount i12 i13 i9 i10 i11 0 0:7
+if 1 i13
+loop 2 i14 i9 i12 i11
+ldf f15 p1 i14 8 0
+fadd f8 f8 f15
+endloop 2
+endif 1
+li i16 0
+li i17 3
+li i18 1
+rcount i19 i20 i16 i17 i18 1 0:10
+if 3 i20
+loop 4 i21 i16 i19 i18
+ldf f22 p1 i21 8 0
+lf f23 #4000000000000000
+fmul f24 f22 f23
+fadd f8 f8 f24
+endloop 4
+endif 3
+sa p25 s3
+stf f8 p25 - 0 0
+la p26 d1
+rcall sea_printf 0:13 0 2 p26 p25
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,116 @@
+#sea 1
+#target arm64-macos
+#file vec7_keep_carried.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4008000000000000
+stf f4 p2 - 0 8
+lf f5 #4000000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:13 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+ldp p14 p9 - 0 40
+li i15 0
+icmp gt i16 i12 i15
+isub i17 i12 i13
+do 1
+rcall sea_arr_new_u 0:5 1 p18 4 i13 i13 i12 i13
+ldp p19 p18 - 0 40
+if 2 i16
+li i20 7
+isub i21 i17 i20
+li i22 3
+ishr i23 i21 i22
+ishr i24 i17 i22
+icmp le i25 i23 i24
+li i26 0
+li i27 64
+li i28 -64
+pdiff i29 p14 p19
+icmp ge i30 i29 i27
+icmp le i31 i29 i28
+icmp eq i32 i29 i26
+ior i33 i30 i31
+ior i34 i33 i32
+iand i35 i25 i34
+if 3 i35
+xsplat x36 f11
+li i37 8
+loop 4 i38 i15 i23 i37
+ldx x39 p14 i38 8 0
+ldx x40 p14 i38 8 16
+ldx x41 p14 i38 8 32
+ldx x42 p14 i38 8 48
+xmul x43 x39 x36
+xmul x44 x40 x36
+xmul x45 x41 x36
+xmul x46 x42 x36
+stx x43 p19 i38 8 0
+stx x44 p19 i38 8 16
+stx x45 p19 i38 8 32
+stx x46 p19 i38 8 48
+endloop 4
+li i47 7
+iand i48 i21 i47
+li i49 0
+icmp gt i50 i48 i49
+if 5 i50
+li i51 3
+ishl i52 i23 i51
+iadd i53 i15 i52
+li i54 8
+iadd i55 i53 i54
+isub i56 i48 i13
+loop 6 i57 i55 i56 i13
+ldf f58 p14 i57 8 0
+fmul f59 f58 f11
+stf f59 p19 i57 8 0
+endloop 6
+endif 5
+else 3
+loop 7 i60 i15 i17 i13
+ldf f61 p14 i60 8 0
+fmul f62 f61 f11
+stf f62 p19 i60 8 0
+endloop 7
+endif 3
+endif 2
+lf f63 #0000000000000000
+ldi i64 p18 - 0 16
+rcount i65 i66 i15 i64 i13 0 0:7
+if 8 i66
+ldp p67 p18 - 0 40
+loop 9 i68 i15 i65 i13
+ldf f69 p67 i68 8 0
+fadd f63 f63 f69
+endloop 9
+endif 8
+release p18
+mov f70 f63
+exit 1
+enddo 1
+release p9
+sa p71 s3
+stf f70 p71 - 0 0
+la p72 d1
+rcall sea_printf 0:13 0 2 p72 p71
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

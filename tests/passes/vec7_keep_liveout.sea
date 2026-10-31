@@ -1,0 +1,13 @@
+// vec7_keep_liveout -- DESIGN.md 2.12.6 condition 3: t is written in the loop and read after it
+// (a live-out lane value), so the loop stays scalar; the fused copy x * 1.0 is vectorized
+fn live(x: f64[]) -> f64 {
+    var u = x * 1.0
+    var t = 0.0
+    for i in 0..len(u) {
+        t = u[i] * 2.0
+        u[i] = t
+    }
+    return t + u[0]
+}
+let x = [1.0, 2.5, 3.0]
+printf("%g\n", live(x))

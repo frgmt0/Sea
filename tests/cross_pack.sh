@@ -12,11 +12,19 @@
 #   BAYSICK  the Baysick checkout (default: the parent of the Sea repository); its
 #            Makefile.linux, include/*.inc and src/runtime_x86_64_linux/*.s go to the bundle
 #   SEA_COMPILE_TIMEOUT  seconds per compilation (default 120)
+#   LIRCHK   the sea.lir validator (default: tools/lirchk beside the driver, i.e. build/tools/lirchk)
+#
+# Every x86_64 sea.lir a case is compiled through (the driver's, seavec's output, a hand-written
+# pass-4 input) is validated with lirchk (Decision 116, the vector classes and LF records
+# included); a rejection is a pack failure of that case (NAME.packfail, "lirchk rejects ...").
 #
 # Cases (6.6.1): every programs/ test; every errors/ test that compiles (a compile-time test:
 # driver exit SEA_EXIT_COMPILE, exactly NAME.err on stderr, empty stdout, NAME.status equal, is
 # target-independent and skipped silently); passes/NAME.sea with NAME.out (--no-prelude);
-# hand-written passes/NAME.lir (retargeted, run through seagen_x64); rt/x86_64_linux/NAME.s.
+# hand-written passes/NAME.lir (retargeted, run through seagen_x64; not one beside a NAME.lir3, L-fc);
+# passes/NAME.lirx64 with a NAME.out and no NAME.sea (L-fc): without a NAME.lir3 a hand-written
+# x86_64-linux-only pass-4 test (run through seagen_x64 as it is), with a NAME.lir3 a hand-written
+# seavec test (NAME.lir3 retargeted, run through seavec and then seagen_x64); rt/x86_64_linux/NAME.s.
 # math/math_check (tests/math: harness source and *.vec, built and run on the host).
 # ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
 # NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference), NAME.meta
@@ -49,6 +57,12 @@ case $SEA in /*) ;; *) SEA=$(pwd)/$SEA ;; esac
 case $BAYSICK in /*) ;; *) BAYSICK=$(pwd)/$BAYSICK ;; esac
 [ -x "$SEA" ] || setup_fail "driver '$SEA' not found or not executable; run 'make' first"
 SEADIR=${SEA_HOME:-$(dirname "$SEA")}
+LIRCHK=${LIRCHK:-$(dirname "$SEA")/tools/lirchk}
+case $LIRCHK in /*) ;; *) LIRCHK=$(pwd)/$LIRCHK ;; esac
+[ -x "$LIRCHK" ] || setup_fail "validator '$LIRCHK' not found or not executable; run 'make' first (LIRCHK overrides)"
+if [ ! -x "$SEADIR/seavec" ]; then
+    setup_fail "pass 'seavec' not found in '$SEADIR' (run 'make')"
+fi
 if [ ! -x "$SEADIR/seagen_x64" ]; then
     setup_fail "pass 'seagen_x64' not found in '$SEADIR': the x86_64 code generator is not built (passes/seagen_x64 not written yet, or run 'make')"
 fi
@@ -161,14 +175,43 @@ packfail() {
     BAD=$((BAD + 1))
 }
 
-# pack_sea KIND DIR NAME [--no-prelude] : compile DIR/NAME.sea to cases/KIND/NAME.s.
+# lirchk_dir DIR : validate DIR/sea.lir with lirchk (Decision 116). On a rejection the first lines of
+# its messages are left in $TMP/k.msg and 1 is returned.
+lirchk_dir() {
+    run_limited "$CTIMEOUT" "$1" "$LIRCHK" >"$TMP/k.out" 2>"$TMP/k.err"
+    _kst=$?
+    if [ $_kst -ne 0 ]; then
+        {
+            echo "lirchk rejects sea.lir (status $_kst):"
+            cat "$TMP/k.err" "$TMP/k.out" | head -3
+        } > "$TMP/k.msg"
+        return 1
+    fi
+    return 0
+}
+
+# pack_sea KIND DIR NAME [--no-prelude] : compile DIR/NAME.sea to cases/KIND/NAME.s. The driver runs
+# with --keep-temps: its line `sea: temporary files kept in DIR` is removed from the standard error,
+# and DIR/sea.lir (written when the compilation got as far as pass 3d) is validated with lirchk.
 # Returns 1 when the case is a compile-time error test (skipped), else 0.
 pack_sea() {
     _kind=$1; _dir=$2; _nm=$3; shift 3
     _out=$BUNDLE/cases/$_kind/$_nm.s
-    run_limited "$CTIMEOUT" "$_dir" "$SEA" build --target x86_64-linux -S -o "$_out" "$@" "$_nm.sea" \
-        >"$TMP/c.out" 2>"$TMP/c.err"
+    run_limited "$CTIMEOUT" "$_dir" "$SEA" build --keep-temps --target x86_64-linux -S -o "$_out" "$@" "$_nm.sea" \
+        >"$TMP/c.out" 2>"$TMP/c.err.raw"
     _st=$?
+    _kept=$(sed -n 's/^sea: temporary files kept in //p' "$TMP/c.err.raw" | head -1)
+    grep -v '^sea: temporary files kept in ' "$TMP/c.err.raw" > "$TMP/c.err"
+    _lc=0
+    if [ -n "$_kept" ] && [ -f "$_kept/sea.lir" ] && [ $_st -eq 0 ]; then
+        lirchk_dir "$_kept" || _lc=1
+    fi
+    if [ -n "$_kept" ] && [ -d "$_kept" ]; then rm -rf "$_kept"; fi
+    if [ $_lc -ne 0 ]; then
+        rm -f "$_out"
+        packfail "$BUNDLE/cases/$_kind/$_nm" "$_st" "$TMP/k.msg"
+        return 0
+    fi
     if [ $_st -eq 0 ] && [ ! -s "$TMP/c.out" ] && [ ! -s "$TMP/c.err" ] && [ -f "$_out" ]; then
         return 0
     fi
@@ -180,6 +223,30 @@ pack_sea() {
     fi
     packfail "$BUNDLE/cases/$_kind/$_nm" "$_st" "$TMP/c.err"
     return 0
+}
+
+# pack_p4 NAME BASE W : pass 4 (seagen_x64) on W/sea.lir, the x86_64-linux LIR of a hand-written test
+# (BASE.out, sidecars of BASE). W/sea.lir is validated with lirchk first; the sea.s is the case's NAME.s.
+# W is removed. A failure is recorded as NAME.packfail.
+pack_p4() {
+    _nm=$1; _base=$2; _w=$3
+    dest=$BUNDLE/cases/passes/$_nm
+    if ! lirchk_dir "$_w"; then
+        packfail "$dest" 0 "$TMP/k.msg"
+    else
+        run_limited "$CTIMEOUT" "$_w" "$SEADIR/seagen_x64" >"$TMP/c.out" 2>"$TMP/c.err"
+        st=$?
+        if [ $st -eq 0 ] && [ ! -s "$TMP/c.err" ] && [ -f "$_w/sea.s" ]; then
+            cp "$_w/sea.s" "$dest.s" || setup_fail "cannot write $dest.s"
+            # the pass writes nothing to stdout (the driver sends it to stderr): any is a failure
+            if [ -s "$TMP/c.out" ]; then rm -f "$dest.s"; packfail "$dest" "$st" "$TMP/c.err"; fi
+        else
+            packfail "$dest" "$st" "$TMP/c.err"
+        fi
+    fi
+    rm -rf "$_w"
+    sidecars "$_base" "$dest" out err status meta
+    PACKED=$((PACKED + 1))
 }
 
 for src in "$ROOT"/tests/programs/*.sea; do
@@ -278,13 +345,15 @@ for src in "$ROOT"/ports/*.sea; do
     PACKED=$((PACKED + 1))
 done
 
-# passes/NAME.lir with none of NAME.sea, NAME.lir1 and NAME.lir2: pass-4 tests, retargeted
+# passes/NAME.lir with none of NAME.sea, NAME.lir1, NAME.lir2 and NAME.lir3: pass-4 tests, retargeted
+# (a NAME.lir beside a NAME.lir3 is a seavec golden, as in tests/stage.sh)
 for lir in "$ROOT"/tests/passes/*.lir; do
     [ -e "$lir" ] || continue
     nm=$(basename "$lir" .lir)
     base=${lir%.lir}
     [ -f "$base.lir1" ] && continue
     [ -f "$base.lir2" ] && continue
+    [ -f "$base.lir3" ] && continue
     [ -f "$base.sea" ] && continue
     selected "passes/$nm" || continue
     check_meta "$base"
@@ -292,19 +361,40 @@ for lir in "$ROOT"/tests/passes/*.lir; do
     if ! awk '!d && $1 == "#target" { print "#target x86_64-linux"; d = 1; next } { print }' "$lir" > "$w/sea.lir"; then
         setup_fail "cannot retarget $lir"
     fi
-    run_limited "$CTIMEOUT" "$w" "$SEADIR/seagen_x64" >"$TMP/c.out" 2>"$TMP/c.err"
-    st=$?
-    dest=$BUNDLE/cases/passes/$nm
-    if [ $st -eq 0 ] && [ ! -s "$TMP/c.err" ] && [ -f "$w/sea.s" ]; then
-        cp "$w/sea.s" "$dest.s" || setup_fail "cannot write $dest.s"
-        # the pass writes nothing to stdout (the driver sends it to stderr): any is a failure
-        if [ -s "$TMP/c.out" ]; then rm -f "$dest.s"; packfail "$dest" "$st" "$TMP/c.err"; fi
+    pack_p4 "$nm" "$base" "$w"
+done
+
+# passes/NAME.lirx64 with a NAME.out and no NAME.sea (L-fc): x86_64-linux pass-4 tests. Without a
+# NAME.lir3 the file is the test input (hand-written, x86_64-linux only: gen7_y*, gen7_vfeat); with a
+# hand-written NAME.lir3 the test is seavec on NAME.lir3 retargeted, then pass 4 on its output (the
+# live seavec output, not the golden NAME.lirx64, which tests/stage.sh compares). A seavec failure
+# is a pack failure. Without a NAME.out it is only a seavec golden (stage.sh's), not a run case.
+for g in "$ROOT"/tests/passes/*.lirx64; do
+    [ -e "$g" ] || continue
+    nm=$(basename "$g" .lirx64)
+    base=${g%.lirx64}
+    [ -f "$base.sea" ] && continue
+    [ -f "$base.out" ] || continue
+    selected "passes/$nm" || continue
+    check_meta "$base"
+    w=$(mktemp -d "$TMP/w.XXXXXX") || setup_fail "cannot create temporary directory"
+    if [ -f "$base.lir3" ]; then
+        if ! awk '!d && $1 == "#target" { print "#target x86_64-linux"; d = 1; next } { print }' "$base.lir3" > "$w/sea.lir3"; then
+            setup_fail "cannot retarget $base.lir3"
+        fi
+        run_limited "$CTIMEOUT" "$w" "$SEADIR/seavec" >"$TMP/c.out" 2>"$TMP/c.err"
+        st=$?
+        if [ $st -ne 0 ] || [ -s "$TMP/c.err" ] || [ -s "$TMP/c.out" ] || [ ! -f "$w/sea.lir" ]; then
+            rm -rf "$w"
+            packfail "$BUNDLE/cases/passes/$nm" "$st" "$TMP/c.err"
+            sidecars "$base" "$BUNDLE/cases/passes/$nm" out err status meta
+            PACKED=$((PACKED + 1))
+            continue
+        fi
     else
-        packfail "$dest" "$st" "$TMP/c.err"
+        cp "$g" "$w/sea.lir" || setup_fail "cannot copy $g"
     fi
-    rm -rf "$w"
-    sidecars "$base" "$dest" out err status meta
-    PACKED=$((PACKED + 1))
+    pack_p4 "$nm" "$base" "$w"
 done
 
 # rt/NAME: the x86_64 runtime tests

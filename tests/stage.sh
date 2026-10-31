@@ -57,18 +57,43 @@
 # innermost loop (the range from a `L<f>_<b>_top:` label / `.L<f>_<b>_top:` to the last branch back
 # to it that contains no other loop top label) must contain no frame access (arm64 `[sp`, `[x29`;
 # x86_64 `(%rsp)`, `(%rbp)`), and there must be at least one such loop. Outer loops are not checked.
+#
+# Phase 7e (DESIGN.md 2.12.10, 6.2, L-fc, Decision 99, Decision 116):
+# * Every sea.lir seavec writes here, for either target, and every hand-written pass-4 input, is
+#   validated with build/tools/lirchk (lirrw's vector validator: the classes x y m, the LF records,
+#   vfeat only on x86_64-linux). A rejection fails the test as `lirchk rejects sea.lir ...`; a
+#   missing build/tools/lirchk is a setup error.
+# * seavec on x86_64-linux: a NAME.lirx64 beside a NAME.lir3 is the golden of seavec run on NAME.lir3
+#   with its #target record changed to x86_64-linux (as tests/cross_pack.sh retargets). Name:
+#   stage/seavec_x64/NAME. (NAME.lir, the arm64-macos golden, is checked by stage/seavec/NAME.)
+# * A hand-written NAME.lir3 (no NAME.sea) with a NAME.out: pass 4 runs on each seavec output: the
+#   arm64-macos one is assembled, linked and run as a hand-written pass-4 test below (its NAME.out,
+#   NAME.err, NAME.status), the x86_64-linux one goes through seagen_x64, which must exit 0 and
+#   write a sea.s (stage/seagen_x64/NAME): x86_64 code cannot run on the Mac, so its run is the
+#   cross run's (tests/cross.sh). A NAME.lir3 test with a NAME.sea has its NAME.out run by run.sh.
+# * A NAME.lirx64 with no NAME.lir3 and no NAME.sea is a hand-written pass-4 test for x86_64-linux
+#   only (NAME.out required): it is validated and run through seagen_x64 as above, never through
+#   seagen_a64 and never as a *.lir test (stage/seagen_x64/NAME). Beside it a NAME.lir, if any, is
+#   the same test for arm64-macos. A NAME.lirx64 with a NAME.sea but no NAME.lir3 is a setup FAILURE.
 
 # usage: sh tests/stage.sh [-v] [PATTERN...]      PATTERN: a substring of the test name
-#        (stage/<pass>/NAME). Environment: BUILD (default build/), SEA_TEST_TIMEOUT (10).
+#        (stage/<pass>/NAME). Environment: BUILD (default build/), SEA_TEST_TIMEOUT (10),
+#        LIRCHK (default build/tools/lirchk).
 # Exit status: 0 all passed, 1 a failure, 2 setup error.
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${BUILD:-$ROOT/build}
 case $BUILD in /*) ;; *) BUILD=$ROOT/$BUILD ;; esac
+LIRCHK=${LIRCHK:-$BUILD/tools/lirchk}
 TIMEOUT=${SEA_TEST_TIMEOUT:-10}
 VERBOSE=0
 if [ "${1:-}" = "-v" ]; then VERBOSE=1; shift; fi
 PATTERNS="$*"
+
+if [ ! -x "$LIRCHK" ]; then
+    echo "stage.sh: validator '$LIRCHK' not found or not executable; run 'make' first" >&2
+    exit 2
+fi
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea-stage.XXXXXX") || exit 2
 trap 'rm -rf "$TMP"' EXIT; trap 'exit 130' INT; trap 'exit 143' TERM
@@ -142,6 +167,73 @@ heap_end() {
     fi
 }
 
+# chk_lir NAME DIR : validate DIR/sea.lir with lirchk (Decision 116). Returns 1 (after the FAIL) on a rejection.
+chk_lir() {
+    run_limited "$TIMEOUT" "$2" "$LIRCHK" >"$TMP/k.out" 2>"$TMP/k.err"
+    _kst=$?
+    if [ $_kst -ne 0 ]; then
+        fail "$1" "lirchk rejects sea.lir (status $_kst): $(cat "$TMP/k.err" "$TMP/k.out" | head -3 | tr '\n' ' ')"
+        return 1
+    fi
+    return 0
+}
+
+# a64_gen NAME DIR : seagen_a64 on DIR/sea.lir (standard input /dev/null); must exit 0 and write DIR/sea.s.
+a64_gen() {
+    if [ ! -x "$BUILD/seagen_a64" ]; then fail "$1" "pass 'seagen_a64' not built ($BUILD/seagen_a64)"; return 1; fi
+    run_limited "$TIMEOUT" "$2" "$BUILD/seagen_a64" >"$TMP/p.out" 2>"$TMP/p.err"
+    st=$?
+    if [ $st -ne 0 ]; then fail "$1" "seagen_a64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; return 1; fi
+    if [ ! -f "$2/sea.s" ]; then fail "$1" "no sea.s written"; return 1; fi
+    return 0
+}
+
+# a64_run NAME DIR BASE : assemble DIR/sea.s, link it with libsea.a and libbaysickrt.a as the driver does, run
+# it (standard input /dev/null) and compare with BASE.out, BASE.err (else empty), BASE.status (else 0).
+a64_run() {
+    if [ ! -f "$BUILD/libsea.a" ] || [ ! -f "$BUILD/libbaysickrt.a" ]; then fail "$1" "runtime library not built ($BUILD)"; return 1; fi
+    if [ ! -f "$3.out" ]; then fail "$1" "expected output $(basename "$3").out missing"; return 1; fi
+    _want=0
+    [ -f "$3.status" ] && _want=$(sed -n 1p "$3.status")
+    _experr=$TMP/empty
+    [ -f "$3.err" ] && _experr=$3.err
+    SDK=$(env -u SDKROOT xcrun --show-sdk-path 2>/dev/null | sed -n 1p)
+    if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then fail "$1" "cannot determine macOS SDK path"; return 1; fi
+    (cd "$2" && env -u SDKROOT as -arch arm64 -mmacosx-version-min=11.0 -o sea.o sea.s) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
+    st=$?
+    if [ $st -ne 0 ]; then fail "$1" "as failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; return 1; fi
+    (cd "$2" && env -u SDKROOT ld -o prog sea.o "$BUILD/libsea.a" "$BUILD/libbaysickrt.a" -lSystem \
+        -syslibroot "$SDK" -e _main -arch arm64 -platform_version macos 11.0 11.0) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
+    st=$?
+    if [ $st -ne 0 ]; then fail "$1" "ld failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; return 1; fi
+    heap_begin "$3"
+    run_limited "$TIMEOUT" "$2" "$2/prog" >"$TMP/p.out" 2>"$TMP/p.err"
+    st=$?
+    heap_end
+    [ -n "$LEAK" ] && { fail "$1" "$LEAK"; return 1; }
+    [ "$st" = "$_want" ] || { fail "$1" "exit status $st, expected $_want"; return 1; }
+    same "$3.out" "$TMP/p.out" "standard output" "$1" || return 1
+    same "$_experr" "$TMP/p.err" "standard error" "$1" || return 1
+    return 0
+}
+
+# x64_gen NAME DIR : seagen_x64 on DIR/sea.lir (a #target x86_64-linux file); must exit 0 and write DIR/sea.s.
+# The program cannot run on the Mac: its run is the cross run's (tests/cross.sh).
+x64_gen() {
+    if [ ! -x "$BUILD/seagen_x64" ]; then fail "$1" "pass 'seagen_x64' not built ($BUILD/seagen_x64)"; return 1; fi
+    run_limited "$TIMEOUT" "$2" "$BUILD/seagen_x64" >"$TMP/p.out" 2>"$TMP/p.err"
+    st=$?
+    if [ $st -ne 0 ]; then fail "$1" "seagen_x64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; return 1; fi
+    if [ ! -s "$2/sea.s" ]; then fail "$1" "no sea.s written"; return 1; fi
+    same "$TMP/empty" "$TMP/p.err" "stderr" "$1" || return 1
+    return 0
+}
+
+# retarget IN OUT : IN with its #target record changed to x86_64-linux (as tests/cross_pack.sh does)
+retarget() {
+    awk '!d && $1 == "#target" { print "#target x86_64-linux"; d = 1; next } { print }' "$1" > "$2"
+}
+
 # stage PASS PREV NEXT : one pass over every golden pair
 stage() {
     _p=$1; _prev=$2; _next=$3
@@ -189,8 +281,66 @@ stage() {
             fi
         fi
         [ $ok = 1 ] && { same "$TMP/empty" "$TMP/p.err" "stderr" "$name" || ok=0; }
-        rm -rf "$w"
+        # a seavec output is validated with lirchk (Decision 116)
+        [ $ok = 1 ] && [ "$_next" = lir ] && { chk_lir "$name" "$w" || ok=0; }
         [ $ok = 1 ] && pass
+        # a hand-written seavec test (NAME.lir3, no NAME.sea) with a NAME.out: pass 4 on the arm64-macos output
+        if [ $ok = 1 ] && [ "$_next" = lir ] && [ ! -f "$ROOT/tests/passes/$nm.sea" ] && [ -f "$ROOT/tests/passes/$nm.out" ]; then
+            p4=stage/seagen_a64/$nm
+            if selected "$p4"; then
+                if a64_gen "$p4" "$w" && a64_run "$p4" "$w" "$ROOT/tests/passes/$nm"; then pass; fi
+            fi
+        fi
+        rm -rf "$w"
+    done
+}
+
+# stage_x64 : seavec and pass 4 on x86_64-linux (L-fc). A NAME.lirx64 with a NAME.lir3 is the golden of
+# seavec run on NAME.lir3 retargeted to x86_64-linux; with a hand-written NAME.lir3 (no NAME.sea) and a
+# NAME.out the output also goes through seagen_x64. A NAME.lirx64 with neither NAME.lir3 nor NAME.sea is a
+# hand-written pass-4 test for x86_64-linux only: validated and run through seagen_x64, never seagen_a64.
+stage_x64() {
+    for g in "$ROOT"/tests/passes/*.lirx64; do
+        [ -e "$g" ] || continue
+        nm=$(basename "$g" .lirx64)
+        d=$ROOT/tests/passes
+        if [ -f "$d/$nm.lir3" ]; then
+            name=stage/seavec_x64/$nm
+            selected "$name" || continue
+            if [ ! -x "$BUILD/seavec" ]; then fail "$name" "pass 'seavec' not built ($BUILD/seavec)"; continue; fi
+            w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
+            retarget "$d/$nm.lir3" "$w/sea.lir3"
+            run_limited "$TIMEOUT" "$w" "$BUILD/seavec" >"$TMP/p.out" 2>"$TMP/p.err"
+            st=$?
+            ok=1
+            [ $st -eq 0 ] || { fail "$name" "exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
+            [ $ok = 1 ] && [ ! -f "$w/sea.lir" ] && { fail "$name" "no sea.lir written"; ok=0; }
+            [ $ok = 1 ] && { same "$g" "$w/sea.lir" "sea.lir" "$name" || ok=0; }
+            if [ $ok = 1 ]; then
+                if ! { cmp -s "$w/sea.lir" "$TMP/end5" || tail -c 6 "$w/sea.lir" | cmp -s - "$TMP/end6"; }; then
+                    fail "$name" "sea.lir does not end with #end"; ok=0
+                fi
+            fi
+            [ $ok = 1 ] && { same "$TMP/empty" "$TMP/p.err" "stderr" "$name" || ok=0; }
+            [ $ok = 1 ] && { chk_lir "$name" "$w" || ok=0; }
+            [ $ok = 1 ] && pass
+            if [ $ok = 1 ] && [ ! -f "$d/$nm.sea" ] && [ -f "$d/$nm.out" ]; then
+                p4=stage/seagen_x64/$nm
+                if selected "$p4"; then
+                    if x64_gen "$p4" "$w"; then pass; fi
+                fi
+            fi
+            rm -rf "$w"
+            continue
+        fi
+        name=stage/seagen_x64/$nm
+        selected "$name" || continue
+        if [ -f "$d/$nm.sea" ]; then fail "$name" "$nm.lirx64 has $nm.sea but no $nm.lir3 (setup error)"; continue; fi
+        if [ ! -f "$d/$nm.out" ]; then fail "$name" "expected output $nm.out missing"; continue; fi
+        w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
+        cp "$g" "$w/sea.lir"
+        if chk_lir "$name" "$w" && x64_gen "$name" "$w"; then pass; fi
+        rm -rf "$w"
     done
 }
 
@@ -252,19 +402,12 @@ for g in "$ROOT"/tests/passes/*.lir; do
     selected "$name" || continue
     d=$ROOT/tests/passes
     if [ ! -f "$d/$nm.out" ]; then fail "$name" "expected output $nm.out missing"; continue; fi
-    if [ ! -x "$BUILD/seagen_a64" ]; then fail "$name" "pass 'seagen_a64' not built ($BUILD/seagen_a64)"; continue; fi
-    if [ ! -f "$BUILD/libsea.a" ] || [ ! -f "$BUILD/libbaysickrt.a" ]; then fail "$name" "runtime library not built ($BUILD)"; continue; fi
-    want=0
-    [ -f "$d/$nm.status" ] && want=$(sed -n 1p "$d/$nm.status")
-    exp_err=$TMP/empty
-    [ -f "$d/$nm.err" ] && exp_err=$d/$nm.err
     w=$(mktemp -d "$TMP/w.XXXXXX") || exit 2
     cp "$g" "$w/sea.lir"
     ok=1
-    run_limited "$TIMEOUT" "$w" "$BUILD/seagen_a64" >"$TMP/p.out" 2>"$TMP/p.err"
-    st=$?
-    [ $st -eq 0 ] || { fail "$name" "seagen_a64 exit status $st: $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
-    [ $ok = 1 ] && [ ! -f "$w/sea.s" ] && { fail "$name" "no sea.s written"; ok=0; }
+    # the hand-written input is validated first (Decision 116)
+    chk_lir "$name" "$w" || ok=0
+    [ $ok = 1 ] && { a64_gen "$name" "$w" || ok=0; }
     # ra5_live_*: the loops must have no frame access in the -S output of both targets (DESIGN.md 6.2)
     case $nm in ra5_live_*)
         if [ $ok = 1 ]; then
@@ -288,31 +431,7 @@ for g in "$ROOT"/tests/passes/*.lir; do
             fi
         fi ;;
     esac
-    if [ $ok = 1 ]; then
-        SDK=$(env -u SDKROOT xcrun --show-sdk-path 2>/dev/null | sed -n 1p)
-        if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then fail "$name" "cannot determine macOS SDK path"; ok=0; fi
-    fi
-    if [ $ok = 1 ]; then
-        (cd "$w" && env -u SDKROOT as -arch arm64 -mmacosx-version-min=11.0 -o sea.o sea.s) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
-        st=$?
-        [ $st -eq 0 ] || { fail "$name" "as failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
-    fi
-    if [ $ok = 1 ]; then
-        (cd "$w" && env -u SDKROOT ld -o prog sea.o "$BUILD/libsea.a" "$BUILD/libbaysickrt.a" -lSystem \
-            -syslibroot "$SDK" -e _main -arch arm64 -platform_version macos 11.0 11.0) >"$TMP/p.out" 2>"$TMP/p.err" </dev/null
-        st=$?
-        [ $st -eq 0 ] || { fail "$name" "ld failed ($st): $(head -3 "$TMP/p.err" | tr '\n' ' ')"; ok=0; }
-    fi
-    if [ $ok = 1 ]; then
-        heap_begin "$d/$nm"
-        run_limited "$TIMEOUT" "$w" "$w/prog" >"$TMP/p.out" 2>"$TMP/p.err"
-        st=$?
-        heap_end
-        [ -n "$LEAK" ] && { fail "$name" "$LEAK"; ok=0; }
-        [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; ok=0; }
-        [ $ok = 1 ] && { same "$d/$nm.out" "$TMP/p.out" "standard output" "$name" || ok=0; }
-        [ $ok = 1 ] && { same "$exp_err" "$TMP/p.err" "standard error" "$name" || ok=0; }
-    fi
+    [ $ok = 1 ] && { a64_run "$name" "$w" "$d/$nm" || ok=0; }
     rm -rf "$w"
     [ $ok = 1 ] && pass
 done
@@ -357,6 +476,7 @@ stage sealower hirl lir1
 stage seaopt lir1 lir2
 stage sealopt lir2 lir3
 stage seavec lir3 lir
+stage_x64
 stage seagen_a64 lir s
 
 echo "----"

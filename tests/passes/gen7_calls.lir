@@ -1,0 +1,390 @@
+#sea 1
+#target arm64-macos
+#file gen7_calls.sea
+func .main main 0:1:1 0 0
+slot s1 512 16
+slot s2 64 16
+slot s3 64 8
+sa p1 s1
+sa p2 s2
+sa p3 s3
+li i4 #7FF8000000000000
+lf f5 #400921FB54442D18
+lf f6 #8000000000000000
+stf f5 p1 - 0 0
+stf f6 p1 - 0 8
+ldx x7 p1 - 0 0
+xcmp gt m8 x7 x7
+mnot m9 m8
+lf f10 #3FE0000000000000
+lf f11 #0000000000000001
+stf f10 p1 - 0 0
+stf f11 p1 - 0 8
+ldx x12 p1 - 0 0
+rcall sea_log_x - 1 x13 1 x12
+stx x13 p2 - 0 0
+ldf f14 p2 - 0 0
+fnan i15 f14
+ldi i16 p2 - 0 0
+isel i17 i15 i4 i16
+ldf f18 p2 - 0 8
+fnan i19 f18
+ldi i20 p2 - 0 8
+isel i21 i19 i4 i20
+sti i17 p3 - 0 0
+sti i21 p3 - 0 8
+la p22 d1
+rcall sea_printf 0:2 0 2 p22 p3
+rcall sea_log_x - 1 x12 1 x12
+stx x12 p2 - 0 0
+ldf f23 p2 - 0 0
+fnan i24 f23
+ldi i25 p2 - 0 0
+isel i26 i24 i4 i25
+ldf f27 p2 - 0 8
+fnan i28 f27
+ldi i29 p2 - 0 8
+isel i30 i28 i4 i29
+sti i26 p3 - 0 0
+sti i30 p3 - 0 8
+la p31 d2
+rcall sea_printf 0:2 0 2 p31 p3
+lf f32 #40862E42FEFA38EE
+lf f33 #FFF0000000000000
+stf f32 p1 - 0 0
+stf f33 p1 - 0 8
+ldx x34 p1 - 0 0
+rcall sea_exp_x - 1 x35 1 x34
+stx x35 p2 - 0 0
+ldf f36 p2 - 0 0
+fnan i37 f36
+ldi i38 p2 - 0 0
+isel i39 i37 i4 i38
+ldf f40 p2 - 0 8
+fnan i41 f40
+ldi i42 p2 - 0 8
+isel i43 i41 i4 i42
+sti i39 p3 - 0 0
+sti i43 p3 - 0 8
+la p44 d3
+rcall sea_printf 0:2 0 2 p44 p3
+rcall sea_exp_x - 1 x34 1 x34
+stx x34 p2 - 0 0
+ldf f45 p2 - 0 0
+fnan i46 f45
+ldi i47 p2 - 0 0
+isel i48 i46 i4 i47
+ldf f49 p2 - 0 8
+fnan i50 f49
+ldi i51 p2 - 0 8
+isel i52 i50 i4 i51
+sti i48 p3 - 0 0
+sti i52 p3 - 0 8
+la p53 d4
+rcall sea_printf 0:2 0 2 p53 p3
+lf f54 #463E50FEC1788956
+lf f55 #3FF921FB54442D18
+stf f54 p1 - 0 0
+stf f55 p1 - 0 8
+ldx x56 p1 - 0 0
+rcall sea_sin_x - 1 x57 1 x56
+stx x57 p2 - 0 0
+ldf f58 p2 - 0 0
+fnan i59 f58
+ldi i60 p2 - 0 0
+isel i61 i59 i4 i60
+ldf f62 p2 - 0 8
+fnan i63 f62
+ldi i64 p2 - 0 8
+isel i65 i63 i4 i64
+sti i61 p3 - 0 0
+sti i65 p3 - 0 8
+la p66 d5
+rcall sea_printf 0:2 0 2 p66 p3
+rcall sea_sin_x - 1 x56 1 x56
+stx x56 p2 - 0 0
+ldf f67 p2 - 0 0
+fnan i68 f67
+ldi i69 p2 - 0 0
+isel i70 i68 i4 i69
+ldf f71 p2 - 0 8
+fnan i72 f71
+ldi i73 p2 - 0 8
+isel i74 i72 i4 i73
+sti i70 p3 - 0 0
+sti i74 p3 - 0 8
+la p75 d6
+rcall sea_printf 0:2 0 2 p75 p3
+lf f76 #454F19E5D71B26BB
+lf f77 #3FF921FB54442D19
+stf f76 p1 - 0 0
+stf f77 p1 - 0 8
+ldx x78 p1 - 0 0
+rcall sea_cos_x - 1 x79 1 x78
+stx x79 p2 - 0 0
+ldf f80 p2 - 0 0
+fnan i81 f80
+ldi i82 p2 - 0 0
+isel i83 i81 i4 i82
+ldf f84 p2 - 0 8
+fnan i85 f84
+ldi i86 p2 - 0 8
+isel i87 i85 i4 i86
+sti i83 p3 - 0 0
+sti i87 p3 - 0 8
+la p88 d7
+rcall sea_printf 0:2 0 2 p88 p3
+rcall sea_cos_x - 1 x78 1 x78
+stx x78 p2 - 0 0
+ldf f89 p2 - 0 0
+fnan i90 f89
+ldi i91 p2 - 0 0
+isel i92 i90 i4 i91
+ldf f93 p2 - 0 8
+fnan i94 f93
+ldi i95 p2 - 0 8
+isel i96 i94 i4 i95
+sti i92 p3 - 0 0
+sti i96 p3 - 0 8
+la p97 d8
+rcall sea_printf 0:2 0 2 p97 p3
+lf f98 #C000000000000000
+lf f99 #4000000000000000
+stf f98 p1 - 0 0
+stf f99 p1 - 0 8
+ldx x100 p1 - 0 0
+lf f101 #C008000000000000
+lf f102 #C090840000000000
+stf f101 p1 - 0 0
+stf f102 p1 - 0 8
+ldx x103 p1 - 0 0
+rcall sea_pow_x - 1 x104 2 x100 x103
+stx x104 p2 - 0 0
+ldf f105 p2 - 0 0
+fnan i106 f105
+ldi i107 p2 - 0 0
+isel i108 i106 i4 i107
+ldf f109 p2 - 0 8
+fnan i110 f109
+ldi i111 p2 - 0 8
+isel i112 i110 i4 i111
+sti i108 p3 - 0 0
+sti i112 p3 - 0 8
+la p113 d9
+rcall sea_printf 0:2 0 2 p113 p3
+rcall sea_pow_x - 1 x103 2 x100 x103
+stx x103 p2 - 0 0
+ldf f114 p2 - 0 0
+fnan i115 f114
+ldi i116 p2 - 0 0
+isel i117 i115 i4 i116
+ldf f118 p2 - 0 8
+fnan i119 f118
+ldi i120 p2 - 0 8
+isel i121 i119 i4 i120
+sti i117 p3 - 0 0
+sti i121 p3 - 0 8
+la p122 d10
+rcall sea_printf 0:2 0 2 p122 p3
+lf f123 #0358000000000000
+lf f124 #3FF0000000000000
+stf f123 p1 - 0 0
+stf f124 p1 - 0 8
+ldx x125 p1 - 0 0
+lf f126 #0360000000000000
+lf f127 #FFF0000000000000
+stf f126 p1 - 0 0
+stf f127 p1 - 0 8
+ldx x128 p1 - 0 0
+rcall sea_hypot_x - 1 x129 2 x125 x128
+stx x129 p2 - 0 0
+ldf f130 p2 - 0 0
+fnan i131 f130
+ldi i132 p2 - 0 0
+isel i133 i131 i4 i132
+ldf f134 p2 - 0 8
+fnan i135 f134
+ldi i136 p2 - 0 8
+isel i137 i135 i4 i136
+sti i133 p3 - 0 0
+sti i137 p3 - 0 8
+la p138 d11
+rcall sea_printf 0:2 0 2 p138 p3
+rcall sea_hypot_x - 1 x128 2 x125 x128
+stx x128 p2 - 0 0
+ldf f139 p2 - 0 0
+fnan i140 f139
+ldi i141 p2 - 0 0
+isel i142 i140 i4 i141
+ldf f143 p2 - 0 8
+fnan i144 f143
+ldi i145 p2 - 0 8
+isel i146 i144 i4 i145
+sti i142 p3 - 0 0
+sti i146 p3 - 0 8
+la p147 d12
+rcall sea_printf 0:2 0 2 p147 p3
+stx x7 p2 - 0 0
+ldf f148 p2 - 0 0
+fnan i149 f148
+ldi i150 p2 - 0 0
+isel i151 i149 i4 i150
+ldf f152 p2 - 0 8
+fnan i153 f152
+ldi i154 p2 - 0 8
+isel i155 i153 i4 i154
+sti i151 p3 - 0 0
+sti i155 p3 - 0 8
+la p156 d13
+rcall sea_printf 0:2 0 2 p156 p3
+stm2 m8 p2 - 0 32
+ldb i157 p2 - 0 32
+ldb i158 p2 - 0 33
+iadd i159 i157 i158
+sti i157 p3 - 0 0
+sti i158 p3 - 0 8
+sti i159 p3 - 0 16
+la p160 d14
+rcall sea_printf 0:2 0 2 p160 p3
+stm2 m9 p2 - 0 32
+ldb i161 p2 - 0 32
+ldb i162 p2 - 0 33
+iadd i163 i161 i162
+sti i161 p3 - 0 0
+sti i162 p3 - 0 8
+sti i163 p3 - 0 16
+la p164 d15
+rcall sea_printf 0:2 0 2 p164 p3
+xsel x165 m9 x7 x7
+stx x165 p2 - 0 0
+ldf f166 p2 - 0 0
+fnan i167 f166
+ldi i168 p2 - 0 0
+isel i169 i167 i4 i168
+ldf f170 p2 - 0 8
+fnan i171 f170
+ldi i172 p2 - 0 8
+isel i173 i171 i4 i172
+sti i169 p3 - 0 0
+sti i173 p3 - 0 8
+la p174 d16
+rcall sea_printf 0:2 0 2 p174 p3
+ret 0
+endfunc
+fmt d1 6
+ftext log
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 6
+ftext log_self
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 6
+ftext exp
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 6
+ftext exp_self
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d5 6
+ftext sin
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d6 6
+ftext sin_self
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d7 6
+ftext cos
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d8 6
+ftext cos_self
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d9 6
+ftext pow
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d10 6
+ftext pow_intob
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d11 6
+ftext hypot
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d12 6
+ftext hypot_intob
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d13 6
+ftext keep
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d14 8
+ftext mk
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d15 8
+ftext mk2
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d16 6
+ftext keepsel
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

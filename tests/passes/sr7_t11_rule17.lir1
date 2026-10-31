@@ -1,0 +1,59 @@
+#sea 1
+#target arm64-macos
+#file sr7_t11_rule17.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 32 8
+slot s4 32 8
+slot s5 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+li i7 32
+mcopy p1 p2 i7
+sa p8 s3
+lf f9 #4000000000000000
+sa p10 s4
+li i11 4
+li i12 0
+icmp gt i13 i11 i12
+if 1 i13
+li i14 1
+isub i15 i11 i14
+loop 2 i16 i12 i15 i14
+ldf f17 p1 i16 8 0
+fmul f18 f17 f9
+stf f18 p10 i16 8 0
+endloop 2
+endif 1
+li i19 32
+mcopy p8 p10 i19
+li i20 0
+li i21 4
+chkb i20 i21 0 0:7
+ldf f22 p8 i20 8 0
+li i23 3
+li i24 4
+chkb i23 i24 0 0:7
+ldf f25 p8 i23 8 0
+sa p26 s5
+stf f22 p26 - 0 0
+stf f25 p26 - 0 8
+la p27 d1
+rcall sea_printf 0:7 0 2 p27 p26
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

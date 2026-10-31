@@ -1,0 +1,84 @@
+#sea 1
+#target arm64-macos
+#file vec7_keep_i64.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 72 8
+slot s3 72 8
+slot s4 72 8
+slot s5 16 8
+slot s6 16 8
+slot s7 8 8
+sa p1 s1
+sa p2 s2
+li i3 1
+sti i3 p2 - 0 0
+li i4 5
+sti i4 p2 - 0 8
+li i5 3
+sti i5 p2 - 0 16
+li i6 7
+sti i6 p2 - 0 24
+li i7 2
+sti i7 p2 - 0 32
+li i8 8
+sti i8 p2 - 0 40
+li i9 4
+sti i9 p2 - 0 48
+li i10 6
+sti i10 p2 - 0 56
+li i11 9
+sti i11 p2 - 0 64
+li i12 72
+mcopy p1 p2 i12
+sa p13 s3
+sa p14 s4
+sti i7 p14 - 0 0
+sti i9 p14 - 0 8
+sti i5 p14 - 0 16
+sti i10 p14 - 0 24
+sti i5 p14 - 0 32
+sti i6 p14 - 0 40
+sti i4 p14 - 0 48
+sti i10 p14 - 0 56
+sti i3 p14 - 0 64
+mcopy p13 p14 i12
+sa p15 s5
+sa p16 s6
+mov i17 i11
+li i18 0
+icmp gt i19 i17 i18
+if 1 i19
+li i20 1
+isub i21 i17 i20
+loop 2 i22 i18 i21 i20
+ldi i23 p1 i22 8 0
+ldi i24 p13 i22 8 0
+icmp gt i25 i23 i24
+stb i25 p16 i22 1 0
+endloop 2
+endif 1
+li i26 9
+mcopy p15 p16 i26
+li i27 0
+mov i28 i26
+mov i29 i27
+icmp gt i30 i28 i29
+if 3 i30
+li i31 1
+isub i32 i28 i31
+loop 4 i33 i29 i32 i31
+ldb i34 p15 i33 1 0
+iadd i27 i27 i34
+endloop 4
+endif 3
+sa p35 s7
+sti i27 p35 - 0 0
+la p36 d1
+rcall sea_printf 0:7 0 2 p36 p35
+ret 0
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+#end

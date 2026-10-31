@@ -1,0 +1,140 @@
+#sea 1
+#target arm64-macos
+#file vec7_mask.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 72 8
+slot s3 72 8
+slot s4 72 8
+slot s5 16 8
+slot s6 16 8
+slot s7 16 8
+slot s8 16 8
+slot s9 8 8
+slot s10 72 8
+slot s11 72 8
+slot s12 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+lf f7 #4014000000000000
+stf f7 p2 - 0 32
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+lf f9 #401C000000000000
+stf f9 p2 - 0 48
+lf f10 #4020000000000000
+stf f10 p2 - 0 56
+lf f11 #4022000000000000
+stf f11 p2 - 0 64
+li i12 72
+mcopy p1 p2 i12
+sa p13 s3
+sa p14 s4
+stf f5 p14 - 0 0
+stf f4 p14 - 0 8
+stf f3 p14 - 0 16
+stf f11 p14 - 0 24
+stf f10 p14 - 0 32
+stf f9 p14 - 0 40
+stf f8 p14 - 0 48
+stf f7 p14 - 0 56
+stf f6 p14 - 0 64
+mcopy p13 p14 i12
+sa p15 s5
+sa p16 s6
+li i17 1
+stb i17 p16 - 0 0
+li i18 0
+stb i18 p16 - 0 1
+stb i17 p16 - 0 2
+stb i18 p16 - 0 3
+stb i17 p16 - 0 4
+stb i18 p16 - 0 5
+stb i17 p16 - 0 6
+stb i18 p16 - 0 7
+stb i17 p16 - 0 8
+li i19 9
+mcopy p15 p16 i19
+sa p20 s7
+sa p21 s8
+mov i22 i19
+mov i23 i18
+icmp gt i24 i22 i23
+if 1 i24
+li i25 1
+isub i26 i22 i25
+loop 2 i27 i23 i26 i25
+ldb i28 p15 i27 1 0
+bnot i29 i28
+ldf f30 p1 i27 8 0
+ldf f31 p13 i27 8 0
+fcmp gt i32 f30 f31
+iand i33 i32 i28
+ior i34 i29 i33
+stb i34 p21 i27 1 0
+endloop 2
+endif 1
+li i35 9
+mcopy p20 p21 i35
+li i36 0
+mov i37 i35
+mov i38 i36
+icmp gt i39 i37 i38
+if 3 i39
+li i40 1
+isub i41 i37 i40
+loop 4 i42 i38 i41 i40
+ldb i43 p20 i42 1 0
+iadd i36 i36 i43
+endloop 4
+endif 3
+sa p44 s9
+sti i36 p44 - 0 0
+la p45 d1
+rcall sea_printf 0:11 0 2 p45 p44
+sa p46 s10
+sa p47 s11
+li i48 9
+li i49 0
+icmp gt i50 i48 i49
+if 5 i50
+li i51 1
+isub i52 i48 i51
+loop 6 i53 i49 i52 i51
+ldb i54 p15 i53 1 0
+ldf f55 p1 i53 8 0
+ldf f56 p13 i53 8 0
+fsel f57 i54 f55 f56
+stf f57 p47 i53 8 0
+endloop 6
+endif 5
+li i58 72
+mcopy p46 p47 i58
+li i59 2
+ldf f60 p46 i59 8 0
+li i61 8
+ldf f62 p46 i61 8 0
+sa p63 s12
+stf f60 p63 - 0 0
+stf f62 p63 - 0 8
+la p64 d2
+rcall sea_printf 0:13 0 2 p64 p63
+ret 0
+endfunc
+fmt d1 2
+fconv - - - d i
+ftext %0A
+fmt d2 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

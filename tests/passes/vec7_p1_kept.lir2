@@ -1,0 +1,84 @@
+#sea 1
+#target arm64-macos
+#file vec7_p1_kept.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 24 8
+slot s4 24 8
+slot s5 24 8
+slot s6 24 8
+slot s7 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+sa p7 s3
+sa p8 s4
+lf f9 #4010000000000000
+stf f9 p8 - 0 0
+lf f10 #4014000000000000
+stf f10 p8 - 0 8
+lf f11 #4018000000000000
+stf f11 p8 - 0 16
+mcopy p7 p8 i6
+sa p12 s5
+sa p13 s6
+li i14 3
+li i15 0
+icmp gt i16 i14 i15
+if 1 i16
+li i17 1
+isub i18 i14 i17
+loop 2 i19 i15 i18 i17
+ldf f20 p1 i19 8 0
+ldf f21 p7 i19 8 0
+do 3
+lf f22 #3FF8000000000000
+fcmp gt i23 f20 f22
+if 4 i23
+lf f24 #4012000000000000
+fcmp gt i25 f21 f24
+if 5 i25
+lf f26 #4004000000000000
+fcmp lt i27 f20 f26
+if 6 i27
+lf f28 #4016000000000000
+fcmp lt i29 f21 f28
+if 7 i29
+lf f30 #4000000000000000
+fmul f31 f20 f30
+mov f32 f31
+exit 3
+endif 7
+endif 6
+endif 5
+endif 4
+lf f33 #3FF0000000000000
+fadd f34 f20 f33
+mov f32 f34
+exit 3
+enddo 3
+stf f32 p13 i19 8 0
+endloop 2
+endif 1
+li i35 24
+mcopy p12 p13 i35
+li i36 1
+ldf f37 p12 i36 8 0
+sa p38 s7
+stf f37 p38 - 0 0
+la p39 d1
+rcall sea_printf 0:20 0 2 p39 p38
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

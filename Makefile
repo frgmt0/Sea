@@ -6,7 +6,7 @@
 #                         written yet is reported ("make: ... not written yet"), not hidden,
 #                         and does not stop the parts that exist.
 #   make runtime          build/libsea.a from runtime/arm64_macos/*.s
-#   make tools            build/tools/gendata, build/tools/seaval from tools/*.bas
+#   make tools            build/tools/gendata, build/tools/seaval, build/tools/lirchk from tools/*.bas
 #   make passes           build/<pass> for each of seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec
 #                         seagen_a64: build/gen/<pass>.bas (passes/<pass>/*.bas, then the modules
 #                         and DATA blocks of passes/<pass>/build.list, then 99999 END; DESIGN.md
@@ -146,13 +146,15 @@ $(BUILD)/obj/runtime/%.o: runtime/arm64_macos/%.s $(INCLUDES) $(BAYSICK_INC)
 	$(AS) $(RT_ASFLAGS) -o $@ $<
 
 # ---- tools ------------------------------------------------------------------------------
-# gendata is standalone; seaval is built like a pass (its file + modules + DATA + 99999 END,
+# gendata is standalone; seaval and lirchk are built like a pass (own file + modules + DATA + 99999 END,
 # tools/seaval.build.list, same format as passes/<pass>/build.list).
 tools:
 	@if [ -f tools/gendata.bas ]; then $(MAKE) --no-print-directory $(BUILD)/tools/gendata || exit 1; \
 	else echo "make: tools/gendata.bas not written yet" >&2; fi
 	@if [ -f tools/seaval.bas ]; then $(MAKE) --no-print-directory $(BUILD)/tools/seaval || exit 1; \
 	else echo "make: tools/seaval.bas not written yet" >&2; fi
+	@if [ -f tools/lirchk.bas ]; then $(MAKE) --no-print-directory $(BUILD)/tools/lirchk || exit 1; \
+	else echo "make: tools/lirchk.bas not written yet" >&2; fi
 
 $(BUILD)/tools/gendata: tools/gendata.bas | check-baysick
 	@mkdir -p $(BUILD)/tools
@@ -164,6 +166,13 @@ $(BUILD)/tools/seaval: $(BUILD)/gen/seaval.bas | check-baysick
 
 $(BUILD)/gen/seaval.bas: FORCE | $(BUILD)/tools/gendata
 	@sh -c "$$GEN_PASS" gen_pass seaval tools/seaval.bas tools/seaval.build.list
+
+$(BUILD)/tools/lirchk: $(BUILD)/gen/lirchk.bas | check-baysick
+	@mkdir -p $(BUILD)/tools
+	$(BSK) $(BUILD)/gen/lirchk.bas -o $@
+
+$(BUILD)/gen/lirchk.bas: FORCE | $(BUILD)/tools/gendata
+	@sh -c "$$GEN_PASS" gen_pass lirchk tools/lirchk.bas tools/lirchk.build.list
 
 # ---- passes -----------------------------------------------------------------------------
 # build/gen/<pass>.bas is regenerated on every build (FORCE) and replaced only if its content

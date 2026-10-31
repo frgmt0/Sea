@@ -1,0 +1,14 @@
+// sr7_copy -- DESIGN.md 2.12.6 T12 with slot copies (Decision 117): q is filled from its literal
+// by a slot copy, and `var r = q` copies q's slot into r's inside the loop; the three slots form
+// the greatest set closed under slot copies, every location f (propagated through the copies),
+// each first written by a store or a copy; each mcopy becomes four movs, the slots are deleted
+fn run(n: i64, dt: f64) -> f64 {
+    var q: f64[4] = [1.0, 0.0, 0.0, 1.0]
+    for k in 0..n {
+        var r = q
+        q[0] = r[0] + dt * r[1]
+        q[1] = r[1] - dt * r[0]
+    }
+    return q[0] + q[1] + q[3]
+}
+printf("%g %g\n", run(3, 0.5), run(1, 0.25))

@@ -1,0 +1,6 @@
+# tools/lirchk.build.list -- what is added to tools/lirchk.bas to build the vector validator (DESIGN 2.6.3, 2.12.6).
+# Same format as passes/<pass>/build.list:
+#   lib <module>...   shared modules of passes/lib/
+#   data <block>...   generated DATA blocks
+lib io diag tables lirrw
+data errors exits consts entries records

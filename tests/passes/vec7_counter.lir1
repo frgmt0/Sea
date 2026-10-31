@@ -1,0 +1,99 @@
+#sea 1
+#target arm64-macos
+#file vec7_counter.sea
+func .main main 0:1:1 0 0
+slot s1 80 8
+slot s2 80 8
+slot s3 72 8
+slot s4 72 8
+slot s5 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #0000000000000000
+stf f3 p2 - 0 0
+lf f4 #0000000000000000
+stf f4 p2 - 0 8
+lf f5 #0000000000000000
+stf f5 p2 - 0 16
+lf f6 #0000000000000000
+stf f6 p2 - 0 24
+lf f7 #0000000000000000
+stf f7 p2 - 0 32
+lf f8 #0000000000000000
+stf f8 p2 - 0 40
+lf f9 #0000000000000000
+stf f9 p2 - 0 48
+lf f10 #0000000000000000
+stf f10 p2 - 0 56
+lf f11 #0000000000000000
+stf f11 p2 - 0 64
+lf f12 #0000000000000000
+stf f12 p2 - 0 72
+li i13 80
+mcopy p1 p2 i13
+sa p14 s3
+sa p15 s4
+lf f16 #3FF0000000000000
+stf f16 p15 - 0 0
+lf f17 #4000000000000000
+stf f17 p15 - 0 8
+lf f18 #4008000000000000
+stf f18 p15 - 0 16
+lf f19 #4010000000000000
+stf f19 p15 - 0 24
+lf f20 #4014000000000000
+stf f20 p15 - 0 32
+lf f21 #4018000000000000
+stf f21 p15 - 0 40
+lf f22 #401C000000000000
+stf f22 p15 - 0 48
+lf f23 #4020000000000000
+stf f23 p15 - 0 56
+lf f24 #4022000000000000
+stf f24 p15 - 0 64
+li i25 72
+mcopy p14 p15 i25
+lf f26 #4000000000000000
+li i27 9
+li i28 1
+li i29 10
+li i30 1
+rcount i31 i32 i28 i29 i30 0 0:8
+li i33 10
+if 1 i32
+chkb i28 i33 0 0:8
+imul i34 i31 i30
+iadd i35 i28 i34
+chkb i35 i33 0 0:8
+endif 1
+li i36 1
+iadd i37 i31 i36
+li i38 0
+isel i39 i32 i37 i38
+icmp ne i40 i39 i27
+li i41 -1
+chk i40 SHAPE_MISMATCH 0:8 4 i39 i41 i27 i41
+li i42 0
+li i43 1
+if 2 i32
+loop 3 i44 i28 i31 i30
+ldf f45 p14 i42 8 0
+fmul f46 f45 f26
+stf f46 p1 i44 8 0
+iadd i42 i42 i43
+endloop 3
+endif 2
+li i47 3
+li i48 10
+chkb i47 i48 0 0:9
+ldf f49 p1 i47 8 0
+sa p50 s5
+stf f49 p50 - 0 0
+la p51 d1
+rcall sea_printf 0:9 0 2 p51 p50
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

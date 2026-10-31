@@ -1,0 +1,20 @@
+// vec7_ifconv -- DESIGN.md 2.12.6 the if-conversion: an if/else whose condition is an fcmp (a mask
+// register) and whose parts hold only vector-set records is computed on both paths, each part's
+// registers renamed, and t merged after the block by fsel (it is read outside its parts, by the
+// store); the slow copy of T6's versioning keeps its cow blocks and stays scalar (condition 1)
+fn bend(x: f64[]) -> f64[] {
+    var u = x * 1.0
+    for i in 0..len(u) {
+        var t = 0.0
+        if u[i] > 2.0 {
+            t = u[i] * 0.5
+        } else {
+            t = u[i] + 1.0
+        }
+        u[i] = t
+    }
+    return u
+}
+let x = [1.0, 2.5, 3.0]
+let r = bend(x)
+printf("%g\n", r[2])

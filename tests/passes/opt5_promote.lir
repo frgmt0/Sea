@@ -69,49 +69,47 @@ rcall sea_printf 0:35 0 2 p28 p27
 ret 0
 endfunc
 func tally fn 0:5:1 3 p1 p2 i3 1 f
-slot s1 16 8
-sa p4 s1
-lf f5 #0000000000000000
-stf f5 p4 - 0 0
+lf f4 #0000000000000000
+mov f5 f4
 li i6 0
-sti i6 p4 - 0 8
 mov i7 i6
-li i8 1
-rcount i9 i10 i7 i3 i8 0 0:7
-if 1 i10
-ldi i11 p1 - 0 0
-ldf f12 p4 - 0 0
-ldi i13 p2 - 0 16
-ldi i14 p4 - 0 8
-ldp p15 p2 - 0 40
-li i16 1
-loop 2 i17 i7 i9 i8
-iaddc i11 i11 i17 0:8
-chkb i17 i13 0 0:9
-ldf f18 p15 i17 8 0
-fadd f12 f12 f18
-iaddc i14 i14 i16 0:10
+mov i8 i6
+li i9 1
+rcount i10 i11 i8 i3 i9 0 0:7
+if 1 i11
+ldi i12 p1 - 0 0
+mov f13 f5
+ldi i14 p2 - 0 16
+mov i15 i7
+ldp p16 p2 - 0 40
+li i17 1
+loop 2 i18 i8 i10 i9
+iaddc i12 i12 i18 0:8
+chkb i18 i14 0 0:9
+ldf f19 p16 i18 8 0
+fadd f13 f13 f19
+iaddc i15 i15 i17 0:10
 endloop 2
-sti i11 p1 - 0 0
-stf f12 p4 - 0 0
-sti i14 p4 - 0 8
+sti i12 p1 - 0 0
+mov f5 f13
+mov i7 i15
 endif 1
-li i19 0
-mov i20 i19
-li i21 1
-rcount i22 i23 i20 i3 i21 0 0:13
-if 3 i23
-ldi i24 p1 - 0 0
-ldi i25 p4 - 0 8
-loop 4 i26 i20 i22 i21
-imulc i27 i24 i25 0:14
-iaddc i19 i19 i27 0:14
+li i20 0
+mov i21 i20
+li i22 1
+rcount i23 i24 i21 i3 i22 0 0:13
+if 3 i24
+ldi i25 p1 - 0 0
+mov i26 i7
+loop 4 i27 i21 i23 i22
+imulc i28 i25 i26 0:14
+iaddc i20 i20 i28 0:14
 endloop 4
 endif 3
-ldf f28 p4 - 0 0
-itof f29 i19
-fadd f30 f28 f29
-ret 1 f30
+mov f29 f5
+itof f30 i20
+fadd f31 f29 f30
+ret 1 f31
 endfunc
 func twice fn 0:18:1 2 p1 i2 1 i
 li i3 0

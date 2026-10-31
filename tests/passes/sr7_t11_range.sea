@@ -1,0 +1,13 @@
+// sr7_t11_range -- DESIGN.md 2.12.6 T11 on compiled loops (Decision 117): `0..4` and `0..=3` over
+// an f64[4] are rule-4 loops whose `rcount` has constant operands, so n = 4 is known; each loop
+// becomes four copies with `li Jk v`, s carried through the copies and moved back after the last;
+// the guards and the rcounts stay. T12 then replaces q's slot and its literal's (a slot copy)
+let q: f64[4] = [1.0, 2.0, 3.0, 4.0]
+var s = 0.0
+for i in 0..4 {
+    s = s + q[i]
+}
+for i in 0..=3 {
+    s = s + q[i] * 2.0
+}
+printf("%g\n", s)

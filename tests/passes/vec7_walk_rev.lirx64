@@ -1,0 +1,91 @@
+#sea 1
+#target x86_64-linux
+#file vec7_walk_rev.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 6
+li i2 1
+rcall sea_arr_new 0:4 1 p3 4 i2 i2 i1 i2
+li i4 0
+mov i5 i2
+rcount i6 i7 i4 i1 i5 0 0:5
+if 1 i7
+ldi i8 p3 - 0 0
+li i9 1
+icmp eq i10 i8 i9
+if 2 i10
+ldp p11 p3 - 0 40
+loop 3 i12 i4 i6 i5
+itof f13 i12
+stf f13 p11 i12 8 0
+endloop 3
+else 2
+li i14 1
+loop 4 i15 i4 i6 i5
+itof f16 i15
+ldi i17 p3 - 0 0
+icmp ne i18 i17 i14
+if 5 i18
+rcall sea_arr_unique 0:6 1 p19 1 p3
+mov p3 p19
+endif 5
+ldp p20 p3 - 0 40
+stf f16 p20 i15 8 0
+endloop 4
+endif 2
+endif 1
+ldi i21 p3 - 0 16
+li i22 1
+isub i23 i21 i22
+li i24 0
+li i25 -1
+rcount i26 i27 i23 i24 i25 1 0:8
+mov i28 i21
+if 6 i27
+chkb i23 i28 0 0:8
+imul i29 i26 i25
+iadd i30 i23 i29
+chkb i30 i28 0 0:8
+endif 6
+lf f31 #4000000000000000
+li i32 1
+iadd i33 i26 i32
+li i34 0
+isel i35 i27 i33 i34
+rcall sea_arr_new_u 0:8 1 p36 4 i32 i32 i35 i32
+ldp p37 p36 - 0 40
+ldp p38 p3 - 0 40
+mov i39 i34
+icmp gt i40 i35 i39
+if 7 i40
+li i41 1
+isub i42 i35 i41
+li i43 8
+imul i44 i23 i43
+padd p45 p38 i44
+padd p46 p45 i43
+li i47 -8
+loop 8 i48 i39 i42 i41
+padd p46 p46 i47
+ldf f49 p46 - 0 0
+fmul f50 f49 f31
+stf f50 p37 i48 8 0
+endloop 8
+endif 7
+li i51 0
+ldi i52 p36 - 0 16
+chkb i51 i52 0 0:9
+ldp p53 p36 - 0 40
+ldf f54 p53 i51 8 0
+sa p55 s1
+stf f54 p55 - 0 0
+la p56 d1
+rcall sea_printf 0:9 0 2 p56 p55
+release p36
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

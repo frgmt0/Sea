@@ -1,0 +1,17 @@
+// sr7_struct -- DESIGN.md 2.12.6 T12 on a struct: a's slot is reached only through private bases
+// with constant offsets, sum (f64, offset 0) and n (i64, offset 8), each first written by a store;
+// each location becomes a register, loads and stores movs, and the sa and the slot are deleted
+struct Acc {
+    sum: f64
+    n: i64
+}
+fn tally(v: f64[], k: i64) -> f64 {
+    var a = Acc { sum: 0.0, n: 0 }
+    for i in 0..k {
+        a.sum = a.sum + v[i]
+        a.n = a.n + 1
+    }
+    return a.sum + f64(a.n)
+}
+let v = [1.0, 2.0, 3.0]
+printf("%g %g\n", tally(v, 3), tally(v, 2))

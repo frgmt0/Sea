@@ -1,0 +1,93 @@
+#sea 1
+#target arm64-macos
+#file vec7_ifconv.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4004000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:19 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+do 1
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+rcall sea_arr_new_u 0:6 1 p14 4 i13 i13 i12 i13
+ldp p15 p14 - 0 40
+ldp p16 p9 - 0 40
+li i17 0
+icmp gt i18 i12 i17
+if 2 i18
+li i19 1
+isub i20 i12 i19
+loop 3 i21 i17 i20 i19
+ldf f22 p16 i21 8 0
+fmul f23 f22 f11
+stf f23 p15 i21 8 0
+endloop 3
+endif 2
+li i24 0
+ldi i25 p14 - 0 16
+li i26 1
+rcount i27 i28 i24 i25 i26 0 0:7
+if 4 i28
+loop 5 i29 i24 i27 i26
+lf f30 #0000000000000000
+ldp p31 p14 - 0 40
+ldf f32 p31 i29 8 0
+lf f33 #4000000000000000
+fcmp gt i34 f32 f33
+if 6 i34
+ldp p35 p14 - 0 40
+ldf f36 p35 i29 8 0
+lf f37 #3FE0000000000000
+fmul f30 f36 f37
+else 6
+ldp p38 p14 - 0 40
+ldf f39 p38 i29 8 0
+lf f40 #3FF0000000000000
+fadd f30 f39 f40
+endif 6
+ldi i41 p14 - 0 0
+li i42 1
+icmp ne i43 i41 i42
+if 7 i43
+rcall sea_arr_unique 0:14 1 p44 1 p14
+mov p14 p44
+endif 7
+ldp p45 p14 - 0 40
+stf f30 p45 i29 8 0
+endloop 5
+endif 4
+mov p46 p14
+exit 1
+enddo 1
+release p9
+li i47 2
+ldi i48 p46 - 0 16
+chkb i47 i48 0 0:20
+ldp p49 p46 - 0 40
+ldf f50 p49 i47 8 0
+sa p51 s3
+stf f50 p51 - 0 0
+la p52 d1
+rcall sea_printf 0:20 0 2 p52 p51
+release p46
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

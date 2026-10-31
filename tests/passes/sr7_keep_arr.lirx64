@@ -1,0 +1,41 @@
+#sea 1
+#target x86_64-linux
+#file sr7_keep_arr.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+li i7 32
+mcopy p1 p2 i7
+li i8 4
+li i9 1
+rcall sea_arr_new_u 0:5 1 p10 4 i9 i9 i8 i9
+ldp p11 p10 - 0 40
+mcopy p11 p1 i7
+li i12 3
+ldf f13 p11 i12 8 0
+ldf f14 p1 i9 8 0
+sa p15 s3
+stf f13 p15 - 0 0
+stf f14 p15 - 0 8
+la p16 d1
+rcall sea_printf 0:6 0 2 p16 p15
+release p10
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

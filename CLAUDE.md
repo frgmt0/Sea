@@ -122,7 +122,15 @@ rows; the user's D1–D3 and the concatenation decision, lead decisions L-fv–L
 §2.12.3, §2.12.4 "Readings fixed by 7c"; `make test` and `make cross` (876) pass; two independent
 reviews with differential fuzzing against the pre-7c compiler, every defect fixed; the measurement
 after 7c passes with no relief: `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431
-with 3, DESIGN.md §2.7 "Measured after 7c"). **Next:** 7e (`seavec` and vector code in pass 4).
+with 3, DESIGN.md §2.7 "Measured after 7c"). **7e is done**
+(2026-10-31: `seavec` with T11 unrolling, T12 scalar replacement and T13 if-conversion and
+vectorization, vector code in `seagen_a64` (NEON) and `seagen_x64` (SSE2, AVX2), the vector classes
+of `lirrw` and `ralloc`, `tools/lirchk` validating every `sea.lir` (Decision 116), both x86_64
+variants in the cross run; Decisions 115–117 decided by the user, lead decisions L-gk–L-hp, DESIGN.md
+§2.12.6, §2.12.7, §6.6.1; `make test` passes (stage 1 235, programs 2 191) and `make cross` passes
+941 cases (default 822, `sse2` 822, once-only 119, total 1 763); measured: `seavec` 5 825 built
+lines, `seagen_a64` 5 254, `seagen_x64` 6 103, all inside the gate, DESIGN.md §2.7 "Measured after
+7e"). **Next:** 7f (W4, the allocation count, the vector check, acceptance).
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
@@ -169,7 +177,8 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `make -f Makefile.linux check-includes`.
 - x86_64 cross test (DESIGN.md §6.6.1): `make cross` / `sh tests/cross.sh [-v] [-H host]
   [pattern]` (packs on the Mac, one ssh to the host, default `$SEA_CROSS_HOST` else `desktop`);
-  `make cross-pack` builds `build/x86_64-linux-bundle` only; on Linux: `sh tests/cross_run.sh
+  `make cross-pack` builds `build/x86_64-linux-bundle` only (every case runs under both x86_64
+  variants, default and `sse2`, unless `SEA_KERNELS` is set); on Linux: `sh tests/cross_run.sh
   [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
   Makefile.linux test-rt` (`tests/rt/x86_64_linux/`), `make -f Makefile.linux test-math`. `make cross` also
   runs one extra case, `math/math_check`, on the host.
@@ -178,7 +187,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
 ## Repo layout (DESIGN.md §2.10)
 - `passes/<pass>/` the Baysick files and `build.list` of each pass (`seaparse seaname seacheck seaexpand seafuse sealoop sealower seaopt sealopt seavec seagen_a64 seagen_x64`); `passes/lib/` the shared modules
   (`io diag tables lirrw limb f64emu fltlit layout ralloc`), interfaces in `passes/lib/API.md`, `API-arith.md`.
-- `tools/` `gendata.bas` (the `DATA` generator), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirf hirl lir1 lir2 lir3 lir`; `lir2` and `lir3` checked as `lir1` except its two lir1-only label rules, L-bu; `hirf` as `hirl` without `inst emap cdat iblk iret`),
+- `tools/` `gendata.bas` (the `DATA` generator), `lirchk.bas` (validator of `sea.lir` with the vector classes, run by `tests/run.sh`, `tests/stage.sh` and `tests/cross_pack.sh`), `seaval.bas` (intermediate-file validator: formats `ast res hir1 hir hirf hirl lir1 lir2 lir3 lir`; `lir2` and `lir3` checked as `lir1` except its two lir1-only label rules, L-bu; `hirf` as `hirl` without `inst emap cdat iblk iret`),
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.

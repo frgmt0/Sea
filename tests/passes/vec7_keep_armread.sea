@@ -1,0 +1,20 @@
+// vec7_keep_armread -- DESIGN.md 2.12.6 the if-conversion and condition 3: t is written in both
+// parts of an if-converted block and read before the block (by the store of the next iteration),
+// so its merge is a carried value and the loop stays scalar (written as it stood before P1)
+fn carry(x: f64[]) -> f64[] {
+    var u = x * 1.0
+    var t = 0.0
+    for i in 0..len(u) {
+        let a = u[i]
+        u[i] = t
+        if a > 2.0 {
+            t = a * 2.0
+        } else {
+            t = a + 1.0
+        }
+    }
+    return u
+}
+let x = [1.0, 2.5, 3.0]
+let r = carry(x)
+printf("%g\n", r[2])

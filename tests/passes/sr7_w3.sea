@@ -1,0 +1,16 @@
+// sr7_w3 -- DESIGN.md 2.12.6 T11 and T12 on W3's shape (Decision 117, L-gz): q = q + dt * f(q)
+// with an inlined f returning an f64[4]; T11 unrolls the rule-17 loop of the element-wise sum (four
+// copies), T12 replaces all five slots (q, its literal, f's result and literal, the sum's result,
+// joined by slot copies); the sum's stores stand under rule 17's guard `icmp gt 4 0`, which the
+// walk decides, and that block is resolved (its if and endif deleted); the outer loop stays scalar
+fn deriv(q: f64[4]) -> f64[4] {
+    return [q[1], -q[0], q[3], -q[2]]
+}
+fn run(n: i64, dt: f64) -> f64 {
+    var q: f64[4] = [1.0, 0.0, 0.0, 1.0]
+    for k in 0..n {
+        q = q + dt * deriv(q)
+    }
+    return q[0] + q[1] + q[2] + q[3]
+}
+printf("%g %g\n", run(3, 0.5), run(1, 0.25))

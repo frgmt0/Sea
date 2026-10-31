@@ -1,0 +1,127 @@
+#sea 1
+#target arm64-macos
+#file vec7_invf.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 72 8
+slot s3 72 8
+slot s4 72 8
+slot s5 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+lf f7 #4014000000000000
+stf f7 p2 - 0 32
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+lf f9 #401C000000000000
+stf f9 p2 - 0 48
+lf f10 #4020000000000000
+stf f10 p2 - 0 56
+lf f11 #4022000000000000
+stf f11 p2 - 0 64
+li i12 72
+mcopy p1 p2 i12
+li i13 1
+li i14 9
+ldf f15 p1 i13 8 0
+sa p16 s3
+mov f17 f3
+sa p18 s4
+mov i19 i14
+li i20 0
+icmp gt i21 i19 i20
+if 1 i21
+li i22 1
+isub i23 i19 i22
+li i24 7
+isub i25 i23 i24
+li i26 3
+ishr i27 i25 i26
+ishr i28 i23 i26
+icmp le i29 i27 i28
+li i30 0
+li i31 64
+li i32 -64
+pdiff i33 p1 p18
+icmp ge i34 i33 i31
+icmp le i35 i33 i32
+icmp eq i36 i33 i30
+ior i37 i34 i35
+ior i38 i37 i36
+iand i39 i29 i38
+if 2 i39
+xsplat x40 f15
+xsplat x41 f17
+li i42 8
+loop 3 i43 i20 i27 i42
+ldx x44 p1 i43 8 0
+ldx x45 p1 i43 8 16
+ldx x46 p1 i43 8 32
+ldx x47 p1 i43 8 48
+xmul x48 x44 x40
+xmul x49 x45 x40
+xmul x50 x46 x40
+xmul x51 x47 x40
+xadd x52 x48 x41
+xadd x53 x49 x41
+xadd x54 x50 x41
+xadd x55 x51 x41
+stx x52 p18 i43 8 0
+stx x53 p18 i43 8 16
+stx x54 p18 i43 8 32
+stx x55 p18 i43 8 48
+endloop 3
+li i56 7
+iand i57 i25 i56
+li i58 0
+icmp gt i59 i57 i58
+if 4 i59
+li i60 3
+ishl i61 i27 i60
+iadd i62 i20 i61
+li i63 8
+iadd i64 i62 i63
+isub i65 i57 i22
+loop 5 i66 i64 i65 i22
+ldf f67 p1 i66 8 0
+fmul f68 f67 f15
+fadd f69 f68 f17
+stf f69 p18 i66 8 0
+endloop 5
+endif 4
+else 2
+loop 6 i70 i20 i23 i22
+ldf f71 p1 i70 8 0
+fmul f72 f71 f15
+fadd f73 f72 f17
+stf f73 p18 i70 8 0
+endloop 6
+endif 2
+endif 1
+li i74 72
+mcopy p16 p18 i74
+li i75 2
+ldf f76 p16 i75 8 0
+li i77 8
+ldf f78 p16 i77 8 0
+sa p79 s5
+stf f76 p79 - 0 0
+stf f78 p79 - 0 8
+la p80 d1
+rcall sea_printf 0:8 0 2 p80 p79
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,94 @@
+#sea 1
+#target arm64-macos
+#file sr7_copy.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 3
+lf f2 #3FE0000000000000
+call run 1 f3 2 i1 f2
+li i4 1
+lf f5 #3FD0000000000000
+call run 1 f6 2 i4 f5
+sa p7 s1
+stf f3 p7 - 0 0
+stf f6 p7 - 0 8
+la p8 d1
+rcall sea_printf 0:14 0 2 p8 p7
+ret 0
+endfunc
+func run fn 0:5:1 2 i1 f2 1 f
+slot s1 32 8
+slot s2 32 8
+slot s3 32 8
+sa p3 s1
+sa p4 s2
+lf f5 #3FF0000000000000
+stf f5 p4 - 0 0
+lf f6 #0000000000000000
+stf f6 p4 - 0 8
+lf f7 #0000000000000000
+stf f7 p4 - 0 16
+lf f8 #3FF0000000000000
+stf f8 p4 - 0 24
+li i9 32
+mcopy p3 p4 i9
+li i10 0
+li i11 1
+rcount i12 i13 i10 i1 i11 0 0:7
+if 1 i13
+loop 2 i14 i10 i12 i11
+sa p15 s3
+li i16 32
+mcopy p15 p3 i16
+li i17 0
+li i18 4
+chkb i17 i18 0 0:9
+ldf f19 p15 i17 8 0
+li i20 1
+li i21 4
+chkb i20 i21 0 0:9
+ldf f22 p15 i20 8 0
+fmul f23 f2 f22
+fadd f24 f19 f23
+li i25 0
+li i26 4
+chkb i25 i26 0 0:9
+stf f24 p3 i25 8 0
+li i27 1
+li i28 4
+chkb i27 i28 0 0:10
+ldf f29 p15 i27 8 0
+li i30 0
+li i31 4
+chkb i30 i31 0 0:10
+ldf f32 p15 i30 8 0
+fmul f33 f2 f32
+fsub f34 f29 f33
+li i35 1
+li i36 4
+chkb i35 i36 0 0:10
+stf f34 p3 i35 8 0
+endloop 2
+endif 1
+li i37 0
+li i38 4
+chkb i37 i38 0 0:12
+ldf f39 p3 i37 8 0
+li i40 1
+li i41 4
+chkb i40 i41 0 0:12
+ldf f42 p3 i40 8 0
+fadd f43 f39 f42
+li i44 3
+li i45 4
+chkb i44 i45 0 0:12
+ldf f46 p3 i44 8 0
+fadd f47 f43 f46
+ret 1 f47
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

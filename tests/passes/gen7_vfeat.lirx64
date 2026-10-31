@@ -1,0 +1,162 @@
+#sea 1
+#target x86_64-linux
+#file gen7_vfeat.sea
+func .main main 0:1:1 0 0
+slot s1 512 16
+slot s2 64 16
+slot s3 64 8
+sa p1 s1
+sa p2 s2
+sa p3 s3
+li i4 #7FF8000000000000
+lf f5 #3FF0000000000000
+stf f5 p1 - 0 0
+lf f6 #4000000000000000
+stf f6 p1 - 0 32
+lf f7 #7FF8000000000000
+stf f7 p1 - 0 8
+lf f8 #3FF0000000000000
+stf f8 p1 - 0 40
+lf f9 #8000000000000000
+stf f9 p1 - 0 16
+lf f10 #0000000000000000
+stf f10 p1 - 0 48
+lf f11 #0000000000000001
+stf f11 p1 - 0 24
+lf f12 #800FFFFFFFFFFFFF
+stf f12 p1 - 0 56
+vfeat i13 avx2
+if 1 i13
+ldy y14 p1 - 0 0
+ldy y15 p1 - 0 32
+yadd y16 y14 y15
+sty y16 p1 - 0 64
+ymax y17 y14 y15
+sty y17 p1 - 0 96
+ycmp gt m18 y14 y15
+stm4 m18 p1 - 0 128
+else 1
+ldx x19 p1 - 0 0
+ldx x20 p1 - 0 32
+xadd x21 x19 x20
+stx x21 p1 - 0 64
+xmax x22 x19 x20
+stx x22 p1 - 0 96
+xcmp gt m23 x19 x20
+stm2 m23 p1 - 0 128
+ldx x24 p1 - 0 16
+ldx x25 p1 - 0 48
+xadd x26 x24 x25
+stx x26 p1 - 0 80
+xmax x27 x24 x25
+stx x27 p1 - 0 112
+xcmp gt m28 x24 x25
+stm2 m28 p1 - 0 130
+endif 1
+ldy y29 p1 - 0 64
+sty y29 p2 - 0 0
+ldf f30 p2 - 0 0
+fnan i31 f30
+ldi i32 p2 - 0 0
+isel i33 i31 i4 i32
+ldf f34 p2 - 0 8
+fnan i35 f34
+ldi i36 p2 - 0 8
+isel i37 i35 i4 i36
+ldf f38 p2 - 0 16
+fnan i39 f38
+ldi i40 p2 - 0 16
+isel i41 i39 i4 i40
+ldf f42 p2 - 0 24
+fnan i43 f42
+ldi i44 p2 - 0 24
+isel i45 i43 i4 i44
+sti i33 p3 - 0 0
+sti i37 p3 - 0 8
+sti i41 p3 - 0 16
+sti i45 p3 - 0 24
+la p46 d1
+rcall sea_printf 0:2 0 2 p46 p3
+ldy y47 p1 - 0 96
+sty y47 p2 - 0 0
+ldf f48 p2 - 0 0
+fnan i49 f48
+ldi i50 p2 - 0 0
+isel i51 i49 i4 i50
+ldf f52 p2 - 0 8
+fnan i53 f52
+ldi i54 p2 - 0 8
+isel i55 i53 i4 i54
+ldf f56 p2 - 0 16
+fnan i57 f56
+ldi i58 p2 - 0 16
+isel i59 i57 i4 i58
+ldf f60 p2 - 0 24
+fnan i61 f60
+ldi i62 p2 - 0 24
+isel i63 i61 i4 i62
+sti i51 p3 - 0 0
+sti i55 p3 - 0 8
+sti i59 p3 - 0 16
+sti i63 p3 - 0 24
+la p64 d2
+rcall sea_printf 0:2 0 2 p64 p3
+ldb i65 p1 - 0 128
+ldb i66 p1 - 0 129
+ldb i67 p1 - 0 130
+ldb i68 p1 - 0 131
+sti i65 p3 - 0 0
+sti i66 p3 - 0 8
+sti i67 p3 - 0 16
+sti i68 p3 - 0 24
+la p69 d3
+rcall sea_printf 0:2 0 2 p69 p3
+li i70 0
+li i71 1
+icmp eq i72 i13 i70
+icmp eq i73 i13 i71
+iadd i74 i72 i73
+sti i74 p3 - 0 0
+la p75 d4
+rcall sea_printf 0:2 0 2 p75 p3
+ret 0
+endfunc
+fmt d1 10
+ftext add
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d2 10
+ftext max
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d3 10
+ftext gt
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+fmt d4 4
+ftext vfeat01
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

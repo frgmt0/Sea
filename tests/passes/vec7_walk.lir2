@@ -1,0 +1,73 @@
+#sea 1
+#target arm64-macos
+#file vec7_walk.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 6
+li i2 1
+rcall sea_arr_new 0:5 1 p3 4 i2 i2 i1 i2
+li i4 0
+mov i5 i2
+rcount i6 i7 i4 i1 i5 0 0:6
+if 1 i7
+loop 2 i8 i4 i6 i5
+itof f9 i8
+ldi i10 p3 - 0 0
+li i11 1
+icmp ne i12 i10 i11
+if 3 i12
+rcall sea_arr_unique 0:7 1 p13 1 p3
+mov p3 p13
+endif 3
+ldp p14 p3 - 0 40
+stf f9 p14 i8 8 0
+endloop 2
+endif 1
+li i15 1
+ldi i16 p3 - 0 16
+mov i17 i15
+rcount i18 i19 i15 i16 i17 0 0:9
+mov i20 i16
+if 4 i19
+imul i21 i18 i17
+iadd i22 i15 i21
+chkb i22 i20 0 0:9
+endif 4
+lf f23 #4000000000000000
+li i24 1
+iadd i25 i18 i24
+li i26 0
+isel i27 i19 i25 i26
+rcall sea_arr_new_u 0:9 1 p28 4 i24 i24 i27 i24
+ldp p29 p28 - 0 40
+ldp p30 p3 - 0 40
+mov i31 i26
+icmp gt i32 i27 i31
+if 5 i32
+li i33 1
+isub i34 i27 i33
+loop 6 i35 i31 i34 i33
+imul i36 i35 i17
+iadd i37 i15 i36
+ldf f38 p30 i37 8 0
+fmul f39 f38 f23
+stf f39 p29 i35 8 0
+endloop 6
+endif 5
+li i40 2
+ldi i41 p28 - 0 16
+chkb i40 i41 0 0:10
+ldp p42 p28 - 0 40
+ldf f43 p42 i40 8 0
+sa p44 s1
+stf f43 p44 - 0 0
+la p45 d1
+rcall sea_printf 0:10 0 2 p45 p44
+release p28
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

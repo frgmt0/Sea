@@ -1,0 +1,49 @@
+#sea 1
+#target arm64-macos
+#file sr7_state4_hand.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+lf f1 #3FF0000000000000
+mov f2 f1
+mov f3 f1
+mov f4 f1
+mov f5 f1
+lf f6 #3FE0000000000000
+li i7 0
+li i8 2
+li i9 1
+loop 1 i10 i7 i8 i9
+mov f11 f2
+fmul f12 f11 f6
+fadd f13 f11 f12
+mov f2 f13
+mov f14 f3
+fmul f15 f14 f6
+fadd f16 f14 f15
+mov f3 f16
+mov f17 f4
+fmul f18 f17 f6
+fadd f19 f17 f18
+mov f4 f19
+mov f20 f5
+fmul f21 f20 f6
+fadd f22 f20 f21
+mov f5 f22
+endloop 1
+mov f23 f2
+mov f24 f3
+fadd f25 f23 f24
+mov f26 f4
+fadd f27 f25 f26
+mov f28 f5
+fadd f29 f27 f28
+sa p30 s1
+stf f29 p30 - 0 0
+la p31 d1
+rcall sea_printf 0:1 0 2 p31 p30
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

@@ -1,0 +1,8 @@
+// vec7_sum8 -- DESIGN.md 2.12.6 T13 condition 5, the sum8 group of a fused sum (L13's home, a
+// 64-byte slot): the eight accumulators loaded into four 2-lane (two 4-lane) registers before the
+// vector loop and stored back after it; the group's iand and ldf and its stf become nothing, its
+// fadd an xadd/yadd of the homes; the tail keeps the scalar group
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+let y = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+printf("%g\n", sum(x * y))

@@ -1,0 +1,9 @@
+// vec7_counter -- DESIGN.md 2.12.6 P2, a counter: the selection store y[1..10] = x * 2.0 reads x at
+// seafuse's linear counter K (`iadd K K U` last in the body); P2 writes `isub E K S` before the
+// loop, rewrites the read to the unit access `D' J 8 0` with D' = D + E*8, removes the counter's
+// iadd and restores K after the vector form (iadd K K C, iadd K K T)
+// (nine elements: the loop's count exceeds 8, so T11 does not unroll it, Decision 117)
+var y = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+let x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+y[1..10] = x * 2.0
+printf("%g\n", y[3])

@@ -1,0 +1,172 @@
+#sea 1
+#target x86_64-linux
+#file vec7_keep_liveout.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4004000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+li i7 3
+li i8 1
+rcall sea_arr_new_u 0:13 1 p9 4 i8 i8 i7 i8
+ldp p10 p9 - 0 40
+mcopy p10 p1 i6
+lf f11 #3FF0000000000000
+ldi i12 p9 - 0 16
+li i13 1
+ldp p14 p9 - 0 40
+li i15 0
+icmp gt i16 i12 i15
+isub i17 i12 i13
+lf f18 #4000000000000000
+do 1
+rcall sea_arr_new_u 0:4 1 p19 4 i13 i13 i12 i13
+ldp p20 p19 - 0 40
+if 2 i16
+li i21 7
+isub i22 i17 i21
+li i23 3
+ishr i24 i22 i23
+ishr i25 i17 i23
+icmp le i26 i24 i25
+li i27 0
+li i28 64
+li i29 -64
+pdiff i30 p14 p20
+icmp ge i31 i30 i28
+icmp le i32 i30 i29
+icmp eq i33 i30 i27
+ior i34 i31 i32
+ior i35 i34 i33
+iand i36 i26 i35
+if 3 i36
+vfeat i37 avx2
+if 4 i37
+ysplat y38 f11
+li i39 8
+loop 5 i40 i15 i24 i39
+ldy y41 p14 i40 8 0
+ldy y42 p14 i40 8 32
+ymul y43 y41 y38
+ymul y44 y42 y38
+sty y43 p20 i40 8 0
+sty y44 p20 i40 8 32
+endloop 5
+li i45 7
+iand i46 i22 i45
+li i47 0
+icmp gt i48 i46 i47
+if 6 i48
+li i49 3
+ishl i50 i24 i49
+iadd i51 i15 i50
+li i52 8
+iadd i53 i51 i52
+isub i54 i46 i13
+loop 7 i55 i53 i54 i13
+ldf f56 p14 i55 8 0
+fmul f57 f56 f11
+stf f57 p20 i55 8 0
+endloop 7
+endif 6
+else 4
+xsplat x58 f11
+li i59 8
+loop 8 i60 i15 i24 i59
+ldx x61 p14 i60 8 0
+ldx x62 p14 i60 8 16
+ldx x63 p14 i60 8 32
+ldx x64 p14 i60 8 48
+xmul x65 x61 x58
+xmul x66 x62 x58
+xmul x67 x63 x58
+xmul x68 x64 x58
+stx x65 p20 i60 8 0
+stx x66 p20 i60 8 16
+stx x67 p20 i60 8 32
+stx x68 p20 i60 8 48
+endloop 8
+li i69 7
+iand i70 i22 i69
+li i71 0
+icmp gt i72 i70 i71
+if 9 i72
+li i73 3
+ishl i74 i24 i73
+iadd i75 i15 i74
+li i76 8
+iadd i77 i75 i76
+isub i78 i70 i13
+loop 10 i79 i77 i78 i13
+ldf f80 p14 i79 8 0
+fmul f81 f80 f11
+stf f81 p20 i79 8 0
+endloop 10
+endif 9
+endif 4
+else 3
+loop 11 i82 i15 i17 i13
+ldf f83 p14 i82 8 0
+fmul f84 f83 f11
+stf f84 p20 i82 8 0
+endloop 11
+endif 3
+endif 2
+lf f85 #0000000000000000
+ldi i86 p19 - 0 16
+rcount i87 i88 i15 i86 i13 0 0:6
+if 12 i88
+ldi i89 p19 - 0 0
+icmp eq i90 i89 i13
+if 13 i90
+ldp p91 p19 - 0 40
+loop 14 i92 i15 i87 i13
+ldf f93 p91 i92 8 0
+fmul f85 f93 f18
+stf f85 p91 i92 8 0
+endloop 14
+else 13
+loop 15 i94 i15 i87 i13
+ldp p95 p19 - 0 40
+ldf f96 p95 i94 8 0
+fmul f85 f96 f18
+ldi i97 p19 - 0 0
+icmp ne i98 i97 i13
+if 16 i98
+rcall sea_arr_unique 0:8 1 p99 1 p19
+mov p19 p99
+endif 16
+ldp p100 p19 - 0 40
+stf f85 p100 i94 8 0
+endloop 15
+endif 13
+endif 12
+ldi i101 p19 - 0 16
+chkb i15 i101 0 0:10
+ldp p102 p19 - 0 40
+ldf f103 p102 i15 8 0
+fadd f104 f85 f103
+release p19
+mov f105 f104
+exit 1
+enddo 1
+release p9
+sa p106 s3
+stf f105 p106 - 0 0
+la p107 d1
+rcall sea_printf 0:13 0 2 p107 p106
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

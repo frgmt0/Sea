@@ -1,0 +1,7 @@
+// sr7_t11_rule17 -- DESIGN.md 2.12.6 T11 on a rule-17 count (Decision 117): the element-wise
+// q * 2.0 over an f64[4] is loop(N; K) with `isub L N O` of two constants, a constant C = 3 in
+// seavec's sense, so the loop becomes four copies; T12 then replaces the four slots (q, its
+// literal, the result and r, joined by slot copies) by registers
+var q: f64[4] = [1.0, 2.0, 3.0, 4.0]
+let r: f64[4] = q * 2.0
+printf("%g %g\n", r[0], r[3])

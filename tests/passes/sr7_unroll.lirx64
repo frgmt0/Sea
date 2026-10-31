@@ -1,0 +1,39 @@
+#sea 1
+#target x86_64-linux
+#file sr7_unroll.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 8 8
+sa p1 s1
+la p2 d1
+li i3 32
+mcopy p1 p2 i3
+lf f4 #0000000000000000
+li i5 0
+ldf f6 p1 i5 8 0
+fadd f7 f4 f6
+li i8 1
+ldf f9 p1 i8 8 0
+fadd f10 f7 f9
+li i11 2
+ldf f12 p1 i11 8 0
+fadd f13 f10 f12
+li i14 3
+ldf f15 p1 i14 8 0
+fadd f16 f13 f15
+mov f4 f16
+sa p17 s2
+stf f4 p17 - 0 0
+la p18 d2
+rcall sea_printf 0:1 0 2 p18 p17
+ret 0
+endfunc
+dat d1 f64 4
+dvf #3FF0000000000000
+dvf #4000000000000000
+dvf #4008000000000000
+dvf #4010000000000000
+fmt d2 2
+fconv - - - g f
+ftext %0A
+#end

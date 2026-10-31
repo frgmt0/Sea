@@ -33,7 +33,7 @@
 50120 DATA "SITE_FILE","SITE_LINE","SITE_SIZE","DATA_ALIGN","ESIZE_I64","ESIZE_F64","ESIZE_BOOL"
 50125 DATA "LIM_LIR_INSTRS","LIM_LIR_OPERANDS","LIM_LIR_REGS","LIM_LIR_BLOCKS","LIM_LIR_SLOTS"
 50130 DATA "LIM_LIR_IMMS","LIM_LIR_LABELS","LIM_LIR_SITES","FILE_VERSION","SL_SIZE","SL_NREF"
-50135 DATA "SL_REFS","ESIZE_PTR","-"
+50135 DATA "SL_REFS","ESIZE_PTR","VAR_AVX2","-"
 50200 DATA "func",1,"slot",2,"endfunc",3,"li",4,"lf",5,"sa",7,"loop",8,"endloop",9,"do",10
 50205 DATA "enddo",11,"if",12,"ifz",13,"else",14,"endif",15,"exit",16,"next",17,"ret",18
 50210 DATA "call",19,"rcall",20,"chk",21,"str",30,"fmt",31,"ftext",32,"fconv",33,"dat",34
@@ -194,4 +194,30 @@
 51000 DATA "addq $8, %rcx","addq $8, %rax","subq $8, %rdx","cmpq $8, %rdx","jae 1b","2:"
 51001 DATA "testq %rdx, %rdx","je 4f","3:","movzbl (%rcx), %r11d","movb %r11b, (%rax)","incq %rcx"
 51002 DATA "incq %rax","decq %rdx","jne 3b","4:"
-51005 DATA "-"
+51005 REM ---- phase 7 (DESIGN 2.12.7, 3.6.4): pdiff as subq; 2 lanes SSE2, 4 lanes AVX / AVX2 with
+51010 REM VEX encodings, one IEEE instruction per lane operation (no FMA, never minpd / maxpd). Forms:
+51015 REM 22 VEX d = a op b, 23 VEX d = op a (v / w: the .L<f>_yneg / .L<f>_yabs constant), 24 xcmp,
+51020 REM 25 ycmp, 26 xsel, 27 ysel, 28 xmin xmax ymin ymax, 29 xsplat, 30 xlane ylane, 31 mnot,
+51025 REM 32 ldm2 ldm4 stm2 stm4, 33 vfeat. mand / mor of 4-lane masks use the rows mand4 / mor4
+51030 DATA "pdiff","-","-",1,"-",1,0,"subq"
+51035 DATA "xadd","-","-",2,"c",1,0,"addpd","xsub","-","-",2,"-",1,0,"subpd"
+51040 DATA "xmul","-","-",2,"c",1,0,"mulpd","xdiv","-","-",2,"-",1,0,"divpd"
+51045 DATA "xneg","-","-",5,"n",1,0,"xorpd","xabs","-","-",5,"a",1,0,"andpd"
+51050 DATA "xsqrt","-","-",6,"-",1,0,"sqrtpd"
+51055 DATA "mand","-","-",2,"c",1,0,"andpd","mor","-","-",2,"c",1,0,"orpd"
+51060 DATA "mand4","-","-",22,"-",1,0,"vandpd","mor4","-","-",22,"-",1,0,"vorpd"
+51065 DATA "yadd","-","-",22,"-",1,0,"vaddpd","ysub","-","-",22,"-",1,0,"vsubpd"
+51070 DATA "ymul","-","-",22,"-",1,0,"vmulpd","ydiv","-","-",22,"-",1,0,"vdivpd"
+51075 DATA "ysqrt","-","-",23,"-",1,0,"vsqrtpd","ysplat","-","-",23,"-",1,0,"vbroadcastsd"
+51080 DATA "yneg","-","-",23,"v",1,0,"vxorpd","yabs","-","-",23,"w",1,0,"vandpd"
+51085 DATA "xcmp","-","-",24,"-",0,0,"ycmp","-","-",25,"-",0,0
+51090 DATA "xsel","-","-",26,"-",0,0,"ysel","-","-",27,"-",0,0
+51095 DATA "xmin","-","-",28,"-",0,0,"xmax","-","-",28,"-",0,0
+51100 DATA "ymin","-","-",28,"-",0,0,"ymax","-","-",28,"-",0,0
+51105 DATA "xsplat","-","-",29,"-",0,0,"xlane","-","-",30,"-",0,0,"ylane","-","-",30,"-",0,0
+51110 DATA "mnot","-","-",31,"-",0,0,"vfeat","-","-",33,"-",0,0
+51115 DATA "ldm2","-","-",32,"-",0,0,"ldm4","-","-",32,"-",0,0
+51120 DATA "stm2","-","-",32,"-",0,0,"stm4","-","-",32,"-",0,0
+51125 DATA "ldx","-","-",15,"-",1,0,"movupd","stx","-","-",16,"-",1,0,"movupd"
+51130 DATA "ldy","-","-",15,"-",1,0,"vmovupd","sty","-","-",16,"-",1,0,"vmovupd"
+51135 DATA "-"

@@ -1,0 +1,123 @@
+#sea 1
+#target x86_64-linux
+#file vec7_alias_dm8.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 24
+li i2 1
+rcall sea_arr_new 0:1 1 p3 4 i2 i2 i1 i2
+ldp p4 p3 - 0 40
+li i5 0
+li i6 23
+loop 1 i7 i5 i6 i2
+itof f8 i7
+stf f8 p4 i7 8 0
+endloop 1
+li i9 8
+padd p10 p4 i9
+li i11 -8
+padd p12 p10 i11
+li i13 11
+lf f14 #4000000000000000
+li i15 7
+isub i16 i13 i15
+li i17 3
+ishr i18 i16 i17
+ishr i19 i13 i17
+icmp le i20 i18 i19
+li i21 0
+li i22 64
+li i23 -64
+pdiff i24 p10 p12
+icmp ge i25 i24 i22
+icmp le i26 i24 i23
+icmp eq i27 i24 i21
+ior i28 i25 i26
+ior i29 i28 i27
+iand i30 i20 i29
+if 2 i30
+vfeat i31 avx2
+if 3 i31
+ysplat y32 f14
+li i33 8
+loop 4 i34 i5 i18 i33
+ldy y35 p10 i34 8 0
+ldy y36 p10 i34 8 32
+ymul y37 y35 y32
+ymul y38 y36 y32
+sty y37 p12 i34 8 0
+sty y38 p12 i34 8 32
+endloop 4
+li i39 7
+iand i40 i16 i39
+li i41 0
+icmp gt i42 i40 i41
+if 5 i42
+li i43 3
+ishl i44 i18 i43
+iadd i45 i5 i44
+li i46 8
+iadd i47 i45 i46
+isub i48 i40 i2
+loop 6 i49 i47 i48 i2
+ldf f50 p10 i49 8 0
+fmul f51 f50 f14
+stf f51 p12 i49 8 0
+endloop 6
+endif 5
+else 3
+xsplat x52 f14
+li i53 8
+loop 7 i54 i5 i18 i53
+ldx x55 p10 i54 8 0
+ldx x56 p10 i54 8 16
+ldx x57 p10 i54 8 32
+ldx x58 p10 i54 8 48
+xmul x59 x55 x52
+xmul x60 x56 x52
+xmul x61 x57 x52
+xmul x62 x58 x52
+stx x59 p12 i54 8 0
+stx x60 p12 i54 8 16
+stx x61 p12 i54 8 32
+stx x62 p12 i54 8 48
+endloop 7
+li i63 7
+iand i64 i16 i63
+li i65 0
+icmp gt i66 i64 i65
+if 8 i66
+li i67 3
+ishl i68 i18 i67
+iadd i69 i5 i68
+li i70 8
+iadd i71 i69 i70
+isub i72 i64 i2
+loop 9 i73 i71 i72 i2
+ldf f74 p10 i73 8 0
+fmul f75 f74 f14
+stf f75 p12 i73 8 0
+endloop 9
+endif 8
+endif 3
+else 2
+loop 10 i76 i5 i13 i2
+ldf f77 p10 i76 8 0
+fmul f78 f77 f14
+stf f78 p12 i76 8 0
+endloop 10
+endif 2
+sa p79 s1
+la p80 d1
+loop 11 i81 i5 i6 i2
+ldf f82 p4 i81 8 0
+stf f82 p79 - 0 0
+rcall sea_printf 0:1 0 2 p80 p79
+endloop 11
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

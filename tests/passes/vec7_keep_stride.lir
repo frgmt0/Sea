@@ -1,0 +1,86 @@
+#sea 1
+#target arm64-macos
+#file vec7_keep_stride.sea
+func .main main 0:1:1 0 0
+slot s1 8 8
+li i1 6
+li i2 1
+rcall sea_arr_new 0:4 1 p3 4 i2 i2 i1 i2
+li i4 0
+mov i5 i2
+rcount i6 i7 i4 i1 i5 0 0:5
+if 1 i7
+ldi i8 p3 - 0 0
+li i9 1
+icmp eq i10 i8 i9
+if 2 i10
+ldp p11 p3 - 0 40
+loop 3 i12 i4 i6 i5
+itof f13 i12
+stf f13 p11 i12 8 0
+endloop 3
+else 2
+li i14 1
+loop 4 i15 i4 i6 i5
+itof f16 i15
+ldi i17 p3 - 0 0
+icmp ne i18 i17 i14
+if 5 i18
+rcall sea_arr_unique 0:6 1 p19 1 p3
+mov p3 p19
+endif 5
+ldp p20 p3 - 0 40
+stf f16 p20 i15 8 0
+endloop 4
+endif 2
+endif 1
+li i21 0
+ldi i22 p3 - 0 16
+li i23 2
+rcount i24 i25 i21 i22 i23 0 0:8
+mov i26 i22
+if 6 i25
+imul i27 i24 i23
+iadd i28 i21 i27
+chkb i28 i26 0 0:8
+endif 6
+lf f29 #4000000000000000
+li i30 1
+iadd i31 i24 i30
+li i32 0
+isel i33 i25 i31 i32
+rcall sea_arr_new_u 0:8 1 p34 4 i30 i30 i33 i30
+ldp p35 p34 - 0 40
+ldp p36 p3 - 0 40
+mov i37 i32
+icmp gt i38 i33 i37
+if 7 i38
+li i39 1
+isub i40 i33 i39
+li i41 -16
+padd p42 p36 i41
+li i43 16
+loop 8 i44 i37 i40 i39
+padd p42 p42 i43
+ldf f45 p42 - 0 0
+fmul f46 f45 f29
+stf f46 p35 i44 8 0
+endloop 8
+endif 7
+li i47 2
+ldi i48 p34 - 0 16
+chkb i47 i48 0 0:9
+ldp p49 p34 - 0 40
+ldf f50 p49 i47 8 0
+sa p51 s1
+stf f50 p51 - 0 0
+la p52 d1
+rcall sea_printf 0:9 0 2 p52 p51
+release p34
+release p3
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

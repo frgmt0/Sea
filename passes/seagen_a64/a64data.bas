@@ -90,6 +90,35 @@
 50730 DATA "b.gt 3f","sub x16, x16, x15","udiv x15, x16, x17","mov x16, #1","b 4f","1:"
 50735 DATA "cmp x15, x16","b.lt 3f","sub x16, x15, x16","neg x17, x17","udiv x15, x16, x17"
 50740 DATA "mov x16, #1","b 4f","3:","mov x15, #0","mov x16, #0","4:"
+50745 REM ---- 2-lane vectors and masks (DESIGN 2.12.7, 3.6.4; NEON, one instruction per IEEE lane
+50746 REM operation, no FMA). A vector or mask register is named vN; $q $r are the q names of the
+50747 REM destination and of the first operand, $h the h name of the destination, $v the v name of
+50748 REM the first operand (an f register). xmin xmax xsel xcmp are emitted by their own code.
+50750 DATA "pdiff","-","-",1,0,"sub $d, $a, $b"
+50752 DATA "xadd","-","-",1,0,"fadd $d.2d, $a.2d, $b.2d"
+50754 DATA "xsub","-","-",1,0,"fsub $d.2d, $a.2d, $b.2d"
+50756 DATA "xmul","-","-",1,0,"fmul $d.2d, $a.2d, $b.2d"
+50758 DATA "xdiv","-","-",1,0,"fdiv $d.2d, $a.2d, $b.2d"
+50760 DATA "xneg","-","-",1,0,"fneg $d.2d, $a.2d"
+50762 DATA "xabs","-","-",1,0,"fabs $d.2d, $a.2d"
+50764 DATA "xsqrt","-","-",1,0,"fsqrt $d.2d, $a.2d"
+50766 DATA "xmin","-","-",0,0
+50768 DATA "xmax","-","-",0,0
+50770 DATA "xsel","-","-",0,0
+50772 DATA "xcmp","-","-",0,0
+50774 DATA "xsplat","-","-",1,0,"dup $d.2d, $v.d[0]"
+50776 DATA "xlane","-","-",1,0,"mov $d, $a.d[$U]"
+50778 DATA "mand","-","-",1,0,"and $d.16b, $a.16b, $b.16b"
+50780 DATA "mor","-","-",1,0,"orr $d.16b, $a.16b, $b.16b"
+50782 DATA "mnot","-","-",1,0,"mvn $d.16b, $a.16b"
+50784 DATA "ldx","-","-",1,0,"ldr $q, $M"
+50786 DATA "stx","-","-",1,0,"str $r, $M"
+50788 REM ldm2: two bytes (0 or 1) widened to two 64-bit lanes, then negated (1 -> all-ones); stm2:
+50790 REM each lane shifted right by 63 (all-ones -> 1) and narrowed to a byte in v31 (L-fi)
+50792 DATA "ldm2","-","-",5,0,"ldr $h, $M","uxtl $d.8h, $d.8b","uxtl $d.4s, $d.4h"
+50794 DATA "uxtl $d.2d, $d.2s","neg $d.2d, $d.2d"
+50796 DATA "stm2","-","-",5,0,"ushr v31.2d, $a.2d, #63","xtn v31.2s, v31.2d","xtn v31.4h, v31.4s"
+50798 DATA "xtn v31.8b, v31.8h","str h31, $M"
 50800 REM ---- f64: one IEEE instruction each (DESIGN 3.6.4: no FMA, no contraction) ------------
 50805 DATA "fadd","-","-",1,0,"fadd $d, $a, $b"
 50810 DATA "fsub","-","-",1,0,"fsub $d, $a, $b"

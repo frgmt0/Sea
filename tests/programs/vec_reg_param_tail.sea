@@ -1,0 +1,36 @@
+// vec_reg_param_tail -- regression (7e review): a parameter read only inside a vectorized loop is not a
+// local of L (DESIGN.md 2.12.6 "Registers": locals are written in L and read only in L), so the tail and
+// the scalar `else` loop read the parameter itself: an f64 `s` stored into rows 1..n-2 of every column
+// (LANGUAGE.md 5.2, 5.6 column-major `.flat`) at lengths with and without a tail, and a non-inlined
+// function whose f64 parameter scales a whole vector of 3 and 11 elements
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn f(n: i64, c: i64, s: f64) {
+    var T = zeros(n, c)
+    for j in 0..c {
+        for i in 0..n {
+            T[i, j] = f64(i + 10 * j)
+        }
+    }
+    T[1..n-1, :] = s
+    pv("T", T.flat)
+}
+fn scaled(x: f64[], s: f64) -> f64[] {
+    var n = 0
+    for k in 0..1 {
+        n = n + k
+    }
+    return x * s + 1.0
+}
+f(3, 4, -4.25)
+f(12, 2, 1.5)
+f(20, 1, 2.5)
+f(10, 3, 7.0)
+let a: f64[] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0]
+pv("a3", scaled(a[0..3], 2.0))
+pv("a11", scaled(a, 3.0))

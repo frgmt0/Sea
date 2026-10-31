@@ -1,0 +1,50 @@
+#sea 1
+#target arm64-macos
+#file sr7_keep_arr.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+li i7 32
+mcopy p1 p2 i7
+li i8 4
+li i9 1
+li i10 1
+li i11 1
+rcall sea_arr_new_u 0:5 1 p12 4 i9 i10 i8 i11
+ldp p13 p12 - 0 40
+li i14 32
+mcopy p13 p1 i14
+li i15 3
+ldi i16 p12 - 0 16
+chkb i15 i16 0 0:6
+ldp p17 p12 - 0 40
+ldf f18 p17 i15 8 0
+li i19 1
+li i20 4
+chkb i19 i20 0 0:6
+ldf f21 p1 i19 8 0
+sa p22 s3
+stf f18 p22 - 0 0
+stf f21 p22 - 0 8
+la p23 d1
+rcall sea_printf 0:6 0 2 p23 p22
+release p12
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

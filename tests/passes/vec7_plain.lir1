@@ -1,0 +1,93 @@
+#sea 1
+#target arm64-macos
+#file vec7_plain.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 72 8
+slot s3 72 8
+slot s4 72 8
+slot s5 72 8
+slot s6 72 8
+slot s7 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+lf f7 #4014000000000000
+stf f7 p2 - 0 32
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+lf f9 #401C000000000000
+stf f9 p2 - 0 48
+lf f10 #4020000000000000
+stf f10 p2 - 0 56
+lf f11 #4022000000000000
+stf f11 p2 - 0 64
+li i12 72
+mcopy p1 p2 i12
+sa p13 s3
+sa p14 s4
+lf f15 #4010000000000000
+stf f15 p14 - 0 0
+lf f16 #4014000000000000
+stf f16 p14 - 0 8
+lf f17 #4018000000000000
+stf f17 p14 - 0 16
+lf f18 #401C000000000000
+stf f18 p14 - 0 24
+lf f19 #4020000000000000
+stf f19 p14 - 0 32
+lf f20 #4022000000000000
+stf f20 p14 - 0 40
+lf f21 #4024000000000000
+stf f21 p14 - 0 48
+lf f22 #4026000000000000
+stf f22 p14 - 0 56
+lf f23 #4028000000000000
+stf f23 p14 - 0 64
+li i24 72
+mcopy p13 p14 i24
+sa p25 s5
+sa p26 s6
+li i27 9
+li i28 0
+icmp gt i29 i27 i28
+if 1 i29
+li i30 1
+isub i31 i27 i30
+loop 2 i32 i28 i31 i30
+ldf f33 p1 i32 8 0
+ldf f34 p13 i32 8 0
+fadd f35 f33 f34
+stf f35 p26 i32 8 0
+endloop 2
+endif 1
+li i36 72
+mcopy p25 p26 i36
+li i37 2
+li i38 9
+chkb i37 i38 0 0:9
+ldf f39 p25 i37 8 0
+li i40 8
+li i41 9
+chkb i40 i41 0 0:9
+ldf f42 p25 i40 8 0
+sa p43 s7
+stf f39 p43 - 0 0
+stf f42 p43 - 0 8
+la p44 d1
+rcall sea_printf 0:9 0 2 p44 p43
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

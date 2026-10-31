@@ -1,0 +1,195 @@
+#sea 1
+#target x86_64-linux
+#file vec7_sum8.sea
+func .main main 0:1:1 0 0
+slot s1 72 8
+slot s2 72 8
+slot s3 72 8
+slot s4 72 8
+slot s5 64 8
+slot s6 8 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+lf f6 #4010000000000000
+stf f6 p2 - 0 24
+lf f7 #4014000000000000
+stf f7 p2 - 0 32
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+lf f9 #401C000000000000
+stf f9 p2 - 0 48
+lf f10 #4020000000000000
+stf f10 p2 - 0 56
+lf f11 #4022000000000000
+stf f11 p2 - 0 64
+li i12 72
+mcopy p1 p2 i12
+sa p13 s3
+sa p14 s4
+stf f3 p14 - 0 0
+stf f4 p14 - 0 8
+stf f5 p14 - 0 16
+stf f6 p14 - 0 24
+stf f7 p14 - 0 32
+stf f8 p14 - 0 40
+stf f9 p14 - 0 48
+stf f10 p14 - 0 56
+stf f11 p14 - 0 64
+mcopy p13 p14 i12
+li i15 9
+li i16 0
+icmp gt i17 i15 i16
+if 1 i17
+sa p18 s5
+lf f19 #8000000000000000
+stf f19 p18 - 0 0
+stf f19 p18 - 0 8
+stf f19 p18 - 0 16
+stf f19 p18 - 0 24
+stf f19 p18 - 0 32
+stf f19 p18 - 0 40
+stf f19 p18 - 0 48
+stf f19 p18 - 0 56
+li i20 7
+li i21 1
+isub i22 i15 i21
+li i23 7
+isub i24 i22 i23
+li i25 3
+ishr i26 i24 i25
+ishr i27 i22 i25
+icmp le i28 i26 i27
+if 2 i28
+vfeat i29 avx2
+if 3 i29
+ldy y30 p18 - 0 0
+ldy y31 p18 - 0 32
+li i32 8
+loop 4 i33 i16 i26 i32
+ldy y34 p1 i33 8 0
+ldy y35 p1 i33 8 32
+ldy y36 p13 i33 8 0
+ldy y37 p13 i33 8 32
+ymul y38 y34 y36
+ymul y39 y35 y37
+yadd y30 y30 y38
+yadd y31 y31 y39
+endloop 4
+sty y30 p18 - 0 0
+sty y31 p18 - 0 32
+li i40 7
+iand i41 i24 i40
+li i42 0
+icmp gt i43 i41 i42
+if 5 i43
+li i44 3
+ishl i45 i26 i44
+iadd i46 i16 i45
+li i47 8
+iadd i48 i46 i47
+isub i49 i41 i21
+loop 6 i50 i48 i49 i21
+iand i51 i50 i20
+ldf f52 p18 i51 8 0
+ldf f53 p1 i50 8 0
+ldf f54 p13 i50 8 0
+fmul f55 f53 f54
+fadd f52 f52 f55
+stf f52 p18 i51 8 0
+endloop 6
+endif 5
+else 3
+ldx x56 p18 - 0 0
+ldx x57 p18 - 0 16
+ldx x58 p18 - 0 32
+ldx x59 p18 - 0 48
+li i60 8
+loop 7 i61 i16 i26 i60
+ldx x62 p1 i61 8 0
+ldx x63 p1 i61 8 16
+ldx x64 p1 i61 8 32
+ldx x65 p1 i61 8 48
+ldx x66 p13 i61 8 0
+ldx x67 p13 i61 8 16
+ldx x68 p13 i61 8 32
+ldx x69 p13 i61 8 48
+xmul x70 x62 x66
+xmul x71 x63 x67
+xmul x72 x64 x68
+xmul x73 x65 x69
+xadd x56 x56 x70
+xadd x57 x57 x71
+xadd x58 x58 x72
+xadd x59 x59 x73
+endloop 7
+stx x56 p18 - 0 0
+stx x57 p18 - 0 16
+stx x58 p18 - 0 32
+stx x59 p18 - 0 48
+li i74 7
+iand i75 i24 i74
+li i76 0
+icmp gt i77 i75 i76
+if 8 i77
+li i78 3
+ishl i79 i26 i78
+iadd i80 i16 i79
+li i81 8
+iadd i82 i80 i81
+isub i83 i75 i21
+loop 9 i84 i82 i83 i21
+iand i85 i84 i20
+ldf f86 p18 i85 8 0
+ldf f87 p1 i84 8 0
+ldf f88 p13 i84 8 0
+fmul f89 f87 f88
+fadd f86 f86 f89
+stf f86 p18 i85 8 0
+endloop 9
+endif 8
+endif 3
+else 2
+loop 10 i90 i16 i22 i21
+iand i91 i90 i20
+ldf f92 p18 i91 8 0
+ldf f93 p1 i90 8 0
+ldf f94 p13 i90 8 0
+fmul f95 f93 f94
+fadd f92 f92 f95
+stf f92 p18 i91 8 0
+endloop 10
+endif 2
+ldf f96 p18 - 0 0
+ldf f97 p18 - 0 8
+ldf f98 p18 - 0 16
+ldf f99 p18 - 0 24
+ldf f100 p18 - 0 32
+ldf f101 p18 - 0 40
+ldf f102 p18 - 0 48
+ldf f103 p18 - 0 56
+fadd f104 f96 f97
+fadd f105 f98 f99
+fadd f106 f104 f105
+fadd f107 f100 f101
+fadd f108 f102 f103
+fadd f109 f107 f108
+fadd f110 f106 f109
+else 1
+lf f110 #0000000000000000
+endif 1
+sa p111 s6
+stf f110 p111 - 0 0
+la p112 d1
+rcall sea_printf 0:8 0 2 p112 p111
+ret 0
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end
