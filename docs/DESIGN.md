@@ -3190,7 +3190,12 @@ Increments by sub-phase (§8, rows 7b–7f):
   6 760–8 460), with little margin, so `seavec` is **measured after T13's legality code**: when the
   projected total (measured built lines + the rewrite's and fixes' estimates) passes about 6 500,
   a relief (for example T11 and T12 moved out of `seavec`) is decided with the user before the
-  rewrite is written.
+  rewrite is written. **Measured during 7e** (2026-10-31, WP-VEC's build with T11–T13 complete): `seavec`
+  5 498 built lines, under 6 500, so no relief. **Decision 117** adds T11's known counts (the
+  `rcount` fold) 30–60, T12's slot copies (pairing, class propagation, the greatest set, the
+  `mov`s) 80–150 and condition 1's unit-access test 5–10: +115–220, **about 5 613–5 718**, inside
+  every line of the gate after phase 7 (+ 1 000 remaining 6 613–6 718; + 1.5 × remaining
+  7 113–7 218).
 * **`seagen_a64`**: the 12 `DATA` lines; `ralloc`'s classes `x y m` (a module both code generators
   load) 150–300; NEON selection, the mask load and store sequences, `xmin`/`xmax`, the vector
   entries' calls, `pdiff` 330–610: **5 530–5 960**.
@@ -4365,38 +4370,84 @@ is fixed by its first write in record order, a read of a mask with none yet is `
 `lirrw` checks only `vfeat` against the target and accepts `y`, `ldm4` and `stm4` in an
 `arm64-macos` file, which `seagen_a64` rejects (§2.12.7, L-go); a `lirrw` rejection prints no
 detail, so each of its rejection cases in `tests/lib_check.sh` is a one-record mutation of an
-accepted file (L-gp). Its output depends on the `#target` record (Decision 99): on `arm64-macos` T13
+accepted file (L-gp). `lirrw`'s string interning (`GOSUB 75000`: the string in `Z$`, its `S$` row in `Q2`, a new
+row when absent) is part of its interface for the programs that load it: `seavec`
+calls it for the names of the vector entries and the word `avx2` (L-gy; `passes/lib/API.md`
+documents it). Its output depends on the `#target` record (Decision 99): on `arm64-macos` T13
 writes 2-lane loops; on `x86_64-linux` each vectorized loop is written twice under `vfeat` (4-lane
 first, 2-lane in the `else` part, §3.6.5). A function to which none of T11–T13 applies is written
 unchanged (T10 is idempotent), so `sea.lir` equals `sea.lir3` for it. Decision 72's capacity rule
 holds for every transformation (a transformation whose result would exceed a LIR limit, or a
 `seavec` table's region, is not applied to that loop).
 
-**T11. Unrolling of short constant loops** (Decision 102). An innermost `loop B J S C T` whose S, C,
-T are constants (Terms of §5.8) with C + 1 ≤ 8 iterations, whose body has at most 64 records, no
-block record, no `exit`/`next`/`ret`, and at least one load or store whose base is an `sa` of a slot
-and whose `idx` is J, is replaced by C + 1 copies of its body in order, the k-th with J replaced by
-a new register written `li Jk (S + k·T)` at its top. Registers are threaded through the copies
-(L-ev): a register written in the body gets a new name in each copy; a read in copy k of a register
-the body writes reads the name copy k gives it when copy k has already written it, else copy
-k − 1's name (copy 1: the original register, the value before the loop); after the last copy, a
-`mov` from its name to the original register for every register written in the body and read after
-the loop or carried around it. The guard's `if` stays. After T11 such an access has a constant
-`idx` register.
+*Constants in `seavec`* (Decisions 115, 117). In T11, T12 and T13 a *constant* is a register whose
+only definition in the function is an `li`, or a `mov`, `iadd`, `isub` or `imul` whose operands are
+constants, its value folded exactly and lying in −2⁵² … 2⁵² (§2.8; in that range the wrapping
+instruction gives the exact value). This is L-br's reading of T7 extended: T3 leaves a repeated `li`
+as a `mov` of the first (§5.8 T3), T3 does not fold an `isub` of two `li`s (rule 17's `isub L N O`),
+and T7 writes its Δ as an `imul` of two such registers. The read and write counts these rules use
+("only definition", "nothing reads", "read after") are counted over the whole function (L-gw). A
+register is *read after* a loop L when a record after L's last record reads it, or a record before
+L inside a loop that encloses L does (reached around that loop's back edge) (L-gu).
 
-**T12. Scalar replacement** (§5.3; Decision 102). A slot s of at most 256 × 8 bytes whose every
-`sa` register is a private base (§5.8 Terms) used only by `ldi ldf sti stf` with `idx` `-` or a
-constant register (offset off + idx·scale a constant), never by `ldb stb ldp stp mcopy`, a call or
-an `rcall`, and whose accesses touch each 8-byte location with one class only and never partly
-overlap another location (offsets multiples of 8 from the slot's start; an `ldi` and an `ldf` of the
-same bytes, or offsets 0 and 4, refuse the slot, L-ew): each distinct (s, byte offset) becomes a new
-register of its class; a load of it is a `mov` from that register, a store a `mov` into it; the
-first access in record order of each location must be a store on every path (a forward walk with
-F6's joins over the function's blocks; a location read before it is surely written refuses the
-whole slot); the `sa` instructions and the slot's `slot` record are deleted when no use remains (the
-slots are renumbered densely, `s1`, `s2`, …).
+**T11. Unrolling of short constant loops** (Decisions 102, 117). T11 visits the loops of the
+function as it stands before T11, in record order (its copies are not visited again, L-gt). An
+innermost `loop B J S C T` whose S and T are constants and whose *iteration count* n is known, 1 ≤
+n ≤ 8, whose body has at most 64 records, no block record, no `exit`/`next`/`ret`, and at least one
+load or store whose base is an `sa` of a slot and whose `idx` is J, and whose J is not read after it
+(L-gs), is replaced by n copies of its body in order, copy k (k = 1 … n) with J replaced by a new
+register written `li Jk v` at its top, v = S + (k − 1)·T folded exactly (L-gq; when a v would leave
+−2⁵² … 2⁵², T11 does not apply). n is known when C is a constant c with 0 ≤ c ≤ 7 (n = c + 1), or
+when C's only definition is an `rcount C E lo hi st incl site` whose `lo`, `hi` and `st` are
+constants (rule 4): then n is the exact number of elements of the range `lo..hi step st` (`incl` 0)
+or `lo..=hi step st` (`incl` 1) of LANGUAGE.md §5.1, computed from the folded values with exact
+integer arithmetic (§3.6.4 `rcount`: the loop's `last` is n − 1); `st` = 0 (a run-time error) and n
+= 0 (an empty range, whose `rcount` writes `last` = 0 and whose guard never enters the loop) make
+T11 not apply. A rule-17 loop (`isub L N O` with N and O constants) has C a constant. Registers are
+threaded through the copies (L-ev): a register written in the body gets a new name in each copy; a
+read in copy k of a register the body writes reads the name copy k gives it when copy k has already
+written it, else copy k − 1's name (copy 1: the original register, the value before the loop);
+after the last copy, a `mov` from its name to the original register for every register written in
+the body and read after the loop or carried around it. The guard's `if` stays, and so does the
+`rcount` (it has a site; T10 does not delete it): a loop runs at least once when entered (§3.6.4),
+so the n copies run exactly when the loop would, with the same values. After T11 such an access has
+a constant `idx` register.
 
-**T13. If-conversion and vectorization** (Decisions 99–101, 108, 115). T13 visits the *candidates*
+**T12. Scalar replacement** (§5.3; Decisions 102, 117). T12 visits the slots in the order of their
+`slot` records, as the function stands before T12 (L-gt). A slot s of at most 256 × 8 bytes whose
+every `sa` register (a `p` register every definition of which is an `sa` of s; this rule's own use
+list replaces the Terms' private base, whose uses are only without an `idx`, L-gr) is used only by
+`ldi ldf sti stf` with `idx` `-` or a constant register (offset off + idx·scale a constant)
+and as an operand of a *slot copy* (below), never by `ldb stb ldp stp`, another `mcopy`, a call or an
+`rcall`, never a stored value or an operand of `mov`, `padd` or `psel`; and whose accesses touch each
+8-byte location with one class only and never partly overlap another location (offsets multiples of
+8 from the slot's start; an `ldi` and an `ldf` of the same bytes, or offsets 0 and 4, refuse the
+slot, L-ew): each distinct (s, byte offset) becomes a new register of its class; a load of it is a
+`mov` from that register, a store a `mov` into it; the first access in record order of each location
+must be a store on every path (a forward walk with F6's joins over the function's blocks; a location
+read before it is surely written refuses the whole slot); the `sa` instructions and the slot's `slot`
+record are deleted when no use remains (the slots are renumbered densely, `s1`, `s2`, …).
+
+A *slot copy* is an `mcopy Pd Ps N` whose Pd and Ps are `sa` registers of two different slots and
+whose N is a constant, a multiple of 8, with 8 ≤ N ≤ the size of each slot. This is how pass 3a
+fills a fixed-size array or struct from a literal (its parts stored into the literal's own slot,
+then copied) or from another such value (`var r = q`). In the first-access walk a
+slot copy reads each location of the source slot at offsets 0, 8, …, N − 8 and then writes the
+location at the same offset of the destination; a location's class is propagated through slot
+copies (a location copied from or to a location of class `i` or `f` has that class, and two classes
+for one location refuse the slot). The slots T12 replaces are the greatest set of slots that meet
+the conditions above and every slot copy of which has its other slot in the set too (start from
+every slot that meets them and remove one whose slot copy has a partner outside the set, until
+nothing changes), so a slot copy always joins two replaced slots. Each slot copy then becomes, at
+its place, `mov Rd,o Rs,o` for o = 0, 8, …, N − 8 in increasing order (Rs,o and Rd,o the registers of
+the source's and destination's locations at offset o): a `mov` copies all 64 bits of its register,
+so each location receives exactly the bytes the `mcopy` would copy, and the two regions never
+overlap (§3.6.4), so the order of the `mov`s does not matter. An `mcopy` whose other operand is not
+an `sa` register of a slot (array data, a `ref` parameter's memory) is not a slot copy and refuses
+the slot: the bytes of array data are not known at compile time, and splitting such a copy into
+loads or stores of a replaced slot is left out of v1.
+
+**T13. If-conversion and vectorization** (Decisions 99–101, 108, 115, 117). T13 visits the *candidates*
 of the function as it stands before T13, in record order: each `loop` L whose body holds no `loop`
 (a `do` in it is allowed here, unlike in the Terms' "innermost" of §5.8, and P1 must dissolve it).
 The loops a rewrite writes (vector loops, tails, the `else` loop) are not visited again, as T9's
@@ -4414,12 +4465,8 @@ loop L that runs the tail and the `else` part is L after P1 and P2, without the 
 changes nothing in a scalar loop). So `sea.lir` differs from `sea.lir3` only in the loops T13
 vectorizes (and in T11's and T12's changes).
 
-*Constants.* In T13 a *constant* is a register whose only definition in the function is an `li`, or
-a `mov`, `iadd`, `isub` or `imul` whose operands are constants, its value folded exactly and lying
-in −2⁵² … 2⁵² (§2.8; in that range the wrapping instruction gives the exact value). This is L-br's
-reading of T7 extended: T3 leaves a repeated `li` as a `mov` of the first (§5.8 T3), and T7 writes
-its Δ as an `imul` of two such registers. The conditions 1 and 5 and P2 read "constant" in this
-sense; T11 keeps the Terms' (§5.8). T13 folds a constant's value into the `li`s it writes and reads
+*Constants.* The conditions 1 and 5 and P2 read "constant" in the sense of "Constants in `seavec`"
+above. T13 folds a constant's value into the `li`s it writes and reads
 no constant's register before or after L except L's own operands S, C and T, which are written
 before L (L reads them at its entry, §3.6.4 property 2).
 
@@ -4486,7 +4533,8 @@ Then the pure instructions of L whose results nothing reads are deleted (T10's f
 restricted to L). Every instruction P2 writes wraps, as the address computations it replaces do, so
 each access addresses exactly the bytes it addressed before, element by element, and (4)'s test sees
 the true bases; an access whose folded constants would leave −2⁵² … 2⁵², or whose X chain holds
-another instruction (a checked one, a second counter, J with another coefficient), is not changed.
+another instruction (a checked one, a second counter, J with another coefficient), an invariant
+register that occurs as two terms, or more than 6 invariant terms tᵢ (L-gv), is not changed.
 
 **P3. Invariant loads.** A load `ldf F P - 0 o` in L (at any depth) is *invariant* when: P is
 invariant in L and is a parameter never written or a register every definition of which is an `sa`
@@ -4525,7 +4573,9 @@ extents a fused copy checked before L, addresses an element that exists in every
 A block that is not if-converted stays, and L fails (1). Then L is vectorized when:
 
 1. L is `loop B J S C T` with T a constant 1 and S, C, T invariant in L, and after its preparation
-   its body is one region (no block record, no `exit`, `next` or `ret`), so L is innermost;
+   its body is one region (no block record, no `exit`, `next` or `ret`), so L is innermost, and the
+   body holds at least one unit access (after P2; Decision 117: a loop with an empty body, or with no
+   access, gains nothing from the vector form and is not vectorized);
 2. every record of the body is in the *vector set*: a *unit access* `ldf X D J 8 0`, `stf V D J 8
    0`, `ldb M D J 1 0` or `stb M D J 1 0` with D invariant in L (T7's unit-stride form, §5.8: a
    folded or whole-array leaf of a plain copy gives it, its constant and invariant index terms
@@ -4853,7 +4903,8 @@ applied. T2 lists every changed golden with the rule that changes it (L-fb). **P
 (L-fc): a `seavec` dump's `x86_64-linux` golden is `NAME.lirx64` (an extension `stage.sh`'s `*.lir`
 loop does not match); a hand-written `x86_64-linux`-only pass-4 test is `NAME.lirx64` with its
 `.out`, run only through `seagen_x64`; a hand-written `seavec` stage test is a `NAME.lir3` without
-`NAME.sea`, with `NAME.lir` and `NAME.lirx64` (`stage.sh` runs `seavec` on it per target, and pass 4
+`NAME.sea` (its subject stated in `tests/CORPUS.md`, since LIR has no comment record, L-gx), with
+`NAME.lir` and `NAME.lirx64` (`stage.sh` runs `seavec` on it per target, and pass 4
 on each output when a `NAME.out` exists).
 
 #### 2.12.11 Readings fixed by 7a
@@ -12418,12 +12469,16 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     refused), a hand-written loop whose `ind` is read after it (refused), the full-range split (C =
     2⁶⁴ − 1, a hand-written `NAME.lir3` without `.out`), and a loop that fails after its preparation and is written unchanged (its `NAME.lir` equal
     to its `NAME.lir3`); a `NAME.lir` or `NAME.lirx64` differs from `NAME.lir3` only in the loops T13
-    vectorizes, and no `lir1`, `lir2` or `lir3` golden changes; the independence test of §2.12.6 (4) on hand-written
+    vectorizes, and no `lir1`, `lir2` or `lir3` golden changes; a loop with an empty body or no unit access is
+    not vectorized (Decision 117: `opt5_ovf_const`'s two empty loops, whose `NAME.lir` and
+    `NAME.lirx64` equal its `NAME.lir3`); the independence test of §2.12.6 (4) on hand-written
     `vec7_alias_*` LIR (a `NAME.lir3` without `NAME.sea`, run through `seavec` by `stage.sh` per
     target and, with a `.out`, through pass 4): bases of one array at distances 0, 8, 56, 64 and −8
     bytes (Sea source cannot make them: a selection is a copy, and F1 (5) keeps a shifted store out
-    of place); T11 with a value carried through the copies and T12 on a fixed-size `f64[4]` state
-    updated in a loop (W3's shape) and on a struct, a slot read before written, a slot read as `i`
+    of place); T11 with a value carried through the copies (on compiled loops of Decision 117: a constant
+    `rcount` range, `0..4` and `0..=3` over an `f64[4]`, and a rule-17 count) and T12 on a fixed-size
+    `f64[4]` state updated in a loop (W3's shape, filled from its literal by a slot copy, and a copy
+    `var r = q` between two replaced slots; a slot copied into array data is kept) and on a struct, a slot read before written, a slot read as `i`
     and `f`, and one with overlapping offsets (all three kept).
   * **`gen7_*` pass-4 tests** (WP-GEN, hand-written `sea.lir` with `.out`, both targets as `ra5_*`;
     the 4-lane ones as `NAME.lirx64`, `x86_64-linux` only): every vector and mask instruction of
@@ -13035,7 +13090,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
 | 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code. **Done** (2026-10-30): F1–F5 in `seafuse` with buffer reuse, in-place selection stores of kinds S, R, A, M, MM, groups with `tbind`s of k-result elemental applications, fused, masked and `.flat` reductions in and out of groups, and folded concatenation parts in stacks and mixed rows (decided by the user 2026-10-30, L-fy); the user's D1–D3 (2026-10-29: the group's leaf phase and stored binds in the enclosing block, F8 appended in `sea.hirf`, the broadcast copy reading a folded leaf by its map) and the readings of the work packages and both reviews' fixes recorded in §2.12.3, §2.12.4 ("Readings fixed by 7c") and as lead decisions L-fv–L-gj; `sealoop`'s share: the F8 reader and renumbering (L-fw), the `rcnt` type check (L-gj), an inlined callee's undeclared `.i` local (R34); `sealower` unchanged; tests: 39 `fuse_*` programs (T1's 26, 11 `fuse_reg_*` regressions, 2 concatenation programs), 19 `r_fuse_*`/`err_fuse_*` error tests, 22 `fuse7_*` and 12 `fuse7c2_*` dumps (`dump7_cases.py` part 4), the re-derived goldens `ew_colrow`, `sel_reads` and the subject test `elem6_inst` (L-fb's list in `tests/CORPUS.md`); `make test` passes in every group (`test-programs` 2 034, `test-stage` 1 067) and `make cross` 876 of 876 on the Linux host; two independent reviews with differential fuzzing against the pre-7c compiler (stdout, stderr, status and heap check compared byte for byte; review 1: 1 566 programs, 9 defects, all fixed, with two more found by the fixer's fuzzing; review 2: 577 programs and capacity scans, 5 defects, all fixed), the final fuzz runs (1 000, 400 and 400 programs on fresh seeds: all MATCH; 300 concatenation programs: no mismatch, those 37 that fail to compile failing on both compilers); the measurement after 7c passes with no relief (§2.7, "Measured after 7c": `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431 with 3); observed: fused output can slow `sealopt` (§2.12.5); next 7e |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
-| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115, 116): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
+| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115–117): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
 | 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change expected; **specified by decision, not started: written when 7f is done**): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass |
 
@@ -14519,6 +14574,28 @@ recommendation as (a), its reasons, the decision, and what it affects.
     (a)** (the user, 2026-10-31). Affects §2.6.3 (the tool's build list), §2.12.6, §8 (row 7e:
     WP-HARNESS and the done-when), L-gk; no contract file.
 
+117. **T11 and T12 on compiled code; empty loops** (2026-10-31, after T2's and WP-VEC's builds;
+    §2.12.6). T2 found, and the builds confirmed, that T11 and T12 as agreed never fire on code Sea
+    compiles: a lowered loop's C is an `rcount` result (rule 4) or an `isub` of two `li`s (rule 17),
+    never the Terms' constant, and every fixed-size array or struct is filled by an `mcopy` from its
+    literal's slot (or from another such value), which T12 refused; so W3's `f64[4]` state, which
+    §6.2 promises, was never scalar-replaced. First, options: (a) **extend T11 and T12 now: T11
+    takes S and T as constants in the sense of "Constants in `seavec`" and a known iteration count n
+    (1 ≤ n ≤ 8) from a constant C or an `rcount` of constant operands, folded exactly by LANGUAGE.md
+    §5.1's element count (`st` = 0 and the empty range not unrolled), the guard and the `rcount`
+    kept; T12 accepts *slot copies*, `mcopy`s between two replaced slots of a constant multiple of 8
+    bytes, written as per-location `mov`s, the replaced slots the greatest set closed under slot
+    copies, an `mcopy` to or from any other memory still refusing the slot**; (b) leave T11 and T12
+    as agreed for v1 (they fire only on hand-written LIR). Recommended: (a); the rules stay small
+    (+115–220 lines, §2.7), and both are exact: the copies run exactly when the loop would, and a
+    `mov` copies the 64 bits the `mcopy` would. **Decided: (a)** (the user, 2026-10-31). Second, a
+    loop with an empty body (or with no unit access) met conditions 1–5 vacuously and got the whole
+    vector form (`opt5_ovf_const`). Options: (a) **condition 1 also requires at least one unit
+    access after P2**; (b) leave it. **Decided: (a)** (the user, 2026-10-31): such a loop gains nothing
+    from the form, and its goldens revert to `NAME.lir3`. Affects §2.7 (`seavec`, measured 5 498 built,
+    about 5 613–5 718 with this decision), §2.12.6 ("Constants in `seavec`", T11, T12, T13 (1)),
+    §6.2 (`vec7_*`, `sr7_*`); lead decisions L-gq–L-gy; no contract file.
+
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
 normative section): L-ac,
@@ -15213,3 +15290,30 @@ the validation of `sea.lir` that L-gk describes):
 * **L-gp** A `lirrw` rejection (`BAD_RECORD`) prints no detail, so each `lirrw` rejection case of
   `tests/lib_check.sh` is a one-record mutation of an accepted file, which isolates its cause
   (§2.12.6).
+
+Lead decisions of sub-phase 7e (T2's and WP-VEC's readings, found in their builds and recorded
+2026-10-31 with Decision 117; each decides byte-level output or legality and is written into
+§2.12.6 or §2.12.10):
+
+* **L-gq** T11's copy k, counted from 1, has J = S + (k − 1)·T (the agreed text's S + k·T counted
+  from 0); only this keeps the loop's values (T2).
+* **L-gr** T12's own use list (loads and stores with `idx` `-` or a constant register, and slot
+  copies) replaces the Terms' private base, whose uses are only without an `idx`; otherwise T11's
+  output, whose accesses have constant `idx` registers, could never feed T12 (T2).
+* **L-gs** T11 does not apply when its loop's `ind` is read after the loop: the copies never write
+  it, and L-ay would give it S + C·T (WP-VEC).
+* **L-gt** T11 and T12 take their candidates (loops; slots) from the function as it stands before
+  the transformation, in record order, as T13 does; T11's copies are not visited again (WP-VEC).
+* **L-gu** A register is read after a loop L when a record after L's last record reads it, or a
+  record before L inside a loop that encloses L does (reached around that loop's back edge); T11's
+  `mov`s, T12 and T13's condition 3 use this reading (WP-VEC).
+* **L-gv** P2 leaves an access unchanged when its index chain names one invariant register as two
+  terms or has more than 6 invariant terms (a capacity of `seavec`'s term list; WP-VEC).
+* **L-gw** The read and write counts T11–T13 use ("only definition", "nothing reads", "only write
+  in L") are counted over the whole function (WP-VEC).
+* **L-gx** A hand-written `.lir3` test states its subject in `tests/CORPUS.md`, since LIR has no
+  comment record (T2; §2.12.10).
+* **L-gy** `lirrw`'s string interning (`GOSUB 75000`: the string in `Z$`, its `S$` row in `Q2`, a
+  new row when absent) is part of `lirrw`'s interface for the programs that load it; `seavec`
+  uses it for the vector entries' names and the word `avx2`, and `passes/lib/API.md` documents it
+  (its owner's change) (§2.12.6).
