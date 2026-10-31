@@ -1,12 +1,15 @@
 87000 REM ralloc.bas: the linear-scan register allocator of DESIGN 4.9.2 (Decisions 59, 60; L-ac L-an
 87003 REM L-aq); lines 87000-88999. API: API.md. Needs no module. All state lives in the caller's
-87006 REM D(Z9,8): rows 1..R9 registers (col 0 the caller's class, col 8 the location), R9+b block b,
+87006 REM D(Z9,8): rows 1..R9 registers (col 0 the caller's class: 1 i 2 f 3 p 4 x 5 y 6 m of 2 lanes 7 m of
+87007 REM 4 lanes; col 8 the location), R9+b block b,
 87009 REM X+1.. (X = R9+B9) scalars, 64 machine-register rows, moves. Row 0: R9 B9 Z9, highest row
 87012 REM used, blocks, -, open part (b; -b else part), loop depth. Row X+1: last call, W list, M, slots, start chain,
 87015 REM save cursor, moves, steps. Register walk columns: 1 first+1, 2 last, 3 latest write (ra_ref),
 87018 REM 4 pend*(B9+1)+depth, 5 hints (A*(R9+1)+B)*(R9+1)+V (V avoided), 6 W link / next call, 7 first call crossed (or, with
 87021 REM none, -(3K+n): a result of call K, n results counted up to 2), 8 start;
 87024 REM after ra_end: 1 first, 2 end, 3 start, 4 depth, 5 hint, 6 start chain, 7 save slot, 8 loc.
+87025 REM After ra_end D(s,4) of row s is the offset of slot s (s <= the first count of row X+2); row X+2: slots
+87026 REM before the L-aq ones, their end in bytes, 1 if one is a vector slot, all slots (ra_off ra_so ra_sa).
 87027 REM Block row: 0 kind (1 loop 2 do 3 if), 1 parent part, 2 open, 3 close, 4 first call, 5 ind (then
 87030 REM ind referenced after; if: else), 6 step, 7 depth (then count location), 8 hidden step (location).
 87033 SUB "ra_init": D(), R9, B9, Z9, T ' records the limits; T = 1 if D(Z9,8) is too small
@@ -368,7 +371,9 @@
 88056 IF R = 0 THEN 88233
 88059 LET S = D(R, 3)
 88062 LET C = 1
-88065 IF D(R, 0) <> 2 THEN 88074
+88065 IF D(R, 0) = 2 THEN 88068
+88066 IF D(R, 0) < 4 THEN 88074
+88067 REM f and the vector classes x y m (4-7) share the floating-point register file (2.12.7)
 88068 LET C = 2
 88071 REM expire the active intervals of the class that end below S
 88074 FOR P = 1 TO 64
@@ -397,6 +402,8 @@
 88125 REM the first free register of the row (column 1 crossing no call, 2 crossing one)
 88128 LET K = 1
 88131 IF D(R, 7) <= 0 THEN 88137
+88132 REM a vector interval stays in the row crossing no call: every register is caller-saved for it (L-ez)
+88133 IF D(R, 0) >= 4 THEN 88137
 88134 LET K = 2
 88137 LET Q = 0
 88140 FOR P = 1 TO 64
@@ -451,6 +458,8 @@
 88269 GOTO 88287
 88272 IF D(R, 7) <= 0 THEN 88305
 88275 IF D(X + P, 3) = 0 THEN 88284
+88276 REM a vector interval crossing a call is saved even in a callee-saved register (2.12.7, L-ez)
+88277 IF D(R, 0) >= 4 THEN 88284
 88278 LET D(R, 7) = 0
 88281 GOTO 88305
 88284 LET D(R, 4) = 2 * D(R, 7)
@@ -463,7 +472,7 @@
 88305 NEXT R
 88308 CALL "ra_srt": D(), Q, 4, 5, Z
 88311 LET S8 = 0
-88314 IF Z = 0 THEN 88344
+88314 IF Z = 0 THEN 88342
 88317 LET S8 = S8 + 1
 88320 IF D(Z, 8) <> -1 THEN 88332
 88323 LET D(Z, 8) = -S8
@@ -473,6 +482,7 @@
 88335 LET Z = D(Z, 5)
 88338 GOTO 88314
 88341 REM per loop: the count and step locations; L-aq ones (-1) get slots of their own, by block
+88342 CALL "ra_off": D(), S8
 88344 FOR B = 1 TO D(0, 5)
 88347 LET Z = R9 + B
 88350 IF D(Z, 0) <> 1 THEN 88380
@@ -486,6 +496,7 @@
 88374 LET D(Z, J) = D(H, 8)
 88377 NEXT J
 88380 NEXT B
+88381 LET D(D(0, 1) + D(0, 2) + 2, 4) = S8
 88383 SUBEND
 88386 SUB "ra_blk": D(), B, C, S, F ' loop B: count location C, hidden step location S (0 none), F
 88389 LET Z = D(0, 1) + B
@@ -519,7 +530,8 @@
 88473 FOR P = 1 TO 64
 88476 LET O = D(X + P, 5)
 88479 IF O = 0 THEN 88524
-88482 IF D(X + P, 3) <> 0 THEN 88524
+88482 IF D(X + P, 3) = 0 THEN 88485
+88483 IF D(O, 0) < 4 THEN 88524
 88485 IF D(O, 2) <= 2 * K + 1 THEN 88524
 88488 LET N = N + 1
 88491 LET D(X + N, 6) = P
@@ -659,3 +671,50 @@
 88878 LET N = D(0, 1) + 1
 88881 LET D(R, 5) = INT(D(R, 5) / N) * N + V
 88884 SUBEND
+88887 SUB "ra_off": D(), S1 ' slots 1..S1: sizes (8; x and 2-lane m 16; y and 4-lane m 32), then offsets (L-fh)
+88888 REM D(s,4) of row s (free after the slot sort) holds slot s's size, then its byte offset in the spill
+88889 REM area; a 16- or 32-byte slot starts at a multiple of 16. Row R9+B9+2: S1, the end of those slots, V
+88890 FOR S = 1 TO S1
+88891 LET D(S, 4) = 8
+88892 NEXT S
+88893 REM the slot of each register: its spill slot (location -s) or its save slot (column 7)
+88894 FOR R = 1 TO D(0, 4)
+88895 IF D(R, 3) < 0 THEN 88905
+88896 LET S = D(R, 7)
+88897 IF D(R, 8) >= 0 THEN 88899
+88898 LET S = -D(R, 8)
+88899 IF S <= 0 THEN 88905
+88900 IF D(R, 0) < 4 THEN 88905
+88901 LET D(S, 4) = 16
+88902 IF D(R, 0) = 4 THEN 88905
+88903 IF D(R, 0) = 6 THEN 88905
+88904 LET D(S, 4) = 32
+88905 NEXT R
+88906 REM the offsets in slot order; V = 1 once a vector slot is placed
+88907 LET O = 0
+88908 LET V = 0
+88909 FOR S = 1 TO S1
+88910 LET Z = D(S, 4)
+88911 IF Z = 8 THEN 88915
+88912 LET V = 1
+88913 LET O = INT((O + 15) / 16) * 16
+88914 REM the slot starts here and the next one after it
+88915 LET D(S, 4) = O
+88916 LET O = O + Z
+88917 NEXT S
+88918 LET X = D(0, 1) + D(0, 2) + 2
+88919 LET D(X, 1) = S1
+88920 LET D(X, 2) = O
+88921 LET D(X, 3) = V
+88922 SUBEND
+88925 SUB "ra_so": D(), S, O ' O = the byte offset of spill slot S (1..S8) in the function's spill area
+88928 LET X = D(0, 1) + D(0, 2) + 2
+88931 LET O = D(S, 4)
+88934 IF S <= D(X, 1) THEN 88940
+88937 LET O = D(X, 2) + 8 * (S - D(X, 1) - 1)
+88940 SUBEND
+88943 SUB "ra_sa": D(), A, V ' A = the spill area's bytes; V = 1 if it holds a 16- or 32-byte slot
+88946 LET X = D(0, 1) + D(0, 2) + 2
+88949 LET A = D(X, 2) + 8 * (D(X, 4) - D(X, 1))
+88952 LET V = D(X, 3)
+88955 SUBEND

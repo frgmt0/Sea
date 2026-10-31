@@ -1,0 +1,30 @@
+// vec_where_cmp -- where() with a mask from each comparison (lt le gt ge eq ne) of two arrays, of an array and a
+// splat on either side, and of two trees, on lanes with NaN (every ordered comparison false, != true), +-0
+// (equal), +-inf and a subnormal, at lengths 7, 9, 16 and 17. Loops meant to vectorize (T13): the F1 nests, one per
+// result, whose bodies are fcmp (lt le eq, gt ge swapped, ne unordered) into a mask register read only by fsel,
+// with fmul/fadd arms (conditions 2 and 3: mask registers written by fcmp and read only by fsel's condition).
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn run(x: f64[], y: f64[]) {
+    printf("n=%d\n", len(x))
+    pv("lt", where(x < y, x * 2.0, y * 3.0))
+    pv("le", where(x <= y, x + 10.0, y - 10.0))
+    pv("gt", where(x > y, x * 4.0, y * 5.0))
+    pv("ge", where(x >= y, x - 1.0, y + 1.0))
+    pv("eq", where(x == y, x + y, x - y))
+    pv("ne", where(x != y, x * y, x + 100.0))
+    pv("abs", where(x > 0.0, x, -x))
+    pv("0lt", where(0.0 < y, y, y * -1.0))
+    pv("tree", where(x * x < y + 1.0, x - y, y - x))
+}
+let x: f64[] = [nan, 1.0, 2.0, 3.0, -1.0, -0.0, 0.0, 0.0, -0.0, inf, -inf, inf, 5e-324, nan, 2.5, -2.5, 4.0]
+let y: f64[] = [1.0, nan, 2.0, 1.0, -1.0, 0.0, -0.0, 0.0, -0.0, inf, -inf, -inf, 0.0, nan, 2.5, 2.5, 5.0]
+let lens: i64[] = [7, 9, 16, 17]
+for n in lens {
+    run(x[0..n], y[0..n])
+}

@@ -1,5 +1,6 @@
 #!/bin/sh
-# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables,layout,ralloc}.bas and of the
+# lib_check.sh -- tests of the shared pass modules passes/lib/{io,diag,tables,layout,ralloc}.bas, of the shared
+# main-program part passes/lib/lirrw.bas (its vector validation, section 7) and of the
 # intermediate-file validator tools/seaval.bas (docs/DESIGN.md 2.2, 2.6.2, 2.6.3, 3, 3.9).
 #
 #   sh tests/lib_check.sh [-v]            (make test-lib)
@@ -17,7 +18,9 @@
 #   tab    the loaders of tables.bas against counts taken from the contract files, tb_cval
 #   boot   a table that does not fit: BAD_DATA
 #   lay    layout.bas: the struct layout rule of DESIGN 4.8 (sizes, offsets, reference offsets)
-#   ra     ralloc.bas: the register allocator of DESIGN 4.9.2 (intervals, scan, slots, moves)
+#   ra     ralloc.bas: the register allocator of DESIGN 4.9.2 (intervals, scan, slots, moves; the vector
+#          classes and their slots, 2.12.7)
+#   lr     lirrw.bas: the vector classes and set-LF records (accepted in sea.lir only, written back), T10 on them
 # and the validator tools/seaval.bas is run on the dump examples of DESIGN 3.4, 3.5.8 and 3.6.7
 # (taken from the document itself) and on mutated copies, which it must reject with status 11.
 #
@@ -1130,7 +1133,7 @@ cat > "$T/h_ra.bas" <<'EOF'
 11 REM K r c (the caller's class), P r, R k r w, C k, H k r a b, O k b y i s, X k b, E m (ra_end),
 12 REM L r... (locations), V r (start end, the module's columns 3 2), B b (ra_blk), U p (ra_used),
 13 REM W (ra_rew), S k (ra_sv, ra_svi), M s e c (ra_mv), Q (ra_pm, ra_st), Y n (n moves), G r (D(r,0)),
-14 REM Z k b (ra_else), A k r v (ra_avoid)
+14 REM Z k b (ra_else), A k r v (ra_avoid), J s (ra_so: the offset of spill slot s), N (ra_sa: the spill area)
 20 DIM D(111110,8), F$(20), V(20)
 30 IF END #0 THEN 990
 40 LINPUT #0, L$
@@ -1138,9 +1141,9 @@ cat > "$T/h_ra.bas" <<'EOF'
 60 FOR I = 2 TO N
 70 LET V(I) = VAL(F$(I))
 80 NEXT I
-90 LET K = POS("ITFKPRCHOXELVBUWSMQYGZA", F$(1))
+90 LET K = POS("ITFKPRCHOXELVBUWSMQYGZAJN", F$(1))
 100 IF K = 0 THEN 980
-110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560,570,580
+110 ON K GOTO 200,210,220,230,240,250,260,270,280,290,300,320,360,380,400,420,440,480,500,540,560,570,580,590,600
 200 CALL "ra_init": D(), V(2), V(3), V(4), T
 205 PRINT "I T=" & STR$(T)
 207 GOTO 30
@@ -1211,6 +1214,12 @@ cat > "$T/h_ra.bas" <<'EOF'
 575 GOTO 30
 580 CALL "ra_avoid": D(), V(2), V(3), V(4)
 585 GOTO 30
+590 CALL "ra_so": D(), V(2), O
+592 PRINT "J " & STR$(V(2)) & ": " & STR$(O)
+595 GOTO 30
+600 CALL "ra_sa": D(), A, V
+605 PRINT "N A=" & STR$(A) & " V=" & STR$(V)
+610 GOTO 30
 980 PRINT "BAD COMMAND " & L$
 985 STOP 3
 990 STOP
@@ -2254,6 +2263,231 @@ S 8: N=2 T=0 (1 1 3) (2 2 6)
 EOF
 expect "ralloc: Decision 75: call crossing on the new intervals: an if part's temporaries do not cross the loop's call" "$T/ra" "$T/ra_q.in" 0 "$T/ra_q.exp" /dev/null
 
+# v. the vector classes of phase 7 (DESIGN 2.12.7, L-ez, L-fh; API.md "ralloc.bas"): the caller's classes 4 x,
+#    5 y, 6 a 2-lane m, 7 a 4-lane m share the floating-point register file with f; spill and save slots
+#    of 16 (x, 2-lane m) and 32 bytes (y, 4-lane m) start at a multiple of 16 of the spill area (ra_so,
+#    ra_sa), 8-byte slots stay packed; every register is caller-saved for a vector value (a vector
+#    interval keeps the row "crossing no call"; one crossing a call is saved even in a callee-saved
+#    register), on arm64 (L-ez: only the low 64 bits of v8-v15 survive) and x86_64 alike.
+#
+# v1. sharing and slot sizes, one floating-point register (10) and two general ones. Records: 1 func; 2
+#    writes f1 (5); 3 x2 (7); 4 y3 (9); 5 i4, m5 (4 lanes) (11); 6 m6 (2 lanes) (13); 7 reads x2 (14),
+#    writes f7 (15); 8 reads f1 y3 i4 m5 m6 f7 (16); 9 ret. Intervals r1 5-16, r2 7-14, r3 9-16, r4 11-16,
+#    r5 11-16, r6 13-16, r7 15-16. r1 10; r2: none free, the victim among r1 and r2 (depth 0 both) is
+#    the one ending last, r1, which gives 10 to r2; r3: victim among r2 (14) and r3 (16): r3; r4 general
+#    1; r5 and r6 likewise spilled (r2 still holds 10 to 14); r7 at 15: r2 expired, 10. Slots by first
+#    use: r1 1 (8 bytes), r3 2 (32), r5 3 (32), r6 4 (16); offsets 0, 16 (8 rounded up to 16), 48, 80;
+#    the area 96 bytes with a vector slot.
+{ cat <<'EOF'
+I 99999 9999 111110
+T 1 1 1 1 0
+T 2 1 2 2 0
+T 10 2 1 1 0
+F
+K 1 2
+K 2 4
+K 3 5
+K 4 1
+K 5 7
+K 6 6
+K 7 2
+R 2 1 1
+R 3 2 1
+R 4 3 1
+R 5 4 1
+R 5 5 1
+R 6 6 1
+R 7 2 0
+R 7 7 1
+R 8 1 0
+R 8 3 0
+R 8 4 0
+R 8 5 0
+R 8 6 0
+R 8 7 0
+E 7
+L 1 2 3 4 5 6 7
+J 1
+J 2
+J 3
+J 4
+N
+U 10
+EOF
+} > "$T/ra_v1.in"
+cat > "$T/ra_v1.exp" <<'EOF'
+I T=0
+E S8=4 T=0
+L 1=-1 2=10 3=-2 4=1 5=-3 6=-4 7=10
+J 1: 0
+J 2: 16
+J 3: 48
+J 4: 80
+N A=96 V=1
+U 10: 1
+EOF
+expect "ralloc: x y m share the floating-point registers with f (spill choice across classes); spill slots of 8, 32, 32 and 16 bytes, vector slots at multiples of 16 (2.12.7, L-fh)" "$T/ra" "$T/ra_v1.in" 0 "$T/ra_v1.exp" /dev/null
+
+# v2. arm64-like table (L-ez): floating point 10 caller-saved (rows 1, 3), 11 and 12 callee-saved (rows
+#    2, 1 and 3, 2, as d16.. then d8..). Records: 1 func; 2 writes f1 (5); 3 x2 (7); 4 y3 (9); 5 call
+#    (10, 11); 6 reads f1 x2 y3 (12); 7 ret. All three cross call 5. r1 (f, crossing): row "crossing a
+#    call", 11; r2 (x): row "crossing no call", 10; r3 (y): row "crossing no call", 10 and 11 taken, 12.
+#    Saves: r1 none (f in a callee-saved register); r2 (caller-saved 10) and r3 (vector in callee-saved
+#    12) at call 5, slots 1 (16 bytes, offset 0) and 2 (32, offset 16); ra_sv lists 10 and 12, not 11.
+#    The prologue saves 12 (ra_used) as it saves any callee-saved register given to an interval.
+{ cat <<'EOF'
+I 99999 9999 111110
+T 1 1 1 1 0
+T 10 2 1 3 0
+T 11 2 2 1 1
+T 12 2 3 2 1
+F
+K 1 2
+K 2 4
+K 3 5
+R 2 1 1
+R 3 2 1
+R 4 3 1
+C 5
+R 6 1 0
+R 6 2 0
+R 6 3 0
+E 3
+L 1 2 3
+J 1
+J 2
+N
+W
+S 5
+U 11
+U 12
+EOF
+} > "$T/ra_v2.in"
+cat > "$T/ra_v2.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=11 2=10 3=12
+J 1: 0
+J 2: 16
+N A=48 V=1
+S 5: N=2 T=0 (10 1 2) (12 2 3)
+U 11: 1
+U 12: 1
+EOF
+expect "ralloc: arm64 (L-ez): a vector value crossing a call keeps the row 'crossing no call' and is saved around it even in a callee-saved register; an f in one is not" "$T/ra" "$T/ra_v2.in" 0 "$T/ra_v2.exp" /dev/null
+
+# v3. x86_64-like table: floating point 10 and 11, both caller-saved (rows 1 2, 1 2). Records: 1 func;
+#    2 writes f1 (5); 3 m2 (4 lanes) (7); 4 rcall (8, 9); 5 reads f1 m2 (10); 6 ret. r1 10 (row
+#    "crossing a call"), r2 11; both saved at record 4: slots 1 (8 bytes, offset 0) and 2 (32 bytes,
+#    offset 16), ties of the first call by register number.
+{ cat <<'EOF'
+I 99999 9999 111110
+T 1 1 1 1 0
+T 10 2 1 1 0
+T 11 2 2 2 0
+F
+K 1 2
+K 2 7
+R 2 1 1
+R 3 2 1
+C 4
+R 5 1 0
+R 5 2 0
+E 2
+L 1 2
+J 1
+J 2
+N
+W
+S 4
+EOF
+} > "$T/ra_v3.in"
+cat > "$T/ra_v3.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=10 2=11
+J 1: 0
+J 2: 16
+N A=48 V=1
+S 4: N=2 T=0 (10 1 1) (11 2 2)
+EOF
+expect "ralloc: x86_64 (every xmm caller-saved): f and a 4-lane mask crossing a call both saved, 8- and 32-byte save slots" "$T/ra" "$T/ra_v3.in" 0 "$T/ra_v3.exp" /dev/null
+
+# v4. L-aq with a vector slot: R9 = 3, no floating-point register. Records: 1 func; 2 writes i1 (5); 3
+#    x2 (7); 4 loop 1 i3 i1 i1 i1 (reads 8, ind 9); 5 reads x2 (10); 6 endloop 1 (12, 13); 7 ret. r2
+#    is read in the loop with its write before it: extended to 9..13, so 7-13; with no register of its
+#    class it is spilled, slot 1 (16 bytes, offset 0). The hidden count would be register 4 > R9: a slot
+#    of its own after the others, slot 2 of 8 bytes at offset 16; the area 24. r1, the step register, is
+#    read by the closing sequence (12) and extended over the loop, so r3 takes general register 2.
+{ cat <<'EOF'
+I 3 4 111110
+T 1 1 1 1 0
+T 2 1 2 2 0
+F
+K 1 1
+K 2 4
+K 3 1
+R 2 1 1
+R 3 2 1
+R 4 1 0
+R 4 3 1
+O 4 1 1 3 1
+R 5 2 0
+X 6 1
+E 3
+L 1 2 3
+V 2
+B 1
+J 1
+J 2
+N
+EOF
+} > "$T/ra_v4.in"
+cat > "$T/ra_v4.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=1 2=-1 3=2
+V 2: 7 13
+B 1: -2 0 0
+J 1: 0
+J 2: 16
+N A=24 V=1
+EOF
+expect "ralloc: L-aq's count slot after a 16-byte vector slot (ra_so, ra_sa), a vector class with no register spilled" "$T/ra" "$T/ra_v4.in" 0 "$T/ra_v4.exp" /dev/null
+
+# v5. scalar functions keep 8-byte slots at 8(s-1) and an area of 8 S8 bytes with V = 0 (no change for
+#    the scalar code). One floating-point register: records 1 func; 2 writes f1 (5); 3 f2 (7); 4 f3 (9);
+#    5 reads f1 f2 f3 (10). r1 10; r2 and r3 spilled (ends equal: the highest number), slots 1, 2.
+{ cat <<'EOF'
+I 99999 9999 111110
+T 10 2 1 1 0
+F
+K 1 2
+K 2 2
+K 3 2
+R 2 1 1
+R 3 2 1
+R 4 3 1
+R 5 1 0
+R 5 2 0
+R 5 3 0
+E 3
+L 1 2 3
+J 1
+J 2
+N
+EOF
+} > "$T/ra_v5.in"
+cat > "$T/ra_v5.exp" <<'EOF'
+I T=0
+E S8=2 T=0
+L 1=10 2=-1 3=-2
+J 1: 0
+J 2: 8
+N A=16 V=0
+EOF
+expect "ralloc: scalar slots stay 8 bytes at 8(s-1), the area 8 S8 bytes, V = 0" "$T/ra" "$T/ra_v5.in" 0 "$T/ra_v5.exp" /dev/null
+
 # r. ra_else's precondition (L-bv, API.md): B must be the innermost open block, of kind if, with its
 #    first part current; any other call is a caller bug reported by dg_bug (internal error, status 11,
 #    "ralloc: <message>" on standard error, nothing more on standard output), before anything changes.
@@ -2712,6 +2946,273 @@ L3=$SEA/tests/passes/opt5_bce_dom.lir3
 valid "sea.lir3 of tests/passes/opt5_bce_dom.lir3" lir3 "$L3"
 mut_rep "$L3" '^li i3 8$' 'pdiff i9 p5 p5' > "$T/mut/l3"
 rejects "an LF record (pdiff) in sea.lir3" lir3 "$T/mut/l3" BAD_RECORD "$(lineof "$L3" '^li i3 8$')" "unknown opcode 'pdiff' for format lir3"
+
+# ==============================================================================================
+# 7. lirrw: the vector classes x y m and the set-LF records (DESIGN 2.12.6, 3.6.1, 3.6.4, 3.6.5;
+#    Decision 113; API.md "lirrw.bas"). A harness main program (the 38 arrays of lirrw's contract,
+#    then entries 69400, 69410, optionally 69440 (T10), 69430, 69420, as seavec runs them) reads
+#    lr.in and writes lr.out in its working directory; lr.mode holds "V8 T": V8 the input kind (1
+#    sea.lir1, 2 sea.lir2 or sea.lir3, 3 sea.lir), T = 1 to run T10 before each write. Only V8 = 3
+#    accepts the vector classes and the LF records; with V8 = 1 or 2 (the inputs of seaopt,
+#    sealopt and seavec) each is BAD_RECORD. A rejected file differs from an accepted one in one
+#    record only, so the rejection is that record's (lirrw reports BAD_RECORD without a line).
+# ==============================================================================================
+cat > "$T/h_lr.bas" <<'EOF'
+10 REM lirrw harness: FILES 1 lr.in, 2 lr.out, 3 lr.mode ("V8 T": V8 the input kind, T = 1 runs T10)
+20 FILES "lr.in"; "lr.out"; "lr.mode"
+30 DIM E(299), E$(299,5), N(39,2), N$(39), W$(299), Q(399,9), Q$(399), F(1499,3), F$(1499), Z(8)
+40 DIM J(299,4), J$(299), Y(399), Y$(399,5), D(39), D$(39), B(399), A(399)
+50 DIM I(199999,4), O(799999), R(99999,9), K(19999,4), C(199999,4), S$(199999)
+60 DIM X(131071), T(10000), G$(300), U(40), L(4), H$(100), A$(2)
+70 DIM M(301), P(262143), H(199999), V$(49999), U$(131071), G(199999,3), W(199999,4)
+80 LET P$ = "lrchk"
+90 LINPUT #3, Z$
+100 LET V8 = VAL(SEG$(Z$, 1, 1))
+110 LET Q8 = VAL(SEG$(Z$, 3, 3))
+120 GOSUB 69400
+130 GOSUB 69410
+140 IF Y0 < 0 THEN 180
+150 IF Q8 <> 1 THEN 170
+160 GOSUB 69440
+170 GOSUB 69430
+175 GOTO 130
+180 GOSUB 69420
+190 STOP
+EOF
+cat "$T/h_lr.bas" "$SEA/passes/lib/io.bas" "$SEA/passes/lib/diag.bas" "$SEA/passes/lib/tables.bas" "$SEA/passes/lib/lirrw.bas" > "$T/lr.bas"
+printf '%s\n' errors exits consts entries records | (cd "$T/gd" && "$GENDATA" 89000) >> "$T/lr.bas" || { echo "lib_check: gendata failed for lr" >&2; exit 2; }
+echo "99999 END" >> "$T/lr.bas"
+"$BSK" "$T/lr.bas" -o "$T/lr" || { echo "lib_check: cannot compile lr" >&2; exit 2; }
+mkdir -p "$T/lrd"
+
+# lrrun MODE FILE: lr.in = FILE, lr.mode = MODE; status in $rc, stdout $T/out, stderr $T/err, output $T/lrd/lr.out
+lrrun() {
+    /bin/cp -f "$2" "$T/lrd/lr.in"
+    printf '%s\n' "$1" > "$T/lrd/lr.mode"
+    /bin/rm -f "$T/lrd/lr.out"
+    (cd "$T/lrd" && "$T/lr") < /dev/null > "$T/out" 2> "$T/err"
+    rc=$?
+}
+# lr_ok DESC MODE FILE EXPECTED: accepted (status 0, nothing on stdout or stderr), lr.out = EXPECTED
+lr_ok() {
+    lrrun "$2" "$3"
+    if [ "$rc" -eq 0 ] && [ ! -s "$T/out" ] && [ ! -s "$T/err" ] && cmp -s "$T/lrd/lr.out" "$4"; then
+        ok "lirrw: $1"
+    else
+        bad "lirrw: $1" "status $rc (wanted 0), stderr: $(head -c 200 "$T/err")" "output differs: $(diff "$4" "$T/lrd/lr.out" 2>&1 | head -6 | tr '\n' '|' | cut -c1-300)"
+    fi
+}
+printf 'lrchk: %s\n' "$(errtext BAD_RECORD)" > "$T/lr_bad.err"
+# lr_bad DESC MODE FILE: BAD_RECORD (status 11, the one line of DESIGN 2.6.2 on stderr, nothing on stdout)
+lr_bad() {
+    lrrun "$2" "$3"
+    if [ "$rc" -eq 11 ] && [ ! -s "$T/out" ] && cmp -s "$T/err" "$T/lr_bad.err"; then
+        ok "lirrw: $1"
+    else
+        bad "lirrw: $1" "status $rc (wanted 11), stdout: $(head -c 100 "$T/out")" "stderr: $(head -c 300 "$T/err")"
+    fi
+}
+
+# VEC: a sea.lir (x86_64-linux) holding every one of the 47 set-LF records (3.6.4) and the classes x y
+# m: masks of 2 lanes (ldm2 xcmp mand mor mnot) and of 4 (ldm4 ycmp ...), mov of x y m, rcalls of the
+# vector entries sea_log_x and sea_exp_y (rt.inc ids 39, 46: x -> x, y -> y), a chk and a call with
+# scalar operands. Registers numbered by first appearance, as 3.6.1 requires.
+cat > "$T/lr_vec.lir" <<'EOF'
+#sea 1
+#target x86_64-linux
+#file t.sea
+func g fn 0:2:1 1 f1 0
+ret 0
+endfunc
+func .main main 0:1:1 0 0
+slot s1 64 16
+sa p1 s1
+li i2 0
+ldx x3 p1 i2 8 0
+ldy y4 p1 - 0 0
+ldm2 m5 p1 i2 1 0
+ldm4 m6 p1 - 1 8
+xadd x7 x3 x3
+xsub x8 x7 x3
+xmul x9 x8 x7
+xdiv x10 x9 x8
+xmin x11 x10 x9
+xmax x12 x11 x10
+xneg x13 x12
+xabs x14 x13
+xsqrt x15 x14
+xfloor x16 x15
+xceil x17 x16
+xtrunc x18 x17
+xround x19 x18
+xcmp lt m20 x19 x3
+xsel x21 m20 x19 x3
+lf f22 #3FF0000000000000
+xsplat x23 f22
+xlane f24 x23 1
+mand m25 m20 m5
+mor m26 m25 m20
+mnot m27 m26
+stx x21 p1 i2 8 0
+stm2 m27 p1 - 1 0
+yadd y28 y4 y4
+ysub y29 y28 y4
+ymul y30 y29 y28
+ydiv y31 y30 y29
+ymin y32 y31 y30
+ymax y33 y32 y31
+yneg y34 y33
+yabs y35 y34
+ysqrt y36 y35
+yfloor y37 y36
+yceil y38 y37
+ytrunc y39 y38
+yround y40 y39
+ycmp ge m41 y40 y4
+ysel y42 m41 y40 y4
+ysplat y43 f24
+ylane f44 y43 3
+mand m45 m41 m6
+mor m46 m45 m41
+mnot m47 m46
+sty y42 p1 - 0 0
+stm4 m47 p1 i2 1 4
+mov x48 x21
+mov y49 y42
+mov m50 m27
+mov m51 m47
+rcall sea_log_x - 1 x52 1 x48
+rcall sea_exp_y - 1 y53 1 y49
+pdiff i54 p1 p1
+vfeat i55 avx2
+call g 0 1 f44
+chk i55 CONV_I64 0:3 1 f44
+stf f44 p1 - 0 0
+ret 0
+endfunc
+#end
+EOF
+lr_ok "a sea.lir with the 47 LF records, x y m registers, masks of 2 and 4 lanes, vector rcalls read and written back unchanged (V8 = 3)" "3 0" "$T/lr_vec.lir" "$T/lr_vec.lir"
+
+# the same records are rejected in every input of passes 3b-3d: the whole file, then each LF record
+# alone in an otherwise scalar file, with V8 = 1 (sea.lir1, seaopt) and V8 = 2 (sea.lir2, sea.lir3:
+# sealopt, seavec)
+cat > "$T/lr_base.lir" <<'EOF'
+#sea 1
+#target x86_64-linux
+#file t.sea
+func .main main 0:1:1 0 0
+slot s1 64 16
+sa p1 s1
+li i2 0
+ldf f3 p1 i2 8 0
+stf f3 p1 - 0 8
+ret 0
+endfunc
+#end
+EOF
+for v in 1 2; do
+    lr_ok "the scalar base file is accepted and written unchanged (V8 = $v)" "$v 0" "$T/lr_base.lir" "$T/lr_base.lir"
+    lr_bad "the vector sea.lir is BAD_RECORD as an input of kind V8 = $v" "$v 0" "$T/lr_vec.lir"
+done
+n=0
+grep -E '^(pdiff|ld[xy]|ldm[24]|st[xy]|stm[24]|x[a-z]+|y[a-z]+|m(and|or|not)|vfeat) ' "$T/lr_vec.lir" | awk '!seen[$1]++' > "$T/lr_lf"
+while IFS= read -r rec; do
+    n=$((n + 1))
+    awk -v r="$rec" '$0 == "ldf f3 p1 i2 8 0" { print r; next } { print }' "$T/lr_base.lir" > "$T/mut/lr_lf"
+    for v in 1 2; do
+        lrrun "$v 0" "$T/mut/lr_lf"
+        if [ "$rc" -eq 11 ] && [ ! -s "$T/out" ] && cmp -s "$T/err" "$T/lr_bad.err"; then
+            ok "lirrw: LF record '${rec%% *}' is BAD_RECORD with V8 = $v"
+        else
+            bad "lirrw: LF record '${rec%% *}' is BAD_RECORD with V8 = $v" "status $rc, stderr: $(head -c 200 "$T/err")"
+        fi
+    done
+done < "$T/lr_lf"
+awk '$1 == "rec" && $2 == "LF" { print $4 }' "$SEA/include/passes.txt" | sort > "$T/lr_lfp"
+awk '{ print $1 }' "$T/lr_lf" | sort > "$T/lr_lfv"
+if [ "$n" -eq 47 ] && cmp -s "$T/lr_lfp" "$T/lr_lfv"; then ok "lirrw: the test file holds every LF record of passes.txt (47)"; else bad "lirrw: the test file holds every LF record of passes.txt (47)" "$n found; $(diff "$T/lr_lfp" "$T/lr_lfv" | tr '\n' ' ')"; fi
+# each vector class in an L record (mov; rcall of a vector entry) where V8 = 1 or 2
+for rec in 'mov x4 x4' 'mov y4 y4' 'mov m4 m4' 'rcall sea_log_x - 1 x4 1 x4'; do
+    awk -v r="$rec" '{ print } $0 == "ldf f3 p1 i2 8 0" { print r }' "$T/lr_base.lir" > "$T/mut/lr_cl"
+    # (no control for m: a mov of a mask whose lane count nothing fixed is BAD_RECORD with V8 = 3 too)
+    [ "$rec" = "mov m4 m4" ] || lr_ok "control: '$rec' in the scalar file is accepted with V8 = 3" "3 0" "$T/mut/lr_cl" "$T/mut/lr_cl"
+    lr_bad "the vector class in '$rec' is BAD_RECORD with V8 = 1" "1 0" "$T/mut/lr_cl"
+    lr_bad "the vector class in '$rec' is BAD_RECORD with V8 = 2" "2 0" "$T/mut/lr_cl"
+done
+
+# V8 = 3 validation (3.6.1, 3.6.3, 3.6.4): mutated copies of VEC
+lr_mut() { # DESC SED-EXPRESSION: lr_bad on VEC edited by sed
+    sed "$2" "$T/lr_vec.lir" > "$T/mut/lr_m"
+    if cmp -s "$T/mut/lr_m" "$T/lr_vec.lir"; then bad "lirrw: $1" "the edit changed nothing"; return; fi
+    lr_bad "$1" "3 0" "$T/mut/lr_m"
+}
+lr_mut "an operand of the wrong vector class (xadd with a y operand)" 's/^xadd x7 x3 x3$/xadd x7 x3 y4/'
+lr_mut "an x register where a y register is required (ysqrt of an x)" 's/^ysqrt y36 y35$/ysqrt y36 x3/'
+lr_mut "xsel with a 4-lane mask (a mask is used only with its lane count)" 's/^xsel x21 m20 x19 x3$/xsel x21 m6 x19 x3/'
+lr_mut "ysel with a 2-lane mask" 's/^ysel y42 m41 y40 y4$/ysel y42 m20 y40 y4/'
+lr_mut "stm4 of a 2-lane mask" 's/^stm4 m47 p1 i2 1 4$/stm4 m27 p1 i2 1 4/'
+lr_mut "mand of a 2-lane and a 4-lane mask" 's/^mand m25 m20 m5$/mand m25 m20 m6/'
+lr_mut "a 2-lane mask written again with 4 lanes (mov)" '/^mov m51 m47$/a\
+mov m50 m51'
+lr_mut "a 2-lane mask rewritten by ycmp" '/^ycmp ge m41 y40 y4$/a\
+ycmp lt m5 y40 y4'
+lr_mut "a mask read before any instruction gives it a lane count (stm2 before its ldm2)" '/^ldm2 m5 p1 i2 1 0$/i\
+stm2 m5 p1 - 1 0'
+lr_mut "mnot whose operand has no lane count yet" '/^ldm2 m5 p1 i2 1 0$/i\
+mnot m5 m5'
+lr_mut "a vector register as a parameter of a func (Sea functions take i f p)" 's/^func g fn 0:2:1 1 f1 0$/func g fn 0:2:1 1 x1 0/'
+lr_mut "a call with a vector argument" 's/^call g 0 1 f44$/call g 0 1 x48/'
+lr_mut "a chk with a vector argument" 's/^chk i55 CONV_I64 0:3 1 f44$/chk i55 CONV_I64 0:3 1 y49/'
+lr_mut "a mov between an x and a y register" 's/^mov y49 y42$/mov y49 x21/'
+lr_mut "vfeat on arm64-macos (x86_64-linux only, 3.6.4)" 's/^#target x86_64-linux$/#target arm64-macos/'
+sed -e 's/^#target x86_64-linux$/#target arm64-macos/' -e 's/^vfeat i55 avx2$/li i55 1/' "$T/lr_vec.lir" > "$T/mut/lr_a64"
+lr_ok "control: the same file on arm64-macos without vfeat is accepted (the 4-lane forms are pass 4's to refuse on arm64, 2.12.7)" "3 0" "$T/mut/lr_a64" "$T/mut/lr_a64"
+
+# T10 (5.8) on vector code (V8 = 3, T = 1): a dead ldx, xmul, xcmp/xsel pair and vfeat are deleted (pure
+# instructions and loads whose destination nothing reads), stores and what they read stay; the
+# registers are renumbered by first appearance keeping their classes (x3 x4 m8 become x2 x3 m4)
+cat > "$T/lr_t10.lir" <<'EOF'
+#sea 1
+#target x86_64-linux
+#file t.sea
+func .main main 0:1:1 0 0
+slot s1 32 16
+sa p1 s1
+ldx x2 p1 - 0 0
+ldx x3 p1 - 0 16
+xadd x4 x2 x2
+xmul x5 x4 x4
+xcmp eq m6 x4 x2
+xsel x7 m6 x4 x2
+ldm2 m8 p1 - 1 0
+stx x4 p1 - 0 0
+stm2 m8 p1 - 1 2
+vfeat i9 avx2
+ret 0
+endfunc
+#end
+EOF
+cat > "$T/lr_t10.exp" <<'EOF'
+#sea 1
+#target x86_64-linux
+#file t.sea
+func .main main 0:1:1 0 0
+slot s1 32 16
+sa p1 s1
+ldx x2 p1 - 0 0
+xadd x3 x2 x2
+ldm2 m4 p1 - 1 0
+stx x3 p1 - 0 0
+stm2 m4 p1 - 1 2
+ret 0
+endfunc
+#end
+EOF
+lr_ok "T10 deletes dead vector loads and instructions, keeps vector stores, renumbers x and m registers" "3 1" "$T/lr_t10.lir" "$T/lr_t10.exp"
+lrrun "4 0" "$T/lr_base.lir"
+printf 'lrchk: V8 must be 1 (input sea.lir1), 2 (sea.lir2, sea.lir3) or 3 (sea.lir) before entry 69400\n' > "$T/lr_v8.err"
+if [ "$rc" -eq 11 ] && cmp -s "$T/err" "$T/lr_v8.err"; then ok "lirrw: V8 = 4 is a pass bug (dg_bug, status 11)"; else bad "lirrw: V8 = 4 is a pass bug (dg_bug, status 11)" "status $rc, stderr: $(head -c 200 "$T/err")"; fi
 
 (echo foo; cat "$T/ex/lirx") > "$T/v.in"
 printf 'seaval: the first input line must name the format: ast, res, hir1, hir, hirf, hirl, lir1, lir2, lir3 or lir\n' > "$T/fmt.err"

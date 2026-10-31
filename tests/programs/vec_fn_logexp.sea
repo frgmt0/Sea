@@ -1,0 +1,60 @@
+// vec_fn_logexp -- log and exp on 13-entry cycles of inputs that hit the rare paths in some lanes only: log of
+// subnormals (5e-324, 1e-323, two more), of the smallest normal, of 0, -1, NaN, +inf and of 2^23; exp of 600.27,
+// of 709.78 (a result near the overflow threshold), of -745.13 (a subnormal result), of -708.4, NaN, +-inf and 5e-324
+// among common arguments. Every input and its result are a row of tests/math/log.vec and exp.vec (the reference
+// bits). Loops meant to vectorize (T13): the F1 nests storing l (`rcall sea_log`, no site: the vector entry of
+// DESIGN.md 2.12.8), e (`sea_exp`) and u = log(xl) - exp(xe) (two calls and an fsub in one body), unit accesses
+// of the inputs, and the F1 nests of the ok masks (fcmp eq, fcmp ne, iand, ior, stb) that compare each result with
+// its expected value (conditions 1-3). Lengths 0, 1, 7, 8, 9, 15, 16, 17 and 1000.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pb(tag: str, m: bool[]) {
+    printf("%s %d:", tag, len(m))
+    for b in m {
+        printf(" %d", b)
+    }
+    printf("\n")
+}
+let txl: f64[] = [1.0, 5e-324, 2.0, 1e-323, 0.5, 2.225073858507201e-308, -1.0, 8388608.0, nan, 2.716154612436e-312, 0.0, inf, 7.4963640972774e-310]
+let txe: f64[] = [0.0, 600.2654583649127, 1.0, 709.7827128933385, -745.1332191018956, 0.5, -708.3964185322212, nan, -1.0, -inf, 2.0, 5e-324, inf]
+let trl: f64[] = [0.0, -744.4400719213812, 0.6931471805599453, -743.7469247408213, -0.6931471805599453, -708.3964185322641, nan, 15.942385152878742, nan, -717.4073318795434, -inf, inf, -711.7869607121888]
+let tre: f64[] = [1.0, 4.920126228925561e+260, 2.718281828459045, 1.7976931347805236e+308, 5e-324, 1.6487212707001282, 2.225073858602629e-308, nan, 0.36787944117144233, 0.0, 7.38905609893065, 1.0, inf]
+fn run(n: i64, off: i64, txl: f64[], txe: f64[], trl: f64[], tre: f64[]) {
+    var xl = zeros(n)
+    var xe = zeros(n)
+    var rl = zeros(n)
+    var re = zeros(n)
+    for i in 0..n {
+        xl[i] = txl[(i + off) % 13]
+        xe[i] = txe[(i + off) % 13]
+        rl[i] = trl[(i + off) % 13]
+        re[i] = tre[(i + off) % 13]
+    }
+    let l = log(xl)
+    let e = exp(xe)
+    let u = log(xl) - exp(xe)
+    let ru = rl - re
+    let okl = (l == rl) | ((l != l) & (rl != rl))
+    let oke = (e == re) | ((e != e) & (re != re))
+    let oku = (u == ru) | ((u != u) & (ru != ru))
+    printf("n=%d off=%d match: %d %d %d\n", n, off, nnz(okl), nnz(oke), nnz(oku))
+    if n <= 17 {
+        pv("log", l)
+        pv("exp", e)
+        pv("diff", u)
+    }
+}
+run(0, 0, txl, txe, trl, tre)
+run(1, 0, txl, txe, trl, tre)
+run(7, 3, txl, txe, trl, tre)
+run(8, 5, txl, txe, trl, tre)
+run(9, 0, txl, txe, trl, tre)
+run(15, 11, txl, txe, trl, tre)
+run(16, 2, txl, txe, trl, tre)
+run(17, 4, txl, txe, trl, tre)
+run(1000, 7, txl, txe, trl, tre)

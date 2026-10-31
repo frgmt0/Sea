@@ -1,0 +1,43 @@
+// vec_trip_mask -- trip counts 0, 1, 7, 8, 9, 15, 16, 17 and 1000 of comparison masks stored as bool arrays,
+// combined, counted with nnz and used by where. Loops meant to vectorize (T13): the F1 nests that store m (fcmp
+// gt, stb at J: conditions 2 and 3, a mask register read only by stb), k (fcmp lt, ldb of m, ior, stb), q (bnot,
+// iand, fcmp ne, stb) and r (a fused `where` over the mask m: ldb, fmul, fadd, fsel, stf); the F3 loops of nnz and
+// sum stay scalar (only the sum8 group is vectorized, condition 5). If F2 fuses the statements into one group
+// nest, that nest is the loop (the same conditions hold: its stored locals are written to memory).
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pb(tag: str, m: bool[]) {
+    printf("%s %d:", tag, len(m))
+    for b in m {
+        printf(" %d", b)
+    }
+    printf("\n")
+}
+fn run(n: i64) {
+    var x = zeros(n)
+    var y = zeros(n)
+    for i in 0..n {
+        x[i] = f64(i % 5) - 2.0
+        y[i] = f64(i % 3) - 1.0
+    }
+    let m = x > y
+    let k = (x < 0.0) | m
+    let q = (!k) & (x != y)
+    let r = where(m, x * 2.0, y + 1.0)
+    printf("n=%d nnz(m)=%d nnz(k)=%d nnz(q)=%d sum(r)=%.17g\n", n, nnz(m), nnz(k), nnz(q), sum(r))
+    if n <= 17 {
+        pb("m", m)
+        pb("k", k)
+        pb("q", q)
+        pv("r", r)
+    }
+}
+let trips: i64[] = [0, 1, 7, 8, 9, 15, 16, 17, 1000]
+for n in trips {
+    run(n)
+}

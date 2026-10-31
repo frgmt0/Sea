@@ -1,0 +1,67 @@
+// vec_fn_powhypot -- pow and hypot on 13-entry cycles of argument pairs hitting the rare paths in some lanes only:
+// pow with a NaN base, a negative base, a huge result (2^750), a result near the underflow threshold (base 3.3e254,
+// exponent -117), tiny and huge bases with tiny exponents; hypot with the largest finite double, the smallest
+// subnormals, an infinity (hypot(inf, 1) and hypot(1, inf) are +inf), NaN, signed zeros and a result overflowing to
+// +inf. Every pair and result are a row of tests/math/pow.vec and hypot.vec (the reference bits). Loops meant to
+// vectorize (T13): the F1 nests storing p (`rcall sea_pow`, two f operands, no site: the vector entry of DESIGN.md
+// 2.12.8), h (`sea_hypot`) and w = pow(px, py) + hypot(hx, hy) * 0.5 (two calls, fmul by a splat, fadd), unit accesses,
+// and the ok-mask nests (fcmp, iand, ior, stb) that compare with the expected values (conditions 1-3). Lengths 0,
+// 1, 7, 8, 9, 15, 16, 17 and 1000.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pb(tag: str, m: bool[]) {
+    printf("%s %d:", tag, len(m))
+    for b in m {
+        printf(" %d", b)
+    }
+    printf("\n")
+}
+let tpx: f64[] = [0.5, 3.1201654943073267, 2.0, nan, -1.0, 5.403085326880971, 1.297865668250846e-170, 9.194100885860161, 2.659693413977278e-110, 1.0592929883769284, 0.8664262670881079, 3.288609541998783e+254, 2.2756531599858986e+266]
+let tpy: f64[] = [0.5, 45.13002645614674, 750.0, 1.0, 1.0, 77.95859009264677, -2.137166673756395e-06, -4.720354094431272, 1.3082093332795885e-06, 1653.9997050768548, -1409.7866350292172, -117.23367040008497, 0.010002672203310328]
+let tpr: f64[] = [0.7071067811865476, 2.005623930528269e+22, 5.922386521532856e+225, nan, -1.0, 1.3053404740331819e+57, 1.0008363637338844, 2.8307081570255493e-05, 0.9996699852074141, 2.3802254955699562e+41, 6.0973876138783475e+87, 0.0, 461.6180914117797]
+let thx: f64[] = [9.0, 1.7976931348623157e+308, 4.910085911844213e+150, 5e-324, 1.5e-323, nan, inf, 1.0, 0.15232801172235647, 5e-324, 1.7976931348623157e+308, 1.0, -0.0]
+let thy: f64[] = [40.0, 1.0, 6.546781215792284e+150, 5e-324, 2e-323, 1.0, 1.0, inf, 41636.90477415883, 1.0, 1.7976931348623157e+308, nan, -0.0]
+let thr: f64[] = [41.0, 1.7976931348623157e+308, 8.183476519740355e+150, 5e-324, 2.5e-323, nan, inf, inf, 41636.90477443748, 1.0, inf, nan, 0.0]
+fn run(n: i64, off: i64, tpx: f64[], tpy: f64[], tpr: f64[], thx: f64[], thy: f64[], thr: f64[]) {
+    var px = zeros(n)
+    var py = zeros(n)
+    var hx = zeros(n)
+    var hy = zeros(n)
+    var rp = zeros(n)
+    var rh = zeros(n)
+    for i in 0..n {
+        px[i] = tpx[(i + off) % 13]
+        py[i] = tpy[(i + off) % 13]
+        hx[i] = thx[(i + off) % 13]
+        hy[i] = thy[(i + off) % 13]
+        rp[i] = tpr[(i + off) % 13]
+        rh[i] = thr[(i + off) % 13]
+    }
+    let p = pow(px, py)
+    let h = hypot(hx, hy)
+    let w = pow(px, py) + hypot(hx, hy) * 0.5
+    let rw = rp + rh * 0.5
+    let okp = (p == rp) | ((p != p) & (rp != rp))
+    let okh = (h == rh) | ((h != h) & (rh != rh))
+    let okw = (w == rw) | ((w != w) & (rw != rw))
+    printf("n=%d off=%d match: %d %d %d\n", n, off, nnz(okp), nnz(okh), nnz(okw))
+    if n <= 17 {
+        pv("pow", p)
+        pv("hypot", h)
+        pv("w", w)
+    }
+}
+run(0, 0, tpx, tpy, tpr, thx, thy, thr)
+run(1, 0, tpx, tpy, tpr, thx, thy, thr)
+run(7, 3, tpx, tpy, tpr, thx, thy, thr)
+run(8, 5, tpx, tpy, tpr, thx, thy, thr)
+run(9, 0, tpx, tpy, tpr, thx, thy, thr)
+run(15, 11, tpx, tpy, tpr, thx, thy, thr)
+run(16, 2, tpx, tpy, tpr, thx, thy, thr)
+run(17, 4, tpx, tpy, tpr, thx, thy, thr)
+run(1000, 7, tpx, tpy, tpr, thx, thy, thr)

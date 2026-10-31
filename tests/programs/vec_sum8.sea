@@ -1,0 +1,42 @@
+// vec_sum8 -- `sum` in the pinned 8-lane order (LANGUAGE.md 10.5: a[i % 8] += x[i] from -0.0, then
+// ((a0 + a1) + (a2 + a3)) + ((a4 + a5) + (a6 + a7))), bit-identical on every target and vector width, at lengths
+// 0, 1, 7, 8, 9, 15, 16, 17 and 1000, and for the 9- and 17-element vectors below, whose sum8 result differs from the
+// left-to-right result (printed beside it) because 1e16 absorbs the small terms in a different order. Loops meant to
+// vectorize (T13): the F3 loops of sum(x), sum(x * 1.0 + y) and sum(x * x), whose bodies are the sum8 group
+// (iand W J 7, ldf G A W, fadd G G Y, stf G A W on the 64-byte home, start 0, condition 5) after a fused tree of
+// unit loads, fmul and fadd (conditions 2 and 3): the vector loop keeps lanes k = i mod 8 in registers, the tail
+// of n mod 8 elements runs scalar and continues the same lanes. The seq loops (a carried scalar) stay scalar.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn seq(v: f64[]) -> f64 {
+    var s = 0.0
+    for x in v {
+        s = s + x
+    }
+    return s
+}
+fn run(x: f64[]) {
+    let y = x * 0.5
+    printf("n=%d sum=%.17g seq=%.17g fused=%.17g sq=%.17g\n", len(x), sum(x), seq(x), sum(x * 1.0 + y), sum(x * x))
+}
+let x9: f64[] = [1e+16, 1.0, -1e+16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+let x17: f64[] = [1e+16, 3.0, 1.0, -1e+16, 2.0, 0.5, 0.25, 7.0, 1.0, 1.0, -1.0, 1e+16, 0.125, 5.0, 0.001, 3.0, -1e+16]
+run(x9)
+run(x17)
+run(x17[0..16])
+run(x17[0..15])
+run(x17[0..8])
+run(x17[0..7])
+run(x17[0..1])
+run(x17[0..0])
+run([-0.0])
+var h = zeros(1000)
+for i in 0..1000 {
+    h[i] = 1.0 / f64(i + 1)
+}
+run(h)

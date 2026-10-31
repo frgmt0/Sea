@@ -1,0 +1,46 @@
+// vec_inplace -- updates of an array from its own elements (F1 (5), LANGUAGE.md 5.5): `x = x * 1.5 + 0.25`,
+// `x = where(x > 10.0, x * 0.5, x)`, `x = sqrt(x * x + 1.0)`, `a = a + b`, `a = min(a, b)`, a bool array updated
+// with itself (`m = m & (x > 1.0)`) and a fixed-size f64[9] written in its home, at lengths 0, 1, 7, 8, 9, 15, 16,
+// 17 and 1000. Loops meant to vectorize (T13): each update is an F1 nest storing into the array it loads at the same
+// element: ldf/stf (ldb/stb) with the same base D and index J, which condition 4 allows (identical bases: the same
+// element, always independent); the vector form loads all lanes before storing, so a lane never reads an element
+// another lane of the same iteration wrote. Other nests: the fill loops (i64 arithmetic, scalar) and the sum8 F3 loops.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn run(n: i64) {
+    var x = zeros(n)
+    var a = zeros(n)
+    var b = zeros(n)
+    var m = filled(true, n)
+    for i in 0..n {
+        x[i] = f64(i % 9) * 1.75 - 3.0
+        a[i] = f64(i % 4) - 1.5
+        b[i] = 1.0 / (f64(i % 5) + 1.0)
+    }
+    x = x * 1.5 + 0.25
+    x = where(x > 10.0, x * 0.5, x)
+    x = sqrt(x * x + 1.0)
+    a = a + b
+    a = min(a, b * 4.0)
+    m = m & (x > 1.5)
+    x = x - a * 0.5
+    printf("n=%d sum(x)=%.17g sum(a)=%.17g nnz(m)=%d\n", n, sum(x), sum(a), nnz(m))
+    if n <= 17 {
+        pv("x", x)
+        pv("a", a)
+    }
+}
+let trips: i64[] = [0, 1, 7, 8, 9, 15, 16, 17, 1000]
+for n in trips {
+    run(n)
+}
+var q: f64[9] = [1.0, -2.0, 0.5, 4.0, -0.0, 8.0, 0.25, 3.0, -6.0]
+for k in 0..3 {
+    q = q + q * 0.5
+}
+pv("q", q)

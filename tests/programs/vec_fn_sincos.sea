@@ -1,0 +1,59 @@
+// vec_fn_sincos -- sin and cos on a 13-entry cycle of inputs that hit the rare paths in some lanes only: |x| >= 2^23
+// (8388608, 14461176.67, 5.68e30, 1.88e31: the Payne-Hanek reduction), a subnormal, NaN, +-inf, +-0 among common
+// arguments; the 13-cycle rotates the rare lanes over all lane positions as the offset and the length vary. Every
+// input and its result are a row of tests/math/sin.vec and cos.vec (the reference bits). Loops meant to vectorize
+// (T13): the F1 nests storing s (`rcall sea_sin`, no site: the vector entry of DESIGN.md 2.12.8), c (`sea_cos`) and
+// t = sin(x) * 2.0 - cos(x) (both calls, fmul, fsub in one body), unit accesses of x and e, and the three F1 nests
+// of ok (fcmp eq, fcmp ne, iand, ior, stb) that compare each result with its expected value (conditions 1-3).
+// Lengths 0, 1, 7, 8, 9, 15, 16, 17 and 1000.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pb(tag: str, m: bool[]) {
+    printf("%s %d:", tag, len(m))
+    for b in m {
+        printf(" %d", b)
+    }
+    printf("\n")
+}
+let tx: f64[] = [0.5, 14461176.670278378, 2.0, 5e-324, 5.68398888336151e+30, -2.0, nan, 1.0, 8388608.0, -0.0, 1.8812297788759319e+31, inf, 0.0]
+let ts: f64[] = [0.479425538604203, -1.0, 0.9092974268256817, 5e-324, 1.0, -0.9092974268256817, nan, 0.8414709848078965, 0.4322482022567978, -0.0, 0.5071809993768395, nan, 0.0]
+let tc: f64[] = [0.8775825618903728, -1.8626451509294607e-09, -0.4161468365471424, 1.0, 1.2763563845088003e-16, -0.4161468365471424, nan, 0.5403023058681398, -0.9017546737587593, 1.0, 0.8618395638813006, nan, 1.0]
+let tt: f64[] = [0.08126851531803325, -1.9999999981373549, 2.234741690198506, -1.0, 1.9999999999999998, -1.402448017104221, nan, 1.1426396637476532, 1.7662510782723548, -1.0, 0.15252243487237838, nan, -1.0]
+fn run(n: i64, off: i64, tx: f64[], ts: f64[], tc: f64[], tt: f64[]) {
+    var x = zeros(n)
+    var es = zeros(n)
+    var ec = zeros(n)
+    var et = zeros(n)
+    for i in 0..n {
+        x[i] = tx[(i + off) % 13]
+        es[i] = ts[(i + off) % 13]
+        ec[i] = tc[(i + off) % 13]
+        et[i] = tt[(i + off) % 13]
+    }
+    let s = sin(x)
+    let c = cos(x)
+    let t = sin(x) * 2.0 - cos(x)
+    let oks = (s == es) | ((s != s) & (es != es))
+    let okc = (c == ec) | ((c != c) & (ec != ec))
+    let okt = (t == et) | ((t != t) & (et != et))
+    printf("n=%d off=%d match: %d %d %d\n", n, off, nnz(oks), nnz(okc), nnz(okt))
+    if n <= 17 {
+        pv("sin", s)
+        pv("cos", c)
+        pv("t", t)
+    }
+}
+run(0, 0, tx, ts, tc, tt)
+run(1, 0, tx, ts, tc, tt)
+run(7, 3, tx, ts, tc, tt)
+run(8, 5, tx, ts, tc, tt)
+run(9, 0, tx, ts, tc, tt)
+run(15, 11, tx, ts, tc, tt)
+run(16, 2, tx, ts, tc, tt)
+run(17, 4, tx, ts, tc, tt)
+run(1000, 7, tx, ts, tc, tt)

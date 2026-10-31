@@ -1,0 +1,39 @@
+// vec_where_boolarr -- where() whose masks are bool arrays (loaded bytes), alone, negated, combined with `&` and
+// `|`, combined with a comparison, and nested, at lengths 0, 1, 7, 8, 9, 15, 16, 17, then a 1000-element case with a
+// mask computed by a scalar loop. Loops meant to vectorize (T13): the F1 nests, one per result, whose bodies are
+// ldb (a mask register, condition 2) feeding fsel, iand/ior/bnot of mask registers and fcmp, fadd/fsub/fmul arms,
+// with unit accesses of b, c, x, y (conditions 1-3); the nested where is two fsel in one body.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let lens: i64[] = [0, 1, 7, 8, 9, 15, 16, 17]
+fn run(b: bool[], c: bool[], x: f64[], y: f64[]) {
+    printf("n=%d\n", len(x))
+    pv("b", where(b, x, y))
+    pv("nb", where(!b, x * 2.0, y - 1.0))
+    pv("bc", where(b & c, x + y, x - y))
+    pv("b|c", where(b | c, x * y, 0.5))
+    pv("bx", where(b & (x > y), x, y))
+    pv("nest", where(b, where(c, x, y), where(c, -x, -y)))
+}
+let b: bool[] = [true, false, true, true, false, false, true, false, true, true, false, true, false, false, true, false, true]
+let c: bool[] = [false, false, true, false, true, true, true, false, false, true, true, false, true, false, false, true, true]
+let x: f64[] = [1.5, -2.0, 0.0, 3.25, nan, -0.0, 8.0, 10000000000.0, -7.5, 0.125, inf, 2.0, -1.0, 6.0, 0.5, -0.5, 9.0]
+let y: f64[] = [-1.5, 2.0, -0.0, 3.25, 1.0, 0.0, nan, -10000000000.0, 7.5, 0.25, -inf, 2.0, 1.0, -6.0, 0.5, 0.5, -9.0]
+for n in lens {
+    run(b[0..n], c[0..n], x[0..n], y[0..n])
+}
+var u = zeros(1000)
+var v = zeros(1000)
+var sel = filled(false, 1000)
+for i in 0..1000 {
+    u[i] = f64(i) * 0.5
+    v[i] = 100.0 - f64(i) * 0.25
+    sel[i] = i % 3 == 0
+}
+let r = where(sel, u, v)
+printf("1000: nnz=%d sum=%.17g r[0]=%.17g r[1]=%.17g r[999]=%.17g\n", nnz(sel), sum(r), r[0], r[1], r[999])

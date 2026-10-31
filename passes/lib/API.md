@@ -162,7 +162,8 @@ Internal SUBs (not part of the API): `tb_fail`, `tb_dec`, `tb_fspec`, `tb_type`.
 
 Not a module of SUBs: the **shared main-program part** of the LIR passes (DESIGN §2.6.3, §2.7,
 lead decisions L-bd, L-bi, L-bp; from sub-phase 5c-2, in the build lists of `seaopt` and
-`sealopt`). It holds pass 3b's LIR reader, validator and writer (DESIGN §3.6.5: the whole
+`sealopt`, from 7b also of `seavec`; the vector classes and the set-LF records from 7e, Decision 113:
+section "Vector classes and set LF" below). It holds pass 3b's LIR reader, validator and writer (DESIGN §3.6.5: the whole
 validation list, the capacity limits, the header records, the renumbering writer) and T10 of
 DESIGN §5.8 (clean-up and renumbering), moved out of `seaopt` unchanged, so that both passes
 read, check, clean and write LIR identically. Its lines are main-program lines, concatenated by
@@ -190,10 +191,10 @@ the string arrays `A$ D$ E$ F$ G$ H$ J$ N$ Q$ S$ U$ V$ W$ Y$` (14).
 | array | use |
 |---|---|
 | `E E$` `D D$` `J J$` `Y Y$` | the tables of the `errors`, `exits`, `consts` and `entries` blocks (`tb_*`; counts `E0 N5 N6 N7`) |
-| `Q Q$ F F$ N N$ W$ Z` | `passes.txt` (`tb_records`); the part adds `Q(row,6)` the internal opcode code (`li` 1 … `release` 72, the table at line 76115), `Q(row,7)` the category (1 pure, 2 `iaddc isubc imulc inegc`, 3 load, 4 store), `Q(row,8)` the memory kind of a load or store (1 i64, 2 byte, 3 f64, 4 address), `F(field,0)` the field's role (0 site, no operand; 1 register read; 2 register written; 3 an `i`/`f` immediate, a row of `C`; 4 an `off` field, a row of `G`; 5 a `u` count; 6 any other one-operand field; 7 a `pos`, two operands) |
-| `A B` | the rows of set L (`A(1..A8)`) and the special code of each record row (`B`) |
+| `Q Q$ F F$ N N$ W$ Z` | `passes.txt` (`tb_records`); the part adds `Q(row,6)` the internal opcode code (`li` 1 … `release` 72, the table at line 76115); for the rows of set LF 73 … 119, the table at line 76136, below), `Q(row,7)` the category (1 pure, 2 `iaddc isubc imulc inegc`, 3 load, 4 store), `Q(row,8)` the memory kind of a load or store (1 i64, 2 byte, 3 f64, 4 address; `ldx ldy stx sty` 3, `ldm2 ldm4 stm2 stm4` 2), `F(field,0)` the field's role (0 site, no operand; 1 register read; 2 register written; 3 an `i`/`f` immediate, a row of `C`; 4 an `off` field, a row of `G`; 5 a `u` count; 6 any other one-operand field; 7 a `pos`, two operands) |
+| `A B` | the rows of set L (`A(1..A8)`; the rows of set LF are not among them: `Q(row,1)` = 6) and the special code of each record row (`B`; 0 for every LF row) |
 | `I O M` | instruction n (1..`A0`, row 0 the func record): `I(n,1)` its row of `Q` (0: deleted until the next compaction), `I(n,2)` the index in `O` of its first operand, `I(n,3)` the operand count, `I(n,4)` the site (F·1E9+L, 0 none); `I(n,0)` the pass's between entries, but entries 69440 (T10) and 69460 (dead records) overwrite it for every record 1..`A0` (-1 dead, else 0). `O(1..A1)` the operands in record order; the func record's fields in `M(1..A5)` |
-| `R` | register r (1..`M7`): `R(r,1)` the class (1 `i`, 2 `f`, 3 `p`), owned by the reader; `R(r,2)` T10's read count (entry 69440 resets it to 0 for registers 1..`M7` and recounts it, under the numbers before its renumbering, so after the entry it holds no meaning for the pass, which never keeps anything there); the reader zeroes columns 2..7 of a new register; every other column the pass's (entry 69440 and 69465 renumber the registers and move only column 1, so a pass column is stale after either) |
+| `R` | register r (1..`M7`): `R(r,1)` the class (1 `i`, 2 `f`, 3 `p`, 4 `x`, 5 `y`, 6 `m`), owned by the reader (set by a pass for the registers it creates; the writer writes the letter of any class); `R(r,2)` T10's read count (entry 69440 resets it to 0 for registers 1..`M7` and recounts it, under the numbers before its renumbering, so after the entry it holds no meaning for the pass, which never keeps anything there; with `V8` = 3 the reader keeps an `m` register's lane count, 2 or 4, there until that entry); the reader zeroes columns 2..7 of a new register; every other column the pass's (entry 69440 and 69465 renumber the registers and move only column 1, so a pass column is stale after either) |
 | `K` | block b (1..`B2`): `K(b,1)` kind (1 `loop`, 2 `do`, 3 `if`, 4 `ifz`), `K(b,2)` opening, `K(b,3)` `else` (0 none), `K(b,4)` closing instruction; `K(10000+s,1..2)` slot s (1..`S6`): size, alignment |
 | `C G` | `C(r,1..4)` the limbs of an `i`/`f` immediate (1..`A2`); `G(r,0..3)` those of an `off` field (1..`A6`) |
 | `S$ P` | the distinct strings of the compilation (1..`A3`), interned through the hash table `P` |
@@ -227,10 +228,12 @@ State carried between the pass and the part:
 * set by the pass before entry 69400: `P$` (its name, in every message) and `V8`, the kind of its
   input (L-bu): 1 for `sea.lir1` (`seaopt`), which keeps the two `sea.lir1`-only label rules of
   DESIGN §3.6.2 (data labels numbered by first reference; no defined label unused), 2 for
-  `sea.lir2` or `sea.lir` (`sealopt`), which drops them (T10 may have deleted an `la`, and pass 3b
-  keeps labels no instruction refers to any more); a label used but not defined is an error for
-  both. A data label number above `Q9` (`SEA_LIM_LIR_LABELS`), defined or referenced, is the
-  compile error `TOO_LARGE` (`labels`) only when `V8` = 1; when `V8` = 2 it is `BAD_RECORD` (no
+  `sea.lir2` or `sea.lir3` (`sealopt`, `seavec`), which drops them (T10 may have deleted an `la`, and pass 3b
+  keeps labels no instruction refers to any more), 3 for `sea.lir` (no pass reads it through `lirrw`
+  so far; `tests/lib_check.sh` does), which drops them too and alone accepts the vector classes `x y m`
+  and the set-LF records (DESIGN §2.12.6, Decision 113: below); a label used but not defined is an error for
+  all three. A data label number above `Q9` (`SEA_LIM_LIR_LABELS`), defined or referenced, is the
+  compile error `TOO_LARGE` (`labels`) only when `V8` = 1; when `V8` = 2 or 3 it is `BAD_RECORD` (no
   `sea.lir2` or `sea.lir` can hold one, since pass 3b keeps every label; DESIGN §3.6.2, L-bv). Any
   other value at entry 69400 is a `dg_bug`;
 * set by entry 69400, read-only for the pass: the limits `I9 O9 R9 B9 S9 M9 Q9 S8`
@@ -287,6 +290,75 @@ The part's operand visitor (lines 77160-77290) has only T10's modes and the renu
 (9 count a read, 10 uncount it, 11 renumber, 12 count an instruction's reads of its own
 destination, which T10 does not count, L-bn); a pass's visitor, with its own modes, stays in the
 pass (`seaopt`: line 7175).
+
+### Vector classes and set LF (sub-phase 7e; DESIGN §2.12.6, §3.6.1, §3.6.4, §3.6.5; Decision 113)
+
+**Where they are accepted.** The register classes `x` (`v2f64`), `y` (`v4f64`) and `m` (a lane
+mask) and the records of set LF (`pdiff`, `ldx ldy ldm2 ldm4`, `stx sty stm2 stm4`, the 17 `x…`
+and 17 `y…` instructions, `mand mor mnot`, `vfeat`: 47 records) are accepted by the reader only
+with `V8` = 3 (`sea.lir`). With `V8` = 1 or 2 — the inputs `sea.lir1`, `sea.lir2`, `sea.lir3` of
+`seaopt`, `sealopt` and `seavec` — an LF opcode is `BAD_RECORD` (the opcode is not among the rows
+`A(1..A8)` of set L; the message is unchanged, "unknown opcode ... for format lir1") and so is a
+register written with the letter `x`, `y` or `m` in any field (line 72882), also in an L record
+such as `mov x4 x4` or `rcall sea_log_x - 1 x4 1 x4`. These rejections leave every `seaopt`,
+`sealopt` and `seavec` output on a valid input byte for byte as before.
+
+**The text forms accepted** (`V8` = 3), each record exactly as `passes.txt` gives its fields (§3.6.4's
+table; `idx` may be `-`):
+
+    pdiff i p p                     ldx x p i? u i     ldy y p i? u i     ldm2 m p i? u i    ldm4 m p i? u i
+    stx x p i? u i    sty y p i? u i     stm2 m p i? u i    stm4 m p i? u i
+    xadd|xsub|xmul|xdiv|xmin|xmax x x x       xneg|xabs|xsqrt|xfloor|xceil|xtrunc|xround x x
+    xcmp cc m x x     xsel x m x x      xsplat x f        xlane f x u
+    yadd|ysub|ymul|ydiv|ymin|ymax y y y       yneg|yabs|ysqrt|yfloor|yceil|ytrunc|yround y y
+    ycmp cc m y y     ysel y m y y      ysplat y f        ylane f y u
+    mand|mor m m m    mnot m m          vfeat i avx2
+
+(a letter stands for a register of that class, `cc` a word of enumeration `cc`, `u` and `i` the
+`u` and `i` fields; for example `xcmp lt m20 x19 x3`, `ldm4 m6 p1 - 1 8`, `xlane f24 x23 1`). Besides,
+`mov` of two registers of one vector class, and `rcall` of the entries 39–50 of `rt.inc`
+(`sea_log_x … sea_hypot_y`, whose argument and result classes are `x` or `y`), are valid.
+
+**What is validated** (`V8` = 3), beyond the field types (a typed field `rx ry rm` takes only its
+class, so `xadd x7 x3 y4` is `BAD_RECORD`) and the numbering by first appearance, which counts
+vector registers like the others:
+
+* a mask has the lane count of the instruction that writes it and is read only with that lane count
+  (§3.6.1): 2 for `ldm2 stm2 xcmp xsel`, 4 for `ldm4 stm4 ycmp ysel`; `mand mor mnot` and a `mov` of
+  masks take the lane count of their (first) source, and every other mask operand must have it. A
+  mask's first write fixes its count, a later write must agree, and a read of a mask that no
+  earlier record (in record order) wrote is `BAD_RECORD` (DESIGN §3.6.4 property 2 makes the first
+  reference of a register a write). The count is kept in `R(r,2)` from the reader until T10;
+* `vfeat` only when the `#target` is `x86_64-linux` (§3.6.4);
+* no vector or mask register is a `func` parameter, a `call` argument or result, a `chk` argument
+  or a `ret` value (Sea functions pass and return `i f p` only, §3.6.3: `cls` is of enumeration
+  `rcls`).
+
+The 4-lane forms (`y`, `ldm4`, `stm4`) are accepted on `arm64-macos` too: §2.12.7 makes them
+`BAD_RECORD` in `seagen_a64`, not in `sea.lir` as such (implementer reading of 7e WP-LIB).
+
+**Writing and T10** need no `V8`: the writer (69430) writes every class letter and every LF row a
+pass puts into the tables (so `seavec`, reading `sea.lir3` with `V8` = 2, writes its vector code
+through it). Each LF row has, from entry 69400, its internal code in `Q(row,6)`, its category in
+`Q(row,7)` and memory kind in `Q(row,8)`, and the roles of its fields in `F(field,0)` (`d` written,
+every other register field read, `k` of `xlane`/`ylane` a `u` field, `cc` and `f` one-operand
+fields), exactly as the L rows have them, so T10 (69440) deletes a vector load or pure vector
+instruction whose destination nothing reads and keeps vector stores, and the renumbering (69440,
+69465) keeps each register's class. Internal codes (`Q(row,6)`; a pass finds an LF row by its code
+or by `Q$(row)`; an LF record of `passes.txt` missing from the table is a `dg_bug` at entry 69400):
+
+| code | records | category (`Q(row,7)`), kind (`Q(row,8)`) |
+|---|---|---|
+| 73 | `pdiff` | 1 pure |
+| 74 75 76 77 | `ldx ldy ldm2 ldm4` | 3 load; kinds 3 3 2 2 |
+| 78 79 80 81 | `stx sty stm2 stm4` | 4 store; kinds 3 3 2 2 |
+| 82 … 98 | `xadd xsub xmul xdiv xmin xmax xneg xabs xsqrt xfloor xceil xtrunc xround xcmp xsel xsplat xlane` | 1 pure |
+| 99 … 115 | `yadd … ylane`, in the same order (the `x` code + 17) | 1 pure |
+| 116 117 118 | `mand mor mnot` | 1 pure |
+| 119 | `vfeat` | 1 pure |
+
+A pass's own visitor (with its modes) walks LF rows as it walks L rows: every LF field is one
+operand (no `site` or `pos` field).
 
 ## layout.bas (lines 86000-88999)
 
@@ -372,14 +444,16 @@ consts table, never written numbers) and `X` = `R9` + `B9`:
 | rows | use |
 |---|---|
 | 0 | the module's scalars |
-| 1 .. `R9` | register r (LIR registers 1 .. M, then the hidden registers M+1, ...): `D(r,0)` the class, **the caller's** (1 `i`, 2 `f`, 3 `p`, as the decoder sets it today; the module writes it only for the hidden registers); `D(r,1..7)` the module's; `D(r,8)` the location after `ra_end` (below) |
+| 1 .. `R9` | register r (LIR registers 1 .. M, then the hidden registers M+1, ...): `D(r,0)` the class, **the caller's** (1 `i`, 2 `f`, 3 `p`, as the decoder sets it today; from 7e 4 `x`, 5 `y`, 6 an `m` of 2 lanes, 7 an `m` of 4 lanes (the lane count of the instruction that writes it, DESIGN §3.6.1), set before `ra_end`; the module writes it only for the hidden registers); `D(r,1..7)` the module's (after `ra_end`, `D(s,4)` of row s holds the offset of slot s, read through `ra_so`); `D(r,8)` the location after `ra_end` (below) |
 | `R9`+1 .. `X` | block b at row `R9`+b: the module's |
 | `X`+1 .. `X`+546 | the module's: scalars, the register table (64 rows), the save list, the moves |
 
 The caller may read `D(r,0)` and, after `ra_end`, `D(r,8)`; every other cell is the module's.
 **Location** of register r (`D(r,8)`, fixed for the whole function: no interval is split):
-P >= 1 the machine register P of the caller's numbering (`ra_tab`); -s the spill slot s (s >= 1,
-8 bytes each; the caller places slot s at its spill area + 8(s-1), DESIGN §4.9.2 "Frame"); 0 the
+P >= 1 the machine register P of the caller's numbering (`ra_tab`); -s the spill slot s (s >= 1;
+8 bytes for `i f p`, 16 for `x` and a 2-lane `m`, 32 for `y` and a 4-lane `m`, DESIGN §2.12.7, L-fh;
+the caller places slot s at its spill area + the offset `ra_so` gives, which is 8(s-1) in a function
+with no vector slot, DESIGN §4.9.2 "Frame"); 0 the
 register has no reference the caller reported (no interval: e.g. an `li` all of whose uses are
 immediates, or the result of a fused comparison).
 
@@ -395,7 +469,8 @@ allocated. The caller keeps the names (its templates); the module never sees the
   (the first bound of the caller's `DIM D(Z9,8)`, 111110). `T` = 1 if `X` + 546 > `Z9` (the table
   is too small), else 0.
 * `ra_tab D(), P, C, N, K, S` -- declares machine register P (1 .. 64) allocatable: class C (1
-  general, for `i` and `p`; 2 floating point, for `f`), N its rank (1 = first) in its class's row
+  general, for `i` and `p`; 2 floating point, for `f` and, from 7e, `x y m`, which share the
+  floating-point register file: arm64 `v0`-`v31`, whose low halves are `d0`-`d31`; x86_64 `xmm`/`ymm`), N its rank (1 = first) in its class's row
   "crossing no call" of the DESIGN §4.9.2 register table, K its rank in the row "crossing a
   call", S = 1 if it is callee-saved (the prologue saves it when it is used), else 0. One call per
   allocatable register of the target (arm64 25 general and 29 floating-point registers, x86_64 10
@@ -476,8 +551,8 @@ allocated. The caller keeps the names (its templates); the module never sees the
   (the decoder's highest register number). Numbers the hidden registers (below), completes the
   intervals, sorts them by start (ties: register number), runs the scan of DESIGN §4.9.2 and
   gives the slots. Out: `D(r,8)` for r = 1 .. M (and the hidden registers), `S8` = the number of
-  spill slots of the function (the frame's spill area is 8·`S8` bytes), `T` = 1 if a block is
-  still open (a caller bug), else 0.
+  spill slots of the function (the frame's spill area is `ra_sa`'s A bytes: 8·`S8` in a function
+  with no vector slot), `T` = 1 if a block is still open (a caller bug), else 0.
 * `ra_blk D(), B, C, S, F` -- for `loop` block B after `ra_end`: C = the location of its hidden
   count register (P, or -s: either the hidden register was spilled, or it would have been
   numbered above `SEA_LIM_LIR_REGS` and lives in a spill slot of its own, L-aq; the caller reads
@@ -487,6 +562,16 @@ allocated. The caller keeps the names (its templates); the module never sees the
   form of DESIGN §4.9.2 "Loop closing"), else 0.
 * `ra_used D(), P, U` -- U = 1 if machine register P was given to an interval of this function
   (for a callee-saved P: the prologue saves it, in the caller's table order), else 0.
+* `ra_so D(), S, O` -- after `ra_end`: O = the byte offset of spill slot S (1 .. `S8`) from the start
+  of the function's spill area (7e, L-fh). The slots before L-aq's are laid out in slot order, an
+  8-byte slot right after the previous one, a 16- or 32-byte slot (an `x`, `y` or `m` value, spilled
+  or saved) at the next multiple of 16; L-aq's slots (8 bytes) follow them. With no vector slot O =
+  8(S-1), as before 7e.
+* `ra_sa D(), A, V` -- after `ra_end`: A = the size in bytes of the spill area (the end of its last
+  slot; 8·`S8` with no vector slot), V = 1 if it holds a 16- or 32-byte slot, else 0. When V = 1
+  the caller places the area at a frame offset that is a multiple of 16, so that each vector slot is
+  16-byte aligned (L-fh: it is accessed with unaligned vector moves, `str q`/`ldr q`, `movupd`,
+  `vmovupd`, and no frame is realigned; the frame's body stays a multiple of 16, DESIGN §4.9.2).
 
 Interval rules (DESIGN §4.9.2, as the module applies them): an interval runs from the first to the
 last reported reference; for each loop (`loop`, `do`) a register referenced inside it is extended
@@ -515,9 +600,23 @@ the one whose deepest reference has the smallest loop depth, then the one ending
 highest register number; a victim that held a register gives it to the new interval.
 
 **Slots.** Spill slots are numbered 1 .. `S8` in order of first use (ties: register number): a
-spilled interval at its first reference, an interval in a caller-saved register that crosses a
-call (its **save slot**) at the first call it crosses; then the L-aq counts and steps, by block.
+spilled interval at its first reference, an interval in a caller-saved register (or, from 7e, a
+vector interval in any register) that crosses a call (its **save slot**) at the first call it crosses; then the L-aq counts and steps, by block.
 A spilled interval's slot is `-D(r,8)`; save slots are returned by `ra_sv`.
+
+**The vector classes** (7e; DESIGN §2.12.7, L-ez, L-fh). An interval of class 4 `x`, 5 `y`, 6 or 7
+`m` is allocated as an `f` interval is, from the machine registers of class 2 (`f` and vector values
+compete for them, and the spill choice above compares them alike), with two differences: (1) it
+takes its register from the row "crossing no call" even when it crosses a call, since no register
+keeps a vector value across a call (on arm64 only the low 64 bits of `v8`–`v15` survive one, so
+preferring them would only add prologue saves); (2) when it crosses a call and holds a register,
+it is saved around every call it crosses — it gets a save slot and `ra_sv` lists it — whether or
+not that register is callee-saved (every vector register is caller-saved across a `call`, an
+`rcall` and the free path of a `release`; L-ez's "spilled" is read as this save, as §4.9.2 "Calls"
+saves a caller-saved register). A callee-saved register given to a vector interval (arm64
+`d8`–`d15`, only when the other rows' registers are taken) is reported by `ra_used` like any other,
+so the prologue still saves its low 64 bits for the function's caller. Its spill or save slot has
+16 (`x`, a 2-lane `m`) or 32 bytes (`y`, a 4-lane `m`) at a 16-byte-aligned offset (`ra_so`, `ra_sa`).
 
 ### Per function: the code sweeps
 
@@ -525,7 +624,7 @@ A spilled interval's slot is `-D(r,8)`; save slots are returned by `ra_sv`.
   the records: the line count and the code).
 * `ra_sv D(), K, N, T` -- at the `call`/`rcall` K, or at the free path of the `release` K, records
   K in increasing order within a sweep: N = the number of intervals in a caller-saved register
-  that cross K (start <= 2K, end > 2K+1), listed by `ra_svi` in increasing machine-register
+  (or, from 7e, of a vector class in any register: L-ez) that cross K (start <= 2K, end > 2K+1), listed by `ra_svi` in increasing machine-register
   number. **The caller skips the registers record K writes** (its results: their values before
   the call are dead, and a reload would overwrite the result; with the loop extension a result's
   interval can start before 2K): it stores the others to their save slots before the argument

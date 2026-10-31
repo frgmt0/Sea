@@ -1,0 +1,42 @@
+// vec_matrix_plain -- matrices whose element count r*c is 0, 1, 7, 8, 9, 15, 16, 17 and 1000 (tail lengths 0-7):
+// F1's nest over a dynamic matrix with equal extents runs its plain copy, one linear loop over the column-major
+// data (DESIGN.md 2.12.4 F1 (4)). Loops meant to vectorize (T13): the plain linear loops that store C (a fused
+// tree: unit ldf/stf at J, invariant splats of 0.5), M (fcmp gt, stb) and D (ldb, fneg, fsel, stf), conditions 1-4;
+// the broadcast copy (non-unit accesses) stays scalar. sum(C.flat) and nnz(M.flat) are F3 loops (sum8, condition 5).
+fn pm(tag: str, A: f64[,]) {
+    printf("%s %dx%d", tag, rows(A), cols(A))
+    for i in 0..rows(A) {
+        printf(" |")
+        for j in 0..cols(A) {
+            printf(" %.17g", A[i, j])
+        }
+    }
+    printf("\n")
+}
+fn run(r: i64, c: i64) {
+    var A = zeros(r, c)
+    var B = zeros(r, c)
+    for j in 0..c {
+        for i in 0..r {
+            A[i, j] = f64(i * 3 + j) - 5.0
+            B[i, j] = 1.0 / f64(i + 2 * j + 1)
+        }
+    }
+    let C = A * 0.5 - B
+    let M = A > B * 8.0
+    let D = where(M, C, -C)
+    printf("%dx%d nnz(M)=%d sum(C)=%.17g sum(D)=%.17g\n", r, c, nnz(M.flat), sum(C.flat), sum(D.flat))
+    if r * c <= 17 {
+        pm("C", C)
+        pm("D", D)
+    }
+}
+run(0, 3)
+run(1, 1)
+run(7, 1)
+run(1, 8)
+run(3, 3)
+run(5, 3)
+run(4, 4)
+run(17, 1)
+run(40, 25)

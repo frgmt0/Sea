@@ -1,0 +1,31 @@
+// vec_minmax -- min and max (LANGUAGE.md 10.4: a NaN operand gives the other, min(-0, +0) is the first argument)
+// on lanes with a NaN in either operand or both, +-0 in every order, +-inf, subnormals and equal values, at lengths
+// 0, 1, 7, 8, 9, 15, 16, 17. Loops meant to vectorize (T13): the F1 nests storing p, q (fmin, fmax of two
+// loaded f registers), r and s (an `lf` splat as the first or second operand) and u (a fused fmax of an fmin, then
+// fadd of 0.0, which turns -0 into +0): unit accesses, nothing live out (conditions 1-3).
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let lens: i64[] = [0, 1, 7, 8, 9, 15, 16, 17]
+fn run(a: f64[], b: f64[]) {
+    let p = min(a, b)
+    let q = max(a, b)
+    let r = min(a, 0.0)
+    let s = max(0.0, b)
+    let u = max(min(a, b), -2.0) + 0.0
+    printf("n=%d\n", len(a))
+    pv("min", p)
+    pv("max", q)
+    pv("min0", r)
+    pv("0max", s)
+    pv("clamp", u)
+}
+let a: f64[] = [nan, 1.0, nan, -0.0, 0.0, -0.0, 0.0, inf, -inf, 2.0, -3.0, 5e-324, -5e-324, 7.5, 7.5, nan, -1.0]
+let b: f64[] = [2.0, nan, nan, 0.0, -0.0, -0.0, 0.0, -inf, inf, 2.0, 3.0, -5e-324, 5e-324, 7.5, 1.0, -0.0, nan]
+for n in lens {
+    run(a[0..n], b[0..n])
+}

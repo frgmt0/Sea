@@ -1,0 +1,37 @@
+// vec_trip_arith -- trip counts 0, 1, 7, 8, 9, 15, 16, 17 and 1000 (tail lengths 0-7) of f64 element-wise trees
+// (DESIGN.md 6.2 "Phase-7 tests", vec_*). Loops meant to vectorize (T13, DESIGN.md 2.12.6): the F1 nests that
+// store z, w and d (one fused tree each, over the whole arrays x and y: unit accesses ldf/stf at J with
+// invariant bases, conditions 1, 2, 3, 4 and 8 elements per vector iteration; the invariant constants 1.5, 3.0,
+// 0.25 are splatted, conditions 2 and 3) and the F3 sum loops of sum(z) and sum(w) (the sum8 group, condition 5).
+// The two fill loops use i64 arithmetic and stay scalar. Every n is run: the vector part runs n div 8 times
+// and the scalar loop runs the tail n mod 8; for n < 8 the whole range is the tail.
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn run(n: i64) {
+    var x = zeros(n)
+    var y = zeros(n)
+    for i in 0..n {
+        x[i] = f64(i) * 0.37 - 2.0
+        y[i] = 1.0 / (f64(i) + 1.0)
+    }
+    let z = (x * 1.5 - y) / 3.0 + x * y * 0.25
+    let w = abs(x - y) - z
+    let d = -(x * y) + sqrt(y) * 2.0
+    printf("n=%d sum(z)=%.17g sum(w)=%.17g sum(d)=%.17g\n", n, sum(z), sum(w), sum(d))
+    if n <= 17 {
+        pv("z", z)
+        pv("w", w)
+        pv("d", d)
+    } else {
+        printf("z[0]=%.17g z[999]=%.17g w[500]=%.17g d[333]=%.17g\n", z[0], z[999], w[500], d[333])
+    }
+}
+let trips: i64[] = [0, 1, 7, 8, 9, 15, 16, 17, 1000]
+for n in trips {
+    run(n)
+}

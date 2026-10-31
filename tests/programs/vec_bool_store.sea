@@ -1,0 +1,43 @@
+// vec_bool_store -- bool results of comparisons stored, then counted with nnz/any/all and printed, on lanes with
+// NaN in either operand (every ordered comparison false, != true), +-0, +-inf and a subnormal, at lengths 1, 9, 16,
+// 17 and a 1000-element case. Loops meant to vectorize (T13): the F1 nests storing m1 .. m5, each a mask-only body
+// (fcmp lt/eq/ne/ge/le, iand, ior, bnot of mask registers, stb at J with the unit access of condition 2; a mask
+// register read only by stb, iand, ior, bnot, condition 2); lanes store exactly 0 or 1 (DESIGN.md 3.6.4 stm2/stm4).
+fn pb(tag: str, m: bool[]) {
+    printf("%s %d:", tag, len(m))
+    for b in m {
+        printf(" %d", b)
+    }
+    printf("\n")
+}
+fn run(x: f64[], y: f64[]) {
+    let m1 = x < y
+    let m2 = x == y
+    let m3 = x != y
+    let m4 = (x >= y) & (y >= x)
+    let m5 = (!(x <= y)) | m2
+    printf("n=%d nnz: %d %d %d %d %d any: %d %d all: %d %d\n", len(x), nnz(m1), nnz(m2), nnz(m3), nnz(m4), nnz(m5),
+           any(m1), any(m4), all(m3), all(m5))
+    pb("lt", m1)
+    pb("eq", m2)
+    pb("ne", m3)
+    pb("geq", m4)
+    pb("n-le-or-eq", m5)
+}
+let x: f64[] = [nan, 1.0, 2.0, nan, -1.0, -0.0, 0.0, 0.0, 5e-324, inf, -inf, inf, 3.0, nan, 2.5, -2.5, 4.0]
+let y: f64[] = [1.0, nan, 2.0, nan, -1.0, 0.0, -0.0, 1.0, 0.0, inf, -inf, -inf, 3.0, 0.0, 2.5, 2.5, nan]
+let lens: i64[] = [1, 9, 16, 17]
+for n in lens {
+    run(x[0..n], y[0..n])
+}
+var p = zeros(1000)
+var q = zeros(1000)
+for i in 0..1000 {
+    p[i] = f64(i % 11)
+    q[i] = f64(i % 7)
+}
+let a1 = p < q
+let a2 = p == q
+let a3 = p != q
+let a4 = (p >= q) & (q >= p)
+printf("1000: nnz: %d %d %d %d\n", nnz(a1), nnz(a2), nnz(a3), nnz(a4))

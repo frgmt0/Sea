@@ -1,0 +1,40 @@
+n=7
+lt 7: 3 NaN 6 3 -3 0 -0
+le 7: -9 NaN 12 -9 9 10 10
+gt 7: 5 NaN 10 12 -5 0 -0
+ge 7: 2 NaN 1 2 -2 -1 -1
+eq 7: NaN NaN 4 2 -2 0 0
+ne 7: NaN NaN 102 3 99 100 100
+abs 7: NaN 1 2 3 1 0 -0
+0lt 7: 1 NaN 2 1 1 -0 0
+tree 7: NaN NaN 0 -2 0 -0 0
+n=9
+lt 9: 3 NaN 6 3 -3 0 -0 0 -0
+le 9: -9 NaN 12 -9 9 10 10 10 10
+gt 9: 5 NaN 10 12 -5 0 -0 0 -0
+ge 9: 2 NaN 1 2 -2 -1 -1 -1 -1
+eq 9: NaN NaN 4 2 -2 0 0 0 -0
+ne 9: NaN NaN 102 3 99 100 100 100 100
+abs 9: NaN 1 2 3 1 0 -0 -0 0
+0lt 9: 1 NaN 2 1 1 -0 0 -0 0
+tree 9: NaN NaN 0 -2 0 -0 0 0 0
+n=16
+lt 16: 3 NaN 6 3 -3 0 -0 0 -0 Inf -Inf -Inf 0 NaN 7.5 -5
+le 16: -9 NaN 12 -9 9 10 10 10 10 Inf -Inf -Inf -10 NaN 12.5 7.5
+gt 16: 5 NaN 10 12 -5 0 -0 0 -0 Inf -Inf Inf 1.9762625833649862e-323 NaN 12.5 12.5
+ge 16: 2 NaN 1 2 -2 -1 -1 -1 -1 Inf -Inf Inf -1 NaN 1.5 3.5
+eq 16: NaN NaN 4 2 -2 0 0 0 -0 Inf -Inf Inf 4.9406564584124654e-324 NaN 5 -5
+ne 16: NaN NaN 102 3 99 100 100 100 100 Inf -Inf -Inf 0 NaN 102.5 -6.25
+abs 16: NaN 1 2 3 1 0 -0 -0 0 Inf Inf Inf 4.9406564584124654e-324 NaN 2.5 2.5
+0lt 16: 1 NaN 2 1 1 -0 0 -0 0 Inf Inf Inf -0 NaN 2.5 2.5
+tree 16: NaN NaN 0 -2 0 -0 0 0 0 NaN NaN -Inf 4.9406564584124654e-324 NaN 0 5
+n=17
+lt 17: 3 NaN 6 3 -3 0 -0 0 -0 Inf -Inf -Inf 0 NaN 7.5 -5 8
+le 17: -9 NaN 12 -9 9 10 10 10 10 Inf -Inf -Inf -10 NaN 12.5 7.5 14
+gt 17: 5 NaN 10 12 -5 0 -0 0 -0 Inf -Inf Inf 1.9762625833649862e-323 NaN 12.5 12.5 25
+ge 17: 2 NaN 1 2 -2 -1 -1 -1 -1 Inf -Inf Inf -1 NaN 1.5 3.5 6
+eq 17: NaN NaN 4 2 -2 0 0 0 -0 Inf -Inf Inf 4.9406564584124654e-324 NaN 5 -5 -1
+ne 17: NaN NaN 102 3 99 100 100 100 100 Inf -Inf -Inf 0 NaN 102.5 -6.25 20
+abs 17: NaN 1 2 3 1 0 -0 -0 0 Inf Inf Inf 4.9406564584124654e-324 NaN 2.5 2.5 4
+0lt 17: 1 NaN 2 1 1 -0 0 -0 0 Inf Inf Inf -0 NaN 2.5 2.5 5
+tree 17: NaN NaN 0 -2 0 -0 0 0 0 NaN NaN -Inf 4.9406564584124654e-324 NaN 0 5 1

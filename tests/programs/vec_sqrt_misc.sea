@@ -1,0 +1,30 @@
+// vec_sqrt_misc -- sqrt, abs, unary minus and division on lanes holding 0, -0, negative values (sqrt gives NaN),
+// +-inf, NaN, a subnormal and values whose square overflows or underflows, at lengths 0, 1, 7, 8, 9, 15, 16, 17
+// (slices of one 17-element vector). Loops meant to vectorize (T13): the F1 nests storing s (fsqrt), a (fabs),
+// g (fneg), q (an `lf` splat of 1.0 and fdiv) and t (fmul, fadd with a splat, fsqrt, fabs, fsub) over x: unit
+// accesses, f registers written before they are read, nothing live out (conditions 1-3).
+fn pv(tag: str, v: f64[]) {
+    printf("%s %d:", tag, len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let lens: i64[] = [0, 1, 7, 8, 9, 15, 16, 17]
+fn run(x: f64[]) {
+    let s = sqrt(x)
+    let a = abs(x)
+    let g = -x
+    let q = 1.0 / x
+    let t = sqrt(x * x + 1.0) - abs(x)
+    printf("n=%d\n", len(x))
+    pv("sqrt", s)
+    pv("abs", a)
+    pv("neg", g)
+    pv("rcp", q)
+    pv("hyp", t)
+}
+let x: f64[] = [4.0, 2.0, 0.0, -0.0, -1.0, inf, -inf, nan, 1e-310, 2.5, 1e+300, 1e-300, 9.0, 0.25, -4.0, 16.0, 1e+308]
+for n in lens {
+    run(x[0..n])
+}

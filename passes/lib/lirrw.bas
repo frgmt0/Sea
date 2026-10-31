@@ -12,9 +12,11 @@
 69055 REM   J$(299) Y(399) Y$(399,5) D(39) D$(39) B(399) A(399) I(199999,4) O(799999) R(99999,9)
 69060 REM   K(19999,4) C(199999,4) S$(199999) X(131071) T(10000) G$(300) U(40) L(4) H$(100) A$(2)
 69065 REM   M(301) P(262143) H(199999) V$(49999) U$(131071) G(199999,3) W(199999,4)
-69070 REM sets P$ (its name), V8 (its input: 1 sea.lir1, 2 sea.lir2, sea.lir3 or sea.lir, L-bu) and FILES 1 = its input,
+69070 REM sets P$ (its name), V8 (its input: 1 sea.lir1, 2 sea.lir2 or sea.lir3, 3 sea.lir; L-bu) and FILES 1 = its input,
 69075 REM 2 = its output, and leaves to this part the scalars listed in API.md (any entry may change any).
-69076 REM V8 = 1 keeps the two sea.lir1-only label rules (3.6.2: labels numbered by first use, none unused); 2 drops them.
+69076 REM V8 = 1 keeps the two sea.lir1-only label rules (3.6.2: labels numbered by first use, none unused); 2 and 3 drop them.
+69077 REM V8 = 3 alone accepts the classes x y m and the set-LF records (2.12.6, Decision 113: sea.lir only); the writer
+69078 REM writes them whatever V8 is (seavec reads sea.lir3 with V8 = 2 and writes vector code into sea.lir).
 69080 REM It may use R(r,c) for c <> 1, 2 (column 2 is T10's), W between entries, the arrays S and V, other names.
 69085 REM TABLES of the current function (reset by its func record; operand values are plain numbers):
 69090 REM   I(n,1..4) instruction n (1..A0; row 0 the func record): record row in Q, index in O of its
@@ -23,7 +25,8 @@
 69105 REM   O(k)      operands in record order (k = 1..A1; the func record's in M(1..I(0,3))): u the value
 69110 REM             (-1 absent), reg the number (0 absent), i f a row of C, off a row of G, s a row of S$,
 69115 REM             pos two operands F*1E9+L and C, lab slot blk the number, enumeration the word (1..)
-69120 REM   R(r,1)    class of register r (1..M7): 1 i 2 f 3 p (4 x 5 y 6 m); R(r,2) T10's read count
+69120 REM   R(r,1)    class of register r (1..M7): 1 i 2 f 3 p (4 x 5 y 6 m); R(r,2) T10's read count (V8 = 3: an
+69122 REM             m register's lane count, 2 or 4, from the reader until the next T10)
 69125 REM   K(b,1..4) block b (1..B2): kind (1 loop 2 do 3 if 4 ifz), opening, else (0 none), closing
 69130 REM   K(10000+s,1..2)  slot s (1..S6): size, alignment; C(r,1..4) 16-bit limbs (1..A2); G(r,0..3)
 69135 REM             off limbs (1..A6); per compilation S$ (1..A3, hash P), sites X (A4), funcs H V$ U$ M6
@@ -49,7 +52,8 @@
 69235 REM ====================================================================================
 69400 IF V8 = 1 THEN 70390
 69401 IF V8 = 2 THEN 70390
-69402 CALL "dg_bug": P$, "V8 must be 1 (input sea.lir1) or 2 (sea.lir2, sea.lir) before entry 69400"
+69402 IF V8 = 3 THEN 70390
+69403 CALL "dg_bug": P$, "V8 must be 1 (input sea.lir1), 2 (sea.lir2, sea.lir3) or 3 (sea.lir) before entry 69400"
 69410 IF Y0 <> 39 THEN 70740
 69412 LET M8 = 0
 69414 GOTO 72060
@@ -154,6 +158,7 @@
 70805 GOTO 70825
 70810 NEXT I1
 70815 LET M$ = "unknown opcode '" & G$(1) & "' for format lir1"
+70816 IF V8 = 3 THEN 75240
 70820 GOTO 72180
 70825 LET Y0 = B(I0)
 70830 LET D7 = 0
@@ -266,6 +271,7 @@
 71346 IF Y0 = 50 THEN 74500
 71347 IF Y0 = 53 THEN 74520
 71348 IF Y0 = 54 THEN 74560
+71349 IF Q(I0, 1) = 6 THEN 75300
 71350 IF Y0 < 40 THEN 72060
 71355 IF Y0 > 48 THEN 72060
 71360 LET V = U(1)
@@ -330,6 +336,7 @@
 71655 LET P1 = I(A0, 2)
 71660 LET M$ = "mov of registers of different classes"
 71665 IF R(O(P1), 1) <> R(O(P1 + 1), 1) THEN 72180
+71667 IF R(O(P1), 1) = 6 THEN 75285
 71670 GOTO 72060
 71675 REM rcall entry site nr d.. na a..: an entry of rt.inc, its site, result and argument classes
 71680 LET P1 = I(A0, 2)
@@ -584,7 +591,8 @@
 72865 LET M$ = B$ & " has the wrong register class here"
 72870 GOTO 72180
 72875 LET M$ = B$ & " has a vector or mask class, which sea.lir1 does not use"
-72880 IF X2 > 3 THEN 72180
+72880 IF X2 <= 3 THEN 72885
+72882 IF V8 < 3 THEN 72180
 72885 IF V <= M7 THEN 72955
 72890 LET M$ = B$ & " is not the next register (" & STR$(M7 + 1) & " is: numbers follow first appearance)"
 72895 IF V <> M7 + 1 THEN 72180
@@ -801,6 +809,7 @@
 73910 IF F$(B0) <> "par" THEN 73925
 73915 LET M$ = B$ & " is parameter " & STR$(X1) & ", so it must be register " & STR$(X1)
 73918 IF V <> X1 THEN 72180
+73919 IF X2 > 3 THEN 75260
 73920 LET Y2$ = Y2$ & SEG$("ifp", X2, X2)
 73922 GOTO 73995
 73925 IF F$(B0) <> "cls" THEN 73995
@@ -858,6 +867,9 @@
 74495 REM ---- 4500: chk: n = the argument slots of its error (C3, from 4700) ----
 74500 LET M$ = "chk names an error whose arguments take " & STR$(C3) & " slots, but n = " & STR$(U(4))
 74505 IF U(4) <> C3 THEN 72180
+74506 FOR Q3 = 1 TO U(4)
+74507 IF R(O(I(A0, 2) + 2 + Q3), 1) > 3 THEN 75270
+74508 NEXT Q3
 74510 GOTO 72060
 74515 REM ---- 4520: ret: the results of the func, in number and class ----
 74520 LET P1 = I(A0, 2)
@@ -873,11 +885,13 @@
 74570 LET R2$ = ""
 74575 LET P2 = P1 + 1
 74580 FOR Q3 = 1 TO O(P2)
+74584 IF R(O(P2 + Q3), 1) > 3 THEN 75265
 74585 LET R2$ = R2$ & SEG$("ifp", R(O(P2 + Q3), 1), R(O(P2 + Q3), 1))
 74590 NEXT Q3
 74595 LET R2$ = R2$ & "/"
 74600 LET P2 = P2 + O(P2) + 1
 74605 FOR Q3 = 1 TO O(P2)
+74609 IF R(O(P2 + Q3), 1) > 3 THEN 75265
 74610 LET R2$ = R2$ & SEG$("ifp", R(O(P2 + Q3), 1), R(O(P2 + Q3), 1))
 74615 NEXT Q3
 74620 IF H(Q2) = 0 THEN 74640
@@ -986,6 +1000,92 @@
 75224 LET Z6 = U(2)
 75226 LET Z7 = -1
 75228 GOTO 72060
+75235 REM ---- 5240: V8 = 3 (sea.lir): the opcode among the rows of set LF (2.12.6, Decision 113) ----
+75240 FOR I1 = 1 TO Z(7)
+75242 IF Q(I1, 1) <> 6 THEN 75248
+75244 IF Q$(I1) <> G$(1) THEN 75248
+75246 LET I0 = I1
+75247 GOTO 70825
+75248 NEXT I1
+75250 GOTO 72180
+75255 REM ---- 5260: Sea functions pass and return the classes i f p only (3.6.3), so no vector or mask ----
+75257 REM register is a parameter (3919), a call's argument or result (4584, 4609) or a chk argument (4507)
+75260 LET M$ = B$ & " is a parameter of a vector or mask class (Sea functions take i f p, 3.6.3)"
+75262 GOTO 72180
+75265 LET M$ = "call of " & S$(Q2) & " with a vector or mask register (Sea functions take i f p, 3.6.3)"
+75267 GOTO 72180
+75270 LET M$ = "chk with a vector or mask argument"
+75272 GOTO 72180
+75280 REM ---- 5285: mov of masks (V8 = 3): the destination takes the lane count of the source (3.6.1) ----
+75285 LET W2 = O(P1 + 1)
+75287 LET W1 = R(W2, 2)
+75289 IF W1 = 0 THEN 75362
+75291 LET W2 = O(P1)
+75293 GOSUB 75380
+75295 GOTO 72060
+75298 REM ---- 5300: an LF instruction (V8 = 3): vfeat on x86_64-linux only (3.6.4); a mask has the lane count of
+75299 REM the instruction that writes it and is read only with that lane count (3.6.1) ----
+75300 LET X3 = Q(I0, 6)
+75302 LET M$ = "vfeat on target " & T$ & " (x86_64-linux only, 3.6.4)"
+75304 IF X3 <> 119 THEN 75312
+75306 IF T$ <> "x86_64-linux" THEN 72180
+75308 GOTO 72060
+75310 REM W1 the lane count: 2 for ldm2 stm2 xcmp xsel, 4 for ldm4 stm4 ycmp ysel, operand a's for mand mor mnot
+75312 LET W1 = 2
+75314 IF X3 = 76 THEN 75338
+75316 IF X3 = 80 THEN 75338
+75318 IF X3 = 95 THEN 75338
+75320 IF X3 = 96 THEN 75338
+75322 LET W1 = 4
+75324 IF X3 = 77 THEN 75338
+75326 IF X3 = 81 THEN 75338
+75328 IF X3 = 112 THEN 75338
+75330 IF X3 = 113 THEN 75338
+75332 IF X3 < 116 THEN 72060
+75334 LET W2 = O(I(A0, 2) + 1)
+75335 LET W1 = R(W2, 2)
+75336 IF W1 = 0 THEN 75362
+75337 REM each m operand in field order: a read one must have W1 lanes, a written one gets W1 (5380)
+75338 LET P1 = I(A0, 2)
+75340 FOR J2 = 1 TO Q(I0, 4)
+75342 LET B4 = Q(I0, 3) + J2 - 1
+75344 IF F(B4, 1) <> 22 THEN 75358
+75346 LET W2 = O(P1 + J2 - 1)
+75348 IF F(B4, 0) = 2 THEN 75356
+75350 LET M$ = "mask m" & STR$(W2) & " is read with " & STR$(W1) & " lanes but has " & STR$(R(W2, 2)) & " (3.6.1)"
+75352 IF R(W2, 2) <> W1 THEN 72180
+75354 GOTO 75358
+75356 GOSUB 75380
+75358 NEXT J2
+75360 GOTO 72060
+75362 LET M$ = "mask m" & STR$(W2) & " is read before an instruction gives it a lane count (3.6.1)"
+75364 GOTO 72180
+75375 REM ---- 5380: mask W2 written with W1 lanes: its first write fixes its lane count, a later one keeps it ----
+75380 LET M$ = "mask m" & STR$(W2) & " is written with " & STR$(W1) & " lanes after " & STR$(R(W2, 2)) & " (3.6.1)"
+75382 IF R(W2, 2) = 0 THEN 75388
+75384 IF R(W2, 2) <> W1 THEN 72180
+75386 RETURN
+75388 LET R(W2, 2) = W1
+75390 RETURN
+75395 REM ---- 5400: once, from 6165, for a row of set LF: its internal code (73-119, the table K1$ of 6136), its
+75397 REM category and memory kind (ldx ldy stx sty f64, ldm2 ldm4 stm2 stm4 byte; the rest pure) and roles (6930) ----
+75400 LET C5$ = "|" & Q$(I2) & "="
+75402 LET P3 = POS(K1$, C5$)
+75404 LET M$ = "passes.txt has the set-LF record " & Q$(I2) & ", which " & P$ & " does not know"
+75406 IF P3 = 0 THEN 72205
+75408 LET X3 = 72 + VAL(SEG$(K1$, P3 + LEN(C5$), P3 + LEN(C5$) + 1))
+75410 LET Q(I2, 6) = X3
+75412 LET Q(I2, 7) = 1
+75414 IF X3 < 74 THEN 75428
+75416 IF X3 > 81 THEN 75428
+75418 LET Q(I2, 7) = 3
+75420 IF X3 < 78 THEN 75424
+75422 LET Q(I2, 7) = 4
+75424 LET Q(I2, 8) = 3
+75425 IF X3 - 74 - 4 * INT((X3 - 74) / 4) < 2 THEN 75428
+75426 LET Q(I2, 8) = 2
+75428 GOSUB 76930
+75430 GOTO 76205
 76105 REM ---- once: internal codes of the opcodes (Q(row,6)), categories (Q(row,7): 1 pure, 2 iaddc
 76110 REM isubc imulc inegc, 3 load, 4 store), memory kinds (Q(row,8)), field roles (F(row,0)) ----------
 76115 LET C1$ = "|li=01|lf=02|la=03|sa=04|mov=05|iadd=06|isub=07|imul=08|iaddc=09|isubc=10|imulc=11|ineg=12|inegc=13|idivf=14|imodf=15|imulh=16|iand=17|ior=18|"
@@ -993,12 +1093,17 @@
 76125 LET C3$ = "|fmin=36|fmax=37|ffloor=38|fceil=39|ftrunc=40|fround=41|fcmp=42|fnan=43|itof=44|ftoi=45|padd=46|ldi=47|ldb=48|ldf=49|ldp=50|sti=51|stb=52|"
 76130 LET C4$ = "|stf=53|stp=54|mcopy=55|loop=56|endloop=57|do=58|enddo=59|if=60|ifz=61|else=62|endif=63|exit=64|next=65|ret=66|call=67|rcall=68|chkb=69|"
 76135 LET C0$ = C1$ & C2$ & C3$ & C4$ & "|chk=70|retain=71|release=72|"
+76136 LET K1$ = "|pdiff=01|ldx=02|ldy=03|ldm2=04|ldm4=05|stx=06|sty=07|stm2=08|stm4=09|xadd=10|xsub=11|xmul=12|xdiv=13|xmin=14|xmax=15|xneg=16|xabs=17|xsqrt=18|"
+76137 LET K2$ = "|xfloor=19|xceil=20|xtrunc=21|xround=22|xcmp=23|xsel=24|xsplat=25|xlane=26|yadd=27|ysub=28|ymul=29|ydiv=30|ymin=31|ymax=32|yneg=33|yabs=34|"
+76138 LET K3$ = "|ysqrt=35|yfloor=36|yceil=37|ytrunc=38|yround=39|ycmp=40|ysel=41|ysplat=42|ylane=43|mand=44|mor=45|mnot=46|vfeat=47|"
+76139 LET K1$ = K1$ & K2$ & K3$
 76140 FOR I2 = 0 TO Z(7)
 76145 LET Q(I2, 6) = 0
 76150 LET Q(I2, 7) = 0
 76155 LET Q(I2, 8) = 0
 76160 IF I2 = 0 THEN 76205
-76165 IF Q(I2, 1) <> 5 THEN 76205
+76165 IF Q(I2, 1) = 6 THEN 75400
+76167 IF Q(I2, 1) <> 5 THEN 76205
 76170 LET C5$ = "|" & Q$(I2) & "="
 76175 LET P3 = POS(C0$, C5$)
 76180 IF P3 = 0 THEN 76205
