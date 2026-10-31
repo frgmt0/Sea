@@ -4426,7 +4426,11 @@ slot, L-ew): each distinct (s, byte offset) becomes a new register of its class;
 `mov` from that register, a store a `mov` into it; the first access in record order of each location
 must be a store on every path (a forward walk with F6's joins over the function's blocks; a location
 read before it is surely written refuses the whole slot; a guard whose condition is known counts as
-decided, below); the `sa` instructions and the slot's `slot`
+decided, below; after a `do`'s `enddo` the state is the join of the states at the `exit`s naming that
+`do`, not F6's entry state after a loop's closing record, since a path that reaches `enddo` runs the
+body again and only its `exit`s leave it, and after a `do` with no `exit` nothing is reachable; an
+implementation may bound the nesting it tracks and use the `do`'s entry state beyond it, which is
+conservative, L-hb); the `sa` instructions and the slot's `slot`
 record are deleted when no use remains (the slots are renumbered densely, `s1`, `s2`, …).
 
 A *slot copy* is an `mcopy Pd Ps N` whose Pd and Ps are `sa` registers of two different slots and
@@ -15350,3 +15354,9 @@ Lead decisions of sub-phase 7e (T2's and WP-VEC's readings, found in their build
 * **L-ha** (the lead, 2026-10-31, after T2's round 2) A location that no slot of its slot-copy chain
   accesses by `ldi ldf sti stf` has no class: it takes no part in the walk, gets no register and no
   `mov`, and its slots are still replaced (§2.12.6 T12).
+* **L-hb** (the lead, 2026-10-31, after WP-VEC and T2 read T12's walk differently on `sr7_w3`) In
+  T12's first-access walk the state after a `do`'s `enddo` is the join of the states at the `exit`s
+  naming that `do`, not F6's "entry state after a loop's closing record": a path that reaches
+  `enddo` loops back, so only the `exit`s leave, and a `do` with no `exit` leaves nothing reachable
+  after it. An implementation may bound the nesting it tracks and fall back to the `do`'s entry
+  state beyond it, which is conservative (a walk state only gains written locations) (§2.12.6 T12).
