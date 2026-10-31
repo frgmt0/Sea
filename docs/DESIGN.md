@@ -1693,7 +1693,8 @@ tables lirrw limb f64emu fltlit layout ralloc`; a list naming `lirrw` together w
 `f64emu` is a build error, since their line ranges overlap, L-bi) and `data <block>…` (among `errors errno exits consts entries records
 mtab`; only `seaname` lists `mtab`, §4.10.5), comment lines starting with `#`; the parts are
 concatenated in the order above whatever the order of the list, and a name outside the two sets
-is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`. The
+is a build error. `tools/seaval.bas` is built the same way from `tools/seaval.build.list`, and from 7e
+`tools/lirchk.bas` from `tools/lirchk.build.list` (Decision 116). The
 build regenerates `build/gen/` every time and compiles each result with `baysick`; nothing in
 `build/` is committed. The modules' interfaces are internal to the compiler (not contract
 files): `passes/lib/API.md` documents the `SUB`s of `io`, `diag` and `tables`, and
@@ -1768,6 +1769,7 @@ overlap those of `limb` and `f64emu` (not `fltlit`, at 82 000 – 85 999), which
 | `seavec` (from 7b, pass 3d, §2.12.6) | `io diag tables lirrw` | `errors exits consts entries records` |
 | `seagen_a64`, `seagen_x64` | `io diag tables`; from 5b `io diag tables ralloc` | `errors exits consts entries records` |
 | `tools/seaval.bas` (`tools/seaval.build.list`) | `io diag tables` | `errors consts records` |
+| `tools/lirchk.bas` (`tools/lirchk.build.list`; from 7e, Decision 116, §2.12.6) | `io diag tables lirrw` | `errors exits consts entries records` |
 
 So from phase 4a on the exact arithmetic of constants (`limb`, `f64emu`, `FEPOW` and `mtab`, §2.8,
 §4.10.5) lives in `seaname`, and `seacheck` holds none: it takes every value it writes from its
@@ -3176,7 +3178,19 @@ Increments by sub-phase (§8, rows 7b–7f):
   2 519 own lines = 2 908, + 12 entry lines = 2 920); 7e: `lirrw`'s extension 60–120; set-up and
   loop analysis 150–250, T11 with register threading 150–300, T12 200–350, T13's if-conversion
   150–300, T13's legality 300–500, T13's rewrite (vector copies, tail, guard, independence test,
-  `vfeat` versions, sum8) 500–900, fixes 150–300: **4 580–5 940**.
+  `vfeat` versions, sum8) 500–900, fixes 150–300: **4 580–5 940**. **Amended by Decision 115**
+  (2026-10-31; T13's preparation P1–P3, the mask merges and the normative vector form, estimated
+  by the review of that text on the base of about 3 060 built lines after WP-LIB): set-up, block
+  tree, definitions and uses, invariance and T13's constants 200–350, T11 150–300, T12 200–350, P1
+  100–200, P2 200–350, P3 50–100, the preparation's snapshot and restore 50–100, the if-conversion
+  with renaming and merges 200–350, the legality (1)–(5) with the mask fixpoint 300–500, the rewrite
+  (both widths, splats, tails, the `else` copy, the test, `vfeat`, sum8, counter updates, vector
+  `rcall`s) 600–1 000, fixes 150–300: +2 200–3 900, **about 5 260–6 960**. The gate after phase 7
+  passes (40 under 7 000 at the upper end; + 1 000 remaining 6 260–7 960; + 1.5 × remaining
+  6 760–8 460), with little margin, so `seavec` is **measured after T13's legality code**: when the
+  projected total (measured built lines + the rewrite's and fixes' estimates) passes about 6 500,
+  a relief (for example T11 and T12 moved out of `seavec`) is decided with the user before the
+  rewrite is written.
 * **`seagen_a64`**: the 12 `DATA` lines; `ralloc`'s classes `x y m` (a module both code generators
   load) 150–300; NEON selection, the mask load and store sequences, `xmin`/`xmax`, the vector
   entries' calls, `pdiff` 330–610: **5 530–5 960**.
@@ -3213,7 +3227,7 @@ phase 7's 1 000); `seaexpand` and `seaparse` none.
 | `sealower` (Decision 50) | 6 729 | 12–72 | 6 741–6 801 | not a condition | 370 | 7 111–7 171: yes | 7 296–7 356: yes | 3 (`C S X`) |
 | `seaopt` | 5 507 | 72–132 | 5 579–5 639 | yes | 1 000 | 6 579–6 639: yes | 7 079–7 139: yes | 2 (`S V`) |
 | `sealopt` | 5 427 | 73–133 | 5 500–5 560 | yes | 1 000 | 6 500–6 560: yes | 7 000–7 060: yes | 0 (waived, Decision 78) |
-| `seavec` (Decision 98) | — | 4 580–5 940 | 4 580–5 940 | yes | 1 000 | 5 580–6 940: yes | 6 080–7 440: yes | 0 after its tables (`S V` used); waived (Decision 98) |
+| `seavec` (Decision 98; amended by Decision 115) | — | 5 260–6 960 | 5 260–6 960 | yes (40 under at the upper end; measured after T13's legality code) | 1 000 | 6 260–7 960: yes | 6 760–8 460: yes | 0 after its tables (`S V` used); waived (Decision 98) |
 | `seagen_a64` | 5 038 | 492–922 | 5 530–5 960 | yes | 200 | 5 730–6 160: yes | 5 830–6 260: yes | none set (L-ac) |
 | `seagen_x64` | 5 376 | 672–1 282 | 6 048–6 658 | yes | 200 | 6 248–6 858: yes | 6 348–6 958: yes | none set (L-ac) |
 
@@ -4334,7 +4348,24 @@ scratch `W` between entries, and the unreserved string arrays and scalars (its l
 the gates is waived as `sealopt`'s is, Decision 98). `lirrw` validates the vector classes `x`, `y`,
 `m` and the `LF` records in `sea.lir` and `sea.lir3` input positions where they are allowed (only in
 `sea.lir`, so `seaopt`, `sealopt` and `seavec` reject them in their inputs) and writes them
-(Decision 113). Its output depends on the `#target` record (Decision 99): on `arm64-macos` T13
+(Decision 113). As built (WP-LIB): `seavec` reads `sea.lir3` with `lirrw`'s LIR input kind as
+`sealopt` does; `lirrw`'s writer does not validate the vector records `seavec` puts into its tables,
+and `seavec` does not read its output back. Every `sea.lir` is validated in the test harness instead
+(Decision 116, L-gk): the tool `tools/lirchk.bas` (`tools/lirchk.build.list`: `lib io diag tables
+lirrw`, `data errors exits consts entries records`, as `seavec`'s; own lines 100 – 59 999 with the
+room L-bp leaves a program that loads `lirrw`; a tool, not gated) reads one `sea.lir` as `seavec`
+reads its input, validates it with `lirrw`'s `sea.lir` input kind (the only one that accepts `x y m`
+and the `LF` records, with every check of the vector classes: lane counts, `vfeat` only on
+`x86_64-linux`, no vector or mask register as a parameter, argument, result or `chk` argument),
+writes nothing and ends with status 0 or `lirrw`'s `BAD_RECORD` failure; `tests/run.sh` runs it on the
+`sea.lir` of every program and dump test it compiles (for the target it compiles for), and
+`tests/stage.sh` on every `seavec` output it produces (`NAME.lir` and `NAME.lirx64`, both targets); a mask register's lane count
+is fixed by its first write in record order, a read of a mask with none yet is `BAD_RECORD` (property
+2), and `mand mor mnot` and a `mov` of masks take the lane count of their first source (L-gn);
+`lirrw` checks only `vfeat` against the target and accepts `y`, `ldm4` and `stm4` in an
+`arm64-macos` file, which `seagen_a64` rejects (§2.12.7, L-go); a `lirrw` rejection prints no
+detail, so each of its rejection cases in `tests/lib_check.sh` is a one-record mutation of an
+accepted file (L-gp). Its output depends on the `#target` record (Decision 99): on `arm64-macos` T13
 writes 2-lane loops; on `x86_64-linux` each vectorized loop is written twice under `vfeat` (4-lane
 first, 2-lane in the `else` part, §3.6.5). A function to which none of T11–T13 applies is written
 unchanged (T10 is idempotent), so `sea.lir` equals `sea.lir3` for it. Decision 72's capacity rule
@@ -4365,33 +4396,160 @@ F6's joins over the function's blocks; a location read before it is surely writt
 whole slot); the `sa` instructions and the slot's `slot` record are deleted when no use remains (the
 slots are renumbered densely, `s1`, `s2`, …).
 
-**T13. If-conversion and vectorization** (Decisions 99–101, 108). First, in an innermost `loop`
-with step 1, an `if`/`ifz` block (with or without `else`, nested ones innermost first) whose parts
-hold only instructions of the vector set below (no store, no failing instruction, no `rcall` with a
-site, no `call`, no block of another kind) is *if-converted* (L-fg): both parts are computed in
-order (the condition's register stays live), and each register written in a part and read after
-the block becomes, after the block, `fsel R c Ra Rb` (`ifz`: the operands swapped), Ra and Rb the
-renamed values of the two parts (the value before the block where a part does not write it). This
-is the speculation LANGUAGE.md §6.10 allows for arms that cannot fail; it changes no observed value
-(each lane selects the scalar arm's result). Then a loop L is vectorized when:
+**T13. If-conversion and vectorization** (Decisions 99–101, 108, 115). T13 visits the *candidates*
+of the function as it stands before T13, in record order: each `loop` L whose body holds no `loop`
+(a `do` in it is allowed here, unlike in the Terms' "innermost" of §5.8, and P1 must dissolve it).
+The loops a rewrite writes (vector loops, tails, the `else` loop) are not visited again, as T9's
+copies are not (§5.8). On each candidate T13 works in this order: P1 (inlined returns), P2 (unit
+accesses), P3 (invariant loads), the if-conversion, the conditions 1–5, the rewrite. P1–P3 and the
+if-conversion are L's *preparation*; it is kept only when L is then vectorized. When a step of the
+preparation leaves L with a `do`, a block or an access that the conditions reject, when L fails one
+of the conditions 1–5, or when the rewrite would exceed a LIR limit or a `seavec` table's region
+(Decision 72), L and everything P2 wrote before it are written exactly as they stood before P1 (no
+counter update of P2 is written: those exist only with the rewrite), and T13 goes on with the next
+candidate. In T13 *before L* means immediately before L's opening record, in the part that holds
+it (§5.8 Terms; a `loop` runs its body at least once when it is entered, §3.6.4, so what stands
+there runs exactly when L is entered); the rewrite replaces L in place. In the rewrite, the scalar
+loop L that runs the tail and the `else` part is L after P1 and P2, without the if-conversion (P3
+changes nothing in a scalar loop). So `sea.lir` differs from `sea.lir3` only in the loops T13
+vectorizes (and in T11's and T12's changes).
 
-1. L is an innermost `loop B J S C T` in the pattern of rule 4 or rule 17 (§5.8 Terms: its guard)
-   with T a constant 1, and its body is one region (no block record, no `exit`, `next` or `ret`)
-   after the if-conversion;
+*Constants.* In T13 a *constant* is a register whose only definition in the function is an `li`, or
+a `mov`, `iadd`, `isub` or `imul` whose operands are constants, its value folded exactly and lying
+in −2⁵² … 2⁵² (§2.8; in that range the wrapping instruction gives the exact value). This is L-br's
+reading of T7 extended: T3 leaves a repeated `li` as a `mov` of the first (§5.8 T3), and T7 writes
+its Δ as an `imul` of two such registers. The conditions 1 and 5 and P2 read "constant" in this
+sense; T11 keeps the Terms' (§5.8). T13 folds a constant's value into the `li`s it writes and reads
+no constant's register before or after L except L's own operands S, C and T, which are written
+before L (L reads them at its entry, §3.6.4 property 2).
+
+**P1. Inlined returns.** L20's lowering of an inlined call (rule 37: an `iblk` is `do D` … `enddo D`,
+each `iret` its `mov`s and `exit D`, §3.5.9) leaves in L a `do` that every path leaves by its `exit`.
+P1 dissolves each `do D` in L, innermost first, whose body holds no `loop`, no `do` (after those
+nested in it are dissolved), no `ret`, no `next` and no `exit` naming a block other than D. A part
+of a block (or D's body) *ends in `exit D`* when its last record is `exit D`, or is the `endif` of an
+`if`/`ifz` block both of whose parts end in `exit D` (a missing `else` part is empty and does not).
+Repeatedly, until neither applies (the result does not depend on the order):
+
+1. the records after an `exit D`, and after a block both of whose parts end in `exit D`, up to the
+   end of the part (or of D's body) that holds it, are deleted: they never run;
+2. for an `if`/`ifz` block I exactly one of whose parts ends in `exit D`, the records after I up to
+   the end of the part (or body) that holds I move, in order, to the end of I's other part (an
+   `else` is created for a block without one).
+
+Then a record is *in tail position* when it is the last record of D's body, or the last record of a
+part of a block whose `endif` is in tail position. When D's body ends in `exit D` and every `exit D`
+is in tail position, every `exit D`, the `do D` and the `enddo D` are deleted. Otherwise D stays (a
+path that reaches `enddo D` runs D's body again, §3.6.4; a guarded `exit D` with records after its
+block on both of its paths would need them duplicated), and L is not vectorized. P1 moves and
+deletes records but never copies or reorders an operation, so every path runs the same instructions
+in the same order and §3.6.4's property 2 still holds (a deleted record never ran).
+
+**P2. Unit accesses.** When L's step T is a constant 1 and S, C and T are invariant in L, with `ind`
+J:
+
+* A *counter* of L is an `i` register K ≠ J whose only write in L is one `iadd K K U` (U a constant
+  1) at the top block level of L's body, after every read of K in L. In the iteration whose `ind` is
+  J it holds K₀ + (J − S), wrapping, K₀ being its value at L's entry.
+* A *walked base* is a `p` register Q with exactly two definitions in the function: one before L
+  (T7's invariant-stride form, §5.8) and `padd Q Q Δ`, the first record of L's body, with Δ a
+  constant whose value δ is the element size of the accesses on Q (8 for `ldf stf`, 1 for `ldb stb`);
+  Q is read only by that `padd` and by accesses in L with base Q, `idx` `-` and scale 0 (T7's `Q - 0
+  o`), all of one element size. In the iteration whose `ind` is J such an access at offset o addresses
+  Q₀ + (J − S + 1)·δ + o, Q₀ being Q's value at L's entry. A reverse walk (δ the negative element
+  size, from a slice with step −1) is refused: its elements run downwards, which the vector form's
+  ascending lanes do not express; its accesses stay, and L fails (2).
+
+An `ldf stf ldb stb` access in L (at any depth) whose base D is invariant in L, with scale z and
+offset o, and whose `idx` X is computed in L from exactly one of J or a counter K, with coefficient
+1, constants and invariant registers by wrapping `iadd`, `isub` and `imul` by a constant 1 only (X =
+V + c + Σσᵢtᵢ: V that J or K, c a constant, tᵢ invariant registers with signs σᵢ = ±1), becomes `D′
+J z 0` with D′ = D + (Σσᵢtᵢ·z + e), e = c·z + o; for a counter, one more term t = E with σ = +1,
+E = K₀ − S. An access `Q - 0 o` on a walked base becomes `D′ J δ 0` with D′ = Q + (o + δ − δ·S), and
+the `padd Q Q Δ` is deleted. Before L (after whatever stands there) P2 writes, in this order:
+
+1. for each counter whose reads are rewritten, in the order of the counters' `iadd`s in L, `isub E
+   K S` (K holding K₀ there): one E per counter, shared by its accesses;
+2. for each D′, in the record order of the first access that uses it (accesses with equal D, terms,
+   e and scale share one D′): T7's unit-stride instructions (§5.8), one group `li Z σz`, `imul T1 t
+   Z` (both omitted when σz = 1, T1 being t), `padd D1 D T1` per term t, the counter's E first, then
+   the others in the order of their first reads in X's computation, then, when e ≠ 0, `li G e` and
+   `padd D′ D1 G` (each operand the previous result, D′ being the last one written); for a walked
+   base, with S a constant, `li G e` and `padd D′ Q G` with e = o + δ − δ·S (D′ being Q when e = 0),
+   and with S not a constant, `li Z −δ`, `imul T1 S Z`, `padd D1 Q T1`, then, when e = o + δ ≠ 0,
+   `li G e` and `padd D′ D1 G`.
+
+A counter none of whose reads remain loses its `iadd`; after the rewrite's last record (the `endif`
+of the vector form's `if`) it gets `iadd K K C` and `iadd K K T` (T, the step, holds 1 and is
+defined outside L), the K₀ + C + 1 that L leaves, the counters in the order of their `iadd`s in L.
+Then the pure instructions of L whose results nothing reads are deleted (T10's first rule,
+restricted to L). Every instruction P2 writes wraps, as the address computations it replaces do, so
+each access addresses exactly the bytes it addressed before, element by element, and (4)'s test sees
+the true bases; an access whose folded constants would leave −2⁵² … 2⁵², or whose X chain holds
+another instruction (a checked one, a second counter, J with another coefficient), is not changed.
+
+**P3. Invariant loads.** A load `ldf F P - 0 o` in L (at any depth) is *invariant* when: P is
+invariant in L and is a parameter never written or a register every definition of which is an `sa`
+of one slot s; no register holding that address (P; for a slot, every `sa` register of s) is,
+anywhere in the function, a stored value or an operand of `mov`, `padd` or `psel`; its bytes lie
+inside the memory P reaches (T8 (c), §5.8); and L holds no store whose base is P (for a slot, any
+`sa` register of s), no `mcopy`, no `call` and no `rcall` other than `sea_log sea_exp sea_sin sea_cos
+sea_pow sea_hypot`. Outside L, P may be a `call` argument or an `mcopy` operand (so it need not be a
+private base, §5.8 Terms). By §3.6.4 properties 3 and 4 (L-af) no instruction of L changes those
+bytes, and P is an object pointer (§5.8 T8, L-at), so the load cannot fail and reads one value in
+every iteration. An invariant load is a record of the vector set (2) and may stand in a part that
+is if-converted (computing it on both paths reads valid memory and changes no value, LANGUAGE.md
+§6.10); in the vector loop it is replaced by one load before the vector loop and a splat (the
+listing below); in the scalar loops it stays where it is.
+
+**If-conversion** (L-fg). In L, each `if`/`ifz` block (with or without `else`, nested ones
+innermost first) whose condition register c is a mask register (2) written earlier in the iteration
+and whose parts hold only records of the vector set below (no store, no failing instruction, no
+`rcall` with a site, no `call`, no block of another kind) is *if-converted*: both parts are computed
+in order, every register a part writes being renamed in that part, and after the block each register
+R written in a part and read at any record outside that part (later in the iteration, earlier in L's
+body, which a later iteration reaches, or after L) is merged from Ra and Rb, the renamed values of
+the two parts (the value of R before the block where a part does not write it): an `f` register by
+`fsel R c Ra Rb`, a mask register by `iand R1 c Ra`, `bnot R2 c`, `iand R3 R2 Rb`, `ior R R1 R3`
+(R1, R2, R3 new registers); for `ifz` Ra and Rb are swapped. A register read only inside the part
+that writes it is not merged. The merges stand in the order of their registers' first writes in the
+block, and each reads c's value from before the block: a part that writes c (the `&&`/`||`
+lowering, `fcmp gt c …; if B c; fcmp le c …; endif B`) writes a renamed register like any other, and
+c's own merge comes last. Since c, Ra and Rb hold 0 or 1, the mask formula is the selection exactly,
+and lane by lane `mand`, `mnot`, `mand`, `mor` give the same. This is the speculation LANGUAGE.md
+§6.10 allows for arms that cannot fail; it changes no observed value (each lane selects the scalar
+arm's result). A unit access in a converted part is in range whichever arm runs: T1 narrows only
+on integer comparisons (§5.8 Facts), never on an `fcmp` or a loaded `bool`, and a block whose
+condition is not a mask register is not converted, so an access whose `chkb` T1 removed, or whose
+extents a fused copy checked before L, addresses an element that exists in every iteration of L.
+A block that is not if-converted stays, and L fails (1). Then L is vectorized when:
+
+1. L is `loop B J S C T` with T a constant 1 and S, C, T invariant in L, and after its preparation
+   its body is one region (no block record, no `exit`, `next` or `ret`), so L is innermost;
 2. every record of the body is in the *vector set*: a *unit access* `ldf X D J 8 0`, `stf V D J 8
    0`, `ldb M D J 1 0` or `stb M D J 1 0` with D invariant in L (T7's unit-stride form, §5.8: a
    folded or whole-array leaf of a plain copy gives it, its constant and invariant index terms
-   folded into D); `fadd fsub fmul fdiv fsqrt fneg fabs fmin fmax` of `f` registers; `fcmp cc M a
-   b`; `fsel R c a b`; `iand ior` of two mask registers and `bnot` of one; `mov` of an `f` or mask
-   register; `lf` (a splat); an `rcall` of `sea_log sea_exp sea_sin sea_cos sea_pow sea_hypot` (no
-   site); and the sum8 group of (5). A *mask register* is an `i` register written in the body only
-   by `fcmp`, `ldb`, `iand`, `ior`, `bnot` of mask registers, and read only by `fsel`'s condition,
-   `stb`, `iand`, `ior`, `bnot`;
-3. every `f` register the body reads is written earlier in the same iteration, or invariant in L
-   (splatted once before the vector loop), or the sum8 accumulator; every `i` register it reads is a
-   mask register written earlier in the iteration, or J as the `idx` of a unit access; no register
-   written in the body other than J is read after L or before its write in the body (no lane value
-   lives out, no other carried value), the sum8 home excepted;
+   folded into D, and P2 gives it to counter-indexed accesses and walked bases); an invariant load
+   (P3); `fadd fsub fmul fdiv fsqrt fneg fabs fmin fmax` of `f` registers; `fcmp cc M a b`; `fsel R
+   c a b`; `iand ior` of two mask registers and `bnot` of one; `mov` of an `f` or mask register;
+   `lf` (a splat); an `rcall` of `sea_log sea_exp sea_sin sea_cos sea_pow sea_hypot` (no site); and
+   the sum8 group of (5). The *mask registers* are the greatest set of `i` registers each of which
+   is written in the body only by `fcmp`, `ldb`, and `iand`, `ior`, `bnot` or `mov` of mask
+   registers, and read only by `fsel`'s condition, `stb`, `iand`, `ior`, `bnot`, `mov` and, before
+   the if-conversion, an `if`/`ifz` (found as §5.8 finds the array registers: start from every `i`
+   register written in the body and remove one whose writes or reads break this until nothing
+   changes); each holds 0 or 1 (`fcmp` and `bnot` write 0 or 1, and every stored byte is 0 or 1,
+   §3.6.4);
+3. every `f` register the body reads is written earlier in the same iteration (an invariant load's
+   destination included), or invariant in L (splatted once before the vector loop), or the sum8
+   accumulator; every `i` register it reads is a mask register written earlier in the iteration, J
+   as the `idx` of a unit access, or J, Q and W in a sum8 group (5); no register written in the body,
+   J included, is read after L, and none is read before its write in the body (no lane value lives
+   out, no other carried value), the sum8 home excepted. The registers *written in the body* are
+   those L's body writes before the if-conversion, a renamed register standing for its original (a
+   counter P2 removed is no longer written in the body). J is never read after a loop by pass 3a's
+   lowering or by `seafuse` (a loop variable is scoped to its loop), so refusing such a read costs
+   no workload loop and spares the rewrite the value L-ay gives J;
 4. *independence at run time*: for every pair of unit accesses of one kind (`f64` or byte) at least
    one of which is a store, with different bases Da and Db (identical bases: the same element,
    always allowed), the distance d = Da − Db (`pdiff`) satisfies d ≤ −w·8 or d ≥ w·8 for `f64` (w·1
@@ -4407,33 +4565,88 @@ is the speculation LANGUAGE.md §6.10 allows for arms that cannot fail; it chang
    (`max min argmax argmin`, `nnz any all`, the `i64` sums, F3's masked sums and user accumulations
    stay scalar: lane-split forms would change ties, signed zeros or overflow points).
 
-The rewrite: before L (inside its guard) the count n = C + 1 is split as nv = n div 8 vector
-iterations (none when n < 8) and the tail; the independence test of (4) and nv > 0 select the
-vector form, in an `if`: the vector loop `loop Bv Jv S Cv 8` (Cv = nv − 1) whose body is the body of
-L with every instruction of the vector set replaced by its 2-lane form four times (lanes 0–1 at
-offset 0, 2–3 at 16, 4–5 at 32, 6–7 at 48 bytes of each unit access, `ldm2`/`stm2` at byte offsets
-0, 2, 4, 6) or, in the 4-lane version, by its 4-lane form twice (offsets 0 and 32; `ldm4`/`stm4` at
-0 and 4); each invariant `f` operand splatted once before the vector loop (`xsplat`/`ysplat`); the
-elementary-function `rcall`s replaced by the vector entries of §2.12.8 (`sea_log_x`, … or `sea_log_y`,
-…); then the scalar loop L itself runs the tail (its start S + 8·nv, its count n − 8·nv, under its
-own guard); in the `else` part of the vector form's `if`, L runs on the whole range as before. On
-`x86_64-linux` the vector form's `if` holds, in its first part, `vfeat F avx2` and an inner `if F`
-with the 4-lane loop and, in its `else` part, the 2-lane loop (each followed by the same tail). Every
-lane performs its element's scalar sequence (§3.6.4: each `x`/`y` instruction is lane by lane the
-scalar instruction of its name), so the vector and scalar forms give identical bits (LANGUAGE.md
-§6.8 4.).
+**The rewrite.** L is replaced, in place, by the *vector form* below (normative, so that its
+goldens follow byte for byte; every listed `li` is written where it is listed, with a register of
+its own). Before it stand P2's instructions (they are before L). Let n = C + 1 (up to 2⁶⁴) and nv =
+n div 8 the vector iterations.
+
+1. *The split*: `li R7 7`, `isub A C R7`, `li R3 3`, `ishr Cv A R3`, `ishr H C R3`, `icmp le V Cv
+   H`. For C ≥ 7 (unsigned) Cv = (C − 7) div 8 = nv − 1 ≤ H; for C < 7, A wraps to at least 2⁶⁴ − 7
+   and Cv ≥ 2⁶¹ − 1 > 0 = H; both are below 2⁶¹, so the signed `icmp` is the unsigned comparison and
+   V = 1 exactly when nv > 0, the full range C = 2⁶⁴ − 1 included (nv = 2⁶¹, n never formed).
+2. *The independence test* of (4): the *entries* are the pairs (base register, kind) of the body's
+   unit accesses, in the record order of each entry's first access; a *pair* is two entries i < j
+   of one kind with different registers at least one of which has a store in the body (one pair per
+   two entries, however many accesses they have), in the order of i, then j. When there is a pair:
+   `li Z0 0`; when an `f64` pair exists, `li P8 64`, `li N8 −64`; when a byte pair exists, `li P1 8`,
+   `li N1 −8`; then for each pair (Ei, Ej): `pdiff Dd Ei Ej`, `icmp ge G1 Dd Pk`, `icmp le G2 Dd Nk`,
+   `icmp eq G3 Dd Z0`, `ior G4 G1 G2`, `ior G5 G4 G3`, `iand Vk Vk−1 G5` (Pk, Nk of the pair's kind;
+   V0 = V). The form's condition is the last Vk (V when there is no pair), so nv > 0 enters as the
+   first operand of the chain.
+3. `if Bi Vlast`; then on `arm64-macos` the 2-lane part and its tail; on `x86_64-linux` `vfeat F
+   avx2`, `if Bf F`, the 4-lane part and its tail, `else Bf`, the 2-lane part and its tail, `endif
+   Bf`; then `else Bi`, the scalar loop L on the whole range, `endif Bi`; then P2's counter updates.
+
+A *w-lane part* (w = 2 with the class `x` and m = 4 copies, or w = 4 with `y` and m = 2; `Xop` names
+`xop` or `yop`, `ldmw`/`stmw` `ldm2`/`stm2` or `ldm4`/`stm4`) is, in order:
+
+* *the splats*, in the record order of the body (within a record, operands left to right): for the
+  first read of each invariant `f` register r, `Xsplat Sr r`; for each invariant load `ldf F P - 0
+  o`, `ldf F′ P - 0 o` and `Xsplat SF F′`; for each `lf F v` of the body, `lf F′ v` and `Xsplat SF
+  F′`; each part writes its own (so on `x86_64-linux` each arm has its splats);
+* *the sum8 homes*, for each sum8 group in the order of its `iand`: `Xld Hq A - 0 (q − 1)·8w` for q
+  = 1 … m (`ldx` at 0, 16, 32, 48; `ldy` at 0, 32);
+* `li E8 8`, `loop Bv Jv S Cv E8`, the vector body, `endloop Bv`;
+* the sum8 homes stored back, `Xst Hq A - 0 (q − 1)·8w`, in the same order;
+* *the tail*: `li R7′ 7`, `iand Nt A R7′`, `li Z′ 0`, `icmp gt Gt Nt Z′`, `if Bt Gt`, `li R3′ 3`,
+  `ishl Pt Cv R3′`, `iadd S1 S Pt`, `li E8′ 8`, `iadd St S1 E8′`, `isub Lt Nt T`, `loop Bl J′ St Lt
+  T`, the body of L after P1 and P2, `endloop Bl`, `endif Bt`: the tail count n − 8·nv is Nt = A mod
+  8 (A = n − 8, Cv = A div 8) and its start S + 8·nv is St.
+
+*The vector body*: each record of the prepared body in order is replaced by m consecutive copies,
+copy q (q = 1 … m) computing lanes (q − 1)·w … q·w − 1, as follows: a unit access `ldf X D J 8 0` /
+`stf V D J 8 0` becomes `Xld Xq D Jv 8 (q − 1)·8w` / `Xst Vq D Jv 8 (q − 1)·8w`, and `ldb M D J 1 0`
+/ `stb M D J 1 0` becomes `ldmw Mq D Jv 1 (q − 1)·w` / `stmw Mq D Jv 1 (q − 1)·w`; `fadd fsub fmul
+fdiv fsqrt fneg fabs fmin fmax fcmp fsel` become `Xadd … Xmax Xcmp Xsel` of the copies (same `cc`);
+`iand ior bnot` of masks become `mand mor mnot`; a `mov` becomes a `mov` of the copies; an `rcall` of
+`sea_f` becomes `rcall sea_f_x` (or `sea_f_y`) with the same field layout; an `lf F v` or an
+invariant load writing F becomes nothing when F has no other write in the body (its reads then read
+SF) and `mov Fq SF` otherwise; the sum8 group's `iand` and `ldf` become nothing, its `fadd G G Y`
+`Xadd Hq Hq Yq` and its `stf` nothing. In copy q an operand that is an `f` or mask register written
+in the body is that register's copy-q register (one per register and copy, the same for all its
+writes), an invariant `f` register r is Sr, and J is Jv.
+
+*Registers.* Each copy of L (the tails, the `else` loop) has its own local registers (those written
+in L and read only in L, J included); the registers written before L or read after it are the same
+in every copy (L-bl). The split, the test, each part's splats, homes, step and vector loop write
+registers of their own. T10 then renumbers the function (§3.6.1), which fixes every number, so only
+which registers are the same matters. Every lane performs its element's scalar sequence (§3.6.4:
+each `x`/`y` instruction is lane by lane the scalar instruction of its name), so the vector and
+scalar forms give identical bits (LANGUAGE.md §6.8 4.).
 
 **Alignment**: none is required or assumed: unit accesses are unaligned vector loads and stores
 (NEON `ldr q`, SSE2 `movupd`, AVX2 `vmovupd`); no peeling (L-ey).
 
-**What the workloads get** (Decision 108): W1's bisection nest (the plain copy's linear loop over
-the grid, with `shaft_safety`'s inlined `if` chains, whose arms call only `pow` and compute `f64`
-values, if-converted) is vectorized; the broadcast copy and the split copy are not (non-unit
-accesses). W4's `rb_half_sweep` store `T[1..ny-1, :] = where(colorIn, Tn, Tc)` (its inner loop over
-rows: unit accesses of `Tn`, `Tc`, the mask and `T`) and `residual`'s fused nest are vectorized; the
-group nest of `Tc`, `tgs`, `Tn` and `dMax` is not (its masked `max` carries values under an `if` that
-holds a store-free but carried update, which (3) excludes); the scalar SOR loop is not (§5.2's shape
-stays). The shape lines of §2.12.10 check the first two.
+**What the workloads get** (Decisions 108, 115). W1's bisection nest, the plain copy's linear loop
+over the grid (`.main`, lines 251–257 of the port), is vectorized: its accesses are already unit;
+`shaft_safety`'s inlined body is a `do` that ends in a single `exit`, which T8 and T9 treat as an
+innermost loop and T9 unswitches on `dmm > 51` (two `do` copies in an `if` on that condition), and
+P1 dissolves both; its `&&` conditions merge as masks; its loads of `pGrid`'s fields (an `sa` slot
+also passed to a `call` and an `mcopy` destination outside the loop) are invariant loads (P3); and
+its `if` chains, whose arms call only `pow` and compute `f64` values, are if-converted. The broadcast
+copy and the split copy are not (non-unit accesses). W4's `rb_half_sweep` store `T[1..ny-1, :] =
+where(colorIn, Tn, Tc)` (its inner loop over rows: the reads of `Tn`, `Tc` and the mask at
+`seafuse`'s linear counter O, which P2 makes unit accesses, the store to `T`, and a step that T3 left
+as a `mov` of an `li 1`, a constant in T13's sense) and `residual`'s fused nest (its reads through
+the row counter K, P2) are vectorized; the group nest of `Tc`, `tgs`, `Tn` and `dMax` is not (its
+masked `max` carries values under an `if` that holds a store-free but carried update, which (3)
+excludes); the scalar SOR loop is not (its `next`, a `chkb` and the carried `dMax`; §5.2's shape
+stays), and neither is W5's LCG loop (a failing `imulc`, a carried value, `itof`). A W1-shaped loop
+over a unit-step slice (`tests/programs/vec_ifexpr_w1.sea`) gets a walked base (P2). The shape
+lines of §2.12.10 check W1's nest and W4's store. W1's vector body calls `sea_pow_x` (or `_y`) three
+times per copy (two in one T9 copy, one in the other, both computed), where the scalar loop calls
+`sea_pow` once per element and the body without T9's split would call it twice: whether T9's
+unswitching of the `do` matters is measured in 7f (§2.12.10, Decision 115).
 
 #### 2.12.7 Pass 4 (both targets)
 
@@ -4444,7 +4657,14 @@ stays). The shape lines of §2.12.10 check the first two.
   vector moves (`str q`/`ldr q`; `movupd`; `vmovupd`), so no frame is realigned (the System V stack
   guarantees 16 bytes, L-fh); across a `call` or `rcall` every vector register is caller-saved (on
   arm64 only the low 64 bits of `v8`–`v15` survive a call, so an `x` or `m` value live across one is
-  spilled, L-ez).
+  spilled, L-ez). As built (WP-LIB): L-ez's "spilled" is §4.9.2's "Calls" save, a store to the
+  interval's save slot (listed by `ra_sv`) before each call it crosses and a load after it, on both
+  targets and on the free path of a `release`, not a spill of the whole interval (L-gl); a vector
+  interval takes the `f` row "crossing no call" even when it crosses a call, so arm64 does not
+  prefer `d8`–`d15` (which would only add prologue saves), and is saved around each call even in a
+  callee-saved register, which `ra_used` still reports (L-gm); the classes are 4 `x`, 5 `y`, 6 a
+  2-lane and 7 a 4-lane `m`, a mask's lane count coming from its defining instruction (`xcmp`/`ldm2`
+  2, `ycmp`/`ldm4` 4, `mand mor mnot mov` their first source's, L-gn).
 * **Comparisons, selections, `xmin`/`xmax`** (both targets; L-fi): a mask lane is all-ones where the
   comparison holds; `lt le eq` use the ordered predicates, `gt ge` swap the operands of `lt le`, and
   `ne` uses the unordered not-equal (a NaN lane is set, as `fcmp ne`); AVX uses the `_OQ` predicates
@@ -4608,7 +4828,10 @@ gains the line kind `vector <target> <function> <first line> <last line>`: in `s
 range, identified as the scalar lines are (L-ar), and in its `-S` text that loop's 2-lane (and
 4-lane) instructions; written for W1's bisection (`.main`, 251–257) and W4's selection store (the
 caller of `rb_half_sweep`, over `rb_half_sweep`'s line range, since inlined code keeps its own
-lines), on both targets.
+lines), on both targets. 7f also measures whether T9's unswitching of `shaft_safety`'s
+inlined-return `do` matters for W1's speed (W1's vector body calls `pow` three times where the
+loop without that split would call it twice, §2.12.6 "What the workloads get"); T9 changes only by a
+later agreed decision (Decision 115).
 
 **Goldens that fusion changes** (Decision 97). Programs' outputs never change. The dump goldens of
 the stages after `seaexpand` change where F1–F5, L18/L20's copying or T11–T13 apply: every test with
@@ -4619,7 +4842,9 @@ test with a `NAME.lir2` (29 tests: `lir4_seaopt` has a `NAME.lir2` and no `NAME.
 `NAME.lir` renamed `NAME.lir3` and a new `NAME.lir` equal to it unless T11–T13 apply (derived by hand
 when they do; the review counted about 7 such loops: `opt5_bce_range`, `opt5_bce_scope`, `opt5_cow`,
 `opt5_cow_kept`, `opt5_sor`, `opt5_sr_stride`, `opt5_sr_unit`, of which T13's conditions decide
-which vectorize). A test whose subject is the unfused form (the agreed examples of rules 21, 22,
+which vectorize; with Decision 115's preparation the set is larger: every vectorized loop over a fused
+selection store, a unit-step slice or an inlined elemental with returns, T2 deriving each by hand).
+A test whose subject is the unfused form (the agreed examples of rules 21, 22,
 23, 28, L7's and L13's tests, 6c's `elem6_*` dumps of L19) keeps its subject: its statements are
 separated so that no group forms and each tree is one `seafuse` leaves to L7 (an intermediate `let`
 read by a `printf` of one element between the statements, which ends any group, F2 (1), and its
@@ -9708,7 +9933,9 @@ loop-extended interval starts before k (a value carried around a loop that the c
 L-az). The order is: those stores, the argument
 move, the call, the result move, those loads. The callee-saved registers the function allocates are
 saved by the prologue after the frame record is set up and restored before the epilogue. The cold
-call of `_sea_err` saves nothing: it never returns.
+call of `_sea_err` saves nothing: it never returns. A vector interval (`x`, `y`, `m`, phase 7) that
+crosses k is saved and reloaded this way, at full width, even in a callee-saved register (§2.12.7,
+L-gl, L-gm).
 
 **Moves.** Parameters arrive in the §4.8 registers and are moved to their locations after the
 prologue; the arguments of a `call` or `rcall`, its results, the values of a `ret`, the operands of
@@ -12183,7 +12410,15 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     `NAME.lirx64` for `x86_64-linux`, L-fc): T13 on a plain loop, a loop with an invariant `f`
     operand, masks, an elementary function, the sum8 group, an if-converted block, and each condition
     that keeps a loop scalar (a block with a store, an `i64` operation, a carried value, a non-unit
-    access, a live-out lane value); the independence test of §2.12.6 (4) on hand-written
+    access, a live-out lane value); the preparation of Decision 115 (§2.12.6 P1–P3): a dissolved
+    inlined return, a guarded early return (dissolved, and one whose `do` stays), an `&&` condition
+    merged as a mask (`iand bnot iand ior`), a counter-indexed access from a fused selection store,
+    a walked base from a unit-step slice (and a reverse one, refused), an invariant parameter or slot
+    load in an if-converted arm, a register written in a part and read before the block (carried,
+    refused), a hand-written loop whose `ind` is read after it (refused), the full-range split (C =
+    2⁶⁴ − 1, a hand-written `NAME.lir3` without `.out`), and a loop that fails after its preparation and is written unchanged (its `NAME.lir` equal
+    to its `NAME.lir3`); a `NAME.lir` or `NAME.lirx64` differs from `NAME.lir3` only in the loops T13
+    vectorizes, and no `lir1`, `lir2` or `lir3` golden changes; the independence test of §2.12.6 (4) on hand-written
     `vec7_alias_*` LIR (a `NAME.lir3` without `NAME.sea`, run through `seavec` by `stage.sh` per
     target and, with a `.out`, through pass 4): bases of one array at distances 0, 8, 56, 64 and −8
     bytes (Sea source cannot make them: a selection is a copy, and F1 (5) keeps a shifted store out
@@ -12800,8 +13035,8 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7b | **Contract and the two new programs, no change of behaviour** (after 7a; Decisions 94, 98, 109, 112). **WP-CONTRACT** first and alone: `include/passes.txt` (the set letters `HL`, `L`, `LF` in its header comment; `rec LF 131 pdiff 0 d:ri a:rp b:rp`), `include/rt.inc` (entries 39–50 with the letters `x`, `y`; `SEA_ENT_COUNT` 50), the tables of §3.9, §3.6.4 (`pdiff`) and §4.8 (the line shape's letters, the rows of §2.12.8), LANGUAGE.md §9.2's sentence (§2.12.2 (5)), and the normative sections §2.12 amends (§3's introduction among them); then in parallel, each owning its files: **WP-FUSE0** `passes/seafuse/*` (new: reader, validator, walker and writer of `sea.hir`/`sea.hirf`, its own helpers, L19 and `ind2sub`'s array form rewritten to emit the per-element `call`, L-eh, L-ek; F1–F5's table layout of Decision 112 (1)); **WP-LOOP** `passes/sealoop/*` (the `sea.hirf` reader, L19's own lines removed, the `.l` renumbering in file order, Decision 109); **WP-VEC0** `passes/seavec/*` (new: `lirrw`-based, validates `sea.lir3` and writes it unchanged as `sea.lir`); **WP-LOPT** `passes/sealopt/*` (output `sea.lir3`); **WP-PIPE** `driver/sea` (the two steps, `--emit hirf` and `lir3`, the usage text), `tests/driver_check.sh`, `tests/stage.sh` (the pairs `seafuse hir hirf`, `sealoop hirf hirl` with L-ek's fallback, `sealopt lir2 lir3`, `seavec lir3 lir`), `tests/run.sh`, `tools/seaval.bas` (formats `hirf`, `lir3`), `tools/passlines.sh`, `Makefile` (the programs, their installation), `tests/cross_pack.sh` if it needs it, and the lists of passes, `--emit` kinds and `seaval` formats in `sea/CLAUDE.md`; **T1** `tests/CORPUS.md` (the renamed goldens and the new files); **T2** the 29 `NAME.lir` with a `NAME.lir2` renamed `NAME.lir3` and each new `NAME.lir` (equal), the `NAME.hirf` of the `elem6_*` tests | 7b neutral by Decision 109 (a): `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir` and every diagnostic byte-identical over the corpus, L-p's method; every stage pair holds; `make test`, `make check-contracts` and `make cross` pass; sizes and `seafuse`'s free letters recorded in §2.7 ("Measured after 7b"), Decision 112 (1)'s packing done before 7c's code if it has fewer than 2. **Done** (2026-10-29): `make test` passes in every group (`test-driver` 122, `check-data` 114, `test-lib` 232, `test-rt` 114, `test-stage` 833, `test-shape` 4, `test-protocol` 56, `test-programs` 1 705, `test-accept` 2+2), `make cross` 784 of 784 cases on the Linux host `desktop`; neutral by Decision 109 over the whole corpus (1 061 sources on both targets compiled before and after 7b, L-p's method: `sea.ast`…`sea.hir`, `sea.hirl`, `sea.lir1`, `sea.lir2`, `sea.lir3` (= the old `sea.lir`), `sea.lir`, standard output, standard error and status byte-identical apart from the embedded `std.sea` install path), with the two exceptions agreed 2026-10-29 (a `tret` of an `emap` inside an `inl`/`elem` function; capacity positions: §2.12.3); sizes and free letters in §2.7 ("Measured after 7b": `seafuse` 3 164 with 5 free letters, so Decision 112 (1)'s packing is not needed; `sealoop` 6 396); WP-PIPE also edited `tests/protocol.sh` (its fake chain needs the two new programs); Decision 110's copying built in 7b (amended); an independent review found elemental applications and an array-`r` `ind2sub` inside inlined (L18/L20) functions crashing `sealoop` (fixed by that copying), a non-neutral field-path `tasg` through a `ref` root (fixed, L-fr) and moving capacity positions (agreed, L-fq); six regression programs `tests/programs/elem6_inl_*` and `seaval` `hirf`/`lir3` cases in `tests/lib_check.sh` added; lead decisions L-fm–L-fu (agreed 2026-10-29 where marked) |
 | 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code. **Done** (2026-10-30): F1–F5 in `seafuse` with buffer reuse, in-place selection stores of kinds S, R, A, M, MM, groups with `tbind`s of k-result elemental applications, fused, masked and `.flat` reductions in and out of groups, and folded concatenation parts in stacks and mixed rows (decided by the user 2026-10-30, L-fy); the user's D1–D3 (2026-10-29: the group's leaf phase and stored binds in the enclosing block, F8 appended in `sea.hirf`, the broadcast copy reading a folded leaf by its map) and the readings of the work packages and both reviews' fixes recorded in §2.12.3, §2.12.4 ("Readings fixed by 7c") and as lead decisions L-fv–L-gj; `sealoop`'s share: the F8 reader and renumbering (L-fw), the `rcnt` type check (L-gj), an inlined callee's undeclared `.i` local (R34); `sealower` unchanged; tests: 39 `fuse_*` programs (T1's 26, 11 `fuse_reg_*` regressions, 2 concatenation programs), 19 `r_fuse_*`/`err_fuse_*` error tests, 22 `fuse7_*` and 12 `fuse7c2_*` dumps (`dump7_cases.py` part 4), the re-derived goldens `ew_colrow`, `sel_reads` and the subject test `elem6_inst` (L-fb's list in `tests/CORPUS.md`); `make test` passes in every group (`test-programs` 2 034, `test-stage` 1 067) and `make cross` 876 of 876 on the Linux host; two independent reviews with differential fuzzing against the pre-7c compiler (stdout, stderr, status and heap check compared byte for byte; review 1: 1 566 programs, 9 defects, all fixed, with two more found by the fixer's fuzzing; review 2: 577 programs and capacity scans, 5 defects, all fixed), the final fuzz runs (1 000, 400 and 400 programs on fresh seeds: all MATCH; 300 concatenation programs: no mismatch, those 37 that fail to compile failing on both compilers); the measurement after 7c passes with no relief (§2.7, "Measured after 7c": `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431 with 3); observed: fused output can slow `sealopt` (§2.12.5); next 7e |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
-| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113): T11, T12, T13 with if-conversion (§2.12.6), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
-| 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108): §2.12.10. Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
+| 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115, 116): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7 |
+| 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
 | 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change expected; **specified by decision, not started: written when 7f is done**): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass |
 
 ## 9. Decisions (agreed)
@@ -14116,7 +14351,8 @@ recommendation as (a), its reasons, the decision, and what it affects.
      lines, in §2.7's `seavec` estimate) and exact by construction (each lane takes the scalar arm's
      value); (b) is smaller but leaves the workload with the most element-wise work scalar; (c) puts
      a LIR concern into the HIR and needs `seafuse` to see through inlined bodies, which it does not
-     (L20 inlines after it). **Decided: (a)** (the user, 2026-10-29). Affects §2.12.6, §2.12.10, §2.7, §6.2.
+     (L20 inlines after it). **Decided: (a)** (the user, 2026-10-29). Affects §2.12.6, §2.12.10, §2.7, §6.2. Amended by Decision 115
+     (T13's preparation, 2026-10-31).
 109. **`.l` local numbering across `seafuse` and `sealoop`, and what "neutral" means for 7b.**
      (§3.5.9 "Locals" numbers `.l` locals in file order; in `elem6_vec.hirl` L19's and L20's locals
      interleave, so any scheme in which the two programs number separately permutes the names and
@@ -14203,7 +14439,8 @@ recommendation as (a), its reasons, the decision, and what it affects.
      (5 579–5 639) and `sealopt` (5 500–5 560) leaves both well inside the gate; (b) duplicates the
      record table's handling; (c) leaves `seavec`'s output unchecked until pass 4, against §3's rule
      that each pass validates what it reads and writes what it validates. **Decided: (a)** (the user, 2026-10-29). Affects §2.7, §2.12.6, §8
-     (row 7e), `passes/lib/API.md`.
+     (row 7e), `passes/lib/API.md`. Amended by Decision 116 (2026-10-31: the vector output is validated in
+     the test harness by `tools/lirchk.bas`).
 
 114. **W7 joins the acceptance set; where its port is built; which MATLAB baseline times it**
     (2026-10-29; §1.2, §6.3, §8). The user added the workload `sea/workloads/w7_drivetrain.m` (an
@@ -14221,6 +14458,66 @@ recommendation as (a), its reasons, the decision, and what it affects.
     W7's own run already exists. Affects §0, §1.2 (the set, the versions paragraph and Decision 79's
     "all six workloads", W7's baseline), §6.3 ("W7 acceptance" and the list of feature gaps), §8
     (row 7g, row 10), LANGUAGE.md §1.2, §4.2 and §10; no contract file, no code.
+
+115. **How T13 reaches the loops Decision 108 promises** (2026-10-31; §2.12.6). An analysis of
+    `sea.lir3` at 7c's commit found that T13 as agreed vectorizes none of them: W1's nest holds the
+    `do` blocks of `shaft_safety`'s inlined returns (L20) and `&&` conditions that write their own
+    condition register, and reads `pGrid`'s fields through a slot that is no private base; W4's
+    selection store reads its plain arm at `seafuse`'s linear counter O and `residual` through a row
+    counter K, neither a unit access; their steps, and T7's walked bases over unit-step slices, are
+    `mov`s of `li`s that the Terms' "constant" does not cover. Options: (a) **amendments in `seavec`
+    only (WP-VEC): T13's constants as L-br's reading extended; P1 dissolving inlined-return `do`
+    blocks; P2 normalizing counters and walked bases to unit accesses; P3 invariant loads of never
+    written parameters and slot `sa` bases; mask merges `iand bnot iand ior` in the if-conversion,
+    a part that writes the condition register writing a renamed one; the preparation kept only on a
+    loop that is then vectorized, the tail and `else` loop being L after P1 and P2 without the
+    if-conversion**; (b) fixes at the origin: `seafuse` reading the plain arm at the loops'
+    inductions, T3 propagating copies across regions or L-br extended to T7's k and c, T9
+    restricted to `loop`s (re-derives the `hirf`, `hirl` and `lir1`–`lir3` goldens of every fused
+    selection store and of every loop T3 or T9 touches, and reopens 7c's passes); (c) narrow
+    Decision 108 to what T13 as agreed vectorizes (W1's nest, W4's store and `residual` stay
+    scalar, and the `vector` shape lines lose their subjects). Recommended: (a); it changes only
+    `seavec`'s output, and only for loops it vectorizes (no `lir1`, `lir2` or `lir3` golden
+    changes), each rule moves or renames instructions without changing any operation or address
+    (bit-identity, LANGUAGE.md §6.8 4.), and no failing instruction is speculated. **Decided: (a)**
+    (the user, 2026-10-31), written with the lead's readings that make the rules exact, and with the
+    fixes of an independent review of that text (2026-10-31): P1 only on a `do` whose body ends in
+    its `exit` with every `exit` in tail position, nothing duplicated; P2 only with step 1 and S, C,
+    T invariant, one `isub E K S` per counter, a walked base with exactly two definitions, scale 0
+    and Δ the element size (a reverse walk refused), the counter's value after L restored as K₀ + C +
+    1 only with the rewrite; P3 excluding stores through any `sa` register of the slot; the
+    if-conversion merging every register read outside the part that writes it, in first-write order,
+    the condition's merge last, the condition a mask register, condition 3 counting the writes before
+    the conversion; the mask registers a greatest fixpoint, also written by `mov`; J not read after L;
+    candidates taken from the function before T13, its own copies never revisited; condition 1
+    without the guard pattern (§5.8's "before L"); a normative listing of the vector form (the split
+    without forming n, the independence test's order, splats, sum8 homes, the tails, the `vfeat`
+    layout, the copies' registers per L-bl). Second, T9 unswitches the inlined-return `do` (a `do`
+    is a loop in §5.8's Terms), so W1's vector body calls `pow` three times per copy where the body
+    without that split would call it twice (the scalar loop calls it once per element). Options: (a)
+    **leave T9 as it is and measure W1's speed in 7f**; (b) restrict T9 to `loop`s now (`lir3`
+    goldens change where T9 split a `do`). **Decided: (a)** (the user, 2026-10-31): T9 changes only
+    by a later agreed decision. Affects §2.7 (`seavec`'s estimate, +2 200–3 900, about 5 260–6 960
+    built, and its measurement after T13's legality code), §2.12.6 (T13), §2.12.10, §6.2 (`vec7_*`),
+    §8 (rows 7e and 7f), L-fg; no contract file.
+
+116. **How `seavec`'s vector output is validated** (2026-10-31; amends Decision 113 (a); §2.12.6).
+    As built by WP-LIB, `lirrw`'s writer trusts the vector records `seavec` puts into its tables, and
+    no pass reads `sea.lir` through `lirrw`'s `sea.lir` input kind, so Decision 113's "validates
+    them in `sea.lir` output" held only for `tests/lib_check.sh`'s cases; pass 4 reads `sea.lir` with
+    its own reader. Options: (a) **validation in the test harness: a small tool `tools/lirchk.bas`
+    built with `lirrw` (no new validator) reads a `sea.lir` with the `sea.lir` input kind, and
+    `tests/run.sh` and `tests/stage.sh` run it on every `sea.lir` they produce (WP-HARNESS); `seavec`
+    does not re-validate at compile time**; (b) `seavec` reads its own `sea.lir` back through
+    `lirrw` before it exits (20–40 lines, and its input read twice in every compilation); (c) only
+    pass 4's own reader checks `sea.lir` (Decision 113's option (c)). Recommended: (a); it checks
+    every vector record of the corpus with the one validator Decision 113 set up and costs no
+    compile time; `seaval`'s format `lir` extended to `x y m` was not chosen, since `seaval` checks
+    fields and register classes only and would be a second, weaker validator of the vector classes
+    (no lane counts, no `vfeat` target, no parameter and argument rules); (b) doubles `seavec`'s
+    read time; (c) leaves `seavec`'s output checked only by a second implementation. **Decided:
+    (a)** (the user, 2026-10-31). Affects §2.6.3 (the tool's build list), §2.12.6, §8 (row 7e:
+    WP-HARNESS and the done-when), L-gk; no contract file.
 
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
@@ -14769,7 +15066,9 @@ reviews, and agreed by the user together with Decisions 94–113 on 2026-10-29);
   never meets a second `cow` (§2.12.4).
 * **L-fg** T13 if-converts only blocks in an innermost step-1 loop whose parts hold vector-set
   instructions and no store, failing instruction, `call` or sited `rcall`, innermost first; a block
-  it does not convert keeps the loop scalar (§2.12.6, Decision 108).
+  it does not convert keeps the loop scalar (§2.12.6, Decision 108); amended by Decision 115:
+  candidates may hold `do` blocks that P1 dissolves, P1–P3 run first, mask registers merge by
+  `iand bnot iand ior`, and the whole preparation is kept only when the loop is vectorized.
 * **L-fh** Spill slots of `y` and 4-lane `m` values are 32 bytes at 16-byte alignment, accessed by
   `vmovupd`; no frame is realigned (§2.12.7).
 * **L-fi** Vector comparisons use ordered predicates for `lt le eq`, operand swaps for `gt ge` (SSE2
@@ -14887,3 +15186,30 @@ recorded 2026-10-30; L-fv–L-fy record decisions of the user):
   "Locals" says (`passes/sealoop/lp0main.bas` compared `5 − J`, now `6 − J`): a 7b defect never
   exercised, because 7b's `seafuse` wrote no `rcnt`; and an inlined callee's `.i` local that no
   record declares (a group local whose `bind` F2 dropped, R34) is numbered after the declared ones.
+
+Lead decisions of sub-phase 7e (WP-LIB's readings, found in its build and recorded 2026-10-31; each
+is written into its normative section; Decision 115 records the user's amendment of T13, Decision 116
+the validation of `sea.lir` that L-gk describes):
+
+* **L-gk** (decided by the user, 2026-10-31: Decision 116) `lirrw`'s `sea.lir` input kind, the full
+  validator of the vector classes, is used by the tool `tools/lirchk.bas`, which `tests/run.sh` and
+  `tests/stage.sh` run on every `sea.lir` they produce; `seavec` reads `sea.lir3` with the LIR input
+  kind, as `sealopt` does, and does not read its output back, `lirrw`'s writer not validating the
+  vector records `seavec` puts into its tables (§2.12.6).
+* **L-gl** L-ez's "spilled" is §4.9.2's "Calls" save around each call the vector interval crosses
+  (a save slot, listed by `ra_sv`), not a spill of the whole interval; on both targets and on the
+  free path of a `release` (§2.12.7, §4.9.2).
+* **L-gm** A vector interval that crosses a call takes the `f` row "crossing no call", not "crossing
+  a call", so arm64 does not prefer `d8`–`d15`, which would only add prologue saves; it is saved
+  around each call even in a callee-saved register, and a callee-saved register given to a vector
+  value is still reported by `ra_used` (§2.12.7, §4.9.2).
+* **L-gn** A mask register's lane count is fixed by its first write in record order; a read of a
+  mask with no lane count yet is `BAD_RECORD` (§3.6.4 property 2); `mand mor mnot` and a `mov` of
+  masks take the lane count of their (first) source; `ralloc`'s class is 6 for a 2-lane and 7 for a
+  4-lane mask (§2.12.6, §2.12.7).
+* **L-go** `lirrw` checks only `vfeat` against the target (§3.6.4: `x86_64-linux` only) and accepts
+  `y`, `ldm4` and `stm4` in an `arm64-macos` file; `seagen_a64` rejects them as `BAD_RECORD`
+  (§2.12.7; §2.12.6).
+* **L-gp** A `lirrw` rejection (`BAD_RECORD`) prints no detail, so each `lirrw` rejection case of
+  `tests/lib_check.sh` is a one-record mutation of an accepted file, which isolates its cause
+  (§2.12.6).
