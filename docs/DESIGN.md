@@ -4425,7 +4425,8 @@ and as an operand of a *slot copy* (below), never by `ldb stb ldp stp`, another 
 slot, L-ew): each distinct (s, byte offset) becomes a new register of its class; a load of it is a
 `mov` from that register, a store a `mov` into it; the first access in record order of each location
 must be a store on every path (a forward walk with F6's joins over the function's blocks; a location
-read before it is surely written refuses the whole slot); the `sa` instructions and the slot's `slot`
+read before it is surely written refuses the whole slot; a guard whose condition is known counts as
+decided, below); the `sa` instructions and the slot's `slot`
 record are deleted when no use remains (the slots are renumbered densely, `s1`, `s2`, …).
 
 A *slot copy* is an `mcopy Pd Ps N` whose Pd and Ps are `sa` registers of two different slots and
@@ -4435,7 +4436,10 @@ then copied) or from another such value (`var r = q`). In the first-access walk 
 slot copy reads each location of the source slot at offsets 0, 8, …, N − 8 and then writes the
 location at the same offset of the destination; a location's class is propagated through slot
 copies (a location copied from or to a location of class `i` or `f` has that class, and two classes
-for one location refuse the slot). The slots T12 replaces are the greatest set of slots that meet
+for one location refuse the slot). A location that no slot joined to it by slot copies accesses by
+`ldi ldf sti stf` has no class: it takes no part in the walk, gets no register, and the slot copies
+write no `mov` for it; its slots are still replaced (L-ha: its bytes are only copied between replaced
+slots, which nothing else reaches, so they are never observed). The slots T12 replaces are the greatest set of slots that meet
 the conditions above and every slot copy of which has its other slot in the set too (start from
 every slot that meets them and remove one whose slot copy has a partner outside the set, until
 nothing changes), so a slot copy always joins two replaced slots. Each slot copy then becomes, at
@@ -4446,6 +4450,22 @@ overlap (§3.6.4), so the order of the `mov`s does not matter. An `mcopy` whose 
 an `sa` register of a slot (array data, a `ref` parameter's memory) is not a slot copy and refuses
 the slot: the bytes of array data are not known at compile time, and splitting such a copy into
 loads or stores of a replaced slot is left out of v1.
+
+*Known guards* (L-gz). In the first-access walk an `if`/`ifz` block whose condition register has a
+single definition in the function that folds is *decided*: an `icmp cc c a b` with a and b constants
+(rule 17's guard `li Z 0`, `icmp gt E N Z`, `if B E`, with N a constant), folded as the signed
+comparison, or an `rcount C c lo hi st incl site` with `lo`, `hi`, `st` constants and `st` ≠ 0
+(rule 4's guard `if B E` on its flag), folded as n > 0 with n as T11 computes it. When it holds, the
+part that runs (`if`: the first; `ifz`: the `else` part) is on every path through the block and the
+other part on none; when it fails, the other way round. The part on no path is dead for the walk
+(its accesses are neither required to follow a store nor counted as stores). Rule 17 guards a
+fixed-size element-wise result's store loop by `icmp gt N 0` with N constant, so without this a
+fused fixed-size result copied into a variable (W3's `q = q + dt * f(q)`) would keep its slots. So
+that §3.6.4's property 2 holds for the new registers on every path of the written code, every
+decided block that holds an access to, or a slot copy of, a slot T12 replaces is resolved: its
+`if`/`ifz`, `else` and `endif` records and its dead part are deleted, the part that runs staying in
+place (the condition's definition stays; T10 deletes it when nothing reads it, an `rcount` staying,
+as it has a site).
 
 **T13. If-conversion and vectorization** (Decisions 99–101, 108, 115, 117). T13 visits the *candidates*
 of the function as it stands before T13, in record order: each `loop` L whose body holds no `loop`
@@ -12478,7 +12498,9 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     of place); T11 with a value carried through the copies (on compiled loops of Decision 117: a constant
     `rcount` range, `0..4` and `0..=3` over an `f64[4]`, and a rule-17 count) and T12 on a fixed-size
     `f64[4]` state updated in a loop (W3's shape, filled from its literal by a slot copy, and a copy
-    `var r = q` between two replaced slots; a slot copied into array data is kept) and on a struct, a slot read before written, a slot read as `i`
+    `var r = q` between two replaced slots; a fused fixed-size result `q = q + dt * f(q)` stored under
+    rule 17's constant guard `icmp gt N 0` and copied into the state, its guard decided and resolved,
+    L-gz; a slot copied into array data is kept) and on a struct, a slot read before written, a slot read as `i`
     and `f`, and one with overlapping offsets (all three kept).
   * **`gen7_*` pass-4 tests** (WP-GEN, hand-written `sea.lir` with `.out`, both targets as `ra5_*`;
     the 4-lane ones as `NAME.lirx64`, `x86_64-linux` only): every vector and mask instruction of
@@ -14594,7 +14616,7 @@ recommendation as (a), its reasons, the decision, and what it affects.
     access after P2**; (b) leave it. **Decided: (a)** (the user, 2026-10-31): such a loop gains nothing
     from the form, and its goldens revert to `NAME.lir3`. Affects §2.7 (`seavec`, measured 5 498 built,
     about 5 613–5 718 with this decision), §2.12.6 ("Constants in `seavec`", T11, T12, T13 (1)),
-    §6.2 (`vec7_*`, `sr7_*`); lead decisions L-gq–L-gy; no contract file.
+    §6.2 (`vec7_*`, `sr7_*`); lead decisions L-gq–L-gy (and the lead's L-gz, L-ha within it); no contract file.
 
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
@@ -15317,3 +15339,14 @@ Lead decisions of sub-phase 7e (T2's and WP-VEC's readings, found in their build
   new row when absent) is part of `lirrw`'s interface for the programs that load it; `seavec`
   uses it for the vector entries' names and the word `avx2`, and `passes/lib/API.md` documents it
   (its owner's change) (§2.12.6).
+* **L-gz** (the lead, 2026-10-31, after T2's round 2, in line with Decision 117) In T12's
+  first-access walk an `if`/`ifz` whose condition register has a single definition that folds (an
+  `icmp` of two constants, as rule 17's `icmp gt E N Z`, or an `rcount` flag of constant `lo`, `hi`,
+  `st` with `st` ≠ 0, as rule 4's) is decided: the part that runs is on every path, the other part
+  (a constant-false guard's first part, a constant-true guard's `else` part) on none and dead for
+  the walk; each decided block holding an access to, or a slot copy of, a replaced slot is resolved
+  (its block records and dead part deleted) so that §3.6.4's property 2 holds for the new registers
+  (§2.12.6 T12).
+* **L-ha** (the lead, 2026-10-31, after T2's round 2) A location that no slot of its slot-copy chain
+  accesses by `ldi ldf sti stf` has no class: it takes no part in the walk, gets no register and no
+  `mov`, and its slots are still replaced (§2.12.6 T12).
