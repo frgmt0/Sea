@@ -1,0 +1,145 @@
+# Token map for the W7 report (DESIGN.md 6.4). Written from the fprintf formats of
+# workloads/w7_drivetrain.m and the rules of reference_py/compare.py (RULES["w7_drivetrain"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). The W7 JSON keys are in the report's units (s, m/s, mm, MPa, cm^3) except
+# top_err (a fraction, printed in percent), so `json <key>` applies directly elsewhere. Where a
+# key's tolerance is below one printed unit the `json` rule is used as it stands (DESIGN.md 6.4,
+# L-eg: converted to the report's units, no rounding slack).
+#
+# The heading, 'Vehicle ...' and 'Run: ...' lines print inputs only (no JSON key): default rule
+# ('3800..3950' is split at '..', each part by the default rule).
+#
+# Sweep table rows: '%6.2f' then ' | %9.4f %7.3f %7.3f' for each CVT. Tokens: 1 G, 2 '|',
+# 3 t, 4 trap, 5 top (Stock), 6 '|', 7 t, 8 trap, 9 top (Launch), 10 '|', 11 t, 12 trap, 13 top
+# (Overdrive). G: json G (1e-15 relative); t: t_dist (1e-9 relative); trap: v_trap (1e-9
+# relative); top: v_top (2e-6 absolute).
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   1    json G
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   3    json t_dist
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   4    json v_trap
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   5    json v_top
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   7    json t_dist
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   8    json v_trap
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   9    json v_top
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   11   json t_dist
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   12   json v_trap
+^[[:space:]]*[0-9]+[.][0-9][0-9][[:space:]][|]   13   json v_top
+#
+# '(times to %.0f m in s; ...)': the run distance, an input (default rule).
+#
+# Best-reduction rows '%-10s %8.2f %9.4f %9.4f | %9.4f %9.4f' (every CVT name is one word):
+# 2 the grid G at i_best (json G: the same grid point, i_best is exact), 3 t_best (1e-9
+# relative), 4 G_best, 6 G_best_lo, 7 G_best_hi (1e-7 relative); token 5 is '|'.
+^(Stock|Launch|Overdrive)[[:space:]]   2    json G
+^(Stock|Launch|Overdrive)[[:space:]]   3    json t_best
+^(Stock|Launch|Overdrive)[[:space:]]   4    json G_best
+^(Stock|Launch|Overdrive)[[:space:]]   6    json G_best_lo
+^(Stock|Launch|Overdrive)[[:space:]]   7    json G_best_hi
+#
+# 'Time at the grid best with Crr -25 %% and +25 %% [s]:' then ' %s %.4f %.4f' per CVT:
+# tokens 8 '-25' and 11 '+25' are literal text of the format (default rule); 13 '[s]:' is
+# non-numeric; 15, 18, 21 t_best_lo and 16, 19, 22 t_best_hi (1e-9 relative).
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   15   json t_best_lo
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   16   json t_best_hi
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   18   json t_best_lo
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   19   json t_best_hi
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   21   json t_best_lo
+^Time[[:space:]]at[[:space:]]the[[:space:]]grid   22   json t_best_hi
+#
+# 'First upshift in each best run [s]:' then ' %s %.3f' per CVT: tokens 9, 11, 13 are t_shift
+# (1.001e-3 absolute: one 1 ms step).
+^First[[:space:]]upshift   9    json t_shift
+^First[[:space:]]upshift   11   json t_shift
+^First[[:space:]]upshift   13   json t_shift
+#
+# Region rows '  %-17s' then ' %6d' per CVT: region_steps (int 2). The names 'clutch open',
+# 'clutch slip', 'low ratio' and 'min ratio' are two tokens (counts at 3, 4, 5); 'shifting',
+# 'governor' and 'wheelspin' one (counts at 2, 3, 4).
+^[[:space:]][[:space:]](clutch|low|min)[[:space:]]   3    json region_steps
+^[[:space:]][[:space:]](clutch|low|min)[[:space:]]   4    json region_steps
+^[[:space:]][[:space:]](clutch|low|min)[[:space:]]   5    json region_steps
+^[[:space:]][[:space:]](shifting|governor|wheelspin)[[:space:]]   2    json region_steps
+^[[:space:]][[:space:]](shifting|governor|wheelspin)[[:space:]]   3    json region_steps
+^[[:space:]][[:space:]](shifting|governor|wheelspin)[[:space:]]   4    json region_steps
+#
+# 'Integration steps in all %d runs: %d': token 5 the number of runs nCfg*nG*nCrr (a count of
+# the configuration, no JSON key: exact); token 7 total_steps (int 20).
+^Integration[[:space:]]steps   5    exact
+^Integration[[:space:]]steps   7    json total_steps
+#
+# 'Gear reduction for the %s CVT: target ratio %.2f, design torque %.1f N m at %.1f rpm':
+# token 9 is G_target (exact). Tokens 12 (Tin/1000) and 16 (nIn) have no JSON key: default rule.
+^Gear[[:space:]]reduction   9    json G_target
+#
+# 'Minimum pinion teeth (no undercut):' then ' %.1f deg: %d' per pressure angle: tokens 8, 11,
+# 14 are n_min (exact); 6, 9, 12 are the pressure angles (inputs, default rule).
+^Minimum[[:space:]]pinion   8    json n_min
+^Minimum[[:space:]]pinion   11   json n_min
+^Minimum[[:space:]]pinion   14   json n_min
+#
+# 'Candidates %d: ratio rejects %d, repeats %d, geometry rejects %d, stress rejects %d':
+# n_cand (2), n_rej_ratio (5), n_dup (7), n_rej_geom (10), n_rej_stress (13), all exact.
+^Candidates[[:space:]]   2    json n_cand
+^Candidates[[:space:]]   5    json n_rej_ratio
+^Candidates[[:space:]]   7    json n_dup
+^Candidates[[:space:]]   10   json n_rej_geom
+^Candidates[[:space:]]   13   json n_rej_stress
+#
+# 'Feasible designs: %d (%d / %d / %d by pressure angle)': token 3 n_feasible, tokens 4 '(106'
+# (the '(' is stripped), 6 and 8 feasible_per_phi; all exact.
+^Feasible[[:space:]]designs:   3    json n_feasible
+^Feasible[[:space:]]designs:   4    json feasible_per_phi
+^Feasible[[:space:]]designs:   6    json feasible_per_phi
+^Feasible[[:space:]]designs:   8    json feasible_per_phi
+#
+# Top-design rows '%4d %5.1f %5.2f %5.2f %5.2f %4d %4d %4d %4d %6.1f %6.1f %7.2f %7.2f %+8.4f
+# %7.1f %7.1f %9.2f': 1 rank (exact), 2 top_phi, 3 top_m1, 4 top_m2 (exact), 5 top_split
+# (1e-15 relative), 6 top_Np1, 7 top_Ng1, 8 top_Np2, 9 top_Ng2, 10 top_F1, 11 top_F2, 12 top_a1,
+# 13 top_a2 (exact), 14 the ratio error in percent, 15 top_s1, 16 top_s2 (1e-12 relative),
+# 17 top_mass (1e-12 relative). Token 14 is 100*top_err: top_err's rule is 1e-12 relative to the
+# largest |top_err| of the reference JSON (3.0864e-3), 3.0864e-15 absolute on the fraction, so
+# 3.0864e-13 absolute on the percentage.
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   1    exact
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   2    json top_phi
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   3    json top_m1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   4    json top_m2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   5    json top_split
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   6    json top_Np1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   7    json top_Ng1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   8    json top_Np2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   9    json top_Ng2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   10   json top_F1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   11   json top_F2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   12   json top_a1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   13   json top_a2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   14   num 3.0864e-13 0
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   15   json top_s1
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   16   json top_s2
+^[[:space:]]+[0-9]+[[:space:]]+[0-9]+[.][0-9][[:space:]]   17   json top_mass
+#
+# 'Best design: ratio %.4f (Ng1 Np1 Ng2 Np2 = %d %d %d %d), blank volume %.2f cm^3': token 4 is
+# Ng1*Ng2/(Np1*Np2) of the lightest design, whose tooth counts are exact keys, so exact; tokens
+# 10, 11, 12 and 13 ('12),': ',' and ')' stripped) are its teeth, top_Ng1, top_Np1, top_Ng2,
+# top_Np2 (exact); token 16 its volume, top_mass (1e-12 relative).
+^Best[[:space:]]design:   4    exact
+^Best[[:space:]]design:   10   json top_Ng1
+^Best[[:space:]]design:   11   json top_Np1
+^Best[[:space:]]design:   12   json top_Ng2
+^Best[[:space:]]design:   13   json top_Np2
+^Best[[:space:]]design:   16   json top_mass
+#
+# '  stage %d: centre distance %.2f mm (band %d), module %.2f mm (band %d), backlash
+# %.2f..%.2f mm': token 2 the stage number (exact); 5 the centre distance (top_a1 for stage 1,
+# top_a2 for stage 2, exact); 8 backlash_band_a and 13 backlash_band_m ('2),': exact); 10 the
+# module (top_m1 / top_m2, exact); 15 'min..max', split at '..', backlash_min and backlash_max
+# (both exact, so one exact rule for both parts).
+^[[:space:]][[:space:]]stage[[:space:]]   2    exact
+^[[:space:]][[:space:]]stage[[:space:]]1:   5    json top_a1
+^[[:space:]][[:space:]]stage[[:space:]]2:   5    json top_a2
+^[[:space:]][[:space:]]stage[[:space:]]   8    json backlash_band_a
+^[[:space:]][[:space:]]stage[[:space:]]1:   10   json top_m1
+^[[:space:]][[:space:]]stage[[:space:]]2:   10   json top_m2
+^[[:space:]][[:space:]]stage[[:space:]]   13   json backlash_band_m
+^[[:space:]][[:space:]]stage[[:space:]]   15   exact
+#
+# 'Compute time: %.3f s' is skipped by the comparison (DESIGN.md 6.4).

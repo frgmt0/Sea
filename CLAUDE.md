@@ -140,7 +140,13 @@ decisions L-hq–L-ib, DESIGN.md §2.12.10, §4.5, §6.3, §6.6.1; `make test` p
 shape 8, fusion 2, programs 2 192, accept 2 + 3) and `make cross` passes 954 cases (default 826,
 `sse2` 826, once-only 128, total 1 780); measured: `seafuse` 6 482 built lines, `sealoop` 6 485,
 `sealopt` 5 548, and the gate after phase 7 passes every program with no relief, DESIGN.md §2.7
-"Measured at the gate after phase 7"). **Next:** 7g (the W7 port and acceptance).
+"Measured at the gate after phase 7"). **7g is done**
+(2026-11-01: the W7 port `ports/w7_drivetrain.sea` and its token map, port-only by Decision 120 (the
+user), no pass, runtime, prelude, include or golden change; `tests/accept.sh` passes W1, W4, W5 and
+W7; lead decisions L-ic–L-ii, DESIGN.md §6.3 "Measured at 7g"; `make test` passes (accept 2 + 4) and
+`make cross` passes 955 cases (default 827, `sse2` 827, once-only 128, total 1 782); W7 compiles in
+17.4–20.8 s and computes in 0.134–0.135 s). **Phase 7 is complete.** **Next:** phase 8 (linear
+algebra, DESIGN.md §8 row 8), its specification first.
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 

@@ -1,0 +1,873 @@
+// w7_drivetrain.sea -- Off-road buggy drivetrain study: CVT/gearbox acceleration sweep and a
+// two-stage spur reduction design-space search
+//
+// Sea port of sea/workloads/w7_drivetrain.m (Sea acceptance workload 7). Same model, same
+// numbers, no figures (DESIGN.md 6.3 "W7 acceptance"). Options:
+//   --export-reference   write w7_drivetrain.json to the working directory
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8): the
+//   time step of accel_run line by line (driveline first: the clutch branches, the CVT ratio
+//   update by explicit Euler and the drive torque; then the axle load, the slip curve, the
+//   linearly implicit wheel step, the vehicle update v then x with the new v), shift_imbalance,
+//   slip_curve, road_load, both bisections (steady_ratio and top_speed), the parabola vertex of
+//   refine_min and the gear search with its one-tooth correction, Lewis stress and face-width
+//   growth. MATLAB's `^2` and `^4`-free squares are written as the script writes them
+//   (`(G * G)`, `(v * v)`); the real powers `Gtarget^splitExp(is)` and `(...)^0.45` are `pow`.
+// * interp1. LANGUAGE.md has no table lookup (DESIGN.md 6.3, "Feature gaps W7 meets", item 1):
+//   the function interp1 below is MATLAB's linear interp1 for a scalar query, with the pinned
+//   formula `(1 - s) * y0 + s * y1`, s = (xq - x0) / (x1 - x0) on the interval [x0, x1] that holds
+//   xq (the last interval at the table's end), and NaN outside the table (reachable: steady_ratio
+//   asks for the torque below the table's first speed at low road speeds, as in MATLAB).
+// * Rank-3 arrays. MATLAB's `tDist`, `vTrap` and `nSteps` (nCfg x nG x nCrr) are one matrix per
+//   rolling-resistance case (item 5): `sweep[s].t`, `.v`, `.steps` (a `Sweep[]`), so
+//   `tDist(c, i, s)` is `sweep[s].t[c, i]`; the exported keys t_dist, t_dist_lo, t_dist_hi, ...
+//   are the three matrices.
+// * Growing arrays. MATLAB's `fePhi(end + 1) = ...` (item 2) is preallocation to the number of
+//   candidates (326,700) with the count nFeas; the arrays are cut to nFeas after the search.
+//   `diff(eng.rpm)` and `diff(lewisN)` (item 3) are loops; `1.5:0.25:3.5` and `2.0:0.25:4.5`
+//   (item 4) are `linspace(1.5, 3.5, 9)` and `linspace(2.0, 4.5, 11)` (the same, exact values).
+// * Indices. Sea is 0-based: the grid minimum `iBest`, the configuration pick `cfgPick`, the
+//   sorted order `ord` and the lightest design `b` are 0-based and exported (and printed) as
+//   MATLAB's 1-based numbers (`+ 1`); the backlash bands are `find_last(...)` plus 1, MATLAB's
+//   `find(..., 1, 'last')`. `min(tDist(c, :, s))` is `min` and `argmin` of the row (NaN ignored,
+//   first occurrence, as MATLAB). The CVT region `reg` stays MATLAB's number 1..6 (7 is the
+//   wheelspin count), so `regSteps(reg)` is `regSteps[reg - 1]`. `traceStock(20:20:end)` is
+//   `traceStock[19..$ step 20]`.
+// * Integers. Step counts, region counts, bisection iterations and the search counters are
+//   `i64`; `t = k * dt` and `(k - 1) * dt` convert k exactly (LANGUAGE.md 4.2), as MATLAB's
+//   doubles. Tooth counts, minimum teeth and module values stay `f64` (they come from `round`,
+//   `ceil` and `linspace`, as in MATLAB) and print with `%d` as integral `f64` (LANGUAGE.md 11.1).
+// * Structs. MATLAB's `veh`, `tire`, `eng`, `runCfg` and `gd` are the structs Veh, Tire, Eng,
+//   RunCfg and Gd; the struct array `cvt` is a `Cvt[]`. `eng.tqGov` and `gd.sLimit`, which the
+//   script adds after the other fields, are computed where the script computes them (tqGov after
+//   the validation, from the validated table) and given in the struct literal.
+// * Multiple results. `[Te, gov] = engine_torque(...)` is a tuple; the single-output uses of
+//   engine_torque (`Te = engine_torque(nFree, eng)`, the arguments of shift_imbalance in
+//   steady_ratio and the drive forces of steady_force) are `let (Te, _) = ...` just before the
+//   expression that uses them. `[~, ~, ~, regBest(c, :), vTr, tShift(c)] = accel_run(...)` binds
+//   the results and stores them; driveline returns early from its clutch branches, as MATLAB.
+// * Errors keep MATLAB's messages without the message identifiers (`w7:config`, ...); none fires.
+// * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT and
+//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` are not needed: the
+//   JSON goes to the working directory (LANGUAGE.md 11.3) and the export record (MATLAB's `ref`,
+//   a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
+// * Report. The format strings are MATLAB's fprintf formats, each written as one literal.
+
+struct Veh {
+    m: f64          // vehicle + driver mass [kg]
+    Cd: f64         // drag coefficient [-]
+    A: f64          // frontal area [m^2]
+    rho: f64        // air density [kg/m^3]
+    Crr: f64        // rolling resistance coefficient on dirt [-]
+    wfRear: f64     // static rear (driven) axle weight fraction [-]
+    h: f64          // centre of gravity height [m]
+    L: f64          // wheelbase [m]
+    rw: f64         // rolling radius of the driven wheels [m]
+    eta: f64        // driveline efficiency, CVT input to wheels [-]
+    g: f64          // gravity [m/s^2]
+    Jw: f64         // rear wheels, tires and axle [kg m^2]
+    Jd: f64         // CVT secondary and gearbox input shaft [kg m^2]
+    Je: f64         // crankshaft, flywheel, clutch and CVT primary [kg m^2]
+    Jf: f64         // front wheels [kg m^2]
+}
+
+struct Tire {
+    muPk: f64       // peak friction coefficient [-]
+    kPk: f64        // slip at the peak [-]
+    muSl: f64       // friction coefficient at full slide [-]
+    kSl: f64        // slip from which mu stays at muSl [-]
+    vRef0: f64      // lowest reference speed of the slip definition [m/s]
+}
+
+struct Eng {
+    rpm: f64[]      // table speeds [rev/min]
+    tq: f64[]       // full-throttle torque at those speeds [N m]
+    nIdle: f64      // engine speed when the throttle opens at t = 0 [rev/min]
+    revRate: f64    // free rev-up rate of the engine with the clutch open [rev/min/s]
+    nGov: f64       // governor: torque falls linearly above this speed [rev/min]
+    nCut: f64       // governor cutoff: no torque at or above this speed [rev/min]
+    tqGov: f64      // torque where the governor droop starts [N m]
+}
+
+struct Cvt {
+    name: str
+    nEngage: f64    // clutch starts to drive [rev/min]
+    nStall: f64     // engine speed while the clutch slips [rev/min]
+    rLow: f64       // launch (low) ratio [-]
+    rMin: f64       // minimum ratio [-]
+    kFly: f64       // flyweight force per (krev/min)^2 [N]
+    F0: f64         // spring preload at rLow [N]
+    kSp: f64        // spring force per unit of upshift [N]
+    kHx: f64        // helix force per N m of secondary torque [N/(N m)]
+}
+
+struct RunCfg {
+    dist: f64       // run distance [m]
+    dt: f64         // time step [s]
+    tMax: f64       // maximum simulated time [s]
+}
+
+struct Gd {
+    Ks: f64         // service (shock) factor on the design torque [-]
+    etaStage: f64   // efficiency of one gear stage [-]
+    Sall: f64       // allowable Lewis bending stress, case-hardened steel [MPa]
+    FOS: f64        // factor of safety on bending [-]
+    ratioTol: f64   // allowed relative error of the overall ratio [-]
+    a1Win: f64[]    // stage 1 centre distance window [mm]
+    a2Win: f64[]    // stage 2 centre distance window [mm]
+    Dmax: f64       // maximum gear outside diameter (housing) [mm]
+    Fstep: f64      // face width step [mm]
+    kMin: f64       // face width limits kMin*m <= F <= kMax*m [-]
+    kMax: f64
+    sLimit: f64     // stress limit [MPa]
+}
+
+// One rolling-resistance case of the acceleration sweep (MATLAB's third dimension).
+struct Sweep {
+    t: f64[,]       // time to distance [s], nCfg x nG
+    v: f64[,]       // speed at the distance [m/s]
+    steps: i64[,]   // integration steps per run
+}
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- vehicle and engine
+let veh = Veh {
+    m: 265, Cd: 0.88, A: 1.02, rho: 1.17, Crr: 0.052, wfRear: 0.60, h: 0.45, L: 1.65,
+    rw: 0.292, eta: 0.88, g: 9.81, Jw: 1.10, Jd: 0.012, Je: 0.022, Jf: 0.90,
+}
+
+// Tire on dirt (invented): piecewise-linear mu(kappa)
+let tire = Tire { muPk: 0.72, kPk: 0.10, muSl: 0.66, kSl: 0.80, vRef0: 1.0 }
+
+// Single-cylinder engine at full throttle (invented): torque [N m] vs speed [rev/min]
+let engRpm: f64[] = [1500, 1900, 2300, 2700, 3100, 3500, 3900, 4300]
+let engTq: f64[] = [14.6, 16.9, 18.4, 19.2, 19.3, 18.6, 17.1, 14.8]
+let nIdle = 1500.0          // engine speed when the throttle opens at t = 0 [rev/min]
+let revRate = 7400.0        // free rev-up rate of the engine with the clutch open [rev/min/s]
+let nGov = 3800.0           // governor: torque falls linearly above this speed [rev/min]
+let nCut = 3950.0           // governor cutoff: no torque at or above this speed [rev/min]
+
+// CVT configurations (invented): clutch engagement and stall speed, low and minimum ratio,
+// primary flyweight constant, secondary spring preload and rate, torque-feedback helix constant
+let cvt = [
+    Cvt { name: "Stock",     nEngage: 1900, nStall: 2650, rLow: 2.60, rMin: 0.88, kFly: 100,
+          F0: 720, kSp: 190, kHx: 6.0 },
+    Cvt { name: "Launch",    nEngage: 2100, nStall: 2900, rLow: 2.90, rMin: 0.95, kFly: 92,
+          F0: 800, kSp: 170, kHx: 7.0 },
+    Cvt { name: "Overdrive", nEngage: 1850, nStall: 2500, rLow: 2.40, rMin: 0.72, kFly: 108,
+          F0: 690, kSp: 160, kHx: 5.0 },
+]
+let cShift = 0.01           // ratio change rate per newton of force imbalance [1/(N s)]
+
+// Acceleration run and sweep
+let runCfg = RunCfg { dist: 45, dt: 1e-3, tMax: 12 }
+let Gsweep = linspace(6, 15, 46)    // gearbox reductions [-]
+let crrScale = [1, 0.75, 1.25]      // rolling resistance factors: base and sensitivity runs
+let traceEvery = 20                 // export every 20th speed sample of the traced run
+
+// ---------------------------------------------------------------- gear design inputs
+let Sall = 420.0            // allowable Lewis bending stress, case-hardened steel [MPa]
+let FOS = 1.5               // factor of safety on bending [-]
+let gd = Gd {
+    Ks: 1.40, etaStage: 0.98, Sall: Sall, FOS: FOS, ratioTol: 0.0035,
+    a1Win: [42.0, 90.0], a2Win: [60.0, 125.0], Dmax: 200, Fstep: 0.5, kMin: 9, kMax: 14,
+    sLimit: Sall / FOS,
+}
+let phiDeg = [20, 22.5, 25]               // pressure angles [deg]
+let mod1 = linspace(1.5, 3.5, 9)          // stage 1 modules [mm] (MATLAB 1.5:0.25:3.5)
+let mod2 = linspace(2.0, 4.5, 11)         // stage 2 modules [mm] (MATLAB 2.0:0.25:4.5)
+let splitExp = linspace(0.40, 0.60, 11)   // stage split: stage 1 ratio = Gtarget^splitExp
+let nOffset = 10                          // pinion teeth Nmin .. Nmin + nOffset - 1
+
+// Lewis form factor, 20-degree full-depth teeth (public table), vs number of teeth
+let lewisN: f64[] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30, 34, 38, 43, 50, 60, 75,
+    100, 150, 300, 400]
+let lewisY: f64[] = [0.245, 0.261, 0.277, 0.290, 0.296, 0.303, 0.309, 0.314, 0.322, 0.328, 0.331, 0.337,
+    0.346, 0.353, 0.359, 0.371, 0.384, 0.397, 0.409, 0.422, 0.435, 0.447, 0.460, 0.472, 0.480]
+// Invented pressure-angle scaling: Y(phi) = Y20 * (tan(phi)/tan(20 deg))^0.45
+
+// Invented recommended backlash [mm] by centre-distance band (rows) and module band (columns)
+let blAEdges = [0, 50, 80, 125, 200]      // centre distance band edges [mm]
+let blMEdges = [0, 2, 3, 5]               // module band edges [mm]
+let blMinTab = [0.05, 0.07, 0.09; 0.07, 0.09, 0.12; 0.09, 0.12, 0.15; 0.12, 0.15, 0.19]
+let blMaxTab = [0.11, 0.14, 0.17; 0.14, 0.17, 0.21; 0.17, 0.21, 0.26; 0.21, 0.26, 0.32]
+
+// ---------------------------------------------------------------- validation
+var rpmRising = true
+for k in 1..len(engRpm) {
+    if engRpm[k] - engRpm[k - 1] <= 0 { rpmRising = false }
+}
+if !rpmRising || len(engRpm) != len(engTq) {
+    error("engine table must have increasing speeds and one torque per speed")
+}
+if !(nGov < nCut && nCut <= engRpm[len(engRpm) - 1]) {
+    error("governor speeds must satisfy nGov < nCut <= %g", engRpm[len(engRpm) - 1])
+}
+for c in 0..len(cvt) {
+    if !(nIdle < cvt[c].nEngage && cvt[c].nEngage < cvt[c].nStall && cvt[c].nStall < nGov) {
+        error("CVT \"%s\": need nIdle < nEngage < nStall < nGov", cvt[c].name)
+    }
+    if !(cvt[c].rMin > 0 && cvt[c].rMin < cvt[c].rLow) {
+        error("CVT \"%s\": need 0 < rMin < rLow", cvt[c].name)
+    }
+    if cvt[c].kFly * (cvt[c].nStall / 1000) ^ 2 >= cvt[c].F0 {
+        error("CVT \"%s\" would shift while the clutch slips", cvt[c].name)
+    }
+}
+if !(tire.kPk > 0 && tire.kPk < tire.kSl && tire.muSl <= tire.muPk) {
+    error("tire curve needs 0 < kPk < kSl and muSl <= muPk")
+}
+var lewisRising = true
+for k in 1..len(lewisN) {
+    if lewisN[k] - lewisN[k - 1] <= 0 { lewisRising = false }
+}
+if !lewisRising || len(lewisN) != len(lewisY) {
+    error("Lewis table must have increasing tooth counts")
+}
+let eng = Eng {
+    rpm: engRpm, tq: engTq, nIdle: nIdle, revRate: revRate, nGov: nGov, nCut: nCut,
+    tqGov: interp1(engRpm, engTq, nGov),     // torque where the governor droop starts
+}
+
+// ---------------------------------------------------------------- part A: acceleration sweep
+let nCfg = len(cvt)
+let nG = len(Gsweep)
+let nCrr = len(crrScale)
+var sweep = filled(Sweep { t: zeros(nCfg, nG), v: zeros(nCfg, nG), steps: filled(0, nCfg, nG) },
+    nCrr)
+var vTop = zeros(nCfg, nG)              // steady-state top speed [m/s]
+var topIters = filled(0, nCfg, nG)      // bisection iterations
+for c in 0..nCfg {
+    for s in 0..nCrr {
+        let crr = veh.Crr * crrScale[s]
+        for i in 0..nG {
+            let (tc, vc, kc, _, _, _) = accel_run(Gsweep[i], cvt[c], veh, tire, eng, runCfg,
+                cShift, crr, false)
+            sweep[s].t[c, i] = tc
+            sweep[s].v[c, i] = vc
+            sweep[s].steps[c, i] = kc
+        }
+    }
+    for i in 0..nG {
+        (vTop[c, i], topIters[c, i]) = top_speed(Gsweep[i], cvt[c], veh, tire, eng, veh.Crr)
+    }
+}
+var totalSteps = 0
+for s in 0..nCrr {
+    totalSteps += sum(sweep[s].steps.flat)
+}
+
+// Best reduction per configuration and rolling-resistance case: grid minimum + parabola vertex
+var iBest = filled(0, nCfg, nCrr)       // 0-based grid index
+var tBest = zeros(nCfg, nCrr)
+var Gbest = zeros(nCfg, nCrr)
+for c in 0..nCfg {
+    for s in 0..nCrr {
+        let row = sweep[s].t[c, :]
+        tBest[c, s] = min(row)
+        iBest[c, s] = argmin(row)
+        Gbest[c, s] = refine_min(Gsweep, row, iBest[c, s])
+    }
+}
+
+// Region statistics (steps per CVT region, wheelspin) and first upshift of each best grid run
+var regBest = filled(0, nCfg, 7)
+var tShift = zeros(nCfg)
+var traceStock = zeros(0)
+for c in 0..nCfg {
+    let (_, _, _, reg, vTr, ts) = accel_run(Gsweep[iBest[c, 0]], cvt[c], veh, tire, eng,
+        runCfg, cShift, veh.Crr, true)
+    regBest[c, :] = reg
+    tShift[c] = ts
+    if c == 0 {
+        traceStock = vTr
+    }
+}
+
+// ---------------------------------------------------------------- part B: gear design search
+let cfgPick = argmin(tBest[:, 0])           // the fastest configuration at base rolling resistance
+let Gtarget = round(100 * Gbest[cfgPick, 0]) / 100   // overall gear ratio to build [-]
+let Tin = max(eng.tq) * cvt[cfgPick].rLow * gd.Ks * 1000   // stage 1 pinion design torque [N mm]
+let cp = cvt[cfgPick]   // design speed: the engine speed where the CVT starts to shift at peak torque
+let nIn = 1000 * sqrt((cp.F0 + cp.kHx * max(eng.tq) * cp.rLow) / cp.kFly) / cp.rLow   // [rev/min]
+let phi20 = 20 * pi / 180
+let tan20 = sin(phi20) / cos(phi20)
+
+let nPhi = len(phiDeg)
+var nMin = zeros(nPhi)
+var yScale = zeros(nPhi)
+var nCand = 0
+var nDup = 0
+var nRejRatio = 0
+var nRejGeom = 0
+var nRejStress = 0
+let nCandMax = nPhi * len(mod1) * len(mod2) * nOffset * nOffset * len(splitExp)
+var fePhi = zeros(nCandMax)
+var feM1 = zeros(nCandMax)
+var feM2 = zeros(nCandMax)
+var feSplit = zeros(nCandMax)
+var feNp1 = zeros(nCandMax)
+var feNg1 = zeros(nCandMax)
+var feNp2 = zeros(nCandMax)
+var feNg2 = zeros(nCandMax)
+var feF1 = zeros(nCandMax)
+var feF2 = zeros(nCandMax)
+var feA1 = zeros(nCandMax)
+var feA2 = zeros(nCandMax)
+var feErr = zeros(nCandMax)
+var feS1 = zeros(nCandMax)
+var feS2 = zeros(nCandMax)
+var feMass = zeros(nCandMax)
+var nFeas = 0
+for ip in 0..nPhi {
+    let phi = phiDeg[ip] * pi / 180
+    let sp = sin(phi)
+    nMin[ip] = ceil(2 / (sp * sp))
+    yScale[ip] = ((sp / cos(phi)) / tan20) ^ 0.45
+    for i1 in 0..len(mod1) {
+        let m1 = mod1[i1]
+        for i2 in 0..len(mod2) {
+            let m2 = mod2[i2]
+            for o1 in 0..nOffset {
+                let Np1 = nMin[ip] + o1
+                let Y1 = interp1(lewisN, lewisY, Np1) * yScale[ip]
+                for o2 in 0..nOffset {
+                    let Np2 = nMin[ip] + o2
+                    let Y2 = interp1(lewisN, lewisY, Np2) * yScale[ip]
+                    var prevNg1 = -1.0
+                    var prevNg2 = -1.0
+                    for is in 0..len(splitExp) {
+                        nCand += 1
+                        // stage 1 teeth for the split; stage 2 compensates; if the overall
+                        // ratio is out of tolerance, move the stage 1 gear by one tooth
+                        let base = round(Np1 * Gtarget ^ splitExp[is])
+                        var ok = false
+                        var Ng1 = 0.0
+                        var Ng2 = 0.0
+                        var err = 0.0
+                        for dN in [0, -1, 1] {
+                            Ng1 = base + dN
+                            Ng2 = round(Np2 * Gtarget * Np1 / Ng1)
+                            err = Ng1 * Ng2 / (Np1 * Np2) / Gtarget - 1
+                            if abs(err) <= gd.ratioTol {
+                                ok = true
+                                break
+                            }
+                        }
+                        if !ok {
+                            nRejRatio += 1
+                            continue
+                        }
+                        if Ng1 == prevNg1 && Ng2 == prevNg2 {   // same teeth as the previous split
+                            nDup += 1
+                            continue
+                        }
+                        prevNg1 = Ng1
+                        prevNg2 = Ng2
+                        let a1 = m1 * (Np1 + Ng1) / 2
+                        let a2 = m2 * (Np2 + Ng2) / 2
+                        if (a1 < gd.a1Win[0] || a1 > gd.a1Win[1] || a2 < gd.a2Win[0] ||
+                                a2 > gd.a2Win[1] || m1 * (Ng1 + 2) > gd.Dmax ||
+                                m2 * (Ng2 + 2) > gd.Dmax) {
+                            nRejGeom += 1
+                            continue
+                        }
+                        let (ok1, F1, s1) = size_face(Tin, nIn, m1, Np1, Y1, gd)
+                        if !ok1 {
+                            nRejStress += 1
+                            continue
+                        }
+                        let (ok2, F2, s2) = size_face(Tin * Ng1 / Np1 * gd.etaStage,
+                            nIn * Np1 / Ng1, m2, Np2, Y2, gd)
+                        if !ok2 {
+                            nRejStress += 1
+                            continue
+                        }
+                        let dp1 = m1 * Np1
+                        let dg1 = m1 * Ng1
+                        let dp2 = m2 * Np2
+                        let dg2 = m2 * Ng2
+                        let vol = pi / 4 * (F1 * (dp1 * dp1 + dg1 * dg1) +
+                            F2 * (dp2 * dp2 + dg2 * dg2)) / 1000   // blank volume [cm^3]
+                        fePhi[nFeas] = phiDeg[ip];   feM1[nFeas] = m1
+                        feM2[nFeas] = m2;            feSplit[nFeas] = splitExp[is]
+                        feNp1[nFeas] = Np1;          feNg1[nFeas] = Ng1
+                        feNp2[nFeas] = Np2;          feNg2[nFeas] = Ng2
+                        feF1[nFeas] = F1;            feF2[nFeas] = F2
+                        feA1[nFeas] = a1;            feA2[nFeas] = a2
+                        feErr[nFeas] = err;          feS1[nFeas] = s1
+                        feS2[nFeas] = s2;            feMass[nFeas] = vol
+                        nFeas += 1
+                    }
+                }
+            }
+        }
+    }
+}
+if nFeas == 0 {
+    error("no feasible gear design for ratio %.2f", Gtarget)
+}
+fePhi = fePhi[0..nFeas];     feM1 = feM1[0..nFeas];     feM2 = feM2[0..nFeas]
+feSplit = feSplit[0..nFeas]; feNp1 = feNp1[0..nFeas];   feNg1 = feNg1[0..nFeas]
+feNp2 = feNp2[0..nFeas];     feNg2 = feNg2[0..nFeas];   feF1 = feF1[0..nFeas]
+feF2 = feF2[0..nFeas];       feA1 = feA1[0..nFeas];     feA2 = feA2[0..nFeas]
+feErr = feErr[0..nFeas];     feS1 = feS1[0..nFeas];     feS2 = feS2[0..nFeas]
+feMass = feMass[0..nFeas]
+let massSorted = sort(feMass)           // stable: equal masses keep search order
+let ord = argsort(feMass)
+let nTop = min(10, nFeas)
+let top = ord[0..nTop]
+var feasPerPhi = filled(0, nPhi)
+for ip in 0..nPhi {
+    feasPerPhi[ip] = nnz(fePhi == phiDeg[ip])
+}
+let b = top[0]                          // the lightest feasible design
+
+// ---------------------------------------------------------------- part C: backlash lookup
+let blA = [feA1[b], feA2[b]]
+let blM = [feM1[b], feM2[b]]
+var blBandA = filled(0, 2)              // 0-based bands
+var blBandM = filled(0, 2)
+var blMin = zeros(2)
+var blMax = zeros(2)
+for k in 0..2 {
+    if blA[k] >= blAEdges[len(blAEdges) - 1] || blM[k] >= blMEdges[len(blMEdges) - 1] {
+        error("stage %d is outside the backlash table", k + 1)
+    }
+    blBandA[k] = find_last(blA[k] >= blAEdges[0..$ - 1])
+    blBandM[k] = find_last(blM[k] >= blMEdges[0..$ - 1])
+    blMin[k] = blMinTab[blBandA[k], blBandM[k]]
+    blMax[k] = blMaxTab[blBandA[k], blBandM[k]]
+}
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+let regName = ["clutch open", "clutch slip", "low ratio", "shifting", "min ratio", "governor",
+    "wheelspin"]
+printf("\n=== W7  Off-road buggy drivetrain study ===\n")
+printf("Vehicle %.0f kg, Cd*A %.3f m^2, Crr %.3f, tire mu %.2f peak / %.2f slide, rear weight %.0f %%, wheel radius %.0f mm\n",
+    veh.m, veh.Cd * veh.A, veh.Crr, tire.muPk, tire.muSl, 100 * veh.wfRear, veh.rw * 1e3)
+printf("Run: %.0f m from rest, dt = %.1e s, limit %.0f s; governor %.0f..%.0f rpm\n\n",
+    runCfg.dist, runCfg.dt, runCfg.tMax, eng.nGov, eng.nCut)
+printf("%6s", "G")
+for c in 0..nCfg {
+    printf(" | %-9s %7s %7s", cvt[c].name, "trap", "top")
+}
+printf("\n")
+for i in 0..nG {
+    printf("%6.2f", Gsweep[i])
+    for c in 0..nCfg {
+        printf(" | %9.4f %7.3f %7.3f", sweep[0].t[c, i], sweep[0].v[c, i], vTop[c, i])
+    }
+    printf("\n")
+}
+printf("(times to %.0f m in s; trap and top speeds in m/s)\n\n", runCfg.dist)
+printf("%-10s %8s %9s %9s | %9s %9s\n", "CVT", "G grid", "t[s]", "G*", "G* Crr-25%",
+    "G* Crr+25%")
+for c in 0..nCfg {
+    printf("%-10s %8.2f %9.4f %9.4f | %9.4f %9.4f\n", cvt[c].name, Gsweep[iBest[c, 0]],
+        tBest[c, 0], Gbest[c, 0], Gbest[c, 1], Gbest[c, 2])
+}
+printf("Time at the grid best with Crr -25 %% and +25 %% [s]:")
+for c in 0..nCfg {
+    printf(" %s %.4f %.4f", cvt[c].name, tBest[c, 1], tBest[c, 2])
+}
+printf("\nFirst upshift in each best run [s]:")
+for c in 0..nCfg {
+    printf(" %s %.3f", cvt[c].name, tShift[c])
+}
+printf("\nSteps per CVT region in each best run:\n")
+for k in 0..7 {
+    printf("  %-17s", regName[k])
+    for c in 0..nCfg {
+        printf(" %6d", regBest[c, k])
+    }
+    printf("\n")
+}
+printf("Integration steps in all %d runs: %d\n\n", nCfg * nG * nCrr, totalSteps)
+
+printf("Gear reduction for the %s CVT: target ratio %.2f, design torque %.1f N m at %.1f rpm\n",
+    cvt[cfgPick].name, Gtarget, Tin / 1000, nIn)
+printf("Minimum pinion teeth (no undercut):")
+for ip in 0..nPhi {
+    printf(" %.1f deg: %d", phiDeg[ip], nMin[ip])
+}
+printf("\nCandidates %d: ratio rejects %d, repeats %d, geometry rejects %d, stress rejects %d\n",
+    nCand, nRejRatio, nDup, nRejGeom, nRejStress)
+printf("Feasible designs: %d (%d / %d / %d by pressure angle)\n", nFeas, feasPerPhi[0],
+    feasPerPhi[1], feasPerPhi[2])
+printf("%4s %5s %5s %5s %5s %4s %4s %4s %4s %6s %6s %7s %7s %8s %7s %7s %9s\n", "rank", "phi",
+    "m1", "m2", "split", "Np1", "Ng1", "Np2", "Ng2", "F1", "F2", "a1", "a2", "err[%]", "s1", "s2",
+    "vol[cm3]")
+for r in 1..=nTop {
+    let k = top[r - 1]
+    printf("%4d %5.1f %5.2f %5.2f %5.2f %4d %4d %4d %4d %6.1f %6.1f %7.2f %7.2f %+8.4f %7.1f %7.1f %9.2f\n",
+        r, fePhi[k], feM1[k], feM2[k], feSplit[k], feNp1[k], feNg1[k], feNp2[k], feNg2[k],
+        feF1[k], feF2[k], feA1[k], feA2[k], 100 * feErr[k], feS1[k], feS2[k], feMass[k])
+}
+printf("Best design: ratio %.4f (Ng1 Np1 Ng2 Np2 = %d %d %d %d), blank volume %.2f cm^3\n",
+    feNg1[b] * feNg2[b] / (feNp1[b] * feNp2[b]), feNg1[b], feNp1[b], feNg2[b], feNp2[b],
+    feMass[b])
+for k in 0..2 {
+    printf("  stage %d: centre distance %.2f mm (band %d), module %.2f mm (band %d), backlash %.2f..%.2f mm\n",
+        k + 1, blA[k], blBandA[k] + 1, blM[k], blBandM[k] + 1, blMin[k], blMax[k])
+}
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w7_drivetrain",
+        cfg_name: cvt.name,
+        G: Gsweep,
+        t_dist: sweep[0].t,
+        t_dist_lo: sweep[1].t,
+        t_dist_hi: sweep[2].t,
+        v_trap: sweep[0].v,
+        v_trap_lo: sweep[1].v,
+        v_trap_hi: sweep[2].v,
+        steps: sweep[0].steps,
+        steps_lo: sweep[1].steps,
+        steps_hi: sweep[2].steps,
+        total_steps: totalSteps,
+        v_top: vTop,
+        top_iters: topIters,
+        i_best: iBest[:, 0] + 1,             // MATLAB's 1-based grid indices
+        i_best_lo: iBest[:, 1] + 1,
+        i_best_hi: iBest[:, 2] + 1,
+        t_best: tBest[:, 0],
+        t_best_lo: tBest[:, 1],
+        t_best_hi: tBest[:, 2],
+        G_best: Gbest[:, 0],
+        G_best_lo: Gbest[:, 1],
+        G_best_hi: Gbest[:, 2],
+        region_steps: regBest,
+        t_shift: tShift,
+        trace_v: traceStock[traceEvery - 1..$ step traceEvery],
+        cfg_pick: cfgPick + 1,               // MATLAB's 1-based configuration number
+        G_target: Gtarget,
+        n_min: nMin,
+        y_scale: yScale,
+        n_cand: nCand,
+        n_dup: nDup,
+        n_rej_ratio: nRejRatio,
+        n_rej_geom: nRejGeom,
+        n_rej_stress: nRejStress,
+        n_feasible: nFeas,
+        feasible_per_phi: feasPerPhi,
+        mass_sorted: massSorted,
+        top_phi: fePhi[top],
+        top_m1: feM1[top],
+        top_m2: feM2[top],
+        top_split: feSplit[top],
+        top_Np1: feNp1[top],
+        top_Ng1: feNg1[top],
+        top_Np2: feNp2[top],
+        top_Ng2: feNg2[top],
+        top_F1: feF1[top],
+        top_F2: feF2[top],
+        top_a1: feA1[top],
+        top_a2: feA2[top],
+        top_err: feErr[top],
+        top_s1: feS1[top],
+        top_s2: feS2[top],
+        top_mass: feMass[top],
+        backlash_band_a: blBandA + 1,        // MATLAB's 1-based bands
+        backlash_band_m: blBandM + 1,
+        backlash_min: blMin,
+        backlash_max: blMax,
+    }
+    write_json("w7_drivetrain.json", out)
+}
+
+// ================================================================ functions
+
+// MATLAB's interp1(x, y, xq) (linear) for a scalar query: the interval [x[k], x[k+1]] that holds
+// xq (the last one at the table's end), s = (xq - x[k]) / (x[k+1] - x[k]), and the pinned formula
+// (1 - s) * y[k] + s * y[k+1]; NaN outside [x[0], x[n-1]] (and for a NaN query), as MATLAB.
+fn interp1(x: f64[], y: f64[], xq: f64) -> f64 {
+    let n = len(x)
+    if !(xq >= x[0] && xq <= x[n - 1]) {
+        return nan
+    }
+    var k = 0
+    while k < n - 2 && x[k + 1] <= xq {
+        k += 1
+    }
+    let s = (xq - x[k]) / (x[k + 1] - x[k])
+    return (1 - s) * y[k] + s * y[k + 1]
+}
+
+// One acceleration run from rest. Returns the time and speed at the distance (NaN if
+// runCfg.tMax is reached first), the number of steps, the steps spent in each CVT region (1..6)
+// and with the tire beyond its peak slip (7), the speed after every step when record is true,
+// and the time of the first upshift (NaN if none).
+fn accel_run(G: f64, c: Cvt, veh: Veh, tire: Tire, eng: Eng, runCfg: RunCfg, cShift: f64,
+             crr: f64, record: bool) -> (f64, f64, i64, i64[], f64[], f64) {
+    let dt = runCfg.dt
+    let mv = veh.m + veh.Jf / (veh.rw * veh.rw)     // vehicle mass with the front wheel inertia
+    let Nstat = veh.m * veh.g * veh.wfRear          // static rear axle load [N]
+    let Nmax = veh.m * veh.g
+    let kTr = veh.m * veh.h / veh.L                 // weight transfer per unit acceleration [kg]
+    let nMax = i64(round(runCfg.tMax / dt))
+    var regSteps = filled(0, 7)
+    var vTrace = if record { zeros(nMax) } else { zeros(0) }
+    var v = 0.0
+    var x = 0.0
+    var wW = 0.0
+    var r = c.rLow
+    var aPrev = 0.0
+    var k = 0
+    var vPrev = 0.0
+    var xPrev = 0.0
+    var tShift = nan
+    while x < runCfg.dist && k < nMax {
+        let t = k * dt
+        let (Td, Jeq, rNew, reg) = driveline(wW, r, t, G, c, veh, eng, cShift, dt)
+        regSteps[reg - 1] += 1
+        if rNew < c.rLow && isnan(tShift) {
+            tShift = t
+        }
+        var Nr = Nstat + kTr * aPrev                // rear axle load with weight transfer
+        if Nr > Nmax {
+            Nr = Nmax
+        } else if Nr < 0 {
+            Nr = 0
+        }
+        let vRef = max(v, tire.vRef0)
+        let kappa = (wW * veh.rw - v) / vRef
+        let (mu, dmu) = slip_curve(kappa, tire)
+        if kappa > tire.kPk {
+            regSteps[6] += 1
+        }
+        var Fx = mu * Nr
+        let dFdw = dmu * Nr * veh.rw / vRef         // d Fx / d wW
+        // linearly implicit Euler step of the wheel: J*dw/dt = Td - rw*(Fx + dFdw*(wNew - wW))
+        var wNew = wW + dt * (Td - Fx * veh.rw) / (Jeq + dt * veh.rw * dFdw)
+        if wNew < 0 {
+            wNew = 0
+        }
+        Fx = Fx + dFdw * (wNew - wW)                // the tire force the step used
+        vPrev = v
+        xPrev = x
+        v = v + dt * (Fx - road_load(v, veh, crr)) / mv
+        if v < 0 {
+            v = 0
+        }
+        aPrev = (v - vPrev) / dt
+        x = x + v * dt
+        wW = wNew
+        r = rNew
+        k += 1
+        if record {
+            vTrace[k - 1] = v
+        }
+    }
+    var tCross = nan
+    var vCross = nan
+    if x >= runCfg.dist {
+        let frac = (runCfg.dist - xPrev) / (x - xPrev)
+        tCross = (k - 1) * dt + frac * dt
+        vCross = vPrev + frac * (v - vPrev)
+    }
+    if record {
+        vTrace = vTrace[0..k]
+    }
+    return (tCross, vCross, k, regSteps, vTrace, tShift)
+}
+
+// Drive torque at the rear wheels [N m], driveline inertia reflected to them [kg m^2], the CVT
+// ratio after this step and the region: 1 clutch open, 2 clutch slipping, 3 locked at rLow,
+// 4 shifting, 5 at rMin, 6 governor (droop or cutoff).
+fn driveline(wW: f64, r: f64, t: f64, G: f64, c: Cvt, veh: Veh, eng: Eng, cShift: f64,
+             dt: f64) -> (f64, f64, f64, i64) {
+    let nOut = wW * G * 60 / (2 * pi)               // CVT output speed [rev/min]
+    let nFree = min(eng.nIdle + eng.revRate * t, c.nStall)   // engine speed with the clutch slipping
+    let nLock = r * nOut                            // engine speed with the clutch locked
+    let JwG = veh.Jw + veh.Jd * (G * G)
+    if nFree < c.nEngage {
+        return (0.0, JwG, r, 1)
+    } else if nLock < nFree {
+        let (Te, _) = engine_torque(nFree, eng)
+        return (veh.eta * r * G * Te, JwG, r, 2)
+    }
+    let (Te, gov) = engine_torque(nLock, eng)
+    var rNew = r - dt * cShift * shift_imbalance(r, nLock, Te, c)
+    if rNew > c.rLow {
+        rNew = c.rLow
+    } else if rNew < c.rMin {
+        rNew = c.rMin
+    }
+    let rDot = (rNew - r) / dt
+    let rG = r * G
+    let Td = veh.eta * rG * (Te - veh.Je * G * rDot * wW)
+    let Jeq = JwG + veh.eta * veh.Je * (rG * rG)
+    var reg = 4
+    if gov {
+        reg = 6
+    } else if r == c.rLow {
+        reg = 3
+    } else if r == c.rMin {
+        reg = 5
+    }
+    return (Td, Jeq, rNew, reg)
+}
+
+// Full-throttle engine torque [N m] at n [rev/min], with the governor droop and cutoff; the
+// second result is true when the governor acts.
+fn engine_torque(n: f64, eng: Eng) -> (f64, bool) {
+    if n >= eng.nCut {
+        return (0.0, true)
+    } else if n > eng.nGov {
+        return (eng.tqGov * (eng.nCut - n) / (eng.nCut - eng.nGov), true)
+    }
+    return (interp1(eng.rpm, eng.tq, n), false)
+}
+
+// CVT axial force balance [N]: primary flyweights minus secondary spring and torque helix;
+// positive moves the ratio towards rMin (upshift).
+fn shift_imbalance(r: f64, nE: f64, Te: f64, c: Cvt) -> f64 {
+    return c.kFly * ((nE / 1000) * (nE / 1000)) - c.F0 - c.kSp * (c.rLow - r) - c.kHx * Te * r
+}
+
+// Piecewise-linear friction coefficient mu(kappa), odd in kappa, and its slope d mu/d|kappa|.
+fn slip_curve(kappa: f64, tire: Tire) -> (f64, f64) {
+    let s = abs(kappa)
+    var mu = 0.0
+    var dmu = 0.0
+    if s <= tire.kPk {
+        mu = tire.muPk * s / tire.kPk
+        dmu = tire.muPk / tire.kPk
+    } else if s < tire.kSl {
+        dmu = -(tire.muPk - tire.muSl) / (tire.kSl - tire.kPk)
+        mu = tire.muPk + dmu * (s - tire.kPk)
+    } else {
+        mu = tire.muSl
+        dmu = 0
+    }
+    if kappa < 0 {
+        mu = -mu
+    }
+    return (mu, dmu)
+}
+
+// Rolling resistance plus aerodynamic drag [N] at speed v [m/s].
+fn road_load(v: f64, veh: Veh, crr: f64) -> f64 {
+    return crr * veh.m * veh.g + 0.5 * veh.rho * veh.Cd * veh.A * (v * v)
+}
+
+// Equilibrium CVT ratio at output speed nOut [rev/min]: rLow or rMin when the force balance
+// does not change sign between them, else its root by bisection to 1e-9.
+fn steady_ratio(nOut: f64, c: Cvt, eng: Eng) -> f64 {
+    var nE = c.rLow * nOut
+    let (TeLow, _) = engine_torque(nE, eng)
+    if shift_imbalance(c.rLow, nE, TeLow, c) <= 0 {
+        return c.rLow
+    }
+    nE = c.rMin * nOut
+    let (TeMin, _) = engine_torque(nE, eng)
+    if shift_imbalance(c.rMin, nE, TeMin, c) >= 0 {
+        return c.rMin
+    }
+    var a = c.rMin
+    var b = c.rLow
+    while b - a > 1e-9 {
+        let mid = 0.5 * (a + b)
+        nE = mid * nOut
+        let (TeMid, _) = engine_torque(nE, eng)
+        if shift_imbalance(mid, nE, TeMid, c) > 0 {
+            b = mid
+        } else {
+            a = mid
+        }
+    }
+    return 0.5 * (a + b)
+}
+
+// Steady-state drive force [N] at speed v: static axle load, tire slip in the linear range from
+// the road load, the clutch slipping below its stall speed, else the CVT at its force balance.
+fn steady_force(v: f64, G: f64, c: Cvt, veh: Veh, tire: Tire, eng: Eng, crr: f64) -> f64 {
+    let Nr = veh.m * veh.g * veh.wfRear
+    let kappa = road_load(v, veh, crr) / Nr * tire.kPk / tire.muPk
+    let wW = (v + kappa * max(v, tire.vRef0)) / veh.rw
+    let nOut = wW * G * 60 / (2 * pi)
+    if c.rLow * nOut < c.nStall {
+        let (TeStall, _) = engine_torque(c.nStall, eng)
+        return TeStall * c.rLow * G * veh.eta / veh.rw
+    }
+    let r = steady_ratio(nOut, c, eng)
+    let (Te, _) = engine_torque(r * nOut, eng)
+    return Te * r * G * veh.eta / veh.rw
+}
+
+// Steady-state top speed: the root of steady drive force - road load, by bisection on
+// [0.5, 45] m/s to 1e-6 m/s; the second result is the number of iterations.
+fn top_speed(G: f64, c: Cvt, veh: Veh, tire: Tire, eng: Eng, crr: f64) -> (f64, i64) {
+    var lo = 0.5
+    var hi = 45.0
+    if (steady_force(lo, G, c, veh, tire, eng, crr) - road_load(lo, veh, crr) <= 0 ||
+            steady_force(hi, G, c, veh, tire, eng, crr) - road_load(hi, veh, crr) >= 0) {
+        error("top speed for G = %.3f is not bracketed by [%g, %g]", G, lo, hi)
+    }
+    var iters = 0
+    while hi - lo > 1e-6 {
+        let mid = 0.5 * (lo + hi)
+        if steady_force(mid, G, c, veh, tire, eng, crr) - road_load(mid, veh, crr) > 0 {
+            lo = mid
+        } else {
+            hi = mid
+        }
+        iters += 1
+    }
+    return (0.5 * (lo + hi), iters)
+}
+
+// Abscissa of the vertex of the parabola through (x, y) at i-1, i, i+1 (the grid minimum and
+// its neighbours; i is 0-based); the grid point itself at either end of the grid.
+fn refine_min(x: f64[], y: f64[], i: i64) -> f64 {
+    if i > 0 && i < len(x) - 1 {
+        let x1 = x[i - 1]
+        let x2 = x[i]
+        let x3 = x[i + 1]
+        let y1 = y[i - 1]
+        let y2 = y[i]
+        let y3 = y[i + 1]
+        let num = (x2 - x1) * (x2 - x1) * (y2 - y3) - (x2 - x3) * (x2 - x3) * (y2 - y1)
+        let den = (x2 - x1) * (y2 - y3) - (x2 - x3) * (y2 - y1)
+        return x2 - 0.5 * num / den
+    }
+    return x[i]
+}
+
+// Face width of one stage from the Lewis bending stress of its pinion: start at kMin*m and
+// grow in steps of gd.Fstep until sigma <= gd.sLimit; not ok if F would exceed kMax*m.
+// T pinion torque [N mm], n pinion speed [rev/min], m module [mm], Np pinion teeth.
+// Results: ok, the face width F [mm] and the stress sigma [MPa].
+fn size_face(T: f64, n: f64, m: f64, Np: f64, Y: f64, gd: Gd) -> (bool, f64, f64) {
+    let d = m * Np                      // pitch diameter [mm]
+    let Wt = 2 * T / d                  // tangential load [N]
+    let V = pi * d * n / 60000          // pitch-line speed [m/s]
+    let Kv = (6.1 + V) / 6.1            // Barth velocity factor, cut or milled profile
+    var F = gd.kMin * m
+    var sigma = Kv * Wt / (F * m * Y)
+    var ok = true
+    while sigma > gd.sLimit {
+        F = F + gd.Fstep
+        if F > gd.kMax * m {
+            ok = false
+            break
+        }
+        sigma = Kv * Wt / (F * m * Y)
+    }
+    return (ok, F, sigma)
+}
