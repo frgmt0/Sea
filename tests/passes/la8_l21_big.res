@@ -1,0 +1,58 @@
+#sea 1
+#target arm64-macos
+#file la8_l21_big.sea
+rtfmat 10 4 17 1
+rtfmat 11 4 1 17
+rpname 0:1:5 A 1
+rint 0:1:12 17 #4031000000000000
+rint 0:1:15 1 #3FF0000000000000
+rtype 0:1:8 f64 fm 2 10
+rname 0:1:20 zeros pd 0
+rint 0:1:26 17 #4031000000000000
+rint 0:1:30 1 #3FF0000000000000
+call 0:1:20 2
+var 0:1:1 1
+rpname 0:2:5 B 2
+rint 0:2:12 1 #3FF0000000000000
+rint 0:2:14 17 #4031000000000000
+rtype 0:2:8 f64 fm 2 11
+rname 0:2:20 zeros pd 0
+rint 0:2:26 1 #3FF0000000000000
+rint 0:2:29 17 #4031000000000000
+call 0:2:20 2
+var 0:2:1 1
+rname 0:3:1 A loc 1
+rint 0:3:3 16 #4030000000000000
+rint 0:3:7 0 #0000000000000000
+index 0:3:1 2
+float 0:3:12 #4000000000000000
+asg 0:3:1 set
+rname 0:4:1 B loc 2
+rint 0:4:3 0 #0000000000000000
+rint 0:4:6 16 #4030000000000000
+index 0:4:1 2
+float 0:4:12 #4008000000000000
+asg 0:4:1 set
+rpname 0:5:5 C 3
+rname 0:5:9 A loc 1
+rname 0:5:13 B loc 2
+bin 0:5:9 matmul
+let 0:5:1 0
+rname 0:6:1 printf pd 0
+str 0:6:8 %25g%20%25g%20%25g%0A
+rname 0:6:22 C loc 3
+rint 0:6:24 16 #4030000000000000
+rint 0:6:28 16 #4030000000000000
+index 0:6:22 2
+rname 0:6:33 C loc 3
+rint 0:6:35 0 #0000000000000000
+rint 0:6:38 0 #0000000000000000
+index 0:6:33 2
+rname 0:6:42 C loc 3
+rint 0:6:44 16 #4030000000000000
+rint 0:6:48 0 #0000000000000000
+index 0:6:42 2
+call 0:6:1 4
+cstmt 0:6:1
+prog 6
+#end

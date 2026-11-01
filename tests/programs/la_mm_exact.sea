@@ -1,0 +1,52 @@
+// la_mm_exact -- matrix @ matrix of dynamic matrices through GEMM (class R; LANGUAGE.md 10.8, DESIGN.md 2.13.6
+// MATMUL) on exact data (integers in -3 .. 3, every product and partial sum exact in every order and
+// variant, DESIGN.md 2.13.8): 1 x 1, 3 x 5 @ 5 x 2 element by element and 70 x 40 @ 40 x 65 against a
+// scalar triple loop (0 mismatches) and by the sums of squares of its columns; results printed as x + 0.0 (GEMM leaves the
+// sign of a zero open); the program tests/la/la_link.sh links; expected bytes from
+// tests/vectors/la8_cases.py
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+fn mki(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 3 + j * 5 + s) % 7 - 3)
+        }
+    }
+    return A
+}
+var A1 = zeros(1, 1)
+A1[0, 0] = 3.0
+var B1 = zeros(1, 1)
+B1[0, 0] = -7.0
+pmz(A1 @ B1)
+pmz(mki(3, 5, 1) @ mki(5, 2, 4))
+let A3 = mki(70, 40, 2)
+let B3 = mki(40, 65, 3)
+let C3 = A3 @ B3
+printf("%dx%d\n", rows(C3), cols(C3))
+var bad = 0
+for i in 0..70 {
+    for j in 0..65 {
+        var s = 0.0
+        for kk in 0..40 {
+            s = s + A3[i, kk] * B3[kk, j]
+        }
+        if s != C3[i, j] {
+            bad += 1
+        }
+    }
+}
+printf("%d\n", bad)
+for j in 0..65 {
+    printf(" %.17g", sum(C3[:, j] * C3[:, j]))
+}
+printf("\n")

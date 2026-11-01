@@ -1,0 +1,40 @@
+// la_vm_fixed -- @ of a fixed-size vector and a fixed-size matrix, inlined by L21 with L13's sum8 form (DESIGN.md
+// 2.13.4 L21, L-iw; LANGUAGE.md 6.8, 10.5): k = 19 (lanes 0-7 twice, then 0-2), k = 8, a k = 10 case
+// whose lanes meet 1e16 and -1e16 in lane 0, and k = 0 (f64[0] @ f64[0,2]: +0); class E; expected bytes
+// from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var x: f64[19] = zeros(19)
+for i in 0..19 {
+    x[i] = f64((i * 5 + 4) % 9 - 4) / f64(i + 4 + 7)
+}
+var A: f64[19,3] = zeros(19, 3)
+for i in 0..19 {
+    for j in 0..3 {
+        A[i, j] = f64((i * 7 + j * 3 + 2) % 11 - 5) / f64(i + 2 * j + 2 + 3)
+    }
+}
+let y: f64[3] = x @ A
+pv(y)
+var x8: f64[8] = zeros(8)
+for i in 0..8 {
+    x8[i] = f64((i * 5 + 1) % 9 - 4) / f64(i + 1 + 7)
+}
+var A8: f64[8,5] = zeros(8, 5)
+for i in 0..8 {
+    for j in 0..5 {
+        A8[i, j] = f64((i * 7 + j * 3 + 6) % 11 - 5) / f64(i + 2 * j + 6 + 3)
+    }
+}
+pv(x8 @ A8)
+let xs = [1e+16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1e+16, 1.0]
+let As = [1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0; 1.0, -1.0]
+pv(xs @ As)
+let z: f64[0] = []
+let Z: f64[0,2] = []
+pv(z @ Z)

@@ -1,0 +1,7 @@
+// r_la_mv_shape -- dynamic 2 x 3 matrix @ vector of 4: shape mismatch (LANGUAGE.md 9.2; DESIGN.md 2.13.2, 2.13.5
+// GEMV, L-ij: a vector's shape is its length), at the line of the @
+let A = zeros(2, 3)
+let x = zeros(4)
+printf("start\n")
+let y = A @ x
+printf("%d\n", len(y))

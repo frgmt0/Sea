@@ -151,10 +151,20 @@ DESIGN.md §8 row 8) **is specified** (8a, agreed 2026-11-01 after one independe
 (Baysick's GEMM for matrix @ matrix, Sea's class-E GEMV and 8-lane vector @ matrix kernels, fixed-size
 `@` inlined by `sealoop`'s L21), the handles `Lu`/`Chol`, `lu chol solve rcond eig_sym` as runtime
 entries 51–61 (blocked LU and Cholesky through `_bsk_kern_gemm_sub`, `dgecon`-style `rcond`, tred1 +
-tql1), the W2 and W3 ports. **Next:** 8b (WP-CONTRACT first and alone: `rt.inc` entries 51–61 and
-constants, LANGUAGE.md's agreed text; then `@`). The Baysick-repo work package WP-BSK-OVERLAP
-(Baysick DESIGN.md §6.6.1: "overlap" means sharing an element, plus a `kern_check` case) is a
-precondition for 8c.
+tql1), the W2 and W3 ports. **8b is done** (2026-11-01: WP-CONTRACT's `rt.inc` entries 51–61 and
+constants with LANGUAGE.md's agreed text; `@` of every numeric operand pair: `seacheck`'s `ckmm`
+(`cvt`, `dyn`, 217), `sealoop`'s R35 and L21 in the new part `lpbmat.bas`, `sealower`'s rule-39 rows
+`MATMUL`/`GEMV`/`VECMAT`; `rt_gemm.s` (GEMM through Baysick, GEMV and VECMAT in NEON, SSE2 and AVX2
+forms, class E) and `rt_kern.s` (`_sea_variant`) in both runtimes; `tests/la/` with the group
+`test-la` and the cross cases `la/la_check`, `la/la_link`; 22 `la_*` programs, `r_la_*`/`err_la_*`
+errors, `la8_mm_*` and `la8_l21_*` dumps, 8 `rt_la_gemm_*` cases per target, `err_ns_matmul`
+retired; a review defect fixed (L21 now builds the dynamic vector result of a k = 0 product over 256
+elements); `make test` and `make cross` pass (997 cases: default 859, `sse2` 859, once-only 138,
+total 1 856); lead decisions L-jg–L-jl; measured: `seacheck` 6 969 built lines, `sealoop` 6 643,
+`sealower` 6 798, DESIGN.md §2.7 "Measured after 8b"). The Baysick-repo work package WP-BSK-OVERLAP
+(Baysick DESIGN.md §6.6.1: "overlap" means sharing an element, plus a `kern_check` case) has landed
+(Baysick commit 8c8dee3). **Next:** 8c (factorizations, solves, `rcond`, `eig_sym` and the handles
+`Lu`/`Chol`).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -185,7 +195,9 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2, and the `vector` lines of W1's bisection and W4's selection store, §2.12.10), `test-fusion` (`tests/fusion.sh`, the allocations per iteration of `tests/fusion/` under `SEA_HEAP_CHECK=count`, DESIGN.md §2.12.10), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
   (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`, and their vector entries against the scalar ones in every lane position and on random inputs),
-  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W4 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
+  `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders and
+  MATMUL on exact data under every usable variant, with the header `tests/la/gen_consts.sh` writes;
+  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W4 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.
@@ -206,8 +218,9 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   variants, default and `sse2`, unless `SEA_KERNELS` is set); on Linux: `sh tests/cross_run.sh
   [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
   Makefile.linux test-rt` (`tests/rt/x86_64_linux/`), `make -f Makefile.linux test-math`. `make cross` also
-  runs one extra case, `math/math_check`, on the host, and the case kind `fusion` (`tests/fusion/`,
-  DESIGN.md §6.6.1) under both variants.
+  runs the once-only cases `math/math_check`, `la/la_check` and `la/la_link` on the host, and the
+  case kind `fusion` (`tests/fusion/`, DESIGN.md §6.6.1) under both variants; `make -f
+  Makefile.linux test-la` runs `la_check` there.
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
@@ -217,7 +230,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.
-- `tests/` programs/, errors/, passes/ (dump goldens), rt/, shape/, fusion/, harness/, vectors/ and the
+- `tests/` programs/, errors/, passes/ (dump goldens), rt/, shape/, fusion/, la/, harness/, vectors/ and the
   scripts above; `tests/CORPUS.md` describes the corpus.
 
 ## Pass authors

@@ -1,0 +1,8 @@
+// la_vm_k0_big -- a fixed-size vector @ matrix with k = 0 whose result has more than 256 elements (DESIGN.md 2.13.2,
+// Decision 125 (a), L21): f64[0] @ f64[0,300] is the dynamic f64[] of 300 zeros, every one +0 (the
+// empty sum, not the -0.0 of sum8's accumulators): the length, the count equal to 0 and
+// min(1.0 / y) = Inf (-Inf for any -0); expected bytes from tests/vectors/la8_cases.py
+let x: f64[0] = []
+let Z: f64[0,300] = []
+let y = x @ Z
+printf("%d %d %g\n", len(y), nnz(y == 0.0), min(1.0 / y))

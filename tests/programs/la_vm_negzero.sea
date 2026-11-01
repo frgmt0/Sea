@@ -1,0 +1,16 @@
+// la_vm_negzero -- vector @ matrix: the accumulators start at -0.0 (LANGUAGE.md 10.5, DESIGN.md 2.13.2), so a column of
+// -0 products gives -0, one +0 product makes +0, -0 * -3 is +0; printed with %.17g; expected bytes
+// from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x: f64[] = [-0.0, 0.0, 1.0]
+let A: f64[,] = [1.0, -0.0, 1.0, 0.0; -0.0, 0.0, 1.0, 0.0; -0.0, -0.0, -1.0, 0.0]
+pv(x @ A)
+let x1: f64[] = [-0.0]
+let A1: f64[,] = [3.0, -3.0].row
+pv(x1 @ A1)

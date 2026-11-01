@@ -1,0 +1,8 @@
+let A: f64[2,3] = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let B: f64[3,2] = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0]
+let C = A @ B
+printf("%g %g %g %g\n", C[0, 0], C[0, 1], C[1, 0], C[1, 1])
+// la8_l21_mm -- L21's matrix @ matrix form (DESIGN.md 3.5.9 "What sealoop rewrites in 8b", L-jg): v outer,
+// i inner, constants T = ci 1 and V = ci 1 (both operands matrices), X = ci 1 (k = 3: the chain loop
+// runs z = 1, 2), the indices a[i,z] = i + z*2, b[z,v] = z + v*3, R[i,v] = i + v*2; the result is the
+// fixed-size f64[2,2]. Code at lines 1-4. Output: [22 28; 49 64].

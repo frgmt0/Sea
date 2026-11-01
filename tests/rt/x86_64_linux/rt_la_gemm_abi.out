@@ -1,0 +1,26 @@
+pass 1
+gemv 19x5 @ 5: ok
+gemv 37x33 @ 33: ok
+gemv 4x0 @ 0: ok
+gemv 0x3 @ 3: ok
+vecmat 13 @ 13x3: ok
+vecmat 40 @ 40x17: ok
+vecmat 0 @ 0x5: ok
+matmul 3x5 @ 5x2: ok
+matmul 70x40 @ 40x65: ok
+matmul 130x300 @ 300x90: ok
+matmul 4x0 @ 0x6: ok
+matmul 0x3 @ 3x6: ok
+pass 2
+gemv 19x5 @ 5: ok
+gemv 37x33 @ 33: ok
+gemv 4x0 @ 0: ok
+gemv 0x3 @ 3: ok
+vecmat 13 @ 13x3: ok
+vecmat 40 @ 40x17: ok
+vecmat 0 @ 0x5: ok
+matmul 3x5 @ 5x2: ok
+matmul 70x40 @ 40x65: ok
+matmul 130x300 @ 300x90: ok
+matmul 4x0 @ 0x6: ok
+matmul 0x3 @ 3x6: ok

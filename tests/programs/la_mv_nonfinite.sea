@@ -1,0 +1,31 @@
+// la_mv_nonfinite -- Inf and NaN propagate by IEEE rules through the pinned order (LANGUAGE.md 10.8, DESIGN.md 2.13.2):
+// 0 * inf, inf + -inf, a NaN element, products overflowing to +-inf and their sum, subnormal products
+// rounding to 0; NaN printed NaN whatever its sign (11.1); expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A0: f64[,] = [inf, 1.0].row
+let x0: f64[] = [0.0, 1.0]
+pv(A0 @ x0)
+let A1: f64[,] = [inf, -inf].row
+let x1: f64[] = [1.0, 1.0]
+pv(A1 @ x1)
+let A2: f64[,] = [inf, 1.0; 1.0, -inf]
+let x2: f64[] = [1.0, 1.0]
+pv(A2 @ x2)
+let A3: f64[,] = [1e+308, 1e+308; -1e+308, -1e+308; 1e+308, -1e+308]
+let x3: f64[] = [10.0, -10.0]
+pv(A3 @ x3)
+let A4: f64[,] = [1e+308, 1e+308; -1e+308, -1e+308]
+let x4: f64[] = [1.0, 1.0]
+pv(A4 @ x4)
+let A5: f64[,] = [nan, 0.0; 0.0, 0.0]
+let x5: f64[] = [1.0, inf]
+pv(A5 @ x5)
+let A6: f64[,] = [5e-324, 5e-324, 1.0; 2.2250738585072014e-308, -2.2250738585072014e-308, 0.0]
+let x6: f64[] = [0.5, 0.5, 0.0]
+pv(A6 @ x6)

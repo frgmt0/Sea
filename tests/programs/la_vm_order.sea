@@ -1,0 +1,34 @@
+// la_vm_order -- vector @ matrix with k = 19: each y[j] is the pinned 8-lane sum (LANGUAGE.md 10.5, 10.8; DESIGN.md
+// 2.13.2, 2.13.6 VECMAT, L-iz) of the rounded products, derived lane by lane: x = [1e16, 1 (7 times),
+// -1e16, 1 (10 times)] against a column of ones gives 17 where the sequential sum gives 10
+// (and equals sum(x)), and 19 x 3 rounded quotients; expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn mkq(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 7 + j * 3 + s) % 11 - 5) / f64(i + 2 * j + s + 3)
+        }
+    }
+    return A
+}
+fn vq(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 5 + s) % 9 - 4) / f64(i + s + 7)
+    }
+    return v
+}
+let xa: f64[] = [1e+16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1e+16, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+let Aa = ones(19, 1)
+pv(xa @ Aa)
+printf("%.17g\n", sum(xa))
+let x = vq(19, 2)
+let A = mkq(19, 3, 5)
+pv(x @ A)

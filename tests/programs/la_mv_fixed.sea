@@ -1,0 +1,44 @@
+// la_mv_fixed -- @ of a fixed-size matrix and a fixed-size vector, inlined by L21 in the pinned chain (DESIGN.md
+// 2.13.4 L21, Decision 125 (a), L-iw; LANGUAGE.md 6.8: class E at every extent, result f64[r]): the
+// order-sensitive rows of la_mv_order, 5 x 7 and 16 x 16 matrices of rounded quotients, a column of -0
+// by 5 (the chain starts with the first product: -0), and k = 0 (f64[2,0] @ f64[0]: +0, no loop);
+// expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A = [1e+16, 1.0, -1e+16; 0.1, 0.2, 0.3]
+let x = [1.0, 1.0, 1.0]
+let y: f64[2] = A @ x
+pv(y)
+var F: f64[5,7] = zeros(5, 7)
+for i in 0..5 {
+    for j in 0..7 {
+        F[i, j] = f64((i * 7 + j * 3 + 4) % 11 - 5) / f64(i + 2 * j + 4 + 3)
+    }
+}
+var xv: f64[7] = zeros(7)
+for i in 0..7 {
+    xv[i] = f64((i * 5 + 3) % 9 - 4) / f64(i + 3 + 7)
+}
+pv(F @ xv)
+var G: f64[16,16] = zeros(16, 16)
+for i in 0..16 {
+    for j in 0..16 {
+        G[i, j] = f64((i * 7 + j * 3 + 1) % 11 - 5) / f64(i + 2 * j + 1 + 3)
+    }
+}
+var xg: f64[16] = zeros(16)
+for i in 0..16 {
+    xg[i] = f64((i * 5 + 2) % 9 - 4) / f64(i + 2 + 7)
+}
+let yg: f64[16] = G @ xg
+pv(yg)
+let N = [-0.0; -0.0]
+pv(N @ [5.0])
+let Z: f64[2,0] = []
+let z: f64[0] = []
+pv(Z @ z)

@@ -204,12 +204,28 @@
     \m 48, COS_Y, sea_cos_y, -, y, y
     \m 49, POW_Y, sea_pow_y, -, yy, y
     \m 50, HYPOT_Y, sea_hypot_y, -, yy, y
+    \m 51, MATMUL, sea_matmul, S, pp, p
+    \m 52, GEMV, sea_gemv, S, pp, p
+    \m 53, VECMAT, sea_vecmat, S, pp, p
+    \m 54, LU, sea_lu, S, p, p
+    \m 55, CHOL, sea_chol, S, p, p
+    \m 56, LU_SOLVE, sea_lu_solve, S, pp, p
+    \m 57, CHOL_SOLVE, sea_chol_solve, S, pp, p
+    \m 58, SOLVE, sea_solve, S, pp, p
+    \m 59, RCOND, sea_rcond, S, p, f
+    \m 60, EIG_SYM, sea_eig_sym, S, p, p
+    \m 61, EIG_SYM_GEN, sea_eig_sym_gen, S, pp, p
 .endm
-.equiv SEA_ENT_COUNT,           50  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           61  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm
 SEA_ENTRY_LIST SEA_ENTDEF
+
+// ---- Linear algebra constants (DESIGN.md 2.13.5, 4.8) -----------------------
+.equiv SEA_LA_NB,               32  /* panel width of every blocked algorithm and block of the triangular solves */
+.equiv SEA_EIG_MAXIT,           30  /* QL iterations allowed for one eigenvalue */
+.equiv SEA_RCOND_ITMAX,         5   /* iteration limit of the rcond estimator */
 
 // ---- Kernel variants (DESIGN.md 4.4); names as Baysick's KV_NAME ----------
 .equiv SEA_VAR_NEON,            1   /* "neon", arm64-macos */

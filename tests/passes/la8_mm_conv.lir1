@@ -1,0 +1,145 @@
+#sea 1
+#target arm64-macos
+#file la8_mm_conv.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 32 8
+slot s3 32 8
+slot s4 16 8
+sa p1 s1
+li i2 1
+sti i2 p1 - 0 0
+li i3 2
+sti i3 p1 - 0 16
+li i4 3
+sti i4 p1 - 0 8
+li i5 4
+sti i5 p1 - 0 24
+li i6 2
+li i7 2
+li i8 2
+li i9 2
+rcall sea_arr_new_u 0:1 1 p10 4 i8 i9 i6 i7
+ldp p11 p10 - 0 40
+li i12 32
+mcopy p11 p1 i12
+li i13 2
+li i14 1
+li i15 1
+li i16 1
+rcall sea_arr_new_u 0:2 1 p17 4 i14 i15 i13 i16
+lf f18 #3FF0000000000000
+ldp p19 p17 - 0 40
+li i20 0
+icmp gt i21 i13 i20
+if 1 i21
+li i22 1
+isub i23 i13 i22
+loop 2 i24 i20 i23 i22
+stf f18 p19 i24 8 0
+endloop 2
+endif 1
+ldi i25 p10 - 0 16
+ldi i26 p10 - 0 24
+li i27 1
+li i28 2
+rcall sea_arr_new_u 0:3 1 p29 4 i27 i28 i25 i26
+ldp p30 p29 - 0 40
+ldp p31 p10 - 0 40
+icmp eq i32 i25 i25
+icmp eq i33 i26 i26
+iand i34 i32 i33
+if 3 i34
+imul i35 i25 i26
+li i36 0
+icmp gt i37 i35 i36
+if 4 i37
+li i38 1
+isub i39 i35 i38
+loop 5 i40 i36 i39 i38
+ldi i41 p31 i40 8 0
+itof f42 i41
+stf f42 p30 i40 8 0
+endloop 5
+endif 4
+else 3
+li i43 1
+icmp ne i44 i25 i43
+icmp ne i45 i26 i43
+imul i46 i45 i25
+li i47 0
+icmp gt i48 i26 i47
+if 6 i48
+li i49 1
+isub i50 i26 i49
+loop 7 i51 i47 i50 i49
+li i52 0
+icmp gt i53 i25 i52
+if 8 i53
+li i54 1
+isub i55 i25 i54
+loop 9 i56 i52 i55 i54
+imul i57 i56 i44
+imul i58 i51 i46
+iadd i59 i57 i58
+ldi i60 p31 i59 8 0
+itof f61 i60
+imul i62 i51 i25
+iadd i63 i56 i62
+stf f61 p30 i63 8 0
+endloop 9
+endif 8
+endloop 7
+endif 6
+endif 3
+rcall sea_gemv 0:3 1 p64 2 p29 p17
+release p29
+sa p65 s2
+sa p66 s3
+lf f67 #3FF0000000000000
+stf f67 p66 - 0 0
+lf f68 #4000000000000000
+stf f68 p66 - 0 16
+lf f69 #4008000000000000
+stf f69 p66 - 0 8
+lf f70 #4010000000000000
+stf f70 p66 - 0 24
+li i71 32
+mcopy p65 p66 i71
+li i72 2
+li i73 2
+li i74 1
+li i75 2
+rcall sea_arr_new_u 0:5 1 p76 4 i74 i75 i72 i73
+ldp p77 p76 - 0 40
+li i78 32
+mcopy p77 p65 i78
+rcall sea_gemv 0:5 1 p79 2 p76 p17
+release p76
+li i80 1
+ldi i81 p64 - 0 16
+chkb i80 i81 0 0:6
+ldp p82 p64 - 0 40
+ldf f83 p82 i80 8 0
+li i84 0
+ldi i85 p79 - 0 16
+chkb i84 i85 0 0:6
+ldp p86 p79 - 0 40
+ldf f87 p86 i84 8 0
+sa p88 s4
+stf f83 p88 - 0 0
+stf f87 p88 - 0 8
+la p89 d1
+rcall sea_printf 0:6 0 2 p89 p88
+release p79
+release p64
+release p17
+release p10
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

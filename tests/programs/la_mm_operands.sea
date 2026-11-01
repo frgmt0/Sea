@@ -1,0 +1,52 @@
+// la_mm_operands -- operands and chains of @ (LANGUAGE.md 6.1: @ shares the precedence of * and is left-associative;
+// DESIGN.md 2.13.4: @ is a seafuse barrier whose operands are fused trees, L-ix): (A + B) @ C, A @ C @ D,
+// A.T @ B, a row range, 2.0 * A @ C = (2.0 * A) @ C, A @ C * 2.0 = (A @ C) * 2.0, -A @ C, and two chains
+// ending in matrix @ vector; exact integer data (GEMM, class R), printed as x + 0.0; expected bytes from
+// tests/vectors/la8_cases.py
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+fn mki(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 3 + j * 5 + s) % 7 - 3)
+        }
+    }
+    return A
+}
+fn vi(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 2 + s) % 5 - 2)
+    }
+    return v
+}
+let A = mki(3, 4, 1)
+let B = mki(3, 4, 2)
+let C = mki(4, 2, 3)
+let D = mki(2, 5, 4)
+pmz((A + B) @ C)
+pmz(A @ C @ D)
+pmz(A.T @ B)
+pmz(A[0..2, :] @ C)
+pmz(2.0 * A @ C)
+pmz(A @ C * 2.0)
+pmz(-A @ C)
+let x = vi(5, 1)
+pvz(A @ C @ D @ x)
+pvz((A @ C) @ (D @ x))

@@ -654,3 +654,48 @@
 19330 IF P > X(39) THEN 19340
 19335 LET R = K + 2
 19340 SUBEND
+19341 REM ---- ckmm: the matrix product J = A @ B of numeric array operands, not both vectors (DESIGN
+19342 REM 2.13.3, Decision 125): an i64 operand converted element by element; with both operands
+19343 REM fixed-size, 217 at J when the inner extents differ, else the type f64[r,c], f64[r] or f64[c],
+19344 REM fixed-size when it has at most LIM_FIXED_ELEMS elements (fxk), else the dynamic one; with one
+19345 REM fixed-size operand beside a dynamic one, a dyn of the fixed one; a dynamic operand gives the
+19346 REM dynamic type (LANGUAGE 6.8; U V the operands' ranks, F the fixed-size count, P the elements)
+19347 SUB "ckmm": N(), M(), T(), X(), X$(), J, A, B
+19348 CALL "shp": T(), M(A, 1), E1, U, F1, A1, B1
+19349 CALL "shp": T(), M(B, 1), E2, V, F2, A2, B2
+19350 IF E1 <> 3 THEN 19352
+19351 CALL "acv": N(), M(), T(), X(), X$(), A
+19352 IF E2 <> 3 THEN 19354
+19353 CALL "acv": N(), M(), T(), X(), X$(), B
+19354 REM the result: rows R1 (matrix @ ...) or the vector's extent, columns C1 (... @ matrix)
+19355 LET K = U + V - 2
+19356 LET R1 = A1
+19357 LET C1 = B2
+19358 IF U = 2 THEN 19361
+19359 LET R1 = B2
+19360 LET C1 = 0
+19361 IF V = 2 THEN 19363
+19362 LET C1 = 0
+19363 LET F = F1 + F2
+19364 IF F = 1 THEN 19374
+19365 IF F = 0 THEN 19380
+19366 REM both fixed-size: the inner extents (A's columns or its length, B's rows or its length)
+19367 IF A2 = A1 + (U - 1) * (B1 - A1) THEN 19372
+19368 CALL "sht": U, A1, B1, A$
+19369 CALL "sht": V, A2, B2, B$
+19370 CALL "er": N(), X(), X$(), J, "SHAPE_MISMATCH_C", A$, B$, "", 2
+19371 GOTO 19384
+19372 CALL "fxk": X(), K, 1, R1 * (C1 * (K - 1) + 2 - K), Q
+19373 GOTO 19382
+19374 REM one fixed-size operand: it is made the dynamic array it equals (Decision 125 (a))
+19375 LET Q = A
+19376 IF F1 = 1 THEN 19378
+19377 LET Q = B
+19378 CALL "elt": T(), M(Q, 1), E, G
+19379 CALL "tarr": T(), N(), X(), X$(), G, 4, 0, 0, M(Q, 5)
+19380 LET Q = K
+19381 LET C1 = 0
+19382 CALL "tarr": T(), N(), X(), X$(), Q, 4, R1, C1, M(J, 1)
+19383 GOTO 19385
+19384 LET M(J, 1) = 0
+19385 SUBEND

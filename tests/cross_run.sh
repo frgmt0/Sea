@@ -22,7 +22,9 @@
 # second run is named `FAIL <name> [sse2]: ...`. The setup requires AVX2 (`grep -qw avx2
 # /proc/cpuinfo`) whatever is asked for, else exit 2: the 4-lane code (the y-class tests run AVX2
 # instructions unconditionally) cannot be tested, and a run never passes with only the sse2 arm
-# executed. An rt/ case keeps its own env= lines and runs once, as does math/math_check. The
+# executed. An rt/ case keeps its own env= lines and runs once, as do math/math_check and the
+# phase-8 cases la/la_check (tests/la/la_check.c, which runs every usable variant itself) and
+# la/la_link (tests/la/la_link.sh on cases/la/la_mm_exact.s, DESIGN.md 2.13.8). The
 # summary names the counts of each variant: `variant <v>: passed P  failed F`, then
 # `once (build, rt, math): passed P  failed F`, then the totals.
 #
@@ -511,6 +513,51 @@ else
             if [ "$VERBOSE" = 1 ]; then sed 's/^/    /' "$TMP/m.out" | head -60; fi
         fi
     fi
+fi
+
+# ---- la/la_check, la/la_link: linear algebra, once each (DESIGN.md 2.13.8, L-ja, L-jd) --------
+# la_check selects every usable variant itself; the header comes from the bundle's include/.
+if [ -f "$BUNDLE/tests/la/la_check.case" ]; then
+    name=la/la_check
+    mkdir -p "$TMP/la"
+    if ! sh "$BUNDLE/tests/la/gen_consts.sh" "$TMP/la/sea_consts.h" >"$TMP/la.cc" 2>&1; then
+        fail "$name" "gen_consts.sh failed: $(head -3 "$TMP/la.cc" | tr '\n' ' ')"
+    else
+        "$CC" -std=c11 -O2 -Wall -Wextra -ffp-contract=off -I "$TMP/la" -o "$TMP/la_check" \
+            "$BUNDLE/tests/la/la_check.c" "$LIBSEA" "$BSKRT" -no-pie -lm >"$TMP/la.cc" 2>&1
+        if [ $? -ne 0 ] || [ -s "$TMP/la.cc" ]; then
+            fail "$name" "build failed: $(head -3 "$TMP/la.cc" | tr '\n' ' ')"
+        else
+            run_limited 300 /dev/null "$TMP" "$TMP/la_check" >"$TMP/la.out" 2>"$TMP/la.err"
+            st=$?
+            if [ $st -eq 0 ] && [ ! -s "$TMP/la.err" ]; then
+                pass
+            else
+                fail "$name" "exit status $st: $(head -3 "$TMP/la.err" | tr '\n' ' ')"
+                if [ "$VERBOSE" = 1 ]; then sed 's/^/    /' "$TMP/la.err" | head -60; fi
+            fi
+        fi
+    fi
+elif [ -z "$(cat "$BUNDLE/PATTERNS" 2>/dev/null)" ]; then
+    fail la/la_check "the bundle lacks the la/la_check case"
+fi
+# la_link: the link map of the gcc link of la_mm_exact names only rt_kinit.o and rt_k*.o of libbaysickrt.a
+if [ -f "$BUNDLE/tests/la/la_link.case" ]; then
+    name=la/la_link
+    if [ -f "$BUNDLE/cases/la/la_mm_exact.packfail" ]; then
+        fail "$name" "compile (on the Mac) failed: $(head -3 "$BUNDLE/cases/la/la_mm_exact.packfail" | tr '\n' ' ')"
+    else
+        AS="$AS" CC="$CC" sh "$BUNDLE/tests/la/la_link.sh" -s "$BUNDLE/cases/la/la_mm_exact.s" "$LIBSEA" "$BSKRT" \
+            >"$TMP/ll.out" 2>&1
+        st=$?
+        if [ $st -eq 0 ]; then
+            pass
+        else
+            fail "$name" "$(grep -v '^ ' "$TMP/ll.out" | head -3 | tr '\n' ' ')"
+        fi
+    fi
+elif [ -z "$(cat "$BUNDLE/PATTERNS" 2>/dev/null)" ]; then
+    fail la/la_link "the bundle lacks the la/la_link case"
 fi
 
 if [ $((PASS + FAIL)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi

@@ -1,0 +1,11 @@
+var A: f64[17,1] = zeros(17, 1)
+var B: f64[1,17] = zeros(1, 17)
+A[16, 0] = 2.0
+B[0, 16] = 3.0
+let C = A @ B
+printf("%g %g %g\n", C[16, 16], C[0, 0], C[16, 0])
+// la8_l21_big -- L21 with a result over SEA_LIM_FIXED_ELEMS (256) elements and k = 1 (DESIGN.md 3.5.9
+// "What sealoop rewrites in 8b", L-jg; 2.13.2): 17 x 1 @ 1 x 17 is the dynamic f64 matrix of 289
+// elements, so the home is tmp g = ci 17, tmp h = ci 17, anew P T 0 2 (lv g) (lv h); k = 1 writes no
+// tmp X and no chain loop (S is the first product). Code at lines 1-6. Output: C[16,16] = 2*3 = 6,
+// C[0,0] = C[16,0] = 0.

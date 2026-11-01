@@ -4,12 +4,14 @@
 # (DESIGN.md 4.4, 4.5, 4.6, 4.7.1, 4.8; LANGUAGE.md 9.2, 9.4).
 # The x86_64-linux twin of runtime/arm64_macos/rt_main.s.
 #
-# Defines: main, sea_stack_limit, sea_variant   (global, rt.inc)
+# Defines: main, sea_stack_limit   (global, rt.inc)
 #          sea_argc, sea_argv   (.globl + .hidden: internal, DESIGN.md
 #                               4.5; read by sea_args, rt_args.s)
 # Uses   : sea_main and sea_sites (the program), sea_err (rt_err.s),
 #          sea_out_flush and sea_out_fail (rt_out.s), sea_write_all
-#          (rt_out.s), sea_live and sea_freed (rt_mem.s), Baysick's
+#          (rt_out.s), sea_live and sea_freed (rt_mem.s), sea_variant
+#          (rt_kern.s, L-iu: set here, defined there so that a C test can
+#          link the entries without this main), Baysick's
 #          bsk_kern_init, bsk_kern_use, bsk_kern_variants, bsk_kern_name
 #          (libbaysickrt.a), and glibc through the PLT.
 #
@@ -420,11 +422,6 @@ main:
     .size sea_stack_limit, 8
 sea_stack_limit:
     .zero 8                         # lowest %rsp the prologue check accepts
-    .globl sea_variant
-    .type sea_variant, @object
-    .size sea_variant, 8
-sea_variant:
-    .zero 8                         # SEA_VAR_* of the selected variant
     .globl sea_argc
     .hidden sea_argc
     .type sea_argc, @object

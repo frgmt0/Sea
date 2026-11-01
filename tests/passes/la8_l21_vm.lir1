@@ -1,0 +1,120 @@
+#sea 1
+#target arm64-macos
+#file la8_l21_vm.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+slot s2 24 8
+slot s3 48 8
+slot s4 48 8
+slot s5 16 8
+slot s6 16 8
+slot s7 64 8
+slot s8 16 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 8
+lf f5 #4008000000000000
+stf f5 p2 - 0 16
+li i6 24
+mcopy p1 p2 i6
+sa p7 s3
+sa p8 s4
+lf f9 #3FF0000000000000
+stf f9 p8 - 0 0
+lf f10 #4000000000000000
+stf f10 p8 - 0 24
+lf f11 #4008000000000000
+stf f11 p8 - 0 8
+lf f12 #4010000000000000
+stf f12 p8 - 0 32
+lf f13 #4014000000000000
+stf f13 p8 - 0 16
+lf f14 #4018000000000000
+stf f14 p8 - 0 40
+li i15 48
+mcopy p7 p8 i15
+sa p16 s5
+sa p17 s6
+li i18 1
+li i19 0
+li i20 1
+li i21 1
+li i22 1
+if 1 i18
+loop 2 i23 i19 i21 i20
+li i24 3
+li i25 0
+icmp gt i26 i24 i25
+if 3 i26
+sa p27 s7
+lf f28 #8000000000000000
+stf f28 p27 - 0 0
+stf f28 p27 - 0 8
+stf f28 p27 - 0 16
+stf f28 p27 - 0 24
+stf f28 p27 - 0 32
+stf f28 p27 - 0 40
+stf f28 p27 - 0 48
+stf f28 p27 - 0 56
+li i29 7
+li i30 1
+isub i31 i24 i30
+loop 4 i32 i25 i31 i30
+iand i33 i32 i29
+ldf f34 p27 i33 8 0
+ldf f35 p1 i32 8 0
+li i36 3
+imul i37 i23 i36
+iadd i38 i32 i37
+ldf f39 p7 i38 8 0
+fmul f40 f35 f39
+fadd f34 f34 f40
+stf f34 p27 i33 8 0
+endloop 4
+ldf f41 p27 - 0 0
+ldf f42 p27 - 0 8
+ldf f43 p27 - 0 16
+ldf f44 p27 - 0 24
+ldf f45 p27 - 0 32
+ldf f46 p27 - 0 40
+ldf f47 p27 - 0 48
+ldf f48 p27 - 0 56
+fadd f49 f41 f42
+fadd f50 f43 f44
+fadd f51 f49 f50
+fadd f52 f45 f46
+fadd f53 f47 f48
+fadd f54 f52 f53
+fadd f55 f51 f54
+else 3
+lf f55 #0000000000000000
+endif 3
+stf f55 p17 i23 8 0
+endloop 2
+endif 1
+li i56 16
+mcopy p16 p17 i56
+li i57 0
+li i58 2
+chkb i57 i58 0 0:4
+ldf f59 p16 i57 8 0
+li i60 1
+li i61 2
+chkb i60 i61 0 0:4
+ldf f62 p16 i60 8 0
+sa p63 s8
+stf f59 p63 - 0 0
+stf f62 p63 - 0 8
+la p64 d1
+rcall sea_printf 0:4 0 2 p64 p63
+ret 0
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

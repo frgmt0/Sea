@@ -3,12 +3,14 @@
 // stack-overflow signal handling and kernel selection
 // (DESIGN.md 4.4, 4.5, 4.6, 4.8; LANGUAGE.md 9.2, 9.4).
 //
-// Defines: _main, _sea_stack_limit, _sea_variant   (global, rt.inc)
+// Defines: _main, _sea_stack_limit   (global, rt.inc)
 //          _sea_argc, _sea_argv   (private to the runtime: main's argc
 //                                  and argv, read by _sea_args, rt_args.s)
 // Uses   : _sea_main and _sea_sites (the program), _sea_err (rt_err.s),
 //          _sea_out_flush, _sea_out_fail and _sea_write_all (rt_out.s),
-//          _sea_live (rt_mem.s), and Baysick's
+//          _sea_live (rt_mem.s), _sea_variant (rt_kern.s, L-iu: set
+//          here, defined there so that a C test can link the entries
+//          without this main), and Baysick's
 //          _bsk_kern_init, _bsk_kern_use, _bsk_kern_variants.
 //
 // Start-up (Baysick's program-stack technique, Baysick DESIGN.md 6.9):
@@ -448,9 +450,7 @@ Lrt_main_s_live:    .ascii " live objects\n"
 
     .section __DATA,__bss
     .globl _sea_stack_limit
-    .globl _sea_variant
 .zerofill __DATA,__bss,_sea_stack_limit,8,3 /* lowest sp the prologue check accepts */
-.zerofill __DATA,__bss,_sea_variant,8,3     /* SEA_VAR_* of the selected variant */
     .private_extern _sea_argc
     .private_extern _sea_argv
 .zerofill __DATA,__bss,_sea_argc,8,3        /* main's argc (sign-extended) */

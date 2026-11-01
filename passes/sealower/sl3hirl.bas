@@ -932,3 +932,26 @@
 34929 GOTO 2360
 34930 IF E3 = 5 THEN 1285
 34932 GOTO 2360
+34998 REM ==== sub-phase 8b (DESIGN 2.13.4): rule 39's three @ rows. A bin matmul (R35: two dynamic f64 operands; from 3685, A1 A2 their registers, D2 the destination p) is one
+34999 REM rcall of MATMUL (matrix @ matrix), GEMV (matrix @ vector) or VECMAT (vector @ matrix): rcall <symbol> <site> 1 D2 2 A1 A2, the result owned (count 1), then each owned
+35000 REM operand released (rule 15 (b)); a borrowed lv is neither retained nor released (the entry borrows it); every check is the entry's (L-iv)
+35001 LET Q1$ = "MATMUL"
+35002 IF T(H(H(X, 7), 4), 1) = 1 THEN 35008
+35004 IF T(H(X, 4), 1) = 3 THEN 35010
+35006 LET Q1$ = "GEMV"
+35007 GOTO 35010
+35008 LET Q1$ = "VECMAT"
+35010 LET Q9 = FNE(Q1$, " (pp, p)")
+35012 IF Y$(Q9, 4) <> "pp" THEN 35016
+35014 IF Y$(Q9, 5) = "p" THEN 35020
+35016 CALL "dg_bug": P$, "entry " & Q1$ & " (pp, p) is not in the entries table"
+35020 GOSUB 5590
+35022 LET L1$ = L1$ & FNR$(D2) & " 2" & FNR$(A1) & FNR$(A2)
+35024 GOSUB 7695
+35026 LET X0 = H(X, 7)
+35028 LET R0 = A1
+35030 GOSUB 10080
+35032 LET X0 = H(X0, 8)
+35034 LET R0 = A2
+35036 GOSUB 10080
+35038 GOTO 3088

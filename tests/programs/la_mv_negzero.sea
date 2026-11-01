@@ -1,0 +1,18 @@
+// la_mv_negzero -- the first term of each row is the product itself, never 0 + A[i,0]*x[0] (DESIGN.md 2.13.2): a row of
+// -0 products gives -0 (also with one column), -0 + +0 is +0, products of -0 by negative x are +0;
+// printed with %.17g (LANGUAGE.md 11.1: -0); expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A: f64[,] = [-0.0, -0.0, -0.0; 0.0, 0.0, 0.0; -0.0, 0.0, -0.0; 1.0, -1.0, 0.0; -0.0, -0.0, 0.0]
+let x: f64[] = [1.0, 2.0, 3.0]
+let xn: f64[] = [-1.0, -2.0, -3.0]
+pv(A @ x)
+pv(A @ xn)
+let N: f64[,] = [-0.0; 0.0]
+let x1: f64[] = [5.0]
+pv(N @ x1)

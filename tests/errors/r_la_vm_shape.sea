@@ -1,0 +1,7 @@
+// r_la_vm_shape -- vector of 3 @ dynamic 4 x 2 matrix: shape mismatch with the vector's shape first (DESIGN.md 2.13.2,
+// 2.13.5 VECMAT, L-ij), at the line of the @
+let x = zeros(3)
+let A = zeros(4, 2)
+printf("start\n")
+let y = x @ A
+printf("%d\n", len(y))

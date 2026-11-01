@@ -15,6 +15,15 @@
 #   make -f Makefile.linux test-math        all, then tests/math/math_check.c (gcc, as the
 #                                           cross run builds it) against libsea.a and
 #                                           tests/math/*.vec, bit for bit (DESIGN.md 4.10.6)
+#   make -f Makefile.linux test-la          all, then tests/la/la_check.c (gcc, as the cross run's
+#                                           once-only case la/la_check builds it) against libsea.a
+#                                           and Baysick's BAYSICK/build-x86_64-linux/libbaysickrt.a,
+#                                           every usable kernel variant (DESIGN.md 2.13.8); its header
+#                                           build-x86_64-linux/obj/la/sea_consts.h is written by
+#                                           tests/la/gen_consts.sh from the contract files (L-jd). The
+#                                           link-isolation check tests/la/la_link.sh needs a program
+#                                           compiled on the Mac and runs in the cross run only
+#                                           (case la/la_link)
 #   make -f Makefile.linux check-includes   assemble tests/include_check_x86_64.s:
 #                                           the contract include files with GNU as,
 #                                           layout assertions, code ranges, table
@@ -49,7 +58,7 @@ RT_ASFLAGS := --64 --fatal-warnings -I include -I $(BAYSICK)/include
 RT_SRCS    := $(wildcard runtime/x86_64_linux/*.s)
 RT_OBJS    := $(patsubst runtime/x86_64_linux/%.s,$(BUILD)/obj/%.o,$(RT_SRCS))
 
-.PHONY: all test-rt test-math check-includes check-sources clean
+.PHONY: all test-rt test-math test-la check-includes check-sources clean
 .DEFAULT_GOAL := all
 
 all: $(BUILD)/libsea.a
@@ -86,6 +95,21 @@ test-math: all
 	$(CC) -O1 -ffp-contract=off -mavx2 -c -o $(BUILD)/obj/math_check_y.o tests/math/math_check_y.c
 	$(CC) -o $(BUILD)/obj/math_check $(BUILD)/obj/math_check.o $(BUILD)/obj/math_check_y.o $(BUILD)/libsea.a -lm -lpthread
 	$(BUILD)/obj/math_check tests/math
+
+# The linear-algebra check (DESIGN.md 2.13.8, L-jd): the header from the contract files, then
+# la_check.c linked with libsea.a (without rt_main.o: it defines main and sea_sites) and Baysick's
+# runtime, as the cross run links it.
+LA_DIR := $(BUILD)/obj/la
+BSKRT_LINUX := $(BAYSICK)/build-x86_64-linux/libbaysickrt.a
+$(LA_DIR)/sea_consts.h: tests/la/gen_consts.sh include/rt.inc include/limits.inc include/errors.inc
+	@mkdir -p $(LA_DIR)
+	sh tests/la/gen_consts.sh $@
+test-la: all $(LA_DIR)/sea_consts.h
+	@if [ ! -f tests/la/la_check.c ]; then echo "make: tests/la/la_check.c not found" >&2; exit 1; fi
+	@if [ ! -f "$(BSKRT_LINUX)" ]; then echo "make: $(BSKRT_LINUX) not found (make -f Makefile.linux in BAYSICK)" >&2; exit 1; fi
+	$(CC) -std=c11 -O2 -Wall -Wextra -ffp-contract=off -I $(LA_DIR) -o $(LA_DIR)/la_check tests/la/la_check.c \
+	    $(BUILD)/libsea.a $(BSKRT_LINUX) -no-pie -lm
+	$(LA_DIR)/la_check
 
 # Same comment rule and grep as the Mac Makefile (Baysick DESIGN.md 3.4).
 check-includes: $(INCLUDES) tests/include_check_x86_64.s tests/include_asserts.inc

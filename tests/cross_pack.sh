@@ -4,7 +4,7 @@
 # usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]
 #   -o BUNDLE_DIR  output directory; must not exist or must be empty (else exit 2)
 #   PATTERN        only pack cases whose name (programs/NAME, errors/NAME, passes/NAME,
-#                  accept/NAME, ports/NAME, rt/NAME, fusion/NAME) contains one of the patterns (matched literally)
+#                  accept/NAME, ports/NAME, rt/NAME, fusion/NAME, la/NAME) contains one of the patterns (matched literally)
 #
 # Environment:
 #   SEA      the driver (default: build/sea of the Sea repository); the pass executables are
@@ -26,6 +26,8 @@
 # x86_64-linux-only pass-4 test (run through seagen_x64 as it is), with a NAME.lir3 a hand-written
 # seavec test (NAME.lir3 retargeted, run through seavec and then seagen_x64); rt/x86_64_linux/NAME.s.
 # math/math_check (tests/math: harness source and *.vec, built and run on the host).
+# la/la_check and la/la_link (phase 8, DESIGN.md 2.13.8): tests/la/{gen_consts.sh,la_check.c,la_link.sh},
+# with the marker files la_check.case / la_link.case, and cases/la/la_mm_exact.s for la_link.
 # ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
 # NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference), NAME.meta
 # (filter=compute-time) and NAME.expect/NAME.json.
@@ -448,6 +450,26 @@ if selected "math/math_check"; then
     cp "$ROOT/tests/math/math_check.c" "$ROOT/tests/math/math_check_y.c" "$ROOT"/tests/math/*.vec "$BUNDLE/tests/math/" \
         || setup_fail "cannot copy tests/math"
     PACKED=$((PACKED + 1))
+fi
+
+# la/la_check and la/la_link (DESIGN.md 2.13.8, L-ja, L-jd): once-only cases. The bundle gets
+# tests/la/gen_consts.sh (run on the host: it writes sea_consts.h from the bundle's include/),
+# la_check.c and la_link.sh; la/la_link also gets its own compilation of
+# tests/programs/la_mm_exact.sea as cases/la/la_mm_exact.s (or .packfail).
+if selected "la/la_check" || selected "la/la_link"; then
+    for f in gen_consts.sh la_check.c la_link.sh; do
+        [ -f "$ROOT/tests/la/$f" ] || setup_fail "tests/la/$f missing"
+    done
+    mkdir -p "$BUNDLE/tests/la" "$BUNDLE/cases/la" || setup_fail "cannot create $BUNDLE/tests/la"
+    cp "$ROOT/tests/la/gen_consts.sh" "$ROOT/tests/la/la_check.c" "$ROOT/tests/la/la_link.sh" "$BUNDLE/tests/la/" \
+        || setup_fail "cannot copy tests/la"
+    if selected "la/la_check"; then : > "$BUNDLE/tests/la/la_check.case"; PACKED=$((PACKED + 1)); fi
+    if selected "la/la_link"; then
+        [ -f "$ROOT/tests/programs/la_mm_exact.sea" ] || setup_fail "tests/programs/la_mm_exact.sea missing (la/la_link)"
+        pack_sea la "$ROOT/tests/programs" la_mm_exact
+        : > "$BUNDLE/tests/la/la_link.case"
+        PACKED=$((PACKED + 1))
+    fi
 fi
 
 if [ $PACKED -eq 0 ]; then echo "cross_pack.sh: no case selected (patterns: ${PATTERNS:-none}; compile-time error tests are not packed)" >&2; exit 2; fi

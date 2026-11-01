@@ -1,0 +1,40 @@
+// la_mv_mixed -- a dynamic matrix @ a fixed-size vector and a fixed-size matrix @ a dynamic vector: the fixed-size
+// operand is made dynamic (dyn, DESIGN.md 2.13.3, L-iq) and the product is GEMV, class E in the pinned
+// order (LANGUAGE.md 10.8); expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn mkq(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 7 + j * 3 + s) % 11 - 5) / f64(i + 2 * j + s + 3)
+        }
+    }
+    return A
+}
+fn vq(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 5 + s) % 9 - 4) / f64(i + s + 7)
+    }
+    return v
+}
+let Q = mkq(6, 5, 3)
+var xs: f64[5] = zeros(5)
+for i in 0..5 {
+    xs[i] = f64((i * 5 + 2) % 9 - 4) / f64(i + 2 + 7)
+}
+pv(Q @ xs)
+var F: f64[4,6] = zeros(4, 6)
+for i in 0..4 {
+    for j in 0..6 {
+        F[i, j] = f64((i * 7 + j * 3 + 2) % 11 - 5) / f64(i + 2 * j + 2 + 3)
+    }
+}
+let xd = vq(6, 4)
+pv(F @ xd)

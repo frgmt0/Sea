@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file la8_mm_conv.sea
+tmat 10 3
+tvec 11 4
+tfmat 12 4 2 2
+tfvec 13 3 2
+tfmat 14 3 2 2
+tmat 15 4
+tfvec 16 4 2
+fn 1 .main main 1 0 5 0:1:1
+loc Ai 10 let 0:1:5
+loc x 11 let 0:2:5
+loc y 11 let 0:3:5
+loc F 12 let 0:4:5
+loc z 11 let 0:5:5
+ci 0:1:19 3 1
+ci 0:1:22 3 2
+row 0:1:19 13 2
+ci 0:1:25 3 3
+ci 0:1:28 3 4
+row 0:1:25 13 2
+arr 0:1:18 14 2
+dyn 0:1:18 10
+bind 0:1:1 1
+ci 0:2:14 3 2
+lib 0:2:9 11 ones 1
+bind 0:2:1 2
+lv 0:3:9 10 1
+cvt 0:3:9 15
+lv 0:3:14 11 2
+bin 0:3:9 11 matmul
+bind 0:3:1 3
+cf 0:4:10 4 #3FF0000000000000
+cf 0:4:15 4 #4000000000000000
+row 0:4:10 16 2
+cf 0:4:20 4 #4008000000000000
+cf 0:4:25 4 #4010000000000000
+row 0:4:20 16 2
+arr 0:4:9 12 2
+bind 0:4:1 4
+lv 0:5:9 12 4
+dyn 0:5:9 15
+lv 0:5:13 11 2
+bin 0:5:9 11 matmul
+bind 0:5:1 5
+lv 0:6:19 11 3
+ci 0:6:21 3 1
+idx 0:6:19 4 1
+fconv 0:6:8 1 - - - g
+ftext 0:6:8 1 %20
+lv 0:6:25 11 5
+ci 0:6:27 3 0
+idx 0:6:25 4 1
+fconv 0:6:8 1 - - - g
+ftext 0:6:8 1 %0A
+fmt 0:6:8 1 4
+lib 0:6:1 1 printf 1
+eval 0:6:1
+block 0:1:1 6
+end
+#end

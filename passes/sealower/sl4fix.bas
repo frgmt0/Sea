@@ -31,7 +31,7 @@
 40076 NEXT E6
 40078 GOTO 40034
 40090 REM ---- 40100 (R10, every node H1 of kind K just read): a rng only as a forr's range; no array operand of cvt un bin powk lib; no array index of an idx; no asg op to an array; an idx of an array base has as many indices as the base has
-40091 REM dimensions (else bad tree)
+40091 REM dimensions (else bad tree); a bin with an array operand only as R35 says (43000, 8b)
 40100 LET E9 = H(H1, 7)
 40102 IF E9 = 0 THEN 40127
 40104 IF H(E9, 1) <> 16 THEN 40108
@@ -43,6 +43,7 @@
 40114 IF K = 39 THEN 40122
 40116 IF K = 12 THEN 40162
 40118 IF K < 6 THEN 40124
+40119 IF K = 8 THEN 43000
 40120 IF K < 10 THEN 2360
 40121 GOTO 40124
 40122 IF E9 <> H(H1, 7) THEN 2360
@@ -954,3 +955,21 @@
 42968 IF H(P5, 1) <> 44 THEN 23360
 42970 LET U6 = K4 + 1
 42972 RETURN
+42996 REM ---- R35 (8b, DESIGN 2.13.4; from 40119: a bin H1 with an array operand): only a bin matmul of two dynamic f64 operands, a matrix and a matrix (the
+42998 REM type a dynamic f64 matrix), a matrix and a vector or a vector and a matrix (a dynamic f64 vector); T(.,1) 1 tvec 3 tmat, so the result's kind is the sum less 3
+43000 IF G$(4) <> "matmul" THEN 2360
+43002 LET E5 = H(H(H1, 7), 4)
+43004 LET E6 = H(H(H(H1, 7), 8), 4)
+43006 IF E5 <= 9 THEN 2360
+43008 IF E6 <= 9 THEN 2360
+43010 IF T(E5, 2) <> 4 THEN 2360
+43011 IF T(E6, 2) <> 4 THEN 2360
+43012 IF ABS(T(E5, 1) - 2) <> 1 THEN 2360
+43014 IF ABS(T(E6, 1) - 2) <> 1 THEN 2360
+43016 IF T(E5, 1) + T(E6, 1) = 2 THEN 2360
+43018 LET E5 = T(E5, 1) + T(E6, 1) - 3
+43020 LET E6 = H(H1, 4)
+43022 IF E6 <= 9 THEN 2360
+43024 IF T(E6, 1) <> E5 THEN 2360
+43026 IF T(E6, 2) = 4 THEN 40124
+43028 GOTO 2360

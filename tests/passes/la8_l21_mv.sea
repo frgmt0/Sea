@@ -1,0 +1,9 @@
+let A: f64[2,2] = [1.0, 2.0; 3.0, 4.0]
+let x: f64[2] = [5.0, 6.0]
+let y = A @ x
+printf("%g %g\n", y[0], y[1])
+// la8_l21_mv -- L21's matrix @ vector form (DESIGN.md 3.5.9 "What sealoop rewrites in 8b", lead decision
+// L-jg; Decision 125 (a)): r = k = 2, so the chain loop over z = 1 .. k-1 runs once (X = ci 0); the
+// result is the fixed-size f64[2] (anew ... 0 0). Lines 1-3 are the worked example of 3.5.9, whose
+// 70 records are the .hirl's L21 records verbatim; the code stands at lines 1-4 so the positions do not
+// depend on this comment. Output: [1 2; 3 4] @ [5, 6] = [17, 39].

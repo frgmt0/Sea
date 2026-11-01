@@ -1,0 +1,36 @@
+// la_mv_view -- views and selections as operands of matrix @ vector (DESIGN.md 2.13.4 R35: the operand is
+// materialized before the call; LANGUAGE.md 5.2, 5.6): A.T, a row range, a column range with a vector
+// range, A.flat as the vector, an index-vector row selection; class E in the pinned order; expected
+// bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn mkq(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 7 + j * 3 + s) % 11 - 5) / f64(i + 2 * j + s + 3)
+        }
+    }
+    return A
+}
+fn vq(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 5 + s) % 9 - 4) / f64(i + s + 7)
+    }
+    return v
+}
+let A = mkq(5, 4, 1)
+let x5 = vq(5, 3)
+let x4 = vq(4, 5)
+pv(A.T @ x5)
+pv(A[1..3, :] @ x4)
+pv(A[:, 0..2] @ x4[1..3])
+let B = mkq(3, 20, 6)
+pv(B @ A.flat)
+pv(A[[4, 0, 2], :] @ x4)

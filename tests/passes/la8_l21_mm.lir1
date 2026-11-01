@@ -1,0 +1,139 @@
+#sea 1
+#target arm64-macos
+#file la8_l21_mm.sea
+func .main main 0:1:1 0 0
+slot s1 48 8
+slot s2 48 8
+slot s3 48 8
+slot s4 48 8
+slot s5 32 8
+slot s6 32 8
+slot s7 32 8
+sa p1 s1
+sa p2 s2
+lf f3 #3FF0000000000000
+stf f3 p2 - 0 0
+lf f4 #4000000000000000
+stf f4 p2 - 0 16
+lf f5 #4008000000000000
+stf f5 p2 - 0 32
+lf f6 #4010000000000000
+stf f6 p2 - 0 8
+lf f7 #4014000000000000
+stf f7 p2 - 0 24
+lf f8 #4018000000000000
+stf f8 p2 - 0 40
+li i9 48
+mcopy p1 p2 i9
+sa p10 s3
+sa p11 s4
+lf f12 #3FF0000000000000
+stf f12 p11 - 0 0
+lf f13 #4000000000000000
+stf f13 p11 - 0 24
+lf f14 #4008000000000000
+stf f14 p11 - 0 8
+lf f15 #4010000000000000
+stf f15 p11 - 0 32
+lf f16 #4014000000000000
+stf f16 p11 - 0 16
+lf f17 #4018000000000000
+stf f17 p11 - 0 40
+li i18 48
+mcopy p10 p11 i18
+sa p19 s5
+sa p20 s6
+li i21 1
+li i22 0
+li i23 1
+li i24 1
+li i25 1
+li i26 1
+if 1 i21
+loop 2 i27 i22 i25 i23
+if 3 i21
+loop 4 i28 i22 i24 i23
+ldf f29 p1 i28 8 0
+li i30 3
+imul i31 i27 i30
+ldf f32 p10 i31 8 0
+fmul f33 f29 f32
+if 5 i21
+loop 6 i34 i23 i26 i23
+li i35 2
+imul i36 i34 i35
+iadd i37 i28 i36
+ldf f38 p1 i37 8 0
+li i39 3
+imul i40 i27 i39
+iadd i41 i34 i40
+ldf f42 p10 i41 8 0
+fmul f43 f38 f42
+fadd f33 f33 f43
+endloop 6
+endif 5
+li i44 2
+imul i45 i27 i44
+iadd i46 i28 i45
+stf f33 p20 i46 8 0
+endloop 4
+endif 3
+endloop 2
+endif 1
+li i47 32
+mcopy p19 p20 i47
+li i48 0
+li i49 0
+li i50 2
+chkb i48 i50 0 0:4
+li i51 2
+chkb i49 i51 1 0:4
+imul i52 i49 i50
+iadd i53 i48 i52
+ldf f54 p19 i53 8 0
+li i55 0
+li i56 1
+li i57 2
+chkb i55 i57 0 0:4
+li i58 2
+chkb i56 i58 1 0:4
+imul i59 i56 i57
+iadd i60 i55 i59
+ldf f61 p19 i60 8 0
+li i62 1
+li i63 0
+li i64 2
+chkb i62 i64 0 0:4
+li i65 2
+chkb i63 i65 1 0:4
+imul i66 i63 i64
+iadd i67 i62 i66
+ldf f68 p19 i67 8 0
+li i69 1
+li i70 1
+li i71 2
+chkb i69 i71 0 0:4
+li i72 2
+chkb i70 i72 1 0:4
+imul i73 i70 i71
+iadd i74 i69 i73
+ldf f75 p19 i74 8 0
+sa p76 s7
+stf f54 p76 - 0 0
+stf f61 p76 - 0 8
+stf f68 p76 - 0 16
+stf f75 p76 - 0 24
+la p77 d1
+rcall sea_printf 0:4 0 2 p77 p76
+ret 0
+endfunc
+fmt d1 8
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

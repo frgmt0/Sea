@@ -180,10 +180,10 @@
 10515 CALL "vu": N(), M(), T(), X(), X$(), B, G2
 10520 IF G1 = 0 THEN 10985
 10525 IF G2 = 0 THEN 10985
-10530 REM an array operand: && and || take scalars only, @ is from phase 8 (vector @ vector is no
-10535 REM product); an element-wise operator is checked on the element types (an untyped constant
-10540 REM takes the other element type), then broadcast (bop: a vector with a matrix, static shapes;
-10545 REM LANGUAGE 6.2-6.4)
+10530 REM an array operand: && and || take scalars only, @ takes numeric matrices and vectors (ckmm;
+10535 REM vector @ vector is no product); an element-wise operator is checked on the element types (an
+10540 REM untyped constant takes the other element type), then broadcast (bop: a vector with a matrix,
+10545 REM static shapes; LANGUAGE 6.2-6.4)
 10550 CALL "elt": T(), G1, E1, K1
 10555 CALL "elt": T(), G2, E2, K2
 10560 IF K1 + K2 = 0 THEN 10640
@@ -198,8 +198,8 @@
 10605 IF K1 + K2 > 2 THEN 10620
 10610 CALL "er": N(), X(), X$(), J, "MATMUL_VECTORS", "", "", "", 0
 10615 GOTO 10985
-10620 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", "@", "", "", 1
-10625 GOTO 10985
+10620 CALL "ckmm": N(), M(), T(), X(), X$(), J, A, B
+10625 GOTO 11025
 10630 LET G1 = E1
 10635 LET G2 = E2
 10640 REM + and the comparisons of two str or str elements (Decision 45) give str and bool

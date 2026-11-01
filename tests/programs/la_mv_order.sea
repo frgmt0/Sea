@@ -1,0 +1,36 @@
+// la_mv_order -- matrix @ vector in the pinned order (LANGUAGE.md 10.8, DESIGN.md 2.13.2, 2.13.6 GEMV): rows whose
+// reassociated sum differs, A[0,:] = [1e16, 1, -1e16] with x = [1, 1, 1] giving 0 (the exact sum and
+// (1e16 - 1e16) + 1 are 1), 0.1 + 0.2 + 0.3, and a 7 x 9 matrix of rounded quotients against a 9-vector
+// (the reversed order differs there; class E, printed
+// with %.17g); expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn mkq(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 7 + j * 3 + s) % 11 - 5) / f64(i + 2 * j + s + 3)
+        }
+    }
+    return A
+}
+fn vq(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 5 + s) % 9 - 4) / f64(i + s + 7)
+    }
+    return v
+}
+let A: f64[,] = [1e+16, 1.0, -1e+16; 1.0, 1e+16, -1e+16; 1e+16, -1e+16, 1.0; 0.1, 0.2, 0.3; 1.0, 1e+16, 1.0]
+let x: f64[] = [1.0, 1.0, 1.0]
+pv(A @ x)
+let Q = mkq(7, 9, 2)
+let xq = vq(9, 1)
+pv(Q @ xq)
+let y = Q @ xq
+printf("%.17g %.17g\n", y[0], y[6])

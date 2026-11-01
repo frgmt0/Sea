@@ -1,0 +1,8 @@
+// r_la_mm_shape -- matrix @ matrix of dynamic 2 x 3 and 4 x 2 matrices: shape mismatch with the operands' shapes in
+// source order (LANGUAGE.md 9.2, 10.8; DESIGN.md 2.13.2, 2.13.5 MATMUL, L-ij, L-iv), at the line of
+// the @, after the start line is flushed
+let A = zeros(2, 3)
+let B = zeros(4, 2)
+printf("start\n")
+let C = A @ B
+printf("%d\n", rows(C))

@@ -1,0 +1,17 @@
+let A = ones(2, 3)
+let B = ones(3, 2)
+let C = A @ B
+let y = C @ ones(2)
+let z = ones(2) @ C
+printf("%g %g %g\n", C[1, 1], y[0], z[1])
+// la8_mm_rcall -- rule 39's lowering of `@` (DESIGN.md 2.13.3-2.13.4, sub-phase 8b): matrix @ matrix
+// is `rcall sea_matmul`, matrix @ vector `rcall sea_gemv`, vector @ matrix `rcall sea_vecmat`, each
+// `rcall <sym> <site> 1 pR 2 pA pB` at the line of the `@`. The borrowed variables A, B and C are
+// neither retained nor released by the call; the owned temporaries ones(2) are released right
+// after their rcall. `@` is a seafuse barrier (L-ix) and sealoop copies `bin matmul` unchanged (R35).
+// The code stands at lines 1-6 so the positions of the dumps do not depend on this comment.
+// Derivation: the records that are not `@` come from the base compiler's golden-tested output of a
+// twin program with `let C = A` and `sort(ones(2))` at the same lines (identical constructs); the
+// `@` records (`bin <pos> <type> matmul` at the left operand, operands in source order) and the
+// rcalls are hand-derived from 2.13.3-2.13.4 and rule 39, registers renumbered by hand.
+// Output: C = ones(2,3)@ones(3,2) is all 3; y = C@[1,1] = [6,6]; z = [1,1]@C = [6,6].

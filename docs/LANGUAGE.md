@@ -505,6 +505,8 @@ whose state lives in the runtime: copying a handle copies the reference, so `plo
 changes the axes every copy refers to (that is what a figure under construction needs), and an
 `Lu` factorization is shared, never copied. Handles cannot be declared by programs, compared,
 or stored in arrays; they may be struct fields, parameters, results and locals.
+An array whose element type is a struct with a handle field (at any depth) stores that handle too and
+is the same error (`arrays cannot hold Lu`).
 
 ### 4.2 Numbers: `f64` and `i64`
 
@@ -1034,6 +1036,9 @@ factorizations of §10.8 and everything computed from them (`lu`, `chol`, `solve
 the matrix @ vector and vector @ matrix products, whose order is pinned (§10.8). `@` on
 fixed-size matrices whose every extent is at most 8 is class E too: it is evaluated as
 `c[i,j] = (…((a[i,0]*b[0,j] + a[i,1]*b[1,j]) + a[i,2]*b[2,j]) …)` with separate roundings.
+`@` of two fixed-size operands is class E at every extent, and its result is fixed-size when it has at
+most 256 elements, otherwise dynamic; a product with one dynamic matrix operand is the product on
+dynamic matrices (class R).
 
 **What this costs** is a design decision, not a free property: forbidding contraction and
 using FMA-free elementary functions gives up some speed on compute-bound scalar chains. Decision
@@ -1459,7 +1464,7 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | range step 0 | `range step is zero` |
 | negative or too large extent in a constructor | `invalid array size %d` |
 | `max`/`min`/`argmax`/`argmin` of an empty array | `%s of an empty array` |
-| singular matrix in `solve` (an exactly zero pivot) | `matrix is singular` |
+| singular matrix in `solve` (either form; an exactly zero pivot) | `matrix is singular` |
 | `chol` of a matrix that is not positive definite | `matrix is not positive definite` |
 | `eig_sym` of a non-symmetric matrix | `matrix is not symmetric` |
 | non-square matrix where square required | `matrix is not square (%s)` |
@@ -1680,6 +1685,22 @@ result is deterministic. `rcond`'s threshold use in W2 (`< 1e-12`, smallest valu
 is far from any rounding effect. **Empty and non-finite operands**: an empty product gives the
 zero matrix of the result shape (without calling a kernel); `Inf` and `NaN` propagate by IEEE
 rules in every operation of this table.
+
+`chol` reads the upper triangle of A only and does not test symmetry; it stops with `matrix is not
+positive definite` when a pivot is not greater than zero (a NaN pivot included). `solve(A, B)` and
+`eig_sym` call a matrix symmetric when every pair A[i,j], A[j,i] is equal (`==`, so +0 and −0 are
+equal) or both NaN; `solve(A, B)` tries `chol` when A is symmetric and every diagonal element is
+greater than zero, and LU when it is not or `chol` stops. LU chooses as pivot the first element of
+largest magnitude in its column; a NaN is never chosen unless it is the first candidate, so a column
+whose other candidates are all zero gives a zero pivot. `solve(F, B)` and `solve(A, B)` stop with
+`matrix is singular` at an exactly zero pivot, before any NaN in A or B is looked at and also when B
+has no column; otherwise Inf and NaN propagate through the arithmetic. An `i64` argument is
+converted and a fixed-size argument used as the dynamic array it equals; the results are dynamic.
+`rcond(F)` is, in this order: +Inf for a factor of order 0; NaN when ‖A‖₁ is NaN; 0 when a pivot is
+zero; 0 when ‖A‖₁ is +Inf or the estimate of ‖A⁻¹‖₁ is not finite; else the estimate. `eig_sym(A)`
+returns NaN for every eigenvalue when A has an element that is not finite, and `eig_sym(K, M)` when
+K or M has one or the reduction overflows (the errors of the table come first); the eigenvalues are
+sorted by §10.6's `f64` order. A `shape mismatch` names the operands' shapes in argument order.
 
 ### 10.9 Strings
 

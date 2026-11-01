@@ -1,0 +1,7 @@
+// err_la_mm_static -- @ of fixed-size 2 x 3 and 4 x 2 matrices: both inner extents are constants, so the mismatch is the
+// compile error 217 (DESIGN.md 2.13.3, 2.6.2; L-ij) at the operator node, which stands at its left
+// operand (DESIGN.md 3.3)
+let A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let B = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0; 7.0, 8.0]
+let C = A @ B
+printf("%g\n", C[0, 0])

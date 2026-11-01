@@ -1,0 +1,19 @@
+// la_mv_empty -- empty operands of matrix @ vector (DESIGN.md 2.13.2 "Empty operands", LANGUAGE.md 10.8): r x 0 @ 0 is
+// the vector of r zeros (+0, no kernel called), 0 x k @ k and 0 x 0 @ 0 the empty vector; by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A = zeros(3, 0)
+let x = zeros(0)
+pv(A @ x)
+let B = zeros(0, 4)
+let y = ones(4)
+pv(B @ y)
+let C = zeros(0, 0)
+pv(C @ x)
+let r = A @ x
+printf("%d %.17g\n", len(r), r[2])

@@ -142,8 +142,11 @@
 5500 LET Y5 = X
 5502 GOSUB 15030
 5504 ON C7 + 1 GOTO 5160, 15400, 5170, 5170
-5545 REM ---- bin un cvt powk, elemental lib: L7 when an operand is an array --------------------------
-5550 LET X5 = X1
+5545 REM ---- bin un cvt powk, elemental lib: L7 when an operand is an array (a bin matmul: lpbmat) ----
+5546 IF H(X, 2) > 9 THEN 55040
+5547 GOTO 5551
+5550 IF K = 8 THEN 5546
+5551 LET X5 = X1
 5552 IF X5 = 0 THEN 5160
 5554 IF H(X5, 2) > 9 THEN 20100
 5556 LET X5 = H(X5, 4)

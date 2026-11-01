@@ -1,0 +1,9 @@
+let x: f64[3] = [1.0, 2.0, 3.0]
+let A: f64[3,2] = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0]
+let y = x @ A
+printf("%g %g\n", y[0], y[1])
+// la8_l21_vm -- L21's vector @ matrix form (DESIGN.md 3.5.9 "What sealoop rewrites in 8b", L-jg): in each
+// column v, tmp N = ci k and 4f's sum8 (its tmp Z and ifx included, without its tmp D = data(V)) with
+// X(Ks) the product x[Ks] * A[Ks,v] at Ks + v*3, the ifx the est's value; constants B, C, K, V = ci 1
+// and X = ci 1 (k = 3; no record reads it); no T (a is a vector); the type F8 appended after the tptr.
+// Code at lines 1-4. Output: [1 2 3] @ [1 2; 3 4; 5 6] = [22, 28].

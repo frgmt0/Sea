@@ -1,0 +1,17 @@
+// la_mm_nonfinite -- non-finite operands of matrix @ matrix (GEMM, class R) by Baysick DESIGN.md 6.6.4's IEEE rules 1 and 2
+// only (DESIGN.md 2.13.2, 2.13.8): inf * 0 and a NaN factor give NaN, +inf and -inf terms give NaN, an
+// infinite term with small finite ones gives that infinity; every element of the 4 x 3 result is one
+// of those; expected bytes from tests/vectors/la8_cases.py
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let A: f64[,] = [inf, 1.0; nan, 2.0; inf, inf; -inf, 3.0]
+let B: f64[,] = [1.0, 0.0, -1.0; 1.0, 1.0, -1.0]
+pmz(A @ B)

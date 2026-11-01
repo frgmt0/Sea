@@ -1,0 +1,5 @@
+// err_la_mv_static -- @ of a fixed-size 2 x 3 matrix and a vector literal of 4: 217 with the shapes 2x3 and 4 (DESIGN.md
+// 2.13.3, L-ij), at the left operand
+let A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let y = 2.0 * (A @ [1.0, 2.0, 3.0, 4.0])
+printf("%g\n", y[0])

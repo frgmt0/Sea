@@ -1,0 +1,32 @@
+// la_mv_tails -- matrix @ vector with 1 ... 19 rows for k = 1, 2, 3, 7, 9, 17, so every row panel of GEMV's forms
+// (8 and 16 rows, 2.13.6) and every 2-lane and scalar tail is crossed (DESIGN.md 2.13.8); class E in
+// the pinned order; expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn mkq(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 7 + j * 3 + s) % 11 - 5) / f64(i + 2 * j + s + 3)
+        }
+    }
+    return A
+}
+fn vq(n: i64, s: i64) -> f64[] {
+    var v = zeros(n)
+    for i in 0..n {
+        v[i] = f64((i * 5 + s) % 9 - 4) / f64(i + s + 7)
+    }
+    return v
+}
+for k in [1, 2, 3, 7, 9, 17] {
+    let x = vq(k, k)
+    for r in 1..20 {
+        pv(mkq(r, k, r + k) @ x)
+    }
+}

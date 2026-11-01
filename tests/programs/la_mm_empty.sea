@@ -1,0 +1,19 @@
+// la_mm_empty -- empty operands of matrix @ matrix (DESIGN.md 2.13.2 "Empty operands", 2.13.5 MATMUL; LANGUAGE.md 10.8):
+// r x 0 @ 0 x c is the r x c zero matrix of +0 (no kernel called, printed raw), 0 x k @ k x c is 0 x c,
+// r x k @ k x 0 is r x 0, 0 x 0 @ 0 x 0 is 0 x 0; by hand
+fn pm(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j])
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let A = zeros(3, 0)
+let B = zeros(0, 2)
+pm(A @ B)
+pm(zeros(0, 4) @ zeros(4, 2))
+pm(zeros(2, 4) @ zeros(4, 0))
+pm(zeros(0, 0) @ zeros(0, 0))

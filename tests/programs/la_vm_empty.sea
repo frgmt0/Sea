@@ -1,0 +1,18 @@
+// la_vm_empty -- empty operands of vector @ matrix (DESIGN.md 2.13.2 "Empty operands"): 0 @ 0 x c is the vector of c
+// zeros (+0, the empty sum, not the -0.0 of the accumulators), k @ k x 0 and 0 @ 0 x 0 the empty vector;
+// by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let x = zeros(0)
+let A = zeros(0, 3)
+pv(x @ A)
+let y = ones(2)
+let B = zeros(2, 0)
+pv(y @ B)
+let C = zeros(0, 0)
+pv(x @ C)

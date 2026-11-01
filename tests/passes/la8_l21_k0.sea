@@ -1,0 +1,8 @@
+let Z: f64[2,0] = []
+let W: f64[0,3] = []
+let C = Z @ W
+printf("%g %g\n", C[0, 0], C[1, 2])
+// la8_l21_k0 -- L21 with k = 0 (DESIGN.md 3.5.9 "What sealoop rewrites in 8b", L-jg): no S and no chain
+// loop, every element stored is cf +0 (#0000000000000000); r = 2 and c = 3 are not 0, so the data of
+// R, I and J and the constants B, C, K, T = ci 1, V = ci 2 are written (no X: k < 2). Code at lines
+// 1-4. Output: the 2 x 3 matrix of +0 (printed 0, not -0).

@@ -1,0 +1,22 @@
+// la_mv_i64 -- an i64 operand of @ is converted to f64 element by element (LANGUAGE.md 6.2, 4.2; DESIGN.md 2.13.3,
+// L-iq): i64 matrix @ f64 vector, f64 matrix @ i64 vector (9007199254740993 rounds to 2^53, ties to
+// even), dynamic i64 @ i64, and fixed-size i64[3,2] @ i64[2] (L21 on converted operands, an f64 result);
+// expected bytes from tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let Ai: i64[,] = [1, 2, 3; 4, 5, 6]
+let xf: f64[] = [0.5, 0.25, 0.125]
+pv(Ai @ xf)
+let Af: f64[,] = [0.5, 1.5; 2.5, 3.5]
+let xi: i64[] = [9007199254740993, 3]
+pv(Af @ xi)
+let xi2: i64[] = [1, -1, 2]
+pv(Ai @ xi2)
+let Bi = [3, -1; 2, 7; -5, 4]
+let xf2 = [1, -1]
+pv(Bi @ xf2)

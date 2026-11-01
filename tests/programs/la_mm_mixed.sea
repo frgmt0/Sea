@@ -1,0 +1,39 @@
+// la_mm_mixed -- a fixed-size matrix @ a dynamic one and a dynamic matrix @ a fixed-size one: the fixed-size operand is
+// used as the dynamic matrix it equals (dyn; DESIGN.md 2.13.2, 2.13.3, Decision 125 (a)) and the product
+// is GEMM, class R, so the data is exact (integers); printed as x + 0.0; expected bytes from
+// tests/vectors/la8_cases.py
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+fn mki(r: i64, c: i64, s: i64) -> f64[,] {
+    var A = zeros(r, c)
+    for i in 0..r {
+        for j in 0..c {
+            A[i, j] = f64((i * 3 + j * 5 + s) % 7 - 3)
+        }
+    }
+    return A
+}
+var F: f64[3,4] = zeros(3, 4)
+for i in 0..3 {
+    for j in 0..4 {
+        F[i, j] = f64((i * 3 + j * 5 + 1) % 7 - 3)
+    }
+}
+let D = mki(4, 2, 2)
+pmz(F @ D)
+let E = mki(2, 4, 3)
+var G: f64[4,3] = zeros(4, 3)
+for i in 0..4 {
+    for j in 0..3 {
+        G[i, j] = f64((i * 3 + j * 5 + 4) % 7 - 3)
+    }
+}
+pmz(E @ G)

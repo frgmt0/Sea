@@ -30,6 +30,14 @@
 #                         tests/math/*.vec: log exp sin cos pow hypot, bit for bit (4.10.6), and the
 #                         vector entries sea_*_x in every lane position and on 2^24 random calls per
 #                         lane pattern (2.12.8)
+#   make test-la          the linear-algebra checks (DESIGN.md 2.13.8): tests/la/la_check.c (xcrun cc,
+#                         -I the directory of the generated sea_consts.h) against build/libsea.a and
+#                         build/libbaysickrt.a, every usable kernel variant (GEMV, VECMAT bit for bit
+#                         against the pinned orders, MATMUL on exact data), then tests/la/la_link.sh
+#                         (the link map of tests/programs/la_mm_exact.sea names only rt_kinit.o and
+#                         rt_k*.o among libbaysickrt.a's members, L-ja)
+#   build/obj/la/sea_consts.h  the C header of the contract constants, written by
+#                         tests/la/gen_consts.sh from include/rt.inc, limits.inc, errors.inc (L-jd)
 #   make math-tables      uv run tools/math_tables.py --check (timeout 120): the committed
 #                         include/math_tables.inc equals its definitions; developer tool,
 #                         not part of make test
@@ -93,7 +101,7 @@ RT_OBJS := $(patsubst runtime/arm64_macos/%.s,$(BUILD)/obj/runtime/%.o,$(RT_SRCS
 BAYSICK_INC := $(wildcard $(BAYSICK)/include/runtime.inc $(BAYSICK)/include/limits.inc)
 
 .PHONY: all runtime tools passes install check-baysick FORCE \
-        test test-programs test-accept test-rt test-stage test-shape test-fusion test-protocol test-driver test-lib test-arith test-math math-tables \
+        test test-programs test-accept test-rt test-stage test-shape test-fusion test-protocol test-driver test-lib test-arith test-math test-la math-tables \
         check-data lines check-limits clean \
         check-includes check-contracts cross-includes cross cross-pack
 .DEFAULT_GOAL := all
@@ -269,6 +277,24 @@ test-math: runtime
 	env -u SDKROOT xcrun cc -O1 -ffp-contract=off -Wall -o $(BUILD)/obj/math_check tests/math/math_check.c $(BUILD)/libsea.a -lm
 	$(BUILD)/obj/math_check tests/math
 
+# The linear-algebra checks (DESIGN.md 2.13.8, L-ja, L-jd). The header is derived from the contract
+# files only; la_check.c defines main and _sea_sites, so it links libsea.a without rt_main.o.
+LA_DIR := $(BUILD)/obj/la
+$(LA_DIR)/sea_consts.h: tests/la/gen_consts.sh include/rt.inc include/limits.inc include/errors.inc
+	@mkdir -p $(LA_DIR)
+	sh tests/la/gen_consts.sh $@
+test-la: all $(LA_DIR)/sea_consts.h
+	@for f in tests/la/la_check.c tests/la/la_link.sh; do \
+	    [ -f $$f ] || { echo "make: $$f not written yet" >&2; exit 1; }; done
+	@st=0; \
+	echo "env -u SDKROOT xcrun cc -std=c11 -O2 -Wall -Wextra -ffp-contract=off -I $(LA_DIR) -o $(LA_DIR)/la_check tests/la/la_check.c $(BUILD)/libsea.a $(BUILD)/libbaysickrt.a"; \
+	if env -u SDKROOT xcrun cc -std=c11 -O2 -Wall -Wextra -ffp-contract=off -I $(LA_DIR) -o $(LA_DIR)/la_check \
+	        tests/la/la_check.c $(BUILD)/libsea.a $(BUILD)/libbaysickrt.a; then \
+	    $(LA_DIR)/la_check || st=1; \
+	else echo "FAIL la/la_check: build failed"; st=1; fi; \
+	BUILD=$(BUILD) BAYSICK=$(BAYSICK) sh tests/la/la_link.sh || st=1; \
+	exit $$st
+
 # Developer check (not part of make test): the committed tables equal their definitions.
 math-tables:
 	timeout 120 uv run --with mpmath python tools/math_tables.py --check
@@ -279,7 +305,7 @@ check-data: tools
 # Every group runs even if an earlier one fails; the exit status is 1 if any failed.
 test: all check-contracts
 	@st=0; \
-	for g in test-driver check-data test-lib test-arith test-math test-rt test-stage test-shape test-fusion test-protocol test-programs test-accept; do \
+	for g in test-driver check-data test-lib test-arith test-math test-la test-rt test-stage test-shape test-fusion test-protocol test-programs test-accept; do \
 	  echo "== make $$g"; \
 	  $(MAKE) --no-print-directory $$g || { echo "== $$g FAILED"; st=1; }; \
 	done; \

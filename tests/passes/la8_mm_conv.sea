@@ -1,0 +1,16 @@
+let Ai: i64[,] = [1, 2; 3, 4]
+let x = ones(2)
+let y = Ai @ x
+let F = [1.0, 2.0; 3.0, 4.0]
+let z = F @ x
+printf("%g %g\n", y[1], z[0])
+// la8_mm_conv -- `@` operands that are not dynamic f64 (DESIGN.md 2.13.3, L-ix, decision 39 / L-iq):
+// an i64 matrix operand gets an F1 `cvt` to f64[,] and a fixed-size f64[2,2] operand a `dyn`, both
+// written at the operand's position, as for a function argument; the converted operand is the left
+// one, which stands at the operator's position. Both products are GEMV (`rcall sea_gemv`), the
+// converted temporaries released right after the call. The code stands at lines 1-6.
+// Derivation: the records that are not `@` come from the base compiler's golden-tested output of a
+// twin program calling `fn g(A: f64[,], v: f64[], n: i64)` (recursive, so never inlined) at the same
+// lines, whose argument conversions are the same F1 cvt/dyn; the call becomes `bin matmul`, g is
+// dropped, and the rcalls are hand-derived from rule 39, registers renumbered by hand.
+// Output: y = [1,2;3,4]@[1,1] = [3,7] (y[1] = 7); z = F@[1,1] = [3,7] (z[0] = 3).
