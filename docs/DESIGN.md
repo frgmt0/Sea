@@ -93,8 +93,11 @@ the user's agreement. Phase 0 (§8) did:
    gate after phase 7", which passes every program with no relief; §6.3 "Measured at 7f"; lead
    decisions L-hq–L-ib of §9, Decisions 118–119 decided by the user); sub-phase 7g (the W7 port,
    port-only by Decision 120) is **done** (2026-11-01; §6.3 "Measured at 7g"; lead decisions
-   L-ic–L-ii of §9): **phase 7 is complete**; next is phase 8 (linear algebra, §8 row 8), starting
-   with its specification.
+   L-ic–L-ii of §9): **phase 7 is complete**; phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a (its
+   specification, §2.13) is **done** (2026-11-01; revised after one independent review; Decisions
+   121–129, each decided by the user as option (a), and lead decisions L-ij–L-jf agreed with the
+   text); next is 8b (the contract changes and `@`); the Baysick work package WP-BSK-OVERLAP is a
+   precondition for 8c.
    Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -536,7 +539,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Next: phase 8 (linear algebra, §8 row 8), starting with its specification.
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Next: 8b (the contract changes and `@`); WP-BSK-OVERLAP, in the Baysick repo, is a precondition for 8c.
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -5089,6 +5092,1071 @@ count mode (L-hq) in §4.5, the marker fix (L-hw) in §3.5.9, the `fusion` tests
 L-hy) in §2.12.10 and §6.6.1, the vector check (L-hz, L-ia) in §2.12.10 with Decision 119, T9
 (L-ib) with Decision 118 in §5.8; the port and token readings (L-hr – L-hv) are readings of
 `ports/w4_heat_plate.*`.
+
+### 2.13 Phase 8: linear algebra (sub-phase 8a)
+
+**Status: agreed 2026-11-01.** This section is the specification of phase 8 of §8 (row 8,
+"Linear algebra"), written as sub-phase 8a in the way 7a specified phase 7 (§2.12) and revised after
+one independent review (RCOND without interchanges, Decision 125 restated and 129 added, the cross
+return path, the private routines of the factorizations, the generated C header, the link-map
+script, the Baysick overlap clarification, the `consts` lines in the capacity). Its questions are
+**Decisions 121–129** (§2.13.11, mirrored in §9 as "Decisions of phase 8"), each decided by the user
+as option (a) (2026-11-01). Its smaller readings are the lead decisions **L-ij – L-jf** (§2.13.12,
+mirrored in §9 as "Lead decisions of phase 8"), agreed with the text. No code, test or contract file
+changes with 8a: the contract changes are listed in "Contract changes" below and are made by the
+work package WP-CONTRACT of sub-phase 8b, each with its document table in the same change (the
+contract rule of §2.6). The normative sections listed in §2.13.13 are edited by WP-CONTRACT (the
+tables that mirror a contract file, and the LANGUAGE.md text of §2.13.2) or by the integration of
+each sub-phase (the rest), as 7b did; until each is edited, this section is the agreed specification
+and those sections describe the code as built (sea commit 5e3e8e4, phase 7 complete). The Baysick
+work package WP-BSK-OVERLAP (contract change 6, in the Baysick repo) is a precondition for 8c.
+
+#### 2.13.1 Scope
+
+**What exists today** (read from the passes, the runtime and the contract files at 5e3e8e4):
+
+* *Pass 1* parses the whole grammar: `A @ B` is `bin matmul` (`seaparse.bas` 11510's operator
+  table), and the calls of `lu chol solve rcond eig_sym` are ordinary calls.
+* *`seaname`* resolves the handle type names to the predefined types 6–9 (`sn6type.bas` 8745–8770;
+  §3.5.1: 6 `Figure`, 7 `Axes`, 8 `Lu`, 9 `Chol`), reports an array of a handle type as `arrays
+  cannot hold %s` (258, 9135–9150) and then every handle type node as `not supported yet: handle
+  types` (9155–9198). The five library names are predeclared (`sn0main.bas` 450–470, `sc0main.bas`
+  470–490).
+* *`seacheck`*: the operand errors of `@` (240 for a scalar or `bool` operand, 230 for vector @
+  vector) and then `not supported yet: @` for every other pair (`sc5expr.bas` `ck_bin` 10560–10625);
+  `ck_lib` (`sc6call.bas` 12505–13610) has no row for the five names (its table 12595–12607), so
+  each call is `not supported yet: <name>` at 12635.
+* *`seafuse`* already treats `bin matmul` as a non-fusible node (`fu4fan.bas` 30260, 30773);
+  *`sealoop`* has no `matmul` case (its L7 in `lp4ew.bas` would take a `bin matmul` with an array
+  operand as an element-wise operator); *`sealower`* lists `matmul` among the binary operators
+  (`sl0main.bas` 1095) and lowers none; no `sea.hirl` record names a library call of §10.8.
+* *Contract files*: `passes.txt` has `matmul` in `binop` and `hbinop` and needs no handle record
+  (types 8 and 9 are predefined, §3.5.1); `rt.inc` has `SEA_TAG_LU` 5 and `SEA_TAG_CHOL` 6, entries
+  1–50 (`SEA_ENT_COUNT` 50) and no linear-algebra entry; the `entries` capacity is 64 in `sealower`,
+  `seagen_a64` and `seagen_x64` (L-cs) and 399 in the `lirrw` passes; `errors.inc` has every message
+  phase 8 reports (run-time 2, 10–14; compile-time 217, 230, 240, 243, 255, 258); `limits.inc` has
+  `SEA_LIM_FIXED_MATMUL_E` 8.
+* *Runtime*: `main` calls `_bsk_kern_init`, `_bsk_kern_use` and `_bsk_kern_variants` (§4.4) but
+  nothing calls `_bsk_kern_gemm` or `_bsk_kern_gemm_sub`, which Baysick 0.6.0 provides with the IEEE
+  propagation of its DESIGN.md §6.6.4 (§7.2: done); `rt_mem.s`'s `sea_free` treats any tag but
+  `SEA_TAG_ARRAY` and `SEA_TAG_STR` as a corrupted object; no runtime file holds a kernel of §4.3.
+  The link-map test §4.3 mentions does not exist (no script checks which Baysick members a program
+  pulls).
+* *Prelude*: `std.sea` holds `linspace`, `bincount`, `meshgrid`, `setdiff`; nothing of §10.8.
+* *Tests*: `err_ns_matmul` and `err_ns_lib_solve` hold the two phase-8 rows of the phase rule;
+  `err_ns_handle` and `res_err_handle` use `Figure` (phase 9) and stay.
+
+**What phase 8 implements**, on both targets (row 8 of §8 and its "done when"):
+
+* **The matrix product `@`** (LANGUAGE.md §6.2, §6.8, §10.8): matrix @ matrix through Baysick's GEMM
+  (class R), matrix @ vector through Sea's GEMV kernel and vector @ matrix through Sea's 8-lane
+  kernel (both class E, pinned), and `@` of two fixed-size operands evaluated inline in the pinned
+  order (Decision 125).
+* **The handle types `Lu` and `Chol`** (LANGUAGE.md §4.1): locals, parameters, results, tuple
+  components, struct fields, with reference counts; `Figure` and `Axes` stay phase 9's.
+* **The library functions** `lu`, `chol`, `solve` (both forms), `rcond` and `eig_sym` (both forms)
+  of LANGUAGE.md §10.8, as runtime entries 51–61 (§2.13.5): LU with partial pivoting and ‖A‖₁,
+  Cholesky, triangular solves with many right-hand sides, `solve(A, B)`'s choice, the `dgecon`-style
+  estimator, and symmetric eigenvalues by tridiagonal reduction and implicit QL (Decision 121), the
+  generalized form through `chol(M)`; blocked with the trailing updates through `_bsk_kern_gemm_sub`
+  (Decision 122).
+* **Sea kernel variants** (§4.4): GEMV and the 8-lane kernel in NEON, SSE2 and AVX2 forms,
+  bit-identical (class E); the factorizations in one form per target, their variant dependence being
+  Baysick's (L-it).
+* **W2 and W3 complete** (without figures): `sea/ports/w2_truss_fem.sea` and
+  `sea/ports/w3_quarter_car.sea` with their token maps, accepted by `tests/accept.sh` and by `make
+  cross` under both x86_64 variants (§2.13.9, Decision 127).
+* Every earlier program's output unchanged bit for bit, on both targets and both x86_64 variants.
+
+**What W2 and W3 need** (from `workloads/w2_truss_fem.m`, `workloads/w3_quarter_car.m`):
+
+* W2: `K(freeDof, freeDof) \ F(freeDof, :)` on the reduced 241 × 241 stiffness matrix (exactly
+  symmetric: every `ke` is symmetric and `K(idx, idx) + ke` adds equal values to (i, j) and (j, i)
+  in the same order; positive diagonal) with one, 1 441 (the load-angle sweep) or 61 (the influence
+  lines) right-hand sides, in 96 FSD iterations and the design check: `solve(A, B)`'s Cholesky path;
+  `rcond(Kr(freeDof, freeDof))` in each of the 301 member removals: `rcond(lu(Kff))` as LANGUAGE.md
+  §2.2 writes it, then the solve (Decision 128); `B * Usweep` (301 × 244 @ 244 × 1 441) and `B *
+  Uinf`: GEMM; `K * u0 - F0`: GEMV (class E). Everything else W2 does exists: index-vector and mask
+  selections in reads and stores, `K[idx, idx] += ke` with a fixed-size `ke`, `max(…, dim: 0)`,
+  `min`/`argmin`, `find_first`, `hypot`, `nnz`, `linspace`, `str[]` names, `error`, `write_json`.
+* W3: `sin(argR) @ Ak` and `(cos(argR) * w.row) @ Ak` (16 001 × 60 @ 60): GEMV, class E, so
+  `road_rough` keeps the 1e-12 rule (LANGUAGE.md §10.5); `sort(eig(Mlin \ Klin))`: `eig_sym(Klin,
+  Mlin)` of two fixed-size 2 × 2 matrices (L-iq); the parabolic refinement `[c3(:).^2, c3(:),
+  ones(3, 1)] \ J3(:)`: `solve(A, b)` of a 3 × 3 non-symmetric matrix (the LU path). The rest
+  exists: ranges as values, `.col`/`.row` broadcasting, masked stores, the `f64[4]` RK4 state with
+  the inlined `qc_deriv` (§8.6), `find_last`, concatenation `[0.0, cSweep[mask]]`, struct
+  parameters.
+* **No feature gap**: unlike W7 (§6.3), neither workload needs a construct LANGUAGE.md lacks. The
+  MATLAB idioms without a direct Sea form are met in the port: `repmat(F0, 1, nAngle)` as `F0.col *
+  ones(1, nAngle)` (an exact copy: x · 1 is x, −0 and NaN included); `solve_free` called with a
+  vector and with a matrix as two functions or through `.col` and `[:, 0]` (Sea has no overloading
+  of user functions); `[Y, acc, Ft] = simulate(…)` as `let (Y, acc, Ft, _) = …`; MATLAB's 1-based
+  `kWorst`, `eCrit0`, `rWorst`, `iBest` exported `+ 1`. Port readings are recorded at 8d as lead
+  decisions.
+
+**Not in phase 8**: `Figure`, `Axes` and plotting (phase 9); transposed or strided operands passed
+to GEMM without a copy (`A.T @ B` materializes `A.T` first, §5.1's barrier rule); fusing an
+element-wise operand into the GEMV loop (`sin(argR) @ Ak` materializes `sin(argR)`; a phase-10
+candidate if a benchmark asks); LDLᵀ for symmetric indefinite matrices (LANGUAGE.md chose LU);
+eigenvectors, non-symmetric `eig`, `inv`, `det`, QR (§10.13); threads; the speed comparison with
+MATLAB (phase 10, §6.5; the compute times are recorded at 8d, not judged).
+
+**Contract changes** (WP-CONTRACT, the first package of 8b, alone, before any other 8b code):
+
+1. `include/rt.inc`: the eleven entries of §2.13.5, ids 51–61, appended to `SEA_ENTRY_LIST`
+   (`SEA_ENT_COUNT` becomes 61), their rows moved into §4.8's Id-first table in the same change; the
+   constants `SEA_LA_NB` (Decision 122), `SEA_EIG_MAXIT` 30 and `SEA_RCOND_ITMAX` 5 with their rows
+   in a new §4.8 table ("Linear algebra"); the `FREE` row's contract text gains the handle branch
+   (L-is). As in 4f, all eleven ids enter at 8b, before the code of 8c, so `sealower`'s rows can
+   name them; a program calling an entry whose symbol a runtime does not yet define fails only at
+   link. The `entries` capacity (64) holds 61; the six passes that load the `entries` block grow by
+   eleven generated `DATA` lines, and all twelve passes by three `consts` lines (every `build.list`
+   loads `consts`, which holds every constant of `limits.inc` and `rt.inc`, `tools/gendata.bas`
+   6300). Phase 9's plotting entries will exceed 64: its WP-CONTRACT raises the capacity (L-cs's two
+   lines per pass).
+2. `include/passes.txt`: **no change.** `bin matmul` exists, the library calls are `lib` nodes with
+   their names, the handle types are the predefined types 8 and 9; the refinement R35 and the
+   rewrite L21 (§2.13.4) are semantic rules of §3.5.9, not record formats.
+3. `include/errors.inc`, `include/limits.inc`: no change (every message exists; L-iq's conversions
+   and 258's reading report existing codes).
+4. LANGUAGE.md §4.1, §6.8 (one clarifying sentence, Decision 125), §9.2 and §10.8 gain the sentences
+   of §2.13.2 ("Proposed LANGUAGE.md text"), written by WP-CONTRACT with the agreement, so that the
+   runtime rests on normative text (listed here, not added before the user agrees them).
+5. Not a contract file but derived from them: `tests/la/gen_consts.sh` writes the C header
+   `sea_consts.h` that `tests/la/la_check.c` includes (L-jd); it names no value of its own.
+6. **Baysick, outside Sea** (WP-BSK-OVERLAP, Baysick's runtime and `tests/kern` owners, in the
+   Baysick repo, before 8c): Baysick DESIGN.md §6.6.1's precondition "C must not overlap A or B"
+   gains its definition, "overlap means sharing an element; address ranges of views with the same
+   `MV_LD` may interleave", and `tests/kern/kern_check.c` a case per variant in which C, A and B are
+   disjoint blocks of one row-major array (C right of A and below B, as the LU update of §2.13.6
+   passes them, in Sea's transposed view), checked against the same product on separate copies, bit
+   for bit. If a Baysick kernel variant reads or writes outside a view's stored lanes (it must not:
+   "padding never in a stored lane") the case fails and the kernel is fixed there. Phase 8 relies on
+   this reading; Sea's 8a does not edit Baysick.
+
+#### 2.13.2 The semantic contract of phase 8
+
+**Exactness** (LANGUAGE.md §6.8, §10.5, §10.8). *Class E* (bit-identical on both targets and every
+variant, the pinned orders):
+
+* matrix @ vector: `y[i] = A[i,0]·x[0]`, then `y[i] = y[i] + A[i,j]·x[j]` for j = 1 … k − 1 in
+  ascending order, each product and sum rounded separately (the first term is the product itself,
+  never `0 + A[i,0]·x[0]`, so a row of −0 products gives −0);
+* vector @ matrix: `y[j]` = the pinned 8-lane sum of LANGUAGE.md §10.5 over the rounded products
+  `x[k]·A[k,j]`, k ascending, accumulators starting at −0.0;
+* `@` of two fixed-size operands, at every extent (Decision 125): matrix @ vector as above, vector @
+  matrix as above, matrix @ matrix `c[i,j] = (…((a[i,0]·b[0,j] + a[i,1]·b[1,j]) + a[i,2]·b[2,j]) …)`
+  (LANGUAGE.md §6.8's form). §6.8 makes class R only "the matrix @ matrix product on dynamic
+  matrices", so a fixed-size product is class E at any extent; its sentence on extents ≤ 8 (and
+  `SEA_LIM_FIXED_MATMUL_E`) restates part of that and limits nothing.
+
+*Class R* (deterministic for a target and variant, differing in the last bits between them):
+matrix @ matrix with a dynamic operand (GEMM, Baysick DESIGN.md §6.6.4's rules; a fixed-size operand
+beside a dynamic one is used as the dynamic matrix it equals, Decision 125 (a)), `lu`, `chol`, both
+`solve`s, `rcond`, both `eig_sym`s. Phase 8 pins every part of these that is not a Baysick kernel
+call to the same IEEE operations in the same order on both targets and variants (L-it), so their
+results differ only through `_bsk_kern_gemm` and `_bsk_kern_gemm_sub`; for n ≤ `SEA_LA_NB` no kernel
+is called and they agree bit for bit in practice. That is a property of the build, not of the
+language: tests of class-R results use exact data or tolerance rules (§2.13.8), never it.
+
+**Empty operands** (LANGUAGE.md §10.8). An r × 0 @ 0 × c product is the r × c zero matrix (+0), a
+0 × k @ k × c product the empty 0 × c matrix (and r × k @ k × 0 the r × 0 one); matrix @ vector and
+vector @ matrix likewise (a zero vector of +0 for k = 0, an empty one for r = 0 or c = 0); no kernel
+is called. `lu` and `chol` of a 0 × 0 matrix give a handle of order 0; `solve` with n = 0 gives the
+empty result of B's shape; a B with no column gives the n × 0 result after the checks of A (L-ik);
+`rcond` of an order-0 `Lu` is +∞ (L-io); `eig_sym` of a 0 × 0 matrix is the empty vector.
+
+**Non-finite operands** ("`Inf` and `NaN` propagate by IEEE rules in every operation of this
+table"). The products propagate by their pinned operations (class E) or by Baysick's rules (GEMM).
+The factorizations propagate through their arithmetic, with these readings, each forced by a test
+the operation itself makes: partial pivoting compares magnitudes, so under Decision 129 (a) a NaN
+never wins a pivot search unless it stands first (L-in), and a column whose candidates are zeros and
+NaNs gives a zero pivot, so `solve` of `[0, 1; NaN, 1]` is `matrix is singular`, not NaN; `chol`'s
+positive-definite test is "the pivot is not greater than 0", which a NaN pivot fails: `matrix is not
+positive definite` (L-im; `solve(A, B)` then takes LU, which propagates); the symmetric test of
+`solve(A, B)` and `eig_sym` is Decision 123's; `eig_sym` of a matrix with a non-finite element, and
+`eig_sym(K, M)` with one in K, M or the reduced matrix, gives n NaN (the QL iteration need not
+converge on one, L-ip, L-iy); `rcond` follows L-io, whose precedence Decision 129 fixes. `solve`'s
+`matrix is singular` is an exactly zero pivot (±0), never a NaN pivot.
+
+**Run-time errors** (LANGUAGE.md §9.2; texts in `errors.inc`, raised by the runtime entry with the
+site of the call, L-iv): `shape mismatch: %s vs %s` (2) with the operands' shapes in source order
+(L-ij: `3x4 vs 5x2` for `@` of a 3 × 4 and a 5 × 2 matrix, `3x4 vs 5` for matrix @ vector, `5 vs
+4x3` for vector @ matrix, `3x3 vs 4x2` for `solve` of a 3 × 3 A or factor and a 4 × 2 B, `3x3 vs
+2x2` for `eig_sym(K, M)`); `matrix is not square (%s)` (13) with the operand's shape (`3x4`);
+`matrix is singular` (10) for `solve(A, B)` and `solve(F, B)` alike (L-il); `matrix is not positive
+definite` (11) for `chol(A)` and for M in `eig_sym(K, M)`; `matrix is not symmetric` (12) for
+`eig_sym`; `out of memory` (14) for a result, a handle or a scratch block that cannot be allocated.
+Each entry checks in the order its row of §2.13.5 gives (L-ik); when both extents are compile-time
+constants a shape mismatch of `@` is the compile error 217 (§2.13.3).
+
+**Arguments and results** (L-iq). An `i64` operand of `@` or argument of `lu chol solve eig_sym` is
+converted (an array `cvt`, LANGUAGE.md §4.2); a fixed-size argument of `lu chol solve eig_sym`, and
+a fixed-size operand of `@` whose other operand is dynamic, is made dynamic (`dyn`), as Decision 39
+did for `sort`. The results of `lu` and `chol` are handles, of `rcond` an `f64`, of `solve` a
+dynamic `f64[]` or `f64[,]` of B's rank, of `eig_sym` a dynamic `f64[]`; `@` of two fixed-size
+operands is fixed-size (`f64[r,c]`, `f64[r]`, `f64[c]`) when the result has at most
+`SEA_LIM_FIXED_ELEMS` (256) elements and dynamic otherwise, as a concatenation is (LANGUAGE.md §6.9;
+`f64[256,1] @ f64[1,256]` is a dynamic 256 × 256 matrix, still class E); with a dynamic operand it
+is dynamic.
+
+**Handles** (LANGUAGE.md §4.1). An `Lu` or `Chol` value is a reference to a runtime object; copying
+it copies the reference (retain), the object is freed when its last reference goes (release,
+`sea_free`). A handle cannot be compared (`==` of two handles is 240), formatted (210), written by
+`write_json` (243, the case 6d could not test) or stored in an array: an array type whose element
+type is or contains a handle type, at any depth of struct fields, is 258 naming the handle type
+(L-ir).
+
+**LANGUAGE.md text** (agreed 2026-11-01 with Decisions 129 (a), 123 (a) and 125 (a); added by
+WP-CONTRACT of 8b). §10.8, after the table: "*`chol` reads the upper triangle of A only
+and does not test symmetry; it stops with `matrix is not positive definite` when a pivot is not
+greater than zero (a NaN pivot included). `solve(A, B)` and `eig_sym` call a matrix symmetric when
+every pair A[i,j], A[j,i] is equal (`==`, so +0 and −0 are equal) or both NaN; `solve(A, B)` tries
+`chol` when A is symmetric and every diagonal element is greater than zero, and LU when it is not or
+`chol` stops. LU chooses as pivot the first element of largest magnitude in its column; a NaN is
+never chosen unless it is the first candidate, so a column whose other candidates are all zero gives
+a zero pivot. `solve(F, B)` and `solve(A, B)` stop with `matrix is singular` at an exactly zero
+pivot, before any NaN in A or B is looked at and also when B has no column; otherwise Inf and NaN
+propagate through the arithmetic. An `i64` argument is converted and a fixed-size argument used as
+the dynamic array it equals; the results are dynamic. `rcond(F)` is, in this order: +Inf for a
+factor of order 0; NaN when ‖A‖₁ is NaN; 0 when a pivot is zero; 0 when ‖A‖₁ is +Inf or the estimate
+of ‖A⁻¹‖₁ is not finite; else the estimate. `eig_sym(A)` returns NaN for every eigenvalue when A has
+an element that is not finite, and `eig_sym(K, M)` when K or M has one or the reduction overflows
+(the errors of the table come first); the eigenvalues are sorted by §10.6's `f64` order. A `shape
+mismatch` names the operands' shapes in argument order.*" §6.8, after "is class E too": "*`@` of two
+fixed-size operands is class E at every extent, and its result is fixed-size when it has at most 256
+elements, otherwise dynamic; a product with one dynamic matrix operand is the product on dynamic
+matrices (class R).*" §4.1, after "or stored in arrays": "*An array whose element type is a struct
+with a handle field (at any depth) stores that handle too and is the same error (`arrays cannot hold
+Lu`).*" §9.2's table: the `singular` row reads "`solve` (either form)".
+
+#### 2.13.3 Front end (passes 1, 2a, 2b)
+
+**The phase rule in phase 8** (§2.6.2). Each sub-phase removes exactly the rows it implements, with
+its tests; the plotting row and the `handle types` row for `Figure` and `Axes` stay until phase 9:
+
+| Sub-phase | No longer reported (implemented) | Still reported |
+|-----------|----------------------------------|----------------|
+| 8b | `@` (every numeric operand pair: matrix @ matrix, matrix @ vector, vector @ matrix, dynamic or fixed-size) | `handle types` (all four), `solve` `lu` `chol` `rcond` `eig_sym`, the plotting names |
+| 8c | `handle types` for `Lu` and `Chol`; the library names `solve`, `lu`, `chol`, `rcond`, `eig_sym` | `handle types` for `Figure` and `Axes`; the plotting names |
+| 8d | — | as after 8c |
+
+`err_ns_matmul` is retired in 8b and `err_ns_lib_solve` in 8c (§6.2's rule: no new test names a
+removed word); `err_ns_handle` and `res_err_handle` (`Figure`) keep testing the narrowed row. The
+errors the rows made unreachable become reachable: 217 of `@` and the operand conversions in 8b; 243
+of the five functions, 240 of `==` on handles, 210, 255, 224 at their calls and 243 of `write_json`
+with a handle in 8c.
+
+**Pass 1** (`seaparse`): no change.
+
+**`seaname`** (8c; `sn6type.bas` 9135–9198): the phase rule's `handle types` applies to the types 6
+and 7 only; `Lu` and `Chol` resolve as types 8 and 9 wherever a type node stands (signatures
+included). L-ir's reading of 258: a type node whose element type is a struct type that holds a
+handle (in a field, or in a field of a nested struct or fixed-size array, at any depth) is 258 at
+the node with the handle type's name, found where 258 is found today (before the phase rule).
+Estimate 20–60 lines.
+
+**`seacheck`** (8b, 8c):
+
+* *`@`* (8b, `sc5expr.bas` `ck_bin`, the arm 10560–10625 that reports 259 today): after the existing
+  240 and 230 checks, an operand pair of numeric element types (`f64`, `i64`) with ranks (matrix,
+  matrix), (matrix, vector) or (vector, matrix) is accepted; an `i64` operand gets a `cvt` to the
+  `f64` array of its shape; when one operand is fixed-size and the other dynamic, the fixed-size one
+  gets a `dyn`. When both inner extents are compile-time constants (both operands fixed-size) and
+  differ, the error is 217 `shape mismatch: %s vs %s` at the operator node with the two operands'
+  shapes (L-ij). The type is §2.13.2's. A `bool` element type stays 240.
+* *The five library calls* (8c, `sc6call.bas` `ck_lib`, new rows in its table 12595–12607), the
+  arguments checked in source order, then the call, as every library call (§2.6.2); parameter names
+  as LANGUAGE.md §10.8 writes them (`A`, `F`, `B`, `K`, `M`) for 255 (`'A' is not a ref parameter`);
+  every named argument is 224 (no option). Overloads, after L-iq's conversions: `lu(A)`, `chol(A)`:
+  A a numeric matrix, type 8 or 9; `solve(F, B)`: F of type 8 or 9 and B a numeric vector or matrix,
+  type the dynamic `f64` array of B's rank; `solve(A, B)`: A a numeric matrix, B as before;
+  `rcond(F)`: F of type 8 (a `Chol` is 243, `no overload of 'rcond' accepts (Chol)`), type `f64`;
+  `eig_sym(A)`, `eig_sym(K, M)`: numeric matrices, type `f64[]`. Anything else is 243 at the `call`
+  (`no overload of 'lu' accepts (f64[])`). An argument error leaves the call the type the overload
+  table gives without it only where that type is fixed (`lu` 8, `chol` 9, `rcond` `f64`, `eig_sym`
+  `f64[]`), else the type 0 (the 4d reading).
+* *Handles* (8c): a comparison or other operator with a handle operand is 240 (`operator '==' cannot
+  be applied to Lu and Lu`); a handle argument of `printf` or `format` is 210; `write_json` of a
+  value that is or contains a handle is 243 (existing, now reachable); an array literal or `filled`
+  whose element type would hold a handle is 258 at the `arr` node or the `call` (L-ir); `if`
+  expressions, bindings, assignments, `ref` parameters, returns, tuples and struct fields of handle
+  type follow the existing rules for reference types.
+
+Estimate: `@` 60–120 lines, the five calls 100–180, handles 20–60, fixes 30–60: 210–420.
+
+**`seaexpand`** (pass 2b): no rule changes. Its G12 validation is expected to accept the new trees
+unchanged; if a check rejects `bin matmul` with array operands or the new `lib`s, the fix is 8b's or
+8c's (WP-EXPAND, 0–20 lines). `write_json` never meets a handle (pass 2a rejected it).
+
+#### 2.13.4 Pass 3a and the later passes
+
+**`seafuse`** (8b): `bin matmul` and the `lib`s of §10.8 are barriers (§5.1; L-ix): each is a leaf
+of any element-wise tree above it, and its operand positions are positions F1 rewrites like a
+function argument, so `(A + B) @ x` fuses `A + B` into one nest that writes the temporary the
+product reads; a statement whose value is such a node is not element-wise and ends any group (F2).
+The reader accepts `bin matmul` with array operands, the new `lib` names and the types 8 and 9 in
+`lv`, `loc`, `par` and `fd`. Estimate 20–80 lines (validation and fixes).
+
+**`sealoop`** (8b; lead file `lp4ew.bas` for L7's exclusion, `lp1walk.bas` 5313's `lib` dispatch, a
+new part for L21 in its own line range, `lp7red.bas` 35000–35706 for the R16 pattern it copies):
+
+* **L7** no longer takes `bin matmul` (an element-wise operator never was the matrix product).
+* **R35** (narrows R10 as R16 does for `sort`): a `bin matmul` whose operands are both dynamic (pass
+  2a wrote `dyn` where one was fixed-size) stays in `sea.hirl` as `bin matmul` with two children,
+  each a dynamic `f64` matrix or vector already rewritten (an `lv`, a materialized selection, view
+  or fused tree, any expression with no array expression of R10); so do `lib lu`, `lib chol`, `lib
+  solve`, `lib rcond` and `lib eig_sym`, their children rewritten likewise (a handle child is any
+  expression of type 8 or 9). `sealoop` validates the child types (dynamic `f64` arrays of the ranks
+  §2.13.3 accepts, or a handle) and copies the node; L18 and L20 copy them as any node.
+* **L21** (`@` of two fixed-size operands, Decision 125 (a)): `xblk P T` (T the result type:
+  fixed-size when it has at most `SEA_LIM_FIXED_ELEMS` elements, else the dynamic matrix, §2.13.2)
+  with the operands' homes bound by `tmp`s left to right, a new home R (`anew P T 0 0` for a
+  fixed-size T, R1; for a dynamic T the `anew` of an r × c `f64` matrix with constant extents, as L9
+  allocates a dynamic concatenation, its out-of-memory check included), then by shape: matrix @
+  vector (A r × k, x k): `hloop i in 0..r { bind s = eld(A,i,0) * eld(x,0); hloop j in 1..k { asg s
+  = s + eld(A,i,j) * eld(x,j) }; est R[i] = s }`; vector @ matrix (x k, A k × c): for each column j,
+  R[j] = L13's sum8 form over the products `eld(x,kk) * eld(A,kk,j)`, kk ascending (F8 accumulators
+  from −0.0, the lane `kk & 7`, the pinned final tree); matrix @ matrix (A r × k, B k × c): `hloop j
+  in 0..c { hloop i in 0..r { bind s = eld(A,i,0) * eld(B,0,j); hloop kk in 1..k { asg s = s +
+  eld(A,i,kk) * eld(B,kk,j) }; est R[i,j] = s } }`; with k = 0 each element is `cf +0` (no loop over
+  kk). The value is R. T11 and T12 (§2.12.6) unroll the short constant loops and keep R in registers
+  where they apply. No shape check (the extents are constants, 217 having been checked); only a
+  dynamic result's allocation can fail.
+* Estimate: L21 120–260 lines (with the dynamic-result branch), R35's validation and copy 30–80,
+  fixes 0–60: 150–340, plus the three `consts` lines (L-iw).
+
+**`sealower`** (8b for `@`, 8c for the rest; `sl3hirl.bas` 30040–30160 reading the `lib`s,
+34000–34060 rule 39's generic path, `sl4fix.bas` 40161 the R10 validation): rule 39's mapping table
+(§2.11.5) gains these rows, each lowered generically from its entry (operands by rule 1, `rcall`
+with the site, an owned `p` result, owned temporaries released after the `rcall`; a borrowed `lv`
+neither retained nor released):
+
+| Node | Entry | Operands |
+|------|-------|----------|
+| `bin matmul` of a matrix and a matrix | `MATMUL` | left, right |
+| `bin matmul` of a matrix and a vector | `GEMV` | left, right |
+| `bin matmul` of a vector and a matrix | `VECMAT` | left, right |
+| `lib lu(A)` / `lib chol(A)` | `LU` / `CHOL` | A |
+| `lib solve(F, B)` of an `Lu` / a `Chol` F | `LU_SOLVE` / `CHOL_SOLVE` | F, B |
+| `lib solve(A, B)` of a matrix A | `SOLVE` | A, B |
+| `lib rcond(F)` | `RCOND` | F (the `f` result into the destination) |
+| `lib eig_sym(A)` / `lib eig_sym(K, M)` | `EIG_SYM` / `EIG_SYM_GEN` | A / K, M |
+
+A handle local holds counts as any reference local (rules 15, 16): released at the end of its block
+and on every exit, retained when copied, its struct field released with the struct. Validation: a
+`bin matmul` with array operands only as R35 says, the new `lib`s with the operand types of the
+table, else `BAD_RECORD`. Estimate: the eleven entry `DATA` lines, mapping rows and validation
+60–130 lines.
+
+**Passes 3b, 3c, 3d, 4**: no transformation, template or rule changes. `seaopt`, `sealopt` and
+`seavec` validate the new `rcall` names against the `entries` block (capacity 399); an `rcall` in a
+loop body keeps T13 from vectorizing it, as any call. Pass 4 calls the entries by §4.8's convention
+(an `f` result for `RCOND`); each pass that loads the block grows by eleven `DATA` lines (and every
+pass by three `consts` lines). `tools/seaval.bas` learns R35 where its `hirl`/`hirf` validation
+checks R10 (8b), and `tools/lirchk.bas` the new entry names through the same block.
+
+#### 2.13.5 Runtime entries of phase 8
+
+Eleven entries (written NAME-first, as 7a wrote entries 39–50, so that the contract check reads only
+§4.8's Id-first table; WP-CONTRACT moves them there). Every one can fail (`S`: the site is the last
+integer argument); every argument object is borrowed (a handle argument is not retained), every
+result owned (count 1); a failing entry calls `_sea_err` and never returns. "Shape" slots are the
+`h` slots of §4.8 (rows, then cols or `SEA_SHAPE_VEC`).
+
+| NAME | Id | symbol | Site | Args | Results | Contract |
+|------|---:|--------|------|------|---------|----------|
+| `MATMUL` | 51 | `sea_matmul` | `S` | `pp` | `p` | `(A, B, site)`: A an r × k and B a k′ × c dynamic `f64` matrix; k ≠ k′: `SHAPE_MISMATCH` (A's, B's shape). A new r × c matrix: r = 0 or c = 0 the empty one, k = 0 zeros, else `_bsk_kern_gemm` on the views of §2.13.6 into a fresh `sea_arr_new_u` result (class R, Baysick's IEEE rules; its status is ignored) |
+| `GEMV` | 52 | `sea_gemv` | `S` | `pp` | `p` | `(A, x, site)`: A r × k, x a vector of k′; k ≠ k′: `SHAPE_MISMATCH` (A's, x's shape). A new vector of r: the pinned order of §2.13.2 (class E), +0 for k = 0 |
+| `VECMAT` | 53 | `sea_vecmat` | `S` | `pp` | `p` | `(x, A, site)`: x of k′, A k × c; k′ ≠ k: `SHAPE_MISMATCH` (x's, A's shape). A new vector of c: the pinned 8-lane sums (class E), +0 for k = 0 |
+| `LU` | 54 | `sea_lu` | `S` | `p` | `p` | `(A, site)`: A not square: `NOT_SQUARE` (A's shape). A new `Lu` handle (L-is, counted in `_sea_live`): ‖A‖₁ of the input, then the blocked LU with partial pivoting of §2.13.6, the first exactly zero pivot recorded; never fails for a singular A |
+| `CHOL` | 55 | `sea_chol` | `S` | `p` | `p` | `(A, site)`: `NOT_SQUARE`; the upper triangle of A only (L-im); a pivot not greater than 0: `NOT_POSDEF`. A new `Chol` handle (counted in `_sea_live`) holding R (A = Rᵀ R), its strict lower triangle +0 |
+| `LU_SOLVE` | 56 | `sea_lu_solve` | `S` | `pp` | `p` | `(F, B, site)`: F an `Lu` of order n, B a vector or matrix; rows(B) ≠ n: `SHAPE_MISMATCH` (n × n, B's shape); a recorded zero pivot and n > 0: `SINGULAR`. A new array of B's rank and shape: X with A X = B (interchanges, unit L, U; §2.13.6) |
+| `CHOL_SOLVE` | 57 | `sea_chol_solve` | `S` | `pp` | `p` | `(F, B, site)`: F a `Chol`; the shape check as `LU_SOLVE`. X with Rᵀ R X = B |
+| `SOLVE` | 58 | `sea_solve` | `S` | `pp` | `p` | `(A, B, site)`: `NOT_SQUARE` (A's shape); the shape check; if n > 0, A symmetric (Decision 123) and every A[i,i] > 0: `CHOL` and `CHOL_SOLVE`'s algorithms on a scratch copy, and if a pivot fails, `LU`'s on a fresh copy; otherwise `LU`'s; a zero pivot: `SINGULAR`; then `LU_SOLVE`'s or `CHOL_SOLVE`'s algorithm. A new array of B's shape; the factors live in a scratch block |
+| `RCOND` | 59 | `sea_rcond` | `S` | `p` | `f` | `(F, site)`, result in `d0` / `%xmm0`: F an `Lu`; the values of L-io in Decision 129's order, else (1 / est) / ‖A‖₁ with est the estimate of §2.13.6 (no interchanges); fails only by `OUT_OF_MEMORY` (its scratch) |
+| `EIG_SYM` | 60 | `sea_eig_sym` | `S` | `p` | `p` | `(A, site)`: `NOT_SQUARE`; not symmetric: `NOT_SYMMETRIC`. A new `f64` vector of the n eigenvalues, ascending (L-ip) |
+| `EIG_SYM_GEN` | 61 | `sea_eig_sym_gen` | `S` | `pp` | `p` | `(K, M, site)`: `NOT_SQUARE` (K), `NOT_SQUARE` (M), different orders: `SHAPE_MISMATCH` (K's, M's shape), `NOT_SYMMETRIC` (K, then M); then L-iy's order: a non-finite element of K or M gives n NaN, `NOT_POSDEF` (M), a non-finite reduced matrix gives n NaN. A new vector of the eigenvalues of K x = λ M x, ascending |
+
+**Constants** (`rt.inc`, a new table of §4.8 with WP-CONTRACT): `SEA_LA_NB` (Decision 122: 32), the
+panel width of every blocked algorithm of §2.13.6 and the block partition of the triangular solves;
+`SEA_EIG_MAXIT` 30, the QL iterations allowed for one eigenvalue (EISPACK's limit);
+`SEA_RCOND_ITMAX` 5, the estimator's iteration limit (LAPACK `dlacn2`'s ITMAX). They are contract
+values because both runtimes and `tests/la/la_check.c` use them and `SEA_LA_NB` fixes which class-R
+bits a target produces.
+
+**Shared rules** (both targets, written alike):
+
+* *ABI*: §4.8's convention; arm64 preserves `x19`–`x28`, `x29`, `sp`, `d8`–`d15` and FPCR, x86_64
+  the System V callee-saved registers and MXCSR; Baysick's kernels obey the same (its DESIGN.md
+  §6.6.1). An AVX2 code path ends with `vzeroupper`.
+* *Stack*: each entry's own frame is at most 512 bytes below the incoming `sp` (the return address
+  on x86_64); it calls `sea_arr_new_u`, `_sea_alloc`, `_sea_free_block`, `_sea_err`, `sea_hypot`
+  (EIG) and Baysick's `_bsk_kern_gemm`/`_bsk_kern_gemm_sub`, whose frames `SEA_STACK_MARGIN` (64
+  KiB) must cover; WP-RT measures the deepest path, Baysick's kernel frames included, and records it
+  in §4.8.
+* *Memory*: results through `sea_arr_new_u` (every element written) or `sea_arr_new` (the zero
+  results of empty inner extents); handles as one `_sea_alloc` block each, counted (L-is); scratch
+  (the copies of `SOLVE`, the transposed panel W of §2.13.6, the vectors of `RCOND`, the tridiagonal
+  work of `EIG_*`) as one block per call from `_sea_alloc`, freed with `_sea_free_block` before the
+  entry returns, so the live-object count changes only by the result (the sort entries' rule, §4.8).
+  The result is allocated before the scratch. A failure is `_sea_err(SEA_E_OUT_OF_MEMORY, site)`
+  through `_sea_alloc`'s path.
+* *Kernels*: no entry prints, changes FPCR/MXCSR, or uses another thread; Baysick's kernels are
+  reached only through their trampolines (`_bsk_kern_gemm`, `_bsk_kern_gemm_sub`), whose variant
+  `main` selected (§4.4), and are given views with every extent ≥ 1 (a zero extent skips the call).
+* *Variants* (L-iu): `GEMV` and `VECMAT` have a NEON form (arm64), an SSE2 form (`sea_variant` =
+  `SEA_VAR_SSE2`) and an AVX2 form (`SEA_VAR_AVX2`), chosen by reading `_sea_variant`; they give the
+  same bits (class E). The other entries have one form per target (scalar or 2-lane, never FMA,
+  never a reordered sum), used under every variant.
+* *Files*: `rt_gemm.s` (`MATMUL`, `GEMV`, `VECMAT`), `rt_lu.s` (`LU`, `CHOL`, both solves, `SOLVE`,
+  `RCOND`, their shared panel and triangular routines, and the private routines `sea_la_potrf` and
+  `sea_la_issym` of §2.13.6, L-jc), `rt_eig.s` (`EIG_SYM`, `EIG_SYM_GEN`) and `rt_kern.s`
+  (`_sea_variant`, moved from `rt_main.s`, L-iu) per target; `rt_mem.s`'s `sea_free` gains the
+  handle branch. Both Makefiles take the runtime sources by wildcard, so no object list changes.
+  Estimates (no Baysick limit): `rt_gemm.s` arm64 400–700 lines, x86_64 600–1 000 (two vector
+  forms); `rt_lu.s` 1 200–2 000 per target; `rt_eig.s` 400–700 per target.
+
+#### 2.13.6 The kernels
+
+*Notation*: matrices are column-major, A[i,j] at `DATA + 8·(i + j·ld)`; a *block* X[r0..r1, c0..c1]
+is rows r0 … r1 − 1 and columns c0 … c1 − 1; sums run in the stated index order, each product and
+each sum rounded separately, no FMA, divisions true divisions (never a reciprocal multiply), `sqrt`
+correctly rounded. The *panels* of an order-n algorithm are J_t = [t·NB, min(n, (t + 1)·NB)), t = 0,
+1, …, with NB = `SEA_LA_NB`.
+
+**Baysick views** (§4.3's column-major mapping). For a column-major block X of r rows and c columns
+with column stride ld, V(X) is the Baysick view `MV_DATA` = &X[0,0], `MV_ROWS` = c, `MV_COLS` = r,
+`MV_LD` = ld: the row-major Xᵀ (Baysick's precondition `MV_LD ≥ MV_COLS` holds since ld ≥ r). Then C
+= A·B is `_bsk_kern_gemm(V(C), V(B), V(A))` (it computes Cᵀ = Bᵀ Aᵀ) and C ← C − A·B is
+`_bsk_kern_gemm_sub(V(C), V(B), V(A))`; neither has a transposed form, so a product with Xᵀ as its
+left factor first copies Xᵀ into a scratch block W (exact moves), the one use of W below. Every call
+has r, c and the inner extent ≥ 1 and a C that shares no element with either factor. Blocks of one
+matrix used as C and as a factor share no element (the trailing block lies right of and below the
+panel), but with a common column stride their address ranges interleave; Baysick DESIGN.md §6.6.1
+does not define "overlap", and phase 8 relies on its reading as "shares an element", which contract
+change 6 (WP-BSK-OVERLAP) states and tests in Baysick before 8c.
+
+**GEMV** (`sea_gemv`, class E). Each element follows §2.13.2's chain; the blocking is free because
+it changes no element's sequence: the recommended form takes row panels of P rows (P = 8 for NEON
+and SSE2: four 2-lane accumulators; P = 16 for AVX2: four 4-lane accumulators), sets each
+accumulator to the product of column 0 and x[0], then streams the columns j = 1 … k − 1 (A[i0..i0+P,
+j] is contiguous), `fmul` then `fadd` (`mulpd` then `addpd`; `vmulpd` then `vaddpd`), and stores the
+panel; the r mod P remaining rows by a 2-lane and a scalar form of the same chain. A is read once, x
+once per panel.
+
+**VECMAT** (`sea_vecmat`, class E). For each column j, the 8-lane sum of LANGUAGE.md §10.5 over the
+products x[kk]·A[kk,j]: lane kk mod 8, NEON and SSE2 with four 2-lane accumulators (lanes 0–1, 2–3,
+4–5, 6–7), AVX2 with two 4-lane accumulators, all starting at −0.0; the final tree ((a0 + a1) +
+(a2 + a3)) + ((a4 + a5) + (a6 + a7)). The k mod 8 tail lanes beyond k receive −0.0 in place of a
+product (x + (−0.0) is x for every x, NaN payloads included, so the padding is exact; L-iz), never a
+product read from memory outside the vectors. Several columns may share one pass over x.
+
+**MATMUL** (`sea_matmul`, class R): after the shape check and the empty cases, C =
+`sea_arr_new_u(f64, 2, r, c)` and `_bsk_kern_gemm(V(C), V(B), V(A))`, ld the row counts of the three
+matrices.
+
+**LU** (`sea_lu`; LAPACK `dgetrf`'s right-looking structure with `dgetf2` panels, read as follows).
+‖A‖₁ first, from the input: for each column j, s_j = |A[0,j]| + |A[1,j]| + … in row order; ‖A‖₁ =
+s_0, then for j = 1 … n − 1 it becomes s_j when s_j > ‖A‖₁ or s_j is NaN (`dlange`'s rule, so a NaN
+column sum makes it NaN and keeps it); 0 for n = 0. A is copied into the handle's factor block F;
+then for each panel J = [j0, j1):
+
+1. *Panel*, for k = j0 … j1 − 1 in order: the pivot p is the first row of largest magnitude in
+   column k: p = k, m = |F[k,k]|, and for i = k + 1 … n − 1, p = i and m = |F[i,k]| when |F[i,k]| >
+   m (a NaN never replaces, L-in, Decision 129 (a)); piv[k] = p; rows k and p are exchanged across
+   all n columns (exact moves; none when p = k). If F[k,k] ≠ 0: F[i,k] = F[i,k] / F[k,k] for i = k +
+   1 … n − 1; else the first zero pivot is recorded (when none is yet) and the column is left as it
+   is. Then for each column c = k + 1 … j1 − 1, for i = k + 1 … n − 1: F[i,c] = F[i,c] −
+   F[i,k]·F[k,c].
+2. *Block row*: for each column c = j1 … n − 1, for k = j0 … j1 − 1, for i = k + 1 … j1 − 1: F[i,c]
+   = F[i,c] − F[i,k]·F[k,c] (L11⁻¹ applied, L11 unit lower).
+3. *Trailing update*, when j1 < n: `_bsk_kern_gemm_sub(V(F[j1..n, j1..n]), V(F[j0..j1, j1..n]),
+   V(F[j1..n, j0..j1]))`, all with ld n.
+
+F holds L below the diagonal (unit diagonal not stored) and U on and above it, rows in the pivoted
+order; `piv` the interchanges in order (as LAPACK's `ipiv`, 0-based). A panel's loops may be
+vectorized across i or c (2 lanes); no element's sequence changes (L-it).
+
+**Triangular solves with many right-hand sides** (`LU_SOLVE`; also the second half of `SOLVE`). X is
+a copy of B (an n × m matrix, or a vector as m = 1). (1) For k = 0 … n − 1, rows k and piv[k] of X
+are exchanged. (2) Forward with the unit L, panels ascending: for each column c of X, for k ∈ J, for
+i = k + 1 … j1 − 1: X[i,c] = X[i,c] − F[i,k]·X[k,c]; then, when j1 < n,
+`_bsk_kern_gemm_sub(V(X[j1..n, 0..m]), V(X[j0..j1, 0..m]), V(F[j1..n, j0..j1]))`. (3) Backward with
+U, panels descending: for each column c, for k = j1 − 1 down to j0: X[k,c] = X[k,c] / F[k,k], then
+for i = j0 … k − 1: X[i,c] = X[i,c] − F[i,k]·X[k,c]; then, when j0 > 0,
+`_bsk_kern_gemm_sub(V(X[0..j0, 0..m]), V(X[j0..j1, 0..m]), V(F[0..j0, j0..j1]))`. Before (1): the
+shape check, then `SINGULAR` when a zero pivot is recorded and n > 0, then an n = 0 or m = 0 result
+is returned empty without arithmetic (L-ik).
+
+**CHOL** (`sea_chol`, through `sea_la_potrf`; LAPACK `dpotrf` 'U', right-looking with `dpotf2`
+panels). Only the upper triangle of A is read and copied into the handle's block R (L-im), and R's
+strict lower triangle is set to +0 before step 1: the trailing updates read and write elements below
+the diagonal inside diagonal blocks (step 3), so they must hold defined values. Those elements are
+only ever C elements of the updates, never factor elements, so they reach no element of R; after the
+last panel the strict lower triangle is set to +0 again, so a finished `Chol` holds exactly R. For
+each panel J = [j0, j1):
+
+1. *Diagonal block*, for j = j0 … j1 − 1: d = R[j,j]; d = d − R[kk,j]·R[kk,j] for kk = j0 … j − 1;
+   when d > 0 fails (d ≤ 0 or NaN): `NOT_POSDEF`; R[j,j] = sqrt(d); for c = j + 1 … j1 − 1: s =
+   R[j,c]; s = s − R[kk,j]·R[kk,c] for kk = j0 … j − 1; R[j,c] = s / R[j,j].
+2. *Block row*: for each column c = j1 … n − 1, for j = j0 … j1 − 1: s = R[j,c]; s = s −
+   R[kk,j]·R[kk,c] for kk = j0 … j − 1; R[j,c] = s / R[j,j].
+3. *Trailing update* of the upper triangle, when j1 < n: W = (R[j0..j1, j1..n])ᵀ copied into scratch
+   (n − j1 rows, j1 − j0 columns, ld n − j1); then for each panel K = [k0, k1) with k0 ≥ j1,
+   ascending: `_bsk_kern_gemm_sub(V(R[j1..k1, k0..k1]), V(R[j0..j1, k0..k1]), V(W[0..k1 − j1, 0..j1
+   − j0]))` (the rows up to K's last column; the part below the diagonal inside K is computed and
+   never read).
+
+**CHOL_SOLVE** (and `SOLVE`'s Cholesky half): X a copy of B. Forward with Rᵀ, panels ascending: for
+each column c, for j ∈ J ascending: X[j,c] = X[j,c] / R[j,j], then for i = j + 1 … j1 − 1: X[i,c] =
+X[i,c] − R[j,i]·X[j,c]; then, when j1 < n, W = (R[j0..j1, j1..n])ᵀ in scratch and
+`_bsk_kern_gemm_sub(V(X[j1..n, 0..m]), V(X[j0..j1, 0..m]), V(W))`. Backward with R, panels
+descending: for each column c, for k = j1 − 1 down to j0: X[k,c] = X[k,c] / R[k,k], then for i = j0
+… k − 1: X[i,c] = X[i,c] − R[i,k]·X[k,c]; then, when j0 > 0, `_bsk_kern_gemm_sub(V(X[0..j0, 0..m]),
+V(X[j0..j1, 0..m]), V(R[0..j0, j0..j1]))`. A `Chol` has no zero pivot (every R[j,j] > 0), so no
+`SINGULAR`.
+
+**SOLVE** (`sea_solve`): the checks of its row; for n > 0 the symmetric test of Decision 123 over
+the pairs i < j and the test A[i,i] > 0 for every i (a NaN fails); then the Cholesky attempt (CHOL's
+algorithm on a scratch copy of A's upper triangle) and, if it reaches a failing pivot, LU's
+algorithm on a fresh scratch copy of A (no LDLᵀ: LANGUAGE.md's choice, L-jb); then the singular
+check, the empty shortcut and the solve. The result is exactly what `solve(chol(A), B)` or
+`solve(lu(A), B)` would give for the path taken.
+
+**RCOND** (`sea_rcond`; LAPACK `dgecon` with `dlacn2`, Higham's modification of Hager's estimator).
+L-io's special values first, in Decision 129 (a)'s order: order 0: +∞; ‖A‖₁ NaN: NaN; a recorded
+zero pivot: 0; ‖A‖₁ = 0 or +∞: 0. Otherwise est estimates ‖U⁻¹L⁻¹‖₁, which equals ‖A⁻¹‖₁ because A⁻¹
+= U⁻¹L⁻¹P and a row permutation keeps the 1-norm; as in `dgecon`, the interchanges are never applied
+(applying them permutes the iterates and changes which index wins a tie, so the estimate differs).
+The two solves are "x ← U⁻¹L⁻¹x" (L forward, unit: for k ascending, x[i] = x[i] − F[i,k]·x[k] for
+i > k; then U backward: for k descending, x[k] = x[k] / F[k,k], then x[i] = x[i] − F[i,k]·x[k] for i
+< k) and "x ← L⁻ᵀU⁻ᵀx" (Uᵀ forward: for k ascending, x[k] = (x[k] − F[0,k]·x[0] − … −
+F[k−1,k]·x[k−1]) / F[k,k], the subtractions in index order; then Lᵀ backward, unit: for k
+descending, x[k] = x[k] − F[k+1,k]·x[k+1] − … − F[n−1,k]·x[n−1]), unblocked, without `dlatrs`'s
+scaling (an overflow makes est non-finite, giving 0). Σ|x| is the sum of the magnitudes in index
+order; sgn(v) is +1 when v ≥ 0 (so −0 gives +1) and −1 otherwise (so NaN gives −1), `dlacn2`'s rule
+since LAPACK 3.5 (stated from memory of the reference source, not re-checked against it here;
+WP-LACHECK confirms it against the LAPACK 3.5+ `dlacn2.f` text before 8c's code); "the first index
+of largest |x[i]|" is BLAS `idamax`'s (start at index 0, move only to a strictly greater magnitude):
+
+1. x[i] = 1/n for every i (one division); x ← U⁻¹L⁻¹x; if n = 1, est = |x[0]| and go to 4; est =
+   Σ|x|; ξ[i] = sgn(x[i]); x ← L⁻ᵀU⁻ᵀξ; j = the first index of largest |x[i]|; iter = 2.
+2. x = e_j (all +0, x[j] = 1); x ← U⁻¹L⁻¹x; estold = est; est = Σ|x|; if sgn(x[i]) = ξ[i] for every
+   i, go to 3; if est ≤ estold, go to 3; ξ[i] = sgn(x[i]); x ← L⁻ᵀU⁻ᵀξ; jlast = j; j = the first
+   index of largest |x[i]|; if x[jlast] ≠ |x[j]| and iter < `SEA_RCOND_ITMAX`, iter = iter + 1 and
+   repeat 2.
+3. x[i] = s_i·(1 + i / (n − 1)) for i = 0 … n − 1, s_0 = +1 and s alternating (i and n − 1 converted
+   to `f64`, the division then the sum then the sign); x ← U⁻¹L⁻¹x; t = 2 · (Σ|x| / (3n)) (3n
+   converted to `f64`, the division before the product); if t > est, est = t.
+4. rcond = 0 when est is +∞ or NaN, else (1 / est) / ‖A‖₁.
+
+Step 3's t is a rounded value: for the identity matrix it exceeds 1 at some orders (1 + 2⁻⁵² at n =
+22, 26, 44, …), so rcond is then 1 − 2⁻⁵², not 1. Expected values of tests come from running these
+steps (§2.13.8's generator), never from "the estimator is exact on this matrix".
+
+**EIG_SYM** (`sea_eig_sym`; Decision 121 (a): EISPACK `tred1` then `tql1`, eigenvalues only). After
+the checks: n = 0 gives the empty vector; an element that is ±∞ or NaN gives n NaN (L-ip); otherwise
+A's lower triangle is copied into scratch and reduced to a tridiagonal (d, e) by `tred1`'s
+Householder steps (with its column scaling by the sum of magnitudes, so no square overflows early),
+then `tql1` finds the eigenvalues by the implicit QL iteration with its shifts, each operation as
+the published algorithm writes it under this section's notation, with `pythag(a, b)` = `sea_hypot(a,
+b)` (§4.10, class E), Fortran's SIGN(a, b) = |a| with b's sign bit, and `tql1`'s machine-independent
+convergence test (tst1 = max(tst1, |d[l]| + |e[l]|); e[m] is negligible when tst1 + |e[m]| = tst1).
+An eigenvalue not found within `SEA_EIG_MAXIT` iterations, and every later one, is NaN (never
+observed for finite input; L-ip). The n values are returned sorted by LANGUAGE.md §10.6's `f64`
+order (ascending, NaN last).
+
+**EIG_SYM_GEN** (`sea_eig_sym_gen`; LAPACK `dsygst` itype 1 in its plain form). After the checks of
+its row, in this order (L-iy): n = 0: empty; an element of K or of M that is ±∞ or NaN: n NaN
+(before the Cholesky of M, so an infinite diagonal of M never reaches it); R = `_sea_la_potrf` on a
+scratch copy of M (`NOT_POSDEF` when it reports a failing pivot); Z and C as below; an element of C
+that is ±∞ or NaN (an overflow of the reduction): n NaN, before `tred1`, so `tql1` never sees one;
+else Z = R⁻ᵀK column by column (for each column c, for j ascending: Z[j,c] = (K[j,c] − R[0,j]·Z[0,c]
+− … − R[j−1,j]·Z[j−1,c]) / R[j,j], the subtractions in kk order) and C = Z R⁻¹ row by row (for each
+row r, for j ascending: C[r,j] = (Z[r,j] − R[0,j]·C[r,0] − … − R[j−1,j]·C[r,j−1]) / R[j,j]), both
+unblocked; then EIG_SYM's reduction and iteration on C's lower triangle, with no symmetry test (C is
+symmetric up to rounding). The values are those of M⁻¹K, W3's `eig(Mlin \ Klin)`.
+
+**Handles** (L-is; the layout is private to the runtimes, §4.8, and the same in both): one block of
+`SEA_OBJ_HDR` + 48 bytes of fields (n at 16, ‖A‖₁ at 24, the first zero pivot index at 32, −1 if
+none, the rest 0) then, at offset 64, the n × n factor column-major with ld n, followed for an `Lu`
+by the n pivot indices as u32. `sea_lu` and `sea_chol` are object constructors in the sense of
+`rt_mem.s`'s header: each adds one to `_sea_live` when its handle exists (so `_sea_live +
+_sea_freed`, the total of `SEA_HEAP_CHECK=count`, counts it), and a failing `sea_chol` frees its
+block with `_sea_free_block` before `_sea_err`, uncounted. `sea_free` of a `SEA_TAG_LU` or
+`SEA_TAG_CHOL` object frees the block with `_sea_free_block`, lowers `_sea_live` and raises
+`_sea_freed` by one, as for an array; it holds no references.
+
+**Private routines** (L-jc). `rt_lu.s` owns, and `rt_eig.s` calls, two global routines that are not
+entries (no `rt.inc` record; the module prefix `sea_la_`; AAPCS64 / System V; no allocation, no
+error, no site):
+
+* `sea_la_potrf(a, n, ld, w)` → status: CHOL's algorithm (blocked, `_bsk_kern_gemm_sub` updates,
+  strict lower triangle zeroed) on the column-major n × n matrix at `a` with column stride `ld`, in
+  place, reading only its upper triangle; `w` is a scratch area of at least n · `SEA_LA_NB` doubles
+  for W. Result (`x0` / `%rax`): 0 when R is complete, else 1 + the index of the first failing
+  pivot. `sea_chol`, `sea_solve` and `sea_eig_sym_gen` all call it.
+* `sea_la_issym(a, n, ld)` → 1 when the matrix is symmetric by Decision 123's test, else 0,
+  comparing pairs i < j column by column; `sea_solve` and both `EIG_*` call it.
+
+In 8c WP-EIG codes against this interface in parallel with WP-LU; WP-LU delivers the two routines
+first within its package, with `tests/rt/<target>/rt_la_private*` testing them directly, and
+WP-EIG's tests run once they are in its tree (the integration merges WP-LU before WP-EIG).
+
+#### 2.13.7 Capacity and limits
+
+Bases are "Measured after 7f" (§2.7, equal to the gate after phase 7); increments are the estimates
+of §2.13.3 and §2.13.4, the eleven `entries` and three `consts` lines included; "Remaining" is the
+work after phase 8 (phase 9, and the fixes carried by Decisions 78 and 98), the base of the gate
+after phase 8 (estimates, not measurements):
+
+| Program | After 7f | Phase 8 | After phase 8 | ≤ 7 000 built | Remaining | + remaining ≤ 9 000 | + 1.5 × remaining ≤ 9 000 | Free letters |
+|---------|------:|------:|------:|:---:|------:|------:|------:|------|
+| `seaparse` | 3 940 | 3 | 3 943 | yes | 0 | 3 943 | 3 943 | none set |
+| `seaname` | 5 556 | 23–63 | 5 579–5 619 | yes | 50 (`Figure`, `Axes`) | 5 669: yes | 5 694: yes | 13 |
+| `seacheck` (Decision 82 (a)) | 6 920 | 213–423 | 7 133–7 343 | not a condition | 600 (phase 9) | 7 943: yes | 8 243: yes | 14 |
+| `seaexpand` | 4 797 | 3–23 | 4 800–4 820 | yes | 0 | 4 820 | 4 820 | none set |
+| `seafuse` | 6 482 | 23–83 | 6 505–6 565 | yes (435 under) | 1 000 | 7 565: yes | 8 065: yes | 5 |
+| `sealoop` | 6 485 | 153–343 | 6 638–6 828 | yes (172 under) | 1 000 | 7 828: yes | 8 328: yes | 3; L21 needs none |
+| `sealower` (Decision 50) | 6 742 | 63–133 | 6 805–6 875 | not a condition | 120 | 6 995: yes | 7 055: yes | 3 |
+| `seaopt` | 5 625 | 14 | 5 639 | yes | 1 000 | 6 639: yes | 7 139: yes | 2 |
+| `sealopt` | 5 548 | 14 | 5 562 | yes | 1 000 | 6 562: yes | 7 062: yes | 0 (waived) |
+| `seavec` | 5 825 | 14 | 5 839 | yes | 1 000 | 6 839: yes | 7 339: yes | 0 (waived) |
+| `seagen_a64` | 5 254 | 14–43 | 5 268–5 297 | yes | 100 | 5 397: yes | 5 447: yes | none set (L-ac) |
+| `seagen_x64` | 6 103 | 14–43 | 6 117–6 146 | yes | 100 | 6 246: yes | 6 296: yes | none set (L-ac) |
+
+**Reading.** Phase 8 is mostly runtime work: no pass needs a relief. Every pass gains the three
+`consts` lines of the new constants (all twelve `build.list`s load the `consts` block), and the six
+that load `entries` eleven more. The smallest margin is `sealoop`'s (172 under 7 000 at the upper
+end, L21 carrying most of its increment, its dynamic-result branch of Decision 125 (a) included),
+then `seafuse`'s 435. `seacheck` passes 7 000 built (no condition, Decision 82 (a)) and keeps
+757–967 under 9 000 at the stress line. Decision 52's phase-8 estimate for `sealower` (100–150)
+holds. The `entries` capacity (64) holds 61 entries, 3 to spare (phase 9 raises it, contract change
+1). No new LIR or HIR limit; no `limits.inc` value changes. The generated C header and the `tests/`
+scripts of §2.13.8–§2.13.9 are not Baysick programs and have no line limit.
+
+**The measurement after 8c** (the sub-phase with the front end's and `sealower`'s increments;
+recorded as "Measured after 8c" in §2.7): `make check-limits` and the free letters of `seacheck`,
+`sealoop` and `sealower`; it passes under the conditions of the gate below with the remaining work
+above. A failure calls for a relief agreed with the user before 8d's code. **The gate after phase
+8** (Decision 71's form, after 8d, recorded as "Measured at the gate after phase 8"): every program
+with its remaining work as in the gate after phase 7, with the same exceptions (Decisions 50, 78, 82
+(a), 98, L-ac), and `sealower`'s conditions of §2.7 ("after phase 8": built + 120 ≤ 9 000 and
+built + 180 ≤ 9 000).
+
+#### 2.13.8 Tests
+
+Expected outputs derive from LANGUAGE.md (§6.2, §6.8, §9.2, §10.5, §10.8) and this section, never
+from an implementation (§6.1). Class-E results are compared byte for byte; class-R results only
+through **exact data** (every product and partial sum exactly representable, so every order and
+variant gives the same bits: integer or dyadic matrices with power-of-two pivots, built as the
+test's header derives) or a **tolerance rule** written in the program (a printed `bool`, Baysick's
+`tests/kern` practice: |computed − exact| ≤ c · n · eps · scale with c and the scale stated in the
+header). Every program runs under the heap check with no leak, on both targets and both x86_64
+variants. New name prefixes (§6.2's rules; `tests/CORPUS.md` lists each with its subject):
+
+* **8b, `@`**: `programs/la_mv_*` (matrix @ vector: `la_mv_order`, rows whose reassociated sum would
+  differ, such as A[0,:] = [1e16, 1, −1e16] with x = [1, 1, 1], pinned value 0; `la_mv_negzero`, an
+  all-−0 row gives −0; `la_mv_empty`, r × 0 @ 0 and 0 × k @ k; `la_mv_nonfinite`, ∞, NaN and 0·∞;
+  `la_mv_i64`; `la_mv_fixed`, L21's chain; `la_mv_mixed`, a dynamic matrix with a fixed vector;
+  `la_mv_view`, `.T` and selection operands; `la_mv_tails`, 1 … 19 rows against every panel and
+  tail); `programs/la_vm_*` (vector @ matrix: `la_vm_order` with k = 19 and data on which the 8-lane
+  order and the sequential order differ, the expected value derived lane by lane; `la_vm_negzero`;
+  `la_vm_empty`; `la_vm_fixed`); `programs/la_mm_*` (`la_mm_exact`, integer matrices of shapes 1 ×
+  1, 3 × 5 @ 5 × 2 and 70 × 40 @ 40 × 65; `la_mm_empty`; `la_mm_nonfinite` by Baysick's IEEE rules 1
+  and 2 only; `la_mm_fixed`, L21's chain on order-sensitive data (class E, extents ≤ 8) and a 16 ×
+  16 product on exact data; `la_mm_mixed`; `la_mm_i64`; `la_mm_operands`, fused operands and chains
+  `A @ B @ C`); errors `errors/r_la_mm_shape` (`shape mismatch: 2x3 vs 4x2`), `r_la_mv_shape` (`2x3
+  vs 4`), `r_la_vm_shape` (`3 vs 4x2`), each at its line, and `errors/err_la_mm_static`,
+  `err_la_mv_static` (217); dumps `passes/la8_mm_*` (pass 2a's `cvt` and `dyn`, R35 in `sea.hirl`,
+  rule 39's `rcall`s in `sea.lir1`) and `passes/la8_l21_*` (L21's three forms and k = 0), goldens
+  derived by hand from §2.13.3–§2.13.4.
+* **8c, factorizations and handles**: `programs/la_lu_*` (`la_lu_exact`: A = P·L·U built in the
+  program from a unit lower L with entries in {0, ±1/2, ±1/4}, an upper U with integer entries and
+  power-of-two diagonal and a fixed permutation P, b = A @ x for an integer x, so every elimination
+  step is exact and partial pivoting picks exactly P (|l| < 1); the program prints the largest |x̂ −
+  x|, 0; at n = 3, 31, 32, 33 and 70, so `SEA_LA_NB` ± 1 and two panels are crossed; `la_lu_rcond`,
+  the special values of Decision 129 in its order (order 0 `Inf`; a NaN element with a zero pivot
+  `NaN`; a singular matrix `0`), and the identity and power-of-two diagonal matrices at the orders
+  1–80 with the values printed by `%.17g`, each expected value computed by the generator below from
+  §2.13.6's steps (the identity gives 1 − 2⁻⁵² at n = 22, 26, 44, 60, 63, 68, 74, 77 and 78, so no
+  order is assumed exact); `la_lu_singular`, `lu` of a singular matrix completes; `la_lu_nonfinite`;
+  `la_lu_empty`; `la_lu_share`, a handle copied, stored in a struct field, passed and returned,
+  reassigned, with the heap check), `programs/la_chol_*` (`la_chol_exact`, A = Rᵀ R from a dyadic R
+  with power-of-two diagonal at n = 3 and 70 with 40 right-hand sides; `la_chol_upper`, NaN below
+  the diagonal is never read; `la_chol_rhs`, vector and matrix B), `programs/la_solve_*`
+  (`la_solve_sym`, the Cholesky path; `la_solve_indef`, symmetric with a positive diagonal but
+  indefinite, `[1, 2; 2, 1]`, falls back to LU without an error; `la_solve_nonsym`;
+  `la_solve_zero_pair`, +0/−0 pairs count as symmetric; `la_solve_fixed`, W3's 3 × 3 shape from
+  fixed-size values; `la_solve_i64`; `la_solve_shapes`, vector and matrix B, m = 0),
+  `programs/la_eig_*` (`la_eig_diag`, a diagonal matrix's sorted diagonal, exact; `la_eig_2x2`, [2,
+  1; 1, 2] within 8 · eps · 3; `la_eig_tridiag`, the n = 10 matrix tridiag(−1, 2, −1) against 2 − 2
+  cos(kπ/11) within 16 · n · eps · 4; `la_eig_gen`, diagonal K and a power-of-four diagonal M,
+  exact, and W3's 2 × 2 pencil against its closed form within a stated tolerance; `la_eig_empty`;
+  `la_eig_nonfinite`; `la_eig_gen_nonfinite`, L-iy's three cases: +∞ on M's diagonal, NaN in K, and
+  finite K and M whose reduction overflows (K = 1e300·I, M = 1e−300·I), each n NaN); errors
+  (run-time) `r_la_lu_square`, `r_la_lu_nanpivot` (`solve(lu([0, 1; NaN, 1]), b)` is `matrix is
+  singular` under Decision 129 (a)), `r_la_chol_posdef`, `r_la_chol_nan`, `r_la_chol_square`,
+  `r_la_solve_singular` (from `lu` of a singular matrix), `r_la_solve_singular_a` (`solve(A, B)`),
+  `r_la_solve_singular_m0` (B with no column, L-ik), `r_la_solve_shape`, `r_la_solve_square`,
+  `r_la_eig_square`, `r_la_eig_symmetric`, `r_la_eig_gen_shape`, `r_la_eig_gen_posdef`,
+  `r_la_eig_gen_sym_m`, and one check-order test per entry whose checks can both fail (a non-square
+  matrix holding a NaN, …); errors (compile) `err_la_lu_vector` (243 `no overload of 'lu' accepts
+  (f64[])`), `err_la_rcond_chol` (243 `(Chol)`), `err_la_solve_args`, `err_la_solve_bool`,
+  `err_la_eig_args`, `err_la_handle_array` (258 `arrays cannot hold Lu`),
+  `err_la_handle_struct_array` (258 through a struct field, L-ir), `err_la_handle_eq` (240),
+  `err_la_handle_printf` (210), `err_json_handle` (243, 6d's deferred case), `err_la_ref_arg` (255),
+  `err_la_named` (224); dumps `passes/la8_lib_*` (the `lib` nodes, R35, the `rcall`s, a handle's
+  release on every exit). **Generator**: `tests/vectors/la8_cases.py` (T1's, run as `timeout 120 uv
+  run --no-project python tests/vectors/la8_cases.py [--check]` like the other
+  `tests/vectors/*_cases.py` scripts) writes the `la_*` programs whose expected output depends on
+  rounding (`la_lu_rcond`, `la_mv_order`, `la_vm_order`, the L21 order tests, `la_eig_2x2`'s bound)
+  and their `.out` files, by transcribing §2.13.2's pinned orders and §2.13.6's RCOND steps into
+  Python `float` (binary64) operations one for one, never by calling NumPy, SciPy or LAPACK;
+  `--check` regenerates and compares. Its RCOND transcription is itself checked once at 8c against
+  SciPy's `dgecon` (relative difference ≤ 1e−3 on 3 000 random matrices; a check of the
+  transcription, not an expected value).
+* **Runtime** (8b, 8c): `tests/rt/<target>/rt_la_*` in the style of the existing rt tests: the ABI
+  (callee-saved registers, FPCR/MXCSR, the 512-byte frame bound), ownership (the result's count, the
+  arguments untouched), each error with its site and slots, the empty shortcuts, `sea_free` of both
+  handle tags with the live count. **`tests/la/la_check.c`** (built as `tests/math/math_check.c` is,
+  against `libsea.a` and `libbaysickrt.a`, with `-I` the directory of the generated `sea_consts.h`,
+  L-jd; group `test-la` of `make test`; it selects every usable variant itself through
+  `_bsk_kern_use` and `_sea_variant`, as Baysick's `tests/kern` does, defining its own one-record
+  `_sea_sites`): GEMV and VECMAT bit for bit against a C transcription of the pinned orders on
+  seeded random inputs with every r and k from 0 to 33 and special values (±0, ±∞, NaN payloads,
+  subnormals); MATMUL against exact integer products; LU, CHOL and both solves by the backward-error
+  rule ‖A x̂ − b‖∞ ≤ 64 · n · eps · (‖A‖∞‖x̂‖∞ + ‖b‖∞) for n = 1 … 200 (NB ± 1 included) and m = 1,
+  7, 64; RCOND on matrices whose ‖A⁻¹‖₁ the estimator finds exactly (diagonal, triangular with
+  power-of-two entries); EIG against a C cyclic-Jacobi reference within 64 · n · eps · ‖A‖_F for n ≤
+  50; and every class-R result twice (identical), and on exact data identical across variants. RCOND
+  is checked against a C transcription of §2.13.6's steps applied to the handle's own factors (bit
+  for bit: RCOND makes no Baysick call, so the result is the same under every variant once the
+  factors are given). The cross run gains the once-only case `la/la_check` (all variants inside it).
+* **Link isolation** (§4.3, L-ja): `tests/la/la_link.sh` (WP-LACHECK; group `test-la` and a
+  once-only cross case `la/la_link`) builds `tests/programs/la_mm_exact.sea` and links it again with
+  the link map: on the Mac the driver's `ld` command with `-map FILE` added, on Linux `gcc` with
+  `-Wl,--trace` (each loaded archive member printed as `lib(member)`). Pass criterion: every member
+  of `libbaysickrt.a` that the map or trace names matches `rt_kinit.o` or `rt_k*.o`, and
+  `rt_kinit.o` is among them; any other `libbaysickrt.a` member (or no map) fails, the member named.
+  `nm` cannot do this (an executable has symbols, not members).
+
+* **8d, the ports**: §2.13.9.
+
+#### 2.13.9 The ports W2 and W3 and their acceptance
+
+**The ports.** `sea/ports/w2_truss_fem.sea` and `sea/ports/w3_quarter_car.sea`, written statement by
+statement from the MATLAB scripts as W1, W4 and W7 are (operation order kept, LANGUAGE.md §6.8;
+faithfulness notes in the header comment; no figures, `--export-reference` only), with every key of
+`reference/w2_truss_fem.json` and `reference/w3_quarter_car.json` (indices exported `+ 1`). W2
+follows LANGUAGE.md §2.2 (`assemble_truss`, `solve_free`) and W3 §2.3 (the RK4 loop with the inlined
+`qc_deriv`, the road by `@`). W2's member removal calls `rcond(lu(Kff))` and then `solve(Kff, Fr)`
+as MATLAB does (Decision 128). A port defect found in a pass is reported, not worked around in the
+port. Token maps `sea/ports/w2_truss_fem.tokens` and `sea/ports/w3_quarter_car.tokens` are written
+from the `fprintf` formats and `RULES` (§6.4): W2's `FSD:` line takes `int 2` for the iterations
+(`fsd_iters`) and `num 1e-9 0` for the final change (both runs converged below `fsdTol`), its group
+table, design-case, reactions and sweep lines the rules of `N0`, `u0`, `fos0`, `reactions` and the
+default, its member-removal line `exact` for the counts and `json r_worst`; W3's table lines the
+rules of their keys, `json i_best` and `json c_best`; the rest by the default rule.
+
+**Acceptance** (the "done when" of row 8). `tests/accept.sh` takes both ports with no change, as it
+takes every `sea/ports/NAME.sea`: built under `SEA_COMPILE_TIMEOUT`, run with `--export-reference`
+under `SEA_HEAP_CHECK=1`, `compare.py --candidate` passing every key and `compare_report.py` finding
+the report equivalent; W1, W4, W5 and W7 still pass with outputs byte-identical to 7g's. On the
+Linux host the ports run under both variants; W1, W4, W5 and W7 stay byte-identical cases, while W2
+(class R throughout) and W3 (class R in `f_nat` and `c_best` only, §6.6) are judged by Decision 127
+(a). Compile and compute times of both ports are recorded in §6.3 ("Measured at 8d"), not judged
+(phase 10).
+
+**The cross check of W2 and W3** (Decision 127 (a); WP-CROSS owns all of it). Today `cross.sh`
+streams the bundle as tar into one `ssh` call and copies the host's text report to its own standard
+output; `cross_run.sh`'s `check_meta` rejects any `.meta` line it does not know; a `ports` case is
+compared byte for byte with `NAME.out` and `NAME.expect/NAME.json` (`cross_pack.sh` 323–350). Phase
+8 adds:
+
+1. *The `.meta` key.* `cross_pack.sh` writes, for a port whose source header has the line `// cross:
+   compare=accept` or `// cross: compare=accept except=KEY,KEY`, that line's value as a second
+   `.meta` line (`compare=accept` for W2, `compare=accept except=f_nat,c_best` for W3); the Mac's
+   own `accept.sh` run stays as today. `check_meta` accepts `compare=accept` and `compare=accept
+   except=…` for the kind `ports` only (unknown elsewhere, exit 2 as now).
+2. *The host side.* For such a case `cross_run.sh` runs the port under each variant as now (heap
+   check, status 0, no standard error required as for every port) but compares nothing: it copies
+   the run's filtered standard output and its JSON to `$KEEP/ports/NAME.VARIANT.out` and `.json`
+   (`$KEEP` a new directory the remote script makes beside the unpacked bundle and passes as
+   `cross_run.sh -k DIR`; without `-k`, as on a manual Linux run, the files stay in a printed
+   temporary directory), prints `DEFER
+
+   ports/NAME (VARIANT)` and counts the run as deferred, neither passed nor failed; a run that fails
+   the heap check, exits non-zero or writes no JSON is a host failure as today. Its summary line
+   gains `, D deferred`.
+3. *The return path.* After the summary the remote script writes one line `#sea-cross-files N` (N
+   the byte count) followed by `tar -C $KEEP -cf - . | base64` (POSIX `base64` without line options
+   on the host; decoded with `base64 -D` on the Mac, the Mac's own option); nothing follows.
+   `cross.sh` reads the `ssh` output through a splitter (an `awk` filter) that copies every line to
+   standard output as now until that marker, then writes the remainder to `$TMP/kept.b64` and checks
+   its length against N (a mismatch is a setup error, exit 2). With no deferred case the marker line
+   has N = 0.
+4. *The Mac side.* `tests/cross_accept.sh` (new, WP-CROSS, POSIX sh; needs `uv` as `accept.sh` does)
+   unpacks the kept files and, for each deferred run: `compare.py --candidate` of its JSON against
+   `workloads/reference/NAME.json`, `compare_report.py` of its output against the port's token map
+   and reference report, both exactly as `accept.sh` calls them; and, with `except=K1,K2`, byte
+   equality of every JSON key but K1, K2 with the Mac's packed `NAME.expect/NAME.json`, and of every
+   output line with the Mac's packed `NAME.out` except the lines whose token-map entry names K1 or
+   K2. It prints `PASS`/`FAIL ports/NAME (VARIANT)` with the first difference, and a deferred run
+   with no kept files is a failure.
+5. *The counts.* `cross.sh` exits 0 when the host reports no failure and `cross_accept.sh` no
+   failure, 1 when either has a failure, 2 on a setup error of either; its last line is `host: P
+   passed, F failed, D deferred; Mac: P2 passed, F2 failed`, and D must equal P2 + F2 (else a setup
+   error).
+
+#### 2.13.10 Sub-phases (the rows of §8)
+
+Decision 126 (a): 8a this specification; 8b `@`; 8c factorizations, solves, `rcond`, `eig_sym` and
+the handles; 8d the ports, the cross rule and the gate. Each ends with `make test` and `make cross`
+passing.
+
+| Sub-phase | Contents | Done when |
+|-----------|----------|-----------|
+| 8a | **Phase-8 specification** (documents only): §2.13 (scope, the semantic contract with the proposed LANGUAGE.md text, front end, pass 3a, entries 51–61 and their algorithms, capacity, tests, the ports, these rows, Decisions 121–129, lead decisions L-ij – L-jf); no contract file, intermediate format or code changes; LANGUAGE.md unchanged until agreement | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 121–129. **Done** (2026-11-01): the specification revised after one independent review and agreed, Decisions 121–129 each decided by the user as option (a), lead decisions L-ij–L-jf agreed with the text; next 8b (WP-CONTRACT first and alone) |
+| 8b | **Contract and `@`** (after 8a; Decisions 124, 125). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 51–61, `SEA_ENT_COUNT` 61, `SEA_LA_NB`, `SEA_EIG_MAXIT`, `SEA_RCOND_ITMAX`), §4.8's tables and the `FREE` row, the LANGUAGE.md text of §2.13.2, and the normative sections of §2.13.13 that mirror a contract file; then in parallel: **WP-CHECK** `passes/seacheck/*` (`@` only); **WP-FUSE** `passes/seafuse/*` (barriers, validation); **WP-LOOP** `passes/sealoop/*` (L7's exclusion, R35 for `bin matmul`, L21); **WP-LOWER** `passes/sealower/*` (rule 39's three `@` rows, R35 validation); **WP-RT-A64** `runtime/arm64_macos/rt_gemm.s`, `rt_kern.s`, `rt_main.s` (moving `_sea_variant`), `tests/rt/arm64_macos/rt_la_gemm*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-LACHECK** `tests/la/la_check.c` (the GEMV, VECMAT and MATMUL parts), `tests/la/gen_consts.sh` (L-jd), `tests/la/la_link.sh` (L-ja), `Makefile` (`test-la`, the header rule, its build lines), `Makefile.linux`, the `la/la_check` and `la/la_link` lines of `tests/cross_run.sh` and `tests/cross_pack.sh`; **WP-TOOLS** `tools/seaval.bas` (R35); **T1** `tests/vectors/la8_cases.py` (its `@` part), `tests/programs/la_mv_*`, `la_vm_*`, `la_mm_*`, `tests/errors/r_la_m*`, `err_la_m*_static`, the retirement of `err_ns_matmul`, `tests/CORPUS.md`; **T2** `tests/passes/la8_mm_*`, `la8_l21_*`; outside Sea, alongside 8b: **WP-BSK-OVERLAP** in the Baysick repo (contract change 6: Baysick DESIGN.md §6.6.1's overlap sentence and the `tests/kern/kern_check.c` interleaved-block case, Baysick's owners, Baysick's `make test` and `make cross` passing) | the 8b tests of §2.13.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass |
+| 8c | **Factorizations, solves, `rcond`, `eig_sym`, handles** (after 8b and after WP-BSK-OVERLAP has landed in Baysick, contract change 6; Decisions 121–123, 129). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the five calls, handles); **WP-FUSE** and **WP-LOOP** (R35 for the `lib`s, if their validation needs it); **WP-LOWER** `passes/sealower/*` (the eight remaining rows); **WP-LU-A64** `runtime/arm64_macos/rt_lu.s` (with the private `sea_la_potrf` and `sea_la_issym`, delivered first, L-jc), `rt_mem.s` (`sea_free`'s handle branch), `tests/rt/arm64_macos/rt_la_lu*`, `rt_la_private*`, `rt_la_free*`; **WP-EIG-A64** `runtime/arm64_macos/rt_eig.s`, `tests/rt/arm64_macos/rt_la_eig*` (calling the private routines through their §2.13.6 interface; merged after WP-LU-A64); **WP-LU-X64** and **WP-EIG-X64** the same under `runtime/x86_64_linux/`; **WP-LACHECK** `tests/la/la_check.c` (the factorization, solve, rcond and eig parts); **T1** `tests/vectors/la8_cases.py` (its RCOND and eig part, with the one-time SciPy check of §2.13.8), `tests/programs/la_lu_*`, `la_chol_*`, `la_solve_*`, `la_eig_*`, `tests/errors/r_la_*`, `err_la_*`, `err_json_handle`, the retirement of `err_ns_lib_solve`, `tests/CORPUS.md`; **T2** `tests/passes/la8_lib_*`; then the measurement after 8c (§2.13.7) | the 8c tests of §2.13.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass; the measurement after 8c recorded in §2.7, any relief agreed before 8d's code |
+| 8d | **W2, W3, acceptance; close-out** (after 8c; Decisions 127, 128). Work packages: **WP-PORT** `sea/ports/w2_truss_fem.sea`, `sea/ports/w3_quarter_car.sea` with their `// cross:` header lines (a port defect found in a pass is reported, not worked around); **WP-TOKENS** `sea/ports/w2_truss_fem.tokens`, `sea/ports/w3_quarter_car.tokens`; **WP-CROSS** `tests/cross.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh`, the new `tests/cross_accept.sh` (§2.13.9's items 1–5: the `.meta` key and its whitelist entry, the deferred runs, the return path, the Mac-side comparison, the combined counts; not the `la/*` lines); the compile and compute times recorded in §6.3; then the gate after phase 8 (§2.13.7) | row 8's "done when": `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7 on the Mac (W1, W4, W5, W7 as at 7g); `make cross` passes the six ports under both variants, W2 and W3 by Decision 127; `make test` and `make cross` pass; the gate after phase 8 applied, a failing program getting a relief agreed with the user before phase 9's code |
+
+Row 8 itself becomes: "**Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky,
+triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants (specified in sub-phase 8a;
+built in the sub-phases 8b–8d below, §2.13)", its "done when" unchanged.
+
+#### 2.13.11 Decisions of phase 8
+
+Written with this text, revised after one review, and decided by the user on 2026-11-01, each as
+option (a); §9 holds the same text ("Decisions of phase 8").
+
+121. **The `eig_sym` algorithm** (§2.13.6; §4.3 names tridiagonal reduction and implicit QL).
+     Options: (a) **EISPACK `tred1` (Householder reduction to a tridiagonal, eigenvalues only) then
+     `tql1` (implicit QL with shifts), as published, under §2.13.6's notation, `pythag` =
+     `sea_hypot`, the generalized form through `chol(M)` and the plain `dsygst` reduction**; (b) the
+     same reduction then bisection with Sturm counts (LAPACK `dstebz`-like: every eigenvalue to a
+     fixed tolerance; slower, more code, needs a tolerance rule); (c) cyclic Jacobi on the full
+     matrix (simplest, very accurate for small n, O(n³) per sweep with 6–10 sweeps). Recommended:
+     (a): §4.3's choice, O(n³) once plus O(n²) iterations, well known, about 400–700 runtime lines;
+     W3's 2 × 2 and every test fit any of them. **Decided: (a)** (the user, 2026-11-01). Affects
+     §2.13.5, §2.13.6, §4.3, §6.2.
+122. **Blocking of the factorizations and solves** (§2.13.6). Options: (a) **right-looking blocked
+     LU, Cholesky and triangular solves with one panel width `SEA_LA_NB` = 32 on every target and
+     variant, the panels in Sea's code (pinned, L-it) and every trailing update through
+     `_bsk_kern_gemm_sub`; NB a contract value that phase 10 may retune by a contract change**; (b)
+     the same with NB = 64 (fewer, larger Baysick calls; more of W2's 241 × 241 LU in the scalar
+     panel: about 40 % against 20 % at NB = 32); (c) unblocked only, no `gemm_sub` (every result
+     pinned, class E in practice, but W2's 301 member removals, about 4.2 GFLOP of LU and Cholesky,
+     would run at panel speed, likely slower than MATLAB's 0.936 s); (d) a tuned NB per variant
+     (results then differ between variants in more places). Recommended: (a): most of the work in
+     GEMM's micro-kernel, one partition for both targets, and the smallest W2 panels; the bits it
+     fixes are class R, so a later NB change needs only the contract change. **Decided: (a)** (the
+     user, 2026-11-01). Affects §2.13.5–§2.13.6, §4.3, §4.8, `rt.inc`.
+123. **The symmetric test of `solve(A, B)` and `eig_sym`** (LANGUAGE.md: "exactly symmetric";
+     `eig_sym` of a non-symmetric matrix is an error; §10.8 also says NaN propagates). Options: (a)
+     **A[i,j] and A[j,i] equal by `==` (so +0 and −0 are equal) or both NaN**; (b) plain `==` (a NaN
+     pair is not symmetric: `eig_sym` then stops with `matrix is not symmetric` on a symmetric
+     matrix holding a NaN, and `solve` takes LU); (c) equal bit patterns (−0 against +0 not
+     symmetric, NaN pairs with equal payloads symmetric). Recommended: (a): the exact test MATLAB's
+     choice needs, +0/−0 treated as the equal values they are, and a NaN in a symmetric matrix
+     propagating (to n NaN eigenvalues, L-ip, or through LU after the Cholesky attempt fails on it)
+     instead of raising a symmetry error. No tolerance in any option: "exactly" is LANGUAGE.md's
+     word. **Decided: (a)** (the user, 2026-11-01). Affects LANGUAGE.md §10.8, §2.13.6.
+124. **Where matrix @ vector and vector @ matrix live** (§4.3 says Sea's GEMV kernel). Options: (a)
+     **runtime entries `GEMV` and `VECMAT` with NEON, SSE2 and AVX2 forms, bit-identical (class E),
+     materialized operands**; (b) inline loops written by `sealoop` (a j-outer, i-inner loop that
+     `seavec` vectorizes, and L13's sum8 per column), which could later fuse an element-wise operand
+     into the product (W3's `sin(argR) @ Ak` without the 7.7 MB `sin(argR)`), at 300–500 more
+     `sealoop` lines (over its 7 000 at the upper end) and no cache blocking. Recommended: (a): fits
+     every pass, the kernel's row panels keep y in registers, and operand fusion stays a phase-10
+     candidate. **Decided: (a)** (the user, 2026-11-01). Affects §2.13.4–§2.13.6, §4.3, §4.4.
+125. **How `@` of fixed-size operands is built, and its result type** (LANGUAGE.md §6.8 makes class
+     R only "the matrix @ matrix product on dynamic matrices", so a product of two fixed-size
+     operands is class E at every extent; the sentence on extents ≤ 8 and `SEA_LIM_FIXED_MATMUL_E`
+     restate part of it. §6.8 does not say what the result type is when it would exceed
+     `SEA_LIM_FIXED_ELEMS` (256) elements, as `f64[256,1] @ f64[1,256]` would, nor whether a
+     fixed-size operand beside a dynamic one makes the product "on dynamic matrices"). Options: (a)
+     **two fixed-size operands: inline in the pinned order by `sealoop`'s L21 at every extent; the
+     result fixed-size when it has at most 256 elements, else a dynamic matrix allocated by L21 (as
+     a concatenation becomes dynamic, §6.9); one dynamic operand: the fixed one made dynamic
+     (`dyn`), the runtime entry, a dynamic result, the matrix @ matrix case class R; §6.8 gains that
+     sentence**; (b) as (a), but a class-E runtime entry (a pinned-chain `MATMUL_E`, a contract
+     change) builds every fixed-size product whose result exceeds 256 elements, keeping L21 for the
+     rest; (c) as (a), but a result over 256 elements is a compile error (a new error code, a
+     contract change); (d) as (a), but a fixed-size operand beside a dynamic one keeps the product
+     class E (through (b)'s `MATMUL_E`), reading §6.8's "dynamic matrices" as "both operands
+     dynamic". Recommended: (a): no allocation below 256 elements ("fixed-size arrays never
+     allocate", §4.2), one rewrite, the concatenation rule reused, no contract change, and the mixed
+     case keeps GEMM's speed for a dynamic operand of any size. No workload multiplies fixed-size
+     matrices (W2's `ke` and W3's state are element-wise). **Decided: (a)** (the user, 2026-11-01).
+     Affects §2.13.2–§2.13.4, LANGUAGE.md §6.8 (one clarifying sentence).
+126. **The sub-phase split** (§2.13.10). Options: (a) **8b contract and `@`; 8c factorizations,
+     solves, `rcond`, `eig_sym` and handles; 8d the ports, the cross rule and the gate**; (b) one
+     code sub-phase (8b everything) then the ports (8c); (c) four code sub-phases (`@`; LU,
+     Cholesky, solves, `rcond`; `eig_sym`; ports). Recommended: (a): `@` is independent and
+     exercises the new runtime files, the view mapping and `la_check` before the factorizations
+     depend on them; the five calls share one `ck_lib` table and one mapping table, so splitting
+     `eig_sym` off (c) adds a step without disjoint files. **Decided: (a)** (the user, 2026-11-01).
+     Affects §8.
+127. **How the class-R ports are checked on the Linux host** (§6.6: W2 compared "with the acceptance
+     rules, not byte for byte", W3 byte-identical except `f_nat` and `c_best`; §6.6.1's `ports` case
+     compares bytes, which W2 under `avx2`'s FMA GEMM cannot meet; `cross.sh` is one `ssh` call that
+     returns only text). Options: (a) **a `.meta` key `compare=accept [except=…]` makes the host
+     defer the comparison and keep the port's output and JSON, which return after the report as a
+     marked base64 tar stream on the same `ssh` output; the Mac's new `tests/cross_accept.sh` runs
+     `compare.py --candidate` and `compare_report.py` on them for each variant, plus W3's byte
+     identity outside the excepted keys and their report lines, and `cross.sh` combines both counts
+     (§2.13.9, items 1–5)**; (b) the same comparison on the host (`uv` with NumPy there, which
+     Decision 86 avoided; no return path); (c) byte comparison for every port (fails for W2 under
+     `avx2`; it would test an accident of the build). Recommended: (a): the host stays free of
+     Python, the checks are §6.6's exactly, and the results are judged by the rules that judge the
+     Mac's. **Decided: (a)** (the user, 2026-11-01). Affects §6.6, §6.6.1, `tests/cross*.sh`.
+128. **W2's condition test and solve in the member removal** (MATLAB: `rcond(Kr(freeDof, freeDof))`,
+     an LU and the estimator, then `\`, a Cholesky). Options: (a) **as MATLAB: `rcond(lu(Kff))`,
+     then `solve(Kff, Fr)` (its Cholesky path)**; (b) one factorization: `let F = lu(Kff)`,
+     `rcond(F)`, then `solve(F, Fr)` (about a third less work per removal, a different class-R path
+     from MATLAB's). Recommended: (a): the ports keep MATLAB's operations (§6.3), the work is the
+     reference's, and phase 10 compares like with like. **Decided: (a)** (the user, 2026-11-01).
+     Affects `ports/w2_truss_fem.sea`, §2.13.9.
+
+129. **NaN in LU pivoting, and the precedence of `rcond`'s special values** (§10.8: "Inf and NaN
+     propagate"; but partial pivoting compares magnitudes, so for A = [0, 1; NaN, 1] a search that
+     never lets a NaN win records a zero pivot and `solve` reports `matrix is singular`, and `rcond`
+     returns 0 if the zero-pivot test comes before the NaN-norm test). Options: (a) **LAPACK's rule
+     (`idamax`, `dgetf2`): a NaN never wins the pivot search unless it is the first candidate, a
+     column of zeros and NaNs gives a zero pivot, and `solve` then reports `matrix is singular`;
+     `rcond`'s values in the order order 0 → +∞, ‖A‖₁ NaN → NaN, zero pivot → 0, ‖A‖₁ = 0 or +∞ → 0,
+     non-finite estimate → 0 (so a matrix holding a NaN always has `rcond` NaN); the proposed
+     LANGUAGE.md text states both**; (b) a NaN wins the pivot search (a candidate replaces the
+     current one when it is NaN or strictly larger), so a NaN column never gives a zero pivot and
+     the NaN propagates through `solve`; `rcond` as in (a); (c) `lu` records whether A holds a NaN;
+     `solve(F, B)`, `solve(A, B)` and `rcond` then return all-NaN results (NaN) before any singular
+     test, and pivoting is (a)'s. Recommended: (a): it is what LAPACK and so MATLAB's factorization
+     do (MATLAB's `\` then warns and returns what the factorization gives, Sea stops), a NaN-free
+     matrix is unaffected under every option, and `rcond` never hides a NaN; (b) changes the pivot
+     rule for every matrix holding a NaN and departs from the reference factorization; (c) adds a
+     scan and a flag for a case no workload has. **Decided: (a)** (the user, 2026-11-01). Affects
+     LANGUAGE.md §10.8, §2.13.2, §2.13.6, L-in, L-io.
+
+#### 2.13.12 Lead decisions of phase 8
+
+Readings taken because one answer is clearly right, reported to the user with the text and agreed
+with it on 2026-11-01 (§9, "Lead decisions of phase 8"):
+
+* **L-ij** The shapes in `shape mismatch` are the operands' in source order (`@`: left, right;
+  `solve`: n × n of A or F, then B; `eig_sym(K, M)`: K, M), written as §4.8's `h` slots; `matrix is
+  not square` names the operand's shape; a static mismatch of `@` (both operands fixed-size) is 217
+  at the operator.
+* **L-ik** Each entry checks in its row's order; `solve`'s errors depend on A or F only, never on
+  B's column count: `SINGULAR` is reported for an n × 0 B too, and the empty result comes after the
+  checks.
+* **L-il** `solve(F, B)` reports `matrix is singular` as `solve(A, B)` does (LANGUAGE.md §9.2's row
+  read for both forms; §10.8's table states it only for the second).
+* **L-im** `chol` reads the upper triangle only and tests no symmetry (MATLAB's `chol`); its pivot
+  test is "not greater than 0", so a NaN pivot is `matrix is not positive definite`: the one place
+  where a NaN stops instead of propagating, because the test is the operation's definition.
+* **L-in** Partial pivoting takes the first row of strictly largest magnitude (LAPACK's `idamax`): a
+  NaN never replaces a pivot candidate (Decision 129 (a)); an exactly zero pivot leaves its column
+  unscaled and the factorization continues (LAPACK `dgetf2`), so `lu` never fails for a singular
+  matrix; true division, not LAPACK's reciprocal scaling.
+* **L-io** `rcond`, in this order (Decision 129 (a)): order 0 → +∞ (MATLAB's `rcond([])`); ‖A‖₁ NaN
+  → NaN; a recorded zero pivot → 0; ‖A‖₁ 0 or +∞ → 0; a non-finite estimate → 0; unscaled triangular
+  solves (no `dlatrs`).
+* **L-ip** `eig_sym`: a matrix with a ±∞ or NaN element (after the symmetry test) gives n NaN; an
+  eigenvalue not converged within `SEA_EIG_MAXIT` iterations, and every later one, is NaN; the
+  result is sorted by §10.6's `f64` order; order 0 → the empty vector.
+* **L-iq** Arguments and results: `i64` arguments converted, fixed-size arguments made dynamic
+  (`dyn`) as Decision 39 did for `sort`; every result of the five functions dynamic; `@` of two
+  fixed-size operands fixed-size up to 256 result elements and dynamic above (Decision 125 (a)),
+  with a dynamic operand dynamic. W3's `eig_sym(Klin, Mlin)` of two `f64[2,2]` literals is therefore
+  accepted.
+* **L-ir** An array type whose element type is or contains a handle type (a struct field at any
+  depth) is 258 `arrays cannot hold %s` naming the handle type, at the type node, or at the array
+  literal or the `filled` call that would create it (LANGUAGE.md §4.1: such an array would store the
+  handle).
+* **L-is** A handle is one runtime block (§2.13.6's private layout); `sea_lu` and `sea_chol` count
+  it in `_sea_live` like every object constructor (`rt_mem.s`'s header), so it is in the live count
+  and in `SEA_HEAP_CHECK=count`'s total (§4.1, §4.5); `sea_free` frees and uncounts it; it refers to
+  no other object.
+* **L-it** Everything in the factorizations, solves, `rcond` and `eig_sym` that is not a Baysick
+  kernel call performs the same IEEE operations in the same order on both targets and every variant
+  (panels may be vectorized across rows or columns, never reordered per element); class-R results
+  then differ only through `_bsk_kern_gemm`/`gemm_sub`. A property of the build, not of LANGUAGE.md;
+  tests use exact data.
+* **L-iu** Sea's kernels choose their variant by reading `_sea_variant` (§4.4's "variant table of
+  the same shape as Baysick's" is read as that dispatch: three forms, two of them x86_64's);
+  `_sea_variant` moves from `rt_main.s` to `rt_kern.s`, so a C test links the entries without the
+  runtime's `main`.
+* **L-iv** Every check of the five functions and of a dynamic `@` is made by the runtime entry, with
+  the call's site; the compiled code makes none (L21's fixed-size products have none to make).
+* **L-iw** L21 binds the operands' homes before its loops, starts each chain with the first product,
+  and writes +0 for k = 0; vector @ matrix reuses L13's sum8 form; T11/T12 do the rest.
+* **L-ix** `bin matmul` and the five `lib`s are `seafuse` barriers: leaves of the trees above them,
+  their operand positions F1 positions, their statements group ends.
+* **L-iy** `eig_sym(K, M)` tests, after its errors' shape and symmetry checks, K and M for a ±∞ or
+  NaN element (n NaN, before the Cholesky of M, so an infinite diagonal never passes it), then
+  factors M (`NOT_POSDEF`), then tests the reduced C (n NaN, before `tred1`, so `tql1` never sees an
+  infinite value). No real choice: it is L-ip's rule applied to every matrix the eigenvalue step
+  receives, and an error would make a NaN stop here while it propagates in `eig_sym(A)`.
+* **L-iz** `VECMAT`'s tail lanes are filled with −0.0 (exact), never with a product of memory
+  outside the operands; GEMV's and VECMAT's blocking is free (class E fixes each element's sequence,
+  not the loops).
+* **L-ja** The link-map test of §4.3 is `tests/la/la_link.sh` (§2.13.8): the link map (`ld -map`) or
+  trace (`-Wl,--trace`) of a program calling `MATMUL` names only `rt_kinit.o` and `rt_k*.o` among
+  `libbaysickrt.a`'s members (§4.3's sentence describes a test that does not exist today; `nm`
+  cannot see members).
+* **L-jb** `SOLVE`'s failed Cholesky attempt falls back to LU on a fresh copy of A, never to LDLᵀ
+  (LANGUAGE.md's choice; MATLAB would use LDLᵀ for a symmetric indefinite A, with the same solution
+  up to rounding).
+* **L-jc** The private routines `sea_la_potrf(a, n, ld, w)` (0, or 1 + the failing pivot's index)
+  and `sea_la_issym(a, n, ld)` (1 or 0) live in `rt_lu.s` (WP-LU's), are called by `rt_eig.s`, carry
+  no `rt.inc` record (they are not entries and the passes never name them) and follow the platform
+  ABI; WP-EIG codes against §2.13.6's interface in parallel and is merged after WP-LU.
+* **L-jd** `tests/la/gen_consts.sh` (WP-LACHECK) writes `sea_consts.h` into the build directory from
+  the contract files, as Baysick's `tests/kern/kern_run.sh` derives `runtime_consts.h`: every
+  `.equiv SEA_*` of `rt.inc` and `limits.inc` as `#define`, and every record of `errors.inc`'s
+  `SEA_ERROR_LIST` as `#define SEA_E_<NAME> <code>`; `la_check.c` uses only those names for
+  `SEA_LA_NB`, `SEA_VAR_*`, the error codes and the site layout (`SEA_SITE_FILE`, `SEA_SITE_LINE`,
+  `SEA_SITE_SIZE`). A `make` rule and `Makefile.linux` run it; `cross_pack.sh` packs its output.
+* **L-je** RCOND follows `dgecon` exactly in what it estimates: ‖U⁻¹L⁻¹‖₁ with no interchanges, and
+  `dlacn2`'s sign rule (v ≥ 0 → +1, else −1; −0 → +1, NaN → −1, LAPACK 3.5+, from memory of the
+  source, WP-LACHECK to confirm); the identity's `rcond` is not 1 at every order (§2.13.6), so
+  expected values come from `tests/vectors/la8_cases.py`.
+* **L-jf** `CHOL` (and `sea_la_potrf`) sets R's strict lower triangle to +0 before the first panel,
+  as the trailing updates read and write it inside diagonal blocks, and again after the last one, so
+  a `Chol` holds exactly R.
+
+#### 2.13.13 Sections amended when agreed
+
+The text was agreed on 2026-11-01. §0, §8 and §9 were edited with the agreement; the rest is edited
+by WP-CONTRACT (the tables that mirror a contract file, LANGUAGE.md) or by the integration of each
+sub-phase, as 7b did:
+
+* **§0** (done 2026-11-01: phase 8 started, 8a done, next 8b); `sea/CLAUDE.md`'s status
+  (lead).
+* **§2.6.2**: the after-phase-4 table's `@` row and the five library names removed in 8b and 8c, the
+  `handle types` row narrowed to `Figure` and `Axes`, a pointer to §2.13.3's table.
+* **§2.7**: "Projected for phase 8" (§2.13.7's table), "Measured after 8c", the gate after phase 8
+  and its measurement.
+* **§3.5.5** (library calls of phase 8, L-iq's `cvt` and `dyn`), **§3.5.9** (L21, R35, L7's
+  exclusion, R10's text), **§3.6.6** (rule 39's mapping rows).
+* **§4.1** (handles as one block, counted), **§4.3** (the transposed copy W; "overlap" as sharing an
+  element; the link-map sentence pointing at `tests/la/la_link.sh`), **§4.4** (Sea's dispatch on
+  `_sea_variant`; and its stale sentence that pass 3b emits each vectorized loop twice, which §2.12
+  listed and is still unedited), **§4.5** (the heap check counts handles), **§4.8** (entries 51–61,
+  the `FREE` row, the new constants, the handle content).
+* **§6.2** ("Phase-8 tests", from §2.13.8), **§6.3** ("Phase-8 acceptance": W2, W3, "no feature
+  gap", "Measured at 8d"), **§6.6** and **§6.6.1** (Decision 127's `.meta` key, deferred runs,
+  return path and combined counts; the `la/la_check` and `la/la_link` cases).
+* **§8** (done 2026-11-01): row 8 as §2.13.10 writes it and the rows 8a–8d in full, 8a done.
+* **§9** (done 2026-11-01): Decisions 121–129 with the user's answers; "Lead decisions of phase 8"
+  (L-ij – L-jf).
+* **LANGUAGE.md** §4.1, §6.8, §9.2, §10.8 (the text of §2.13.2).
+* **Baysick** (not Sea's to edit): DESIGN.md §6.6.1's overlap sentence and the `kern_check` case
+  (contract change 6, WP-BSK-OVERLAP); its §6.6 citation of "sea/docs/DESIGN.md §15.3, §18.2", now
+  Sea's §4.3, can be corrected in the same change.
 
 ## 3. Intermediate files
 
@@ -13319,7 +14387,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 5 | **Scalar code quality.** Linear-scan allocation, invariant hoisting, strength reduction, bounds-check elimination, magic division; built in the sub-phases 5a–5d below (specified 2026-10-24, Decisions 58–73: `seaopt`'s T1–T10 of §5.8, the allocator and code selection of §4.9.2) | the W5 LCG and W4 SOR loops meet the §5.2 instruction shapes (checked on `-S` output: §5.2 "Targets for phase 5", `make test-shape` on both targets, §6.2); a micro-benchmark of each is recorded (§5.9). **Complete** (2026-10-25): 5a–5d done, the shapes met on both targets, the gate after phase 5 passed with Decision 78 (§2.7, "Measured after 5d") |
 | 6 | **Functions and output.** Elemental functions, the inlining rule of LANGUAGE.md §8.6, named and default arguments, `format`, `write_json` (intrinsic and runtime emitter) (specified in sub-phase 6a, agreed 2026-10-26 with Decisions 80–93; built in the sub-phases 6b–6e below, with the conditional 6b-0, §2.11) | W1 and W5 complete (without figures; §6.3, "Phase-6 acceptance"): JSON passes `compare.py --candidate`, reports equivalent, outputs byte-identical across targets. **Complete** (2026-10-29): 6a–6e done (6b-0 not run, Decisions 82 and 87), W1 and W5 accepted on the Mac by `tests/accept.sh` and byte-identical on the Linux host but for the `Compute time` line (§6.3), the gate after phase 6 passed with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6") |
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse (specified in sub-phase 7a, agreed 2026-10-29: Decisions 94–113, §2.12; built in the sub-phases 7b–7f below; under Decision 94 (a) fusion runs in a new program of pass 3a, `seafuse`, ahead of `sealoop`; under Decision 105 (a) the "no temporaries" of the next column is checked by the run-time allocation count of §2.12.10) | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
-| 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants | W2 and W3 complete and accepted on both targets |
+| 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants (specified in sub-phase 8a; built in the sub-phases 8b–8d below, §2.13) | W2 and W3 complete and accepted on both targets |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images | the plot tests pass; every port writes its figure with `--figures` and passes its structural check |
 | 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all six workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
 
@@ -13360,6 +14428,10 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115–117): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7  **Done** (2026-10-31): `seavec` with T11 (unrolling with the known counts of Decision 117), T12 (scalar replacement with slot copies, the guards decided in the walk and the `do` exit join, L-gz–L-hb), T13 with P1–P3, if-conversion with mask merges and the legality conditions, and T10 last; vector code in `seagen_a64` (NEON, 2 lanes) and `seagen_x64` (SSE2 2 lanes, AVX2 4 lanes under `vfeat`, L-hc–L-hf); the vector classes of `lirrw` and `ralloc` (WP-LIB); `tools/lirchk` and its use by `run.sh`, `stage.sh` and `cross_pack.sh` (Decision 116, L-hh–L-hj); `shape.sh` taking its candidate loops per target (L-hk); both x86_64 variants in the cross run, with the AVX2 setup check (L-hl); the `vec_*`, `vec7_*`, `sr7_*`, `vec7_alias_*` and `gen7_*` tests and the regression tests `vec_reg_param_tail` and `sr7_reg_bigslots` of the review fixes (L-hn); lead decisions L-gk–L-hp and Decisions 115–117 (§9); `make test` (stage 1 235, shape 4, protocol 56, programs 2 191, accept 2 + 2) and `make cross` (941 cases, default variant 822/0, `sse2` 822/0, once-only 119/0, total 1 763/0) pass; every `sea.lir` of the corpus passes `lirchk`; sizes in §2.7 "Measured after 7e": `seavec` 5 825 built lines, `seagen_a64` 5 254, `seagen_x64` 6 103; next 7f |
 | 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115; measured and decided as Decision 118). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code. **Done** (2026-11-01): the W4 port `ports/w4_heat_plate.sea` with its token map, accepted by `tests/accept.sh` (26 keys, `it_sor` 832 and `it_rb` 759 as MATLAB's, the report equivalent; W1 and W5 still pass; readings L-hr–L-hv); the count mode `SEA_HEAP_CHECK=count` in both runtimes with 9 `rt_heap_count_*` cases per target (§4.5, L-hq); `tests/fusion.sh`, the group `test-fusion` and the cross kind `fusion` (W1 0 and W4 6 allocations per iteration on arm64 and on the host under both variants; L-hx, L-hy); the `vector` shape lines with their op lists, W1 `.main 251 257 sqrt`, W4 `.main 261 261 sel`, on both targets (Decision 119, with W1's fused loop not isolated from the split copy's, accepted by the user; L-hz, L-ia); the T9 measurement and its decision, T9 restricted to `loop` blocks (Decision 118: W1's compute time 37 → 29 ms on the final tree, two `sea_pow` calls per copy in place of three; `vec7_p1_guard` rewritten, L-ib); a defect since 7c fixed in `sealoop` and `seafuse`, which read `^e`/`` markers inside escaped `s` payloads (L-hw; tests `str_caret_bytes`, `str_caret_tptr`); `make test` (stage 1 237, shape 8, fusion 2, protocol 56, programs 2 192, accept 2 + 3) and `make cross` (954 cases, default variant 826/0, `sse2` 826/0, once-only 128/0, total 1 780/0) pass; W4 compiles in 21.4 s and computes in 0.51–0.54 s against MATLAB's best 0.902 s (§6.3 "Measured at 7f"); sizes in §2.7 "Measured after 7f" (`seafuse` 6 482, `sealoop` 6 485, `sealopt` 5 548 built lines) and the gate after phase 7 passes every program with no relief ("Measured at the gate after phase 7"); lead decisions L-hq–L-ib; next 7g |
 | 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change: Decision 120): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass. **Done** (2026-11-01): the W7 port `ports/w7_drivetrain.sea` (874 lines) and its token map, port-only by Decision 120 (the user): its own `interp1` with the pinned formula, preallocation to the 326,700 candidates with a count, loops for `diff`, `linspace` for the floating-point ranges and one matrix per rolling-resistance case (a struct array `Sweep`, L-id), with no language, compiler, runtime, prelude, include or golden change; `tests/accept.sh` passes W1, W4, W5 and W7 (`passed: 4`): every key of `reference/w7_drivetrain.json` passes `compare.py --candidate`, each identical to MATLAB's or differing by 0, the report is equivalent (byte-identical but for the `Compute time` line) and `SEA_HEAP_CHECK=1` gives `heap: 0 live objects`; the token map was checked by perturbation; readings L-ic–L-ii (§9), no gap beyond §6.3's list met; `make test` (accept 2 + 4, the other groups as at 7f) and `make cross` (955 cases, default variant 827/0, `sse2` 827/0, once-only 128/0, total 1 782/0) pass; W7 compiles in 17.4–20.8 s and computes in 0.134–0.135 s against MATLAB's best 8.602 s (§6.3 "Measured at 7g"); pass sizes unchanged (§2.7 "Measured test counts after 7g"); **phase 7 is complete**; next phase 8 |
+| 8a | **Phase-8 specification** (documents only): §2.13 (scope, the semantic contract with the proposed LANGUAGE.md text, front end, pass 3a, entries 51–61 and their algorithms, capacity, tests, the ports, these rows, Decisions 121–129, lead decisions L-ij – L-jf); no contract file, intermediate format or code changes; LANGUAGE.md unchanged until agreement | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 121–129. **Done** (2026-11-01): the specification revised after one independent review and agreed, Decisions 121–129 each decided by the user as option (a), lead decisions L-ij–L-jf agreed with the text; next 8b (WP-CONTRACT first and alone) |
+| 8b | **Contract and `@`** (after 8a; Decisions 124, 125). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 51–61, `SEA_ENT_COUNT` 61, `SEA_LA_NB`, `SEA_EIG_MAXIT`, `SEA_RCOND_ITMAX`), §4.8's tables and the `FREE` row, the LANGUAGE.md text of §2.13.2, and the normative sections of §2.13.13 that mirror a contract file; then in parallel: **WP-CHECK** `passes/seacheck/*` (`@` only); **WP-FUSE** `passes/seafuse/*` (barriers, validation); **WP-LOOP** `passes/sealoop/*` (L7's exclusion, R35 for `bin matmul`, L21); **WP-LOWER** `passes/sealower/*` (rule 39's three `@` rows, R35 validation); **WP-RT-A64** `runtime/arm64_macos/rt_gemm.s`, `rt_kern.s`, `rt_main.s` (moving `_sea_variant`), `tests/rt/arm64_macos/rt_la_gemm*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-LACHECK** `tests/la/la_check.c` (the GEMV, VECMAT and MATMUL parts), `tests/la/gen_consts.sh` (L-jd), `tests/la/la_link.sh` (L-ja), `Makefile` (`test-la`, the header rule, its build lines), `Makefile.linux`, the `la/la_check` and `la/la_link` lines of `tests/cross_run.sh` and `tests/cross_pack.sh`; **WP-TOOLS** `tools/seaval.bas` (R35); **T1** `tests/vectors/la8_cases.py` (its `@` part), `tests/programs/la_mv_*`, `la_vm_*`, `la_mm_*`, `tests/errors/r_la_m*`, `err_la_m*_static`, the retirement of `err_ns_matmul`, `tests/CORPUS.md`; **T2** `tests/passes/la8_mm_*`, `la8_l21_*`; outside Sea, alongside 8b: **WP-BSK-OVERLAP** in the Baysick repo (contract change 6: Baysick DESIGN.md §6.6.1's overlap sentence and the `tests/kern/kern_check.c` interleaved-block case, Baysick's owners, Baysick's `make test` and `make cross` passing) | the 8b tests of §2.13.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass |
+| 8c | **Factorizations, solves, `rcond`, `eig_sym`, handles** (after 8b and after WP-BSK-OVERLAP has landed in Baysick, contract change 6; Decisions 121–123, 129). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the five calls, handles); **WP-FUSE** and **WP-LOOP** (R35 for the `lib`s, if their validation needs it); **WP-LOWER** `passes/sealower/*` (the eight remaining rows); **WP-LU-A64** `runtime/arm64_macos/rt_lu.s` (with the private `sea_la_potrf` and `sea_la_issym`, delivered first, L-jc), `rt_mem.s` (`sea_free`'s handle branch), `tests/rt/arm64_macos/rt_la_lu*`, `rt_la_private*`, `rt_la_free*`; **WP-EIG-A64** `runtime/arm64_macos/rt_eig.s`, `tests/rt/arm64_macos/rt_la_eig*` (calling the private routines through their §2.13.6 interface; merged after WP-LU-A64); **WP-LU-X64** and **WP-EIG-X64** the same under `runtime/x86_64_linux/`; **WP-LACHECK** `tests/la/la_check.c` (the factorization, solve, rcond and eig parts); **T1** `tests/vectors/la8_cases.py` (its RCOND and eig part, with the one-time SciPy check of §2.13.8), `tests/programs/la_lu_*`, `la_chol_*`, `la_solve_*`, `la_eig_*`, `tests/errors/r_la_*`, `err_la_*`, `err_json_handle`, the retirement of `err_ns_lib_solve`, `tests/CORPUS.md`; **T2** `tests/passes/la8_lib_*`; then the measurement after 8c (§2.13.7) | the 8c tests of §2.13.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass; the measurement after 8c recorded in §2.7, any relief agreed before 8d's code |
+| 8d | **W2, W3, acceptance; close-out** (after 8c; Decisions 127, 128). Work packages: **WP-PORT** `sea/ports/w2_truss_fem.sea`, `sea/ports/w3_quarter_car.sea` with their `// cross:` header lines (a port defect found in a pass is reported, not worked around); **WP-TOKENS** `sea/ports/w2_truss_fem.tokens`, `sea/ports/w3_quarter_car.tokens`; **WP-CROSS** `tests/cross.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh`, the new `tests/cross_accept.sh` (§2.13.9's items 1–5: the `.meta` key and its whitelist entry, the deferred runs, the return path, the Mac-side comparison, the combined counts; not the `la/*` lines); the compile and compute times recorded in §6.3; then the gate after phase 8 (§2.13.7) | row 8's "done when": `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7 on the Mac (W1, W4, W5, W7 as at 7g); `make cross` passes the six ports under both variants, W2 and W3 by Decision 127; `make test` and `make cross` pass; the gate after phase 8 applied, a failing program getting a relief agreed with the user before phase 9's code |
 
 ## 9. Decisions (agreed)
 
@@ -14915,6 +15987,119 @@ recommendation as (a), its reasons, the decision, and what it affects.
     **Decided: (a)** (the user, 2026-11-01). The §6.3 gap list stays as candidates for later.
     Affects §6.3 and §8 row 7g; no contract file.
 
+**Decisions of phase 8** (written 2026-11-01 with the text of §2.13, revised after one
+independent review, and decided by the user on 2026-11-01, each as option (a)). Each lists its
+options with the recommendation as (a), its reasons, the decision, and what it affects; §2.13.11
+holds the same text.
+
+121. **The `eig_sym` algorithm** (§2.13.6; §4.3 names tridiagonal reduction and implicit QL).
+     Options: (a) **EISPACK `tred1` (Householder reduction to a tridiagonal, eigenvalues only) then
+     `tql1` (implicit QL with shifts), as published, under §2.13.6's notation, `pythag` =
+     `sea_hypot`, the generalized form through `chol(M)` and the plain `dsygst` reduction**; (b) the
+     same reduction then bisection with Sturm counts (LAPACK `dstebz`-like: every eigenvalue to a
+     fixed tolerance; slower, more code, needs a tolerance rule); (c) cyclic Jacobi on the full
+     matrix (simplest, very accurate for small n, O(n³) per sweep with 6–10 sweeps). Recommended:
+     (a): §4.3's choice, O(n³) once plus O(n²) iterations, well known, about 400–700 runtime lines;
+     W3's 2 × 2 and every test fit any of them. **Decided: (a)** (the user, 2026-11-01). Affects
+     §2.13.5, §2.13.6, §4.3, §6.2.
+122. **Blocking of the factorizations and solves** (§2.13.6). Options: (a) **right-looking blocked
+     LU, Cholesky and triangular solves with one panel width `SEA_LA_NB` = 32 on every target and
+     variant, the panels in Sea's code (pinned, L-it) and every trailing update through
+     `_bsk_kern_gemm_sub`; NB a contract value that phase 10 may retune by a contract change**; (b)
+     the same with NB = 64 (fewer, larger Baysick calls; more of W2's 241 × 241 LU in the scalar
+     panel: about 40 % against 20 % at NB = 32); (c) unblocked only, no `gemm_sub` (every result
+     pinned, class E in practice, but W2's 301 member removals, about 4.2 GFLOP of LU and Cholesky,
+     would run at panel speed, likely slower than MATLAB's 0.936 s); (d) a tuned NB per variant
+     (results then differ between variants in more places). Recommended: (a): most of the work in
+     GEMM's micro-kernel, one partition for both targets, and the smallest W2 panels; the bits it
+     fixes are class R, so a later NB change needs only the contract change. **Decided: (a)** (the
+     user, 2026-11-01). Affects §2.13.5–§2.13.6, §4.3, §4.8, `rt.inc`.
+123. **The symmetric test of `solve(A, B)` and `eig_sym`** (LANGUAGE.md: "exactly symmetric";
+     `eig_sym` of a non-symmetric matrix is an error; §10.8 also says NaN propagates). Options: (a)
+     **A[i,j] and A[j,i] equal by `==` (so +0 and −0 are equal) or both NaN**; (b) plain `==` (a NaN
+     pair is not symmetric: `eig_sym` then stops with `matrix is not symmetric` on a symmetric
+     matrix holding a NaN, and `solve` takes LU); (c) equal bit patterns (−0 against +0 not
+     symmetric, NaN pairs with equal payloads symmetric). Recommended: (a): the exact test MATLAB's
+     choice needs, +0/−0 treated as the equal values they are, and a NaN in a symmetric matrix
+     propagating (to n NaN eigenvalues, L-ip, or through LU after the Cholesky attempt fails on it)
+     instead of raising a symmetry error. No tolerance in any option: "exactly" is LANGUAGE.md's
+     word. **Decided: (a)** (the user, 2026-11-01). Affects LANGUAGE.md §10.8, §2.13.6.
+124. **Where matrix @ vector and vector @ matrix live** (§4.3 says Sea's GEMV kernel). Options: (a)
+     **runtime entries `GEMV` and `VECMAT` with NEON, SSE2 and AVX2 forms, bit-identical (class E),
+     materialized operands**; (b) inline loops written by `sealoop` (a j-outer, i-inner loop that
+     `seavec` vectorizes, and L13's sum8 per column), which could later fuse an element-wise operand
+     into the product (W3's `sin(argR) @ Ak` without the 7.7 MB `sin(argR)`), at 300–500 more
+     `sealoop` lines (over its 7 000 at the upper end) and no cache blocking. Recommended: (a): fits
+     every pass, the kernel's row panels keep y in registers, and operand fusion stays a phase-10
+     candidate. **Decided: (a)** (the user, 2026-11-01). Affects §2.13.4–§2.13.6, §4.3, §4.4.
+125. **How `@` of fixed-size operands is built, and its result type** (LANGUAGE.md §6.8 makes class
+     R only "the matrix @ matrix product on dynamic matrices", so a product of two fixed-size
+     operands is class E at every extent; the sentence on extents ≤ 8 and `SEA_LIM_FIXED_MATMUL_E`
+     restate part of it. §6.8 does not say what the result type is when it would exceed
+     `SEA_LIM_FIXED_ELEMS` (256) elements, as `f64[256,1] @ f64[1,256]` would, nor whether a
+     fixed-size operand beside a dynamic one makes the product "on dynamic matrices"). Options: (a)
+     **two fixed-size operands: inline in the pinned order by `sealoop`'s L21 at every extent; the
+     result fixed-size when it has at most 256 elements, else a dynamic matrix allocated by L21 (as
+     a concatenation becomes dynamic, §6.9); one dynamic operand: the fixed one made dynamic
+     (`dyn`), the runtime entry, a dynamic result, the matrix @ matrix case class R; §6.8 gains that
+     sentence**; (b) as (a), but a class-E runtime entry (a pinned-chain `MATMUL_E`, a contract
+     change) builds every fixed-size product whose result exceeds 256 elements, keeping L21 for the
+     rest; (c) as (a), but a result over 256 elements is a compile error (a new error code, a
+     contract change); (d) as (a), but a fixed-size operand beside a dynamic one keeps the product
+     class E (through (b)'s `MATMUL_E`), reading §6.8's "dynamic matrices" as "both operands
+     dynamic". Recommended: (a): no allocation below 256 elements ("fixed-size arrays never
+     allocate", §4.2), one rewrite, the concatenation rule reused, no contract change, and the mixed
+     case keeps GEMM's speed for a dynamic operand of any size. No workload multiplies fixed-size
+     matrices (W2's `ke` and W3's state are element-wise). **Decided: (a)** (the user, 2026-11-01).
+     Affects §2.13.2–§2.13.4, LANGUAGE.md §6.8 (one clarifying sentence).
+126. **The sub-phase split** (§2.13.10). Options: (a) **8b contract and `@`; 8c factorizations,
+     solves, `rcond`, `eig_sym` and handles; 8d the ports, the cross rule and the gate**; (b) one
+     code sub-phase (8b everything) then the ports (8c); (c) four code sub-phases (`@`; LU,
+     Cholesky, solves, `rcond`; `eig_sym`; ports). Recommended: (a): `@` is independent and
+     exercises the new runtime files, the view mapping and `la_check` before the factorizations
+     depend on them; the five calls share one `ck_lib` table and one mapping table, so splitting
+     `eig_sym` off (c) adds a step without disjoint files. **Decided: (a)** (the user, 2026-11-01).
+     Affects §8.
+127. **How the class-R ports are checked on the Linux host** (§6.6: W2 compared "with the acceptance
+     rules, not byte for byte", W3 byte-identical except `f_nat` and `c_best`; §6.6.1's `ports` case
+     compares bytes, which W2 under `avx2`'s FMA GEMM cannot meet; `cross.sh` is one `ssh` call that
+     returns only text). Options: (a) **a `.meta` key `compare=accept [except=…]` makes the host
+     defer the comparison and keep the port's output and JSON, which return after the report as a
+     marked base64 tar stream on the same `ssh` output; the Mac's new `tests/cross_accept.sh` runs
+     `compare.py --candidate` and `compare_report.py` on them for each variant, plus W3's byte
+     identity outside the excepted keys and their report lines, and `cross.sh` combines both counts
+     (§2.13.9, items 1–5)**; (b) the same comparison on the host (`uv` with NumPy there, which
+     Decision 86 avoided; no return path); (c) byte comparison for every port (fails for W2 under
+     `avx2`; it would test an accident of the build). Recommended: (a): the host stays free of
+     Python, the checks are §6.6's exactly, and the results are judged by the rules that judge the
+     Mac's. **Decided: (a)** (the user, 2026-11-01). Affects §6.6, §6.6.1, `tests/cross*.sh`.
+128. **W2's condition test and solve in the member removal** (MATLAB: `rcond(Kr(freeDof, freeDof))`,
+     an LU and the estimator, then `\`, a Cholesky). Options: (a) **as MATLAB: `rcond(lu(Kff))`,
+     then `solve(Kff, Fr)` (its Cholesky path)**; (b) one factorization: `let F = lu(Kff)`,
+     `rcond(F)`, then `solve(F, Fr)` (about a third less work per removal, a different class-R path
+     from MATLAB's). Recommended: (a): the ports keep MATLAB's operations (§6.3), the work is the
+     reference's, and phase 10 compares like with like. **Decided: (a)** (the user, 2026-11-01).
+     Affects `ports/w2_truss_fem.sea`, §2.13.9.
+
+129. **NaN in LU pivoting, and the precedence of `rcond`'s special values** (§10.8: "Inf and NaN
+     propagate"; but partial pivoting compares magnitudes, so for A = [0, 1; NaN, 1] a search that
+     never lets a NaN win records a zero pivot and `solve` reports `matrix is singular`, and `rcond`
+     returns 0 if the zero-pivot test comes before the NaN-norm test). Options: (a) **LAPACK's rule
+     (`idamax`, `dgetf2`): a NaN never wins the pivot search unless it is the first candidate, a
+     column of zeros and NaNs gives a zero pivot, and `solve` then reports `matrix is singular`;
+     `rcond`'s values in the order order 0 → +∞, ‖A‖₁ NaN → NaN, zero pivot → 0, ‖A‖₁ = 0 or +∞ → 0,
+     non-finite estimate → 0 (so a matrix holding a NaN always has `rcond` NaN); the proposed
+     LANGUAGE.md text states both**; (b) a NaN wins the pivot search (a candidate replaces the
+     current one when it is NaN or strictly larger), so a NaN column never gives a zero pivot and
+     the NaN propagates through `solve`; `rcond` as in (a); (c) `lu` records whether A holds a NaN;
+     `solve(F, B)`, `solve(A, B)` and `rcond` then return all-NaN results (NaN) before any singular
+     test, and pivoting is (a)'s. Recommended: (a): it is what LAPACK and so MATLAB's factorization
+     do (MATLAB's `\` then warns and returns what the factorization gives, Sea stops), a NaN-free
+     matrix is unaffected under every option, and `rcond` never hides a NaN; (b) changes the pivot
+     rule for every matrix holding a NaN and departs from the reference factorization; (c) adds a
+     scan and a flag for a case no workload has. **Decided: (a)** (the user, 2026-11-01). Affects
+     LANGUAGE.md §10.8, §2.13.2, §2.13.6, L-in, L-io.
+
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
 normative section): L-ac,
@@ -15823,3 +17008,90 @@ byte-level output or a check, never a language feature; Decision 120 was decided
   `num 3.0864e-13 0`, `top_err`'s 1e-12 relative bound against max |top_err| 3.0864e-3, converted to
   percent, as L-eg says; keys whose tolerance is below one printed unit use `json <key>` as they
   stand, as W4's `T_max` does (§6.4). No gap beyond §6.3's list was met.
+
+**Lead decisions of phase 8** (written 2026-11-01 with the text of §2.13, revised after one
+independent review, and agreed by the user together with Decisions 121–129 on 2026-11-01); each is a
+reading where LANGUAGE.md or the earlier rules leave a choice, written into §2.13:
+
+* **L-ij** The shapes in `shape mismatch` are the operands' in source order (`@`: left, right;
+  `solve`: n × n of A or F, then B; `eig_sym(K, M)`: K, M), written as §4.8's `h` slots; `matrix is
+  not square` names the operand's shape; a static mismatch of `@` (both operands fixed-size) is 217
+  at the operator.
+* **L-ik** Each entry checks in its row's order; `solve`'s errors depend on A or F only, never on
+  B's column count: `SINGULAR` is reported for an n × 0 B too, and the empty result comes after the
+  checks.
+* **L-il** `solve(F, B)` reports `matrix is singular` as `solve(A, B)` does (LANGUAGE.md §9.2's row
+  read for both forms; §10.8's table states it only for the second).
+* **L-im** `chol` reads the upper triangle only and tests no symmetry (MATLAB's `chol`); its pivot
+  test is "not greater than 0", so a NaN pivot is `matrix is not positive definite`: the one place
+  where a NaN stops instead of propagating, because the test is the operation's definition.
+* **L-in** Partial pivoting takes the first row of strictly largest magnitude (LAPACK's `idamax`): a
+  NaN never replaces a pivot candidate (Decision 129 (a)); an exactly zero pivot leaves its column
+  unscaled and the factorization continues (LAPACK `dgetf2`), so `lu` never fails for a singular
+  matrix; true division, not LAPACK's reciprocal scaling.
+* **L-io** `rcond`, in this order (Decision 129 (a)): order 0 → +∞ (MATLAB's `rcond([])`); ‖A‖₁ NaN
+  → NaN; a recorded zero pivot → 0; ‖A‖₁ 0 or +∞ → 0; a non-finite estimate → 0; unscaled triangular
+  solves (no `dlatrs`).
+* **L-ip** `eig_sym`: a matrix with a ±∞ or NaN element (after the symmetry test) gives n NaN; an
+  eigenvalue not converged within `SEA_EIG_MAXIT` iterations, and every later one, is NaN; the
+  result is sorted by §10.6's `f64` order; order 0 → the empty vector.
+* **L-iq** Arguments and results: `i64` arguments converted, fixed-size arguments made dynamic
+  (`dyn`) as Decision 39 did for `sort`; every result of the five functions dynamic; `@` of two
+  fixed-size operands fixed-size up to 256 result elements and dynamic above (Decision 125 (a)),
+  with a dynamic operand dynamic. W3's `eig_sym(Klin, Mlin)` of two `f64[2,2]` literals is therefore
+  accepted.
+* **L-ir** An array type whose element type is or contains a handle type (a struct field at any
+  depth) is 258 `arrays cannot hold %s` naming the handle type, at the type node, or at the array
+  literal or the `filled` call that would create it (LANGUAGE.md §4.1: such an array would store the
+  handle).
+* **L-is** A handle is one runtime block (§2.13.6's private layout); `sea_lu` and `sea_chol` count
+  it in `_sea_live` like every object constructor (`rt_mem.s`'s header), so it is in the live count
+  and in `SEA_HEAP_CHECK=count`'s total (§4.1, §4.5); `sea_free` frees and uncounts it; it refers to
+  no other object.
+* **L-it** Everything in the factorizations, solves, `rcond` and `eig_sym` that is not a Baysick
+  kernel call performs the same IEEE operations in the same order on both targets and every variant
+  (panels may be vectorized across rows or columns, never reordered per element); class-R results
+  then differ only through `_bsk_kern_gemm`/`gemm_sub`. A property of the build, not of LANGUAGE.md;
+  tests use exact data.
+* **L-iu** Sea's kernels choose their variant by reading `_sea_variant` (§4.4's "variant table of
+  the same shape as Baysick's" is read as that dispatch: three forms, two of them x86_64's);
+  `_sea_variant` moves from `rt_main.s` to `rt_kern.s`, so a C test links the entries without the
+  runtime's `main`.
+* **L-iv** Every check of the five functions and of a dynamic `@` is made by the runtime entry, with
+  the call's site; the compiled code makes none (L21's fixed-size products have none to make).
+* **L-iw** L21 binds the operands' homes before its loops, starts each chain with the first product,
+  and writes +0 for k = 0; vector @ matrix reuses L13's sum8 form; T11/T12 do the rest.
+* **L-ix** `bin matmul` and the five `lib`s are `seafuse` barriers: leaves of the trees above them,
+  their operand positions F1 positions, their statements group ends.
+* **L-iy** `eig_sym(K, M)` tests, after its errors' shape and symmetry checks, K and M for a ±∞ or
+  NaN element (n NaN, before the Cholesky of M, so an infinite diagonal never passes it), then
+  factors M (`NOT_POSDEF`), then tests the reduced C (n NaN, before `tred1`, so `tql1` never sees an
+  infinite value). No real choice: it is L-ip's rule applied to every matrix the eigenvalue step
+  receives, and an error would make a NaN stop here while it propagates in `eig_sym(A)`.
+* **L-iz** `VECMAT`'s tail lanes are filled with −0.0 (exact), never with a product of memory
+  outside the operands; GEMV's and VECMAT's blocking is free (class E fixes each element's sequence,
+  not the loops).
+* **L-ja** The link-map test of §4.3 is `tests/la/la_link.sh` (§2.13.8): the link map (`ld -map`) or
+  trace (`-Wl,--trace`) of a program calling `MATMUL` names only `rt_kinit.o` and `rt_k*.o` among
+  `libbaysickrt.a`'s members (§4.3's sentence describes a test that does not exist today; `nm`
+  cannot see members).
+* **L-jb** `SOLVE`'s failed Cholesky attempt falls back to LU on a fresh copy of A, never to LDLᵀ
+  (LANGUAGE.md's choice; MATLAB would use LDLᵀ for a symmetric indefinite A, with the same solution
+  up to rounding).
+* **L-jc** The private routines `sea_la_potrf(a, n, ld, w)` (0, or 1 + the failing pivot's index)
+  and `sea_la_issym(a, n, ld)` (1 or 0) live in `rt_lu.s` (WP-LU's), are called by `rt_eig.s`, carry
+  no `rt.inc` record (they are not entries and the passes never name them) and follow the platform
+  ABI; WP-EIG codes against §2.13.6's interface in parallel and is merged after WP-LU.
+* **L-jd** `tests/la/gen_consts.sh` (WP-LACHECK) writes `sea_consts.h` into the build directory from
+  the contract files, as Baysick's `tests/kern/kern_run.sh` derives `runtime_consts.h`: every
+  `.equiv SEA_*` of `rt.inc` and `limits.inc` as `#define`, and every record of `errors.inc`'s
+  `SEA_ERROR_LIST` as `#define SEA_E_<NAME> <code>`; `la_check.c` uses only those names for
+  `SEA_LA_NB`, `SEA_VAR_*`, the error codes and the site layout (`SEA_SITE_FILE`, `SEA_SITE_LINE`,
+  `SEA_SITE_SIZE`). A `make` rule and `Makefile.linux` run it; `cross_pack.sh` packs its output.
+* **L-je** RCOND follows `dgecon` exactly in what it estimates: ‖U⁻¹L⁻¹‖₁ with no interchanges, and
+  `dlacn2`'s sign rule (v ≥ 0 → +1, else −1; −0 → +1, NaN → −1, LAPACK 3.5+, from memory of the
+  source, WP-LACHECK to confirm); the identity's `rcond` is not 1 at every order (§2.13.6), so
+  expected values come from `tests/vectors/la8_cases.py`.
+* **L-jf** `CHOL` (and `sea_la_potrf`) sets R's strict lower triangle to +0 before the first panel,
+  as the trailing updates read and write it inside diagonal blocks, and again after the last one, so
+  a `Chol` holds exactly R.

@@ -145,8 +145,17 @@ shape 8, fusion 2, programs 2 192, accept 2 + 3) and `make cross` passes 954 cas
 user), no pass, runtime, prelude, include or golden change; `tests/accept.sh` passes W1, W4, W5 and
 W7; lead decisions L-ic–L-ii, DESIGN.md §6.3 "Measured at 7g"; `make test` passes (accept 2 + 4) and
 `make cross` passes 955 cases (default 827, `sse2` 827, once-only 128, total 1 782); W7 compiles in
-17.4–20.8 s and computes in 0.134–0.135 s). **Phase 7 is complete.** **Next:** phase 8 (linear
-algebra, DESIGN.md §8 row 8), its specification first.
+17.4–20.8 s and computes in 0.134–0.135 s). **Phase 7 is complete.** **Phase 8** (linear algebra,
+DESIGN.md §8 row 8) **is specified** (8a, agreed 2026-11-01 after one independent review: Decisions
+121–129, each option (a), lead decisions L-ij–L-jf; DESIGN.md §2.13, §8 rows 8a–8d, §9): `@`
+(Baysick's GEMM for matrix @ matrix, Sea's class-E GEMV and 8-lane vector @ matrix kernels, fixed-size
+`@` inlined by `sealoop`'s L21), the handles `Lu`/`Chol`, `lu chol solve rcond eig_sym` as runtime
+entries 51–61 (blocked LU and Cholesky through `_bsk_kern_gemm_sub`, `dgecon`-style `rcond`, tred1 +
+tql1), the W2 and W3 ports. **Next:** 8b (WP-CONTRACT first and alone: `rt.inc` entries 51–61 and
+constants, LANGUAGE.md's agreed text; then `@`). The Baysick-repo work package WP-BSK-OVERLAP
+(Baysick DESIGN.md §6.6.1: "overlap" means sharing an element, plus a `kern_check` case) is a
+precondition for 8c.
+
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
