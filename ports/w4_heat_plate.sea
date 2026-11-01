@@ -1,0 +1,274 @@
+// w4_heat_plate.sea -- 2D steady heat conduction in a cooled plate by finite differences
+//
+// Sea port of sea/workloads/w4_heat_plate.m (Sea acceptance workload 4). Same model, same
+// numbers, no figures (DESIGN.md 2.12.10). Options:
+//   --export-reference   write w4_heat_plate.json to the working directory
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
+//   `h ^ 2 * qSrc / kCond`, `Tbot0 + (Tbot1 - Tbot0) * x / W`, `(1 + cos(pi / (ny - 1))) / 2`,
+//   `2 / (1 + sqrt(1 - rhoJ ^ 2))`, `kCond * tPlate * sum(…)`, `qSrc * h ^ 2 * tPlate * cellW[…]`,
+//   `-kCond * (…) / (2 * h)` and residual's five-term sum left to right. MATLAB's `.^2` and `^2`
+//   are Sea's pinned multiplications (LANGUAGE.md 6.5). The sums (`sum`, `mean`) use Sea's
+//   pinned 8-lane order (LANGUAGE.md 10.5), which differs from MATLAB's in the last bits only.
+// * Scalar SOR. The loop is tests/accept/w4_sor.sea's, unchanged (DESIGN.md 5.2 fixes its shape):
+//   the same lexicographic order and the same operations as MATLAB's, so the same sweep count.
+// * Red-black SOR. rb_half_sweep is LANGUAGE.md 2.4's, exactly: MATLAB's copy-in/copy-out
+//   `[T, d1] = rb_half_sweep(T, …)` is a `ref T` parameter returning d1, and the masked store
+//   `Tc(colorIn) = Tn(colorIn); T(2:ny-1, :) = Tc` is `T[1..ny-1, :] = where(colorIn, Tn, Tc)`,
+//   the same value per element. MATLAB's `T(2:ny-1, 2)` and `T(2:ny-1, end-1)` (single columns
+//   of a matrix) are the one-column slices `1..2` and `$-2..$-1`; residual does the same with
+//   `T(:, 2)` and `T(:, nx-1)`.
+// * Indices. Sea is 0-based: MATLAB's `j = 2:ny-1` is `1..ny-1`, `T(j, nx-1)` is `T[j, nx-2]`,
+//   `1:8:ny` is `0..ny step 8`, the centre lines `(nx + 1) / 2` are `idiv(nx + 1, 2) - 1`, and
+//   `x(iq + 1)` stays `x[iq + 1]` (iq is a column of qMag, whose column 0 is node column 1).
+//   The red/black colouring `mod(I + J, 2)` uses MATLAB's 1-based I and J (`meshgrid((1..=nx),
+//   (1..=ny))`), so the colours are MATLAB's. `max(Thot(:))` is `max` and `argmax` of `Thot.flat`
+//   (the first maximum in column-major order, as MATLAB), and `ind2sub` gives 0-based row and
+//   column, used only to index `x` and `y`; likewise for `qMag`. `find(hole)` is
+//   `find(hole.flat)` (column-major linear indices, the same summation order of Qhole), and
+//   MATLAB's linear indexing `unknown(nb)`, `T(holeIdx(m))` is through the flat view. The JSON
+//   holds no index keys.
+// * sub2ind. MATLAB's `sub2ind(size(T), r, c)` checks both subscripts; Sea's `sub2ind(r, i, j)`
+//   checks the row only. The neighbours of the coolant nodes are inside the plate (the
+//   configuration check that the channel does not touch an edge guarantees it), so no check fires.
+// * Integers. The grid sizes, iteration counts and node counts are `i64` (`nnz` of the flat
+//   masks); `maxIt` is `i64`. Every use in `f64` arithmetic converts them exactly (LANGUAGE.md
+//   4.2), so the values are MATLAB's doubles. The physical inputs are written as `f64` literals.
+// * Arrays. MATLAB's `ones(1, nx)` is the vector `ones(nx)`; `T(jMid, :)` and `T(:, iMid).'`
+//   are vectors (Sea vectors have no orientation); `src(inSrc) = …`, `T0(hole) = Thole` and
+//   `Thot(~unknown) = -Inf` are masked assignments of a scalar.
+// * Errors keep MATLAB's messages without the message identifier (`w4:config`); neither fires.
+// * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
+//   SEA_SAVE_FIGURES and the figures section are not ported (DESIGN.md 2.12.10). `wlName`/`wlDir`
+//   are not needed: the JSON goes to the working directory (LANGUAGE.md 11.3) and the export
+//   record (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB reference in
+//   its order.
+// * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` values.
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- inputs
+let W = 0.30                        // plate width [m]
+let H = 0.20                        // plate height [m]
+let h = 0.00125                     // grid spacing [m]
+let kCond = 167.0                   // thermal conductivity [W/(m K)]
+let tPlate = 0.005                  // plate thickness [m]
+let Tbot0 = 40.0                    // bottom edge temperature at x = 0 [degC]
+let Tbot1 = 65.0                    // bottom edge temperature at x = W [degC]
+let Ttop = 20.0                     // top edge temperature [degC]
+let Thole = 12.0                    // coolant channel temperature [degC]
+let holeC = [0.215, 0.105]          // coolant channel center [m]
+let holeR = 0.018                   // coolant channel radius [m]
+let srcBox = [0.06, 0.11, 0.07, 0.12]   // heat source x0 x1 y0 y1 [m]
+let qSrc = 2.5e7                    // volumetric heat generation [W/m^3]
+let tol = 1e-8                      // convergence: max temperature change per sweep [K]
+let maxIt = 20000                   // iteration cap [-]
+
+let nx = i64(round(W / h)) + 1
+let ny = i64(round(H / h)) + 1
+let x = (0..nx) * h
+let y = (0..ny) * h
+let (X, Y) = meshgrid(x, y)         // ny x nx, rows are y
+
+let hole = (X - holeC[0]) ^ 2 + (Y - holeC[1]) ^ 2 <= holeR ^ 2
+var src = zeros(ny, nx)
+let inSrc = X >= srcBox[0] & X <= srcBox[1] & Y >= srcBox[2] & Y <= srcBox[3]
+src[inSrc] = h ^ 2 * qSrc / kCond   // source term of the scaled 5-point equation [K]
+if any(hole.flat & inSrc.flat) {
+    error("heat source and coolant channel overlap")
+}
+if any(hole[0, :]) || any(hole[ny - 1, :]) || any(hole[:, 0]) || any(hole[:, nx - 1]) {
+    error("coolant channel touches the plate edge")
+}
+
+var fixed = hole
+fixed[0, :] = true
+fixed[ny - 1, :] = true
+let unknown = !fixed
+
+var T0 = Ttop * ones(ny, nx)
+T0[0, :] = Tbot0 + (Tbot1 - Tbot0) * x / W
+T0[ny - 1, :] = Ttop
+T0[hole] = Thole
+
+// Relaxation factor from the Jacobi spectral radius of the rectangle (insulated sides)
+let rhoJ = (1 + cos(pi / (ny - 1))) / 2
+let omega = 2 / (1 + sqrt(1 - rhoJ ^ 2))
+
+// ---------------------------------------------------------------- solver 1: scalar SOR
+var T = T0
+var itSor = 0
+var dMax = inf
+while dMax > tol && itSor < maxIt {
+    itSor += 1
+    dMax = 0.0
+    for i in 0..nx {
+        for j in 1..ny-1 {
+            if fixed[j, i] { continue }
+            let tw = if i == 0 { T[j, 1] } else { T[j, i-1] }
+            let te = if i == nx - 1 { T[j, nx-2] } else { T[j, i+1] }
+            let tgs = (tw + te + T[j-1, i] + T[j+1, i] + src[j, i]) / 4.0
+            let tn = T[j, i] + omega * (tgs - T[j, i])
+            let d = abs(tn - T[j, i])
+            if d > dMax { dMax = d }
+            T[j, i] = tn
+        }
+    }
+}
+let Tsor = T
+let dSor = dMax
+
+// ---------------------------------------------------------------- solver 2: red-black SOR
+let (I, J) = meshgrid((1..=nx), (1..=ny))
+let red = (I + J) % 2 == 0 & unknown
+let black = (I + J) % 2 == 1 & unknown
+let redIn = red[1..ny-1, :]
+let blackIn = black[1..ny-1, :]
+T = T0
+var itRb = 0
+dMax = inf
+while dMax > tol && itRb < maxIt {
+    itRb += 1
+    let d1 = rb_half_sweep(ref T, src, redIn, omega)
+    let d2 = rb_half_sweep(ref T, src, blackIn, omega)
+    dMax = max(d1, d2)
+}
+let Trb = T
+let dRb = dMax
+
+// ---------------------------------------------------------------- post-processing
+let resSor = residual(Tsor, src, unknown)
+let resRb = residual(Trb, src, unknown)
+let diffSolvers = max(abs(Tsor.flat - Trb.flat))
+
+T = Tsor
+var Thot = T
+Thot[!unknown] = -inf               // hot spot over the solved (non-Dirichlet) nodes
+let Tmax = max(Thot.flat)
+let kMax = argmax(Thot.flat)
+let (jMax, iMax) = ind2sub(rows(T), kMax)
+let Tmean = mean(T[unknown])
+
+// Conservative heat flows into the plate (per plate thickness) [W]
+var wEdge = ones(nx)
+wEdge[[0, nx - 1]] = 0.5
+let Qbot = kCond * tPlate * sum(wEdge * (T[0, :] - T[1, :]))
+let Qtop = kCond * tPlate * sum(wEdge * (T[ny - 1, :] - T[ny - 2, :]))
+let holeIdx = find(hole.flat)
+let (hj, hi) = ind2sub(rows(T), holeIdx)
+var Qhole = 0.0
+let shifts = [1, 0; -1, 0; 0, 1; 0, -1]
+for s in 0..4 {
+    let nb = sub2ind(rows(T), hj + shifts[s, 0], hi + shifts[s, 1])
+    let m = unknown.flat[nb]
+    Qhole = Qhole + kCond * tPlate * sum(T.flat[holeIdx[m]] - T.flat[nb[m]])
+}
+var cellW = ones(ny, nx)
+cellW[:, [0, nx - 1]] = 0.5
+let Qgen = sum(qSrc * h ^ 2 * tPlate * cellW[inSrc & unknown])
+let Qbalance = Qbot + Qtop + Qhole + Qgen
+
+// Heat-flux field by central differences on interior nodes [W/m^2]
+let qx = -kCond * (T[1..ny-1, 2..nx] - T[1..ny-1, 0..nx-2]) / (2 * h)
+let qy = -kCond * (T[2..ny, 1..nx-1] - T[0..ny-2, 1..nx-1]) / (2 * h)
+let qMag = sqrt(qx ^ 2 + qy ^ 2)
+let qMax = max(qMag.flat)
+let kq = argmax(qMag.flat)
+let (jq, iq) = ind2sub(rows(qMag), kq)
+let xq = x[iq + 1]
+let yq = y[jq + 1]
+
+let iMid = idiv(nx + 1, 2) - 1
+let jMid = idiv(ny + 1, 2) - 1
+let profX = T[jMid, :]
+let profY = T[:, iMid]
+let sub = T[0..ny step 8, 0..nx step 8]
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+printf("\n=== W4  Steady heat conduction in a cooled plate ===\n")
+printf("Grid %d x %d (h = %.3f mm), %d unknowns, %d coolant nodes, omega = %.5f\n",
+    nx, ny, h * 1e3, nnz(unknown.flat), nnz(hole.flat), omega)
+printf("Scalar SOR    : %5d sweeps, last change %.3e K, max residual %.3e K\n",
+    itSor, dSor, resSor)
+printf("Red-black SOR : %5d sweeps, last change %.3e K, max residual %.3e K\n",
+    itRb, dRb, resRb)
+printf("Max difference between the two solutions: %.3e K\n", diffSolvers)
+printf("\nHot spot %.4f degC at (x, y) = (%.4f, %.4f) m\n", Tmax, x[iMax], y[jMax])
+printf("T mean %.4f degC over the unknown nodes\n", Tmean)
+printf("Heat flow into the plate [W]:\n")
+let flowLabel = ["bottom edge", "top edge", "coolant channel", "heat source", "balance"]
+let flowValue = [Qbot, Qtop, Qhole, Qgen, Qbalance]
+for s in 0..len(flowLabel) {
+    printf("  %-16s %12.6f\n", flowLabel[s], flowValue[s])
+}
+printf("Peak heat flux %.4e W/m^2 at (x, y) = (%.4f, %.4f) m\n", qMax, xq, yq)
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w4_heat_plate",
+        nx: nx,
+        ny: ny,
+        n_unknown: nnz(unknown.flat),
+        n_hole: nnz(hole.flat),
+        omega: omega,
+        it_sor: itSor,
+        it_rb: itRb,
+        res_sor: resSor,
+        res_rb: resRb,
+        diff_solvers: diffSolvers,
+        T_max: Tmax,
+        x_Tmax: x[iMax],
+        y_Tmax: y[jMax],
+        T_mean: Tmean,
+        Q_bottom: Qbot,
+        Q_top: Qtop,
+        Q_hole: Qhole,
+        Q_gen: Qgen,
+        Q_balance: Qbalance,
+        q_max: qMax,
+        x_qmax: xq,
+        y_qmax: yq,
+        profile_x: profX,
+        profile_y: profY,
+        T_sub: sub,
+    }
+    write_json("w4_heat_plate.json", out)
+}
+
+// ================================================================ functions
+
+// One colour of red-black SOR on rows 1..ny-2, whole-array form. Side edges are insulated:
+// the ghost column mirrors the first interior column.
+fn rb_half_sweep(ref T: f64[,], src: f64[,], colorIn: bool[,], omega: f64) -> f64 {
+    let ny = rows(T)
+    let Tp = [T[1..ny-1, 1..2], T[1..ny-1, :], T[1..ny-1, $-2..$-1]]
+    let Tc = T[1..ny-1, :]
+    let tgs = (Tp[:, 0..$-2] + Tp[:, 2..$] + T[0..ny-2, :] + T[2..ny, :] + src[1..ny-1, :]) / 4
+    let Tn = Tc + omega * (tgs - Tc)
+    let dMax = max(abs(Tn[colorIn] - Tc[colorIn]))
+    T[1..ny-1, :] = where(colorIn, Tn, Tc)
+    return dMax
+}
+
+// Max |5-point residual| over the unknown nodes, in the scaled form (K).
+fn residual(T: f64[,], src: f64[,], unknown: bool[,]) -> f64 {
+    let ny = rows(T)
+    let nx = cols(T)
+    let Tp = [T[:, 1..2], T, T[:, nx-2..nx-1]]
+    var R = zeros(ny, nx)
+    R[1..ny-1, :] = Tp[1..ny-1, 0..nx] + Tp[1..ny-1, 2..nx+2] + T[0..ny-2, :] + T[2..ny, :] -
+        4 * T[1..ny-1, :] + src[1..ny-1, :]
+    return max(abs(R[unknown]))
+}

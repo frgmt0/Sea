@@ -14,6 +14,12 @@
 #   sea_release      (.globl + .hidden) count - 1, sea_free at 0
 #   sea_live         (.globl + .hidden) u64: arrays and strings allocated
 #                    and not yet freed
+#   sea_freed        (.globl + .hidden) u64: arrays and strings freed so
+#                    far. sea_live + sea_freed is the number of objects
+#                    ever created (the `count` mode of SEA_HEAP_CHECK):
+#                    every constructor counts its object in sea_live and
+#                    nothing but sea_free uncounts one, so the sum misses
+#                    no creation path
 # Uses: sea_err (rt_err.s); glibc mmap, munmap through the PLT.
 #
 # Blocks and classes (DESIGN.md 4.1). A request of b bytes takes the
@@ -388,6 +394,7 @@ sea_free:
     movq %rbx, %rdi
     call sea_free_block
     decq sea_live(%rip)             # one object fewer
+    incq sea_freed(%rip)            # and one more freed (allocations = live + freed)
     addq $8, %rsp
     popq %r15
     popq %r14
@@ -408,6 +415,12 @@ sea_free:
     .size sea_live, 8
 sea_live:
     .zero 8                         # arrays and strings allocated and not yet freed
+    .globl sea_freed
+    .hidden sea_freed
+    .type sea_freed, @object
+    .size sea_freed, 8
+sea_freed:
+    .zero 8                         # arrays and strings freed so far
 .Lrt_mem_free:
     .zero 8 * RT_MEM_NCLASS         # small classes: head of the free list, by k
 .Lrt_mem_cur:

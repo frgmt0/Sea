@@ -6,9 +6,7 @@ slot s1 24 8
 slot s2 24 8
 slot s3 24 8
 slot s4 24 8
-slot s5 24 8
-slot s6 24 8
-slot s7 8 8
+slot s5 8 8
 sa p1 s1
 sa p2 s2
 lf f3 #3FF0000000000000
@@ -21,308 +19,167 @@ li i6 24
 mcopy p1 p2 i6
 sa p7 s3
 sa p8 s4
-lf f9 #4010000000000000
-stf f9 p8 - 0 0
-lf f10 #4014000000000000
-stf f10 p8 - 0 8
-lf f11 #4018000000000000
-stf f11 p8 - 0 16
-mcopy p7 p8 i6
-sa p12 s5
-sa p13 s6
-li i14 3
-li i15 0
-icmp gt i16 i14 i15
-if 1 i16
-li i17 1
-isub i18 i14 i17
-lf f19 #3FF8000000000000
-lf f20 #4012000000000000
-li i21 7
-isub i22 i18 i21
-li i23 3
-ishr i24 i22 i23
-ishr i25 i18 i23
-icmp le i26 i24 i25
-li i27 0
-li i28 64
-li i29 -64
-pdiff i30 p1 p13
-icmp ge i31 i30 i28
-icmp le i32 i30 i29
-icmp eq i33 i30 i27
-ior i34 i31 i32
-ior i35 i34 i33
-iand i36 i26 i35
-pdiff i37 p7 p13
-icmp ge i38 i37 i28
-icmp le i39 i37 i29
-icmp eq i40 i37 i27
-ior i41 i38 i39
-ior i42 i41 i40
-iand i43 i36 i42
-if 2 i43
-vfeat i44 avx2
-if 3 i44
-ysplat y45 f19
-ysplat y46 f20
-lf f47 #4004000000000000
-ysplat y48 f47
-lf f49 #4000000000000000
-ysplat y50 f49
-lf f51 #3FF0000000000000
-ysplat y52 f51
-lf f53 #3FF0000000000000
-ysplat y54 f53
-lf f55 #3FF0000000000000
-ysplat y56 f55
-li i57 8
-loop 4 i58 i15 i24 i57
-ldy y59 p1 i58 8 0
-ldy y60 p1 i58 8 32
-ldy y61 p7 i58 8 0
-ldy y62 p7 i58 8 32
-ycmp gt m63 y59 y45
-ycmp gt m64 y60 y45
-ycmp gt m65 y61 y46
-ycmp gt m66 y62 y46
-ycmp lt m67 y59 y48
-ycmp lt m68 y60 y48
-ymul y69 y59 y50
-ymul y70 y60 y50
-yadd y71 y59 y52
-yadd y72 y60 y52
-mov y73 y69
-mov y74 y70
-mov y75 y71
-mov y76 y72
-ysel y77 m67 y73 y75
-ysel y78 m68 y74 y76
-yadd y79 y59 y54
-yadd y80 y60 y54
-mov y81 y79
-mov y82 y80
-ysel y83 m65 y77 y81
-ysel y84 m66 y78 y82
-yadd y85 y59 y56
-yadd y86 y60 y56
-mov y87 y85
-mov y88 y86
-ysel y89 m63 y83 y87
-ysel y90 m64 y84 y88
-sty y89 p13 i58 8 0
-sty y90 p13 i58 8 32
+li i9 3
+li i10 0
+icmp gt i11 i9 i10
+if 1 i11
+li i12 1
+isub i13 i9 i12
+lf f14 #3FF8000000000000
+lf f15 #4000000000000000
+lf f16 #3FF0000000000000
+li i17 7
+isub i18 i13 i17
+li i19 3
+ishr i20 i18 i19
+ishr i21 i13 i19
+icmp le i22 i20 i21
+li i23 0
+li i24 64
+li i25 -64
+pdiff i26 p1 p8
+icmp ge i27 i26 i24
+icmp le i28 i26 i25
+icmp eq i29 i26 i23
+ior i30 i27 i28
+ior i31 i30 i29
+iand i32 i22 i31
+if 2 i32
+vfeat i33 avx2
+if 3 i33
+ysplat y34 f14
+ysplat y35 f15
+ysplat y36 f16
+li i37 8
+loop 4 i38 i10 i20 i37
+ldy y39 p1 i38 8 0
+ldy y40 p1 i38 8 32
+ycmp gt m41 y39 y34
+ycmp gt m42 y40 y34
+ymul y43 y39 y35
+ymul y44 y40 y35
+yadd y45 y39 y36
+yadd y46 y40 y36
+mov y47 y43
+mov y48 y44
+mov y49 y45
+mov y50 y46
+ysel y51 m41 y47 y49
+ysel y52 m42 y48 y50
+sty y51 p8 i38 8 0
+sty y52 p8 i38 8 32
 endloop 4
-li i91 7
-iand i92 i22 i91
-li i93 0
-icmp gt i94 i92 i93
-if 5 i94
-li i95 3
-ishl i96 i24 i95
-iadd i97 i15 i96
-li i98 8
-iadd i99 i97 i98
-isub i100 i92 i17
-loop 6 i101 i99 i100 i17
-ldf f102 p1 i101 8 0
-ldf f103 p7 i101 8 0
-fcmp gt i104 f102 f19
-fcmp gt i105 f103 f20
-if 7 i104
-if 8 i105
-lf f106 #4004000000000000
-lf f107 #4000000000000000
-lf f108 #3FF0000000000000
-fcmp lt i109 f102 f106
-fmul f110 f102 f107
-fadd f111 f102 f108
-if 9 i109
-mov f112 f110
-else 9
-mov f112 f111
-endif 9
-else 8
-lf f113 #3FF0000000000000
-fadd f114 f102 f113
-mov f112 f114
-endif 8
+li i53 7
+iand i54 i18 i53
+li i55 0
+icmp gt i56 i54 i55
+if 5 i56
+li i57 3
+ishl i58 i20 i57
+iadd i59 i10 i58
+li i60 8
+iadd i61 i59 i60
+isub i62 i54 i12
+loop 6 i63 i61 i62 i12
+ldf f64 p1 i63 8 0
+fcmp gt i65 f64 f14
+fmul f66 f64 f15
+fadd f67 f64 f16
+if 7 i65
+mov f68 f66
 else 7
-lf f115 #3FF0000000000000
-fadd f116 f102 f115
-mov f112 f116
+mov f68 f67
 endif 7
-stf f112 p13 i101 8 0
+stf f68 p8 i63 8 0
 endloop 6
 endif 5
 else 3
-xsplat x117 f19
-xsplat x118 f20
-lf f119 #4004000000000000
-xsplat x120 f119
-lf f121 #4000000000000000
-xsplat x122 f121
-lf f123 #3FF0000000000000
-xsplat x124 f123
-lf f125 #3FF0000000000000
-xsplat x126 f125
-lf f127 #3FF0000000000000
-xsplat x128 f127
-li i129 8
-loop 10 i130 i15 i24 i129
-ldx x131 p1 i130 8 0
-ldx x132 p1 i130 8 16
-ldx x133 p1 i130 8 32
-ldx x134 p1 i130 8 48
-ldx x135 p7 i130 8 0
-ldx x136 p7 i130 8 16
-ldx x137 p7 i130 8 32
-ldx x138 p7 i130 8 48
-xcmp gt m139 x131 x117
-xcmp gt m140 x132 x117
-xcmp gt m141 x133 x117
-xcmp gt m142 x134 x117
-xcmp gt m143 x135 x118
-xcmp gt m144 x136 x118
-xcmp gt m145 x137 x118
-xcmp gt m146 x138 x118
-xcmp lt m147 x131 x120
-xcmp lt m148 x132 x120
-xcmp lt m149 x133 x120
-xcmp lt m150 x134 x120
-xmul x151 x131 x122
-xmul x152 x132 x122
-xmul x153 x133 x122
-xmul x154 x134 x122
-xadd x155 x131 x124
-xadd x156 x132 x124
-xadd x157 x133 x124
-xadd x158 x134 x124
-mov x159 x151
-mov x160 x152
-mov x161 x153
-mov x162 x154
-mov x163 x155
-mov x164 x156
-mov x165 x157
-mov x166 x158
-xsel x167 m147 x159 x163
-xsel x168 m148 x160 x164
-xsel x169 m149 x161 x165
-xsel x170 m150 x162 x166
-xadd x171 x131 x126
-xadd x172 x132 x126
-xadd x173 x133 x126
-xadd x174 x134 x126
-mov x175 x171
-mov x176 x172
-mov x177 x173
-mov x178 x174
-xsel x179 m143 x167 x175
-xsel x180 m144 x168 x176
-xsel x181 m145 x169 x177
-xsel x182 m146 x170 x178
-xadd x183 x131 x128
-xadd x184 x132 x128
-xadd x185 x133 x128
-xadd x186 x134 x128
-mov x187 x183
-mov x188 x184
-mov x189 x185
-mov x190 x186
-xsel x191 m139 x179 x187
-xsel x192 m140 x180 x188
-xsel x193 m141 x181 x189
-xsel x194 m142 x182 x190
-stx x191 p13 i130 8 0
-stx x192 p13 i130 8 16
-stx x193 p13 i130 8 32
-stx x194 p13 i130 8 48
-endloop 10
-li i195 7
-iand i196 i22 i195
-li i197 0
-icmp gt i198 i196 i197
-if 11 i198
-li i199 3
-ishl i200 i24 i199
-iadd i201 i15 i200
-li i202 8
-iadd i203 i201 i202
-isub i204 i196 i17
-loop 12 i205 i203 i204 i17
-ldf f206 p1 i205 8 0
-ldf f207 p7 i205 8 0
-fcmp gt i208 f206 f19
-fcmp gt i209 f207 f20
-if 13 i208
-if 14 i209
-lf f210 #4004000000000000
-lf f211 #4000000000000000
-lf f212 #3FF0000000000000
-fcmp lt i213 f206 f210
-fmul f214 f206 f211
-fadd f215 f206 f212
-if 15 i213
-mov f216 f214
-else 15
-mov f216 f215
-endif 15
-else 14
-lf f217 #3FF0000000000000
-fadd f218 f206 f217
-mov f216 f218
-endif 14
-else 13
-lf f219 #3FF0000000000000
-fadd f220 f206 f219
-mov f216 f220
-endif 13
-stf f216 p13 i205 8 0
-endloop 12
+xsplat x69 f14
+xsplat x70 f15
+xsplat x71 f16
+li i72 8
+loop 8 i73 i10 i20 i72
+ldx x74 p1 i73 8 0
+ldx x75 p1 i73 8 16
+ldx x76 p1 i73 8 32
+ldx x77 p1 i73 8 48
+xcmp gt m78 x74 x69
+xcmp gt m79 x75 x69
+xcmp gt m80 x76 x69
+xcmp gt m81 x77 x69
+xmul x82 x74 x70
+xmul x83 x75 x70
+xmul x84 x76 x70
+xmul x85 x77 x70
+xadd x86 x74 x71
+xadd x87 x75 x71
+xadd x88 x76 x71
+xadd x89 x77 x71
+mov x90 x82
+mov x91 x83
+mov x92 x84
+mov x93 x85
+mov x94 x86
+mov x95 x87
+mov x96 x88
+mov x97 x89
+xsel x98 m78 x90 x94
+xsel x99 m79 x91 x95
+xsel x100 m80 x92 x96
+xsel x101 m81 x93 x97
+stx x98 p8 i73 8 0
+stx x99 p8 i73 8 16
+stx x100 p8 i73 8 32
+stx x101 p8 i73 8 48
+endloop 8
+li i102 7
+iand i103 i18 i102
+li i104 0
+icmp gt i105 i103 i104
+if 9 i105
+li i106 3
+ishl i107 i20 i106
+iadd i108 i10 i107
+li i109 8
+iadd i110 i108 i109
+isub i111 i103 i12
+loop 10 i112 i110 i111 i12
+ldf f113 p1 i112 8 0
+fcmp gt i114 f113 f14
+fmul f115 f113 f15
+fadd f116 f113 f16
+if 11 i114
+mov f117 f115
+else 11
+mov f117 f116
 endif 11
+stf f117 p8 i112 8 0
+endloop 10
+endif 9
 endif 3
 else 2
-loop 16 i221 i15 i18 i17
-ldf f222 p1 i221 8 0
-ldf f223 p7 i221 8 0
-fcmp gt i224 f222 f19
-fcmp gt i225 f223 f20
-if 17 i224
-if 18 i225
-lf f226 #4004000000000000
-lf f227 #4000000000000000
-lf f228 #3FF0000000000000
-fcmp lt i229 f222 f226
-fmul f230 f222 f227
-fadd f231 f222 f228
-if 19 i229
-mov f232 f230
-else 19
-mov f232 f231
-endif 19
-else 18
-lf f233 #3FF0000000000000
-fadd f234 f222 f233
-mov f232 f234
-endif 18
-else 17
-lf f235 #3FF0000000000000
-fadd f236 f222 f235
-mov f232 f236
-endif 17
-stf f232 p13 i221 8 0
-endloop 16
+loop 12 i118 i10 i13 i12
+ldf f119 p1 i118 8 0
+fcmp gt i120 f119 f14
+fmul f121 f119 f15
+fadd f122 f119 f16
+if 13 i120
+mov f123 f121
+else 13
+mov f123 f122
+endif 13
+stf f123 p8 i118 8 0
+endloop 12
 endif 2
 endif 1
-li i237 24
-mcopy p12 p13 i237
-li i238 1
-ldf f239 p12 i238 8 0
-sa p240 s7
-stf f239 p240 - 0 0
-la p241 d1
-rcall sea_printf 0:19 0 2 p241 p240
+li i124 24
+mcopy p7 p8 i124
+li i125 1
+ldf f126 p7 i125 8 0
+sa p127 s5
+stf f126 p127 - 0 0
+la p128 d1
+rcall sea_printf 0:14 0 2 p128 p127
 ret 0
 endfunc
 fmt d1 2

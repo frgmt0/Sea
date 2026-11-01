@@ -4,7 +4,7 @@
 # usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]
 #   -o BUNDLE_DIR  output directory; must not exist or must be empty (else exit 2)
 #   PATTERN        only pack cases whose name (programs/NAME, errors/NAME, passes/NAME,
-#                  accept/NAME, ports/NAME, rt/NAME) contains one of the patterns (matched literally)
+#                  accept/NAME, ports/NAME, rt/NAME, fusion/NAME) contains one of the patterns (matched literally)
 #
 # Environment:
 #   SEA      the driver (default: build/sea of the Sea repository); the pass executables are
@@ -29,6 +29,10 @@
 # ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
 # NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference), NAME.meta
 # (filter=compute-time) and NAME.expect/NAME.json.
+# fusion/NAME (phase 7, DESIGN.md 2.12.10): every tests/fusion/NAME.sea compiled like a program case, with
+# the sidecar NAME.fusion (lines `k=K` and `per_iteration=N`, from the program's header lines
+# `// fusion K: K` and `// Allocations per iteration: N.`, as tests/fusion.sh reads them); the host runs
+# it with K and K + 1 under SEA_HEAP_CHECK=count and checks the difference of the allocation counts.
 # A case whose compilation fails gets NAME.packfail ("status <n>", then stderr) instead of NAME.s.
 #
 # Exit status: 0 the bundle is complete (even with .packfail files), 2 setup error.
@@ -88,7 +92,7 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 mkdir -p "$BUNDLE/include" "$BUNDLE/runtime/x86_64_linux" "$BUNDLE/tests/rt/x86_64_linux" \
     "$BUNDLE/baysick/include" "$BUNDLE/baysick/src/runtime_x86_64_linux" \
     "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" "$BUNDLE/cases/accept" \
-    "$BUNDLE/cases/ports" \
+    "$BUNDLE/cases/ports" "$BUNDLE/cases/fusion" \
     || setup_fail "cannot create bundle directory '$BUNDLE'"
 echo "sea-x86_64-linux-bundle 1" > "$BUNDLE/BUNDLE" || setup_fail "cannot write $BUNDLE/BUNDLE"
 printf '%s\n' "$PATTERNS" > "$BUNDLE/PATTERNS" || setup_fail "cannot write $BUNDLE/PATTERNS"
@@ -342,6 +346,30 @@ for src in "$ROOT"/ports/*.sea; do
         cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"
         packfail "$BUNDLE/cases/ports/$nm" "$st" "$TMP/acc.all"
     fi
+    PACKED=$((PACKED + 1))
+done
+
+# fusion/NAME (DESIGN.md 2.12.10, the temporaries check): compiled like a program case; the sidecar
+# NAME.fusion holds `k=K` and `per_iteration=N`, read from the program's header lines `// fusion K: K`
+# and `// Allocations per iteration: N.` (the derived count, L-fa) exactly as tests/fusion.sh reads
+# them; a program without both lines is a corpus mistake (setup error).
+fusion_num() {
+    awk -v pre="$2" '
+    index($0, pre) == 1 {
+        s = substr($0, length(pre) + 1); sub(/\.$/, "", s)
+        if (s ~ /^[0-9]+$/) { print s; exit }
+    }' "$1"
+}
+for src in "$ROOT"/tests/fusion/*.sea; do
+    [ -e "$src" ] || continue
+    nm=$(basename "$src" .sea)
+    selected "fusion/$nm" || continue
+    fk=$(fusion_num "$src" "// fusion K: ")
+    fn=$(fusion_num "$src" "// Allocations per iteration: ")
+    [ -n "$fk" ] && [ -n "$fn" ] || setup_fail "tests/fusion/$nm.sea lacks its '// fusion K: N' or '// Allocations per iteration: N.' header line"
+    pack_sea fusion "$ROOT/tests/fusion" "$nm"
+    printf 'k=%s\nper_iteration=%s\n' "$fk" "$fn" > "$BUNDLE/cases/fusion/$nm.fusion" \
+        || setup_fail "cannot write $nm.fusion"
     PACKED=$((PACKED + 1))
 done
 

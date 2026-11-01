@@ -41,15 +41,19 @@
 //      usable variant) (DESIGN.md 4.4). _sea_variant = SEA_VAR_NEON: the
 //      only variant id of arm64-macos (`baseline` is also NEON code).
 //   5. The heap check (DESIGN.md 4.5, Decision 24): it is on when the
-//      environment variable SEA_HEAP_CHECK is exactly "1" now.
+//      environment variable SEA_HEAP_CHECK is exactly "1" (mode 1) or
+//      exactly "count" (mode 2) now; any other value leaves it off.
 //   6. sp := the top of the new stack, x29 := 0, call _sea_main.
 // When _sea_main returns: the final flush of standard output
 // (_sea_out_flush). If it fails: _sea_err(SEA_E_CANNOT_WRITE,
 // SEA_SITE_NONE, {"<stdout>", errno}), i.e. `error: cannot write
 // '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise, with
-// the heap check on, the line `heap: N live objects` + LF goes to
-// standard error (N = _sea_live in decimal, no sign or padding; a failed
-// write is ignored: there is no better channel); then
+// the heap check on, the line `heap: N live objects` + LF (mode 1) or
+// `heap: A allocations, N live objects` + LF (mode 2, `count`) goes to
+// standard error (N = _sea_live, A = _sea_live + _sea_freed: every object
+// ever created is live or has been freed; both unsigned 64-bit decimal,
+// no sign or padding; a failed write is ignored: there is no better
+// channel); then
 // _exit(SEA_EXIT_RUN_OK) (all output is already written). A run-time
 // error ends the process in _sea_err and never reaches the heap line.
 // The stack is never unmapped.
@@ -84,7 +88,7 @@
 .equ RT_SA_MASK,        8
 .equ RT_SA_FLAGS,       12
 .equ RT_MAIN_SCRATCH,   48          /* stack_t at +0 (24 bytes), sigaction at +32 (16 bytes) */
-.equ RT_HEAP_LINE_BYTES, 64         /* "heap: " + at most 20 digits + " live objects\n" */
+.equ RT_HEAP_LINE_BYTES, 96         /* "heap: " + 20 digits + " allocations, " + 20 digits + " live objects\n" = 74 */
 
     .section __TEXT,__text,regular,pure_instructions
 
@@ -201,18 +205,30 @@ Lrt_main_kern_done:
     adrp x10, _sea_variant@PAGE
     str x9, [x10, _sea_variant@PAGEOFF]
 
-    // 5. The heap check: SEA_HEAP_CHECK exactly "1".
+    // 5. The heap check: SEA_HEAP_CHECK exactly "1" (mode 1) or exactly
+    //    "count" (mode 2); anything else, or unset, is mode 0 (off).
     adrp x0, Lrt_main_s_heapenv@PAGE
     add x0, x0, Lrt_main_s_heapenv@PAGEOFF
     bl _getenv                      // the value or NULL
-    mov w9, #0                      // off unless the value is "1"
+    mov w9, #0                      // off unless the value is a mode name
     cbz x0, 1f
     ldrb w10, [x0]
     cmp w10, #'1'
-    b.ne 1f
+    b.ne 2f                         // not "1": try "count"
     ldrb w10, [x0, #1]
     cbnz w10, 1f                    // "1" followed by more: off
     mov w9, #1
+    b 1f
+2:  adrp x11, Lrt_main_s_count@PAGE
+    add x11, x11, Lrt_main_s_count@PAGEOFF
+    mov x12, #0                     // byte index
+3:  ldrb w13, [x0, x12]             // value byte
+    ldrb w14, [x11, x12]            // "count" byte (NUL ends it)
+    cmp w13, w14
+    b.ne 1f                         // a difference: off
+    add x12, x12, #1
+    cbnz w13, 3b                    // both NUL: the whole value matched
+    mov w9, #2
 1:  adrp x10, Lrt_main_heapchk@PAGE
     strb w9, [x10, Lrt_main_heapchk@PAGEOFF]
 
@@ -236,7 +252,7 @@ Lrt_main_exit:
     adrp x9, Lrt_main_heapchk@PAGE
     ldrb w9, [x9, Lrt_main_heapchk@PAGEOFF]
     cbz w9, 1f
-    bl Lrt_main_heap_line           // `heap: N live objects` on stderr
+    bl Lrt_main_heap_line           // the heap line on stderr (w9 = mode)
 1:  mov w0, #SEA_EXIT_RUN_OK
     bl _exit                        // does not return
     brk #1                          // not reached
@@ -248,64 +264,113 @@ Lrt_main_oom:
     bl _sea_err                     // noreturn
 
 // ---------------------------------------------------------------------
-// Lrt_main_heap_line -- write `heap: N live objects` + LF to standard
-//   error (DESIGN.md 4.5), N = _sea_live in decimal, without sign or
-//   padding. One write; a failure is ignored.
-//   Inputs  : none
+// Lrt_main_utoa -- unsigned decimal.
+//   Inputs  : x0 = value, x1 = destination
+//   Outputs : x0 = the end (destination + number of digits)
+//   Clobbers: x2-x8
+//   Callee-saved used: none
+//   Frame   : none (leaf)
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_main_utoa:
+    mov x8, x0                      // the value
+    mov x2, x0                      // a copy to count digits with
+    mov x3, #1                      // digits: at least one
+    mov x4, #10
+1:  cmp x2, #10
+    b.lo 2f
+    udiv x2, x2, x4                 // drop one digit
+    add x3, x3, #1
+    b 1b
+2:  add x0, x1, x3                  // the end
+    mov x5, x0                      // write right to left from the end
+3:  udiv x6, x8, x4
+    msub x7, x6, x4, x8             // the next digit
+    add w7, w7, #'0'
+    strb w7, [x5, #-1]!
+    mov x8, x6
+    cbnz x8, 3b
+    ret
+
+// ---------------------------------------------------------------------
+// Lrt_main_copy -- copy bytes.
+//   Inputs  : x0 = source, x1 = destination, x2 = byte count
+//   Outputs : x1 = destination + count
+//   Clobbers: x0, x2, x3
+//   Callee-saved used: none
+//   Frame   : none (leaf)
+// ---------------------------------------------------------------------
+    .p2align 2
+Lrt_main_copy:
+1:  cbz x2, 2f
+    ldrb w3, [x0], #1
+    strb w3, [x1], #1
+    sub x2, x2, #1
+    b 1b
+2:  ret
+
+// ---------------------------------------------------------------------
+// Lrt_main_heap_line -- write the heap line to standard error
+//   (DESIGN.md 4.5): `heap: N live objects` + LF for mode 1,
+//   `heap: A allocations, N live objects` + LF for mode 2, N = _sea_live,
+//   A = _sea_live + _sea_freed, in decimal, without sign or padding.
+//   One write; a failure is ignored.
+//   Inputs  : w9 = mode (1 or 2)
 //   Outputs : none
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags
-//   Callee-saved used: none
-//   Frame   : 16 bytes (frame record) + RT_HEAP_LINE_BYTES (the line at
-//             [sp]) = 80 bytes
+//   Callee-saved used: x19 = mode, x20 = write cursor
+//   Frame   : 32 bytes (frame record, x19, x20) + RT_HEAP_LINE_BYTES (the
+//             line at [sp]) = 128 bytes
 // ---------------------------------------------------------------------
     .p2align 2
 Lrt_main_heap_line:
-    stp x29, x30, [sp, #-16]!       // frame record
+    stp x29, x30, [sp, #-32]!       // frame record
     mov x29, sp
+    stp x19, x20, [sp, #16]
     sub sp, sp, #RT_HEAP_LINE_BYTES
-    // "heap: " at [sp].
-    adrp x9, Lrt_main_s_heap@PAGE
-    add x9, x9, Lrt_main_s_heap@PAGEOFF
-    mov x10, #0
-2:  ldrb w11, [x9, x10]
-    strb w11, [sp, x10]
-    add x10, x10, #1
-    cmp x10, #6
-    b.lo 2b
-    // The count's digits, written right to left into the last bytes of
-    // the buffer and then moved down after "heap: ".
+    mov w19, w9                     // the mode
+    mov x20, sp                     // cursor: the start of the line
+    // "heap: ".
+    adrp x0, Lrt_main_s_heap@PAGE
+    add x0, x0, Lrt_main_s_heap@PAGEOFF
+    mov x1, x20
+    mov x2, #6
+    bl Lrt_main_copy
+    mov x20, x1
+    cmp w19, #2
+    b.ne 1f                         // mode 1: no allocation count
+    // Mode 2: "A allocations, " with A = live + freed.
     adrp x9, _sea_live@PAGE
-    ldr x12, [x9, _sea_live@PAGEOFF]
-    add x13, sp, #RT_HEAP_LINE_BYTES  // end of the buffer
-    mov x14, #10
-3:  udiv x15, x12, x14
-    msub x16, x15, x14, x12         // the next digit
-    add w16, w16, #'0'
-    strb w16, [x13, #-1]!
-    mov x12, x15
-    cbnz x12, 3b
-    add x9, sp, #6                  // destination after "heap: "
-    add x15, sp, #RT_HEAP_LINE_BYTES
-4:  ldrb w16, [x13], #1
-    strb w16, [x9], #1
-    cmp x13, x15
-    b.lo 4b
-    // " live objects\n" after the digits.
-    adrp x10, Lrt_main_s_live@PAGE
-    add x10, x10, Lrt_main_s_live@PAGEOFF
-    mov x11, #0
-5:  ldrb w12, [x10, x11]
-    strb w12, [x9, x11]
-    add x11, x11, #1
-    cmp x11, #14
-    b.lo 5b
-    add x9, x9, #14
+    ldr x0, [x9, _sea_live@PAGEOFF]
+    adrp x9, _sea_freed@PAGE
+    ldr x10, [x9, _sea_freed@PAGEOFF]
+    add x0, x0, x10                 // every object ever created
+    mov x1, x20
+    bl Lrt_main_utoa
+    mov x1, x0
+    adrp x0, Lrt_main_s_allocs@PAGE
+    add x0, x0, Lrt_main_s_allocs@PAGEOFF
+    mov x2, #14
+    bl Lrt_main_copy
+    mov x20, x1
+    // N, then " live objects\n".
+1:  adrp x9, _sea_live@PAGE
+    ldr x0, [x9, _sea_live@PAGEOFF]
+    mov x1, x20
+    bl Lrt_main_utoa
+    mov x1, x0
+    adrp x0, Lrt_main_s_live@PAGE
+    add x0, x0, Lrt_main_s_live@PAGEOFF
+    mov x2, #14
+    bl Lrt_main_copy
     mov w0, #2                      // standard error
+    mov x2, x1
     mov x1, sp
-    sub x2, x9, x1                  // the line's length
+    sub x2, x2, x1                  // the line's length
     bl _sea_write_all               // result ignored
     add sp, sp, #RT_HEAP_LINE_BYTES
-    ldp x29, x30, [sp], #16
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #32
     ret
 
 // ---------------------------------------------------------------------
@@ -375,8 +440,10 @@ Lrt_main_segv_other:
     .section __TEXT,__cstring,cstring_literals
 Lrt_main_s_env:     .asciz "SEA_KERNELS"
 Lrt_main_s_heapenv: .asciz "SEA_HEAP_CHECK"
+Lrt_main_s_count:   .asciz "count"
     .section __TEXT,__const
 Lrt_main_s_heap:    .ascii "heap: "
+Lrt_main_s_allocs:  .ascii " allocations, "
 Lrt_main_s_live:    .ascii " live objects\n"
 
     .section __DATA,__bss
@@ -388,6 +455,6 @@ Lrt_main_s_live:    .ascii " live objects\n"
     .private_extern _sea_argv
 .zerofill __DATA,__bss,_sea_argc,8,3        /* main's argc (sign-extended) */
 .zerofill __DATA,__bss,_sea_argv,8,3        /* main's argv */
-.zerofill __DATA,__bss,Lrt_main_heapchk,1,0 /* 1: SEA_HEAP_CHECK is "1" */
+.zerofill __DATA,__bss,Lrt_main_heapchk,1,0 /* 0 off, 1 SEA_HEAP_CHECK=1, 2 SEA_HEAP_CHECK=count */
 .zerofill __DATA,__bss,Lrt_main_guard,16,3  /* guard page [lo, hi) */
 .zerofill __DATA,__bss,Lrt_main_altstack,RT_ALTSTACK_BYTES,4

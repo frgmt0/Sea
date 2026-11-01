@@ -130,7 +130,17 @@ variants in the cross run; Decisions 115–117 decided by the user, lead decisio
 §2.12.6, §2.12.7, §6.6.1; `make test` passes (stage 1 235, programs 2 191) and `make cross` passes
 941 cases (default 822, `sse2` 822, once-only 119, total 1 763); measured: `seavec` 5 825 built
 lines, `seagen_a64` 5 254, `seagen_x64` 6 103, all inside the gate, DESIGN.md §2.7 "Measured after
-7e"). **Next:** 7f (W4, the allocation count, the vector check, acceptance).
+7e"). **7f is done**
+(2026-11-01: the W4 port `ports/w4_heat_plate.sea` and its token map, accepted by `tests/accept.sh`;
+the allocation count `SEA_HEAP_CHECK=count` in both runtimes; `tests/fusion.sh` (W1 0 and W4 6
+allocations per iteration) and the cross case kind `fusion`; the `vector` shape lines with op lists
+(Decision 119); T9 restricted to `loop` blocks (Decision 118); the fix of `sealoop`'s and
+`seafuse`'s marker reading inside string payloads; Decisions 118–119 decided by the user, lead
+decisions L-hq–L-ib, DESIGN.md §2.12.10, §4.5, §6.3, §6.6.1; `make test` passes (stage 1 237,
+shape 8, fusion 2, programs 2 192, accept 2 + 3) and `make cross` passes 954 cases (default 826,
+`sse2` 826, once-only 128, total 1 780); measured: `seafuse` 6 482 built lines, `sealoop` 6 485,
+`sealopt` 5 548, and the gate after phase 7 passes every program with no relief, DESIGN.md §2.7
+"Measured at the gate after phase 7"). **Next:** 7g (the W7 port and acceptance).
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
 
@@ -157,10 +167,10 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   generator), `test-lib` (`tests/lib_check.sh`), `test-arith` (`tests/arith_check.sh`, the exact
   arithmetic modules), `test-rt` (`tests/rt/`, runtime tests against `libsea.a`), `test-stage`
   (`tests/stage.sh`, each pass on the previous pass's golden), `test-shape` (`tests/shape.sh`, the
-  instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2), `test-protocol`
+  instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2, and the `vector` lines of W1's bisection and W4's selection store, §2.12.10), `test-fusion` (`tests/fusion.sh`, the allocations per iteration of `tests/fusion/` under `SEA_HEAP_CHECK=count`, DESIGN.md §2.12.10), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
   (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`, and their vector entries against the scalar ones in every lane position and on random inputs),
-  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the phase-6 ports W1 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
+  `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W4 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.
@@ -181,7 +191,8 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   variants, default and `sse2`, unless `SEA_KERNELS` is set); on Linux: `sh tests/cross_run.sh
   [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
   Makefile.linux test-rt` (`tests/rt/x86_64_linux/`), `make -f Makefile.linux test-math`. `make cross` also
-  runs one extra case, `math/math_check`, on the host.
+  runs one extra case, `math/math_check`, on the host, and the case kind `fusion` (`tests/fusion/`,
+  DESIGN.md §6.6.1) under both variants.
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
@@ -191,8 +202,8 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `passlines.sh`.
 - `driver/sea` the driver (POSIX sh); `runtime/arm64_macos/`, `runtime/x86_64_linux/` the
   runtimes (`libsea.a`); `std/std.sea` the prelude.
-- `tests/` programs/, errors/, passes/ (dump goldens), rt/, harness/, vectors/ and the scripts
-  above; `tests/CORPUS.md` describes the corpus.
+- `tests/` programs/, errors/, passes/ (dump goldens), rt/, shape/, fusion/, harness/, vectors/ and the
+  scripts above; `tests/CORPUS.md` describes the corpus.
 
 ## Pass authors
 - Baysick limits bite: 10 000 stored lines per built program (own files + modules + `DATA`), 255

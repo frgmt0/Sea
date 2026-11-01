@@ -1,6 +1,6 @@
-// vec7_p1_kept -- DESIGN.md 2.12.6 P1 keeps a do: after T9's two splits the copy for both
-// conditions holds two nested ifs with an exit inside and the final return after them; no part
-// of the outer if ends in exit D, so that exit is not in tail position, D stays and the loop is
+// vec7_p1_kept -- DESIGN.md 2.12.6 P1 keeps a do: T9 leaves the do whole (Decision 118), so it
+// holds four nested ifs with an exit inside and the final return after them; no part of the
+// outer if ends in exit D, so that exit is not in tail position, D stays and the loop is
 // written exactly as before P1 (its .lir equals its .lir3)
 elemental fn k(v: f64, w: f64) -> f64 {
     if v > 1.5 {

@@ -1,0 +1,238 @@
+// w1_bisect.sea -- the temporaries check of W1's grid bisection (DESIGN.md 2.12.10, Decision 105)
+//
+// usage: w1_bisect K        K the number of bisection steps, a decimal 0 <= K < 1000
+//
+// An extract of ports/w1_shaft_design.sea: the structs, the configuration, `caseMat`, the grid
+// `gridP` x `gridRpm` (90 x 120), `pGrid` (with `ke` from reliability_factor) and the vectorized
+// bisection of lines 244-257, every statement copied unchanged, except that the loop runs
+// `for it in 0..k` in place of `0..40`, k read from args(); make_params, surface_factor,
+// reliability_factor and shaft_safety are the port's functions, unchanged. tests/fusion.sh runs
+// it with K and K + 1 under SEA_HEAP_CHECK=count and requires the two allocation counts to differ
+// by exactly the number derived below, and no live object at the end. The two lines the scripts
+// read (tests/fusion.sh, tests/cross_pack.sh) are `// fusion K: N` (the K of the check) and
+// `// Allocations per iteration: N.` (the derivation's result, its last line).
+// fusion K: 2
+//
+// k from args(). There is no parse_i64 in v1 (LANGUAGE.md 10.13), so the argument is matched
+// against str(n) for every n in 0..1000. The scan always runs to its end (no early exit): it
+// allocates the same 1000 strings whatever K is, so it adds nothing to the difference.
+//
+// Derivation of the allocations per iteration (L-fa), from the agreed text of F1-F5
+// (DESIGN.md 2.12.3, 2.12.4) applied to the loop body, lines 252-256 of the port:
+//     S1  let mid = 0.5 * (lo + hi)
+//     S2  let (nfv, nyv, _, _, _) = shaft_safety(mid, MG, TG, pGrid)
+//     S3  let up = min(nfv, nyv) < cfg.nTarget
+//     S4  lo = where(up, mid, lo)
+//     S5  hi = where(up, hi, mid)
+// * Trees. S1: `*` over `+`, two fusible nodes (bin), leaves `0.5`, `lo`, `hi`. S2: an emap of a
+//   five-result elemental function, the direct value of a tbind whose components are f64 arrays
+//   (F5, L-ge); its arguments are `mid` (a local S1 binds: no leaf, its element is S1's E1,
+//   readings 5), MG, TG (whole-array leaves) and pGrid (a scalar struct leaf). S3: `<` over the
+//   elemental lib `min`, leaves nfv, nyv (S2's results) and the field `cfg.nTarget`. S4, S5:
+//   `lib where`, the value of an `asg set` to a whole `var` array (F1 "which trees").
+// * Quiet (2.12.2). `+ * <` of f64, `min` and `where` are quiet; shaft_safety's body (L-ei) holds
+//   only f64 `+ - * /`, `^` of f64 (powk for the integer exponents, pow for -0.107 and -0.157:
+//   no elementary function fails, 4.10), comparisons, `&&`, `if` expressions, `min` and `sqrt`,
+//   and no loop: quiet. So every node of every Si is quiet and F2 (4) holds.
+// * F2 (1): S1, S3 are binds of new locals, S2 a tbind of new locals, S4 and S5 `asg set`s to
+//   whole `var` arrays, each value an element-wise tree or an F5 application; no effect. Every
+//   root is a 90 x 120 matrix (one rank).
+// * F2 (3): lo is written by S4 only and read by S1 and S4 only as whole-array leaves at the
+//   element written; hi likewise by S5, read by S1 and S5; mid, nfv, nyv and up are read by later
+//   statements only at the same element. Nothing breaks (3), so S1-S5, the whole loop body, are
+//   one fused group (2.12.4's example).
+// * F2 (2): the space test Gs compares every root's extents with S1's: all are lo's and hi's,
+//   90 x 120 (rows(PW) x cols(PW)), so the fused arm runs every iteration and the split copy,
+//   whose `anew`s are the only allocations of the split, never runs.
+// * F1 (4), matrix space: the plain-copy test Pl compares the extents of the array leaves lo,
+//   hi, MG, TG with the space's; all are 90 x 120 (MG, TG from meshgrid(gridRpm, gridP)), so the
+//   plain copy runs; it allocates nothing.
+// * "Which results are stored" (F2): lo and hi are whole-array targets, stored in place by the
+//   reuse prologue F2 (6); mid, nfv, nyv and up are not read after the group (the loop body ends
+//   with S5), so they are never stored (R34): no `anew` for them. The discarded results `_` of S2
+//   are not computed (F2 (5)).
+// * F2 (6), reuse: E = (lo's extents == the space's) holds, as lo has had the grid's shape since
+//   `var lo = 0.005 * ones(rows(PW), cols(PW))`; `cow lo` finds lo unique (the held old value O of
+//   the previous iteration was released at its block's end), so it copies nothing; `bind O = lv
+//   lo` only takes a count; the `asg set (lv lo) (anew ...)` stands under `!E` and does not run.
+//   The same for hi.
+// * The `for` over the range 0..k allocates nothing (a scalar loop).
+// Allocations per iteration: 0.
+
+struct Cfg {
+    finish: str         // surface finish: ground | machined | hot-rolled | as-forged
+    reliability: f64    // required reliability [-], one of the tabulated values
+    nTarget: f64        // required safety factor (fatigue and yield) [-]
+    lifeTarget: f64     // required bearing L10 life [h]
+}
+
+struct Geo {
+    L: f64              // bearing span [m]
+    a: f64              // gear distance from left bearing [m]
+    rg: f64             // gear pitch radius [m]
+    phi: f64            // gear pressure angle [rad]
+    mGear: f64          // gear mass [kg]
+    ripple: f64         // alternating torque / mean torque [-]
+    rRatio: f64         // shoulder fillet radius / diameter [-]
+    Kt: f64             // theoretical stress concentration, bending [-]
+    Kts: f64            // theoretical stress concentration, torsion [-]
+    seatRatio: f64      // bearing seat diameter / shoulder diameter [-]
+}
+
+struct Material {
+    name: str
+    Sut: f64            // ultimate strength [Pa]
+    Sy: f64             // yield strength [Pa]
+    E: f64              // Young's modulus [Pa]
+    rho: f64            // density [kg/m^3]
+}
+
+struct Params {
+    Sut: f64
+    Sy: f64
+    ka: f64
+    ke: f64
+    SePrime: f64
+    aPeterson: f64      // Peterson characteristic length [m]
+    rRatio: f64
+    Kt: f64
+    Kts: f64
+    ripple: f64
+    nTarget: f64
+}
+
+// ---------------------------------------------------------------- the iteration count k
+let argv = args()
+if len(argv) != 1 {
+    error("usage: w1_bisect K   (K the number of bisection steps, 0 <= K < 1000)")
+}
+var k = -1
+for n in 0..1000 {
+    if str(n) == argv[0] { k = n }
+}
+if k < 0 {
+    error("K must be a decimal 0 <= K < 1000, got \"%s\"", argv[0])
+}
+
+// ---------------------------------------------------------------- configuration (the port's)
+let cfg = Cfg { finish: "machined", reliability: 0.99, nTarget: 2.0, lifeTarget: 20000 }
+
+// Shaft and gear geometry (invented)
+let geo = Geo {
+    L: 0.420,
+    a: 0.150,
+    rg: 0.085,
+    phi: 20 * pi / 180,
+    mGear: 9.5,
+    ripple: 0.12,
+    rRatio: 0.04,
+    Kt: 1.90,
+    Kts: 1.45,
+    seatRatio: 1 / 1.20,
+}
+
+// Material table (invented values, steels of increasing strength)
+let mats = [
+    Material { name: "CS-low", Sut: 470e6,  Sy: 380e6,  E: 205e9, rho: 7860 },
+    Material { name: "CS-med", Sut: 640e6,  Sy: 530e6,  E: 205e9, rho: 7850 },
+    Material { name: "AS-QT1", Sut: 1030e6, Sy: 890e6,  E: 207e9, rho: 7850 },
+    Material { name: "AS-QT2", Sut: 1460e6, Sy: 1290e6, E: 207e9, rho: 7840 },
+]
+
+let caseMat = [1, 1, 2, 0, 3]                    // 0-based index into mats
+let ke = reliability_factor(cfg.reliability)
+
+// ---------------------------------------------------------------- sweep B: the grid (the port's)
+let gridP = linspace(0.5e3, 45e3, 90)       // [W]
+let gridRpm = linspace(250, 3600, 120)      // [rev/min]
+let pGrid = make_params(geo, cfg, mats[caseMat[0]], cfg.finish, ke)
+
+// Vectorized bisection over the whole grid (fusion target: every line is element-wise)
+let (RPM, PW) = meshgrid(gridRpm, gridP)
+let omegaG = 2 * pi * RPM / 60
+let TG = PW / omegaG
+let FG = TG / geo.rg / cos(geo.phi)
+let MG = FG * geo.a * (geo.L - geo.a) / geo.L
+var lo = 0.005 * ones(rows(PW), cols(PW))
+var hi = 0.300 * ones(rows(PW), cols(PW))
+for it in 0..k {
+    let mid = 0.5 * (lo + hi)
+    let (nfv, nyv, _, _, _) = shaft_safety(mid, MG, TG, pGrid)
+    let up = min(nfv, nyv) < cfg.nTarget
+    lo = where(up, mid, lo)
+    hi = where(up, hi, mid)
+}
+let dGridVec = 0.5 * (lo + hi)
+printf("w1_bisect: %d steps, d from %.9e to %.9e m\n", k, min(dGridVec.flat), max(dGridVec.flat))
+
+// ================================================================ functions (the port's)
+
+// Collect the material- and finish-dependent constants used by shaft_safety.
+fn make_params(geo: Geo, cfg: Cfg, mat: Material, finish: str, ke: f64) -> Params {
+    let ka = surface_factor(finish, mat.Sut)
+    let SePrime = if mat.Sut <= 1400e6 { 0.5 * mat.Sut } else { 700e6 }
+    let aPeterson = 0.0254e-3 * (2070e6 / mat.Sut) ^ 1.8   // Peterson characteristic length [m]
+    return Params {
+        Sut: mat.Sut,
+        Sy: mat.Sy,
+        ka: ka,
+        ke: ke,
+        SePrime: SePrime,
+        aPeterson: aPeterson,
+        rRatio: geo.rRatio,
+        Kt: geo.Kt,
+        Kts: geo.Kts,
+        ripple: geo.ripple,
+        nTarget: cfg.nTarget,
+    }
+}
+
+// Marin surface factor ka = a * Sut[MPa]^b.
+fn surface_factor(finish: str, Sut: f64) -> f64 {
+    var a = 0.0
+    var b = 0.0
+    match lower(finish) {
+        "ground" => { a = 1.58; b = -0.085 }
+        "machined" => { a = 4.51; b = -0.265 }
+        "hot-rolled" => { a = 57.7; b = -0.718 }
+        "as-forged" => { a = 272; b = -0.995 }
+        _ => { error("unknown surface finish \"%s\"", finish) }
+    }
+    return a * (Sut / 1e6) ^ b
+}
+
+// Marin reliability factor from the standard table.
+fn reliability_factor(R: f64) -> f64 {
+    let table = [0.50, 1.000; 0.90, 0.897; 0.95, 0.868; 0.99, 0.814; 0.999, 0.753; 0.9999, 0.702]
+    let k = find_first(abs(table[:, 0] - R) < 1e-12)
+    if k < 0 {
+        error("reliability %.6g is not tabulated", R)
+    }
+    return table[k, 1]
+}
+
+// DE-Goodman fatigue and von Mises yield safety factors; element-wise in d, Mmax, T.
+elemental fn shaft_safety(d: f64, Mmax: f64, T: f64, p: Params) -> (f64, f64, f64, f64, f64) {
+    let dmm = d * 1e3
+    let kb = if dmm > 2.79 && dmm <= 51 { 1.24 * dmm ^ -0.107 }
+             else if dmm > 51 { 1.51 * min(dmm, 254) ^ -0.157 }
+             else { 1.0 }
+    let Se = p.ka * kb * p.ke * p.SePrime
+    let r = p.rRatio * d
+    let q = 1 / (1 + p.aPeterson / r)
+    let qs = 1 / (1 + 0.6 * p.aPeterson / r)
+    let Kf = 1 + q * (p.Kt - 1)
+    let Kfs = 1 + qs * (p.Kts - 1)
+    let Ma = Mmax          // rotating shaft: fully reversed bending
+    let Mm = 0.0
+    let Tm = T
+    let Ta = p.ripple * T
+    let c16 = 16 / (pi * d ^ 3)
+    let alt = sqrt(4 * (Kf * Ma) ^ 2 + 3 * (Kfs * Ta) ^ 2)
+    let mmean = sqrt(4 * (Kf * Mm) ^ 2 + 3 * (Kfs * Tm) ^ 2)
+    let nf = 1 / (c16 * (alt / Se + mmean / p.Sut))
+    let sigMax = sqrt((32 * Kf * (Mm + Ma) / (pi * d ^ 3)) ^ 2
+                      + 3 * (16 * Kfs * (Tm + Ta) / (pi * d ^ 3)) ^ 2)
+    let ny = p.Sy / sigMax
+    return (nf, ny, Se, Kf, Kfs)
+}

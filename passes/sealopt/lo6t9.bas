@@ -1,11 +1,12 @@
 30000 REM ====================================================================================
-30005 REM T9: unswitching (DESIGN 5.8 T9, Decision 63, L-bl, L-bm, L-bt). For each innermost loop L
-30010 REM (no loop in it) outside slow copies, as T8's second pass leaves them (the copies are not
-30015 REM visited): the first two distinct invariant condition registers c1, c2 of its if/ifz (not
-30020 REM dead); L becomes if c1, L[c1 <> 0], else, L[c1 = 0] (renamed, SPLIT), endif; then each copy
-30025 REM that still tests c2 is split on c2 alike (L-bt); then PLACE. Lists: S(835000) the id of the
-30030 REM outer if, S(835000+1 .. Q) the ids of the copies in record order, S(835010+2c+0..1) their
-30035 REM opening and closing records.
+30005 REM T9: unswitching (DESIGN 5.8 T9, Decision 63, L-bl, L-bm, L-bt, Decision 118). For each
+30010 REM innermost loop L (no loop in it) that is a loop block (a do block is never unswitched,
+30015 REM Decision 118), outside slow copies, as T8's second pass leaves them (the copies are not
+30020 REM visited): the first two distinct invariant condition registers c1, c2 of its if/ifz (not
+30025 REM dead); L becomes if c1, L[c1 <> 0], else, L[c1 = 0] (renamed, SPLIT), endif; then each copy
+30030 REM that still tests c2 is split on c2 alike (L-bt); then PLACE. Lists: S(835000) the id of the
+30035 REM outer if, S(835000+1 .. Q) the ids of the copies in record order, S(835010+2c+0..1) their
+30037 REM opening and closing records.
 30040 REM ====================================================================================
 30060 LET Q8 = 1
 30065 GOSUB 3000
@@ -13,6 +14,8 @@
 30075 LET I8 = S(820000 + L)
 30080 GOSUB 3100
 30085 IF L6 = 0 THEN 30490
+30086 REM a do block (record 58: an inlined return, a while loop) is no candidate (Decision 118)
+30087 IF Q(I(L6, 1), 6) = 58 THEN 30490
 30090 IF FNB(I(L6, 0), 4) = 1 THEN 30490
 30095 FOR N4 = L6 + 1 TO L7 - 1
 30100 LET X3 = Q(I(N4, 1), 6)

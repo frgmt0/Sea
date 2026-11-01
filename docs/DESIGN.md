@@ -87,8 +87,12 @@ the user's agreement. Phase 0 (§8) did:
    (`seavec`: T11, T12, T13 with if-conversion and its preparation, and the vector code of pass 4,
    with `tools/lirchk` and both x86_64 variants in the cross run) is **done** (2026-10-31; sizes in
    §2.7 "Measured after 7e"; lead decisions L-gk–L-hp of §9, Decisions 115–117 decided
-   by the user); next is 7f. Every 0.y.z version is an alpha; 1.0.0 means v1 is done
-   (Decision 79, §1.2).
+   by the user); sub-phase 7f (the W4 port, the allocation count `SEA_HEAP_CHECK=count`, the
+   `fusion` and `vector` checks, T9 restricted to `loop`s, the `sealoop`/`seafuse` marker fix and
+   the gate after phase 7) is **done** (2026-11-01; §2.7 "Measured after 7f" and "Measured at the
+   gate after phase 7", which passes every program with no relief; §6.3 "Measured at 7f"; lead
+   decisions L-hq–L-ib of §9, Decisions 118–119 decided by the user); next is 7g (the W7 port).
+   Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
 §4.9.2's first loop-extension rule a temporary first written inside an `if` part of a loop (not at the loop body's
@@ -529,7 +533,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Next: 7f. The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Next: 7g. The user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114): its port and acceptance are sub-phase 7g, after 7f, specified by decision and not started (§8).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3336,6 +3340,66 @@ remaining ≤ 9 000 and built + 1.5 × remaining ≤ 9 000, with at least 2 free
 (L-ac); `seafuse` as Decision 112 settles it if its relief was taken. A failing program gets a
 relief specified and agreed with the user before phase 8's code.
 
+**Measured after 7f** (2026-11-01, the final 7f tree; `make BUILD=<dir> passes tools` and `sh
+tools/passlines.sh limits <dir>` on a fresh build by the close-out, and the same on a fresh build of
+7e's tree, sea commit 2953e10, for the increments; the free letters are the numeric array letters of
+each pass's main-program `DIM`s in `<dir>/gen/<pass>.bas`, outside every `SUB` … `SUBEND`, at the
+lines given below, no other letter being used as an array outside a `SUB`). Every `check-limits`
+verdict is ok. 7f changed three passes: `seafuse` (`fu2out.bas`) and `sealoop` (`lp2out.bas`) by
+L-hw's field-code table, `sealopt` (`lo6t9.bas`) by Decision 118's test; every other pass is as
+after 7e. The runtimes' count mode (L-hq) and the harness are not gated.
+
+| Pass | Built lines | After 7e | 7f increment | `FOR`s | String bytes | Longest line | Main-program `DIM` lines | Free numeric array letters |
+|------|------------:|---------:|-------------:|-------:|-------------:|-------------:|------|------|
+| `seaparse` | 3 940 | 3 940 | 0 | 74 | 2 581 | 166 | 290–300 | 17 (`A B D G H I J K M O P S T U V W X`) |
+| `seaname` | 5 556 | 5 556 | 0 | 135 | 3 162 | 210 | 70–83 | 13 (`A B D F G I L P R S U V Z`) |
+| `seacheck` | 6 920 | 6 920 | 0 | 197 | 5 457 | 194 | 105–115 | 14 (`A B D F G I L P Q R S U V Z`) |
+| `seaexpand` | 4 797 | 4 797 | 0 | 121 | 5 928 | 155 | 220–242 | 2 (`I W`) |
+| `seafuse` | 6 482 | 6 427 | +55 | 153 | 13 029 | 234 | 305–320 | 5 (`B D J S X`) |
+| `sealoop` | 6 485 | 6 431 | +54 | 105 | 12 031 | 208 | 250–266 | 3 (`B X Y`) |
+| `sealower` | 6 742 | 6 742 | 0 | 130 | 4 720 | 255 | 245–265 | 3 (`C S X`) |
+| `seaopt` | 5 625 | 5 625 | 0 | 162 | 6 174 | 179 | 365–382 | 2 (`S V`) |
+| `sealopt` | 5 548 | 5 545 | +3 | 217 | 6 231 | 179 | 365–384 | 0 |
+| `seavec` | 5 825 | 5 825 | 0 | 213 | 6 424 | 179 | 365–384 | 0 |
+| `seagen_a64` | 5 254 | 5 254 | 0 | 136 | 4 817 | 135 | 200–225 | 0 |
+| `seagen_x64` | 6 103 | 6 103 | 0 | 144 | 5 814 | 189 | 200–205 | 0 |
+
+The four front-end passes measure one line more than at the gate after phase 6 (3 939, 5 555, 6 919,
+4 796); the line came before 7e (the 7e tree measures the same) and they have no change of their own
+in phase 7.
+
+**Measured test counts after 7f** (2026-11-01, the final tree, by the close-out). `make test`: every
+group passes (driver 122, `check-data` 114, lib 366, arith 20 551 vectors, math, rt 124, stage 1 237,
+shape 8, fusion 2, protocol 56, programs 2 192, accept 2 + 3); `sh tests/cross.sh -H desktop`: 954
+cases packed, variant default (`avx2`) 826 passed and 0 failed, `sse2` 826 and 0, once-only (build,
+`rt/`, `math/math_check`) 128 and 0, total 1 780 and 0.
+
+**Measured at the gate after phase 7** (the gate above in Decision 71's form, applied to "Measured
+after 7f" with the remaining work of "Remaining after phase 7"; Decision 82 (a) for `seacheck` and
+Decision 50 for `sealower`, which have no 7 000 condition; Decisions 78 and 98 for the letters of
+`sealopt` and `seavec`; L-ac for the code generators; `seafuse` under the plain conditions, since
+Decision 112's relief was not taken, "Measured after 7c"):
+
+| Program (remaining) | Built ≤ 7 000 | + remaining ≤ 9 000 | + 1.5 × remaining ≤ 9 000 | Free letters (≥ 2) | Verdict |
+|---------|------|------|------|------|------|
+| `seaparse` (none) | 3 940: yes | 3 940: yes | 3 940: yes | none set | **pass** |
+| `seaname` (100) | 5 556: yes | 5 556 + 100 = 5 656: yes | 5 556 + 150 = 5 706: yes | 13: yes | **pass** |
+| `seacheck` (850; Decision 82 (a)) | not a condition (6 920) | 6 920 + 850 = 7 770: yes | 6 920 + 1 275 = 8 195: yes | 14: yes | **pass** |
+| `seaexpand` (none) | 4 797: yes | 4 797: yes | 4 797: yes | none set (it has 2) | **pass** |
+| `seafuse` (1 000) | 6 482: yes (518 under) | 6 482 + 1 000 = 7 482: yes | 6 482 + 1 500 = 7 982: yes | 5: yes | **pass** |
+| `sealoop` (1 000) | 6 485: yes (515 under) | 6 485 + 1 000 = 7 485: yes | 6 485 + 1 500 = 7 985: yes | 3: yes | **pass** |
+| `sealower` (370; Decision 50) | not a condition (6 742) | 6 742 + 370 = 7 112: yes | 6 742 + 555 = 7 297: yes | 3: yes | **pass** |
+| `seaopt` (1 000) | 5 625: yes | 5 625 + 1 000 = 6 625: yes | 5 625 + 1 500 = 7 125: yes | 2: yes | **pass** |
+| `sealopt` (1 000) | 5 548: yes | 5 548 + 1 000 = 6 548: yes | 5 548 + 1 500 = 7 048: yes | 0; waived (Decision 78) | **pass** |
+| `seavec` (1 000) | 5 825: yes | 5 825 + 1 000 = 6 825: yes | 5 825 + 1 500 = 7 325: yes | 0; waived (Decision 98) | **pass** |
+| `seagen_a64` (200) | 5 254: yes | 5 254 + 200 = 5 454: yes | 5 254 + 300 = 5 554: yes | none set (L-ac) | **pass** |
+| `seagen_x64` (200) | 6 103: yes | 6 103 + 200 = 6 303: yes | 6 103 + 300 = 6 403: yes | none set (L-ac) | **pass** |
+
+**The gate after phase 7 passes every program**; no relief is called for. The smallest margins are
+`sealoop`'s and `seafuse`'s, 515 and 518 lines under 7 000 built and 1 015 and 1 018 under 9 000 at
+the stress line, and `seagen_x64`'s 897 under 7 000; `seaopt` has exactly the 2 free letters the
+condition requires.
+
 ### 2.8 Numbers inside the compiler
 
 The passes run as Baysick programs, whose numbers are doubles, which cannot represent ∞ or NaN,
@@ -4381,7 +4445,9 @@ transformation changes), which pass 3d reads (Decision 98); `--emit lir3` dumps 
 `sealopt` much slower although its `sea.lir2` is smaller. In 7c's second review one fuzz program
 took 239 s to `--emit lir3` against 101 s before 7c, with byte-identical output; several programs
 with long groups passed the review's 120 s timeout for this reason. `sealopt`'s compile time on
-fused code is to be looked at when 7e and 7f measure the passes and W4's compile time (§6.3).
+fused code is to be looked at when 7e and 7f measure the passes and W4's compile time (§6.3). At
+7f W4 compiles in 21.4 s and W1 in 11.0 s, far under the 120 s timeout (§6.3 "Measured at 7f");
+the review's slow fuzz program was not measured again.
 
 #### 2.12.6 Pass 3d: `seavec`
 
@@ -4743,26 +4809,32 @@ scalar forms give identical bits (LANGUAGE.md §6.8 4.).
 **Alignment**: none is required or assumed: unit accesses are unaligned vector loads and stores
 (NEON `ldr q`, SSE2 `movupd`, AVX2 `vmovupd`); no peeling (L-ey).
 
-**What the workloads get** (Decisions 108, 115). W1's bisection nest, the plain copy's linear loop
+**What the workloads get** (Decisions 108, 115, 118). W1's bisection nest, the plain copy's linear loop
 over the grid (`.main`, lines 251–257 of the port), is vectorized: its accesses are already unit;
-`shaft_safety`'s inlined body is a `do` that ends in a single `exit`, which T8 and T9 treat as an
-innermost loop and T9 unswitches on `dmm > 51` (two `do` copies in an `if` on that condition), and
-P1 dissolves both; its `&&` conditions merge as masks; its loads of `pGrid`'s fields (an `sa` slot
+`shaft_safety`'s inlined body is a `do` that ends in a single `exit`, which T8 treats as an
+innermost loop and T9 leaves whole (T9 unswitches only `loop` blocks, Decision 118), and P1
+dissolves it; its `&&` conditions merge as masks; its loads of `pGrid`'s fields (an `sa` slot
 also passed to a `call` and an `mcopy` destination outside the loop) are invariant loads (P3); and
 its `if` chains, whose arms call only `pow` and compute `f64` values, are if-converted. The broadcast
-copy and the split copy are not (non-unit accesses). W4's `rb_half_sweep` store `T[1..ny-1, :] =
-where(colorIn, Tn, Tc)` (its inner loop over rows: the reads of `Tn`, `Tc` and the mask at
-`seafuse`'s linear counter O, which P2 makes unit accesses, the store to `T`, and a step that T3 left
-as a `mov` of an `li 1`, a constant in T13's sense) and `residual`'s fused nest (its reads through
-the row counter K, P2) are vectorized; the group nest of `Tc`, `tgs`, `Tn` and `dMax` is not (its
-masked `max` carries values under an `if` that holds a store-free but carried update, which (3)
-excludes); the scalar SOR loop is not (its `next`, a `chkb` and the carried `dMax`; §5.2's shape
-stays), and neither is W5's LCG loop (a failing `imulc`, a carried value, `itof`). A W1-shaped loop
+copy is not (non-unit accesses). The split copy (the `else` arm of the group's space test, each
+statement's nest over its own space, L-eq) is: five of its loops in W1's nest, one of them over
+`shaft_safety`'s inlined body with the same lane ops as the fused body (Decision 119), and in W4's
+group of `Tc`, `tgs`, `Tn` and `dMax` its two element-wise loops (`add mul`; `sub mul add`) at each
+of the two call sites, in 2-lane and (on `x86_64-linux`) 4-lane form (found by 7f's independent
+review at 7e's tree and after 7f, checked in `--emit lir` on both targets at 7f's close). W4's
+`rb_half_sweep` store `T[1..ny-1, :] = where(colorIn, Tn, Tc)` (its inner loop over rows: the reads
+of `Tn`, `Tc` and the mask at `seafuse`'s linear counter O, which P2 makes unit accesses, the store to
+`T`, and a step that T3 left as a `mov` of an `li 1`, a constant in T13's sense) and `residual`'s
+fused nest (its reads through the row counter K, P2) are vectorized; the group nest of `Tc`,
+`tgs`, `Tn` and `dMax` is not (its masked `max` carries values under an `if` that holds a store-free
+but carried update, which (3) excludes); the scalar SOR loop is not (its `next`, a `chkb` and the
+carried `dMax`; §5.2's shape stays), and neither is W5's LCG loop (a failing `imulc`, a carried
+value, `itof`). A W1-shaped loop
 over a unit-step slice (`tests/programs/vec_ifexpr_w1.sea`) gets a walked base (P2). The shape
-lines of §2.12.10 check W1's nest and W4's store. W1's vector body calls `sea_pow_x` (or `_y`) three
-times per copy (two in one T9 copy, one in the other, both computed), where the scalar loop calls
-`sea_pow` once per element and the body without T9's split would call it twice: whether T9's
-unswitching of the `do` matters is measured in 7f (§2.12.10, Decision 115).
+lines of §2.12.10 check W1's nest and W4's store. W1's vector body calls `sea_pow_x` (or `_y`) twice
+per copy, both computed, where the scalar loop calls `sea_pow` once per element; with T9's split of
+the `do` (Decision 115's option (a), as built in 7e) it called it three times per copy (two in one
+T9 copy, one in the other), and 7f measured that split to cost W1's compute time (Decision 118).
 
 #### 2.12.7 Pass 4 (both targets)
 
@@ -4937,17 +5009,33 @@ nothing). The derivation is T2's from the agreed text, written in the test's hea
 check sees cow copies and the paths the run takes, which a count of allocation sites in the code
 cannot.
 
-**The vector check** (Decision 108; `tests/shape.sh`, the group `test-shape`). `tests/shape/NAME.shape`
-gains the line kind `vector <target> <function> <first line> <last line>`: in `sea build --target
-<target> --emit lir`, at least one innermost `loop` of the function whose body holds an `x` (and on
-`x86_64-linux` also a `y`) arithmetic instruction with a site or neighbouring `ldx` from the line
-range, identified as the scalar lines are (L-ar), and in its `-S` text that loop's 2-lane (and
-4-lane) instructions; written for W1's bisection (`.main`, 251–257) and W4's selection store (the
-caller of `rb_half_sweep`, over `rb_half_sweep`'s line range, since inlined code keeps its own
-lines), on both targets. 7f also measures whether T9's unswitching of `shaft_safety`'s
-inlined-return `do` matters for W1's speed (W1's vector body calls `pow` three times where the
-loop without that split would call it twice, §2.12.6 "What the workloads get"); T9 changes only by a
-later agreed decision (Decision 115).
+**The vector check** (Decisions 108 and 119; `tests/shape.sh`, the group `test-shape`).
+`tests/shape/NAME.shape` gains the line kind `vector <target> <function> <first line> <last line>
+[<op> …]`, each op one of the lane ops `add sub mul div min max sqrt neg abs cmp sel`. A candidate
+is an innermost `loop` of the function (identified as the scalar lines identify theirs, L-ar) in
+`sea build --target <target> --emit lir` whose body holds a lane-computing instruction (`x` or `y`
+followed by a lane op; 2 lanes for `x`, 4 for `y`). It is from the line range when one of its own
+records has a site of the program's file in the range, or else the nearest record with a site
+before its `loop` record does: a vector body holds no failing instruction and so no site, and the
+statement's checks, run before the loop, carry its line (inlined code keeps its callee's lines,
+L-fl). It qualifies when its body holds every listed op (Decision 119; none listed, every candidate
+qualifies). The line passes when a qualifying 2-lane loop (on `x86_64-linux` also a qualifying
+4-lane loop) has, in the `-S` text between its top label and its closing branch with no other top
+label inside, an instruction of the target's lane form for each of its lane ops (arm64 `.2d`/`.16b`
+NEON forms, SSE2 `…pd` forms on `%xmm`, AVX2 `v…pd` forms on `%ymm`, with `xsel` as
+`bsl`/`bif`/`bit`, `andnpd`, `vblendvpd`). Written: W1's bisection, `vector arm64 .main 251 257
+sqrt` and the same for `x86_64` (only a loop over `shaft_safety`'s inlined body holds `sqrt`; the
+split copy's loop over that body holds the same ops, so the op list does not tell the two apart: a
+gap the user accepted, Decision 119, the `fusion` test showing that the fused path is the one that
+runs);
+W4's selection store, `vector arm64 .main 261 261 sel` and the same for `x86_64` (the store's line
+in `rb_half_sweep`, inlined into `.main` at both call sites; only the store loops carry its site).
+7f also measured whether T9's unswitching of `shaft_safety`'s
+inlined-return `do` matters for W1's speed (W1's vector body called `pow` three times per copy
+where the loop without that split calls it twice, §2.12.6 "What the workloads get"): W1's compute
+time was 35 ms with the split and 27 ms without it, its output byte-identical (median of 15
+interleaved runs, arm64; 37 and 29 ms on the final 7f tree), so T9 no longer unswitches a `do`
+(Decision 118), and `sea_pow` is called twice per copy in place of three times on both targets.
 
 **Goldens that fusion changes** (Decision 97). Programs' outputs never change. The dump goldens of
 the stages after `seaexpand` change where F1–F5, L18/L20's copying or T11–T13 apply: every test with
@@ -4986,7 +5074,12 @@ the narrowing of F1 (5), F2 (1) and F3 and the concatenation parts of F4 stand i
 themselves; F8 and the capacity fallback in §2.12.3. The readings 7e fixed are the lead decisions
 L-gk – L-hp (§9, "Lead decisions of sub-phase 7e"): the `seavec` ones (L-gq – L-hb, L-hm – L-ho) are
 written into §2.12.6 or §2.12.10 as their entries say, the pass-4 ones (L-gl – L-go, L-hc – L-hf)
-into §2.12.7 and §4.9.2, the harness and cross ones (L-hh – L-hl) into §6.2 and §6.6.1.
+into §2.12.7 and §4.9.2, the harness and cross ones (L-hh – L-hl) into §6.2 and §6.6.1. The
+readings 7f fixed are the lead decisions L-hq – L-ib (§9, "Lead decisions of sub-phase 7f"): the
+count mode (L-hq) in §4.5, the marker fix (L-hw) in §3.5.9, the `fusion` tests and cross kind (L-hx,
+L-hy) in §2.12.10 and §6.6.1, the vector check (L-hz, L-ia) in §2.12.10 with Decision 119, T9
+(L-ib) with Decision 118 in §5.8; the port and token readings (L-hr – L-hv) are readings of
+`ports/w4_heat_plate.*`.
 
 ## 3. Intermediate files
 
@@ -6368,7 +6461,8 @@ in 4h" below; Decision 53), the one contract change of `passes.txt` since 4e-0.
 
 **Types.** The type table of `sea.hirl` is that of `sea.hir`, with the same ids, followed by one
 `tptr` record per element type whose address the file takes (`adat`, `cdat`), numbered on from the
-last id of `sea.hir`'s table in order of first reference (file order, fields left to right). This
+last id of `sea.hir`'s table in order of first reference (file order, fields left to right) (a
+reference is a `ty` field; a `^` byte inside an `s` field is string text, §3.1). This
 is an exception to the numbering of §3.5.1, made so that the ids of `sea.hir` carry over. A `tptr`
 is the type only of `adat`, `cdat` and the `tmp` locals bound to them. From 4g its `elt` may also
 be a struct or record type: the address of the elements of an array of structs or records, and
@@ -9192,6 +9286,25 @@ Every array and string a correct program creates is released by the end of `.mai
 16), so the line reads `heap: 0 live objects` for every program; any other N is a reference-count
 error of the compiler or the runtime.
 
+**The count mode** (Decision 105, L-fk). When `SEA_HEAP_CHECK` is exactly `count` at start-up,
+`main` writes, in place of the line above and under the same conditions (after `_sea_main` has
+returned and the final flush has succeeded, to standard error, then exit status 0),
+`heap: A allocations, N live objects` + LF: N is the live-object count of §4.1, and A the number
+of objects the runtime has created since start-up, counting every object that N counts when it
+is made: the arrays of the `sea_arr_new*` entries (and of every runtime entry that builds an
+array through them or the same constructor: `sea_args`, `sea_sort`/`sea_argsort`; the file
+and clock entries and the vector-math entries create none), the copy that `sea_arr_unique` makes of a shared or static array, and every `str` the
+runtime returns (a runtime entry returns a new string each time, never an existing one). A and N
+are unsigned 64-bit decimal numbers, without sign or padding (`heap: 0 allocations, 0 live
+objects` for a program that creates nothing). A is kept without a second increment in the
+constructors: the allocator's free path counts the objects it frees (`_sea_freed` /
+`sea_freed`, 64-bit, `rt_mem.s`), and every constructor already counts its object in the live
+counter and nothing else uncounts one, so A = N + freed, which no creation path can miss. A
+block that is not an object (the output sink's text, a sort's scratch space, the file
+emitters' state) is in neither number. Exactly `1` keeps the line above byte for byte; any value
+other than `1` and `count` (`COUNT`, `2`, `count `, `coun`, the empty string), or unset, writes
+nothing; a run-time error, `error` and a failed flush write no line in either mode.
+
 ### 4.6 Stack and process
 
 `main` runs the program on a 64 MiB stack mapped with a guard page (Baysick's program-stack
@@ -11404,8 +11517,10 @@ instruction or load equal (T3) to an earlier one there whose operands are not wr
 its reads replaced by the earlier register when both destinations have exactly one definition in the
 function (*constant commoning*), and is deleted.
 
-**T9. Unswitching** (Decision 63). For each innermost loop L of the function as T8's second pass
-leaves it (the copies T9 makes are not visited again), outside slow copies: the condition registers
+**T9. Unswitching** (Decisions 63, 118). For each innermost loop L of the function that is a
+`loop` block (a `do` block, such as an inlined return's or a `while` loop's, is never unswitched,
+Decision 118) as T8's second pass leaves it (the copies T9 makes are not visited again), outside
+slow copies: the condition registers
 of the `if`/`ifz` blocks in L that are invariant in L, in order of first use, the first two distinct
 ones c₁, c₂ (no more): L is replaced by `if B c₁`, L[c₁ ≠ 0], `else B`, L[c₁ = 0], `endif B`, where
 L[c₁ ≠ 0] is L with each `if` on c₁ replaced by its first part and each `ifz` on c₁ by its `else`
@@ -12659,6 +12774,18 @@ pass on both targets (Decision 108); (3) `make cross` passes all three ports und
 variants, each byte-identical to the Mac's output but for the `Compute time` line. W4's compile time
 is recorded here at 7f, as W1's was at 6e.
 
+*Measured at 7f* (2026-11-01, Apple M2 Pro, the close-out's build of the final tree). W4's compile
+time (`sea build -o … ports/w4_heat_plate.sea` under `nice -n 19`, wall clock, three runs): 21.4,
+21.4 and 21.5 s, far under `SEA_COMPILE_TIMEOUT`'s 120 s (W1, once on the same build: 11.0 s,
+against 13.8 s at 6e). W4's `Compute time` line, three consecutive runs (the first included): 0.540,
+0.517 and 0.510 s, against MATLAB's compute 0.906 (first), 0.912 (median) and 0.902 s (best) in
+`baseline_timings_matlab.json` and 1.091, 0.856 and 0.846 s single-threaded
+(`baseline_timings_matlab_1thread.json`); these figures are a record, not a measurement by §5.7's
+methodology. `tests/accept.sh` passes W1, W4 and W5: W4's 26 keys pass `compare.py --candidate`
+(`it_sor` 832 and `it_rb` 759, as MATLAB's), its report is equivalent, and W1 and W5 still pass; the
+vector lines pass on both targets and `tests/fusion.sh` on the Mac, the `fusion` cross cases on the
+host under both variants (§2.12.10, §6.6.1).
+
 **W7 acceptance** (decided 2026-10-29, Decision 114; specified by decision, written as part of
 sub-phase 7g when 7f is done, §8). The port is `sea/ports/w7_drivetrain.sea` without figures,
 written from `sea/workloads/w7_drivetrain.m` (a port defect found in a pass is reported, not
@@ -12914,6 +13041,16 @@ the same files the Mac uses (one set for both targets).
   `accept.sh`'s standard output and standard error (exit 2 of `accept.sh` is a setup error of
   `cross_pack.sh`). The host runs it under `SEA_ACCEPT_TIMEOUT` (default 120 seconds), as an
   `accept/` case.
+* `fusion/NAME` (7f, L-hx, L-hy): every `tests/fusion/NAME.sea`, compiled like a program case, with
+  the sidecar `NAME.fusion` (`k=`, `per_iteration=` from its header lines `// fusion K: N` and
+  `// Allocations per iteration: N.`; a program without both lines is a setup error of
+  `cross_pack.sh`); the host builds it once and runs it with K and K + 1 under `SEA_HEAP_CHECK=count`
+  under both variants (in a fresh empty working directory, stdin `/dev/null`; each run must exit 0
+  with exactly the count-mode heap line on standard error and leave no file; its standard output is
+  not compared) and requires the difference of the allocation counts to equal `per_iteration`,
+  with 0 live objects (§2.12.10). A passing variant prints `ok   fusion/NAME: A allocations at
+  K=K, A′ at K=K+1`, and a failure `FAIL fusion/NAME: reason`, the second variant labelled ` [sse2]`
+  after the name and the first unlabelled, as for a program case; a pack failure is counted once.
 * `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1). Its `.meta` may hold
   `stdout=epipe`, `stdout=slowpipe` and `env=NAME=VALUE` lines (`SEA_KERNELS` and
   `BAYSICK_KERNELS` otherwise unset) and nothing else: no `requires=` (§4.7.1). A program case's
@@ -13056,6 +13193,12 @@ every x86_64 `sea.lir` with `lirchk` and packs the `.lirx64` cases (the case lis
 7e's close the host run packed 941 cases: default (`avx2`) 822 passed, 0 failed; `sse2` 822 and 0;
 once-only 119 and 0; total 1 763 and 0.
 
+**As built in 7f** (L-hx, L-hy; `cross_pack.sh`, `cross_run.sh`). The `fusion` cases (the case list
+above) are built once and run per variant like the program cases, after them, and are counted in the
+variant lines. At 7f's close the host run packed 954 cases: default (`avx2`) 826 passed, 0 failed;
+`sse2` 826 and 0; once-only 128 and 0; total 1 780 and 0, both `fusion` cases passing under both
+variants with the Mac's counts (`w1_bisect` 1 018 and 1 018, `w4_rb` 1 042 and 1 048).
+
 ## 7. What Baysick must grow
 
 ### 7.1 Needs of the compiler, against Baysick 0.6.0
@@ -13192,7 +13335,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 7c | **Fusion** (after 7b; Decisions 95–97, 110, 111): F1–F5 of §2.12.4 with buffer reuse and R33, R34 (L18 and L20 copy fused bodies since 7b). Work packages: **WP-FUSE** `passes/seafuse/*`; **WP-LOOP** `passes/sealoop/*` (the copying of `HL` records by L18 and L20 was built in 7b, as caller `.l` locals, Decision 110 as amended 2026-10-29, §2.12.3; 7c's share is any further change fusion needs); **WP-LOWER** `passes/sealower/*` (R33's and R34's validation readings only); **T1** `tests/programs/fuse_*`, `tests/errors/r_fuse_*`, their `tests/vectors/` script, `tests/CORPUS.md` (T1 alone edits it); **T2** `tests/vectors/dump7_cases.py`, `tests/passes/fuse7_*`, the goldens Decision 97 re-derives and the subject tests it rewrites (their `.sea`, `.out` and goldens), with L-fb's list; WP-FUSE and WP-LOOP work against T2's goldens through `stage.sh`; then the measurement after 7c (§2.7) | the 7c tests of §6.2 pass on both targets; every earlier program's output unchanged; every stage pair holds; `make test` and `make cross` pass; the measurement after 7c recorded in §2.7 (`seafuse` and `sealoop`: built ≤ 7 000, built + 1 500 ≤ 9 000, at least 2 free letters), any relief Decision 112 (2) calls for agreed with the user before 7e's code. **Done** (2026-10-30): F1–F5 in `seafuse` with buffer reuse, in-place selection stores of kinds S, R, A, M, MM, groups with `tbind`s of k-result elemental applications, fused, masked and `.flat` reductions in and out of groups, and folded concatenation parts in stacks and mixed rows (decided by the user 2026-10-30, L-fy); the user's D1–D3 (2026-10-29: the group's leaf phase and stored binds in the enclosing block, F8 appended in `sea.hirf`, the broadcast copy reading a folded leaf by its map) and the readings of the work packages and both reviews' fixes recorded in §2.12.3, §2.12.4 ("Readings fixed by 7c") and as lead decisions L-fv–L-gj; `sealoop`'s share: the F8 reader and renumbering (L-fw), the `rcnt` type check (L-gj), an inlined callee's undeclared `.i` local (R34); `sealower` unchanged; tests: 39 `fuse_*` programs (T1's 26, 11 `fuse_reg_*` regressions, 2 concatenation programs), 19 `r_fuse_*`/`err_fuse_*` error tests, 22 `fuse7_*` and 12 `fuse7c2_*` dumps (`dump7_cases.py` part 4), the re-derived goldens `ew_colrow`, `sel_reads` and the subject test `elem6_inst` (L-fb's list in `tests/CORPUS.md`); `make test` passes in every group (`test-programs` 2 034, `test-stage` 1 067) and `make cross` 876 of 876 on the Linux host; two independent reviews with differential fuzzing against the pre-7c compiler (stdout, stderr, status and heap check compared byte for byte; review 1: 1 566 programs, 9 defects, all fixed, with two more found by the fixer's fuzzing; review 2: 577 programs and capacity scans, 5 defects, all fixed), the final fuzz runs (1 000, 400 and 400 programs on fresh seeds: all MATCH; 300 concatenation programs: no mismatch, those 37 that fail to compile failing on both compilers); the measurement after 7c passes with no relief (§2.7, "Measured after 7c": `seafuse` 6 427 built lines with 5 free letters, `sealoop` 6 431 with 3); observed: fused output can slow `sealopt` (§2.12.5); next 7e |
 | 7d | **Vector forms of the elementary functions** (after 7b, in parallel with 7c; Decision 103): entries 39–50 of §2.12.8. Work packages: **WP-VMATH-A64** `runtime/arm64_macos/rt_vmath.s`, `tests/rt/arm64_macos/rt_vmath_abi*`; **WP-VMATH-X64** `runtime/x86_64_linux/rt_vmath.s`, `tests/rt/x86_64_linux/rt_vmath_abi*`; **WP-MATHT** `tests/math/math_check.c` and its 4-lane translation unit (the random differential test, L-fj), `Makefile` (the `math_check` build lines and, if a check needs it, `RT_EXPECTED`) and `Makefile.linux` (its `test-math` lines), the `math/math_check` lines of `tests/cross_run.sh`; the runtime sources are taken by both Makefiles' `RT_SRCS` wildcard, so the two runtime packages edit no Makefile | `make test-math` and the `math/math_check` cross case pass with every vector entry bit-identical to its scalar entry in every lane position and on the random inputs (the 4-lane part on the host); `make test` and `make cross` pass. **Done** (2026-10-29): `test-rt` 115 (Mac) / 118 on the Linux host, `test-math` passes on both targets (every vector entry bit-identical to its scalar entry in every lane position and on 4 × 2²⁴ random calls per function and width), the cross `math/math_check` case passes. Amendments recorded in the text: `rt_vmath.s` calls only the scalar contract entries and emits its own table copy (§2.12.8, §4.10.3); the rare lanes are found by vector compares into one mask tested once, `pow`'s |ehi| ≥ 512 and `hypot`'s subnormal-rounding lanes after the common computation, and the rare sets are per target (§2.12.8, §4.10.1); `rt_vmath_abi` and `rt_vmath_abi_y` join the target-dependent runtime tests (§4.7.1); the lane patterns, the rare-input pool and the thread pool of `math_check` (§2.12.8, §6.2); sizes arm64 751 and x86_64 1 084 lines (§2.7) |
 | 7e | **`seavec` and vector code in pass 4** (after 7c and 7d; Decisions 99–102, 104, 108, 113, 115–117): T11, T12, T13 with if-conversion and its preparation P1–P3 (§2.12.6, amended by Decision 115), pass 4's classes and selection (§2.12.7), both variants in the cross run. **WP-LIB** first and alone: `passes/lib/lirrw.bas` (classes `x y m`, the `LF` records where allowed, Decision 113), `passes/lib/ralloc.bas` (classes `x y m`, spill slots, L-fh), their sections of `passes/lib/API.md`, their cases in `tests/lib_check.sh`; then in parallel: **WP-VEC** `passes/seavec/*`; **WP-GEN-A64** `passes/seagen_a64/*`; **WP-GEN-X64** `passes/seagen_x64/*`; **WP-CROSS** `tests/cross_run.sh` (the two variants, the AVX2 setup check; not its `math_check` lines), `tests/cross.sh`; **WP-HARNESS** `tests/stage.sh`, `tests/run.sh` (L-fc's rules: `NAME.lirx64`, a `NAME.lir3` without `NAME.sea`, `x86_64-linux`-only pass-4 tests; every `sea.lir` through the vector validator, Decision 116), `tools/lirchk.bas`, `tools/lirchk.build.list` and their build and installation lines in `Makefile` (Decision 116, §2.12.6); **T1** `tests/programs/vec_*`, `tests/CORPUS.md`; **T2** `tests/passes/vec7_*`, `sr7_*` (both targets' goldens, L-fc), `vec7_alias_*`, `gen7_*`, and the `NAME.lir` goldens T11–T13 change (L-fb) | the 7e tests of §6.2 pass on both targets and both x86_64 variants; every `sea.lir` in the corpus (each program and dump test's, and every `seavec` output of `stage.sh`) passes the vector validator `lirchk` (Decision 116); the shape tests' scalar lines unchanged; `seaopt` and `sealopt` outputs unchanged by `lirrw`'s extension; every earlier output unchanged; `make test` and `make cross` (both variants) pass; sizes recorded in §2.7  **Done** (2026-10-31): `seavec` with T11 (unrolling with the known counts of Decision 117), T12 (scalar replacement with slot copies, the guards decided in the walk and the `do` exit join, L-gz–L-hb), T13 with P1–P3, if-conversion with mask merges and the legality conditions, and T10 last; vector code in `seagen_a64` (NEON, 2 lanes) and `seagen_x64` (SSE2 2 lanes, AVX2 4 lanes under `vfeat`, L-hc–L-hf); the vector classes of `lirrw` and `ralloc` (WP-LIB); `tools/lirchk` and its use by `run.sh`, `stage.sh` and `cross_pack.sh` (Decision 116, L-hh–L-hj); `shape.sh` taking its candidate loops per target (L-hk); both x86_64 variants in the cross run, with the AVX2 setup check (L-hl); the `vec_*`, `vec7_*`, `sr7_*`, `vec7_alias_*` and `gen7_*` tests and the regression tests `vec_reg_param_tail` and `sr7_reg_bigslots` of the review fixes (L-hn); lead decisions L-gk–L-hp and Decisions 115–117 (§9); `make test` (stage 1 235, shape 4, protocol 56, programs 2 191, accept 2 + 2) and `make cross` (941 cases, default variant 822/0, `sse2` 822/0, once-only 119/0, total 1 763/0) pass; every `sea.lir` of the corpus passes `lirchk`; sizes in §2.7 "Measured after 7e": `seavec` 5 825 built lines, `seagen_a64` 5 254, `seagen_x64` 6 103; next 7f |
-| 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code |
+| 7f | **W4, the allocation count, the vector check, acceptance; close-out** (after 7e; Decisions 105, 107, 108, 115): §2.12.10, including the measurement of whether T9 unswitching W1's inlined-return `do` (three `pow` calls in W1's vector body against two) matters, which changes T9 only by a later agreed decision (Decision 115; measured and decided as Decision 118). Work packages: **WP-HEAP** `runtime/arm64_macos/rt_main.s`, `runtime/x86_64_linux/rt_main.s` (and the allocator file of each runtime that holds the counter), `tests/rt/*/` heap-count cases, §4.5's text (the `count` mode, L-fk); **WP-PORT** `sea/ports/w4_heat_plate.sea` (from the MATLAB source and LANGUAGE.md §2.4; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w4_heat_plate.tokens`; **WP-FUSIONT** `tests/fusion/*`, `tests/fusion.sh`, the group `test-fusion` in `Makefile`, the cross case kind `fusion` in `tests/cross_run.sh` and `tests/cross_pack.sh`, with L-fa's derivations; **WP-SHAPE** `tests/shape.sh` (the `vector` line kind, programs from `ports/`), `tests/shape/w1_shaft_design.shape`, `tests/shape/w4_heat_plate.shape` (L-fl); W4's compile time recorded in §6.3; then the gate after phase 7 (§2.7) | the phase's "done when" (row 7, read by Decision 105): `tests/accept.sh` passes W1, W4 and W5 on the Mac (W1's and W5's outputs as at 6e), `tests/fusion.sh` and the `vector` lines pass on both targets, `make cross` passes the three ports under both variants; `make test` and `make cross` pass; the sizes and letters recorded in §2.7 and the gate after phase 7 applied, a failing program getting a relief agreed with the user before phase 8's code. **Done** (2026-11-01): the W4 port `ports/w4_heat_plate.sea` with its token map, accepted by `tests/accept.sh` (26 keys, `it_sor` 832 and `it_rb` 759 as MATLAB's, the report equivalent; W1 and W5 still pass; readings L-hr–L-hv); the count mode `SEA_HEAP_CHECK=count` in both runtimes with 9 `rt_heap_count_*` cases per target (§4.5, L-hq); `tests/fusion.sh`, the group `test-fusion` and the cross kind `fusion` (W1 0 and W4 6 allocations per iteration on arm64 and on the host under both variants; L-hx, L-hy); the `vector` shape lines with their op lists, W1 `.main 251 257 sqrt`, W4 `.main 261 261 sel`, on both targets (Decision 119, with W1's fused loop not isolated from the split copy's, accepted by the user; L-hz, L-ia); the T9 measurement and its decision, T9 restricted to `loop` blocks (Decision 118: W1's compute time 37 → 29 ms on the final tree, two `sea_pow` calls per copy in place of three; `vec7_p1_guard` rewritten, L-ib); a defect since 7c fixed in `sealoop` and `seafuse`, which read `^e`/`` markers inside escaped `s` payloads (L-hw; tests `str_caret_bytes`, `str_caret_tptr`); `make test` (stage 1 237, shape 8, fusion 2, protocol 56, programs 2 192, accept 2 + 3) and `make cross` (954 cases, default variant 826/0, `sse2` 826/0, once-only 128/0, total 1 780/0) pass; W4 compiles in 21.4 s and computes in 0.51–0.54 s against MATLAB's best 0.902 s (§6.3 "Measured at 7f"); sizes in §2.7 "Measured after 7f" (`seafuse` 6 482, `sealoop` 6 485, `sealopt` 5 548 built lines) and the gate after phase 7 passes every program with no relief ("Measured at the gate after phase 7"); lead decisions L-hq–L-ib; next 7g |
 | 7g | **W7 port and acceptance** (after 7f; Decision 114: the user added W7 to the v1 acceptance set on 2026-10-29, §1.2; no compiler change expected; **specified by decision, not started: written when 7f is done**): §6.3 "W7 acceptance" and its list of feature gaps, which 7g's specification takes up. Work packages: **WP-PORT** `sea/ports/w7_drivetrain.sea` (from `sea/workloads/w7_drivetrain.m`; a port defect found in a pass is reported, not worked around in the port); **WP-TOKENS** `sea/ports/w7_drivetrain.tokens` (from the MATLAB `fprintf` formats and W7's `RULES`, §6.4); W7's compile time recorded in §6.3; row 10's "done when" then covers six workloads | `tests/accept.sh` passes W1, W4, W5 and W7 on the Mac (W1's, W4's and W5's outputs as at 7f); `make cross` passes the four ports under both x86_64 variants, each byte-identical to the Mac's output but for the `Compute time` line; `make test` and `make cross` pass |
 
 ## 9. Decisions (agreed)
@@ -14653,9 +14796,10 @@ recommendation as (a), its reasons, the decision, and what it affects.
     without that split would call it twice (the scalar loop calls it once per element). Options: (a)
     **leave T9 as it is and measure W1's speed in 7f**; (b) restrict T9 to `loop`s now (`lir3`
     goldens change where T9 split a `do`). **Decided: (a)** (the user, 2026-10-31): T9 changes only
-    by a later agreed decision. Affects §2.7 (`seavec`'s estimate, +2 200–3 900, about 5 260–6 960
-    built, and its measurement after T13's legality code), §2.12.6 (T13), §2.12.10, §6.2 (`vec7_*`),
-    §8 (rows 7e and 7f), L-fg; no contract file.
+    by a later agreed decision (measured in 7f and decided as Decision 118: T9 restricted to
+    `loop`s). Affects §2.7 (`seavec`'s estimate, +2 200–3 900, about 5 260–6 960 built, and its
+    measurement after T13's legality code), §2.12.6 (T13), §2.12.10, §6.2 (`vec7_*`), §8 (rows 7e
+    and 7f), L-fg; no contract file.
 
 116. **How `seavec`'s vector output is validated** (2026-10-31; amends Decision 113 (a); §2.12.6).
     As built by WP-LIB, `lirrw`'s writer trusts the vector records `seavec` puts into its tables, and
@@ -14696,6 +14840,48 @@ recommendation as (a), its reasons, the decision, and what it affects.
     from the form, and its goldens revert to `NAME.lir3`. Affects §2.7 (`seavec`, measured 5 498 built,
     about 5 613–5 718 with this decision), §2.12.6 ("Constants in `seavec`", T11, T12, T13 (1)),
     §6.2 (`vec7_*`, `sr7_*`); lead decisions L-gq–L-gy (and the lead's L-gz, L-ha within it); no contract file.
+
+118. **T9 restricted to `loop` blocks** (2026-10-31, the measurement Decision 115 asked for in 7f;
+    §5.8 T9, §2.12.6, §2.12.10). As built in 7e (Decision 115's option (a)), T9 unswitches
+    `shaft_safety`'s inlined-return `do` in W1's bisection nest on `dmm > 51`, and the vector body
+    then calls `sea_pow_x` (or `_y`) three times per element pair instead of twice. Measured in 7f
+    with every `do` unswitch disabled: W1's compute time 35 ms with T9's split and 27 ms without
+    it, the output byte-identical (median of 15 interleaved runs, arm64); the `do` records in W1's
+    `sea.lir3` went from 47 to 37, and P1 then dissolves a single `do` where it dissolved both
+    copies. Options: (a) leave T9 as it is (Decision 115's option (a)); (b) **restrict T9 to
+    `loop`s: a `do` block (an inlined return, a `while` loop) is never unswitched**, Decision 115's
+    option (b) "T9 restricted to `loop`s" alone, without its other fixes at the origin.
+    (b) is one test in `sealopt` (`passes/sealopt/lo6t9.bas`), and the only goldens it changes
+    are the `lir3`, `lir` and `lirx64` of `vec7_p1_guard` and `vec7_p1_kept` (§6.2), whose `do`
+    T9 had split. **Decided: (b)** (the user, 2026-10-31). As built in 7f: on the final tree W1's
+    compute time is 37 ms with the split and 29 ms without it, and its vector body calls `sea_pow`
+    twice per copy in place of three times on both targets; `vec7_p1_guard`, which under (b) no
+    longer reached P1 rule 2, was rewritten with goldens derived anew (`tests/CORPUS.md`, L-ib).
+    Affects §2.12.6 ("What the
+    workloads get"), §2.12.10 (the measurement), §5.8 (T9); no contract file.
+119. **What a `vector` shape line requires of its loop** (2026-11-01, an independent review of
+    7f's WP-SHAPE; §2.12.10, L-fl). As first written, a `vector` line passed on any innermost
+    vectorized loop from its line range. The review confirmed that this admits loops that never
+    run in the workload: a fused group's split copy (the `else` arm of its space test, the loops
+    after `rcall sea_arr_new_u` at the group's line) is vectorized too and lies in the same range.
+    For W4 over `rb_half_sweep`'s range, the winning candidates (L1_385 and L1_388 on `x86_64`,
+    site 1:257, `add` and `mul`) belonged to the split copy, so the line passed without the store
+    loops (site 1:261, `sel`); for W1 over 251–257, five split-copy loops qualified besides the
+    fused body. The review also found that the specified site rule ("a site or neighbouring `ldx`")
+    cannot hold, since `ldx` and the vector instructions have no site field and a vector body holds
+    no failing instruction. Options: (a) **a `vector` line may list the lane ops its loop must hold
+    (`add sub mul div min max sqrt neg abs cmp sel`); a candidate qualifies only when its LIR body
+    holds every listed op, and each listed op must also appear in its lane form in the `-S`
+    range**; (b) narrow line ranges only, with no op list; (c) keep the line as specified.
+    **Decided: (a)** (the user, 2026-11-01). Written with the site rule as built (the loop's own
+    site, else the nearest record with a site before its `loop` record): W4's line becomes `261 261
+    sel` (only the store loops carry that site) and W1's keeps 251–257 with `sqrt`. Second, (a)
+    cannot isolate W1's fused loop: the split copy's loop over `shaft_safety`'s inlined body holds
+    the same lane ops as the fused body, only the counts differ, so W1's line also passes on that
+    loop. Options: (a) **accept the gap and document it** (the `fusion` test, §2.12.10, shows that
+    W1's grid bisection allocates nothing per iteration, so the fused path is the one that runs);
+    (b) a further rule that tells the two loops apart. **Decided: (a)** (the user, 2026-11-01:
+    accepted, documented). Affects §2.12.10 ("The vector check"), L-fl; no contract file.
 
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
@@ -15260,8 +15446,10 @@ reviews, and agreed by the user together with Decisions 94–113 on 2026-10-29);
   `heap: <a> allocations, <l> live objects` replaces the `1` mode's line; every other value still
   writes nothing (§2.12.10, Decision 105).
 * **L-fl** A `vector` shape line is satisfied by an innermost loop identified as the scalar shape
-  lines identify theirs (L-ar: a record with a site in the line range), inlined code keeping its
-  callee's lines; on `x86_64-linux` both the 4-lane and the 2-lane loop must be present (§2.12.10).
+  lines identify theirs (L-ar), from the line range by its own site or else the nearest site before
+  its `loop` record (a vector body has none), inlined code keeping its callee's lines, and holding
+  the line's listed lane ops (Decision 119); on `x86_64-linux` both the 4-lane and the 2-lane loop
+  must be present (§2.12.10).
 
 Lead decisions of sub-phase 7b (found in its integration; the readings it fixed):
 
@@ -15523,3 +15711,55 @@ legality, never a language feature; Decisions 115–117 were decided by the user
   `tests/math/pow.vec` has no base 254 (the `&&` boundaries are in `vec_ifexpr_w1`); the `exp`
   rare-path argument is 600.2654583649127, a row of `exp.vec`. Their `.out` come from the committed
   bit patterns of `tests/math/*.vec` and Python mirrors of LANGUAGE.md §10.4–§10.5 (§6.2).
+
+Lead decisions of sub-phase 7f (the readings of the work packages, found in their builds and
+recorded 2026-11-01 at the close-out; each is written into the section it names or is a reading of
+a port or a test, and decides byte-level output or a check, never a language feature; Decisions
+118–119 were decided by the user):
+
+* **L-hq** (WP-HEAP; L-fk) The count mode's A is not counted at creation: `_sea_free` (`sea_free`)
+  increments a 64-bit `_sea_freed` (`sea_freed`) in `rt_mem.s` beside its decrement of the live
+  counter, and A = live + freed. This is exact because every constructor counts its object in the
+  live counter, nothing but `_sea_free` uncounts one, and `_sea_free` takes only objects (a block
+  that is not an object is released by the block path, which counts nothing); 9 `rt_heap_count_*`
+  cases per target (§4.5, §4.7.1).
+* **L-hr** (WP-PORT) W4's red/black colouring `mod(I + J, 2)` uses MATLAB's 1-based I and J:
+  `let (I, J) = meshgrid((1..=nx), (1..=ny))`, the ranges parenthesised because a range used as a
+  value needs parentheses (LANGUAGE.md Appendix A) (§2.12.10).
+* **L-hs** (WP-PORT) MATLAB's centre lines `(nx + 1) / 2` (1-based) are `idiv(nx + 1, 2) - 1`, and
+  likewise for `ny` (§2.12.10).
+* **L-ht** (WP-TOKENS) The "last change" token of both SOR report lines (token 8) has no JSON key;
+  it maps to `num 1e-8 0`, the solver's tolerance, which both runs end at or below (§6.4).
+* **L-hu** (WP-TOKENS) The report's `omega` and `h` tokens have no `RULES` entry and are left
+  unmapped: the default rule (one unit of the last printed digit) applies, `compare.py`'s 1e-9
+  relative default being finer than one printed unit (§6.4).
+* **L-hv** (WP-PORT) MATLAB's result record `ref` is named `out` in the port, `ref` being a Sea
+  keyword; its JSON keys are those of the MATLAB reference (§2.12.10).
+* **L-hw** (WP-LOOPFIX) `sealoop` (`lp2out.bas`) and `seafuse` (`fu2out.bas`) read the markers `^e`
+  (a `tptr` reference) and `@p` (a new local) only in a `ty` or `lid` field, located by a table of
+  field codes per opcode taken from the record formats of `include/passes.txt` (the sets `H HF HL`);
+  a `^` or `@` byte in any other field, such as an escaped `s` payload, is text. The defect, present
+  since 7c, crashed `sealoop` (`ILLEGAL 'VAL' ARGUMENT`) on `printf("W/m^2")` in a program with
+  arrays, rewrote string constants such as `"^2"` (printed `0`) and could misnumber `tptr` types;
+  tests `str_caret_bytes`, `str_caret_tptr` (§3.5.9 "Types", §3.1).
+* **L-hx** (WP-FUSIONT) A `tests/fusion/` program reads K by comparing `args()`'s argument with
+  `str(n)` for every n in 0..1000 (there is no string-to-integer conversion in v1, LANGUAGE.md
+  §10.13), always to the end of the scan, so the scan makes the same 1 000 allocations for every K
+  and cancels in the difference (§2.12.10).
+* **L-hy** (WP-FUSIONT) K and the derived count are read from the program's header lines `// fusion
+  K: N` and `// Allocations per iteration: N.` by `tests/fusion.sh`, and by `cross_pack.sh`, which
+  writes them into the case's sidecar `NAME.fusion` (`k=`, `per_iteration=`) for `cross_run.sh`
+  (§6.6.1). Measured at 7f's close, identical on arm64 and on `x86_64-linux` under both variants:
+  `w1_bisect` 1 018 allocations at K = 2 and 1 018 at K = 3 (0 per iteration), `w4_rb` 1 042 and
+  1 048 (6).
+* **L-hz** (WP-SHAPE; Decision 119) The `-S` part of a `vector` line requires a lane-form
+  instruction for every lane op the qualifying loop's LIR body holds, not only for the listed ones;
+  a `-S` measurement that finds no instruction in the loop's range is a failure, never a pass
+  (§2.12.10).
+* **L-ia** (WP-SHAPE) A loop range of `shape.sh` that holds another loop's top label is not
+  innermost code and measures as `none`. The guard was dead (it looked for the label after label
+  lines had been skipped); `vmeasure` now tests for it before the skip. The scalar
+  `measure()` keeps the same dead guard, left as it is: a known defect of the harness (§6.2).
+* **L-ib** (Decision 118; T2) In T9 a `loop` that contains a `do` is not innermost (a `do` is a loop
+  in §5.8's Terms), so it is not unswitched either. `vec7_p1_guard` was rewritten as a one-level
+  guarded return that P1 rule 2 dissolves, every golden derived by hand (`tests/CORPUS.md`, §6.2).

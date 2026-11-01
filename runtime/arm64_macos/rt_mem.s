@@ -12,6 +12,12 @@
 //   _sea_release      (private) the count decrement, freeing at 0
 //   _sea_live         (private) u64: arrays and strings allocated and not
 //                     yet freed; read by main's heap check (rt_main.s)
+//   _sea_freed        (private) u64: arrays and strings freed so far.
+//                     _sea_live + _sea_freed is the number of objects ever
+//                     created (the `count` mode of SEA_HEAP_CHECK): every
+//                     constructor counts its object in _sea_live and
+//                     nothing but _sea_free uncounts one, so the sum
+//                     misses no creation path
 //
 // THE INTERNAL API (AAPCS64: x0-x17, d0-d7, d16-d31 clobbered unless a
 // routine says less; x19-x28, d8-d15 preserved; x18 never touched):
@@ -369,6 +375,10 @@ Lrt_mem_free_count:
     ldr x10, [x9, _sea_live@PAGEOFF]
     sub x10, x10, #1                // one live object fewer
     str x10, [x9, _sea_live@PAGEOFF]
+    adrp x9, _sea_freed@PAGE
+    ldr x10, [x9, _sea_freed@PAGEOFF]
+    add x10, x10, #1                // and one more freed (allocations = live + freed)
+    str x10, [x9, _sea_freed@PAGEOFF]
     ldr x25, [sp, #64]
     ldp x23, x24, [sp, #48]
     ldp x21, x22, [sp, #32]
@@ -385,6 +395,8 @@ Lrt_mem_free_badtag:
 // ---------------------------------------------------------------------
     .private_extern _sea_live
 .zerofill __DATA,__bss,_sea_live,8,3                    /* live arrays and strings */
+    .private_extern _sea_freed
+.zerofill __DATA,__bss,_sea_freed,8,3                   /* arrays and strings freed so far */
 .zerofill __DATA,__bss,Lrt_mem_heads,(8*RT_MEM_CLASSES),3   /* first free block per class */
 .zerofill __DATA,__bss,Lrt_mem_counts,(8*RT_MEM_CLASSES),3  /* cached blocks per large class */
 .zerofill __DATA,__bss,Lrt_mem_cur,(8*RT_MEM_CLASSES),3     /* next block to carve per small class */

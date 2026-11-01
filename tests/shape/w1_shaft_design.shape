@@ -1,0 +1,13 @@
+# w1_shaft_design.shape -- the vector check of W1's grid bisection (docs/DESIGN.md 2.12.10 "The
+# vector check", Decisions 108 and 119, lead decision L-fl). Written by hand from the spec, never from
+# the compiler's output. Format: see tests/shape.sh's header.
+program ports/w1_shaft_design.sea
+
+# 2.12.10: W1's grid bisection loop, lines 251-257 of the port (the group of 2.12.4's example, with
+# shaft_safety's inlined if chains if-converted by T13, Decision 108, and its inlined-return do
+# dissolved by P1, Decision 115), runs in a 2-lane loop on arm64 (NEON) and in both the 4-lane
+# (AVX2) and the 2-lane (SSE2) loop on x86_64. Required lane op (Decision 119): sqrt, which only a
+# loop computing shaft_safety's inlined body holds (the plain arithmetic of mid, the min and
+# comparison of up and the two selections of lo and hi have none).
+vector arm64 .main 251 257 sqrt
+vector x86_64 .main 251 257 sqrt

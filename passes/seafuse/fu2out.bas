@@ -9,6 +9,7 @@
 10040 REM before the first fn; a fn record with nl + its new locals, their loc records after its
 10045 REM own; no inst record), and #end.
 10050 LET U5 = 0
+10052 GOSUB 11005
 10055 LET F0 = 0
 10060 LET J = O(0, 0)
 10065 IF J = 0 THEN 10165
@@ -48,13 +49,8 @@
 10196 GOSUB 10234
 10198 NEXT K5
 10200 GOTO 10216
-10204 LET J3 = POS(O$(J), "^")
-10206 IF J3 = 0 THEN 10216
-10207 LET J4 = POS(O$(J) & " ", " ", J3)
-10208 LET E3 = VAL(SEG$(O$(J), J3 + 1, J4 - 1))
-10210 GOSUB 10234
-10212 LET J3 = POS(O$(J), "^", J3 + 1)
-10214 GOTO 10206
+10204 LET Z1$ = O$(J)
+10206 GOSUB 11070
 10216 LET J = O(J, 0)
 10218 GOTO 10184
 10220 FOR E3 = 1 TO Y8
@@ -143,19 +139,78 @@
 10795 REM ---- 10800: Z$ = the generated record of row J, @u and ^e replaced by the lid and the tptr id --
 10800 LET Z1$ = O$(J)
 10805 LET Z$ = ""
+10807 GOSUB 11040
 10810 LET J3 = 1
+10812 LET P3 = 1
 10815 LET J4 = POS(Z1$, " ", J3)
 10820 IF J4 > 0 THEN 10830
 10825 LET J4 = LEN(Z1$) + 1
 10830 LET Z2$ = SEG$(Z1$, J3, J4 - 1)
-10835 IF SEG$(Z2$, 1, 1) <> "@" THEN 10845
+10832 GOSUB 11055
+10835 IF W8$ & SEG$(Z2$, 1, 1) <> "l@" THEN 10845
 10840 LET Z2$ = STR$(U(VAL(SEG$(Z2$, 2, LEN(Z2$))), 4))
-10845 IF SEG$(Z2$, 1, 1) <> "^" THEN 10855
+10845 IF W8$ & SEG$(Z2$, 1, 1) <> "t^" THEN 10855
 10850 LET Z2$ = STR$(C(VAL(SEG$(Z2$, 2, LEN(Z2$))), 6))
 10855 IF J3 = 1 THEN 10870
 10860 LET Z$ = Z$ & " " & Z2$
 10865 GOTO 10875
 10870 LET Z$ = Z2$
 10875 LET J3 = J4 + 1
+10877 LET P3 = P3 + 1
 10880 IF J4 <= LEN(Z1$) THEN 10815
 10885 RETURN
+11001 REM ---- 11005: W7$ = |op=c...| for each record of the sets H HF HL (passes.txt), c the code of
+11002 REM each field after the opcode in order: t a ty, l a lid, . any other. A ^e (tptr) or @p (new
+11003 REM local) marker is read only in a t or an l field, never inside an escaped s payload (ftext,
+11004 REM cs, jkey ... may hold any ^ or @ byte, DESIGN 3.1)
+11005 LET W7$ = "|"
+11010 FOR I = 1 TO Z(7)
+11012 IF R(I, 1) = 2 THEN 11018
+11014 IF R(I, 1) = 4 THEN 11018
+11016 IF R(I, 1) <> 7 THEN 11034
+11018 LET W7$ = W7$ & R$(I) & "="
+11020 IF R(I, 4) = 0 THEN 11032
+11022 FOR K5 = R(I, 3) TO R(I, 3) + R(I, 4) - 1
+11024 LET W8$ = "t"
+11025 IF F(K5, 1) = 8 THEN 11030
+11026 LET W8$ = "l"
+11027 IF F(K5, 1) = 9 THEN 11030
+11028 LET W8$ = "."
+11030 LET W7$ = W7$ & W8$
+11031 NEXT K5
+11032 LET W7$ = W7$ & "|"
+11034 NEXT I
+11036 RETURN
+11037 REM ---- 11040: V7$ = the field codes (11005) of the record Z1$, found by its opcode (P5 bytes);
+11038 REM a record of no H HF HL kind is a bug
+11040 LET P5 = POS(Z1$ & " ", " ") - 1
+11042 LET P6 = POS(W7$, "|" & SEG$(Z1$, 1, P5) & "=")
+11044 IF P6 > 0 THEN 11048
+11046 CALL "dg_bug": P$, "a record of no kind of sea.hirf"
+11048 LET V7$ = SEG$(W7$, P6 + P5 + 2, POS(W7$, "|", P6 + 1) - 1)
+11050 RETURN
+11052 REM ---- 11055: W8$ = the code in V7$ of field P3 of the record (1 its opcode: "."); a field past
+11053 REM the last code repeats the last field (in passes.txt a repeated field, ty*n or lid?*n, is last)
+11055 LET W8$ = "."
+11057 IF P3 < 2 THEN 11064
+11058 IF LEN(V7$) = 0 THEN 11064
+11060 LET P0 = P3 - 1
+11061 IF P0 <= LEN(V7$) THEN 11063
+11062 LET P0 = LEN(V7$)
+11063 LET W8$ = SEG$(V7$, P0, P0)
+11064 RETURN
+11066 REM ---- 11070: each ^e of a ty field of the record Z1$ numbered at its first reference (10234);
+11067 REM a ^ in any other field is a byte of an escaped string, no reference (11005)
+11070 IF POS(Z1$, "^") = 0 THEN 11090
+11072 GOSUB 11040
+11074 LET J3 = 1
+11076 LET P3 = 1
+11078 LET J4 = POS(Z1$ & " ", " ", J3)
+11080 GOSUB 11055
+11082 IF W8$ & SEG$(Z1$, J3, J3) <> "t^" THEN 11086
+11084 LET E3 = VAL(SEG$(Z1$, J3 + 1, J4 - 1))
+11085 GOSUB 10234
+11086 LET J3 = J4 + 1
+11087 LET P3 = P3 + 1
+11088 IF J3 <= LEN(Z1$) THEN 11078
+11090 RETURN

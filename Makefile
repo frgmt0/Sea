@@ -18,6 +18,8 @@
 #   make test-rt          tests/rt/run_rt.sh  runtime tests (assembly programs against libsea.a)
 #   make test-stage       tests/stage.sh    each pass on the golden output of the previous one
 #   make test-shape       tests/shape.sh    instruction-count shape of the W5 and W4 hot loops, both targets (5.2)
+#   make test-fusion      tests/fusion.sh   allocations per iteration of W1's grid bisection and W4's red-black
+#                         iteration under SEA_HEAP_CHECK=count (2.12.10, the temporaries check)
 #   make test-accept      tests/accept4.sh  phase-4 acceptance programs against compare.py --keys (needs uv)
 #                         then tests/accept.sh: the phase-6 ports W1 and W5 (compare.py, compare_report.py)
 #   make test-protocol    tests/protocol.sh pass protocol: missing #end, driver #end check
@@ -91,7 +93,7 @@ RT_OBJS := $(patsubst runtime/arm64_macos/%.s,$(BUILD)/obj/runtime/%.o,$(RT_SRCS
 BAYSICK_INC := $(wildcard $(BAYSICK)/include/runtime.inc $(BAYSICK)/include/limits.inc)
 
 .PHONY: all runtime tools passes install check-baysick FORCE \
-        test test-programs test-accept test-rt test-stage test-shape test-protocol test-driver test-lib test-arith test-math math-tables \
+        test test-programs test-accept test-rt test-stage test-shape test-fusion test-protocol test-driver test-lib test-arith test-math math-tables \
         check-data lines check-limits clean \
         check-includes check-contracts cross-includes cross cross-pack
 .DEFAULT_GOAL := all
@@ -246,6 +248,8 @@ test-stage: all
 	$(call RUN_SCRIPT,tests/stage.sh)
 test-shape: all
 	$(call RUN_SCRIPT,tests/shape.sh)
+test-fusion: all
+	$(call RUN_SCRIPT,tests/fusion.sh)
 test-accept: all
 	@for s in tests/accept4.sh tests/accept.sh; do \
 	    if [ ! -f $$s ]; then echo "make: $$s not written yet" >&2; rc=1; continue; fi; \
@@ -275,7 +279,7 @@ check-data: tools
 # Every group runs even if an earlier one fails; the exit status is 1 if any failed.
 test: all check-contracts
 	@st=0; \
-	for g in test-driver check-data test-lib test-arith test-math test-rt test-stage test-shape test-protocol test-programs test-accept; do \
+	for g in test-driver check-data test-lib test-arith test-math test-rt test-stage test-shape test-fusion test-protocol test-programs test-accept; do \
 	  echo "== make $$g"; \
 	  $(MAKE) --no-print-directory $$g || { echo "== $$g FAILED"; st=1; }; \
 	done; \

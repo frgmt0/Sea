@@ -9,7 +9,7 @@
 #                               4.5; read by sea_args, rt_args.s)
 # Uses   : sea_main and sea_sites (the program), sea_err (rt_err.s),
 #          sea_out_flush and sea_out_fail (rt_out.s), sea_write_all
-#          (rt_out.s), sea_live (rt_mem.s), Baysick's
+#          (rt_out.s), sea_live and sea_freed (rt_mem.s), Baysick's
 #          bsk_kern_init, bsk_kern_use, bsk_kern_variants, bsk_kern_name
 #          (libbaysickrt.a), and glibc through the PLT.
 #
@@ -17,7 +17,8 @@
 #   0. argc (sign-extended) and argv are saved in sea_argc and sea_argv
 #      before anything else (DESIGN.md 4.5, sea_args), and the heap
 #      check is armed when the environment variable SEA_HEAP_CHECK is
-#      exactly "1" (DESIGN.md 4.5).
+#      exactly "1" (mode 1) or exactly "count" (mode 2); any other value
+#      leaves it off (DESIGN.md 4.5).
 #   1. SIGPIPE is ignored, so a write to a closed pipe is EPIPE, which
 #      the output layer reports as `cannot write '<stdout>': Broken pipe`.
 #   2. The program stack: G = sysconf(_SC_PAGESIZE); mmap of
@@ -54,8 +55,11 @@
 # SEA_SITE_NONE, {"<stdout>", errno}), i.e. `error: cannot write
 # '<stdout>': <reason>`, status 1 (LANGUAGE.md 9.2, 9.4). Otherwise,
 # when the heap check is armed, the line `heap: N live objects` + LF
-# goes to standard error (N = sea_live in decimal, no sign or padding;
-# a failed write of it is ignored), and then _exit(SEA_EXIT_RUN_OK) (all
+# (mode 1) or `heap: A allocations, N live objects` + LF (mode 2) goes
+# to standard error (N = sea_live, A = sea_live + sea_freed: every
+# object ever created is live or has been freed; both unsigned 64-bit
+# decimal, no sign or padding; a failed write of it is ignored), and
+# then _exit(SEA_EXIT_RUN_OK) (all
 # output is already written). A run-time error, `error` and a failed
 # final flush end in sea_err without the heap line. The stack is never
 # unmapped.
@@ -95,10 +99,12 @@
 .equ RT_MAIN_SA,        32          # the sigaction in main's scratch (stack_t at 0)
 .equ RT_MAIN_SCRATCH,   (RT_MAIN_SA + RT_SA_SIZE + 8) # 192: a multiple of 16
 # The heap line (DESIGN.md 4.5): "heap: " (6 bytes), at most 20 digits,
-# " live objects\n" (14 bytes), built in RT_MAIN_HEAPLINE bytes.
+# " allocations, " (14 bytes, mode 2) and " live objects\n" (14 bytes),
+# built in RT_MAIN_HEAPLINE bytes.
 .equ RT_MAIN_S_HEAP_LEN, 6
+.equ RT_MAIN_S_ALLOC_LEN, 14
 .equ RT_MAIN_S_LIVE_LEN, 14
-.equ RT_MAIN_HEAPLINE,  48          # >= 6 + 20 + 14, a multiple of 16
+.equ RT_MAIN_HEAPLINE,  96          # >= 6 + 20 + 14 + 20 + 14 = 74, a multiple of 16
 
     .text
 
@@ -137,10 +143,20 @@ main:
     testq %rax, %rax
     jz 1f                           # unset: no check
     cmpb $49, (%rax)                # '1' ...
-    jne 1f
+    jne 2f                          # not "1": try "count"
     cmpb $0, 1(%rax)                # ... and nothing after it
     jne 1f
-    movq $1, .Lrt_main_heapchk(%rip)
+    movq $1, .Lrt_main_heapchk(%rip)    # mode 1
+    jmp 1f
+2:  leaq .Lrt_main_s_count(%rip), %rcx
+    xorl %edx, %edx                 # byte index
+3:  movzbl (%rax,%rdx), %esi        # value byte
+    cmpb (%rcx,%rdx), %sil          # "count" byte (its NUL ends it)
+    jne 1f                          # a difference: off
+    incq %rdx
+    testl %esi, %esi
+    jnz 3b                          # both NUL: the whole value matched
+    movq $2, .Lrt_main_heapchk(%rip)    # mode 2
 1:
     # 1. Ignore SIGPIPE: signal(SIGPIPE, SIG_IGN).
     movl $RT_SIGPIPE, %edi
@@ -256,8 +272,9 @@ main:
     je .Lrt_main_exit0
     # The heap line, built right to left in RT_MAIN_HEAPLINE bytes at
     # 0(%rsp) (%rsp = 0 (mod 16) here, the top of the program stack):
-    # "heap: " N " live objects" LF. main never returns, so %rbx and
-    # %r12 (no longer needed) hold the line's start and end.
+    # "heap: " [A " allocations, "] N " live objects" LF. main never
+    # returns, so %rbx and %r12 (no longer needed) hold the line's
+    # start and end.
     subq $RT_MAIN_HEAPLINE, %rsp
     leaq RT_MAIN_HEAPLINE(%rsp), %r12 # the end of the line
     leaq -RT_MAIN_S_LIVE_LEN(%r12), %rbx
@@ -274,7 +291,24 @@ main:
     movb %dl, (%rbx)
     testq %rax, %rax
     jnz 2b
-    subq $RT_MAIN_S_HEAP_LEN, %rbx
+    cmpq $2, .Lrt_main_heapchk(%rip)
+    jne 4f                          # mode 1: no allocation count
+    subq $RT_MAIN_S_ALLOC_LEN, %rbx
+    movq %rbx, %rdi
+    leaq .Lrt_main_s_alloc(%rip), %rsi
+    movl $RT_MAIN_S_ALLOC_LEN, %edx
+    call memcpy@PLT                 # " allocations, " before N
+    movq sea_live(%rip), %rax
+    addq sea_freed(%rip), %rax      # A = live + freed: every object created
+    movl $10, %ecx
+3:  xorl %edx, %edx
+    divq %rcx                       # %rdx = the next digit
+    addb $48, %dl                   # '0'
+    decq %rbx
+    movb %dl, (%rbx)
+    testq %rax, %rax
+    jnz 3b
+4:  subq $RT_MAIN_S_HEAP_LEN, %rbx
     movq %rbx, %rdi
     leaq .Lrt_main_s_heap(%rip), %rsi
     movl $RT_MAIN_S_HEAP_LEN, %edx
@@ -368,11 +402,14 @@ main:
 .Lrt_main_s_env:    .asciz "SEA_KERNELS"
 .Lrt_main_s_avx2:   .asciz "avx2"
 .Lrt_main_s_heapenv: .asciz "SEA_HEAP_CHECK"
+.Lrt_main_s_count:  .asciz "count"
 .Lrt_main_s_heap:   .ascii "heap: "
 .Lrt_main_s_heap_end:
+.Lrt_main_s_alloc:  .ascii " allocations, "
+.Lrt_main_s_alloc_end:
 .Lrt_main_s_live:   .ascii " live objects\n"
 .Lrt_main_s_live_end:
-.if ((.Lrt_main_s_heap_end - .Lrt_main_s_heap) != RT_MAIN_S_HEAP_LEN) || ((.Lrt_main_s_live_end - .Lrt_main_s_live) != RT_MAIN_S_LIVE_LEN)
+.if ((.Lrt_main_s_alloc_end - .Lrt_main_s_alloc) != RT_MAIN_S_ALLOC_LEN) || ((.Lrt_main_s_heap_end - .Lrt_main_s_heap) != RT_MAIN_S_HEAP_LEN) || ((.Lrt_main_s_live_end - .Lrt_main_s_live) != RT_MAIN_S_LIVE_LEN)
     .error "rt_main: the heap-line texts do not match their lengths"
 .endif
 
@@ -401,7 +438,7 @@ sea_argc:
 sea_argv:
     .zero 8                         # main's argv (for sea_args)
 .Lrt_main_heapchk:
-    .zero 8                         # 1: SEA_HEAP_CHECK is "1", write the heap line
+    .zero 8                         # 0 off, 1 SEA_HEAP_CHECK=1, 2 SEA_HEAP_CHECK=count
 .Lrt_main_guard:
     .zero 16                        # guard page [lo, hi)
     .p2align 4

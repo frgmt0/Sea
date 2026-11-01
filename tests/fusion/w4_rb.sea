@@ -1,0 +1,160 @@
+// w4_rb.sea -- the temporaries check of W4's red-black iteration (DESIGN.md 2.12.10, Decision 105)
+//
+// usage: w4_rb K        K the number of red-black iterations, a decimal 1 <= K < 1000
+//
+// An extract of ports/w4_heat_plate.sea: the inputs, the grid (nx 241, ny 161), the coolant
+// channel, the source, the Dirichlet masks, T0, omega, and solver 2 (the red-black SOR loop with
+// rb_half_sweep exactly as LANGUAGE.md 2.4 writes it), every statement copied unchanged, except
+// that the iteration cap `maxIt` is K (read from args()) in place of 20000. K stays far below
+// the sweep count at which the solver converges, so `dMax > tol` holds and the loop runs exactly
+// K iterations. `var T = T0` and `var dMax = inf` are the port's declarations from its solver-1
+// section (the scalar SOR solver itself, the post-processing and the report are not part of the
+// check). tests/fusion.sh runs it with K and K + 1 under SEA_HEAP_CHECK=count and requires the
+// two allocation counts to differ by exactly the number derived below, and no live object at
+// the end. The two lines the scripts read (tests/fusion.sh, tests/cross_pack.sh) are
+// `// fusion K: N` (the K of the check) and `// Allocations per iteration: N.` (the
+// derivation's result, its last line).
+// fusion K: 2
+//
+// k from args(). There is no parse_i64 in v1 (LANGUAGE.md 10.13), so the argument is matched
+// against str(n) for every n in 0..1000. The scan always runs to its end (no early exit): it
+// allocates the same 1000 strings whatever K is, so it adds nothing to the difference.
+//
+// Derivation of the allocations per iteration (L-fa), from the agreed text of F1-F5
+// (DESIGN.md 2.12.3, 2.12.4). One iteration is `itRb += 1`, two calls of rb_half_sweep and
+// `dMax = max(d1, d2)`; only the calls allocate (the rest is scalar; `ref T`, src and the masks
+// are passed without a copy). rb_half_sweep is inlined at both call sites (8.6 class (c)) and
+// fused in its body before sealoop inlines it (Decision 110), so each call runs the body:
+//     B1  let ny = rows(T)                                               scalar
+//     B2  let Tp = [T[1..ny-1, 1..2], T[1..ny-1, :], T[1..ny-1, $-2..$-1]]
+//     B3  let Tc = T[1..ny-1, :]
+//     B4  let tgs = (Tp[:, 0..$-2] + Tp[:, 2..$] + T[0..ny-2, :] + T[2..ny, :] + src[1..ny-1, :]) / 4
+//     B5  let Tn = Tc + omega * (tgs - Tc)
+//     B6  let dMax = max(abs(Tn[colorIn] - Tc[colorIn]))
+//     B7  T[1..ny-1, :] = where(colorIn, Tn, Tc)
+//     B8  return dMax                                                    scalar
+// * B2, a concatenation (F4 "Concatenation parts"): its three parts are range and `:`
+//   selections of T, which is not a view, so each part folds and is copied from T by its index
+//   map in L9 (c)'s copy pass: no part is materialized. The result Tp, a named local, is one
+//   array: 1 allocation. B2 is no groupable statement (F2 (1): a concatenation is none of the
+//   listed values), so it stands before the group.
+// * B3-B6, one group (F2; 2.12.10 "What runs fused"). B3 is a folded selection (F4, kinds R and
+//   A), B4 and B5 element-wise trees of quiet f64 nodes (`+ - * /`) whose leaves are folded
+//   selections of Tp, T and src (no materialized leaf), B6 a bind of a scalar from `max`, a fused
+//   masked reduction (F3) over `abs` of a same-mask tree (`Tn[colorIn] - Tc[colorIn]`, F4); a
+//   masked reduction does not start a group, but B6 is the fourth statement. F2 (3): Tc is read
+//   by B5 at the element and by B6 through the same-shape mask selection; tgs by B5 at the
+//   element; Tn by B6 through the mask; no target is written. B7 ends the group: it is a
+//   selection store, fused alone (L-gc), and B4 reads T at rows 0..ny-2 and 2..ny while B7
+//   writes rows 1..ny-1 (F2 (3)). Every node is quiet (F2 (4)). Space test (F2 (2)): every root
+//   and the mask colorIn are (ny-2) x nx, so the fused nest runs and the split copy never does.
+//   Stored results: Tc and Tn are read after the group (by B7), so each is stored into an array
+//   bound before the nest: 2 allocations; tgs is not read after the group and is never stored
+//   (R34); dMax is a scalar accumulator. The plain-copy test (F1 (4)) holds: every array leaf
+//   (folded selections of Tp, T, src and the masked leaves) has the space's extents.
+// * B7, a fused selection store (F1 (3), (5)): `where` of quiet nodes with a target of kinds R
+//   and A whose value reads only Tn, Tc and colorIn, never T's root path, so it is written in
+//   place: L6 steps 2-5 (IX 1-IX 3, the shape check, `cow T`) and no RES. T is unique at that
+//   point (the group's temporaries are released after its block, and Tp, Tc, Tn are arrays of
+//   their own), so the cow copies nothing. (In the first iteration of a run T still shares T0's
+//   buffer after `T = T0`, and that one cow copies once; this is the same in the K run and the
+//   K + 1 run and cancels in the difference, which is why K >= 1.)
+// Per call: Tp, Tc, Tn = 3 allocations; two calls per iteration.
+// Allocations per iteration: 6.
+
+// ---------------------------------------------------------------- the iteration count k
+let argv = args()
+if len(argv) != 1 {
+    error("usage: w4_rb K   (K the number of red-black iterations, 1 <= K < 1000)")
+}
+var k = -1
+for n in 0..1000 {
+    if str(n) == argv[0] { k = n }
+}
+if k < 1 {
+    error("K must be a decimal 1 <= K < 1000, got \"%s\"", argv[0])
+}
+
+// ---------------------------------------------------------------- inputs (the port's)
+let W = 0.30                        // plate width [m]
+let H = 0.20                        // plate height [m]
+let h = 0.00125                     // grid spacing [m]
+let kCond = 167.0                   // thermal conductivity [W/(m K)]
+let tPlate = 0.005                  // plate thickness [m]
+let Tbot0 = 40.0                    // bottom edge temperature at x = 0 [degC]
+let Tbot1 = 65.0                    // bottom edge temperature at x = W [degC]
+let Ttop = 20.0                     // top edge temperature [degC]
+let Thole = 12.0                    // coolant channel temperature [degC]
+let holeC = [0.215, 0.105]          // coolant channel center [m]
+let holeR = 0.018                   // coolant channel radius [m]
+let srcBox = [0.06, 0.11, 0.07, 0.12]   // heat source x0 x1 y0 y1 [m]
+let qSrc = 2.5e7                    // volumetric heat generation [W/m^3]
+let tol = 1e-8                      // convergence: max temperature change per sweep [K]
+let maxIt = k                       // iteration cap [-] (the port's 20000; here K)
+
+let nx = i64(round(W / h)) + 1
+let ny = i64(round(H / h)) + 1
+let x = (0..nx) * h
+let y = (0..ny) * h
+let (X, Y) = meshgrid(x, y)         // ny x nx, rows are y
+
+let hole = (X - holeC[0]) ^ 2 + (Y - holeC[1]) ^ 2 <= holeR ^ 2
+var src = zeros(ny, nx)
+let inSrc = X >= srcBox[0] & X <= srcBox[1] & Y >= srcBox[2] & Y <= srcBox[3]
+src[inSrc] = h ^ 2 * qSrc / kCond   // source term of the scaled 5-point equation [K]
+if any(hole.flat & inSrc.flat) {
+    error("heat source and coolant channel overlap")
+}
+if any(hole[0, :]) || any(hole[ny - 1, :]) || any(hole[:, 0]) || any(hole[:, nx - 1]) {
+    error("coolant channel touches the plate edge")
+}
+
+var fixed = hole
+fixed[0, :] = true
+fixed[ny - 1, :] = true
+let unknown = !fixed
+
+var T0 = Ttop * ones(ny, nx)
+T0[0, :] = Tbot0 + (Tbot1 - Tbot0) * x / W
+T0[ny - 1, :] = Ttop
+T0[hole] = Thole
+
+// Relaxation factor from the Jacobi spectral radius of the rectangle (insulated sides)
+let rhoJ = (1 + cos(pi / (ny - 1))) / 2
+let omega = 2 / (1 + sqrt(1 - rhoJ ^ 2))
+
+// ---------------------------------------------------------------- the solver-1 declarations
+var T = T0
+var dMax = inf
+
+// ---------------------------------------------------------------- solver 2: red-black SOR
+let (I, J) = meshgrid((1..=nx), (1..=ny))
+let red = (I + J) % 2 == 0 & unknown
+let black = (I + J) % 2 == 1 & unknown
+let redIn = red[1..ny-1, :]
+let blackIn = black[1..ny-1, :]
+T = T0
+var itRb = 0
+dMax = inf
+while dMax > tol && itRb < maxIt {
+    itRb += 1
+    let d1 = rb_half_sweep(ref T, src, redIn, omega)
+    let d2 = rb_half_sweep(ref T, src, blackIn, omega)
+    dMax = max(d1, d2)
+}
+printf("w4_rb: %d iterations, last change %.6e K, T[80, 120] = %.9f\n", itRb, dMax, T[80, 120])
+
+// ================================================================ functions (the port's)
+
+// One colour of red-black SOR on rows 1..ny-2, whole-array form. Side edges are insulated:
+// the ghost column mirrors the first interior column.
+fn rb_half_sweep(ref T: f64[,], src: f64[,], colorIn: bool[,], omega: f64) -> f64 {
+    let ny = rows(T)
+    let Tp = [T[1..ny-1, 1..2], T[1..ny-1, :], T[1..ny-1, $-2..$-1]]
+    let Tc = T[1..ny-1, :]
+    let tgs = (Tp[:, 0..$-2] + Tp[:, 2..$] + T[0..ny-2, :] + T[2..ny, :] + src[1..ny-1, :]) / 4
+    let Tn = Tc + omega * (tgs - Tc)
+    let dMax = max(abs(Tn[colorIn] - Tc[colorIn]))
+    T[1..ny-1, :] = where(colorIn, Tn, Tc)
+    return dMax
+}

@@ -1,0 +1,53 @@
+# Token map for the W4 report (DESIGN.md 6.4). Written from the fprintf formats of
+# workloads/w4_heat_plate.m and the rules of reference_py/compare.py (RULES["w4_heat_plate"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). The W4 JSON keys are in the report's units (K, degC, m, W, W/m^2), so
+# `json <key>` applies directly.
+#
+# 'Grid %d x %d (h = %.3f mm), %d unknowns, %d coolant nodes, omega = %.5f'
+# tokens: 2 nx, 4 ny, 7 h [mm] (default), 9 unknowns, 11 coolant nodes, 16 omega (no RULES
+# entry: compare.py's DEFAULT, 1e-9 relative, is below one printed unit, so the default rule).
+^Grid[[:space:]]   2    json nx
+^Grid[[:space:]]   4    json ny
+^Grid[[:space:]]   9    json n_unknown
+^Grid[[:space:]]   11   json n_hole
+#
+# 'Scalar SOR    : %5d sweeps, last change %.3e K, max residual %.3e K' (and 'Red-black SOR :').
+# Token 3 is the lone ':'; token 4 the sweep count (it_sor / it_rb int 1); token 8 the last
+# change, which has no JSON key: both runs stop with it at or below tol = 1e-8 K, so the rule is
+# that bound, num 1e-8 0 (as the `small` rules of the residuals; an iteration count changed by
+# one moves it within that bound); token 12 the max residual (res_sor / res_rb small 1e-7).
+^Scalar[[:space:]]SOR[[:space:]]   4    json it_sor
+^Scalar[[:space:]]SOR[[:space:]]   8    num 1e-8 0
+^Scalar[[:space:]]SOR[[:space:]]   12   json res_sor
+^Red-black[[:space:]]SOR[[:space:]]   4    json it_rb
+^Red-black[[:space:]]SOR[[:space:]]   8    num 1e-8 0
+^Red-black[[:space:]]SOR[[:space:]]   12   json res_rb
+#
+# 'Max difference between the two solutions: %.3e K': token 7, diff_solvers small 1e-5.
+^Max[[:space:]]difference   7    json diff_solvers
+#
+# 'Hot spot %.4f degC at (x, y) = (%.4f, %.4f) m': token 3 T_max (num 1e-6 absolute), tokens 9
+# '(0.0825,' and 10 '0.0938)' the position (x_Tmax / y_Tmax exact: the same grid node).
+^Hot[[:space:]]spot   3    json T_max
+^Hot[[:space:]]spot   9    json x_Tmax
+^Hot[[:space:]]spot   10   json y_Tmax
+#
+# 'T mean %.4f degC over the unknown nodes': token 3, T_mean num 1e-6 absolute.
+^T[[:space:]]mean   3    json T_mean
+#
+# The heat-flow table '  %-16s %12.6f': every label but 'balance' is two words, so the value is
+# token 3 (token 2 for 'balance'). Q_bottom / Q_top / Q_hole num 1e-4 absolute, Q_gen 1e-12
+# relative, Q_balance small 1e-5.
+^[[:space:]][[:space:]]bottom[[:space:]]edge       3    json Q_bottom
+^[[:space:]][[:space:]]top[[:space:]]edge          3    json Q_top
+^[[:space:]][[:space:]]coolant[[:space:]]channel   3    json Q_hole
+^[[:space:]][[:space:]]heat[[:space:]]source       3    json Q_gen
+^[[:space:]][[:space:]]balance                     2    json Q_balance
+#
+# 'Peak heat flux %.4e W/m^2 at (x, y) = (%.4f, %.4f) m': token 4 q_max (1e-7 relative), tokens
+# 10 and 11 the position (x_qmax / y_qmax exact). Token 5 'W/m^2' is non-numeric and identical.
+^Peak[[:space:]]heat[[:space:]]flux   4    json q_max
+^Peak[[:space:]]heat[[:space:]]flux   10   json x_qmax
+^Peak[[:space:]]heat[[:space:]]flux   11   json y_qmax

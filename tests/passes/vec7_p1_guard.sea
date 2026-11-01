@@ -1,19 +1,14 @@
-// vec7_p1_guard -- DESIGN.md 2.12.6 P1 rule 2: a guarded early return; T9 splits the do on its
-// first two conditions, and in the copy for both the third stays inside the do as `if B c` /
-// `exit D` / `endif B` followed by the final return: rule 2 moves those records into a new else
+// vec7_p1_guard -- DESIGN.md 2.12.6 P1 rule 2: a guarded early return; T8 moves the comparison
+// and both results out of the do, and T9 leaves the do whole (Decision 118), so it holds `if B c`
+// / `exit D` / `endif B` followed by the final return: rule 2 moves those records into a new else
 // part, every exit is then in tail position and the do dissolves; the if-conversion merges the
-// result by fsel at each level, innermost first
-elemental fn g(v: f64, w: f64) -> f64 {
+// result by fsel and the loop is vectorized
+elemental fn g(v: f64) -> f64 {
     if v > 1.5 {
-        if w > 4.5 {
-            if v < 2.5 {
-                return v * 2.0
-            }
-        }
+        return v * 2.0
     }
     return v + 1.0
 }
 let x = [1.0, 2.0, 3.0]
-let y = [4.0, 5.0, 6.0]
-let r = g(x, y)
+let r = g(x)
 printf("%g\n", r[1])

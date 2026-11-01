@@ -409,6 +409,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `vec_inplace` | §5.5, §6.8; DESIGN.md §2.12.4 F1 (5), §2.12.6 T13 (4) (7e T1): in-place updates `x = x * 1.5 + 0.25`, `x = where(x > 10.0, x * 0.5, x)`, `x = sqrt(x * x + 1.0)`, `a = a + b`, `a = min(a, b * 4.0)`, `m = m & (x > 1.5)` and a fixed-size `f64[9]` written in its home, at the nine trip counts |
 | `vec_reg_param_tail` | §5.2, §5.6, §6.8; DESIGN.md §2.12.6 "Registers" (7e regression, found by the fuzz review): a parameter read only in a vectorized loop is not a local, so the tail and the `else` loop read it: `T[1..n-1, :] = s` into n × c matrices (3 × 4, 12 × 2, 20 × 1, 10 × 3) printed column-major, and a non-inlined `x * s + 1.0` over 3 and 11 elements (3 5 7; 4 7 … 34) |
 | `sr7_reg_bigslots` | §4.5; DESIGN.md §2.12.6 T12 (7e regression, found by the fuzz review): `f64[4]` q, w, r replaced by T12 beside 38 kept `f64[256]` slots and an `f64[224]` (more than 10 000 location rows): 2 3.25 4 5 / 20 40 60 81 / 1 0.5 0.25 0.125 / 819 |
+| `str_caret_bytes` | §3.5, §6.2, §11.1, §11.2; DESIGN.md §3.1 (string escaping), §3.5.9 "Types", "Locals" (7f regression, WP-LOOPFIX, found porting W4's `W/m^2`): beside array code (`ones`, an element-wise tree, `sum`, `linspace`), the bytes `^` and `@` in a `printf` format (`q W/m^2 at %g`), in `print` strings (`x^12`), in `str` constants that are a whole `^`/`@`-plus-digits field of `sea.hirl` (`^2`, `@1`, `^4`, `^10`, `@3`, `^9`) or a lone `^`, in `%s` arguments and in a `str[]` literal and its element-wise `+` reach the output unchanged: `sealoop` and `seafuse` read `^e` (a `tptr`) and `@p` (a new local) only in `ty` and `lid` fields, never inside an escaped `s` payload; each line written by hand from the program text (`sum` of three 3s is 9, of 0 0.25 0.5 0.75 1 is 2.5, `%g`) |
 
 ## passes/
 
@@ -599,6 +600,7 @@ implementation (DESIGN.md §6.1). Layout and sidecars: DESIGN.md §6.2.
 | `res_err_handle` | ast res | §3.4.1: `rerr 259 handle types` at the `type` node |
 | `res_err_unknown_struct` | ast res | §3.4.1: `rerr 229` at the `type` node of an undeclared type name |
 | `res_err_first_pos` | ast res | §3.4.1: two `seaname` errors: the signature error, from 4g-1 (L-i) `rerr 229` at the `type` node of an undeclared struct type `Q`, found after the item error at 6:1, is first in source order and is the `rerr` |
+| `str_caret_tptr` | hir hirl (stage-only) | 7f regression (WP-LOOPFIX): §3.5.9 "Types" (the `tptr` ids after `sea.hir`'s table in order of first reference: a function's new locals, then the `^e` of its `ty` fields) and §3.1 (an `s` field is escaped text, no field reference). The `sea.hir` is the one of `fn g(n: i64) { let u = ones(n); let v = filled(true, n); while false {} }` with `print("^2")`, `g(1)`, `g(2)` in the main program (taken from `sea build --emit hir` and checked against §3.5 by hand; `seafuse` leaves it unchanged); the `.hirl` is written by hand from L2 (two vector expansions of 6 statements, s 8 and 1) with the `.l` numbering of "Locals": `.main`'s `cs … ^2` is copied unchanged and refers to no type, so the first `tptr` reference is `g`'s `.l4` (the `adat` of `ones`, element `f64`: `tptr 12 4`) and the next its `.l12` (`filled`'s, element `bool`: `tptr 13 2`); the build before the fix numbered `bool` first (`tptr 12 2`) and wrote the string as `12` |
 
 Every test above that has a `.hir1` also has a `.res` (phase 4a, §6.2), the stage input of `seacheck` and the golden output of `seaname`; each is derived from its `.ast` by `vectors/res_gen.py`, which cross-checks it against the `.hir1` (the lids of the `loc` records, the constants' values, the `powk` positions).
 
@@ -720,8 +722,8 @@ T2 (DESIGN.md §6.2 "`vec7_*`, `sr7_*` dumps", §2.12.6, L-fc; Decisions 102, 11
 | `vec7_walk` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P2, a walked base from the unit-step slice `x[1..$]` (Δ = `imul` of a `mov` of `li 1` and `li 8`, a constant 8 in T13's sense): `li G 8`, `padd D′ Q G` before L, the access `D′ J 8 0`, the `padd Q Q Δ` deleted |
 | `vec7_walk_rev` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P2 refuses a reverse walk (Δ = −8): condition 2 fails; `.lir` = `.lir3` |
 | `vec7_p1_ret` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P1 dissolves an inlined return (`do D` / `exit D` / `enddo D`) |
-| `vec7_p1_guard` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P1 rule 2 on a guarded early return left in the `do` by T9's two splits (the final return moved into a new `else`), then three nested blocks if-converted innermost first (`fsel` at each level) |
-| `vec7_p1_kept` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P1 keeps a `do` whose inner `exit` is not in tail position (two nested `if`s, the final return after them): the loop is written as before P1; `.lir` = `.lir3` |
+| `vec7_p1_guard` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P1 rule 2 and tail position on a guarded early return (`if v > 1.5 { return v * 2.0 }`, then `return v + 1.0`): T8 moves the comparison, the `fmul` and the `fadd` out of the `do` and T9 leaves the `do` whole (Decision 118), so it holds `if 4` / `mov` / `exit 3` / `endif 4` followed by the final return's `mov` / `exit 3`; rule 2 moves those two records into a new `else 4`, every `exit` is then in tail position and the `do` dissolves; the if-conversion merges the result by `fsel` and the loop is vectorized (`xsel`, and `ysel` in the 4-lane part) |
+| `vec7_p1_kept` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P1 keeps a `do` whose inner `exit` is not in tail position (four nested `if`s, the `do` left whole by T9 under Decision 118, the final return after them): the loop is written as before P1; `.lir` = `.lir3` |
 | `vec7_and` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | an `&&` condition: the part writing the condition register writes a renamed one, merged as a mask by `iand bnot iand ior` (→ `mand mnot mand mor`), then the `if` expression merged by `fsel`; P1 dissolves the `do` |
 | `vec7_counter` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P2, a counter from the selection store `y[1..4] = x * 2.0`: `isub E K S`, `li 8`, `imul`, `padd D′` before L, the read `D′ J 8 0`, the counter's `iadd` removed and `iadd K K C`, `iadd K K T` after the vector form |
 | `vec7_p3` | .sea .lir1 .lir2 .lir3 .lir .lirx64 .out | P3, invariant loads of a slot that is also a `call` argument, one before the inlined `do` and one in an if-converted arm with `sea_exp`: one load and a splat per part, unchanged in the scalar loops |
@@ -754,12 +756,35 @@ T2 (DESIGN.md §6.2 "`vec7_*`, `sr7_*` dumps", §2.12.6, L-fc; Decisions 102, 11
 | `opt5_promote` | `.lir`, `.lirx64` | `tally`'s struct slot `a` scalar-replaced (`sum` at 0, `n` at 8) | T12 |
 | `opt5_promote_exit` | `.lir`, `.lirx64` | `runs`'s slot (offsets 0 and 8, first stored at the top of the outer loop) scalar-replaced | T12 |
 
+**Goldens that 7f changes (Decision 118: T9 unswitches only `loop` blocks).** Only these existing dump goldens change; no `lir1` or `lir2` golden changes except those of the rewritten `vec7_p1_guard`, and every other `NAME.lir3`, `NAME.lir` and `NAME.lirx64` is unchanged (`stage.sh` and the `--emit` dumps of `run.sh` pass on them with the restricted T9: no other test has a `do` that T9 split).
+
+| Test | File | Change | Rule |
+|------|------|--------|------|
+| `vec7_p1_guard` | `.sea` `.lir1` `.lir2` `.lir3` `.lir` `.lirx64` | the test is rewritten: under Decision 118 its old program (a guarded return under three nested conditions) kept its `do`, which it had dissolved only because T9 split it, so no dump test exercised P1 rule 2 any more; the new program has one input and one guard, and every golden is derived anew: `.lir1` by §3.6.6 (rule 37's `do 3`, the result register numbered at the first return's `mov`); `.lir2` by T1 (the constant `chkb` deleted) and T10; `.lir3` by T8 (the `lf`, `fcmp`, `lf`, `fmul`, `lf`, `fadd` out of the `do`, then the three `lf`s out of the `loop`, distinct values, nothing commoned), T9 (nothing: the `do` is not unswitched, and the `loop` holds it) and T10; `.lir`, `.lirx64` by P1 (rule 2 once, then the `do`, its two `exit`s and `enddo` deleted), the if-conversion (`mov`, `mov`, `fsel`), the conditions 1–5 (one pair `p1`/`p8`) and the vector form; `.out` unchanged (`4`) | §3.6.6, §5.8 T1, T8, T9 (Decision 118), T10, §2.12.6 P1, if-conversion, the rewrite |
+| `vec7_p1_kept` | `.lir3` | T8 moves the six constant `lf`s (1.5, 4.5, 2.5, 5.5, 2.0, 1.0) out of the `loop` to before it, and the four `fcmp`s, the `fmul` and the `fadd` out of the `do` to the top of the loop body before it; T9 leaves the `do` whole (Decision 118), so it holds the nested `if 4` … `if 7` with the inner `mov` / `exit 3` and, after `endif 4`, the final return's `mov` / `exit 3`, and the two copies T9 made of it before Decision 118 are gone; T10 renumbers | §5.8 T8, T9 (Decision 118), T10 |
+| `vec7_p1_kept` | `.lir`, `.lirx64` | equal to the new `.lir3` (`.lirx64` differs only in `#target`): the `do` stays as before | §2.12.6 P1 |
+| `vec7_p1_kept` | `.sea` | header comment only (4 lines, AST and positions unchanged) | — |
+
 ## accept/ (DESIGN.md §6.3, run by `tests/accept4.sh`)
 
 | Test | Spec |
 |------|------|
 | `w4_sor` | `.keys` `it_sor,T_max`, `.wl` `w4_heat_plate`: W4's scalar SOR (grid, channel, source, boundary values, lexicographic SOR with the max-change test, the hot spot by a scalar loop over the unknown nodes), the JSON subset written with `%d`/`%.17g`; MATLAB's two configuration checks are not ported (`error` is 4g; this grid never trips them) |
 | `w5_stats` | `.keys` `first_dev,mean_cold,std_cold,hist_counts`, `.wl` `w5_tolerance_mc` (4h, lead decision L-aa): LANGUAGE.md Appendix D verbatim for the four keys (the `Dim` struct and table, the inputs, the validation `match`, the sampling loop, `uTop` and `Top`, `stack_gap`, `lcg_fill`, `muC`, `sdC`, `binW`, `bin`, `inRange`, `counts` by `bincount`), then the JSON subset with `%.17g`/`%d`, `first_dev` as 10 rows of 7; generated by `vectors/prel4h_cases.py` |
+
+## fusion/ (DESIGN.md §2.12.10 "The temporaries check", run by `tests/fusion.sh`)
+
+Each program takes its iteration count K from `args()` and is run with K and K + 1 under
+`SEA_HEAP_CHECK=count` (DESIGN.md §4.5); the difference of the two allocation counts must equal the
+allocations per iteration derived by hand from F1–F5 (DESIGN.md §2.12.3, §2.12.4; L-fa) in the
+program's header comment, never from a run, and no object may be live at the end. The header lines
+`// fusion K: N` and `// Allocations per iteration: N.` are what `fusion.sh` and the cross case kind
+`fusion` (`cross_pack.sh`, `cross_run.sh`, both x86_64 variants) read.
+
+| Test | Spec |
+|------|------|
+| `w1_bisect` | K 2, **0** per iteration (Decision 105): `ports/w1_shaft_design.sea`'s structs, configuration, 90 × 120 grid, `pGrid` and the vectorized bisection (port lines 244–257) unchanged but `for it in 0..k`, with `make_params`, `surface_factor`, `reliability_factor`, `shaft_safety`; the loop body is one F2 group (§2.12.4's example: every node quiet, the space and plain-copy tests hold, `lo`/`hi` reused by F2 (6) with a `cow` that copies nothing, `mid`, `nfv`, `nyv`, `up` never stored) |
+| `w4_rb` | K 2, **6** per iteration (Decision 105): `ports/w4_heat_plate.sea`'s inputs, 161 × 241 plate, masks, `T0`, `omega` and solver 2 with `rb_half_sweep` as LANGUAGE.md §2.4 writes it, unchanged but `maxIt = k`; per call `Tp` (F4: a concatenation of folded slices, one result), the stored group locals `Tc` and `Tn` (F2: `Tc tgs Tn dMax` one group with the masked `max` fused by F3, `tgs` never stored), the selection store in place (F1 (3), (5)) with a `cow` of the unique `T` that copies nothing; two calls per iteration |
 
 ## errors/
 

@@ -6,9 +6,7 @@ slot s1 24 8
 slot s2 24 8
 slot s3 24 8
 slot s4 24 8
-slot s5 24 8
-slot s6 24 8
-slot s7 8 8
+slot s5 8 8
 sa p1 s1
 sa p2 s2
 lf f3 #3FF0000000000000
@@ -21,60 +19,41 @@ li i6 24
 mcopy p1 p2 i6
 sa p7 s3
 sa p8 s4
-lf f9 #4010000000000000
-stf f9 p8 - 0 0
-lf f10 #4014000000000000
-stf f10 p8 - 0 8
-lf f11 #4018000000000000
-stf f11 p8 - 0 16
-li i12 24
-mcopy p7 p8 i12
-sa p13 s5
-sa p14 s6
-li i15 3
-li i16 0
-icmp gt i17 i15 i16
-if 1 i17
-li i18 1
-isub i19 i15 i18
-loop 2 i20 i16 i19 i18
-ldf f21 p1 i20 8 0
-ldf f22 p7 i20 8 0
+li i9 3
+li i10 0
+icmp gt i11 i9 i10
+if 1 i11
+li i12 1
+isub i13 i9 i12
+loop 2 i14 i10 i13 i12
+ldf f15 p1 i14 8 0
 do 3
-lf f23 #3FF8000000000000
-fcmp gt i24 f21 f23
-if 4 i24
-lf f25 #4012000000000000
-fcmp gt i26 f22 f25
-if 5 i26
-lf f27 #4004000000000000
-fcmp lt i28 f21 f27
-if 6 i28
-lf f29 #4000000000000000
-fmul f30 f21 f29
-mov f31 f30
+lf f16 #3FF8000000000000
+fcmp gt i17 f15 f16
+if 4 i17
+lf f18 #4000000000000000
+fmul f19 f15 f18
+mov f20 f19
 exit 3
-endif 6
-endif 5
 endif 4
-lf f32 #3FF0000000000000
-fadd f33 f21 f32
-mov f31 f33
+lf f21 #3FF0000000000000
+fadd f22 f15 f21
+mov f20 f22
 exit 3
 enddo 3
-stf f31 p14 i20 8 0
+stf f20 p8 i14 8 0
 endloop 2
 endif 1
-li i34 24
-mcopy p13 p14 i34
-li i35 1
-li i36 3
-chkb i35 i36 0 0:19
-ldf f37 p13 i35 8 0
-sa p38 s7
-stf f37 p38 - 0 0
-la p39 d1
-rcall sea_printf 0:19 0 2 p39 p38
+li i23 24
+mcopy p7 p8 i23
+li i24 1
+li i25 3
+chkb i24 i25 0 0:14
+ldf f26 p7 i24 8 0
+sa p27 s5
+stf f26 p27 - 0 0
+la p28 d1
+rcall sea_printf 0:14 0 2 p28 p27
 ret 0
 endfunc
 fmt d1 2

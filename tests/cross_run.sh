@@ -25,6 +25,14 @@
 # executed. An rt/ case keeps its own env= lines and runs once, as does math/math_check. The
 # summary names the counts of each variant: `variant <v>: passed P  failed F`, then
 # `once (build, rt, math): passed P  failed F`, then the totals.
+#
+# fusion/NAME (phase 7, DESIGN.md 2.12.10, the temporaries check; tests/fusion.sh's check on the
+# host): NAME.s with the sidecar NAME.fusion (`k=K`, `per_iteration=N`). The build is run, under
+# each variant like a program case, twice in a fresh empty working directory, with the argument K
+# and with K + 1 (stdin /dev/null, SEA_HEAP_CHECK=count); each run must exit 0 with a standard
+# error of exactly one line `heap: A allocations, L live objects`, L = 0, and leave no file. The
+# variant passes when A(K + 1) - A(K) = N, the allocations per iteration derived by hand. Each passing
+# variant prints `ok   fusion/NAME [variant]: A(K) allocations at K=K, A(K+1) at K=K+1`.
 
 AS=${AS:-as}
 CC=${CC:-gcc}
@@ -352,6 +360,74 @@ run_variant() {
 for k in programs errors passes accept ports; do
     for n in $(case_names $k); do do_case $k "$n"; done
 done
+
+# ---- fusion/NAME: the temporaries check (2.12.10) ----------------------------------
+# count_run ARG : run $TMP/prog ARG under SEA_HEAP_CHECK=count in a fresh directory; sets RUN_A
+# (the allocation count) or RUN_WHY (the reason the run failed)
+count_run() {
+    RUN_A=; RUN_WHY=
+    _arg=$1
+    WORK=$(mktemp -d "$TMP/work.XXXXXX") || { RUN_WHY="cannot prepare the work directory"; return 1; }
+    SEA_HEAP_CHECK=count; export SEA_HEAP_CHECK
+    run_limited "$TIMEOUT" /dev/null "$WORK" "$TMP/prog" "$_arg" >"$TMP/r.out" 2>"$TMP/r.err"
+    _st=$?
+    unset SEA_HEAP_CHECK
+    _left=$(ls -A "$WORK")
+    rm -rf "$WORK"
+    if [ $_st -ne 0 ]; then RUN_WHY="K=$_arg: exit status $_st: $(head -3 "$TMP/r.err" | tr '\n' ' ')"; return 1; fi
+    if [ -n "$_left" ]; then RUN_WHY="K=$_arg: unexpected files left: $_left"; return 1; fi
+    if [ "$(wc -l <"$TMP/r.err" | tr -d ' ')" != 1 ]; then
+        RUN_WHY="K=$_arg: standard error is not exactly the heap line: $(head -3 "$TMP/r.err" | tr '\n' ' ')"; return 1
+    fi
+    _l=$(cat "$TMP/r.err")
+    _a=$(printf '%s\n' "$_l" | sed -n 's/^heap: \([0-9][0-9]*\) allocations, \([0-9][0-9]*\) live objects$/\1 \2/p')
+    if [ -z "$_a" ]; then RUN_WHY="K=$_arg: no count-mode heap line: '$_l'"; return 1; fi
+    set -- $_a
+    if [ "$2" != 0 ]; then RUN_WHY="K=$_arg: leak: '$_l'"; return 1; fi
+    RUN_A=$1
+    return 0
+}
+
+# do_fusion NAME : build one fusion case and check it under every variant (Decision 104)
+do_fusion() {
+    name=fusion/$1
+    base=$BUNDLE/cases/fusion/$1
+    if [ -f "$base.packfail" ]; then
+        fail "$name" "compile (on the Mac) failed: $(head -3 "$base.packfail" | tr '\n' ' ')"; return
+    fi
+    fk=$(meta_get "$base.fusion" k)
+    fn=$(meta_get "$base.fusion" per_iteration)
+    case "$fk:$fn" in
+    *[!0-9:]* | :* | *:) echo "cross_run.sh: $1.fusion: missing or bad k= / per_iteration= line" >&2; exit 2 ;;
+    esac
+    asm_link "$name" "$base.s" "" || return
+    _vi=0
+    for _v in $VARIANTS; do
+        _vi=$((_vi + 1))
+        VI=$_vi
+        VSUF=
+        if [ "$_v" = default ]; then
+            unset SEA_KERNELS
+        else
+            SEA_KERNELS=$_v; export SEA_KERNELS
+            if [ $_vi -gt 1 ]; then VSUF=" [$_v]"; fi
+        fi
+        if ! count_run "$fk"; then fail "$name" "$RUN_WHY"; continue; fi
+        _a1=$RUN_A
+        if ! count_run $((fk + 1)); then fail "$name" "$RUN_WHY"; continue; fi
+        _a2=$RUN_A
+        if [ $((_a2 - _a1)) -eq "$fn" ]; then
+            pass
+            echo "ok   $name$VSUF: $_a1 allocations at K=$fk, $_a2 at K=$((fk + 1))"
+        else
+            fail "$name" "$_a1 allocations at K=$fk, $_a2 at K=$((fk + 1)): $((_a2 - _a1)) per iteration, derived $fn"
+        fi
+    done
+    unset SEA_KERNELS
+    VI=
+    VSUF=
+}
+for n in $(case_names fusion); do do_fusion "$n"; done
 
 # ---- rt/NAME: the runtime tests (4.7.1) --------------------------------------------
 cat >"$TMP/runrt.sh" <<'RUNRT'
