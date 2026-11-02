@@ -1,8 +1,10 @@
 #!/bin/sh
 # tests/cross_run.sh -- run an x86_64-linux test bundle (Linux, POSIX sh; docs/DESIGN.md 6.6.1).
 #
-# usage: sh tests/cross_run.sh [-v] [BUNDLE_DIR]
+# usage: sh tests/cross_run.sh [-v] [-k DIR] [BUNDLE_DIR]
 #   -v          show diffs for failures
+#   -k DIR      keep the deferred runs (below) in DIR, an existing directory; without -k they are
+#               kept in a new temporary directory, which is printed and left in place
 #   BUNDLE_DIR  bundle made by tests/cross_pack.sh (default: the directory above this script's)
 #
 # Environment:
@@ -28,6 +30,18 @@
 # summary names the counts of each variant: `variant <v>: passed P  failed F`, then
 # `once (build, rt, math): passed P  failed F`, then the totals.
 #
+# Deferred ports (phase 8, DESIGN.md 2.13.9, Decision 127): a ports case whose NAME.meta has the line
+# `compare=accept` or `compare=accept except=KEY,KEY` (accepted for the kind ports only) is run under
+# each variant as every port (heap check, status 0, empty standard error, NAME.json written and no
+# other file) but compared with nothing: its standard output and its JSON are copied to
+# KEEP/ports/NAME.VARIANT.out and KEEP/ports/NAME.VARIANT.json, `DEFER ports/NAME (VARIANT)` is
+# printed and the run counts as deferred, neither passed nor failed (tests/cross_accept.sh judges it
+# on the Mac). The kept output is the run's standard output as written, the `Compute time` line
+# included: compare_report.py needs that line at its place (it skips it itself), and
+# cross_accept.sh drops it for its byte comparison with the packed NAME.out. A run that fails one of
+# those checks is a failure as for every port. The totals line reads
+# `passed: P  failed: F, D deferred`.
+#
 # fusion/NAME (phase 7, DESIGN.md 2.12.10, the temporaries check; tests/fusion.sh's check on the
 # host): NAME.s with the sidecar NAME.fusion (`k=K`, `per_iteration=N`). The build is run, under
 # each variant like a program case, twice in a fresh empty working directory, with the argument K
@@ -40,10 +54,25 @@ AS=${AS:-as}
 CC=${CC:-gcc}
 TIMEOUT=${SEA_TEST_TIMEOUT:-10}
 VERBOSE=0
-if [ "${1:-}" = "-v" ]; then VERBOSE=1; shift; fi
+KEEP=
+while [ $# -gt 0 ]; do
+    case $1 in
+    -v) VERBOSE=1; shift ;;
+    -k)
+        if [ $# -lt 2 ]; then echo "cross_run.sh: missing argument for '-k'" >&2; exit 2; fi
+        KEEP=$2; shift 2 ;;
+    --) shift; break ;;
+    -*) echo "cross_run.sh: unknown option '$1'" >&2; exit 2 ;;
+    *) break ;;
+    esac
+done
 if [ $# -gt 1 ]; then
-    echo "cross_run.sh: usage: sh tests/cross_run.sh [-v] [BUNDLE_DIR]" >&2
+    echo "cross_run.sh: usage: sh tests/cross_run.sh [-v] [-k DIR] [BUNDLE_DIR]" >&2
     exit 2
+fi
+if [ -n "$KEEP" ]; then
+    _k=$KEEP
+    KEEP=$(cd "$_k" 2>/dev/null && pwd) || { echo "cross_run.sh: cannot enter the keep directory '$_k'" >&2; exit 2; }
 fi
 BUNDLE=${1:-$(dirname "$0")/..}
 BUNDLE=$(cd "$BUNDLE" 2>/dev/null && pwd) || {
@@ -101,6 +130,7 @@ done
 
 PASS=0
 FAIL=0
+DEFER=0
 FAILED=""
 # per variant counters (VI is the index of the variant being run, empty outside the program cases):
 # P1/F1 the first variant, P2/F2 the second (when there is one); VSUF is the label of a failure.
@@ -167,6 +197,18 @@ check_meta() {
         "" | stdout=epipe | stdout=closed) ;;
         env=SEA_HEAP_CHECK=*) ;;
         filter=compute-time) [ "$2" = ports ] && continue
+            echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
+        compare=accept) [ "$2" = ports ] && continue
+            echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
+        compare=accept\ except=*)
+            # the deferred comparison with excepted keys (2.13.9): KEY[,KEY...], each a JSON key name
+            _x=${_l#compare=accept except=}
+            if [ "$2" = ports ] && [ -n "$_x" ]; then
+                case ",$_x," in
+                *,,* | *[!A-Za-z0-9_,]*) ;;
+                *) continue ;;
+                esac
+            fi
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         heap=off) [ "$2" = rt ] || continue
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
@@ -323,6 +365,7 @@ do_case() {
             SEA_KERNELS=$_v; export SEA_KERNELS
             if [ $_vi -gt 1 ]; then VSUF=" [$_v]"; fi
         fi
+        CURV=$_v
         run_variant "$name" "$base" "$_kind"
     done
     unset SEA_KERNELS
@@ -331,12 +374,51 @@ do_case() {
     TIMEOUT=$_savet
 }
 
+# keep_dir : the directory the deferred runs are kept in (KEEP, else a new temporary directory made
+# at the first deferred run and left in place for the user; printed at the end)
+KEEP_MADE=
+keep_dir() {
+    if [ -z "$KEEP" ]; then
+        KEEP=$(mktemp -d "${TMPDIR:-/tmp}/sea-crosskeep.XXXXXX") || {
+            echo "cross_run.sh: cannot create the keep directory" >&2; exit 2; }
+        KEEP_MADE=1
+    fi
+    mkdir -p "$KEEP/ports" || { echo "cross_run.sh: cannot create $KEEP/ports" >&2; exit 2; }
+}
+
+# defer_variant NAME BASE : a deferred port run (2.13.9, Decision 127), after run_prog under the
+# variant CURV. The run must pass the checks of every port (status 0, the heap line, empty standard
+# error, NAME.json written and no other file); its standard output and JSON are then kept as
+# KEEP/ports/NAME.CURV.out and .json and the run is counted as deferred.
+defer_variant() {
+    name=$1; base=$2
+    _pn=$(basename "$base")
+    want=$(want_status "$base")
+    [ "$st" = "$want" ] || { fail "$name" "exit status $st, expected $want"; return; }
+    [ -n "$LEAK" ] && { fail "$name" "$LEAK"; return; }
+    same "$TMP/empty" "$TMP/r.err" "stderr" "$name" || return
+    [ -f "$WORK/$_pn.json" ] || { fail "$name" "the program did not write $_pn.json"; return; }
+    for _r in $(relfiles "$WORK"); do
+        [ "$_r" = "$_pn.json" ] || { fail "$name" "unexpected file $_r"; return; }
+    done
+    keep_dir
+    /bin/cp -f "$TMP/r.out" "$KEEP/ports/$_pn.$CURV.out" && /bin/cp -f "$WORK/$_pn.json" "$KEEP/ports/$_pn.$CURV.json" \
+        || { echo "cross_run.sh: cannot write to $KEEP/ports" >&2; exit 2; }
+    DEFER=$((DEFER + 1))
+    echo "DEFER $name ($CURV)"
+}
+
 # run_variant NAME BASE KIND : run the program built in $TMP/prog (under the SEA_KERNELS the caller
 # set) and compare it with the expected files of BASE; counts one pass or the failures.
 run_variant() {
     name=$1; base=$2; _kind=$3
     if ! newwork "$base"; then fail "$name" "cannot prepare the work directory"; rm -rf "$WORK"; return; fi
     run_prog "$base" "$TMP/prog"
+    if [ "$_kind" = ports ] && [ -n "$(meta_get "$base.meta" compare)" ]; then
+        defer_variant "$name" "$base"
+        rm -rf "$WORK"
+        return
+    fi
     experr=$TMP/empty; [ -f "$base.err" ] && experr=$base.err
     expout=$TMP/empty; [ -f "$base.out" ] && expout=$base.out
     want=$(want_status "$base")
@@ -560,7 +642,8 @@ elif [ -z "$(cat "$BUNDLE/PATTERNS" 2>/dev/null)" ]; then
     fail la/la_link "the bundle lacks the la/la_link case"
 fi
 
-if [ $((PASS + FAIL)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi
+if [ $((PASS + FAIL + DEFER)) -eq 0 ]; then echo "cross_run.sh: the bundle holds no case" >&2; exit 2; fi
+if [ -n "$KEEP_MADE" ]; then echo "deferred runs kept in $KEEP"; fi
 echo "----"
 _vi=0
 for _v in $VARIANTS; do
@@ -571,7 +654,7 @@ for _v in $VARIANTS; do
     echo "variant $_l: passed: $_p  failed: $_f"
 done
 echo "once (build, rt, math): passed: $((PASS - P1 - P2))  failed: $((FAIL - F1 - F2))"
-echo "passed: $PASS  failed: $FAIL"
+echo "passed: $PASS  failed: $FAIL, $DEFER deferred"
 if [ $FAIL -ne 0 ]; then
     echo "failed tests:$FAILED"
     exit 1

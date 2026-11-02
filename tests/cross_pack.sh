@@ -327,10 +327,30 @@ done
 # lines matching `^Compute time: .* s$`, is packed as NAME.out with the meta line
 # filter=compute-time and the argument --export-reference (NAME.args); its NAME.json is packed
 # as NAME.expect/NAME.json. A Mac run that fails its check is a pack failure (NAME.packfail).
+# Phase 8 (DESIGN.md 2.13.9, Decision 127): a port whose header (its leading `//` lines) has the line
+# `// cross: compare=accept` or `// cross: compare=accept except=KEY,KEY` gets that line's value as a
+# second NAME.meta line; the host then defers the comparison to tests/cross_accept.sh.
+
+# cross_header SRC : print the value of SRC's `// cross: ` header line (nothing without one); a
+# malformed or repeated `// cross:` header line is a corpus mistake (setup error)
+cross_header() {
+    awk -v f="$1" '
+    !/^\/\// { exit }
+    /^\/\/ *cross:/ {
+        v = $0; sub(/^\/\/ cross: /, "", v)
+        if (n++ || v == $0 || v !~ /^compare=accept( except=[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*)?$/) {
+            print "cross_pack.sh: " f ": bad or repeated header line '\''" $0 "'\''" > "/dev/stderr"; bad = 1; exit
+        }
+        val = v
+    }
+    END { if (bad) exit 2; if (val != "") print val }' "$1"
+}
+
 for src in "$ROOT"/ports/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     selected "ports/$nm" || continue
+    xc=$(cross_header "$src") || exit 2
     rm -rf "$TMP/acc"
     SEA="$SEA" sh "$ROOT/tests/accept.sh" --save-out "$TMP/acc" "ports/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
     st=$?
@@ -342,6 +362,7 @@ for src in "$ROOT"/ports/*.sea; do
             [ $? -le 1 ] || setup_fail "cannot write $nm.out"
             mkdir -p "$dest.expect" && /bin/cp -f "$TMP/acc/$nm.json" "$dest.expect/$nm.json" || setup_fail "cannot write $nm.expect"
             printf 'filter=compute-time\n' > "$dest.meta" || setup_fail "cannot write $nm.meta"
+            if [ -n "$xc" ]; then printf '%s\n' "$xc" >> "$dest.meta" || setup_fail "cannot write $nm.meta"; fi
             printf '%s\n' --export-reference > "$dest.args" || setup_fail "cannot write $nm.args"
         fi
     else

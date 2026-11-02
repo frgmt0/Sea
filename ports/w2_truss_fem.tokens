@@ -1,0 +1,60 @@
+# Token map for the W2 report (DESIGN.md 6.4, 2.13.9). Written from the fprintf formats of
+# workloads/w2_truss_fem.m and the rules of reference_py/compare.py (RULES["w2_truss_fem"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). The W2 JSON keys are in SI units (m, N), the report prints mm and kN, so where a
+# key's rule is relative to its largest magnitude the tolerance is converted to the report's
+# units as an absolute `num` rule with no rounding slack (DESIGN.md 6.4, L-eg): the scale is the
+# largest magnitude of that key in reference/w2_truss_fem.json.
+#
+# The heading, the geometry line ('%d panels x %.2f m, ...'), 'Steel mass ...', the load-angle
+# sweep lines and the influence-line line use the default rule (DESIGN.md 2.13.9).
+#
+# 'FSD: %d iterations, converged = %d, final max relative change %.3e': token 2 fsd_iters
+# (int 2); token 6 '1,' fsd_converged (exact; printed as 0/1); token 11 the final change, which
+# has no JSON key: both runs converged below fsdTol = 1e-9, so the rule is that bound, num 1e-9 0.
+^FSD:[[:space:]]   2    json fsd_iters
+^FSD:[[:space:]]   6    exact
+^FSD:[[:space:]]   11   num 1e-9 0
+#
+# Group rows '%-13s %6d %10.2f %10.2f %12.2f %12.2f': 'bottom chord' and 'top chord' are two
+# tokens (count 3, Amin 4, Amax 5, Nmin 6, Nmax 7), 'vertical' and 'diagonal' one (2, 3, 4, 5,
+# 6). The count is a property of the geometry (no JSON key): exact. Amin/Amax are A_cat values in
+# cm^2: exact. Nmin/Nmax are N0 values in kN: N0 is num 0 1e-8 relative to max|N0| =
+# 2109286.2088 N, so 2.109286e-2 N = 2.109286e-5 kN absolute.
+^(bottom|top)[[:space:]]chord[[:space:]]   3    exact
+^(bottom|top)[[:space:]]chord[[:space:]]   4    json A_cat
+^(bottom|top)[[:space:]]chord[[:space:]]   5    json A_cat
+^(bottom|top)[[:space:]]chord[[:space:]]   6    num 2.109286e-5 0
+^(bottom|top)[[:space:]]chord[[:space:]]   7    num 2.109286e-5 0
+^(vertical|diagonal)[[:space:]]   2    exact
+^(vertical|diagonal)[[:space:]]   3    json A_cat
+^(vertical|diagonal)[[:space:]]   4    json A_cat
+^(vertical|diagonal)[[:space:]]   5    num 2.109286e-5 0
+^(vertical|diagonal)[[:space:]]   6    num 2.109286e-5 0
+#
+# 'Design load case: midspan deflection %.3f mm, min FOS %.3f (member %d, %s)': token 6 the
+# midspan deflection, a u0 value in mm: u0 is num 0 1e-8 relative to max|u0| = 0.192190783 m, so
+# 1.921908e-9 m = 1.921908e-6 mm absolute; token 10 the minimum FOS, a fos0 value (json fos0, the
+# same units); token 12 '68,' e_crit0 (argmin_tol over fos0). The group name after it is text.
+^Design[[:space:]]load[[:space:]]case:   6    num 1.921908e-6 0
+^Design[[:space:]]load[[:space:]]case:   10   json fos0
+^Design[[:space:]]load[[:space:]]case:   12   json e_crit0
+#
+# 'Reactions: left (%.2f, %.2f) kN, right %.2f kN; applied total %.2f kN': tokens 3 '(0.00,',
+# 4 '847.70)' and 7 are reactions values in kN: num 0 1e-8 relative to max|reactions| =
+# 847697.0526 N, so 8.476971e-3 N = 8.476971e-6 kN absolute. Token 11, -sum(F0) in kN, has no
+# JSON key: default rule.
+^Reactions:[[:space:]]   3    num 8.476971e-6 0
+^Reactions:[[:space:]]   4    num 8.476971e-6 0
+^Reactions:[[:space:]]   7    num 8.476971e-6 0
+#
+# 'Member removal: %d mechanisms, %d cases overstressed, worst utilisation %.4f ' then
+# '(remove member %d, %s)': token 3 mechanism_count and token 5 overstressed_count (exact);
+# token 10 the worst utilisation (default rule); token 13 '61,' r_worst (argmax_tol over
+# util_removed: a near-tie of symmetric members). The group name after it is text.
+^Member[[:space:]]removal:   3    json mechanism_count
+^Member[[:space:]]removal:   5    json overstressed_count
+^Member[[:space:]]removal:   13   json r_worst
+#
+# 'Compute time: %.3f s' is skipped by the comparison (DESIGN.md 6.4).

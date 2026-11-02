@@ -1,0 +1,322 @@
+// w3_quarter_car.sea -- Nonlinear quarter-car ride study with hand-written fixed-step RK4
+// cross: compare=accept except=f_nat,c_best
+//
+// Sea port of sea/workloads/w3_quarter_car.m (Sea acceptance workload 3). Same model, same
+// numbers, no figures (DESIGN.md 2.13.9). Options:
+//   --export-reference   write w3_quarter_car.json to the working directory
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8): the
+//   bump `2*pi*(xh - bumpX0) / bumpL`, `bumpH / 2 * (1 - cos(arg))` and `bumpH / 2 * sin(arg) *
+//   (2*pi*speed / bumpL)`; the LCG phase `2 * pi * s / 2147483647`; the harmonic amplitudes
+//   `sqrt(2 * Gd0 * (nk / n0)^-2 * dn)`, whose `^-2` is Sea's pinned `1/(x*x)` (LANGUAGE.md 6.5)
+//   where MATLAB calls its power function (the last bit of `road_amp` may differ); the road
+//   ramps; the RK4 step of simulate (`x + h2*k1`, `x + dt*k3`, `x + h6*(k1 + 2*k2 + 2*k3 + k4)`
+//   summed left to right) and every line of qc_deriv; the metrics; the cost `J` and the
+//   parabola vertex `-coef(2) / (2 * coef(1))`. MATLAB's `.^2` is Sea's pinned multiplication.
+// * RK4 loop. simulate is LANGUAGE.md 2.3's loop, with qc_deriv a function the compiler inlines
+//   (LANGUAGE.md 8.6). MATLAB's `[k1, Ft(k), Fbs] = qc_deriv(...)` binds `(k1, ft, fbs)` and
+//   stores `Ft[k] = ft`; `k2 = qc_deriv(...)` (one output asked for) is `let (k2, _, _) = ...`.
+//   The final evaluation after the loop is written the same way.
+// * Road. MATLAB's implicit expansion `2*pi * xh(:) * nk + phik` (a column times a row, then a
+//   row added) is `2 * pi * xh.col * nk.row + phik.row`: each element is the same single product
+//   and sum. `sin(argR) * Ak(:)` and `(cos(argR) .* (2*pi*speed*nk)) * Ak(:)` are the class-E
+//   matrix @ vector product (LANGUAGE.md 10.8), whose pinned summation order differs from
+//   MATLAB's in the last bits only (`road_rough`'s rule is 1e-12 relative). Sea vectors have no
+//   orientation, so `th(:)`, `.'` and `Ak(:)` are the vectors themselves; the logical
+//   `(th(:) < rampT) / rampT` is `f64(th < rampT) / rampT` (MATLAB converts the logical to 0/1).
+// * Linear modal check. MATLAB's `sort(eig(Mlin \ Klin))` is `eig_sym(Klin, Mlin)`, the
+//   eigenvalues of the symmetric-definite pencil, ascending (LANGUAGE.md 10.8: "W3's
+//   `sort(eig(Mlin \ Klin))`"); it is class R, so `f_nat` agrees with MATLAB's to the last bits.
+// * Parabolic refinement. `[c3(:).^2, c3(:), ones(3, 1)] \ J3(:)` is `solve(A, J3)` of the same
+//   3 x 3 matrix (not symmetric, so LU, as MATLAB's backslash); class R.
+// * Indices. Sea is 0-based: MATLAB's step loop `k = 1:nStep` with `j = 2*k - 1` is `k in
+//   0..nStep` with `j = 2 * k`, and `zr(2*nStep + 1)` is `zr[2 * nStep]`; `k1(3)` is `k1[2]`;
+//   `Y(1, :)`, `Y(2, :)` are `Y[0, :]`, `Y[1, :]`; `coef(1)`, `coef(2)` are `coef[0]`,
+//   `coef[1]`. The damping index `ic`, the grid minimum `iBest` and the exported case `kRef` are
+//   0-based (MATLAB's kRef = 8 is 7) and exported as MATLAB's 1-based numbers (`+ 1`).
+//   `find(abs(zs) > band, 1, 'last')` is `find_last`, whose -1 is MATLAB's `isempty(last)`, and
+//   MATLAB's `last == numel(zs)` is `last == len(zs) - 1`; `t(last + 1)` keeps its `+ 1` (the
+//   sample after the last one outside the band). `cSweep(iBest-1:iBest+1)` is
+//   `cSweep[iBest-1..=iBest+1]`; `zRough(1:2:end)` is `zRough[0..$ step 2]`.
+// * Integers. nStep, nWave, nC, the LCG state `s` and the counts (`nnz`) are `i64`; the LCG's
+//   `mod(16807 * s, 2147483647)` is exact in `i64` as in MATLAB's doubles (LANGUAGE.md 2.5);
+//   `(0:nStep) * dt`, `nnz(...) * dt` and `nnz(...) / nnz(iRms)` convert exactly (LANGUAGE.md
+//   4.2, 6.5), as MATLAB's doubles. `nStep = round(tEnd / dt)` is `i64(round(tEnd / dt))`.
+// * Variables first set in a branch. MATLAB's `cBest` is set in both branches of an if/else and
+//   `refZs`, `refAcc`, `refFt`, `refRoughAcc` when `ic == kRef`; Sea needs an initializer, so
+//   they are declared before (`cBest` as NaN, the histories empty) and assigned where MATLAB
+//   assigns them. `[Jmin, iBest] = min(J)` is `min` and `argmin` (first occurrence, as MATLAB).
+// * Structs and multiple results. MATLAB's struct `p` is the struct Car, its `p.Wtot`, which the
+//   script adds after `g`, computed in the literal from the same masses and `g`. simulate returns
+//   the tuple `(Y, acc, Ft, bsOn)`; the bump run, which asks for three outputs, discards bsOn.
+// * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
+//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` and
+//   write_reference are not needed: the JSON goes to the working directory (LANGUAGE.md 11.3)
+//   and the export record (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB
+//   reference in its order.
+// * Report. The format strings are MATLAB's fprintf formats, each written as one literal.
+
+struct Car {
+    ms: f64         // sprung mass [kg]
+    mu: f64         // unsprung mass [kg]
+    ks: f64         // suspension spring [N/m]
+    kt: f64         // tire vertical stiffness [N/m]
+    ct: f64         // tire damping [N s/m]
+    rebRatio: f64   // rebound / compression damping ratio [-]
+    gap: f64        // compression travel before the bump stop engages [m]
+    kbs: f64        // bump stop linear stiffness [N/m]
+    kbs3: f64       // bump stop cubic stiffness [N/m^3]
+    Wtot: f64       // static tire load [N]
+}
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- vehicle parameters
+let g = 9.81                // gravity [m/s^2]
+let p = Car {
+    ms: 380, mu: 42, ks: 24e3, kt: 210e3, ct: 60, rebRatio: 1.6, gap: 0.065, kbs: 180e3,
+    kbs3: 4e7, Wtot: (380.0 + 42.0) * g,
+}
+
+// ---------------------------------------------------------------- road and simulation
+let speed = 16.0            // vehicle speed [m/s]
+let dt = 1e-3               // RK4 step [s]
+let tEnd = 8.0              // simulated time [s]
+let bumpX0 = 4.0            // bump start position [m]
+let bumpL = 0.6             // bump length [m]
+let bumpH = 0.07            // bump height [m]
+let nWave = 60              // number of road harmonics [-]
+let nLo = 0.05              // lowest spatial frequency [cycles/m]
+let nHi = 3.0               // highest spatial frequency [cycles/m]
+let Gd0 = 256e-6            // road PSD at n0 [m^3]
+let n0 = 0.1                // reference spatial frequency [cycles/m]
+let rampT = 1.0             // roughness fade-in time [s]
+let seed = 20240917         // LCG seed for the road phases
+let cSweep = linspace(500, 6300, 30)    // compression damping coefficients [N s/m]
+let rmsStart = 1.0          // start of the RMS evaluation window [s]
+
+let nStep = i64(round(tEnd / dt))
+let t = (0..=nStep) * dt                // output times
+let th = (0..=2 * nStep) * (dt / 2)     // half-step grid used by the RK4 stages
+let xh = speed * th
+
+// Bump road on the half-step grid (vectorized)
+var zBump = zeros(len(th))
+var vBump = zeros(len(th))
+let inB = xh >= bumpX0 & xh <= bumpX0 + bumpL
+let arg = 2 * pi * (xh[inB] - bumpX0) / bumpL
+zBump[inB] = bumpH / 2 * (1 - cos(arg))
+vBump[inB] = bumpH / 2 * sin(arg) * (2 * pi * speed / bumpL)
+
+// Random-phase harmonic road (phases from a Park-Miller LCG)
+let nk = linspace(nLo, nHi, nWave)
+let dn = (nHi - nLo) / (nWave - 1)
+let Ak = sqrt(2 * Gd0 * (nk / n0) ^ -2 * dn)
+var phik = zeros(nWave)
+var s = seed
+for k in 0..nWave {
+    s = (16807 * s) % 2147483647
+    phik[k] = 2 * pi * s / 2147483647
+}
+let argR = 2 * pi * xh.col * nk.row + phik.row     // (2*nStep+1) x nWave, implicit expansion
+let zRough0 = sin(argR) @ Ak
+let vRough0 = (cos(argR) * (2 * pi * speed * nk).row) @ Ak
+let ramp = min(th / rampT, 1.0)
+let rampD = f64(th < rampT) / rampT
+let zRough = ramp * zRough0
+let vRough = ramp * vRough0 + rampD * zRough0
+
+// ---------------------------------------------------------------- linear modal check
+let Mlin = [p.ms, 0; 0, p.mu]
+let Klin = [p.ks, -p.ks; -p.ks, p.ks + p.kt]
+let lam = eig_sym(Klin, Mlin)
+let fNat = sqrt(lam) / (2 * pi)
+let zeta = cSweep / (2 * sqrt(p.ks * p.ms))
+
+// ---------------------------------------------------------------- damping sweep
+let nC = len(cSweep)
+var peakAcc = zeros(nC)
+var maxComp = zeros(nC)
+var maxExt = zeros(nC)
+var peakTire = zeros(nC)
+var settle = zeros(nC)
+var overshoot = zeros(nC)
+var liftBump = zeros(nC)
+var rmsAcc = zeros(nC)
+var rmsTire = zeros(nC)
+var liftFrac = zeros(nC)
+var bsFrac = zeros(nC)
+var travelRough = zeros(nC)
+let tBump = bumpX0 / speed
+let iRms = t >= rmsStart
+let kRef = 7                // damping case whose time histories are exported (MATLAB's 8)
+var refZs = zeros(0)
+var refAcc = zeros(0)
+var refFt = zeros(0)
+var refRoughAcc = zeros(0)
+for ic in 0..nC {
+    let c = cSweep[ic]
+    // --- bump run
+    let (Y, acc, Ft, _) = simulate(p, c, zBump, vBump, dt, nStep)
+    let zs = Y[0, :]
+    let zu = Y[1, :]
+    peakAcc[ic] = max(abs(acc))
+    maxComp[ic] = max(zu - zs)
+    maxExt[ic] = max(zs - zu)
+    peakTire[ic] = max(Ft) / p.Wtot
+    liftBump[ic] = nnz(Ft == 0) * dt
+    overshoot[ic] = max(zs) / bumpH
+    let band = 0.02 * max(abs(zs))
+    let last = find_last(abs(zs) > band)
+    if last == -1 || last == len(zs) - 1 {
+        settle[ic] = nan
+    } else {
+        settle[ic] = t[last + 1] - tBump
+    }
+    if ic == kRef {
+        refZs = zs
+        refAcc = acc
+        refFt = Ft
+    }
+    // --- rough-road run
+    let (Yr, accR, FtR, bsOn) = simulate(p, c, zRough, vRough, dt, nStep)
+    rmsAcc[ic] = sqrt(mean(accR[iRms] ^ 2))
+    rmsTire[ic] = sqrt(mean(((FtR[iRms] - p.Wtot) / p.Wtot) ^ 2))
+    liftFrac[ic] = nnz(FtR[iRms] == 0) / nnz(iRms)
+    bsFrac[ic] = nnz(bsOn[iRms]) / nnz(iRms)
+    travelRough[ic] = max(abs(Yr[0, iRms] - Yr[1, iRms]))
+    if ic == kRef {
+        refRoughAcc = accR
+    }
+}
+
+// Combined ride / road-holding cost and its minimum (parabolic refinement)
+let J = rmsAcc / min(rmsAcc) + rmsTire / min(rmsTire)
+let Jmin = min(J)
+let iBest = argmin(J)
+var cBest = nan
+if iBest > 0 && iBest < nC - 1 {
+    let c3 = cSweep[iBest-1..=iBest+1]
+    let J3 = J[iBest-1..=iBest+1]
+    let coef = solve([c3.col ^ 2, c3.col, ones(3, 1)], J3)
+    cBest = -coef[1] / (2 * coef[0])
+} else {
+    cBest = cSweep[iBest]
+}
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+printf("\n=== W3  Quarter-car ride study (RK4, dt = %.1e s, %d steps per run) ===\n", dt, nStep)
+printf("Linear natural frequencies: body %.3f Hz, wheel hop %.3f Hz\n", fNat[0], fNat[1])
+printf("Road: %d harmonics, %.2f..%.2f cycles/m, speed %.1f m/s, bump %.0f mm x %.2f m\n\n",
+    nWave, nLo, nHi, speed, bumpH * 1e3, bumpL)
+printf("%8s %6s | %9s %8s %8s %7s %8s | %9s %8s %7s %7s\n", "c[Ns/m]", "zeta",
+    "peakAcc", "comp[mm]", "ext[mm]", "tire", "settle", "rmsAcc", "rmsTire", "lift%", "J")
+for ic in 0..nC {
+    printf("%8.1f %6.3f | %9.4f %8.2f %8.2f %7.3f %8.3f | %9.5f %8.5f %7.3f %7.4f\n",
+        cSweep[ic], zeta[ic], peakAcc[ic], maxComp[ic] * 1e3, maxExt[ic] * 1e3,
+        peakTire[ic], settle[ic], rmsAcc[ic], rmsTire[ic], 100 * liftFrac[ic], J[ic])
+}
+printf("Bump run: wheel off the ground for up to %.3f s; bump stop reached for c <= %.0f N s/m\n",
+    max(liftBump), max([0, cSweep[maxComp > p.gap]]))
+printf("\nBest compromise: c = %.1f N s/m on the grid (J = %.4f), refined c* = %.1f N s/m\n",
+    cSweep[iBest], Jmin, cBest)
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w3_quarter_car",
+        f_nat: fNat,
+        road_phase: phik,
+        road_amp: Ak,
+        road_rough: zRough[0..$ step 2],
+        c: cSweep,
+        zeta: zeta,
+        peak_acc: peakAcc,
+        max_comp: maxComp,
+        max_ext: maxExt,
+        peak_tire: peakTire,
+        overshoot: overshoot,
+        settle: settle,
+        rms_acc: rmsAcc,
+        rms_tire: rmsTire,
+        lift_time_bump: liftBump,
+        lift_frac: liftFrac,
+        bumpstop_frac: bsFrac,
+        travel_rough: travelRough,
+        J: J,
+        i_best: iBest + 1,
+        c_best: cBest,
+        k_ref: kRef + 1,
+        ref_zs: refZs,
+        ref_acc: refAcc,
+        ref_tire: refFt,
+        ref_rough_acc: refRoughAcc,
+    }
+    write_json("w3_quarter_car.json", out)
+}
+
+// ================================================================ functions
+
+// Fixed-step RK4. zr/vr hold the road on the half-step grid (2*nStep+1 samples).
+// Outputs are sampled at the step starts t_k, k = 0..nStep.
+fn simulate(p: Car, c: f64, zr: f64[], vr: f64[], dt: f64,
+            nStep: i64) -> (f64[,], f64[], f64[], bool[]) {
+    var Y = zeros(4, nStep + 1)
+    var acc = zeros(nStep + 1)
+    var Ft = zeros(nStep + 1)
+    var bsOn = filled(false, nStep + 1)
+    var x: f64[4] = [0, 0, 0, 0]
+    let h2 = dt / 2
+    let h6 = dt / 6
+    for k in 0..nStep {
+        let j = 2 * k
+        let (k1, ft, fbs) = qc_deriv(x, zr[j], vr[j], c, p)
+        let (k2, _, _) = qc_deriv(x + h2 * k1, zr[j + 1], vr[j + 1], c, p)
+        let (k3, _, _) = qc_deriv(x + h2 * k2, zr[j + 1], vr[j + 1], c, p)
+        let (k4, _, _) = qc_deriv(x + dt * k3, zr[j + 2], vr[j + 2], c, p)
+        Ft[k] = ft
+        Y[:, k] = x
+        acc[k] = k1[2]
+        bsOn[k] = fbs > 0
+        x = x + h6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    }
+    let (kEnd, ftEnd, fbsEnd) = qc_deriv(x, zr[2 * nStep], vr[2 * nStep], c, p)
+    Ft[nStep] = ftEnd
+    Y[:, nStep] = x
+    acc[nStep] = kEnd[2]
+    bsOn[nStep] = fbsEnd > 0
+    return (Y, acc, Ft, bsOn)
+}
+
+// State x = [zs, zu, vs, vu] measured from static equilibrium.
+fn qc_deriv(x: f64[4], zr: f64, vr: f64, c: f64, p: Car) -> (f64[4], f64, f64) {
+    let zs = x[0]
+    let zu = x[1]
+    let vs = x[2]
+    let vu = x[3]
+    let vrel = vs - vu
+    let cdamp = if vrel > 0 { c * p.rebRatio } else { c }  // rebound (extension) / compression
+    var Fsusp = -p.ks * (zs - zu) - cdamp * vrel
+    let dc = zu - zs - p.gap
+    var Fbs = 0.0
+    if dc > 0 {
+        Fbs = p.kbs * dc + p.kbs3 * (dc * dc * dc)
+    }
+    Fsusp = Fsusp + Fbs
+    var Ft = p.Wtot + p.kt * (zr - zu) + p.ct * (vr - vu)
+    if Ft < 0 {
+        Ft = 0                  // tire lift-off
+    }
+    return ([vs, vu, Fsusp / p.ms, (-Fsusp + Ft - p.Wtot) / p.mu], Ft, Fbs)
+}

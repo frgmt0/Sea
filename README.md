@@ -23,8 +23,8 @@ No performance claim goes in without a measurement behind it.
 
 ## Status
 
-Phases 0 to 7 are done, and phase 8 (linear algebra) is done through 8c. DESIGN.md §8 has the
-full milestone table.
+Phases 0 to 8 are done; phase 8 (linear algebra) finished with the ports of W2 and W3. DESIGN.md
+§8 has the full milestone table.
 
 - The compiler is a chain of passes: `seaparse`, `seaname`, `seacheck`, `seaexpand`, `seafuse`,
   `sealoop`, `sealower`, `seaopt`, `sealopt`, `seavec`, then a code generator per target
@@ -34,10 +34,9 @@ full milestone table.
 - The language covers scalars, dynamic and fixed-size arrays, structs, strings, functions with
   named and default arguments, formatted output, `write_json`, fusion and SIMD code
   generation, and the matrix product `@`.
-- Phase 8c added `lu`, `chol`, `solve`, `rcond` and `eig_sym`, with the `Lu` and `Chol` handle
-  types. Next are the ports of W2 and W3 (phase 8d).
-- Not done: the last two ports (phase 8d) and plotting (phase 9). Benchmarks against Accelerate
-  and OpenBLAS are phase 10.
+- Phase 8 added `lu`, `chol`, `solve`, `rcond` and `eig_sym`, with the `Lu` and `Chol` handle
+  types, and the ports of W2 and W3. Next is plotting (phase 9), starting with its specification.
+- Not done: plotting (phase 9). Benchmarks against Accelerate and OpenBLAS are phase 10.
 
 ## Workloads
 
@@ -47,14 +46,16 @@ optimisation and a buggy drivetrain. W1 to W5 and W7 are the acceptance targets 
 of each has to reproduce the MATLAB numbers and report, and run faster. W6 is an extra reference
 for later.
 
-`ports/` has the Sea ports of W1, W4, W5 and W7. `tests/accept.sh` runs them and compares every
-output key and the text report with the MATLAB reference. W2 and W3 need the linear algebra from
-phase 8c and are not ported yet. `workloads/README.md` describes the scripts and how the reference
-values are produced and compared.
+`ports/` has the Sea ports of W1, W2, W3, W4, W5 and W7. `tests/accept.sh` runs them and compares
+every output key and the text report with the MATLAB reference. `workloads/README.md` describes
+the scripts and how the reference values are produced and compared.
 
-One recorded number: on an Apple M2 Pro the W7 port computes in 0.134 to 0.135 s, against 8.602 s
+Recorded numbers: on an Apple M2 Pro the W7 port computes in 0.134 to 0.135 s, against 8.602 s
 for MATLAB's best compute time. DESIGN.md §6.3 notes this is a record and not a measurement under
-the benchmark methodology. W7 compiles in 17.4 to 20.8 s.
+the benchmark methodology. W7 compiles in 17.4 to 20.8 s. The W2 port computes in 0.495 to 0.504 s
+and W3 in 0.067 to 0.068 s, against MATLAB's best of 0.936 s and 0.631 s with default threads and
+0.358 s and 0.646 s on one thread; DESIGN.md §6.3 ("Measured at 8d") records these the same way,
+not as benchmark measurements.
 
 ## Relationship to Baysick
 

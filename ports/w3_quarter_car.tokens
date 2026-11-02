@@ -1,0 +1,41 @@
+# Token map for the W3 report (DESIGN.md 6.4, 2.13.9). Written from the fprintf formats of
+# workloads/w3_quarter_car.m and the rules of reference_py/compare.py (RULES["w3_quarter_car"]),
+# never from Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on
+# blank-separated fields; unlisted numeric tokens use the default rule (one unit of the last
+# printed digit). The W3 JSON keys are in SI units and fractions; where the report prints a key
+# in other units (comp and ext in mm, lift in percent) the rule is the key's rule converted to the
+# report's units as a `num` rule (L-eg: no rounding slack). Where a key's tolerance is below one
+# printed unit the `json` rule is used as it stands (L-eg).
+#
+# The heading ('dt = %.1e s, %d steps per run'), 'Linear natural frequencies: body %.3f Hz,
+# wheel hop %.3f Hz' (f_nat has no RULES entry, so `json f_nat` is not a rule: default rule) and
+# 'Road: ...' ('%.2f..%.2f' split at '..', each part by the default rule) take the default rule.
+#
+# Table rows '%8.1f %6.3f | %9.4f %8.2f %8.2f %7.3f %8.3f | %9.5f %8.5f %7.3f %7.4f'.
+# Tokens: 1 c and 2 zeta (no RULES entries: default rule), 3 '|', 4 peak_acc (1e-8 relative),
+# 5 max_comp*1e3 and 6 max_ext*1e3 (1e-8 relative to the largest |max_comp| 0.07658217699648738
+# and |max_ext| 0.04690892221356693 of the reference JSON, in mm: 7.658217699648738e-7 and
+# 4.690892221356693e-7 absolute), 7 peak_tire (1e-8 relative), 8 settle (1.001e-3 absolute),
+# 9 '|', 10 rms_acc, 11 rms_tire (1e-8 relative), 12 100*lift_frac (2/7001 absolute on the
+# fraction, 200/7001 = 0.028567347521782603 on the percentage), 13 J (1e-8 relative).
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   4    json peak_acc
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   5    num 7.658217699648738e-7 0
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   6    num 4.690892221356693e-7 0
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   7    json peak_tire
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   8    json settle
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   10   json rms_acc
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   11   json rms_tire
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   12   num 0.028567347521782603 0
+^[[:space:]]*[0-9]+[.][0-9][[:space:]]+[0-9]+[.][0-9]+[[:space:]][|]   13   json J
+#
+# 'Bump run: wheel off the ground for up to %.3f s; bump stop reached for c <= %.0f N s/m':
+# default rule (DESIGN.md 2.13.9: the rest by the default rule).
+#
+# 'Best compromise: c = %.1f N s/m on the grid (J = %.4f), refined c* = %.1f N s/m':
+# token 5 is cSweep(iBest), the grid point at i_best (json i_best: exact, the same grid value
+# when the index is the same); token 13 '2.2375),' (Jmin) by the default rule; token 17 c_best
+# (1e-7 relative).
+^Best[[:space:]]compromise:   5    json i_best
+^Best[[:space:]]compromise:   17   json c_best
+#
+# 'Compute time: %.3f s' is skipped by the comparison (DESIGN.md 6.4).

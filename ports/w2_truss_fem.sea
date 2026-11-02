@@ -1,0 +1,381 @@
+// w2_truss_fem.sea -- X-braced 2D bridge truss: sizing, load-angle sweep, damage study
+//
+// Sea port of sea/workloads/w2_truss_fem.m (Sea acceptance workload 2). Same model, same
+// numbers, no figures (DESIGN.md 2.13.9). Options:
+//   --export-reference   write w2_truss_fem.json to the working directory
+//
+// cross: compare=accept
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
+//   `sigY / 1.67`, `-wDeck * trib`, `sqrt(dx ^ 2 + dy ^ 2)`, `8 * abs(N) * Le ^ 2 * nBuck /
+//   (pi * E * DoverT)`, `max(abs(Anew - A) / A)`, `pi * E * Acat * DoverT / (8 * Le ^ 2)`,
+//   `rho * g * A[e] * L[e] / 2`, `EA[e] / L[e] * (c[e] * du + s[e] * dv)` and assemble_truss line
+//   by line (LANGUAGE.md 2.2). MATLAB's `.^2` is Sea's pinned multiplication `^ 2` (LANGUAGE.md
+//   6.5). The sums (`sum(rho * Acat * Le)` for the mass, `sum(F0)` in the report) use Sea's pinned
+//   8-lane order (LANGUAGE.md 10.5), which differs from MATLAB's in the last bits only.
+// * Linear algebra (class R, LANGUAGE.md 10.8). MATLAB's `K(freeDof, freeDof) \ F(freeDof, :)`
+//   is `solve(K[freeDof, freeDof], F[freeDof, :])` (its Cholesky path: the reduced stiffness is
+//   exactly symmetric with a positive diagonal). Sea has no overloading of user functions, so
+//   solve_free takes a matrix of right-hand sides, as MATLAB's does, and the single-vector calls
+//   pass `F.col` and take column `[:, 0]` of the result (DESIGN.md 2.13.8). `repmat(F0, 1,
+//   nAngle)` is `F0.col * ones(1, nAngle)` (an exact copy: x * 1 is x). `B * Usweep` and
+//   `B * Uinf` are GEMM (`@`); `K * u0 - F0` is the class-E matrix-vector product `K @ u0 - F0`.
+//   The member removal tests `rcond(lu(Kff))` with `Kff = Kr[freeDof, freeDof]` (LANGUAGE.md 2.2)
+//   and then calls solve_free, whose `solve` factors Kff again by Cholesky, as MATLAB's `rcond`
+//   and `\` do (Decision 128).
+// * Indices. Sea is 0-based: node a has the DOFs 2a (x) and 2a + 1 (y), so MATLAB's `2*i - 1` and
+//   `2*i` of 1-based node i are `2 * a` and `2 * a + 1`; `conn` holds 0-based node numbers (an
+//   `i64[,]`), `fixedDof` is `[0, 1, 2 * nBot - 1]` and `freeDof = setdiff((0..nDof), fixedDof)`.
+//   member_forces and force_matrix keep MATLAB's `i1 = 2*conn(e, 1)` (the y DOF) and its `i1 - 1`
+//   (the x DOF). The midspan nodes `midBot`, `midTop`, the members `eMidChord` (MATLAB's member
+//   nPanel - 1) and `eEndDiag` are 0-based; the counter `e` of the geometry loops is the next
+//   free member index. `group` keeps MATLAB's numbers 1..4, so `groupName{group(e)}` is
+//   `groupName[group[e] - 1]`. `min`/`max` with an index output are `min`/`argmin` and
+//   `max`/`argmax` (first occurrence, NaN ignored, as MATLAB); `eCrit0`, `kWorst`, `kFosWorst`
+//   and `rWorst` are 0-based and exported and printed as MATLAB's 1-based numbers (`+ 1`).
+//   `find(catalogA >= Afsd(e), 1)` with `isempty` is `find_first(...)` and its -1.
+// * Integers. nPanel, nAngle, fsdMaxIt, the node, member and DOF counts and fsdIters are `i64`;
+//   every use in `f64` arithmetic converts them exactly (LANGUAGE.md 4.2), as MATLAB's doubles.
+//   `nPanel / 2 + 1` (an integer: the even-nPanel check) is `idiv(nPanel, 2)` 0-based. The
+//   physical inputs are written as `f64` literals.
+// * Arrays. MATLAB's `zeros(n, 1)` and `ones(n, 1)` are vectors (no orientation); `Nsweep ./
+//   Acat` (column expansion) is `Nsweep / Acat.col`; `max(..., [], 1)` is `max(..., dim: 0)`;
+//   `true(nElem, 1)` and `false(1, nElem)` are `filled(true, nElem)` and `filled(false, nElem)`;
+//   `x(mask) = ...` and `conn(keep, :)` are mask selections.
+// * Errors keep MATLAB's messages without the message identifiers (`w2:config`, ...); none fires.
+// * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
+//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` are not needed: the
+//   JSON goes to the working directory (LANGUAGE.md 11.3) and the export record (MATLAB's `ref`,
+//   a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
+// * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` and `bool`
+//   values.
+
+var exportRef = false
+for a in args() {
+    match a {
+        "--export-reference" => { exportRef = true }
+        _ => { error("unknown option \"%s\"", a) }
+    }
+}
+let tCompute = now()
+
+// ---------------------------------------------------------------- inputs
+let nPanel = 60             // number of panels [-]
+let panelL = 1.00           // panel length [m]
+let height = 6.00           // truss depth [m]
+let E = 205e9               // Young's modulus [Pa]
+let rho = 7850.0            // density [kg/m^3]
+let g = 9.81                // gravity [m/s^2]
+let sigY = 275e6            // yield strength [Pa]
+let sigAll = sigY / 1.67    // allowable stress [Pa]
+let DoverT = 20.0           // tube diameter / wall thickness [-]
+let nBuck = 2.0             // buckling safety factor used in sizing [-]
+let Amin = 1e-3             // minimum member area [m^2]
+let wDeck = 24e3            // deck line load on the bottom chord [N/m]
+let Ppoint = 80e3           // magnitude of the swept point load [N]
+let nAngle = 1441           // number of load angles in the sweep [-]
+let fsdTol = 1e-9           // FSD convergence: max relative area change [-]
+let fsdMaxIt = 300          // FSD iteration cap [-]
+let catalogA = [4, 5, 6.3, 8, 10, 12.5, 16, 20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250,
+    315, 400, 500, 630] * 1e-4     // available tube areas [m^2] (R10 series)
+
+// ---------------------------------------------------------------- geometry
+let nBot = nPanel + 1
+let nNode = 2 * nBot
+var xy = zeros(nNode, 2)
+for i in 0..=nPanel {
+    xy[i, :] = [i * panelL, 0.0]                // bottom chord node
+    xy[nBot + i, :] = [i * panelL, height]      // top chord node
+}
+var conn = filled(0, 5 * nPanel + 1, 2)     // 0-based node numbers
+var group = filled(0, 5 * nPanel + 1)       // 1 bottom chord, 2 top chord, 3 vertical, 4 diagonal
+var e = 0
+for i in 0..nPanel {
+    conn[e, :] = [i, i + 1];                group[e] = 1; e += 1
+    conn[e, :] = [nBot + i, nBot + i + 1];  group[e] = 2; e += 1
+}
+for i in 0..=nPanel {
+    conn[e, :] = [i, nBot + i];             group[e] = 3; e += 1
+}
+for i in 0..nPanel {
+    conn[e, :] = [i, nBot + i + 1];         group[e] = 4; e += 1
+    conn[e, :] = [nBot + i, i + 1];         group[e] = 4; e += 1
+}
+let nElem = e
+let nDof = 2 * nNode
+let groupName = ["bottom chord", "top chord", "vertical", "diagonal"]
+
+let dx = xy[conn[:, 1], 0] - xy[conn[:, 0], 0]
+let dy = xy[conn[:, 1], 1] - xy[conn[:, 0], 1]
+let Le = sqrt(dx ^ 2 + dy ^ 2)
+let ce = dx / Le
+let se = dy / Le
+
+let fixedDof = [0, 1, 2 * nBot - 1]     // pin at bottom-left, roller (uy) at bottom-right
+let freeDof = setdiff((0..nDof), fixedDof)
+let midBot = idiv(nPanel, 2)            // midspan bottom node
+let midTop = nBot + idiv(nPanel, 2)     // midspan top node
+
+if nPanel % 2 != 0 {
+    error("nPanel must be even so that a midspan node exists")
+}
+
+// Deck load (constant): tributary length per bottom node
+var Fdeck = zeros(nDof)
+for i in 0..nBot {
+    var trib = panelL
+    if i == 0 || i == nBot - 1 {
+        trib = panelL / 2
+    }
+    Fdeck[2 * i + 1] = -wDeck * trib
+}
+
+// ---------------------------------------------------------------- fully stressed design
+var A = 0.01 * ones(nElem)
+var fsdIters = 0
+var fsdChange = inf
+while fsdIters < fsdMaxIt && fsdChange > fsdTol {
+    fsdIters += 1
+    let K = assemble_truss(conn, ce, se, Le, E * A, nDof)
+    let F = Fdeck + self_weight(conn, Le, A, rho, g, nDof)
+    let u = solve_free(K, F.col, freeDof, nDof)[:, 0]
+    let N = member_forces(conn, ce, se, Le, E * A, u)
+    var Areq = abs(N) / sigAll
+    let comp = N < 0
+    let Abuck = sqrt(8 * abs(N) * Le ^ 2 * nBuck / (pi * E * DoverT))
+    Areq[comp] = max(Areq[comp], Abuck[comp])
+    let Anew = max(Areq, Amin)
+    fsdChange = max(abs(Anew - A) / A)
+    A = Anew
+}
+let fsdConverged = fsdChange <= fsdTol
+let Afsd = A
+
+// Snap to the catalog
+var Acat = zeros(nElem)
+for e in 0..nElem {
+    let k = find_first(catalogA >= Afsd[e])
+    if k < 0 {
+        error("member %d needs %.4g m^2, larger than the catalog", e + 1, Afsd[e])
+    }
+    Acat[e] = catalogA[k]
+}
+
+// ---------------------------------------------------------------- design check
+let EA = E * Acat
+let K = assemble_truss(conn, ce, se, Le, EA, nDof)
+let Fsw = self_weight(conn, Le, Acat, rho, g, nDof)
+let F0 = Fdeck + Fsw
+let u0 = solve_free(K, F0.col, freeDof, nDof)[:, 0]
+let N0 = member_forces(conn, ce, se, Le, EA, u0)
+let sig0 = N0 / Acat
+let sigCr = pi * E * Acat * DoverT / (8 * Le ^ 2)
+let fos0 = member_fos(sig0, sigY, sigCr)
+let fosMin0 = min(fos0)
+let eCrit0 = argmin(fos0)
+let mass = sum(rho * Acat * Le)
+let midDefl0 = u0[2 * midBot + 1]
+let reactions = K @ u0 - F0
+
+// ---------------------------------------------------------------- load-angle sweep (multi-RHS)
+let theta = linspace(0, 2 * pi, nAngle)
+var Fsweep = F0.col * ones(1, nAngle)
+Fsweep[2 * midTop, :] = Fsweep[2 * midTop, :] + Ppoint * cos(theta)
+Fsweep[2 * midTop + 1, :] = Fsweep[2 * midTop + 1, :] + Ppoint * sin(theta)
+let Usweep = solve_free(K, Fsweep, freeDof, nDof)
+let B = force_matrix(conn, ce, se, Le, EA, nDof)    // N = B @ u
+let Nsweep = B @ Usweep
+let Ssweep = Nsweep / Acat.col
+let utilSweep = max(abs(Ssweep) / sigAll, dim: 0)
+var fosSweep = zeros(nAngle)
+for k in 0..nAngle {
+    fosSweep[k] = min(member_fos(Ssweep[:, k], sigY, sigCr))
+}
+let utilWorst = max(utilSweep)
+let kWorst = argmax(utilSweep)
+let fosWorst = min(fosSweep)
+let kFosWorst = argmin(fosSweep)
+let deflSweep = Usweep[2 * midBot + 1, :]
+let dispMagTop = hypot(Usweep[2 * midTop, :], Usweep[2 * midTop + 1, :])
+
+// ---------------------------------------------------------------- influence lines
+var Funit = zeros(nDof, nBot)
+for i in 0..nBot {
+    Funit[2 * i + 1, i] = -1
+}
+let Uinf = solve_free(K, Funit, freeDof, nDof)
+let Ninf = B @ Uinf
+let eMidChord = nPanel - 2                  // bottom-chord member just left of midspan
+let eEndDiag = 2 * nPanel + (nPanel + 1)    // first diagonal
+let inflDefl = Uinf[2 * midBot + 1, :]
+let inflChord = Ninf[eMidChord, :]
+let inflDiag = Ninf[eEndDiag, :]
+
+// ---------------------------------------------------------------- member removal study
+var utilRemoved = zeros(nElem)
+var mechanism = filled(false, nElem)
+for r in 0..nElem {
+    var keep = filled(true, nElem)
+    keep[r] = false
+    let Kr = assemble_truss(conn[keep, :], ce[keep], se[keep], Le[keep], EA[keep], nDof)
+    let Fr = Fdeck + self_weight(conn[keep, :], Le[keep], Acat[keep], rho, g, nDof)
+    let Kff = Kr[freeDof, freeDof]
+    if rcond(lu(Kff)) < 1e-12 {
+        mechanism[r] = true
+        utilRemoved[r] = nan
+        continue
+    }
+    let ur = solve_free(Kr, Fr.col, freeDof, nDof)[:, 0]
+    let Nr = member_forces(conn[keep, :], ce[keep], se[keep], Le[keep], EA[keep], ur)
+    utilRemoved[r] = max(abs(Nr / Acat[keep])) / sigY
+}
+let utilRemWorst = max(utilRemoved)
+let rWorst = argmax(utilRemoved)
+let nOverstressed = nnz(utilRemoved > 1)
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+printf("\n=== W2  X-braced bridge truss ===\n")
+printf("%d panels x %.2f m, depth %.2f m: %d nodes, %d members, %d free DOF\n",
+    nPanel, panelL, height, nNode, nElem, len(freeDof))
+printf("FSD: %d iterations, converged = %d, final max relative change %.3e\n",
+    fsdIters, fsdConverged, fsdChange)
+printf("Steel mass after catalog snap: %.1f kg\n", mass)
+printf("\n%-13s %6s %10s %10s %12s %12s\n", "Group", "count", "Amin[cm2]",
+    "Amax[cm2]", "Nmin[kN]", "Nmax[kN]")
+for gI in 1..=4 {
+    let m = group == gI
+    printf("%-13s %6d %10.2f %10.2f %12.2f %12.2f\n", groupName[gI - 1], nnz(m),
+        min(Acat[m]) * 1e4, max(Acat[m]) * 1e4, min(N0[m]) / 1e3, max(N0[m]) / 1e3)
+}
+printf("\nDesign load case: midspan deflection %.3f mm, min FOS %.3f (member %d, %s)\n",
+    midDefl0 * 1e3, fosMin0, eCrit0 + 1, groupName[group[eCrit0] - 1])
+printf("Reactions: left (%.2f, %.2f) kN, right %.2f kN; applied total %.2f kN\n",
+    reactions[0] / 1e3, reactions[1] / 1e3, reactions[2 * nBot - 1] / 1e3, -sum(F0) / 1e3)
+printf("\nLoad-angle sweep (%d angles, %.0f kN at midspan top node):\n", nAngle, Ppoint / 1e3)
+printf("  worst utilisation %.4f at %.2f deg; lowest FOS %.4f at %.2f deg\n",
+    utilWorst, theta[kWorst] * 180 / pi, fosWorst, theta[kFosWorst] * 180 / pi)
+printf("  midspan deflection range %.3f .. %.3f mm\n", min(deflSweep) * 1e3,
+    max(deflSweep) * 1e3)
+printf("Influence lines: max midspan deflection per kN %.4f mm, chord force per kN %.4f\n",
+    max(abs(inflDefl)) * 1e3 * 1e3, max(abs(inflChord)) * 1e3)
+printf("Member removal: %d mechanisms, %d cases overstressed, worst utilisation %.4f ",
+    nnz(mechanism), nOverstressed, utilRemWorst)
+printf("(remove member %d, %s)\n", rWorst + 1, groupName[group[rWorst] - 1])
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w2_truss_fem",
+        n_node: nNode,
+        n_elem: nElem,
+        fsd_iters: fsdIters,
+        fsd_converged: fsdConverged,
+        A_fsd: Afsd,
+        A_cat: Acat,
+        mass: mass,
+        u0: u0,
+        N0: N0,
+        fos0: fos0,
+        fos_min0: fosMin0,
+        e_crit0: eCrit0 + 1,                 // MATLAB's 1-based member number
+        mid_defl0: midDefl0,
+        reactions: [reactions[0], reactions[1], reactions[2 * nBot - 1]],
+        theta: theta,
+        util_sweep: utilSweep,
+        fos_sweep: fosSweep,
+        defl_sweep: deflSweep,
+        disp_top_sweep: dispMagTop,
+        util_worst: utilWorst,
+        k_worst: kWorst + 1,                 // MATLAB's 1-based angle numbers
+        fos_worst: fosWorst,
+        k_fos_worst: kFosWorst + 1,
+        infl_defl: inflDefl,
+        infl_chord: inflChord,
+        infl_diag: inflDiag,
+        util_removed: utilRemoved,
+        mechanism_count: nnz(mechanism),
+        overstressed_count: nOverstressed,
+        util_removed_worst: utilRemWorst,
+        r_worst: rWorst + 1,                 // MATLAB's 1-based member number
+    }
+    write_json("w2_truss_fem.json", out)
+}
+
+// ================================================================ functions
+
+// Global stiffness matrix of a 2D truss, assembled member by member (LANGUAGE.md 2.2).
+fn assemble_truss(conn: i64[,], c: f64[], s: f64[], L: f64[], EA: f64[], nDof: i64) -> f64[,] {
+    var K = zeros(nDof, nDof)
+    for e in 0..rows(conn) {
+        let k = EA[e] / L[e]
+        let cc = c[e] * c[e] * k
+        let cs = c[e] * s[e] * k
+        let ss = s[e] * s[e] * k
+        let ke = [ cc,  cs, -cc, -cs;
+                   cs,  ss, -cs, -ss;
+                  -cc, -cs,  cc,  cs;
+                  -cs, -ss,  cs,  ss]
+        let a = conn[e, 0]
+        let b = conn[e, 1]
+        let idx = [2 * a, 2 * a + 1, 2 * b, 2 * b + 1]
+        K[idx, idx] += ke
+    }
+    return K
+}
+
+// Member self weight lumped half to each end node (downward).
+fn self_weight(conn: i64[,], L: f64[], A: f64[], rho: f64, g: f64, nDof: i64) -> f64[] {
+    var F = zeros(nDof)
+    for e in 0..rows(conn) {
+        let w = rho * g * A[e] * L[e] / 2
+        F[2 * conn[e, 0] + 1] = F[2 * conn[e, 0] + 1] - w
+        F[2 * conn[e, 1] + 1] = F[2 * conn[e, 1] + 1] - w
+    }
+    return F
+}
+
+// Solve K(free,free) * U(free,:) = F(free,:) with zero prescribed displacements (LANGUAGE.md 2.2).
+fn solve_free(K: f64[,], F: f64[,], freeDof: i64[], nDof: i64) -> f64[,] {
+    var U = zeros(nDof, cols(F))
+    U[freeDof, :] = solve(K[freeDof, freeDof], F[freeDof, :])
+    return U
+}
+
+// Axial member forces (tension positive).
+fn member_forces(conn: i64[,], c: f64[], s: f64[], L: f64[], EA: f64[], u: f64[]) -> f64[] {
+    let nE = rows(conn)
+    var N = zeros(nE)
+    for e in 0..nE {
+        let i1 = 2 * conn[e, 0] + 1     // y DOF of the first node (MATLAB's 2*conn(e, 1))
+        let i2 = 2 * conn[e, 1] + 1
+        let du = u[i2 - 1] - u[i1 - 1]
+        let dv = u[i2] - u[i1]
+        N[e] = EA[e] / L[e] * (c[e] * du + s[e] * dv)
+    }
+    return N
+}
+
+// Matrix B with N = B @ u for all members.
+fn force_matrix(conn: i64[,], c: f64[], s: f64[], L: f64[], EA: f64[], nDof: i64) -> f64[,] {
+    let nE = rows(conn)
+    var B = zeros(nE, nDof)
+    for e in 0..nE {
+        let k = EA[e] / L[e]
+        let i1 = 2 * conn[e, 0] + 1
+        let i2 = 2 * conn[e, 1] + 1
+        B[e, [i1 - 1, i1, i2 - 1, i2]] = k * [-c[e], -s[e], c[e], s[e]]
+    }
+    return B
+}
+
+// Factor of safety per member: yield, and Euler buckling for compression members.
+fn member_fos(sig: f64[], sigY: f64, sigCr: f64[]) -> f64[] {
+    var fos = sigY / abs(sig)
+    let comp = sig < 0
+    fos[comp] = min(fos[comp], sigCr[comp] / abs(sig[comp]))
+    return fos
+}

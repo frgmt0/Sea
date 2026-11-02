@@ -175,8 +175,19 @@ transcription (PASS), `err_ns_lib_solve` retired; an integration defect fixed (`
 check reused the constants E7/E8 as scratch); `make test` and `make cross` pass (1 087 cases: default
 911, `sse2` 911, once-only 176, total 1 998); lead decisions L-jm–L-jv; measured: `seaname` 5 625
 built lines, `seacheck` 7 059, `sealoop` 6 689, `sealower` 6 841, no relief, DESIGN.md §2.7
-"Measured after 8c"). **Next:** 8d (the ports W2 and W3, the cross rule of Decision 127 and the gate
-after phase 8).
+"Measured after 8c"). **8d is done** (2026-11-02: the ports `ports/w2_truss_fem.sea` and
+`ports/w3_quarter_car.sea` and their token maps, port-only with no compiler or runtime defect found;
+`tests/accept.sh` passes W1, W2, W3, W4, W5 and W7 (W2's float keys within 6.4e-11 relative, `r_worst`
+59 against MATLAB's 61 by the near-tie rule; W3's 27 keys, largest relative difference 9.6e-16);
+Decision 127's cross rule: the `// cross: compare=accept [except=…]` header line, deferred runs on
+the host (`cross_run.sh -k DIR`), the return path `#sea-cross-files N` and the Mac-side
+`tests/cross_accept.sh`; lead decisions L-jw–L-kd, DESIGN.md §2.13.9, §6.3 "Measured at 8d", §6.6.1
+"As built in 8d"; `make test` passes (accept 2 + 6) and `make cross` passes 1 089 cases (default 911,
+`sse2` 911, once-only 176; host 1 998 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); W2
+compiles in 17.83–17.99 s (warm) and computes in 0.495–0.504 s, W3 in 5.73–5.84 s and 0.067–0.068 s; the gate
+after phase 8 passes every program with no relief, DESIGN.md §2.7 "Measured at the gate after phase
+8"). **Phase 8 is complete.** **Next:** phase 9 (plotting, DESIGN.md §8 row 9), starting with its
+specification (documents only, as 6a, 7a and 8a).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -210,7 +221,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders,
   MATMUL on exact data, and LU, CHOL, the solves, RCOND and EIG (DESIGN.md §2.13.8) under every
   usable variant, with the header `tests/la/gen_consts.sh` writes;
-  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W4 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
+  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.
@@ -229,11 +240,18 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   [pattern]` (packs on the Mac, one ssh to the host, default `$SEA_CROSS_HOST` else `desktop`);
   `make cross-pack` builds `build/x86_64-linux-bundle` only (every case runs under both x86_64
   variants, default and `sse2`, unless `SEA_KERNELS` is set); on Linux: `sh tests/cross_run.sh
-  [-v] BUNDLE_DIR`, `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
+  [-v] [-k DIR] BUNDLE_DIR` (`-k DIR` keeps the deferred port runs, below; without it they go to a
+  printed temporary directory), `make -f Makefile.linux` (`build-x86_64-linux/libsea.a`), `make -f
   Makefile.linux test-rt` (`tests/rt/x86_64_linux/`), `make -f Makefile.linux test-math`. `make cross` also
   runs the once-only cases `math/math_check`, `la/la_check` and `la/la_link` on the host, and the
   case kind `fusion` (`tests/fusion/`, DESIGN.md §6.6.1) under both variants; `make -f
-  Makefile.linux test-la` runs `la_check` there.
+  Makefile.linux test-la` runs `la_check` there. A port with the header line `// cross:
+  compare=accept [except=KEY,…]` (W2, W3; Decision 127) is run on the host under both variants but
+  deferred (`DEFER ports/NAME (VARIANT)`, its output and JSON kept and sent back after the line
+  `#sea-cross-files N` as base64 tar); `tests/cross_accept.sh` judges the kept runs on the Mac
+  (`compare.py`, `compare_report.py`, byte equality outside the excepted keys; needs `uv`), and
+  `make cross` ends with `host: P passed, F failed, D deferred; Mac: P2 passed, F2 failed`
+  (DESIGN.md §2.13.9, §6.6.1).
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)
