@@ -1,0 +1,28 @@
+pass 1
+solve P L U n=3 m=1: ok
+solve P L U n=33 m=3: ok
+solve P L U n=70 m=1: ok
+solve P L U n=70 m=7: ok
+solve R'R n=3 m=1: ok
+solve R'R n=33 m=1: ok
+solve R'R n=70 m=5: ok
+solve R'R n=80 m=40: ok
+[1, 2; 2, 1] indefinite: LU after the Cholesky attempt: ok 3FF0000000000000 3FF0000000000000
++0 / -0 pair: the Cholesky path: ok 3FCC71C71C71C71C 3FBC71C71C71C71C 3FF71C71C71C71C7
+symmetric, A[0,0] = -2: LU: ok 3FF0000000000000 3FF0000000000000
+NaN pair, positive diagonal: Cholesky fails on NaN, LU propagates: ok NaN NaN
+symmetric positive definite, two columns: the Cholesky path: ok BFC6969696969697 3FCE1E1E1E1E1E1C 3FF7878787878788 3FEC3C3C3C3C3C3C BFF2D2D2D2D2D2D3 3FE4B4B4B4B4B4B5
+pass 2
+solve P L U n=3 m=1: ok
+solve P L U n=33 m=3: ok
+solve P L U n=70 m=1: ok
+solve P L U n=70 m=7: ok
+solve R'R n=3 m=1: ok
+solve R'R n=33 m=1: ok
+solve R'R n=70 m=5: ok
+solve R'R n=80 m=40: ok
+[1, 2; 2, 1] indefinite: LU after the Cholesky attempt: ok 3FF0000000000000 3FF0000000000000
++0 / -0 pair: the Cholesky path: ok 3FCC71C71C71C71C 3FBC71C71C71C71C 3FF71C71C71C71C7
+symmetric, A[0,0] = -2: LU: ok 3FF0000000000000 3FF0000000000000
+NaN pair, positive diagonal: Cholesky fails on NaN, LU propagates: ok NaN NaN
+symmetric positive definite, two columns: the Cholesky path: ok BFC6969696969697 3FCE1E1E1E1E1E1C 3FF7878787878788 3FEC3C3C3C3C3C3C BFF2D2D2D2D2D2D3 3FE4B4B4B4B4B4B5

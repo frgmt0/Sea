@@ -1,0 +1,5 @@
+// r_la_solve_order_sq -- check order of SOLVE (L-ik): a 2 x 3 A and a vector of 5: matrix is not square before
+// the shape check
+printf("start\n")
+let x = solve(zeros(2, 3), zeros(5))
+printf("%d\n", len(x))

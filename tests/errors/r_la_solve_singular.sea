@@ -1,0 +1,6 @@
+// r_la_solve_singular -- solve(F, b) with F = lu([1, 2; 2, 4]) (zero pivot 2 - 0.5 * 4): matrix is singular, at
+// the line of solve (LANGUAGE.md 9.2 "either form", L-il)
+let F = lu([1.0, 2.0; 2.0, 4.0])
+printf("lu done\n")
+let x = solve(F, [1.0, 1.0])
+printf("%d\n", len(x))

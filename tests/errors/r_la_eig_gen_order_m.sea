@@ -1,0 +1,5 @@
+// r_la_eig_gen_order_m -- check order of EIG_SYM_GEN: a square non-symmetric K and a 3 x 2 M: M's not square
+// comes before the shape check and the symmetric tests
+printf("start\n")
+let e = eig_sym([1.0, 2.0; 3.0, 4.0], zeros(3, 2))
+printf("%d\n", len(e))

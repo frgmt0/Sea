@@ -1,0 +1,4 @@
+// err_la_rcond_chol -- rcond of a Chol: 243 (DESIGN.md 2.13.3: rcond takes an Lu only)
+let A = ones(2, 2)
+let C = chol(A)
+let r = rcond(C)

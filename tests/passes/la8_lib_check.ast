@@ -1,0 +1,102 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_check.sea
+type 0:1:9 f64 m 0
+param 0:1:6 A 0 0
+type 0:1:21 i64 m 0
+param 0:1:17 Ai 0 0
+type 0:1:32 f64 v 0
+param 0:1:29 b 0 0
+type 0:1:42 Lu s 0
+param 0:1:39 F 0 0
+type 0:1:49 Chol s 0
+pname 0:2:9 M
+float 0:2:14 #4010000000000000
+float 0:2:19 #0000000000000000
+row 0:2:14 2
+float 0:2:24 #0000000000000000
+float 0:2:29 #4010000000000000
+row 0:2:24 2
+array 0:2:13 2
+let 0:2:5 0
+pname 0:3:9 Mi
+int 0:3:15 4
+int 0:3:18 0
+row 0:3:15 2
+int 0:3:21 0
+int 0:3:24 4
+row 0:3:21 2
+array 0:3:14 2
+let 0:3:5 0
+pname 0:4:9 G
+type 0:4:12 Lu s 0
+name 0:4:17 lu
+name 0:4:20 Ai
+call 0:4:17 1
+let 0:4:5 1
+pname 0:5:9 C
+name 0:5:13 chol
+name 0:5:18 A
+call 0:5:13 1
+let 0:5:5 0
+pname 0:6:9 x
+name 0:6:13 solve
+name 0:6:19 F
+name 0:6:22 b
+call 0:6:13 2
+let 0:6:5 0
+pname 0:7:9 y
+name 0:7:13 solve
+name 0:7:19 C
+name 0:7:22 A
+call 0:7:13 2
+let 0:7:5 0
+pname 0:8:9 z
+name 0:8:13 solve
+name 0:8:19 Ai
+name 0:8:23 b
+call 0:8:13 2
+let 0:8:5 0
+pname 0:9:9 r
+name 0:9:13 rcond
+name 0:9:19 G
+call 0:9:13 1
+let 0:9:5 0
+pname 0:10:9 e
+name 0:10:13 eig_sym
+name 0:10:21 M
+call 0:10:13 1
+let 0:10:5 0
+pname 0:11:9 e2
+name 0:11:14 eig_sym
+name 0:11:22 Mi
+name 0:11:26 A
+call 0:11:14 2
+let 0:11:5 0
+name 0:12:5 printf
+str 0:12:12 %25g%20%25g%20%25g%20%25g%20%25g%20%25g%0A
+name 0:12:35 x
+int 0:12:37 0
+index 0:12:35 1
+name 0:12:41 y
+int 0:12:43 0
+int 0:12:46 0
+index 0:12:41 2
+name 0:12:50 z
+int 0:12:52 0
+index 0:12:50 1
+name 0:12:56 r
+name 0:12:59 e
+int 0:12:61 0
+index 0:12:59 1
+name 0:12:65 e2
+int 0:12:68 0
+index 0:12:65 1
+call 0:12:5 7
+cstmt 0:12:5
+name 0:13:12 C
+return 0:13:5 1
+block 0:1:54 12
+fn 0:1:1 g 0 4 1
+prog 1
+#end

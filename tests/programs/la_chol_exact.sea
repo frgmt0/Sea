@@ -1,0 +1,44 @@
+// la_chol_exact -- chol and solve on exact data (LANGUAGE.md 10.8; DESIGN.md 2.13.6 CHOL, CHOL_SOLVE, SOLVE, 2.13.8): A = R^T R
+// built by cholcase(n) from an upper R with the power-of-two diagonal 2, 1, 4, 1/2 (positive: each pivot
+// d is the power of four R[j,j]^2 and sqrt(d) is exact) and dyadic entries in {0, +-1/2, +-1, 2} above it,
+// B = A @ X for an integer X with 40 columns; chol(A) reproduces R exactly and solve(chol(A), B) and
+// solve(A, B) (A exactly symmetric with a positive diagonal: the Cholesky path) give X: each line is n,
+// then for both the count of differing elements and the largest |difference|, all 0; n = 3 and 70 (three
+// panels, the trailing updates through gemm_sub with the transposed panel W);
+// exact data (DESIGN.md 2.13.8): every value, product and partial sum is a binary64 dyadic in every
+// order and grouping, so every target, variant and kernel gives these bits; checked by an exact Fraction
+// simulation in tests/vectors/la8_cases.py
+fn cholcase(n: i64) -> f64[,] {
+    let rd = [2.0, 1.0, 4.0, 0.5]
+    let rv = [0.0, 1.0, -0.5, 2.0, 0.0, -1.0, 0.5]
+    var R = zeros(n, n)
+    for i in 0..n {
+        R[i, i] = rd[i % 4]
+        for j in i + 1..n {
+            R[i, j] = rv[(i * 3 + j * 5) % 7]
+        }
+    }
+    return R.T @ R
+}
+fn xmat(n: i64, m: i64) -> f64[,] {
+    var X = zeros(n, m)
+    for i in 0..n {
+        for c in 0..m {
+            X[i, c] = f64((i * 2 + c * 5) % 9 - 4)
+        }
+    }
+    return X
+}
+for n in [3, 70] {
+    let A = cholcase(n)
+    let X = xmat(n, 40)
+    let B = A @ X
+    let C = chol(A)
+    let Xc = solve(C, B)
+    let Xa = solve(A, B)
+    let Qc = Xc != X
+    let Ec = abs(Xc - X)
+    let Qa = Xa != X
+    let Ea = abs(Xa - X)
+    printf("%d %d %g %d %g\n", n, nnz(Qc.flat), max(Ec.flat), nnz(Qa.flat), max(Ea.flat))
+}

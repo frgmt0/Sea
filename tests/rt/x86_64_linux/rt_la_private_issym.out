@@ -1,0 +1,12 @@
+order 0: 1
+1x1 NaN: 1
+[1, 2; 2, 1]: 1
++0 / -0 pair: 1
+NaN / NaN pair (different payloads): 1
+NaN / 2 pair: 0
+2 / NaN pair: 0
+3x3 one pair differs: 0
+3x3 symmetric, ld 4, padding not read: 1
+Inf / Inf pair: 1
+Inf / -Inf pair: 0
+3x3 symmetric with a NaN diagonal: 1

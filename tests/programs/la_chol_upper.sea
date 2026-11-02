@@ -1,0 +1,44 @@
+// la_chol_upper -- chol reads the upper triangle of A only (LANGUAGE.md 10.8; DESIGN.md 2.13.6 CHOL, L-im, L-jf): cholcase(5)
+// with NaN in every element below the diagonal still factors to R exactly, and solve(chol(A), b) with
+// b = R^T R x gives x = [-5, -2, 1, 4, -4] (no NaN reaches the result);
+// exact data (DESIGN.md 2.13.8): every value, product and partial sum is a binary64 dyadic in every
+// order and grouping, so every target, variant and kernel gives these bits; checked by an exact Fraction
+// simulation in tests/vectors/la8_cases.py
+fn cholcase(n: i64) -> f64[,] {
+    let rd = [2.0, 1.0, 4.0, 0.5]
+    let rv = [0.0, 1.0, -0.5, 2.0, 0.0, -1.0, 0.5]
+    var R = zeros(n, n)
+    for i in 0..n {
+        R[i, i] = rd[i % 4]
+        for j in i + 1..n {
+            R[i, j] = rv[(i * 3 + j * 5) % 7]
+        }
+    }
+    return R.T @ R
+}
+fn xint(n: i64) -> f64[] {
+    var x = zeros(n)
+    for i in 0..n {
+        x[i] = f64((i * 3) % 11 - 5)
+    }
+    return x
+}
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+var A = cholcase(5)
+for i in 0..5 {
+    for j in 0..i {
+        A[i, j] = nan
+    }
+}
+let x = xint(5)
+let b = cholcase(5) @ x
+let F = chol(A)
+let xh = solve(F, b)
+printf("%d %g\n", nnz(xh != x), max(abs(xh - x)))
+pvz(xh)

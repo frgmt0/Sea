@@ -1,0 +1,36 @@
+pass 1
+lu 70: ok
+lu 3: ok
+chol 70: ok
+chol 3: ok
+lu_solve 70 x 40: ok
+lu_solve 70 vector: ok
+lu_solve 3 x 2: ok
+chol_solve 70 x 40: ok
+chol_solve 70 vector: ok
+solve 70 x 40 (Cholesky): ok
+solve 70 x 40 (LU): ok
+solve 2 x 1 (Cholesky fails, LU): ok
+solve 3 x 2 (Cholesky): ok
+rcond 70: ok
+rcond 3: ok
+sea_la_potrf 70: ok
+sea_la_issym 70: ok
+pass 2
+lu 70: ok
+lu 3: ok
+chol 70: ok
+chol 3: ok
+lu_solve 70 x 40: ok
+lu_solve 70 vector: ok
+lu_solve 3 x 2: ok
+chol_solve 70 x 40: ok
+chol_solve 70 vector: ok
+solve 70 x 40 (Cholesky): ok
+solve 70 x 40 (LU): ok
+solve 2 x 1 (Cholesky fails, LU): ok
+solve 3 x 2 (Cholesky): ok
+rcond 70: ok
+rcond 3: ok
+sea_la_potrf 70: ok
+sea_la_issym 70: ok

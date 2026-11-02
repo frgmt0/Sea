@@ -1,0 +1,28 @@
+pass 1
+lu n=1 m=1 vector: ok
+lu n=2 m=1 vector: ok
+lu n=3 m=1 vector: ok
+lu n=3 m=2: ok
+lu n=31 m=1 vector: ok
+lu n=32 m=7: ok
+lu n=33 m=1 vector: ok
+lu n=33 m=7: ok
+lu n=64 m=3: ok
+lu n=70 m=1 vector: ok
+lu n=70 m=7: ok
+lu n=70 m=40: ok
+lu n=80 m=65: ok
+pass 2
+lu n=1 m=1 vector: ok
+lu n=2 m=1 vector: ok
+lu n=3 m=1 vector: ok
+lu n=3 m=2: ok
+lu n=31 m=1 vector: ok
+lu n=32 m=7: ok
+lu n=33 m=1 vector: ok
+lu n=33 m=7: ok
+lu n=64 m=3: ok
+lu n=70 m=1 vector: ok
+lu n=70 m=7: ok
+lu n=70 m=40: ok
+lu n=80 m=65: ok

@@ -1,0 +1,4 @@
+// err_la_ref_arg -- a ref argument of lu: 255 at the ref, naming the parameter as LANGUAGE.md 10.8 writes it (A),
+// not the variable (DESIGN.md 2.13.3)
+var M = ones(2, 2)
+let F = lu(ref M)

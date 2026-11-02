@@ -1,0 +1,9 @@
+// la_eig_2x2 -- eig_sym([2, 1; 1, 2]) (LANGUAGE.md 10.8; DESIGN.md 2.13.6 EIG_SYM, 2.13.8) is [1, 3] within the tolerance
+// rule |computed - exact| <= c * n * eps * scale with c = 4, n = 2 and the scale ||A||_2 = 3, i.e.
+// 8 * eps * 3 = 5.3290705182007514e-15 (class R: a printed bool, 1 when the rule holds); the bound is
+// computed by tests/vectors/la8_cases.py (class E: one IEEE product chain, exact)
+let A = [2.0, 1.0; 1.0, 2.0]
+let e = eig_sym(A)
+let bound = 8.0 * eps * 3.0
+printf("%d %.17g\n", len(e), bound)
+printf("%d %d\n", abs(e[0] - 1.0) <= bound, abs(e[1] - 3.0) <= bound)

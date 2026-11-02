@@ -1,0 +1,102 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_release.sea
+tmat 10 4
+tfvec 11 4 2
+tfmat 12 4 2 2
+tstruct 13 S 2
+fd f 8
+fd k 3
+tvec 14 3
+fn 1 .main main 1 0 1 0:1:1
+loc A 10 let 0:16:5
+cf 0:16:18 4 #4000000000000000
+cf 0:16:23 4 #0000000000000000
+row 0:16:18 11 2
+cf 0:16:28 4 #0000000000000000
+cf 0:16:33 4 #4010000000000000
+row 0:16:28 11 2
+arr 0:16:17 12 2
+dyn 0:16:17 10
+bind 0:16:1 1
+lv 0:17:21 10 1
+ci 0:17:24 3 5
+call 0:17:19 4 2 2
+fconv 0:17:8 1 - - - g
+ftext 0:17:8 1 %20
+lv 0:17:30 10 1
+ci 0:17:33 3 10
+call 0:17:28 4 2 2
+fconv 0:17:8 1 - - - g
+ftext 0:17:8 1 %0A
+fmt 0:17:8 1 4
+lib 0:17:1 1 printf 1
+eval 0:17:1
+block 0:1:1 2
+end
+fn 2 g fn 4 2 6 0:2:1
+par A 10 val
+par n 3 val
+loc F 8 let 0:3:9
+loc t 4 var 0:5:9
+loc i 3 for 0:6:9
+loc G 8 let 0:7:13
+loc H 8 let 0:12:9
+loc s 13 let 0:13:9
+lv 0:3:16 10 1
+lib 0:3:13 8 lu 1
+bind 0:3:5 3
+lv 0:4:8 3 2
+ci 0:4:12 3 9
+bin 0:4:8 2 gt
+lv 0:4:29 8 3
+lib 0:4:23 4 rcond 1
+ret 0:4:16 1
+block 0:4:14 1
+if 0:4:5 0
+cf 0:5:13 4 #0000000000000000
+bind 0:5:5 4
+ci 0:6:14 3 0
+lv 0:6:17 3 2
+rng 0:6:14 14 0 0
+lv 0:7:20 10 1
+lib 0:7:17 8 lu 1
+bind 0:7:9 6
+lv 0:8:12 3 5
+ci 0:8:17 3 0
+bin 0:8:12 2 eq
+cont 0:8:21
+block 0:8:19 1
+if 0:8:9 0
+lv 0:9:12 3 5
+ci 0:9:17 3 3
+bin 0:9:12 2 eq
+break 0:9:21
+block 0:9:19 1
+if 0:9:9 0
+lv 0:10:9 4 4
+lv 0:10:13 4 4
+lv 0:10:23 8 6
+lib 0:10:17 4 rcond 1
+bin 0:10:13 4 add
+asg 0:10:9 set
+block 0:6:19 4
+forr 0:6:5 5
+lv 0:12:13 8 3
+bind 0:12:5 7
+lv 0:13:20 8 3
+ci 0:13:26 3 1
+slit 0:13:13 13 2
+bind 0:13:5 8
+lv 0:14:12 4 4
+lv 0:14:22 8 7
+lib 0:14:16 4 rcond 1
+bin 0:14:12 4 add
+lv 0:14:33 13 8
+fld 0:14:33 8 0
+lib 0:14:27 4 rcond 1
+bin 0:14:12 4 add
+ret 0:14:5 1
+block 0:2:32 7
+end
+#end

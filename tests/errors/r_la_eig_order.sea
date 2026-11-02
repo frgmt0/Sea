@@ -1,0 +1,5 @@
+// r_la_eig_order -- check order of EIG_SYM (L-ik): a non-square matrix holding NaN and unequal pairs: matrix is
+// not square before the symmetric test (and no NaN result)
+printf("start\n")
+let e = eig_sym([nan, 1.0, 2.0; 3.0, nan, 4.0])
+printf("%d\n", len(e))

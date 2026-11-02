@@ -1,0 +1,23 @@
+fn g(A: f64[,], Ai: i64[,], b: f64[], F: Lu) -> Chol {
+    let M = [4.0, 0.0; 0.0, 4.0]
+    let Mi = [4, 0; 0, 4]
+    let G: Lu = lu(Ai)
+    let C = chol(A)
+    let x = solve(F, b)
+    let y = solve(C, A)
+    let z = solve(Ai, b)
+    let r = rcond(G)
+    let e = eig_sym(M)
+    let e2 = eig_sym(Mi, A)
+    printf("%g %g %g %g %g %g\n", x[0], y[0, 0], z[0], r, e[0], e2[0])
+    return C
+}
+// la8_lib_check -- pass 2a's tree for the five library calls of phase 8 (DESIGN.md 2.13.3, L-iq,
+// Decision 39; LANGUAGE.md 10.8): `lib lu` of type 8 (Lu), `lib chol` of type 9 (Chol), `lib solve`
+// of the dynamic f64 array of B's rank for an Lu, a Chol and a matrix first argument, `lib rcond` of
+// f64, `lib eig_sym` with one and two arguments of type f64[]. The i64[,] argument Ai gets a `cvt` to
+// f64[,] at its own position (lu, solve(A, B)); the fixed-size f64[2,2] argument M gets a `dyn` at the
+// call's position (Decision 39's form, which L-iq applies to these calls); the fixed-size i64[2,2]
+// argument Mi gets its `cvt` to f64[2,2] at its position, then the `dyn` at the call's. The handle
+// types resolve as 8 and 9 in a parameter, a result, an annotation and inferred locals (seaname,
+// 2.13.3). g is never called, so .main is empty; no .hir (pass 2b drops g). Code at lines 1-14.

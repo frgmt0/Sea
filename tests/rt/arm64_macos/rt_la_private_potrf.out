@@ -1,0 +1,11 @@
+n 0: status 0 ok
+n 1: status 0 ok
+n 3 ld 5: status 0 ok
+n 32 ld 32: status 0 ok
+n 33 ld 35: status 0 ok
+n 70 ld 73: status 0 ok
+n 3 zero pivot at 2: status 3 ok
+n 70 zero pivot at 40: status 41 ok
+n 70 NaN pivot at 0: status 1 ok
+n 70 zero pivot at 69: status 70 ok
+n 64 NaN pivot at 33: status 34 ok

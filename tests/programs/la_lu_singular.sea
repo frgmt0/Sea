@@ -1,0 +1,16 @@
+// la_lu_singular -- lu of a singular matrix completes (LANGUAGE.md 10.8; DESIGN.md 2.13.5 LU "never fails for a singular A",
+// L-in: an exactly zero pivot leaves its column unscaled and the factorization continues): [1, 2; 2, 4]
+// (zero pivot at k = 1), zeros(3, 3) (at k = 0), ones(4, 4) (at k = 1) and a matrix with a zero column (at
+// k = 1); each handle exists and its rcond is 0 (L-io: a recorded zero pivot); by hand
+let A1 = [1.0, 2.0; 2.0, 4.0]
+let F1 = lu(A1)
+printf("lu A1 done %g\n", rcond(F1))
+let A2 = zeros(3, 3)
+let F2 = lu(A2)
+printf("lu A2 done %g\n", rcond(F2))
+let A3 = ones(4, 4)
+let F3 = lu(A3)
+printf("lu A3 done %g\n", rcond(F3))
+let A4 = [2.0, 0.0, 1.0; 1.0, 0.0, 3.0; 4.0, 0.0, 5.0]
+let F4 = lu(A4)
+printf("lu A4 done %g\n", rcond(F4))

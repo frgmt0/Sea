@@ -1,0 +1,52 @@
+// la_solve_shapes -- the result of solve has B's rank and shape (LANGUAGE.md 10.8; DESIGN.md 2.13.2, L-ik): a vector b gives a
+// vector, a 3 x 1 and a 3 x 2 matrix give matrices of that shape, a 3 x 0 B gives 3 x 0 (solve(A, B),
+// solve(lu(A), B), solve(chol(A), B)), n = 0 gives 0 and 0 x 2; A = [4, 2, 0; 2, 5, 2; 0, 2, 5] (the
+// Cholesky path, exact, R = [2, 1, 0; 0, 2, 1; 0, 0, 2]), b = [2, 1, 8] = A [1, -1, 2]; printed as x + 0.0;
+// by hand, checked by tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j])
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let A = [4.0, 2.0, 0.0; 2.0, 5.0, 2.0; 0.0, 2.0, 5.0]
+let b = [2.0, 1.0, 8.0]
+pvz(solve(A, b))
+pmz(solve(A, [2.0; 1.0; 8.0]))
+pmz(solve(A, [2.0, 6.0; 1.0, 11.0; 8.0, -4.0]))
+pmz(solve(A, zeros(3, 0)))
+pmz(solve(lu(A), zeros(3, 0)))
+pmz(solve(chol(A), zeros(3, 0)))
+pv(solve(zeros(0, 0), zeros(0)))
+pm(solve(zeros(0, 0), zeros(0, 2)))
+let y = solve(A, b)
+let Y = solve(A, [2.0; 1.0; 8.0])
+printf("%d %d %d\n", len(y), rows(Y), cols(Y))

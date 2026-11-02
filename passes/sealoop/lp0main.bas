@@ -6,7 +6,7 @@
 125 REM concatenation, materialized views, dyn, fix, ind2sub with an array k), 4f's L13-L14, 4g-1's
 127 REM L16 match and the str cases of L2-L14 (lp8str), 4g-2's L15 projection, L17 (field paths,
 128 REM reference and aggregate elements) and the struct cases (lp9agg). Others
-129 REM 8b (lpbmat, DESIGN 2.13.4): R35 copies a bin matmul of dynamic operands, L21 writes one of fixed-size operands inline.
+129 REM 8b (lpbmat, DESIGN 2.13.4): R35 copies a bin matmul of dynamic operands, L21 writes one of fixed-size operands inline; 8c: R35 validates and copies lib lu chol solve rcond eig_sym (55400).
 130 REM are copied unchanged, so a file without those constructs is sea.hir byte for byte. Built
 135 REM as DESIGN 2.6.3 says: the files lp0main ... lpbmat (in name order), the modules io diag
 140 REM tables layout, the DATA blocks errors exits consts records, 99999 END. Exit:

@@ -1,0 +1,4 @@
+// err_la_solve_args -- solve with a scalar B: 243 with both argument types (DESIGN.md 2.13.3: B a numeric vector or
+// matrix)
+let A = ones(2, 2)
+let x = solve(A, 2.0)

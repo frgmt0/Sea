@@ -1,0 +1,4 @@
+// err_la_solve_bool -- solve with a bool vector B: 243 (a bool element type is not numeric)
+let A = ones(2, 2)
+let b = filled(true, 2)
+let x = solve(A, b)

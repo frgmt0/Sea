@@ -1,0 +1,31 @@
+// la_lu_nonfinite -- Inf and NaN propagate through lu and solve (LANGUAGE.md 10.8; DESIGN.md 2.13.2 "Non-finite operands", L-in,
+// L-io): [2, 1; 1, 3] with b = [Inf, 1] gives [Inf, -Inf] (Inf - 0.5 Inf, then (Inf + Inf) / 2) and with
+// b = [NaN, 1] NaN NaN; [2, NaN; 1, 1] (U[1,1] = 1 - 0.5 NaN) NaN NaN; [Inf, 1; 1, 1] (l = 1 / Inf = 0) gives
+// [-1 / Inf, 2], printed as x + 0.0: 0 2; [NaN, 1; 2, 1]: the NaN is the first candidate, so it is the pivot
+// (Decision 129 (a): never chosen unless it is first), no zero pivot, NaN NaN for solve(F, b) and solve(A, b);
+// rcond: NaN (||A||_1 NaN), 0 (||A||_1 Inf), NaN; n = 2: one panel, every operation pinned (2.13.6), the
+// non-finite results the same in any order; by hand, checked by tests/vectors/la8_cases.py
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+let Ab = [2.0, 1.0; 1.0, 3.0]
+let Fb = lu(Ab)
+pvz(solve(Fb, [inf, 1.0]))
+pvz(solve(Fb, [nan, 1.0]))
+let Ac = [2.0, nan; 1.0, 1.0]
+let Fc = lu(Ac)
+pvz(solve(Fc, [1.0, 1.0]))
+let Ad = [inf, 1.0; 1.0, 1.0]
+let Fd = lu(Ad)
+pvz(solve(Fd, [1.0, 2.0]))
+let Ae = [nan, 1.0; 2.0, 1.0]
+let Fe = lu(Ae)
+pvz(solve(Fe, [1.0, 1.0]))
+printf("%g\n", rcond(Fc))
+printf("%g\n", rcond(Fd))
+printf("%g\n", rcond(Fe))
+pvz(solve(Ae, [1.0, 1.0]))

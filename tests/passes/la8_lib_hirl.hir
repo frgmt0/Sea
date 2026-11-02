@@ -1,0 +1,92 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_hirl.sea
+tmat 10 3
+tvec 11 4
+tfvec 12 3 2
+tfmat 13 3 2 2
+tfvec 14 4 2
+tfmat 15 4 2 2
+tmat 16 4
+fn 1 .main main 1 0 2 0:1:1
+loc Ai 10 let 0:9:5
+loc b 11 let 0:10:5
+ci 0:9:19 3 4
+ci 0:9:22 3 0
+row 0:9:19 12 2
+ci 0:9:25 3 0
+ci 0:9:28 3 1
+row 0:9:25 12 2
+arr 0:9:18 13 2
+dyn 0:9:18 10
+bind 0:9:1 1
+cf 0:10:17 4 #4020000000000000
+cf 0:10:22 4 #4022000000000000
+row 0:10:17 14 2
+arr 0:10:16 14 1
+dyn 0:10:16 11
+bind 0:10:1 2
+lv 0:11:18 10 1
+lv 0:11:22 11 2
+ci 0:11:25 3 1
+call 0:11:16 4 2 3
+fconv 0:11:8 1 - - - g
+ftext 0:11:8 1 %0A
+fmt 0:11:8 1 2
+lib 0:11:1 1 printf 1
+eval 0:11:1
+block 0:1:1 3
+end
+fn 2 g fn 4 3 4 0:1:1
+par Ai 10 val
+par b 11 val
+par n 3 val
+loc M 15 let 0:3:9
+loc F 8 let 0:4:9
+loc e 11 let 0:5:9
+loc x 11 let 0:6:9
+lv 0:2:8 3 3
+ci 0:2:12 3 0
+bin 0:2:8 2 gt
+lv 0:2:25 10 1
+lv 0:2:29 11 2
+lv 0:2:32 3 3
+ci 0:2:36 3 1
+bin 0:2:32 3 sub
+call 0:2:23 4 2 3
+ret 0:2:16 1
+block 0:2:14 1
+if 0:2:5 0
+cf 0:3:14 4 #4010000000000000
+cf 0:3:19 4 #0000000000000000
+row 0:3:14 14 2
+cf 0:3:24 4 #0000000000000000
+cf 0:3:29 4 #3FF0000000000000
+row 0:3:24 14 2
+arr 0:3:13 15 2
+bind 0:3:5 4
+lv 0:4:16 10 1
+cvt 0:4:16 16
+lib 0:4:13 8 lu 1
+bind 0:4:5 5
+lv 0:5:21 15 4
+dyn 0:5:13 16
+lib 0:5:13 11 eig_sym 1
+bind 0:5:5 6
+lv 0:6:19 8 5
+lv 0:6:22 11 2
+lv 0:6:26 11 2
+bin 0:6:22 11 add
+lib 0:6:13 11 solve 2
+bind 0:6:5 7
+lv 0:7:12 11 6
+ci 0:7:14 3 0
+idx 0:7:12 4 1
+lv 0:7:19 11 7
+ci 0:7:21 3 1
+idx 0:7:19 4 1
+bin 0:7:12 4 add
+ret 0:7:5 1
+block 0:1:43 6
+end
+#end

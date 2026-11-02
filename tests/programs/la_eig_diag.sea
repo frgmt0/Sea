@@ -1,0 +1,19 @@
+// la_eig_diag -- eig_sym of a diagonal matrix is its diagonal sorted ascending, exactly (LANGUAGE.md 10.8; DESIGN.md 2.13.6
+// EIG_SYM, 2.13.8): tred1 finds every row's off-diagonal scale 0 and leaves d the diagonal and e zero, so
+// tql1 accepts each d[l] at once (e[l] negligible) and returns d[l] + 0; then the sort of 10.6. Duplicates
+// kept ([3, -1.5, 0.25, 7, -1.5] gives -1.5 -1.5 0.25 3 7), a 1 x 1 matrix, a repeated eigenvalue; by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+var D = zeros(5, 5)
+let d = [3.0, -1.5, 0.25, 7.0, -1.5]
+for i in 0..5 {
+    D[i, i] = d[i]
+}
+pv(eig_sym(D))
+pv(eig_sym([-2.0].row))
+pv(eig_sym([0.5, 0.0; 0.0, 0.5]))

@@ -1,0 +1,8 @@
+lu 33, vector: ok
+lu 64, 3 columns: ok
+lu 70, 40 columns: ok
+lu 70, vector: ok
+chol 33, 3 columns: ok
+chol 64, vector: ok
+chol 70, 40 columns: ok
+chol 70, vector: ok

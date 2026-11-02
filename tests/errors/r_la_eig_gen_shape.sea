@@ -1,0 +1,4 @@
+// r_la_eig_gen_shape -- eig_sym(K, M) of a 3 x 3 K and a 2 x 2 M: shape mismatch, K's shape then M's (L-ij)
+printf("start\n")
+let e = eig_sym([1.0, 0.0, 0.0; 0.0, 1.0, 0.0; 0.0, 0.0, 1.0], [1.0, 0.0; 0.0, 1.0])
+printf("%d\n", len(e))

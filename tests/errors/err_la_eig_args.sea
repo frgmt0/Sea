@@ -1,0 +1,3 @@
+// err_la_eig_args -- eig_sym with three matrices: 243 with the three types (no overload takes three arguments)
+let A = ones(2, 2)
+let e = eig_sym(A, A, A)

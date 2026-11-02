@@ -1,0 +1,5 @@
+// r_la_eig_square -- eig_sym of a 2 x 3 matrix: matrix is not square (DESIGN.md 2.13.5 EIG_SYM)
+let A = zeros(2, 3)
+printf("start\n")
+let e = eig_sym(A)
+printf("%d\n", len(e))

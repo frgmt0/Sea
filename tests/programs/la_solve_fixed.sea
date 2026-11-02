@@ -1,0 +1,33 @@
+// la_solve_fixed -- W3's parabolic refinement [c3(:).^2, c3(:), ones(3, 1)] \ J3(:) (DESIGN.md 2.13.1) from fixed-size values:
+// a fixed-size f64[3,3] built by concatenating columns, and a fixed-size right-hand side, used as the
+// dynamic arrays they equal (L-iq, dyn); the results are dynamic. c3 = [1, 2, 4] gives [1, 1, 1; 4, 2, 1;
+// 16, 4, 1] (not symmetric: LU); pivots 16 then 1 (l = 1/4, 1/16, 3/4, U[2,2] = 3/8), all dyadic, so J3 =
+// [2, 3, 11] gives [1, -2, 3] exactly, by solve(A, b), solve(lu(A), b), a 3 x 2 B (second column A [0, 0,
+// 1]) and the literal form; printed as x + 0.0; by hand, checked by tests/vectors/la8_cases.py
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+fn pmz(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j] + 0.0)
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let c3 = [1.0, 2.0, 4.0]
+let A3 = [(c3 * c3).col, c3.col, [1.0, 1.0, 1.0].col]
+let J3 = [2.0, 3.0, 11.0]
+pvz(solve(A3, J3))
+let Fx = lu(A3)
+pvz(solve(Fx, J3))
+let B2 = [2.0, 1.0; 3.0, 1.0; 11.0, 1.0]
+pmz(solve(A3, B2))
+let A3b: f64[3,3] = [1.0, 1.0, 1.0; 4.0, 2.0, 1.0; 16.0, 4.0, 1.0]
+pvz(solve(A3b, J3))

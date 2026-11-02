@@ -36,7 +36,7 @@
 8780 SUBEND
 8785 REM ---- tyres: the type of type node I, looked up by tylk (DESIGN 3.4.2 "Resolving a type
 8790 REM node"): the base, then the dims left to right, then the shape, then the phase rule (2.6.2,
-8795 REM from 4g-2: handle types only); the first error is the node's
+8795 REM from 8c: the handle types Figure and Axes only); the first error is the node's
 8800 REM and its type is then 0. M(I,1) = the type (a predefined id or a T row), M(I,9) = 1 (done).
 8805 REM A new array type is created here (tarr; the types limit at node X(19), set by the caller).
 8810 REM Locals: B base (-1 a struct), H shape (1 s 2 v 3 m 4 fv 5 fm), V(k,0) the node of dim k,
@@ -106,14 +106,23 @@
 9117 GOTO 9130
 9120 CALL "er": N(), X(), X$(), I, "FIXED_TOO_LARGE", "", "", "", 0
 9125 GOTO 9200
-9130 REM arrays of a handle type: never (LANGUAGE 4.1)
-9135 IF B < 6 THEN 9155
-9140 IF H = 1 THEN 9155
-9145 CALL "er": N(), X(), X$(), I, "ELEMENT_TYPE", S$(N(I, 6)), "", "", 1
+9130 REM arrays of a handle type, or of a struct that holds one in a field at any depth (T(r,2) of
+9131 REM its type row, tyhd): never (LANGUAGE 4.1, L-ir), at the node with the handle type's name
+9132 IF H = 1 THEN 9155
+9133 LET A$ = S$(N(I, 6))
+9134 IF B >= 6 THEN 9145
+9135 IF B <> -1 THEN 9155
+9136 LET P = Y(M(I, 2), 2)
+9137 IF P = 0 THEN 9155
+9138 LET P = T(P, 2) - 5
+9139 IF P < 1 THEN 9155
+9140 LET A$ = SEG$("FigureAxesLuChol", VAL(SEG$("01071113", 2 * P - 1, 2 * P)), VAL(SEG$("06101216", 2 * P - 1, 2 * P)))
+9145 CALL "er": N(), X(), X$(), I, "ELEMENT_TYPE", A$, "", "", 1
 9150 GOTO 9200
-9155 REM the phase rule (DESIGN 2.6.2), after every error above: a handle type (struct types and
-9160 REM fixed-size types of str elements are types from 4g-2); a struct base is its struct type
+9155 REM the phase rule (DESIGN 2.6.2, 2.13.3), after every error above: the handle types 6 and 7
+9160 REM (Lu and Chol are the types 8 and 9 from 8c); a struct base is its struct type
 9165 LET A$ = "handle types"
+9168 IF B >= 8 THEN 9190
 9170 IF B >= 6 THEN 9198
 9175 IF B <> -1 THEN 9190
 9180 LET B = Y(M(I, 2), 2)
@@ -204,6 +213,7 @@
 9580 REM declaration order (DESIGN 3.4.2, type table step 2), with no local in scope -------------
 9585 SUB "tyfld": N(), M(), Y(), T(), W(), C(), S$(), X(), X$()
 9590 LET X(12) = 200000
+9592 CALL "tyhd": N(), M(), Y(), T(), W(), S$(), X(), X$()
 9595 FOR S = 2 TO X(33)
 9600 IF Y(S, 0) <> 3 THEN 9645
 9605 LET F = Y(S, 3)
@@ -230,3 +240,59 @@
 9690 CALL "tyres": N(), M(), Y(), T(), C(), S$(), X(), X$(), I
 9695 NEXT I
 9700 SUBEND
+9705 REM ---- tyhd: the handle each entered struct holds (L-ir, DESIGN 2.13.3): T(r,2) of its struct
+9706 REM type row r = the id (6-9) of the first handle type met in a depth-first walk of its fields in
+9707 REM declaration order (a field whose base word is a handle type, of any shape, or whose base names a
+9708 REM struct, walked in turn: at any depth), else 0; T(r,3) 1 while r is walked, 2 when done (a struct
+9709 REM met again is skipped). The field type nodes are looked up first (tyfld's tylk finds the same).
+9710 REM D(p) the struct of walk frame p, E(p) its next field node (0: none left) ---------------------
+9711 SUB "tyhd": N(), M(), Y(), T(), W(), S$(), X(), X$()
+9712 DIM D(49999), E(49999)
+9715 FOR S = 2 TO X(33)
+9720 IF Y(S, 0) <> 3 THEN 9750
+9725 LET G = N(Y(S, 3), 7)
+9730 FOR K = 1 TO N(Y(S, 3), 1)
+9735 CALL "tylk": N(), M(), Y(), W(), S$(), X(), X$(), N(G, 7)
+9740 LET G = N(G, 8)
+9745 NEXT K
+9750 NEXT S
+9755 FOR S = 2 TO X(33)
+9760 IF Y(S, 0) <> 3 THEN 9845
+9765 IF Y(S, 2) = 0 THEN 9845
+9770 IF T(Y(S, 2), 3) > 0 THEN 9845
+9772 LET P = 1
+9774 LET D(1) = S
+9776 LET E(1) = N(Y(S, 3), 7)
+9778 LET T(Y(S, 2), 3) = 1
+9782 REM the next field of the top frame; none left: its struct holds no handle, done
+9784 IF P = 0 THEN 9845
+9786 LET G = E(P)
+9788 IF G > 0 THEN 9796
+9790 LET T(Y(D(P), 2), 3) = 2
+9792 LET P = P - 1
+9794 GOTO 9784
+9796 LET E(P) = N(G, 8)
+9798 LET Q = N(G, 7)
+9800 LET H = M(Q, 3)
+9802 IF H >= 6 THEN 9830
+9804 IF H > 0 THEN 9784
+9806 LET U = M(Q, 2)
+9808 IF U <= 0 THEN 9784
+9810 IF Y(U, 0) <> 3 THEN 9784
+9812 LET R = Y(U, 2)
+9814 IF R = 0 THEN 9784
+9816 LET H = T(R, 2)
+9818 IF H > 0 THEN 9830
+9820 IF T(R, 3) > 0 THEN 9784
+9822 LET T(R, 3) = 1
+9824 LET P = P + 1
+9826 LET D(P) = U
+9828 LET E(P) = N(Y(U, 3), 7)
+9829 GOTO 9784
+9830 REM found H: every struct on the walk holds it and is done
+9832 FOR K = 1 TO P
+9834 LET T(Y(D(K), 2), 2) = H
+9836 LET T(Y(D(K), 2), 3) = 2
+9838 NEXT K
+9845 NEXT S
+9850 SUBEND

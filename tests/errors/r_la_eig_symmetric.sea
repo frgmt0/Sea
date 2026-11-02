@@ -1,0 +1,4 @@
+// r_la_eig_symmetric -- eig_sym([1, 2; 3, 1]): matrix is not symmetric (LANGUAGE.md 9.2; Decision 123 (a))
+printf("start\n")
+let e = eig_sym([1.0, 2.0; 3.0, 1.0])
+printf("%d\n", len(e))

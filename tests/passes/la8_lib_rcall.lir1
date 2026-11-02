@@ -1,0 +1,116 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_rcall.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 16 8
+slot s3 8 8
+sa p1 s1
+lf f2 #4010000000000000
+stf f2 p1 - 0 0
+lf f3 #0000000000000000
+stf f3 p1 - 0 16
+lf f4 #0000000000000000
+stf f4 p1 - 0 8
+lf f5 #3FF0000000000000
+stf f5 p1 - 0 24
+li i6 2
+li i7 2
+li i8 1
+li i9 2
+rcall sea_arr_new_u 0:13 1 p10 4 i8 i9 i6 i7
+ldp p11 p10 - 0 40
+li i12 32
+mcopy p11 p1 i12
+sa p13 s2
+lf f14 #4020000000000000
+stf f14 p13 - 0 0
+lf f15 #4022000000000000
+stf f15 p13 - 0 8
+li i16 2
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:14 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+li i22 16
+mcopy p21 p13 i22
+li i23 1
+call g 1 f24 3 p10 p20 i23
+sa p25 s3
+stf f24 p25 - 0 0
+la p26 d1
+rcall sea_printf 0:15 0 2 p26 p25
+release p20
+release p10
+ret 0
+endfunc
+func g fn 0:1:1 3 p1 p2 i3 1 f
+li i4 0
+icmp gt i5 i3 i4
+if 1 i5
+li i6 1
+isubc i7 i3 i6 0:2
+call g 1 f8 3 p1 p2 i7
+ret 1 f8
+endif 1
+rcall sea_lu 0:3 1 p9 1 p1
+rcall sea_chol 0:4 1 p10 1 p1
+rcall sea_lu_solve 0:5 1 p11 2 p9 p2
+rcall sea_chol_solve 0:6 1 p12 2 p10 p1
+rcall sea_solve 0:7 1 p13 2 p1 p2
+rcall sea_lu 0:8 1 p14 1 p1
+rcall sea_rcond 0:8 1 f15 1 p14
+release p14
+rcall sea_eig_sym 0:9 1 p16 1 p1
+rcall sea_eig_sym_gen 0:10 1 p17 2 p1 p12
+li i18 1
+ldi i19 p11 - 0 16
+chkb i18 i19 0 0:11
+ldp p20 p11 - 0 40
+ldf f21 p20 i18 8 0
+li i22 1
+li i23 0
+ldi i24 p12 - 0 16
+chkb i22 i24 0 0:11
+ldi i25 p12 - 0 24
+chkb i23 i25 1 0:11
+ldp p26 p12 - 0 40
+imul i27 i23 i24
+iadd i28 i22 i27
+ldf f29 p26 i28 8 0
+fadd f30 f21 f29
+li i31 0
+ldi i32 p13 - 0 16
+chkb i31 i32 0 0:11
+ldp p33 p13 - 0 40
+ldf f34 p33 i31 8 0
+fadd f35 f30 f34
+fadd f36 f35 f15
+li i37 0
+ldi i38 p16 - 0 16
+chkb i37 i38 0 0:11
+ldp p39 p16 - 0 40
+ldf f40 p39 i37 8 0
+fadd f41 f36 f40
+li i42 1
+ldi i43 p17 - 0 16
+chkb i42 i43 0 0:11
+ldp p44 p17 - 0 40
+ldf f45 p44 i42 8 0
+fadd f46 f41 f45
+rcall sea_rcond 0:11 1 f47 1 p9
+fadd f48 f46 f47
+release p17
+release p16
+release p13
+release p12
+release p11
+release p10
+release p9
+ret 1 f48
+endfunc
+fmt d1 2
+fconv - - - g f
+ftext %0A
+#end

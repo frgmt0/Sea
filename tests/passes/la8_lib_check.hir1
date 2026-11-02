@@ -1,0 +1,114 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_check.sea
+tmat 10 4
+tmat 11 3
+tvec 12 4
+tfmat 13 4 2 2
+tfmat 14 3 2 2
+tfvec 15 4 2
+tfvec 16 3 2
+fn 1 .main main 1 0 0 0:1:1
+block 0:1:1 0
+end
+fn 2 g inl 9 4 10 0:1:1
+par A 10 val
+par Ai 11 val
+par b 12 val
+par F 8 val
+loc M 13 let 0:2:9
+loc Mi 14 let 0:3:9
+loc G 8 let 0:4:9
+loc C 9 let 0:5:9
+loc x 12 let 0:6:9
+loc y 10 let 0:7:9
+loc z 12 let 0:8:9
+loc r 4 let 0:9:9
+loc e 12 let 0:10:9
+loc e2 12 let 0:11:9
+cf 0:2:14 4 #4010000000000000
+cf 0:2:19 4 #0000000000000000
+row 0:2:14 15 2
+cf 0:2:24 4 #0000000000000000
+cf 0:2:29 4 #4010000000000000
+row 0:2:24 15 2
+arr 0:2:13 13 2
+bind 0:2:5 5
+ci 0:3:15 3 4
+ci 0:3:18 3 0
+row 0:3:15 16 2
+ci 0:3:21 3 0
+ci 0:3:24 3 4
+row 0:3:21 16 2
+arr 0:3:14 14 2
+bind 0:3:5 6
+lv 0:4:20 11 2
+cvt 0:4:20 10
+lib 0:4:17 8 lu 1
+bind 0:4:5 7
+lv 0:5:18 10 1
+lib 0:5:13 9 chol 1
+bind 0:5:5 8
+lv 0:6:19 8 4
+lv 0:6:22 12 3
+lib 0:6:13 12 solve 2
+bind 0:6:5 9
+lv 0:7:19 9 8
+lv 0:7:22 10 1
+lib 0:7:13 10 solve 2
+bind 0:7:5 10
+lv 0:8:19 11 2
+cvt 0:8:19 10
+lv 0:8:23 12 3
+lib 0:8:13 12 solve 2
+bind 0:8:5 11
+lv 0:9:19 8 7
+lib 0:9:13 4 rcond 1
+bind 0:9:5 12
+lv 0:10:21 13 5
+dyn 0:10:13 10
+lib 0:10:13 12 eig_sym 1
+bind 0:10:5 13
+lv 0:11:22 14 6
+cvt 0:11:22 13
+dyn 0:11:14 10
+lv 0:11:26 10 1
+lib 0:11:14 12 eig_sym 2
+bind 0:11:5 14
+lv 0:12:35 12 9
+ci 0:12:37 3 0
+idx 0:12:35 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:41 10 10
+ci 0:12:43 3 0
+ci 0:12:46 3 0
+idx 0:12:41 4 2
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:50 12 11
+ci 0:12:52 3 0
+idx 0:12:50 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:56 4 12
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:59 12 13
+ci 0:12:61 3 0
+idx 0:12:59 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %20
+lv 0:12:65 12 14
+ci 0:12:68 3 0
+idx 0:12:65 4 1
+fconv 0:12:12 1 - - - g
+ftext 0:12:12 1 %0A
+fmt 0:12:12 1 12
+lib 0:12:5 1 printf 1
+eval 0:12:5
+lv 0:13:12 9 8
+ret 0:13:5 1
+block 0:1:54 12
+end
+#end

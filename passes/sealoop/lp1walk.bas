@@ -78,7 +78,7 @@
 5184 LET H(X, 8) = O9
 5195 NEXT R1
 5197 GOTO 10000
-5295 REM ---- lib: L1-L3 (zeros ... numel), L7 (elemental, an array argument), L11's ind2sub ----------
+5295 REM ---- lib: L1-L3 (zeros ... numel), L7 (elemental, an array argument), L11's ind2sub, R35 (55400) ---
 5296 REM (7b: ind2sub with an array r is L19's, seafuse's: in sea.hirf bad record, 2.12.3 rule (1))
 5300 LET R2 = H(X, 6)
 5302 LET F9 = 4
@@ -88,7 +88,7 @@
 5310 LET W2 = (W2 - 1) / 8 + 1
 5312 GOTO 6005
 5313 IF POS(K5$, "|" & F9$ & " ") + POS(F9$, ".dim") > 0 THEN 35000
-5314 IF F9$ <> "ind2sub" THEN 5324
+5314 IF F9$ <> "ind2sub" THEN 55400
 5316 LET X5 = X
 5318 GOSUB 5750
 5320 IF Y8 = 1 THEN 5170

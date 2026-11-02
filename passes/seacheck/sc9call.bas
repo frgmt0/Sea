@@ -493,42 +493,49 @@
 25605 LET A = N(A, 8)
 25610 LET Q = M(A, 1)
 25615 IF Q < 2 THEN 25640
-25620 CALL "hct": T(), Q, R
+25620 CALL "hct": T(), Q, R, H
 25625 IF R = 1 THEN 25640
 25630 LET Z = 1
 25640 SUBEND
 25645 REM ---- hct: R = 1 when type Q is a handle type, a tuple, or an array, struct or record type that
-25646 REM contains one (no JSON value, LANGUAGE 11.4), else 0. D is the work list of the types still to
-25647 REM look at, G marks a type row once it is on it: only a non-scalar type not yet seen is pushed
-25648 REM (an array's element type, a field's type), so the list and the time are bounded by the number
-25649 REM of types, however deeply or widely the structs nest ----------------------------------------
-25650 SUB "hct": T(), Q, R
-25655 DIM D(65009), G(65009)
+25646 REM contains one (no JSON value, LANGUAGE 11.4), else 0; H = the first handle type (6-9) met in a
+25647 REM depth-first walk in declaration order (an array's element, a struct's fields in turn), else 0:
+25648 REM 258 names it (8c, L-ir). D(p) the type of walk frame p, E(p) its parts already walked; G marks
+25649 REM a type row once it is walked, so the walk and its time are bounded by the number of types -----
+25650 SUB "hct": T(), Q, R, H
+25655 DIM D(65009), E(65009), G(65009)
 25660 LET R = 0
+25661 LET H = 0
 25665 IF Q < 6 THEN 25780
-25667 IF Q <= 9 THEN 25775
+25667 IF Q <= 9 THEN 25773
 25670 LET P = 1
 25672 LET D(1) = Q
+25673 LET E(1) = 0
 25674 LET G(Q) = 1
 25676 IF P = 0 THEN 25780
 25680 LET V = D(P)
-25685 LET P = P - 1
 25695 LET K = T(V, 0)
 25700 IF K > 6 THEN 25775
 25705 LET N1 = 1
 25710 IF K <= 4 THEN 25720
 25715 LET N1 = T(V, 1)
-25720 FOR I = 1 TO N1
-25722 LET B = T(V, 1)
-25724 IF K <= 4 THEN 25730
-25726 CALL "fdg": T(), V, I, A, B
-25730 IF B < 6 THEN 25745
-25732 IF B <= 9 THEN 25775
-25734 IF G(B) = 1 THEN 25745
+25720 LET E(P) = E(P) + 1
+25722 IF E(P) <= N1 THEN 25725
+25723 LET P = P - 1
+25724 GOTO 25676
+25725 LET B = T(V, 1)
+25726 IF K <= 4 THEN 25730
+25728 CALL "fdg": T(), V, E(P), A, B
+25730 IF B < 6 THEN 25676
+25732 IF B <= 9 THEN 25771
+25734 IF G(B) = 1 THEN 25676
 25736 LET G(B) = 1
 25738 LET P = P + 1
 25740 LET D(P) = B
-25745 NEXT I
+25742 LET E(P) = 0
 25747 GOTO 25676
+25771 LET H = B
+25772 GOTO 25775
+25773 LET H = Q
 25775 LET R = 1
 25780 SUBEND

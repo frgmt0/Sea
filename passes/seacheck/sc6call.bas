@@ -40,7 +40,8 @@
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
 12525 REM filled(v, n) | (v, r, c) 13 len (a vector or str) 14 rows cols (a matrix) 15 numel (a
 12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find*, from 4g-1 25 lower, 26 args (min, max
-12535 REM of other than two positional arguments: 16); any other is not supported yet. Untyped
+12535 REM of other than two positional arguments: 16), from 8c (sc9red lla) 27 lu 28 chol 29 solve 30 rcond 31 eig_sym;
+12536 REM any other is not supported yet. Untyped
 12540 REM constants are f64 where f64 is taken (classes 3-5), the other's type in min, max and where,
 12545 REM else i64 (LANGUAGE 4.2); an i64 for an f64 is converted. The overload is judged on the element
 12550 REM types; array arguments of an elemental function (2-10) are then broadcast (lbc, LANGUAGE 6.3)
@@ -65,7 +66,7 @@
 12600 LET Q$ = Q$ & "|isnan 04|pow 05|hypot 05|abs 06|sign 06|min 07|max 07|where 08|ind2sub 09"
 12605 LET Q$ = Q$ & "|sub2ind 10|zeros 11|ones 11|filled 12|len 13|rows 14|cols 14|numel 15|"
 12606 LET Q$ = Q$ & "sum 16|mean 17|variance 17|std 17|argmax 18|argmin 18|nnz 19|any 20|all 20|sort 21|"
-12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|lower 25|args 26|"
+12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|lower 25|args 26|lu 27|chol 28|solve 29|rcond 30|eig_sym 31|"
 12610 LET P = POS(Q$, "|" & L$ & " ")
 12615 IF P = 0 THEN 12635
 12620 LET Z = VAL(SEG$(Q$, P + LEN(L$) + 2, P + LEN(L$) + 3))
@@ -82,7 +83,11 @@
 12660 FOR I = 1 TO H
 12665 LET Q = 0
 12670 IF N(A, 0) <> 37 THEN 12690
-12675 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", L$, "", "", 1
+12671 REM a ref argument of lu chol solve rcond eig_sym names the parameter as LANGUAGE 10.8 writes it (lapn)
+12672 LET P$ = L$
+12673 IF Z < 27 THEN 12675
+12674 CALL "lapn": Z, H, I, P$
+12675 CALL "er": N(), X(), X$(), A, "REF_UNEXPECTED", P$, "", "", 1
 12680 LET E = 1
 12685 GOTO 12765
 12690 CALL "vu": N(), M(), T(), X(), X$(), A, Q
@@ -220,9 +225,15 @@
 13305 NEXT I
 13310 IF U(1) < 2 THEN 13545
 13315 IF U(1) <= 5 THEN 13330
-13316 REM filled with a struct or record value (4g-2, Decision 48)
-13317 IF U(1) < 10 THEN 13545
-13318 IF ABS(T(U(1), 0) - 5.5) > 1 THEN 13545
+13316 REM filled with a struct or record value (4g-2, Decision 48); a value that is or holds a handle: 258 at the call (L-ir)
+13317 CALL "hct": T(), U(1), Q1, Q
+13318 IF Q > 0 THEN 13324
+13319 IF U(1) < 10 THEN 13545
+13320 IF ABS(T(U(1), 0) - 5.5) > 1 THEN 13545
+13322 GOTO 13330
+13324 CALL "tyn": T(), Q, A$
+13326 CALL "er": N(), X(), X$(), J, "ELEMENT_TYPE", A$, "", "", 1
+13328 GOTO 12911
 13330 CALL "tarr": T(), N(), X(), X$(), H - 1, U(1), 0, 0, D
 13335 GOTO 13605
 13340 IF H <> 1 THEN 13545

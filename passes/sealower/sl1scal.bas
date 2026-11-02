@@ -730,13 +730,13 @@
 7375 LET D1 = 0
 7380 LET W(W0 + 2) = S
 7385 GOTO 3030
-7390 REM ---- 7395: C1 = the register class of the scalar type T1 (1 i: bool, i64; 2 f; 3 p: str); 7391: of the type of X, 7393: of its first child's
+7390 REM ---- 7395: C1 = the register class of the scalar type T1 (1 i: bool, i64; 2 f; 3 p: str, a handle 6-9, 8c); 7391: of the type of X, 7393: of its first child's
 7391 LET T1 = H(X, 4)
 7392 GOTO 7395
 7393 LET T1 = H(H(X, 7), 4)
 7395 IF T1 < 2 THEN 2360
-7400 IF T1 > 5 THEN 9740
-7405 LET C1 = VAL(SEG$("1123", T1 - 1, T1 - 1))
+7400 IF T1 > 9 THEN 9740
+7405 LET C1 = VAL(SEG$("11233333", T1 - 1, T1 - 1))
 7410 RETURN
 7411 LET C1 = 2
 7412 GOTO 7420

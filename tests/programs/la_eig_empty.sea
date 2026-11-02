@@ -1,0 +1,13 @@
+// la_eig_empty -- eig_sym of a 0 x 0 matrix, and of a 0 x 0 pencil, is the empty vector (LANGUAGE.md 10.8; DESIGN.md 2.13.2
+// "Empty operands", L-ip, L-iy); by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+pv(eig_sym(zeros(0, 0)))
+pv(eig_sym(zeros(0, 0), zeros(0, 0)))
+let e = eig_sym(zeros(0, 0))
+printf("%d\n", len(e))

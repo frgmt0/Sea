@@ -1,0 +1,13 @@
+// err_la_handle_struct_array -- an array of a struct holding a handle two struct levels down: 258 naming the handle
+// type at the array type node (LANGUAGE.md 4.1 "at any depth"; L-ir)
+struct Inner {
+    f: Lu
+    k: i64
+}
+struct Outer {
+    s: Inner
+    w: f64
+}
+fn total(v: Outer[]) -> i64 {
+    return len(v)
+}

@@ -1,0 +1,6 @@
+// r_la_solve_order_f -- check order of LU_SOLVE (L-ik): a singular factor of order 2 and a vector of 3: the
+// shape check comes before matrix is singular
+let F = lu([1.0, 2.0; 2.0, 4.0])
+printf("start\n")
+let x = solve(F, zeros(3))
+printf("%d\n", len(x))

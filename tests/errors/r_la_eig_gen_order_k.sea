@@ -1,0 +1,5 @@
+// r_la_eig_gen_order_k -- check order of EIG_SYM_GEN (DESIGN.md 2.13.5): K 2 x 3 and M 3 x 2 both not square: K's
+// shape is reported
+printf("start\n")
+let e = eig_sym(zeros(2, 3), zeros(3, 2))
+printf("%d\n", len(e))

@@ -1,0 +1,6 @@
+// r_la_solve_shape -- solve(A, B) of a 3 x 3 A and a 4 x 2 B: shape mismatch, n x n of A then B's shape (L-ij)
+let A = [2.0, 0.0, 0.0; 0.0, 2.0, 0.0; 0.0, 0.0, 2.0]
+let B = zeros(4, 2)
+printf("start\n")
+let X = solve(A, B)
+printf("%d\n", cols(X))

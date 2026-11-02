@@ -1,0 +1,40 @@
+pass 1
+order 0 (+Inf): 7FF0000000000000
+[0, 1; NaN, 1]: ||A||_1 NaN before the zero pivot (NaN): NaN
+[1, 2; 2, 4]: a zero pivot (0): 0000000000000000
+[Inf, 0; 0, 1]: ||A||_1 = +Inf (0): 0000000000000000
+zero matrix: a zero pivot (0): 0000000000000000
+[4]: 3FF0000000000000
+diag(2, 8): 3FD0000000000000
+[1, 2; 3, 4]: 3FA8618618618619
+[1, NaN; 0, 1]: ||A||_1 NaN, no zero pivot (NaN): NaN
+diag(1, 2^-1070): a solve overflows, 0 * Inf = NaN (0): 0000000000000000
+identity 1: 3FF0000000000000
+identity 2: 3FF0000000000000
+identity 3: 3FF0000000000000
+identity 21: 3FF0000000000000
+identity 22: 3FEFFFFFFFFFFFFE
+identity 26: 3FEFFFFFFFFFFFFE
+identity 33: 3FF0000000000000
+identity 44: 3FEFFFFFFFFFFFFE
+identity 60: 3FEFFFFFFFFFFFFE
+pass 2
+order 0 (+Inf): 7FF0000000000000
+[0, 1; NaN, 1]: ||A||_1 NaN before the zero pivot (NaN): NaN
+[1, 2; 2, 4]: a zero pivot (0): 0000000000000000
+[Inf, 0; 0, 1]: ||A||_1 = +Inf (0): 0000000000000000
+zero matrix: a zero pivot (0): 0000000000000000
+[4]: 3FF0000000000000
+diag(2, 8): 3FD0000000000000
+[1, 2; 3, 4]: 3FA8618618618619
+[1, NaN; 0, 1]: ||A||_1 NaN, no zero pivot (NaN): NaN
+diag(1, 2^-1070): a solve overflows, 0 * Inf = NaN (0): 0000000000000000
+identity 1: 3FF0000000000000
+identity 2: 3FF0000000000000
+identity 3: 3FF0000000000000
+identity 21: 3FF0000000000000
+identity 22: 3FEFFFFFFFFFFFFE
+identity 26: 3FEFFFFFFFFFFFFE
+identity 33: 3FF0000000000000
+identity 44: 3FEFFFFFFFFFFFFE
+identity 60: 3FEFFFFFFFFFFFFE

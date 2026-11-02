@@ -1,0 +1,42 @@
+// la_solve_sym -- solve(A, B) of an exactly symmetric A with a positive diagonal takes the Cholesky path (LANGUAGE.md 10.8;
+// DESIGN.md 2.13.6 SOLVE: "exactly what solve(chol(A), B) would give for the path taken"): cholcase(6)
+// with b = A @ x gives x exactly (0 differing, largest difference 0); the Hilbert matrix plus 4 I (n = 4)
+// with a vector and a 4 x 2 B gives the bits of solve(chol(H), B) (0 differing elements); for H the
+// Cholesky and LU paths of 2.13.6 (n <= SEA_LA_NB, every operation pinned) differ in the last bits, so the
+// comparison tells the paths apart (asserted by tests/vectors/la8_cases.py)
+fn cholcase(n: i64) -> f64[,] {
+    let rd = [2.0, 1.0, 4.0, 0.5]
+    let rv = [0.0, 1.0, -0.5, 2.0, 0.0, -1.0, 0.5]
+    var R = zeros(n, n)
+    for i in 0..n {
+        R[i, i] = rd[i % 4]
+        for j in i + 1..n {
+            R[i, j] = rv[(i * 3 + j * 5) % 7]
+        }
+    }
+    return R.T @ R
+}
+fn xint(n: i64) -> f64[] {
+    var x = zeros(n)
+    for i in 0..n {
+        x[i] = f64((i * 3) % 11 - 5)
+    }
+    return x
+}
+let A = cholcase(6)
+let x = xint(6)
+let xa = solve(A, A @ x)
+printf("%d %g\n", nnz(xa != x), max(abs(xa - x)))
+var H = zeros(4, 4)
+for i in 0..4 {
+    for j in 0..4 {
+        H[i, j] = 1.0 / f64(i + j + 1)
+    }
+    H[i, i] = H[i, i] + 4.0
+}
+let hb = [1.0, 2.0, 3.0, 4.0]
+let C = chol(H)
+printf("%d\n", nnz(solve(H, hb) != solve(C, hb)))
+let HB = [1.0, 2.0; 3.0, 4.0; 5.0, 6.0; 7.0, 8.0]
+let Q = solve(H, HB) != solve(C, HB)
+printf("%d\n", nnz(Q.flat))

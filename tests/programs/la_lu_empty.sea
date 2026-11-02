@@ -1,0 +1,29 @@
+// la_lu_empty -- order 0 (LANGUAGE.md 10.8; DESIGN.md 2.13.2 "Empty operands", L-ik, L-io): lu and chol of a 0 x 0 matrix
+// give handles of order 0, rcond of the Lu is Inf, and solve with n = 0 (both handle forms and solve(A, B))
+// gives the empty result of B's shape: 0 for a vector, 0 x m for a matrix; by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pm(M: f64[,]) {
+    printf("%dx%d:", rows(M), cols(M))
+    for i in 0..rows(M) {
+        for j in 0..cols(M) {
+            printf(" %.17g", M[i, j])
+        }
+        printf(" |")
+    }
+    printf("\n")
+}
+let F = lu(zeros(0, 0))
+printf("%g\n", rcond(F))
+pv(solve(F, zeros(0)))
+pm(solve(F, zeros(0, 3)))
+let C = chol(zeros(0, 0))
+pv(solve(C, zeros(0)))
+pm(solve(C, zeros(0, 2)))
+pv(solve(zeros(0, 0), zeros(0)))
+pm(solve(zeros(0, 0), zeros(0, 4)))

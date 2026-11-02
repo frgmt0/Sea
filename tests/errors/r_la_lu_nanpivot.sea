@@ -1,0 +1,8 @@
+// r_la_lu_nanpivot -- lu([0, 1; NaN, 1]) completes with a zero pivot (the NaN never wins the pivot search unless
+// it is first, Decision 129 (a), L-in), so solve(F, b) is matrix is singular, at its line
+let A = [0.0, 1.0; nan, 1.0]
+let b = [1.0, 1.0]
+let F = lu(A)
+printf("lu done\n")
+let x = solve(F, b)
+printf("%d\n", len(x))

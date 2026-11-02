@@ -1,0 +1,5 @@
+// r_la_chol_posdef -- chol([1, 2; 2, 1]): the second pivot 1 - 2 * 2 = -3 is not greater than 0 (DESIGN.md 2.13.5
+// CHOL, L-im)
+printf("start\n")
+let C = chol([1.0, 2.0; 2.0, 1.0])
+printf("%d\n", 1)

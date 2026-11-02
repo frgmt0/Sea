@@ -1,0 +1,31 @@
+// la_eig_gen -- eig_sym(K, M) (LANGUAGE.md 10.8; DESIGN.md 2.13.6 EIG_SYM_GEN, 2.13.8): a diagonal K = diag(3, -5, 12) and
+// the power-of-four M = diag(4, 1/4, 16): R = chol(M) = diag(2, 1/2, 4) exactly, Z = R^-T K and C = Z R^-1
+// are diagonal and exact (off the diagonal +-0), and tred1/tql1 return the diagonal (see la_eig_diag):
+// [-20, 0.75, 0.75] exactly. W3's pencil (DESIGN.md 2.13.1, the fixed-size literals of L-iq) Klin =
+// [24000, -24000; -24000, 234000], Mlin = [380, 0; 0, 42]: its eigenvalues are the roots of 15960 l^2 -
+// 89928000 l + 5040000000 = 0 (det(K - l M) = 0), computed in the program as (qb + sq) / (2 qa) and the
+// cancellation-free 2 qc / (qb + sq) (qb^2 and 4 qa qc are integers below 2^53: exact; one sqrt);
+// tolerance rule c * n * eps * scale with c = 64, n = 2, scale = the larger eigenvalue (||C||_2 of the
+// reduced matrix): a printed bool for each; the closed form is within 1/100 of the bound of the 50-digit
+// roots (tests/vectors/la8_cases.py)
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let K = [3.0, 0.0, 0.0; 0.0, -5.0, 0.0; 0.0, 0.0, 12.0]
+let M = [4.0, 0.0, 0.0; 0.0, 0.25, 0.0; 0.0, 0.0, 16.0]
+pv(eig_sym(K, M))
+let Klin = [24000.0, -24000.0; -24000.0, 234000.0]
+let Mlin = [380.0, 0.0; 0.0, 42.0]
+let lam = eig_sym(Klin, Mlin)
+let qa = 380.0 * 42.0
+let qb = 24000.0 * 42.0 + 234000.0 * 380.0
+let qc = 24000.0 * 234000.0 - 24000.0 * 24000.0
+let sq = sqrt(qb * qb - 4.0 * qa * qc)
+let l2 = (qb + sq) / (2.0 * qa)
+let l1 = (2.0 * qc) / (qb + sq)
+let tol = 64.0 * 2.0 * eps * l2
+printf("%d %d %d\n", len(lam), abs(lam[0] - l1) <= tol, abs(lam[1] - l2) <= tol)

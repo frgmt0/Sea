@@ -23,7 +23,7 @@ No performance claim goes in without a measurement behind it.
 
 ## Status
 
-Phases 0 to 7 are done, and phase 8 (linear algebra) is done through 8b. DESIGN.md §8 has the
+Phases 0 to 7 are done, and phase 8 (linear algebra) is done through 8c. DESIGN.md §8 has the
 full milestone table.
 
 - The compiler is a chain of passes: `seaparse`, `seaname`, `seacheck`, `seaexpand`, `seafuse`,
@@ -34,8 +34,8 @@ full milestone table.
 - The language covers scalars, dynamic and fixed-size arrays, structs, strings, functions with
   named and default arguments, formatted output, `write_json`, fusion and SIMD code
   generation, and the matrix product `@`.
-- Phase 8c is in progress: `lu`, `chol`, `solve`, `rcond` and `eig_sym`, with the `Lu` and `Chol`
-  handle types.
+- Phase 8c added `lu`, `chol`, `solve`, `rcond` and `eig_sym`, with the `Lu` and `Chol` handle
+  types. Next are the ports of W2 and W3 (phase 8d).
 - Not done: the last two ports (phase 8d) and plotting (phase 9). Benchmarks against Accelerate
   and OpenBLAS are phase 10.
 

@@ -1,5 +1,5 @@
 55000 REM ====================================================================================
-55002 REM sealoop part b (lines 55000-59999): the matrix product bin matmul (DESIGN 2.13.4,
+55002 REM sealoop part b (lines 55000-59999): the matrix product bin matmul (DESIGN 2.13.4; 55400 R35 of the 8c libs;
 55004 REM Decisions 124, 125). Entered from 5546 for every bin X of an array type (any other goes to
 55006 REM L7's test at 5551): L7 never takes @. R35: a product of two dynamic f64 operands (pass 2a
 55008 REM wrote a dyn where one was fixed-size) is validated and copied, sealower lowering it by
@@ -149,3 +149,49 @@
 55312 LET S$ = S$ & B5$ & ",eld P 4 %4 0,bin P 4 mul,bin P 4 add,asg P set,)"
 55314 LET S$ = S$ & ",L S"
 55316 RETURN
+55400 REM ---- R35 for the library calls of DESIGN 2.13.4 (8c; from 5314: every lib but ind2sub and those
+55401 REM of K3$ and K5$): lib lu, chol (one dynamic f64 matrix; the type 8, 9), solve (an Lu, a Chol or a
+55402 REM dynamic f64 matrix, then a dynamic f64 vector or matrix; the dynamic f64 array of its rank), rcond
+55403 REM (an Lu; f64), eig_sym (one or two dynamic f64 matrices; f64[]): validated and copied after its
+55404 REM children (sealower's rule 39 lowers them); any other lib goes on at 5324. B1 the function, C2
+55405 REM the arity, B2 the child C3, B3 its kind (1 a vector, 2 a matrix, 8 9 a handle, 0 any other),
+55406 REM B4 the row of the kinds child C3 of B1 may have
+55410 LET B1 = POS("|lu     |chol   |solve  |rcond  |eig_sym|", "|" & SEG$(F9$ & "       ", 1, 7) & "|")
+55412 IF B1 = 0 THEN 5324
+55414 LET B1 = (B1 - 1) / 8 + 1
+55416 LET C2 = H(X, 5)
+55418 IF C2 < 1 THEN 2900
+55420 IF C2 > 2 THEN 2900
+55422 IF C2 = 2 THEN 55428
+55424 IF B1 = 3 THEN 2900
+55426 GOTO 55430
+55428 IF ABS(B1 - 4) <> 1 THEN 2900
+55430 LET B2 = X1
+55432 LET C3 = 0
+55434 LET C3 = C3 + 1
+55436 LET Y7 = H(B2, 2)
+55438 GOSUB 8700
+55440 LET B3 = Y7
+55442 IF ABS(Y7 - 8.5) < 1 THEN 55454
+55444 LET B3 = 0
+55446 IF E5 <> 4 THEN 55454
+55448 IF F5 <> 0 THEN 55454
+55450 LET B3 = R5
+55454 LET B4 = B1 + 3 * (C3 - 1) * (1 - SGN(ABS(B1 - 3)))
+55456 IF POS(SEG$("2  2  2898  2  12 ", 3 * B4 - 2, 3 * B4), STR$(B3)) = 0 THEN 2900
+55458 LET B2 = H(B2, 4)
+55460 IF C3 < C2 THEN 55434
+55462 REM the type: Lu, Chol, the dynamic f64 array of B's rank, f64, the dynamic f64 vector
+55464 LET Y7 = H(X, 2)
+55466 GOSUB 8700
+55468 ON B1 GOTO 55470, 55470, 55474, 55478, 55480
+55470 IF Y7 <> B1 + 7 THEN 2900
+55472 GOTO 5160
+55474 IF R5 <> B3 THEN 2900
+55476 GOTO 55482
+55478 IF Y7 <> 4 THEN 2900
+55479 GOTO 5160
+55480 IF R5 <> 1 THEN 2900
+55482 IF E5 <> 4 THEN 2900
+55484 IF F5 <> 0 THEN 2900
+55486 GOTO 5160

@@ -1,0 +1,5 @@
+// r_la_solve_order_shape -- check order of SOLVE (L-ik): the singular [1, 2; 2, 4] and a vector of 3: the shape
+// check before the factorization's matrix is singular
+printf("start\n")
+let x = solve([1.0, 2.0; 2.0, 4.0], zeros(3))
+printf("%d\n", len(x))

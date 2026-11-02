@@ -1,0 +1,27 @@
+struct S { f: Lu, k: i64 }
+fn g(A: f64[,], n: i64) -> f64 {
+    let F = lu(A)
+    if n > 9 { return rcond(F) }
+    var t = 0.0
+    for i in 0..n {
+        let G = lu(A)
+        if i == 0 { continue }
+        if i == 3 { break }
+        t = t + rcond(G)
+    }
+    let H = F
+    let s = S { f: F, k: 1 }
+    return t + rcond(H) + rcond(s.f)
+}
+let A: f64[,] = [2.0, 0.0; 0.0, 4.0]
+printf("%g %g\n", g(A, 5), g(A, 10))
+// la8_lib_release -- a handle local counts as any reference local (DESIGN.md 2.13.4, rules 15 and
+// 16): F released before the early `return` in the `if`; the loop's G released at `continue`
+// (before `next`), at `break` (before `exit`) and at the end of its block; `let H = F` retains
+// (mov, retain); the struct field `f` of s retains F when stored and is released with s (ldp,
+// release) at the final return, then H, then F (reverse order of the locals). g has a loop and two
+// call sites, so it is not inlined (LANGUAGE.md 8.6). Derivation: the 8b compiler's output of a twin
+// with `struct S { f: f64[,], k: i64 }` and recursive user functions fl and rcona, the calls
+// replaced by `lib lu`/`lib rcond` and `rcall sea_lu`/`sea_rcond` (rule 39), the handle types by 8.
+// Output: rcond(diag(2, 4)) = 1/(4 * 1/2) = 0.5; g(A, 5) = (0.5 + 0.5) + 0.5 + 0.5 = 2 (i = 1, 2
+// add, i = 0 continues, i = 3 breaks); g(A, 10) returns rcond(F) = 0.5.

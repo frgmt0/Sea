@@ -1,0 +1,20 @@
+// la_solve_indef -- solve(A, B) of a symmetric matrix with a positive diagonal that is not positive definite falls back to LU
+// without an error (LANGUAGE.md 10.8; DESIGN.md 2.13.6 SOLVE, L-jb): [1, 2; 2, 1] (the Cholesky attempt
+// stops at d = 1 - 2 * 2 = -3) with b = [-1, 1] gives [1, -1] exactly (pivot 2, l = 0.5, U[1,1] = 1.5) and
+// the bits of solve(lu(A), b); [1, 0.5, 2; 0.5, 2, 1; 2, 1, 1.5] stops at its third pivot (d = -2.5) and
+// gives the bits of solve(lu(A), b) (0 differing elements); printed as x + 0.0; by hand, checked by
+// tests/vectors/la8_cases.py
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+let A = [1.0, 2.0; 2.0, 1.0]
+let b = [-1.0, 1.0]
+pvz(solve(A, b))
+printf("%d\n", nnz(solve(A, b) != solve(lu(A), b)))
+let A3 = [1.0, 0.5, 2.0; 0.5, 2.0, 1.0; 2.0, 1.0, 1.5]
+let b3 = [1.0, -1.0, 2.0]
+printf("%d\n", nnz(solve(A3, b3) != solve(lu(A3), b3)))

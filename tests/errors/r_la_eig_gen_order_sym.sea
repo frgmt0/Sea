@@ -1,0 +1,5 @@
+// r_la_eig_gen_order_sym -- check order of EIG_SYM_GEN: the identity K and an M that is neither symmetric nor
+// positive definite ([-1, 2; 3, 1]): matrix is not symmetric (M) before its Cholesky
+printf("start\n")
+let e = eig_sym([1.0, 0.0; 0.0, 1.0], [-1.0, 2.0; 3.0, 1.0])
+printf("%d\n", len(e))

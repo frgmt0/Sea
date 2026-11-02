@@ -1,0 +1,93 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_release.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+slot s2 16 8
+sa p1 s1
+lf f2 #4000000000000000
+stf f2 p1 - 0 0
+lf f3 #0000000000000000
+stf f3 p1 - 0 16
+lf f4 #0000000000000000
+stf f4 p1 - 0 8
+lf f5 #4010000000000000
+stf f5 p1 - 0 24
+li i6 2
+li i7 2
+li i8 1
+li i9 2
+rcall sea_arr_new_u 0:16 1 p10 4 i8 i9 i6 i7
+ldp p11 p10 - 0 40
+li i12 32
+mcopy p11 p1 i12
+li i13 5
+call g 1 f14 2 p10 i13
+li i15 10
+call g 1 f16 2 p10 i15
+sa p17 s2
+stf f14 p17 - 0 0
+stf f16 p17 - 0 8
+la p18 d1
+rcall sea_printf 0:17 0 2 p18 p17
+release p10
+ret 0
+endfunc
+func g fn 0:2:1 2 p1 i2 1 f
+slot s1 16 8
+rcall sea_lu 0:3 1 p3 1 p1
+li i4 9
+icmp gt i5 i2 i4
+if 1 i5
+rcall sea_rcond 0:4 1 f6 1 p3
+release p3
+ret 1 f6
+endif 1
+lf f7 #0000000000000000
+li i8 0
+li i9 1
+rcount i10 i11 i8 i2 i9 0 0:6
+if 2 i11
+loop 3 i12 i8 i10 i9
+rcall sea_lu 0:7 1 p13 1 p1
+li i14 0
+icmp eq i15 i12 i14
+if 4 i15
+release p13
+next 3
+endif 4
+li i16 3
+icmp eq i17 i12 i16
+if 5 i17
+release p13
+exit 3
+endif 5
+rcall sea_rcond 0:10 1 f18 1 p13
+fadd f7 f7 f18
+release p13
+endloop 3
+endif 2
+mov p19 p3
+retain p19
+sa p20 s1
+retain p3
+stp p3 p20 - 0 0
+li i21 1
+sti i21 p20 - 0 8
+rcall sea_rcond 0:14 1 f22 1 p19
+fadd f23 f7 f22
+ldp p24 p20 - 0 0
+rcall sea_rcond 0:14 1 f25 1 p24
+fadd f26 f23 f25
+ldp p27 p20 - 0 0
+release p27
+release p19
+release p3
+ret 1 f26
+endfunc
+fmt d1 4
+fconv - - - g f
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

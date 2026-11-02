@@ -1,0 +1,5 @@
+// r_la_chol_order -- check order of CHOL (DESIGN.md 2.13.5, L-ik): a 2 x 3 matrix whose first pivot -1 would
+// also fail the positive-definite test: matrix is not square comes first
+printf("start\n")
+let C = chol([-1.0, 0.0, 0.0; 0.0, -1.0, 0.0])
+printf("%d\n", 1)

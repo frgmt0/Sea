@@ -1,0 +1,29 @@
+fn g(A: f64[,], b: f64[], n: i64) -> f64 {
+    if n > 0 { return g(A, b, n - 1) }
+    let F = lu(A)
+    let C = chol(A)
+    let x = solve(F, b)
+    let Y = solve(C, A)
+    let z = solve(A, b)
+    let r = rcond(lu(A))
+    let e = eig_sym(A)
+    let w = eig_sym(A, Y)
+    return x[1] + Y[1, 0] + z[0] + r + e[0] + w[1] + rcond(F)
+}
+let A: f64[,] = [4.0, 0.0; 0.0, 1.0]
+let b: f64[] = [8.0, 9.0]
+printf("%g\n", g(A, b, 1))
+// la8_lib_rcall -- rule 39's eight rows of phase 8c (DESIGN.md 2.13.4) in sea.lir1: `rcall sea_lu`,
+// `sea_chol`, `sea_lu_solve` / `sea_chol_solve` chosen by F's handle type, `sea_solve` for a matrix,
+// `sea_rcond` with its `f` result into the destination, `sea_eig_sym`, `sea_eig_sym_gen`, each
+// `rcall <sym> <line> 1 R n args` (L-jo: handles are class p). The borrowed parameters and locals
+// (A, b, F, C, Y) are neither retained nor released; the owned temporary lu(A) under rcond is
+// released right after the rcond; the handle locals F and C are released with the arrays at the
+// return (rule 16), none at the early return (nothing held yet). R35 copies the lib nodes unchanged
+// into sea.hirl (g's records equal sea.hir's). g is recursive, so never inlined (LANGUAGE.md 8.6).
+// Derivation: the 8b compiler's output of a twin with recursive user functions fl, chox, solva,
+// solvb, solvc, rcona, eigsyma, eigsymb (same name lengths, handle types replaced by f64[,]), with
+// `call` replaced by `lib`/`rcall` and the handle locals' types by 8 and 9 (2.13.3, rule 39) and the
+// twin's functions dropped. sea.hir equals sea.hir1 and sea.hirf (nothing to convert or fuse).
+// Output (exact data: diagonal power-of-two A): x = [2, 9], Y = I, z = [2, 9], rcond = 1/4,
+// e = w = [1, 4]: 9 + 0 + 2 + 0.25 + 1 + 4 + 0.25 = 16.5.

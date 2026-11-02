@@ -1,0 +1,4 @@
+// r_la_eig_gen_posdef -- eig_sym(I, [1, 2; 2, 1]): M is not positive definite (DESIGN.md 2.13.5 EIG_SYM_GEN)
+printf("start\n")
+let e = eig_sym([1.0, 0.0; 0.0, 1.0], [1.0, 2.0; 2.0, 1.0])
+printf("%d\n", len(e))

@@ -1,0 +1,4 @@
+// err_la_handle_literal -- an array literal of handles: 258 at the literal (L-ir)
+let A = ones(2, 2)
+let F = lu(A)
+let v = [F, F]

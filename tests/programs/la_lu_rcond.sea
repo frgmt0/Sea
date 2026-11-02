@@ -1,0 +1,42 @@
+// la_lu_rcond -- rcond(lu(A)) (LANGUAGE.md 10.8; DESIGN.md 2.13.6 RCOND, L-io, L-je, Decision 129 (a)): first the special
+// values in their order: order 0 is Inf; [0, 1; NaN, 1] has a zero pivot (the NaN never wins, L-in) and
+// ||A||_1 NaN: NaN, the NaN coming first; [1, NaN; 0, 1] (NaN norm, no zero pivot): NaN; the singular
+// [1, 2; 2, 4] (pivot 2 - 0.5 * 4 = 0) and zeros(3, 3): 0; ||A||_1 = Inf ([Inf, 0; 0, 1]): 0;
+// diag(5e-324, 1): step 1's first solve gives 0.5 / 5e-324 = Inf, so sum |x| is Inf and rcond 0 at
+// once; diag(1, 2^-1070): step 1 is finite (2^1069), the L^-T U^-T solve gives 1 / 2^-1070 = Inf: 0 at
+// once (without that test 0 * Inf = NaN would follow and the literal steps returned 1). Then, for
+// n = 1 .. 80, the identity and the diagonal matrix of +-1/8 .. 8 (p2[(3 i) mod 7], negated when
+// i mod 3 = 1): their factors are exact in every order (L and U off the diagonal are +-0, which no
+// step of the estimator can see while x stays finite), and each value is
+// computed from 2.13.6's steps transcribed into binary64 by tests/vectors/la8_cases.py (rcond_est),
+// printed with %.17g: the identity gives 1 - 2^-52 at n = 22, 26, 44, 60, 68, 74, 77, 78 and
+// 1 - 2^-51 at n = 63 (step 3's rounded t exceeds 1), so no order is assumed exact
+printf("%g\n", rcond(lu(zeros(0, 0))))
+let An = [0.0, 1.0; nan, 1.0]
+printf("%g\n", rcond(lu(An)))
+let Am = [1.0, nan; 0.0, 1.0]
+printf("%g\n", rcond(lu(Am)))
+let As = [1.0, 2.0; 2.0, 4.0]
+printf("%g\n", rcond(lu(As)))
+let Az = zeros(3, 3)
+printf("%g\n", rcond(lu(Az)))
+let Ai = [inf, 0.0; 0.0, 1.0]
+printf("%g\n", rcond(lu(Ai)))
+let Au = [5e-324, 0.0; 0.0, 1.0]
+printf("%g\n", rcond(lu(Au)))
+let Ab = [1.0, 0.0; 0.0, 8e-323]
+printf("%g\n", rcond(lu(Ab)))
+let p2 = [0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+for n in 1..=80 {
+    var I = zeros(n, n)
+    var D = zeros(n, n)
+    for i in 0..n {
+        I[i, i] = 1.0
+        var d = p2[(3 * i) % 7]
+        if i % 3 == 1 {
+            d = -d
+        }
+        D[i, i] = d
+    }
+    printf("%d %.17g %.17g\n", n, rcond(lu(I)), rcond(lu(D)))
+}

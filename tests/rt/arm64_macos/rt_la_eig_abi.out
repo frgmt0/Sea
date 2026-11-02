@@ -1,0 +1,8 @@
+eig_sym 70: ok
+eig_sym 3x3: ok
+eig_sym 0x0: ok
+eig_sym Inf (n NaN): ok
+eig_sym_gen 70 (blocked Cholesky): ok
+eig_sym_gen 3x3: ok
+eig_sym_gen 0x0: ok
+eig_sym_gen Inf in K (n NaN): ok

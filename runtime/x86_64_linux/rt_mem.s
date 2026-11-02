@@ -12,11 +12,11 @@
 #   sea_free_block   (.globl + .hidden) give a block back
 #   sea_retain       (.globl + .hidden) count + 1 (runtime code)
 #   sea_release      (.globl + .hidden) count - 1, sea_free at 0
-#   sea_live         (.globl + .hidden) u64: arrays and strings allocated
-#                    and not yet freed
-#   sea_freed        (.globl + .hidden) u64: arrays and strings freed so
-#                    far. sea_live + sea_freed is the number of objects
-#                    ever created (the `count` mode of SEA_HEAP_CHECK):
+#   sea_live         (.globl + .hidden) u64: arrays, strings and handles
+#                    allocated and not yet freed
+#   sea_freed        (.globl + .hidden) u64: arrays, strings and handles
+#                    freed so far. sea_live + sea_freed is the number
+#                    of objects ever created (the `count` mode of SEA_HEAP_CHECK):
 #                    every constructor counts its object in sea_live and
 #                    nothing but sea_free uncounts one, so the sum misses
 #                    no creation path
@@ -46,10 +46,10 @@
 # which gives the same class.
 #
 # The live-object counter (DESIGN.md 4.1, 4.5 SEA_HEAP_CHECK) counts
-# objects, not blocks: the constructors of rt_arr.s, rt_str.s, rt_args.s
-# and rt_fmt.s add 1 per array or string they create, sea_free subtracts
-# 1 per object it frees. Static objects (count SEA_RC_STATIC) are never
-# counted or freed.
+# objects, not blocks: the constructors of rt_arr.s, rt_str.s, rt_args.s,
+# rt_fmt.s and rt_lu.s add 1 per array, string or handle they create,
+# sea_free subtracts 1 per object it frees. Static objects (count
+# SEA_RC_STATIC) are never counted or freed.
 #
 # Linux values (DESIGN.md 4.7.1; private to the runtime): mmap(NULL, n,
 # PROT_READ|PROT_WRITE = 3, MAP_PRIVATE|MAP_ANONYMOUS = 0x22, -1, 0),
@@ -66,6 +66,11 @@
 .equ RT_MEM_K_SMALL,    12          # the largest small class: 2^12 = SEA_SMALL_MAX_BYTES
 .equ RT_MEM_MAX_REQ,    0x4000000000000000 # 2^62: the largest request that is attempted
 .equ RT_MEM_NCLASS,     64          # per-class tables are indexed by k = 0 .. 63
+# A handle's private layout (rt_lu.s, DESIGN.md 2.13.6 "Handles", L-is):
+# n at offset 16, the factor (n x n doubles, then an Lu's n u32 pivots)
+# at offset 64.
+.equ RT_MEM_H_N,        SEA_OBJ_HDR
+.equ RT_MEM_H_F,        (SEA_OBJ_HDR + 48)
 
 .if (1 << RT_MEM_K_SMALL) != SEA_SMALL_MAX_BYTES
     .error "rt_mem: RT_MEM_K_SMALL does not match SEA_SMALL_MAX_BYTES"
@@ -305,8 +310,12 @@ sea_release:
 #             sea_release (static and null references skipped); then its
 #             block (SEA_ARR_SIZE + SEA_ARR_CAP * SEA_ARR_ESIZE bytes) is
 #             freed. A string (SEA_TAG_STR) frees its block (SEA_STR_BYTES
-#             + SEA_STR_LEN bytes). Any other tag traps (ud2; arm64: brk):
-#             phase 4 has no handles, so a correct program never gets here.
+#             + SEA_STR_LEN bytes). A handle (SEA_TAG_LU or SEA_TAG_CHOL,
+#             L-is; the private layout of rt_lu.s: n at RT_MEM_H_N, the
+#             factor at RT_MEM_H_F) holds no references: its block (64 +
+#             8n^2 bytes, + 4n pivot bytes for an Lu) is freed. Any other
+#             tag traps (ud2; arm64: brk): Figure and Axes are phase 9's,
+#             so a correct program never gets here.
 #             The live count drops by one.
 #   Inputs  : %rdi = the object (never static, never null)
 #   Outputs : none; cannot fail
@@ -387,9 +396,23 @@ sea_free:
     # A string.
 .Lrt_mem_free_str:
     cmpb $SEA_TAG_STR, SEA_OBJ_TAG(%rbx)
-    jne .Lrt_mem_free_bad           # neither an array nor a string: a runtime bug
+    jne .Lrt_mem_free_handle        # not a string: a handle, or a runtime bug
     movq SEA_STR_LEN(%rbx), %rsi
     addq $SEA_STR_BYTES, %rsi
+    jmp .Lrt_mem_free_block
+
+    # A handle (L-is): 64 + 8n^2 bytes, + 4n pivot bytes for an Lu.
+.Lrt_mem_free_handle:
+    movq RT_MEM_H_N(%rbx), %rcx     # n
+    movq %rcx, %rsi
+    imulq %rcx, %rsi
+    shlq $3, %rsi                   # the factor: 8n^2
+    addq $RT_MEM_H_F, %rsi          # after the header and fields
+    cmpb $SEA_TAG_CHOL, SEA_OBJ_TAG(%rbx)
+    je .Lrt_mem_free_block          # a Chol: no pivots
+    cmpb $SEA_TAG_LU, SEA_OBJ_TAG(%rbx)
+    jne .Lrt_mem_free_bad           # no other object exists: a runtime bug
+    leaq (%rsi,%rcx,4), %rsi        # an Lu: + the n u32 pivots
 .Lrt_mem_free_block:
     movq %rbx, %rdi
     call sea_free_block
@@ -404,7 +427,7 @@ sea_free:
     popq %rbp
     ret
 .Lrt_mem_free_bad:
-    ud2                             # trap: no such object in phase 4
+    ud2                             # trap: no such object (Figure, Axes: phase 9)
     .size sea_free, . - sea_free
 
     .bss
@@ -414,13 +437,13 @@ sea_free:
     .type sea_live, @object
     .size sea_live, 8
 sea_live:
-    .zero 8                         # arrays and strings allocated and not yet freed
+    .zero 8                         # arrays, strings and handles allocated and not yet freed
     .globl sea_freed
     .hidden sea_freed
     .type sea_freed, @object
     .size sea_freed, 8
 sea_freed:
-    .zero 8                         # arrays and strings freed so far
+    .zero 8                         # arrays, strings and handles freed so far
 .Lrt_mem_free:
     .zero 8 * RT_MEM_NCLASS         # small classes: head of the free list, by k
 .Lrt_mem_cur:

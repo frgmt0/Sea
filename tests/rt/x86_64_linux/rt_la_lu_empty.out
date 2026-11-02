@@ -1,0 +1,13 @@
+lu(0x0): n=0 norm=0000000000000000 pivot=-1 rc=1
+rcond(lu(0x0)): 7FF0000000000000
+chol(0x0): n=0 rc=1
+lu_solve(order 0, 0x3): 2 0 3 rc=1
+lu_solve(order 0, vector 0): 1 0 1 rc=1
+chol_solve(order 0, 0x2): 2 0 2 rc=1
+chol_solve(order 0, vector 0): 1 0 1 rc=1
+solve(0x0, 0x4): 2 0 4 rc=1
+solve(0x0, vector 0): 1 0 1 rc=1
+lu_solve(order 3, 3x0): 2 3 0 rc=1
+chol_solve(order 3, 3x0): 2 3 0 rc=1
+solve(SPD 3x3, 3x0): 2 3 0 rc=1
+solve(non-symmetric 3x3, 3x0): 2 3 0 rc=1

@@ -1,0 +1,7 @@
+// r_la_solve_singular_m0 -- solve(A, B) of the singular [1, 2; 2, 4] with a 2 x 0 B: matrix is singular, never
+// the empty result (LANGUAGE.md 10.8 "also when B has no column", L-ik)
+let A = [1.0, 2.0; 2.0, 4.0]
+let B = zeros(2, 0)
+printf("start\n")
+let X = solve(A, B)
+printf("%d\n", cols(X))

@@ -1,0 +1,5 @@
+// r_la_solve_square -- solve(A, b) of a 2 x 3 A: matrix is not square (DESIGN.md 2.13.5 SOLVE)
+let A = zeros(2, 3)
+printf("start\n")
+let x = solve(A, zeros(2))
+printf("%d\n", len(x))

@@ -1697,10 +1697,12 @@ whose other candidates are all zero gives a zero pivot. `solve(F, B)` and `solve
 has no column; otherwise Inf and NaN propagate through the arithmetic. An `i64` argument is
 converted and a fixed-size argument used as the dynamic array it equals; the results are dynamic.
 `rcond(F)` is, in this order: +Inf for a factor of order 0; NaN when ‖A‖₁ is NaN; 0 when a pivot is
-zero; 0 when ‖A‖₁ is +Inf or the estimate of ‖A⁻¹‖₁ is not finite; else the estimate. `eig_sym(A)`
-returns NaN for every eigenvalue when A has an element that is not finite, and `eig_sym(K, M)` when
-K or M has one or the reduction overflows (the errors of the table come first); the eigenvalues are
-sorted by §10.6's `f64` order. A `shape mismatch` names the operands' shapes in argument order.
+zero; 0 when ‖A‖₁ is +Inf, when a triangular solve of the estimator overflows (the sum of the
+magnitudes of its result is Inf or NaN), or when the estimate of ‖A⁻¹‖₁ is Inf, NaN or 0; else the
+estimate. `eig_sym(A)` returns NaN for every eigenvalue when A has an element that is not finite,
+and `eig_sym(K, M)` when K or M has one or the reduction overflows (the errors of the table come
+first); the eigenvalues are sorted by §10.6's `f64` order. A `shape mismatch` names the operands'
+shapes in argument order.
 
 ### 10.9 Strings
 

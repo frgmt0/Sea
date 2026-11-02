@@ -1,0 +1,17 @@
+// la_eig_gen_nonfinite -- eig_sym(K, M) gives n NaN in L-iy's three cases (LANGUAGE.md 10.8; DESIGN.md 2.13.6 EIG_SYM_GEN): +Inf
+// on M's diagonal (before the Cholesky of M), NaN in K, and finite K = 1e300 I, M = 1e-300 I whose
+// reduction overflows (R = sqrt(1e-300) I, Z = 1e300 / 1e-150 = Inf: n NaN before tred1); and an M with
+// +Inf that is also not positive definite (diag(Inf, -1)): n NaN, no error, the non-finite test coming
+// before the Cholesky of M; by hand
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let I2 = [1.0, 0.0; 0.0, 1.0]
+pv(eig_sym(I2, [inf, 0.0; 0.0, 1.0]))
+pv(eig_sym([nan, 0.0; 0.0, 1.0], I2))
+pv(eig_sym([1e+300, 0.0; 0.0, 1e+300], [1e-300, 0.0; 0.0, 1e-300]))
+pv(eig_sym(I2, [inf, 0.0; 0.0, -1.0]))

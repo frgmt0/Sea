@@ -1,0 +1,36 @@
+pass 1
+potrf n=0: 0
+potrf exact n=1 ld=1: ok
+potrf exact n=3 ld=3: ok
+potrf exact n=3 ld=6: ok
+potrf exact n=31 ld=31: ok
+potrf exact n=32 ld=32: ok
+potrf exact n=33 ld=36: ok
+potrf exact n=64 ld=64: ok
+potrf exact n=70 ld=70: ok
+potrf exact n=70 ld=73: ok
+potrf fail n=3 q=2: 3
+potrf fail n=3 q=2: 3
+potrf fail n=3 q=1: 2
+potrf fail n=3 q=0: 1
+potrf fail n=33 q=32: 33
+potrf fail n=40 q=35: 36
+potrf fail n=70 q=69: 70
+pass 2
+potrf n=0: 0
+potrf exact n=1 ld=1: ok
+potrf exact n=3 ld=3: ok
+potrf exact n=3 ld=6: ok
+potrf exact n=31 ld=31: ok
+potrf exact n=32 ld=32: ok
+potrf exact n=33 ld=36: ok
+potrf exact n=64 ld=64: ok
+potrf exact n=70 ld=70: ok
+potrf exact n=70 ld=73: ok
+potrf fail n=3 q=2: 3
+potrf fail n=3 q=2: 3
+potrf fail n=3 q=1: 2
+potrf fail n=3 q=0: 1
+potrf fail n=33 q=32: 33
+potrf fail n=40 q=35: 36
+potrf fail n=70 q=69: 70

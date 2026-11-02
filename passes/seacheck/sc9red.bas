@@ -286,6 +286,7 @@
 20395 SUB "lred": N(), M(), T(), X(), X$(), J, Z, H1, G9, D9, D, Z9
 20400 LET Z9 = 1
 20405 LET D = 0
+20406 IF Z > 26 THEN 20518
 20407 IF Z < 25 THEN 20410
 20408 CALL "lstr": N(), M(), T(), X(), X$(), J, Z, H1, D, Z9
 20409 GOTO 20520
@@ -318,20 +319,23 @@
 20506 GOTO 20515
 20510 LET D = S
 20515 LET Z9 = 0
+20516 GOTO 20520
+20518 CALL "lla": N(), M(), T(), X(), X$(), J, Z, H1, D, Z9
 20520 SUBEND
 20525 REM ---- lerr: D = the result type of the 4f library call of class Z with an argument error or no
 20530 REM overload, D9 its dim narg: i64, bool, f64 or i64[] where it does not depend on the
-20535 REM arguments, else (sum max min sort and every dim: form) 0 (DESIGN 2.6.2); lower str, args str[] --
+20535 REM arguments, else (sum max min sort and every dim: form) 0 (DESIGN 2.6.2); lower str, args str[];
+20536 REM 8c (DESIGN 2.13.3): lu Lu, chol Chol, solve 0, rcond f64, eig_sym f64[] --
 20540 SUB "lerr": T(), N(), X(), X$(), Z, D9, D
-20545 LET D = VAL(SEG$("0004030302000000030500", 2 * Z - 31, 2 * Z - 30))
+20545 LET D = VAL(SEG$("00040303020000000305000809000400", 2 * Z - 31, 2 * Z - 30))
 20550 IF Z > 20 THEN 20565
 20555 IF Z = 18 THEN 20565
 20560 LET D = D * (1 - SGN(D9))
 20565 IF ABS(Z - 22.5) > 1 THEN 20572
 20570 CALL "tarr": T(), N(), X(), X$(), 1, 3, 0, 0, D
 20571 GOTO 20575
-20572 IF Z <> 26 THEN 20575
-20573 CALL "tarr": T(), N(), X(), X$(), 1, 5, 0, 0, D
+20572 IF ABS(Z - 28.5) <> 2.5 THEN 20575
+20573 CALL "tarr": T(), N(), X(), X$(), 1, 5 - (Z - 26) / 5, 0, 0, D
 20575 SUBEND
 20580 REM ---- lpos: P$ = the position of the library call whose argument J takes a dyn (the fixed-size
 20585 REM vector of sort and argsort: the dyn is at the call, DESIGN 3.5.5), else P$ unchanged --------
@@ -342,3 +346,64 @@
 20610 IF M(N(P, 7), 2) >= 0 THEN 20620
 20615 CALL "pos": N(), P, P$
 20620 SUBEND
+20625 REM ---- lla: the overloads of the 8c library call J of class Z (ck_lib: 27 lu 28 chol 29 solve 30
+20630 REM rcond 31 eig_sym; DESIGN 2.13.3, L-iq) with H1 positional arguments and no argument error:
+20635 REM lu(A) chol(A) a numeric matrix (Lu, Chol); solve(F, B) F an Lu or Chol, solve(A, B) A a numeric
+20640 REM matrix, B a numeric vector or matrix (the dynamic f64 array of B's rank); rcond(F) an Lu (f64);
+20645 REM eig_sym(A) eig_sym(K, M) numeric matrices (f64[]). Then each numeric argument is converted (acv,
+20650 REM an i64 one) and made dynamic (M(arg,5) a dyn at the call, lpos) when fixed-size. D the type, Z9
+20655 REM = 1 for no overload; W(i) argument i's kind: 1 a numeric vector, 2 matrix, 8 Lu, 9 Chol, else 0
+20660 SUB "lla": N(), M(), T(), X(), X$(), J, Z, H1, D, Z9
+20662 DIM W(2)
+20664 LET Z9 = 1
+20666 LET D = 0
+20668 IF H1 > 1 + INT(Z / 29) - INT(Z / 30) + INT(Z / 31) THEN 20760
+20670 IF H1 < 1 + INT(Z / 29) - INT(Z / 30) THEN 20760
+20674 LET A = N(N(J, 7), 8)
+20676 FOR I = 1 TO H1
+20678 CALL "shp": T(), M(A, 1), E, K, F, A0, B0
+20680 LET W(I) = M(A, 1)
+20682 IF ABS(W(I) - 8.5) < 1 THEN 20692
+20684 LET W(I) = 0
+20686 IF ABS(E - 3.5) > 1 THEN 20692
+20688 LET W(I) = K
+20692 LET A = N(A, 8)
+20694 NEXT I
+20696 LET D = 4
+20698 ON Z - 26 GOTO 20700, 20700, 20710, 20720, 20730
+20700 IF W(1) <> 2 THEN 20760
+20702 LET D = Z - 19
+20704 GOTO 20740
+20710 IF W(1) < 2 THEN 20760
+20712 IF W(2) = 0 THEN 20760
+20714 IF W(2) > 2 THEN 20760
+20716 CALL "tarr": T(), N(), X(), X$(), W(2), 4, 0, 0, D
+20718 GOTO 20740
+20720 IF W(1) <> 8 THEN 20760
+20722 GOTO 20740
+20730 IF W(1) <> 2 THEN 20760
+20732 IF W(H1) <> 2 THEN 20760
+20734 CALL "tarr": T(), N(), X(), X$(), 1, 4, 0, 0, D
+20740 REM the conversions of the numeric arguments (L-iq: cvt, then dyn, as ckmm's)
+20742 LET A = N(N(J, 7), 8)
+20744 FOR I = 1 TO H1
+20746 IF W(I) > 2 THEN 20756
+20748 CALL "shp": T(), M(A, 1), E, K, F, A0, B0
+20750 IF E <> 3 THEN 20753
+20752 CALL "acv": N(), M(), T(), X(), X$(), A
+20753 IF F = 0 THEN 20756
+20754 CALL "tarr": T(), N(), X(), X$(), K, 4, 0, 0, M(A, 5)
+20756 LET A = N(A, 8)
+20758 NEXT I
+20759 LET Z9 = 0
+20760 SUBEND
+20765 REM ---- lapn: P$ = the name LANGUAGE 10.8 gives parameter I of the class-Z call (27-31) with H
+20770 REM arguments, for 255: lu chol A, solve A B (a ref argument has no value type to choose F), rcond
+20775 REM F, eig_sym A, or K M with two or more arguments; past the last parameter P$ is unchanged ----
+20780 SUB "lapn": Z, H, I, P$
+20782 IF I > 2 THEN 20790
+20784 LET K = Z - 26 + INT(Z / 31) * SGN(H - 1)
+20786 LET A$ = SEG$("A A ABF A KM", 2 * K - 2 + I, 2 * K - 2 + I)
+20788 IF A$ = " " THEN 20790
+20789 LET P$ = A$
+20790 SUBEND

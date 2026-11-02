@@ -1,0 +1,10 @@
+lu_solve order 0, empty vector: 1 0x1 own ok
+lu_solve order 0, 0x3: 2 0x3 own ok
+lu_solve order 2, 2x0: 2 2x0 own ok
+chol_solve order 0, empty vector: 1 0x1 own ok
+chol_solve order 0, 0x4: 2 0x4 own ok
+chol_solve order 2, 2x0: 2 2x0 own ok
+solve 0x0, empty vector: 1 0x1 own ok
+solve 0x0, 0x2: 2 0x2 own ok
+solve symmetric 2x2, 2x0: 2 2x0 own ok
+solve 2x2, 2x0: 2 2x0 own ok

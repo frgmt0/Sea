@@ -1,0 +1,22 @@
+pass 1
+chol n=1 m=1 vector: ok
+chol n=3 m=1 vector: ok
+chol n=3 m=5: ok
+chol n=32 m=5: ok
+chol n=33 m=1 vector: ok
+chol n=64 m=2: ok
+chol n=70 m=1 vector: ok
+chol n=70 m=5: ok
+chol n=70 m=40: ok
+chol n=80 m=80: ok
+pass 2
+chol n=1 m=1 vector: ok
+chol n=3 m=1 vector: ok
+chol n=3 m=5: ok
+chol n=32 m=5: ok
+chol n=33 m=1 vector: ok
+chol n=64 m=2: ok
+chol n=70 m=1 vector: ok
+chol n=70 m=5: ok
+chol n=70 m=40: ok
+chol n=80 m=80: ok

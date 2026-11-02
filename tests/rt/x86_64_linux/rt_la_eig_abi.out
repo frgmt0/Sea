@@ -1,0 +1,22 @@
+pass 1
+eig_sym 70 (R'R): ok
+eig_sym 70 (indefinite): ok
+eig_sym 3: ok
+eig_sym 0x0: ok
+eig_sym 2 (Inf: n NaN, no scratch): ok
+eig_sym_gen 70: ok
+eig_sym_gen 3: ok
+eig_sym_gen 0x0: ok
+eig_sym_gen 2 (Inf in K: n NaN, no scratch): ok
+eig_sym_gen 2 (overflowing reduction: n NaN, scratch freed): ok
+pass 2
+eig_sym 70 (R'R): ok
+eig_sym 70 (indefinite): ok
+eig_sym 3: ok
+eig_sym 0x0: ok
+eig_sym 2 (Inf: n NaN, no scratch): ok
+eig_sym_gen 70: ok
+eig_sym_gen 3: ok
+eig_sym_gen 0x0: ok
+eig_sym_gen 2 (Inf in K: n NaN, no scratch): ok
+eig_sym_gen 2 (overflowing reduction: n NaN, scratch freed): ok

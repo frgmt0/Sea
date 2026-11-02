@@ -1,0 +1,126 @@
+#sea 1
+#target arm64-macos
+#file la8_lib_rcall.sea
+type 0:1:9 f64 m 0
+param 0:1:6 A 0 0
+type 0:1:20 f64 v 0
+param 0:1:17 b 0 0
+type 0:1:30 i64 s 0
+param 0:1:27 n 0 0
+type 0:1:38 f64 s 0
+name 0:2:8 n
+int 0:2:12 0
+bin 0:2:8 gt
+name 0:2:23 g
+name 0:2:25 A
+name 0:2:28 b
+name 0:2:31 n
+int 0:2:35 1
+bin 0:2:31 sub
+call 0:2:23 3
+return 0:2:16 1
+block 0:2:14 1
+if 0:2:5 0
+pname 0:3:9 F
+name 0:3:13 lu
+name 0:3:16 A
+call 0:3:13 1
+let 0:3:5 0
+pname 0:4:9 C
+name 0:4:13 chol
+name 0:4:18 A
+call 0:4:13 1
+let 0:4:5 0
+pname 0:5:9 x
+name 0:5:13 solve
+name 0:5:19 F
+name 0:5:22 b
+call 0:5:13 2
+let 0:5:5 0
+pname 0:6:9 Y
+name 0:6:13 solve
+name 0:6:19 C
+name 0:6:22 A
+call 0:6:13 2
+let 0:6:5 0
+pname 0:7:9 z
+name 0:7:13 solve
+name 0:7:19 A
+name 0:7:22 b
+call 0:7:13 2
+let 0:7:5 0
+pname 0:8:9 r
+name 0:8:13 rcond
+name 0:8:19 lu
+name 0:8:22 A
+call 0:8:19 1
+call 0:8:13 1
+let 0:8:5 0
+pname 0:9:9 e
+name 0:9:13 eig_sym
+name 0:9:21 A
+call 0:9:13 1
+let 0:9:5 0
+pname 0:10:9 w
+name 0:10:13 eig_sym
+name 0:10:21 A
+name 0:10:24 Y
+call 0:10:13 2
+let 0:10:5 0
+name 0:11:12 x
+int 0:11:14 1
+index 0:11:12 1
+name 0:11:19 Y
+int 0:11:21 1
+int 0:11:24 0
+index 0:11:19 2
+bin 0:11:12 add
+name 0:11:29 z
+int 0:11:31 0
+index 0:11:29 1
+bin 0:11:12 add
+name 0:11:36 r
+bin 0:11:12 add
+name 0:11:40 e
+int 0:11:42 0
+index 0:11:40 1
+bin 0:11:12 add
+name 0:11:47 w
+int 0:11:49 1
+index 0:11:47 1
+bin 0:11:12 add
+name 0:11:54 rcond
+name 0:11:60 F
+call 0:11:54 1
+bin 0:11:12 add
+return 0:11:5 1
+block 0:1:42 10
+fn 0:1:1 g 0 3 1
+pname 0:13:5 A
+type 0:13:8 f64 m 0
+float 0:13:18 #4010000000000000
+float 0:13:23 #0000000000000000
+row 0:13:18 2
+float 0:13:28 #0000000000000000
+float 0:13:33 #3FF0000000000000
+row 0:13:28 2
+array 0:13:17 2
+let 0:13:1 1
+pname 0:14:5 b
+type 0:14:8 f64 v 0
+float 0:14:17 #4020000000000000
+float 0:14:22 #4022000000000000
+row 0:14:17 2
+array 0:14:16 1
+let 0:14:1 1
+name 0:15:1 printf
+str 0:15:8 %25g%0A
+name 0:15:16 g
+name 0:15:18 A
+name 0:15:21 b
+int 0:15:24 1
+call 0:15:16 3
+call 0:15:1 2
+cstmt 0:15:1
+prog 4
+#end

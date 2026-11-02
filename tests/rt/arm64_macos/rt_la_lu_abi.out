@@ -1,0 +1,17 @@
+lu 70: ok
+lu 3x3: ok
+lu 0x0: ok
+chol 70: ok
+chol 3x3: ok
+chol 0x0: ok
+lu_solve 70 x 40: ok
+lu_solve 70 vector: ok
+chol_solve 70 x 40: ok
+chol_solve 70 vector: ok
+solve 70 x 40 (Cholesky): ok
+solve 70 x 40 (LU): ok
+solve 2x2 (LU fallback): ok
+solve 0x0: ok
+rcond 70: ok
+issym 70: ok
+potrf 70: ok

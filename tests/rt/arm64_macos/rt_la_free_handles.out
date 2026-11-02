@@ -1,0 +1,7 @@
+lu order 3: tag 5 live +1 after release live -1 freed +1
+chol order 3: tag 6 live +1 after release live -1 freed +1
+lu order 0: tag 5 live +1 after release live -1 freed +1
+chol order 0: tag 6 live +1 after release live -1 freed +1
+lu order 70: tag 5 live +1 after release live -1 freed +1
+chol order 70: tag 6 live +1 after release live -1 freed +1
+lu order 3, count 2: tag 5 live +1 after release live -1 freed +1

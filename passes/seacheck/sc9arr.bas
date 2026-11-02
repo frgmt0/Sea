@@ -293,7 +293,14 @@
 17800 CALL "er": N(), X(), X$(), M9, "TYPE_MISMATCH", A$, B$, "", 2
 17805 GOTO 18395
 17810 IF Z9 = 1 THEN 18395
-17815 REM pass 2: the untyped elements take the element type (all untyped: i64, marked for rtf), an
+17811 REM an element type that is or holds a handle (a struct field at any depth): 258 at J (L-ir)
+17812 IF G < 6 THEN 17818
+17813 CALL "hct": T(), G, Z, Q
+17814 IF Q = 0 THEN 17818
+17815 CALL "tyn": T(), Q, A$
+17816 CALL "er": N(), X(), X$(), J, "ELEMENT_TYPE", A$, "", "", 1
+17817 GOTO 18395
+17818 REM pass 2: the untyped elements take the element type (all untyped: i64, marked for rtf), an
 17820 REM i64 element or part of an f64 literal is converted
 17825 LET U9 = 0
 17830 IF G <> -1 THEN 17845

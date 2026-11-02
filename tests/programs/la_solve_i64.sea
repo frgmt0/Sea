@@ -1,0 +1,29 @@
+// la_solve_i64 -- i64 arguments of solve, lu, chol and eig_sym are converted to f64 (LANGUAGE.md 10.8, 4.2; DESIGN.md 2.13.2,
+// L-iq; fixed-size ones also made dynamic): [4, 2; 2, 5] with b = [2, -3] gives [1, -1] by the Cholesky path
+// (R = [2, 1; 0, 2]), by lu (pivot 4, U[1,1] = 4) and by chol; [9007199254740993, 1; 0, 1] converts to
+// 2^53 (ties to even) and [9007199254740994, 0] exactly, so x[0] = (2^53 + 2) / 2^53 = 1 + 2^-52 (with
+// the unconverted 2^53 + 1 it would round to 1); eig_sym of the i64 diagonal [5, 0; 0, -3] is [-3, 5];
+// exact data, printed as x + 0.0 (eig_sym raw); by hand, checked by tests/vectors/la8_cases.py
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+let Ai: i64[,] = [4, 2; 2, 5]
+let bi: i64[] = [2, -3]
+pvz(solve(Ai, bi))
+pvz(solve(lu(Ai), [2.0, -3.0]))
+pvz(solve(chol(Ai), bi))
+let Bi = [9007199254740993, 1; 0, 1]
+let ci = [9007199254740994, 0]
+pvz(solve(Bi, ci))
+pv(eig_sym([5, 0; 0, -3]))

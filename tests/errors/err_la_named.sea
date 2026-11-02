@@ -1,0 +1,4 @@
+// err_la_named -- a named argument of lu, even with the parameter's own name: 224 at the narg (DESIGN.md 2.13.3:
+// every named argument of the five functions is 224, they have no option)
+let B = ones(2, 2)
+let F = lu(A: B)

@@ -1,0 +1,5 @@
+// err_json_handle -- write_json of a handle: 243 at the call (DESIGN.md 0 decision 2, 2.13.3; the case 6d could not
+// test: the handle types row reported first until 8c)
+let A = ones(2, 2)
+let F = lu(A)
+write_json("h.json", F)

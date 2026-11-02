@@ -10,9 +10,9 @@
 //   _sea_free_block   (private) give a block back
 //   _sea_retain       (private) the count increment for runtime code
 //   _sea_release      (private) the count decrement, freeing at 0
-//   _sea_live         (private) u64: arrays and strings allocated and not
-//                     yet freed; read by main's heap check (rt_main.s)
-//   _sea_freed        (private) u64: arrays and strings freed so far.
+//   _sea_live         (private) u64: arrays, strings and handles allocated
+//                     and not yet freed; read by main's heap check (rt_main.s)
+//   _sea_freed        (private) u64: arrays, strings and handles freed so far.
 //                     _sea_live + _sea_freed is the number of objects ever
 //                     created (the `count` mode of SEA_HEAP_CHECK): every
 //                     constructor counts its object in _sea_live and
@@ -27,8 +27,9 @@
 //       or a failed mmap is _sea_err(SEA_E_OUT_OF_MEMORY, site). The
 //       contents of the block are unspecified (a recycled block is not
 //       clean). The live counter is not touched: the object
-//       constructors (rt_arr.s, rt_str.s, rt_args.s, rt_fmt.s) count
-//       the objects they make, and _sea_free uncounts them.
+//       constructors (rt_arr.s, rt_str.s, rt_args.s, rt_fmt.s, and
+//       rt_lu.s's sea_lu and sea_chol for the handles) count the objects
+//       they make, and _sea_free uncounts them.
 //   _sea_free_block (x0 = block, x1 = the request b it was allocated
 //               with, or any b of the same class) -> nothing
 //   _sea_retain (x0 = object or 0)    clobbers x9 only
@@ -65,6 +66,14 @@
 .equ RT_MEM_CLASSES,    64          /* table slots, indexed by log2 of the class */
 .equ RT_PROT_RW,        3           /* PROT_READ | PROT_WRITE */
 .equ RT_MAP_PRIVANON,   0x1002      /* MAP_PRIVATE | MAP_ANON on Darwin */
+// An Lu or Chol handle's private layout (DESIGN.md 2.13.6 "Handles", 4.8;
+// written by rt_lu.s): n at 16, the n x n factor at 64, then an Lu's n
+// u32 pivots; one block.
+.equ RT_MEM_H_N,        16          /* u64  the order n */
+.equ RT_MEM_H_F,        64          /* bytes before the factor */
+.if (RT_MEM_H_N != SEA_OBJ_HDR) || (RT_MEM_H_F != (SEA_OBJ_HDR + 48))
+    .error "rt_mem: the handle layout is SEA_OBJ_HDR + 48 bytes of fields"
+.endif
 
     .section __TEXT,__text,regular,pure_instructions
 
@@ -293,11 +302,13 @@ _sea_release:
 //             SEA_EK_STRUCT, offsets from its SEA_SL_* descriptor),
 //             skipping null and static references; then its block
 //             (SEA_ARR_SIZE + cap * esize bytes) is freed. A string's
-//             block (SEA_STR_BYTES + length) is freed. The live counter
-//             drops by one. Phase 4 creates no handle object (tags
-//             SEA_TAG_FIGURE .. SEA_TAG_CHOL), so any tag other than
-//             SEA_TAG_ARRAY and SEA_TAG_STR is a corrupted object and
-//             traps (brk) rather than freeing memory of unknown size.
+//             block (SEA_STR_BYTES + length) is freed. An Lu or Chol
+//             handle (L-is) holds no reference: its block (RT_MEM_H_F +
+//             8 n^2 bytes, + 4 n for an Lu's pivots) is freed. The live
+//             counter drops by one and the freed counter rises by one.
+//             Figure and Axes objects (phase 9) are not created yet, so
+//             any other tag is a corrupted object and traps (brk) rather
+//             than freeing memory of unknown size.
 //   Inputs  : x0 = the object (count 0 just reached; never static)
 //   Outputs : none
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags
@@ -319,6 +330,10 @@ _sea_free:
     ldrb w9, [x19, #SEA_OBJ_TAG]
     cmp w9, #SEA_TAG_STR
     b.eq Lrt_mem_free_str
+    cmp w9, #SEA_TAG_LU
+    b.eq Lrt_mem_free_handle
+    cmp w9, #SEA_TAG_CHOL
+    b.eq Lrt_mem_free_handle
     cmp w9, #SEA_TAG_ARRAY
     b.ne Lrt_mem_free_badtag
 
@@ -365,6 +380,18 @@ Lrt_mem_free_arr:
     mov x0, x19
     bl _sea_free_block
     b Lrt_mem_free_count
+Lrt_mem_free_handle:
+    // An Lu or Chol: the fields, the n x n factor, an Lu's n u32 pivots.
+    ldr x10, [x19, #RT_MEM_H_N]
+    mul x1, x10, x10
+    lsl x1, x1, #3                  // the factor's bytes
+    cmp w9, #SEA_TAG_LU
+    b.ne 1f
+    add x1, x1, x10, lsl #2         // and the pivots
+1:  add x1, x1, #RT_MEM_H_F
+    mov x0, x19
+    bl _sea_free_block
+    b Lrt_mem_free_count
 Lrt_mem_free_str:
     ldr x1, [x19, #SEA_STR_LEN]
     add x1, x1, #SEA_STR_BYTES      // header and bytes: one block
@@ -386,7 +413,7 @@ Lrt_mem_free_count:
     ldp x29, x30, [sp], #80
     ret
 Lrt_mem_free_badtag:
-    brk #1                          // not an object phase 4 creates
+    brk #1                          // not an object the runtime creates
 
 // ---------------------------------------------------------------------
 // State: list heads (small: free lists; large: caches) and the large
@@ -394,9 +421,9 @@ Lrt_mem_free_badtag:
 // live-object counter.
 // ---------------------------------------------------------------------
     .private_extern _sea_live
-.zerofill __DATA,__bss,_sea_live,8,3                    /* live arrays and strings */
+.zerofill __DATA,__bss,_sea_live,8,3                    /* live arrays, strings and handles */
     .private_extern _sea_freed
-.zerofill __DATA,__bss,_sea_freed,8,3                   /* arrays and strings freed so far */
+.zerofill __DATA,__bss,_sea_freed,8,3                   /* arrays, strings and handles freed so far */
 .zerofill __DATA,__bss,Lrt_mem_heads,(8*RT_MEM_CLASSES),3   /* first free block per class */
 .zerofill __DATA,__bss,Lrt_mem_counts,(8*RT_MEM_CLASSES),3  /* cached blocks per large class */
 .zerofill __DATA,__bss,Lrt_mem_cur,(8*RT_MEM_CLASSES),3     /* next block to carve per small class */

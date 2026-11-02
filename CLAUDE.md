@@ -163,8 +163,20 @@ elements); `make test` and `make cross` pass (997 cases: default 859, `sse2` 859
 total 1 856); lead decisions L-jg–L-jl; measured: `seacheck` 6 969 built lines, `sealoop` 6 643,
 `sealower` 6 798, DESIGN.md §2.7 "Measured after 8b"). The Baysick-repo work package WP-BSK-OVERLAP
 (Baysick DESIGN.md §6.6.1: "overlap" means sharing an element, plus a `kern_check` case) has landed
-(Baysick commit 8c8dee3). **Next:** 8c (factorizations, solves, `rcond`, `eig_sym` and the handles
-`Lu`/`Chol`).
+(Baysick commit 8c8dee3). **8c is done** (2026-11-01: the handle types `Lu` and `Chol` and `lu chol
+solve rcond eig_sym` through `seaname`, `seacheck`, `sealoop` (R35) and `sealower` (the eight
+remaining rule-39 rows); `rt_lu.s` (blocked LU and Cholesky through `_bsk_kern_gemm_sub`, the
+solves, `SOLVE`, `RCOND`, the private `sea_la_potrf`/`sea_la_issym`) and `rt_eig.s` (tred1 + tql1,
+the generalized form) in both runtimes, `sea_free`'s handle branch; Decision 130 (the user: `rcond`
+is 0 as soon as an estimator solve overflows); 23 `la_lu/chol/solve/eig_*` programs, 26 `r_la_*`
+and 14 compile errors, `la8_lib_*` dumps, `rt_la_*` cases (rt 171 on arm64, 173 on x86_64),
+`la_check` 31 042 cases on the Mac and 62 084 on Linux, the one-time SciPy check of the RCOND
+transcription (PASS), `err_ns_lib_solve` retired; an integration defect fixed (`sealower`'s reading
+check reused the constants E7/E8 as scratch); `make test` and `make cross` pass (1 087 cases: default
+911, `sse2` 911, once-only 176, total 1 998); lead decisions L-jm–L-jv; measured: `seaname` 5 625
+built lines, `seacheck` 7 059, `sealoop` 6 689, `sealower` 6 841, no relief, DESIGN.md §2.7
+"Measured after 8c"). **Next:** 8d (the ports W2 and W3, the cross rule of Decision 127 and the gate
+after phase 8).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -195,8 +207,9 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   instruction-count shape of the W5 and W4 hot loops on both targets, DESIGN.md §5.2, §6.2, and the `vector` lines of W1's bisection and W4's selection store, §2.12.10), `test-fusion` (`tests/fusion.sh`, the allocations per iteration of `tests/fusion/` under `SEA_HEAP_CHECK=count`, DESIGN.md §2.12.10), `test-protocol`
   (`tests/protocol.sh`, truncated input, missing `#end`), `test-math`
   (`tests/math/math_check.c`, all six elementary functions bit for bit over `tests/math/*.vec`, and their vector entries against the scalar ones in every lane position and on random inputs),
-  `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders and
-  MATMUL on exact data under every usable variant, with the header `tests/la/gen_consts.sh` writes;
+  `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders,
+  MATMUL on exact data, and LU, CHOL, the solves, RCOND and EIG (DESIGN.md §2.13.8) under every
+  usable variant, with the header `tests/la/gen_consts.sh` writes;
   then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W4 and W5 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run

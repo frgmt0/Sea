@@ -1,0 +1,17 @@
+// la_solve_zero_pair -- the symmetric test of solve(A, B) (LANGUAGE.md 10.8, Decision 123 (a): A[i,j] == A[j,i] or both NaN): a
+// matrix whose only unequal-looking pair is +0 / -0 is symmetric and takes the Cholesky path, giving the
+// bits of solve(chol(A), b) (the two paths differ for this A and b, asserted by
+// tests/vectors/la8_cases.py); [4, NaN; NaN, 3] is symmetric (a NaN pair) with a positive diagonal, so
+// the Cholesky attempt runs, stops at the NaN pivot 3 - NaN^2, and LU propagates the NaN: NaN NaN
+fn pv(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x)
+    }
+    printf("\n")
+}
+let A = [4.0, 1.0, 0.0; 1.0, 3.0, 1.0; -0.0, 1.0, 2.0]
+let b = [1.0, 2.0, 3.0]
+printf("%d\n", nnz(solve(A, b) != solve(chol(A), b)))
+let N = [4.0, nan; nan, 3.0]
+pv(solve(N, [1.0, 1.0]))

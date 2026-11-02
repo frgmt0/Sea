@@ -4,11 +4,11 @@
 30006 REM destination, rule 30 (1) the vector the loop holds), A(.,4) 1 a .l local + 2 mut for. H(bind,6) = 1: the bind of an L4 block. Fields: xblk H6 n; tmp, hloop H5 lid; ext H5 dim; eld, est H5 sc, H0 off (text); anew H5 z, H6 r; wbin H5 op (1
 30008 REM add 2 sub 3 mul). Resume codes 60-65 (32010). Sub-phase 4h: kinds 65 iblk, 66 iret, resume codes 71, 72 (33690).
 30020 REM ====================================================================================
-30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14 take an array operand: R10, 40116); sort and argsort do (R16) ---------------------------
+30040 REM ---- reading: the lib calls sealoop rewrites never reach sea.hirl (3.5.9; those of L13, L14 take an array operand: R10, 40116); sort and argsort do (R16), and lu chol solve rcond eig_sym (R35, 8c) ---------------------------
 30050 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
 30052 GOSUB 1872
 30056 IF W2 > 0 THEN 2360
-30057 IF POS("|sort|argsort|", "|" & W2$ & "|") > 0 THEN 30130
+30057 IF POS("|sort|argsort|lu|chol|solve|rcond|eig_sym|", "|" & W2$ & "|") > 0 THEN 30128
 30058 GOTO 1285
 30059 REM ---- 30060: H3 = the flags of a loc record: 1 a .l local (3.5.9), + 2 mut for ---------
 30060 LET H3 = 0
@@ -34,6 +34,7 @@
 30120 LET T(Y9, 2) = I(2)
 30122 GOTO 1285
 30126 REM ---- lib sort / argsort (R16): two children, a dynamic vector of f64, i64 or str elements and a bool desc; the result that vector's type (sort) or an i64 vector (argsort)
+30128 IF POS("|sort|argsort|", "|" & W2$ & "|") = 0 THEN 30162
 30130 IF H(H1, 6) <> 2 THEN 2360
 30132 LET E2 = H(H1, 7)
 30134 LET E3 = H(E2, 4)
@@ -50,6 +51,36 @@
 30156 GOTO 2360
 30158 IF E4 <> E3 THEN 2360
 30160 GOTO 1285
+30161 REM ---- lib lu chol solve rcond eig_sym (R35, 8c, DESIGN 2.13.4; E5 the function, E6 its arity, H4 the child H6, E9 its kind: 1 2 a dynamic f64 vector, matrix, 8 9 a handle, else 0): the children of the overload table, the type its result's
+30162 LET E5 = (POS("|lu     |chol   |solve  |rcond  |eig_sym|", "|" & SEG$(W2$ & "       ", 1, 7) & "|") - 1) / 8 + 1
+30164 LET E6 = H(H1, 6)
+30166 IF POS("|11|21|41|51|32|52|", "|" & STR$(10 * E5 + E6) & "|") = 0 THEN 2360
+30168 LET H4 = H(H1, 7)
+30169 LET H6 = 0
+30170 LET H6 = H6 + 1
+30171 LET E3 = H(H4, 4)
+30172 LET E9 = E3
+30173 IF ABS(E3 - 8.5) < 1 THEN 30180
+30174 LET E9 = 0
+30175 IF E3 <= 9 THEN 30180
+30176 IF T(E3, 2) <> 4 THEN 30180
+30177 IF ABS(T(E3, 1) - 2) <> 1 THEN 30180
+30178 LET E9 = (T(E3, 1) + 1) / 2
+30180 LET E4 = E5 + 3 * (H6 - 1) * (1 - SGN(ABS(E5 - 3)))
+30181 IF POS(SEG$("2  2  2898  2  12 ", 3 * E4 - 2, 3 * E4), STR$(E9)) = 0 THEN 2360
+30182 LET H4 = H(H4, 8)
+30183 IF H6 < E6 THEN 30170
+30184 LET E3 = H(H1, 4)
+30185 ON E5 GOTO 30186, 30186, 30191, 30188, 30190
+30186 IF E3 = E5 + 7 THEN 1285
+30187 GOTO 2360
+30188 IF E3 = 4 THEN 1285
+30189 GOTO 2360
+30190 LET E9 = 1
+30191 IF E3 <= 9 THEN 2360
+30192 IF T(E3, 2) <> 4 THEN 2360
+30193 IF T(E3, 1) = 2 * E9 - 1 THEN 1285
+30194 GOTO 2360
 30198 REM ==== reading the node records of set HL (node H1, kind K, fields I() and G$()): their fields, and the checks of 3.5.9 that one record allows; E1 = the function's locals base
 30200 LET E1 = G(G0, 0)
 30201 IF K > 66 THEN 34900
@@ -764,6 +795,17 @@
 34046 LET X0 = H(X0, 8)
 34048 NEXT K7
 34050 GOTO 19575
+34051 REM ---- rule 39's eight 8c rows (DESIGN 2.13.4; from 19570: W2 28 lu, 29 chol, 30 solve, 31 rcond, 32 eig_sym; operands U(Z6+1 .. U0)): LU, CHOL, LU_SOLVE or CHOL_SOLVE (F an Lu or a Chol), SOLVE,
+34052 REM RCOND (its f result into the destination), EIG_SYM, EIG_SYM_GEN (two operands); then lowered from the entry's record as 34006 lowers PRINT (owned operands released, a borrowed lv not; K7 the row of the name table)
+34053 LET K7 = W2 - 27
+34054 LET T3 = H(H(X, 7), 4)
+34055 IF K7 <> 3 THEN 34058
+34056 IF ABS(T3 - 8.5) > 1 THEN 34058
+34057 LET K7 = T3 - 2
+34058 IF U0 - Z6 < 2 THEN 34060
+34059 LET K7 = K7 + 3 * (1 - SGN(ABS(K7 - 5)))
+34060 LET Q1$ = SEG$("LU CHOL SOLVE RCOND EIG_SYM LU_SOLVE CHOL_SOLVE EIG_SYM_GEN", VAL(SEG$("0104091521293849", 2 * K7 - 1, 2 * K7)), VAL(SEG$("0207131927364759", 2 * K7 - 1, 2 * K7)))
+34062 GOTO 34006
 34098 REM ---- (31034) a rarg E2 whose parent is a tmp (E2 + 1): that tmp's parent (its last sibling + 1) is an inline xblk (H5 its iblk), so a ref local stands only there (2.11.5 validation)
 34100 IF H(E2 + 1, 1) <> 44 THEN 31120
 34102 LET O1 = E2 + 1

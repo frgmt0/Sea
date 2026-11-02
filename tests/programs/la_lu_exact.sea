@@ -1,0 +1,65 @@
+// la_lu_exact -- lu, solve(F, b), solve(F, B) and solve(A, b) on exact data (LANGUAGE.md 10.8; DESIGN.md 2.13.6 LU and the
+// triangular solves, 2.13.8): A = P L U built by lucase(n) from a unit lower L with entries in {0, +-1/2,
+// +-1/4}, an upper U with integer entries in -3 .. 3 and the power-of-two diagonal 2, -4, 1, 8, -2, and
+// the fixed row order sigma(i) = (17 i + 5) mod n; b = A @ x and B = A @ X for integer x and X. At every
+// step the pivot candidate of largest magnitude is unique and is LU's row k (|l| <= 1/2 < 1), so partial
+// pivoting picks exactly that order, every elimination step is exact and the solutions are x and X: each
+// line is n, then for solve(F, b), solve(F, B) and solve(A, b) (A is not symmetric: the LU path) the
+// count of elements differing from x or X and the largest |difference|, all 0; n = 3, 31, 32, 33 and 70
+// cross SEA_LA_NB - 1, SEA_LA_NB, SEA_LA_NB + 1 and two panels;
+// exact data (DESIGN.md 2.13.8): every value, product and partial sum is a binary64 dyadic in every
+// order and grouping, so every target, variant and kernel gives these bits; checked by an exact Fraction
+// simulation in tests/vectors/la8_cases.py
+fn lucase(n: i64) -> f64[,] {
+    let lv = [0.0, 0.5, -0.25, 0.0, -0.5, 0.25, 0.0, 0.5, -0.5]
+    let dv = [2.0, -4.0, 1.0, 8.0, -2.0]
+    var L = zeros(n, n)
+    var U = zeros(n, n)
+    for i in 0..n {
+        L[i, i] = 1.0
+        U[i, i] = dv[i % 5]
+        for j in 0..i {
+            L[i, j] = lv[(i * 7 + j * 13) % 9]
+        }
+        for j in i + 1..n {
+            U[i, j] = f64((i * 5 + j * 3) % 7 - 3)
+        }
+    }
+    let M = L @ U
+    var A = zeros(n, n)
+    for i in 0..n {
+        A[i, :] = M[(17 * i + 5) % n, :]
+    }
+    return A
+}
+fn xint(n: i64) -> f64[] {
+    var x = zeros(n)
+    for i in 0..n {
+        x[i] = f64((i * 3) % 11 - 5)
+    }
+    return x
+}
+fn xmat(n: i64, m: i64) -> f64[,] {
+    var X = zeros(n, m)
+    for i in 0..n {
+        for c in 0..m {
+            X[i, c] = f64((i * 2 + c * 5) % 9 - 4)
+        }
+    }
+    return X
+}
+for n in [3, 31, 32, 33, 70] {
+    let A = lucase(n)
+    let x = xint(n)
+    let X = xmat(n, 4)
+    let b = A @ x
+    let B = A @ X
+    let F = lu(A)
+    let xh = solve(F, b)
+    let Xh = solve(F, B)
+    let xa = solve(A, b)
+    let Q = Xh != X
+    let E = abs(Xh - X)
+    printf("%d %d %g %d %g %d %g\n", n, nnz(xh != x), max(abs(xh - x)), nnz(Q.flat), max(E.flat),
+           nnz(xa != x), max(abs(xa - x)))
+}

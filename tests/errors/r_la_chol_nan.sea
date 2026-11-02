@@ -1,0 +1,5 @@
+// r_la_chol_nan -- chol([1, NaN; NaN, 1]): R[0,1] = NaN, the pivot 1 - NaN^2 is NaN, which is not greater than 0
+// (LANGUAGE.md 10.8: a NaN pivot included; L-im)
+printf("start\n")
+let C = chol([1.0, nan; nan, 1.0])
+printf("%d\n", 1)

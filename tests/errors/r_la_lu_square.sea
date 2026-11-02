@@ -1,0 +1,6 @@
+// r_la_lu_square -- lu of a 2 x 3 matrix: matrix is not square with its shape (LANGUAGE.md 9.2, 10.8; DESIGN.md
+// 2.13.5 LU, L-ij, L-iv), at the line of the call, after start is written
+let A = zeros(2, 3)
+printf("start\n")
+let F = lu(A)
+printf("%g\n", rcond(F))

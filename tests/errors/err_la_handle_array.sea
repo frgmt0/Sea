@@ -1,0 +1,5 @@
+// err_la_handle_array -- an array type of a handle type: 258 at the type node (LANGUAGE.md 4.1; DESIGN.md 2.13.3,
+// L-ir)
+fn first(v: Lu[]) -> i64 {
+    return len(v)
+}

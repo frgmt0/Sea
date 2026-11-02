@@ -705,21 +705,22 @@
 18330 LET X0 = H(X0, 8)
 18340 GOTO 18280
 18350 RETURN
-19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3); sort argsort (R16, rule 24) at 33600. W2 counts from 8 frame: x1 = U0 at
+19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3); sort argsort (R16, rule 24) at 33600;
+19342 REM lu chol solve rcond eig_sym (R35, rule 39, 8c) at 34053. W2 counts from 8 frame: x1 = U0 at
 19345 REM entry (the arguments above it), x2 = the next argument, x3 = the function; 19575: the result is D2 (R9 = D2), the arguments popped
-19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    |print   |make_dir "
+19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    |print   |make_dir |lu       |chol     |solve    |rcond    |eig_sym  "
 19370 LET W2$ = S$(H(X, 0))
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
 19390 IF W2 = 0 THEN 2360
 19395 LET W2 = W2 + 7
-19400 IF H(X, 6) < VAL(SEG$("112111111111111223232211011", W2, W2)) THEN 2360
-19410 IF H(X, 6) > VAL(SEG$("223111111111111223232211011", W2, W2)) THEN 2360
+19400 IF H(X, 6) < VAL(SEG$("11211111111111122323221101111211", W2, W2)) THEN 2360
+19410 IF H(X, 6) > VAL(SEG$("22311111111111122323221101111212", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
 19430 LET S = 49
 19440 GOTO 8000
 19550 LET Z6 = W(W0 + 3)
 19560 LET W2 = W(W0 + 5)
-19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600, 42400, 42400, 42400, 34000, 34000
+19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600, 42400, 42400, 42400, 34000, 34000, 34053, 34053, 34053, 34053, 34053
 19575 LET R9 = D2
 19580 GOTO 3083
 20860 REM ---- the exact math functions on scalars (rule 36) ------------------------------------

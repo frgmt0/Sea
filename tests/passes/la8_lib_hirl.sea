@@ -1,0 +1,25 @@
+fn g(Ai: i64[,], b: f64[], n: i64) -> f64 {
+    if n > 0 { return g(Ai, b, n - 1) }
+    let M = [4.0, 0.0; 0.0, 1.0]
+    let F = lu(Ai)
+    let e = eig_sym(M)
+    let x = solve(F, b + b)
+    return e[0] + x[1]
+}
+let Ai: i64[,] = [4, 0; 0, 1]
+let b: f64[] = [8.0, 9.0]
+printf("%g\n", g(Ai, b, 1))
+// la8_lib_hirl -- R35 (DESIGN.md 2.13.4): the `lib`s of 10.8 stay in sea.hirl with their children
+// rewritten as a function argument's are. seafuse treats lu's argument position as F1 treats a
+// call argument (L-ix): the quiet `cvt` of the i64[,] parameter is fused into a nest whose result
+// temporary the lu reads (.hirf); the `dyn` of the fixed-size M (at the call's position, Decision 39)
+// becomes L10's copy in sealoop, and the failing `b + b` is left to L7 as at a call argument; each of
+// the three is an owned temporary released right after its rcall (rule 39), the handle F at the
+// function's end like any reference local. g is recursive (not inlined, LANGUAGE.md 8.6).
+// Derivation: the records come from the 8b compiler's output of a twin with `fl(Ai)`,
+// `eigsymx(M)`, `solvx(F, b + b)` (recursive user functions of the same names' lengths, parameter
+// types f64[,], f64[,], (f64[,], f64[])) with these differences only, from 2.13.3-2.13.4 and rule 39:
+// `call` -> `lib lu`/`lib eig_sym`/`lib solve` (F's type 8 for the twin's f64[,]), the `dyn` and
+// L10's records and `.l` locals at the call's position instead of the argument's, `call` ->
+// `rcall sea_lu`/`sea_eig_sym`/`sea_lu_solve` with the site, the twin's functions dropped.
+// Output: e = eig_sym(diag(4, 1)) = [1, 4]; x = solve(lu(diag(4, 1)), [16, 18]) = [4, 18]: 1 + 18.

@@ -1,0 +1,6 @@
+// err_la_handle_eq -- == of two handles: 240 at the operator node, its left operand (LANGUAGE.md 4.1: handles
+// cannot be compared; DESIGN.md 2.13.3, 3.3)
+let A = ones(2, 2)
+let F = lu(A)
+let G = F
+let same = F == G

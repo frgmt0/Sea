@@ -1,0 +1,69 @@
+// la_lu_share -- handles are references (LANGUAGE.md 4.1; DESIGN.md 2.13.2 "Handles", 2.13.4 rules 15 and 16, L-is): an Lu
+// returned by a function, copied, stored in a struct field, passed, returned again, put in a tuple with
+// its rcond, swapped through ref parameters, reassigned in a loop and chosen by an if expression; each
+// solve uses the factor its value refers to (reassigning F leaves G and s.f with the first one), and the
+// heap check (every program runs with SEA_HEAP_CHECK=1) finds no live object at the end. [4, 1; 2, 8] and
+// b = [6, 18]: pivot 4, l = 0.5, U[1,1] = 7.5, x = [1, 2]; diag(2, 4): [3, 4.5]; diag(6, 12): [1, 1.5];
+// rcond(lu(diag(2, 4))) = (1 / 0.5) / 4 = 0.5 by 2.13.6's steps (est = 0.5, step 3's t = 1/3); exact
+// data, printed as x + 0.0; by hand, checked by tests/vectors/la8_cases.py
+fn pvz(v: f64[]) {
+    printf("%d:", len(v))
+    for x in v {
+        printf(" %.17g", x + 0.0)
+    }
+    printf("\n")
+}
+struct Fac {
+    f: Lu
+    n: i64
+}
+fn make(A: f64[,]) -> Lu {
+    return lu(A)
+}
+fn apply(F: Lu, b: f64[]) -> f64[] {
+    return solve(F, b)
+}
+fn relay(F: Lu) -> Lu {
+    let G = F
+    return G
+}
+fn both(A: f64[,]) -> (Lu, f64) {
+    let F = lu(A)
+    return (F, rcond(F))
+}
+fn swap(ref a: Lu, ref b: Lu) {
+    let t = a
+    a = b
+    b = t
+}
+let b = [6.0, 18.0]
+let A1: f64[,] = [4.0, 1.0; 2.0, 8.0]
+var F = make(A1)
+let G = F
+let s = Fac { f: G, n: 2 }
+pvz(apply(F, b))
+F = lu([2.0, 0.0; 0.0, 4.0])
+pvz(apply(F, b))
+pvz(apply(G, b))
+pvz(solve(s.f, b))
+let H = relay(s.f)
+pvz(solve(H, b))
+var t = s
+t.f = F
+pvz(solve(t.f, b))
+pvz(solve(s.f, b))
+let (K, r) = both([2.0, 0.0; 0.0, 4.0])
+printf("%.17g\n", r)
+pvz(solve(K, b))
+var P = G
+var Q = F
+swap(ref P, ref Q)
+pvz(solve(P, b))
+pvz(solve(Q, b))
+for k in 0..3 {
+    F = lu([2.0, 0.0; 0.0, 4.0] * f64(k + 1))
+}
+pvz(solve(F, b))
+let W = if s.n > 1 { s.f } else { F }
+pvz(solve(W, b))
+printf("%d\n", s.n)

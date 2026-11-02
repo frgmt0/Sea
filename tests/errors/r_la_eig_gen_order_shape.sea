@@ -1,0 +1,5 @@
+// r_la_eig_gen_order_shape -- check order of EIG_SYM_GEN: a non-symmetric 2 x 2 K and the 3 x 3 identity M: the
+// shape mismatch comes before the symmetric test
+printf("start\n")
+let e = eig_sym([1.0, 2.0; 3.0, 4.0], [1.0, 0.0, 0.0; 0.0, 1.0, 0.0; 0.0, 0.0, 1.0])
+printf("%d\n", len(e))

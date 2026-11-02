@@ -1,0 +1,6 @@
+// r_la_chol_solve_shape -- solve(F, b) of a Chol of order 2 and a vector of 3: shape mismatch 2x2 vs 3
+// (DESIGN.md 2.13.5 CHOL_SOLVE "the shape check as LU_SOLVE", L-ij)
+let C = chol([1.0, 0.0; 0.0, 1.0])
+printf("start\n")
+let x = solve(C, zeros(3))
+printf("%d\n", len(x))
