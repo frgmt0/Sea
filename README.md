@@ -1,78 +1,96 @@
 # Sea
 
-Sea is a fast matrix and numerical programming language, intended as an alternative to MATLAB,
-with modern C/Rust-like syntax. It is the child project of
-[Baysick](https://github.com/frgmt0/Baysick), a faithful rebuild of Dartmouth BASIC (1964) written
-in assembly, and Sea is written in Baysick.
+Sea is a matrix and numerical programming language meant as an alternative to MATLAB. It has a
+C/Rust-like syntax and is not MATLAB-compatible. It is the child project of
+[Baysick](https://github.com/frgmt0/Baysick), a rebuild of Dartmouth BASIC (1964) written in
+assembly, and the Sea compiler is itself written in Baysick.
 
-**Status: design and contracts agreed (phase 0); implementation not started.** The language is specified in
-docs/LANGUAGE.md, the compiler, runtime, tests and plan in docs/DESIGN.md.
+Sea is alpha software (versions 0.y.z; 1.0.0 is v1). The language is specified in
+docs/LANGUAGE.md. The compiler, runtime, tests and plan are in docs/DESIGN.md.
 
-## Why
+## Goals
 
-MATLAB is the default tool for matrix work, and it has problems Sea sets out to address:
+In priority order:
 
-* **Speed.** Sea programs are compiled ahead of time to native code. Element-wise expressions are
-  fused so they run without temporary arrays. The numeric kernels are hand-written SIMD (NEON on
-  arm64, SSE2/AVX2 on x86_64), selected at run time by CPU-feature dispatch. Speed is judged by
-  honest benchmarks against Apple Accelerate and OpenBLAS. They are the measuring bar, not
-  dependencies.
-* **Language design.** Sea uses a modern C/Rust-like syntax. It is not MATLAB-compatible, which
-  leaves room for a cleaner language than MATLAB's.
-* **Cost and size.** Sea is meant to be free, tiny and portable: standalone native binaries and
-  no giant runtime.
+1. Speed. Programs are compiled ahead of time to native code. Element-wise expressions are fused so
+   they run without temporary arrays. The numeric kernels are hand-written SIMD (NEON on arm64,
+   SSE2 and AVX2 on x86_64), chosen at run time by CPU feature. Apple Accelerate and OpenBLAS are
+   the benchmark baselines, not dependencies.
+2. A cleaner language than MATLAB.
+3. Free, small and portable: standalone native binaries and no large runtime.
 
-The priorities, in order: raw speed, a cleaner language, then free, tiny and portable.
-
-## Relationship to Baysick
-
-Sea is bootstrapped: it is written in Baysick. Sea lives in its own repository and is included in
-the Baysick repository as a git submodule at `sea/`.
-
-When Sea needs something Baysick lacks, Baysick grows it. Where possible that follows the later
-Dartmouth editions. Baysick now implements the Second through Sixth Editions (MAT statements,
-`INPUT`, strings and `CHANGE`, sequential files, string functions, `CALL`/`SUB`) plus its own
-labelled extensions (version 0.6.0).
-
-Baysick currently has two targets, `arm64-macos` (native) and `x86_64-linux` (cross-compiled and
-tested on Linux), plus its own IR and plug-in backends.
+No performance claim goes in without a measurement behind it.
 
 ## Status
 
-Phase 0 is agreed and complete (2026-10-20), except a MATLAB rerun by the user: the design is
-split into docs/LANGUAGE.md and docs/DESIGN.md, and the compiler's intermediate file formats
-(docs/DESIGN.md §3, include/passes.txt) and contract files (include/limits.inc, errors.inc,
-rt.inc) are written and agreed. Baysick has the matrix runtime and language growth Sea needs to
-start. Next is phase 1, the scalar core on arm64; implementation has not started.
+Phases 0 to 7 are done, and phase 8 (linear algebra) is done through 8b. DESIGN.md §8 has the
+full milestone table.
+
+- The compiler is a chain of passes: `seaparse`, `seaname`, `seacheck`, `seaexpand`, `seafuse`,
+  `sealoop`, `sealower`, `seaopt`, `sealopt`, `seavec`, then a code generator per target
+  (`seagen_a64` or `seagen_x64`).
+- Two targets work: arm64 macOS natively, and x86_64 Linux, cross-compiled on the Mac and tested
+  on a Linux host. The runtime is in assembly for each target.
+- The language covers scalars, dynamic and fixed-size arrays, structs, strings, functions with
+  named and default arguments, formatted output, `write_json`, fusion and SIMD code
+  generation, and the matrix product `@`.
+- Phase 8c is in progress: `lu`, `chol`, `solve`, `rcond` and `eig_sym`, with the `Lu` and `Chol`
+  handle types.
+- Not done: the last two ports (phase 8d) and plotting (phase 9). Benchmarks against Accelerate
+  and OpenBLAS are phase 10.
 
 ## Workloads
 
-`workloads/` holds five original MATLAB engineering scripts (shaft sizing, truss FEM, quarter-car
-RK4, plate heat conduction, Monte Carlo tolerance stack-up). They are Sea's acceptance targets: a
-Sea port of each must reproduce the reference numbers and report, faster. `workloads/README.md`
-describes them, the language features they stress, and how the reference values are produced and
-compared.
+`workloads/` has seven MATLAB scripts that look like ordinary engineering work: shaft sizing,
+truss FEM, a quarter-car model, plate heat conduction, a Monte Carlo tolerance stack-up, topology
+optimisation and a buggy drivetrain. W1 to W5 and W7 are the acceptance targets for v1. A Sea port
+of each has to reproduce the MATLAB numbers and report, and run faster. W6 is an extra reference
+for later.
 
-## Roadmap
+`ports/` has the Sea ports of W1, W4, W5 and W7. `tests/accept.sh` runs them and compares every
+output key and the text report with the MATLAB reference. W2 and W3 need the linear algebra from
+phase 8c and are not ported yet. `workloads/README.md` describes the scripts and how the reference
+values are produced and compared.
 
-In order, without dates:
+One recorded number: on an Apple M2 Pro the W7 port computes in 0.134 to 0.135 s, against 8.602 s
+for MATLAB's best compute time. DESIGN.md §6.3 notes this is a record and not a measurement under
+the benchmark methodology. W7 compiles in 17.4 to 20.8 s.
 
-1. Done: Baysick's MAT statements and matrix runtime.
-2. Done: Baysick grown through the Sixth Edition plus extensions (v0.6.0).
-3. Done: the Sea design, agreed, and split into the language specification and the design document.
+## Relationship to Baysick
 
-The rest follows the milestones in docs/DESIGN.md §8.
+Sea lives in its own repository and is a git submodule of the Baysick repository at `sea/`. When
+Sea needs something Baysick lacks, the feature is added to Baysick, following the later Dartmouth
+editions where it can. Baysick (version 0.6.0) now covers the Second through Sixth Editions plus
+a few extensions of its own, and has the two targets `arm64-macos` and `x86_64-linux`.
 
 ## Getting it
 
 Clone Baysick with its submodules:
 
-```
+```bash
 git clone --recurse-submodules https://github.com/frgmt0/Baysick
 ```
 
 Or clone Sea directly:
 
-```
+```bash
 git clone https://github.com/frgmt0/Sea
 ```
+
+## Building and testing
+
+The passes are compiled with Baysick, so build Baysick first (`make` in the Baysick directory, or
+set `BAYSICK=<dir>`; the default is `..`). Then, in the Sea directory:
+
+```bash
+make                         # runtime, tools, passes, install into build/
+build/sea build prog.sea -o prog
+build/sea run prog.sea
+make test                    # every test group, even if one fails
+make cross                   # x86_64 Linux tests over ssh
+```
+
+`make test` needs the Apple toolchain (`as`, `ld`, `xcrun cc`) and `uv`, which the acceptance
+comparison uses. `make cross` packs a bundle on the Mac and runs it on a Linux host over ssh. The
+host defaults to `$SEA_CROSS_HOST`, else `desktop`, and needs GNU `as`, `gcc` and `make`.
+CLAUDE.md lists the rest of the commands.
