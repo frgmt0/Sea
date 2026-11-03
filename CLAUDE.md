@@ -186,8 +186,11 @@ the host (`cross_run.sh -k DIR`), the return path `#sea-cross-files N` and the M
 `sse2` 911, once-only 176; host 1 998 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); W2
 compiles in 17.83–17.99 s (warm) and computes in 0.495–0.504 s, W3 in 5.73–5.84 s and 0.067–0.068 s; the gate
 after phase 8 passes every program with no relief, DESIGN.md §2.7 "Measured at the gate after phase
-8"). **Phase 8 is complete.** **Next:** phase 9 (plotting, DESIGN.md §8 row 9), starting with its
-specification (documents only, as 6a, 7a and 8a).
+8"). **Phase 8 is complete.** **Phase 9** (plotting, DESIGN.md §8 row 9) **is specified** (9a, agreed
+2026-11-02 after one independent review: Decisions 131–142, each the recommended option (133 (b),
+the others (a)), lead decisions L-ke–L-lf; DESIGN.md §2.14, §8 rows 9a–9d, §9): the `Figure`/`Axes`
+objects, the 21 plotting calls as runtime entries 62–82, the SVG writer, contours, embedded PNG
+images, the six ports' figures. **Next:** 9b (WP-CONTRACT first and alone, DESIGN.md §2.14.10).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
