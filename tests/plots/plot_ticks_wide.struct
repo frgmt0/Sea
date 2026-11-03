@@ -1,0 +1,66 @@
+# plot_ticks_wide.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_ticks_wide.sea; DESIGN.md 2.14.8 "The .struct format")
+# steps >= 1e6 use %g
+file plot_ticks_wide.svg
+canvas 960 480
+heading -
+panels 2
+panel 0
+title millions
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 8
+xtick 0
+xtick 500000
+xtick 1000000
+xtick 1500000
+xtick 2000000
+xtick 2500000
+xtick 3000000
+xtick 3500000
+count ytick 8
+ytick -2e+07
+ytick 0
+ytick 2e+07
+ytick 4e+07
+ytick 6e+07
+ytick 8e+07
+ytick 1e+08
+ytick 1.2e+08
+count ytick2 0
+panel 1
+title below a million
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 8
+xtick 0
+xtick 50000
+xtick 100000
+xtick 150000
+xtick 200000
+xtick 250000
+xtick 300000
+xtick 350000
+count ytick 5
+ytick 9e+08
+ytick 9.5e+08
+ytick 1e+09
+ytick 1.05e+09
+ytick 1.1e+09
+count ytick2 0

@@ -1,0 +1,132 @@
+#sea 1
+#target arm64-macos
+#file plot9_rcall.sea
+pname 0:1:5 fig
+name 0:1:11 figure
+int 0:1:18 1
+int 0:1:21 2
+str 0:1:30 r
+narg 0:1:24 name
+int 0:1:42 400
+narg 0:1:35 width
+call 0:1:11 4
+let 0:1:1 0
+pname 0:2:5 ax
+name 0:2:10 panel
+name 0:2:16 fig
+int 0:2:21 0
+int 0:2:24 1
+call 0:2:10 3
+let 0:2:1 0
+pname 0:3:5 t
+name 0:3:9 twin_y
+name 0:3:16 ax
+call 0:3:9 1
+let 0:3:1 0
+pname 0:4:5 x
+type 0:4:8 f64 v 0
+float 0:4:17 #0000000000000000
+float 0:4:22 #3FF0000000000000
+row 0:4:17 2
+array 0:4:16 1
+let 0:4:1 1
+name 0:5:1 plot
+name 0:5:6 t
+name 0:5:9 x
+name 0:5:12 x
+str 0:5:22 r--
+narg 0:5:15 style
+str 0:5:36 a
+narg 0:5:29 label
+float 0:5:48 #4000000000000000
+narg 0:5:41 width
+str 0:5:60 #102030
+narg 0:5:53 color
+call 0:5:1 7
+cstmt 0:5:1
+name 0:6:1 xline
+name 0:6:7 ax
+float 0:6:11 #3FE0000000000000
+str 0:6:23 :
+narg 0:6:16 style
+str 0:6:35 #00ff00
+narg 0:6:28 color
+call 0:6:1 4
+cstmt 0:6:1
+name 0:7:1 xlabel
+name 0:7:8 ax
+str 0:7:12 x
+call 0:7:1 2
+cstmt 0:7:1
+name 0:8:1 ylabel
+name 0:8:8 t
+str 0:8:11 y
+call 0:8:1 2
+cstmt 0:8:1
+name 0:9:1 title
+name 0:9:7 ax
+str 0:9:11 t
+call 0:9:1 2
+cstmt 0:9:1
+name 0:10:1 legend
+name 0:10:8 ax
+str 0:10:17 south
+narg 0:10:12 loc
+call 0:10:1 2
+cstmt 0:10:1
+name 0:11:1 grid
+name 0:11:6 ax
+false 0:11:14
+narg 0:11:10 on
+call 0:11:1 2
+cstmt 0:11:1
+name 0:12:1 xlim
+name 0:12:6 ax
+float 0:12:11 #3FF0000000000000
+neg 0:12:10
+float 0:12:16 #4000000000000000
+call 0:12:1 3
+cstmt 0:12:1
+name 0:13:1 ylim
+name 0:13:6 t
+float 0:13:9 #0000000000000000
+float 0:13:14 #4008000000000000
+call 0:13:1 3
+cstmt 0:13:1
+name 0:14:1 x_ticks
+name 0:14:9 ax
+str 0:14:14 p
+str 0:14:19 q
+row 0:14:14 2
+array 0:14:13 1
+call 0:14:1 2
+cstmt 0:14:1
+name 0:15:1 y_ticks
+name 0:15:9 t
+str 0:15:13 u
+row 0:15:13 1
+array 0:15:12 1
+call 0:15:1 2
+cstmt 0:15:1
+name 0:16:1 y_reverse
+name 0:16:11 t
+call 0:16:1 1
+cstmt 0:16:1
+name 0:17:1 axis_equal
+name 0:17:12 ax
+call 0:17:1 1
+cstmt 0:17:1
+name 0:18:1 save_svg
+name 0:18:10 fig
+str 0:18:15 r.svg
+call 0:18:1 2
+cstmt 0:18:1
+name 0:19:1 printf
+str 0:19:8 %25d%0A
+name 0:19:16 len
+name 0:19:20 x
+call 0:19:16 1
+call 0:19:1 2
+cstmt 0:19:1
+prog 19
+#end

@@ -1,0 +1,5 @@
+// r_plot_limits_order -- ylim(ax, 2, 1.5): lo above hi (LANGUAGE.md 12.4)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+ylim(ax, 2, 1.5)

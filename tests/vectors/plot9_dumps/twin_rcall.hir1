@@ -1,0 +1,290 @@
+#sea 1
+#target arm64-macos
+#file twin_rcall.sea
+tvec 10 4
+tfvec 11 4 2
+tvec 12 5
+fn 1 .main main 1 0 4 0:1:1
+loc fig 8 let 0:1:5
+loc ax 9 let 0:2:5
+loc t 9 let 0:3:5
+loc x 10 let 0:4:5
+ci 0:1:18 3 1
+ci 0:1:21 3 2
+cs 0:1:30 5 r
+ci 0:1:42 3 400
+ci 0:20:83 3 720
+call 0:1:11 8 2 5
+bind 0:1:1 1
+lv 0:2:16 8 1
+ci 0:2:21 3 0
+ci 0:2:24 3 1
+ci 0:21:54 3 1
+ci 0:21:72 3 1
+call 0:2:10 9 3 5
+bind 0:2:1 2
+lv 0:3:16 9 2
+call 0:3:9 9 4 1
+bind 0:3:1 3
+cf 0:4:17 4 #0000000000000000
+cf 0:4:22 4 #3FF0000000000000
+row 0:4:17 11 2
+arr 0:4:16 11 1
+dyn 0:4:16 10
+bind 0:4:1 4
+lv 0:5:6 9 3
+lv 0:5:9 10 4
+lv 0:5:12 10 4
+cs 0:5:22 5 r--
+cs 0:5:36 5 a
+cf 0:5:48 4 #4000000000000000
+cs 0:5:60 5 #102030
+call 0:5:1 1 5 7
+eval 0:5:1
+lv 0:6:7 9 2
+cf 0:6:11 4 #3FE0000000000000
+cs 0:6:23 5 :
+cs 0:6:35 5 #00ff00
+call 0:6:1 1 6 4
+eval 0:6:1
+lv 0:7:8 9 2
+cs 0:7:12 5 x
+call 0:7:1 1 7 2
+eval 0:7:1
+lv 0:8:8 9 3
+cs 0:8:11 5 y
+call 0:8:1 1 8 2
+eval 0:8:1
+lv 0:9:7 9 2
+cs 0:9:11 5 t
+call 0:9:1 1 9 2
+eval 0:9:1
+lv 0:10:8 9 2
+cs 0:10:17 5 south
+call 0:10:1 1 10 2
+eval 0:10:1
+lv 0:11:6 9 2
+cb 0:11:14 2 0
+call 0:11:1 1 11 2
+eval 0:11:1
+lv 0:12:6 9 2
+cf 0:12:11 4 #3FF0000000000000
+un 0:12:10 4 neg
+cf 0:12:16 4 #4000000000000000
+call 0:12:1 1 12 3
+eval 0:12:1
+lv 0:13:6 9 3
+cf 0:13:9 4 #0000000000000000
+cf 0:13:14 4 #4008000000000000
+call 0:13:1 1 13 3
+eval 0:13:1
+lv 0:14:9 9 2
+cs 0:14:14 5 p
+cs 0:14:19 5 q
+row 0:14:14 12 2
+arr 0:14:13 12 1
+call 0:14:1 1 14 2
+eval 0:14:1
+lv 0:15:9 9 3
+cs 0:15:13 5 u
+row 0:15:13 12 1
+arr 0:15:12 12 1
+call 0:15:1 1 15 2
+eval 0:15:1
+lv 0:16:11 9 3
+call 0:16:1 1 16 1
+eval 0:16:1
+lv 0:17:12 9 2
+call 0:17:1 1 17 1
+eval 0:17:1
+lv 0:18:10 8 1
+cs 0:18:15 5 r.svg
+call 0:18:1 1 18 2
+eval 0:18:1
+lv 0:19:20 10 4
+lib 0:19:16 3 len 1
+fconv 0:19:8 1 - - - d
+ftext 0:19:8 1 %0A
+fmt 0:19:8 1 2
+lib 0:19:1 1 printf 1
+eval 0:19:1
+block 0:1:1 19
+end
+fn 2 figurf fn 8 5 0 0:20:1
+par nrows 3 val
+par ncols 3 val
+par name 5 val
+par width 3 val
+par height 3 val
+lv 0:20:110 3 1
+lv 0:20:117 3 2
+cs 0:20:47 5 %
+ci 0:20:64 3 960
+ci 0:20:83 3 720
+call 0:20:103 8 2 5
+ret 0:20:96 1
+block 0:20:94 1
+end
+fn 3 panex fn 9 5 0 0:21:1
+par fig 8 val
+par row 3 val
+par col 3 val
+par rowspan 3 val
+par colspan 3 val
+lv 0:21:98 8 1
+lv 0:21:103 3 2
+lv 0:21:108 3 3
+ci 0:21:54 3 1
+ci 0:21:72 3 1
+call 0:21:92 9 3 5
+ret 0:21:85 1
+block 0:21:83 1
+end
+fn 4 twin_z fn 9 1 0 0:22:1
+par ax 9 val
+lv 0:22:45 9 1
+call 0:22:38 9 4 1
+ret 0:22:31 1
+block 0:22:29 1
+end
+fn 5 plof fn 1 7 0 0:23:1
+par ax 9 val
+par x 10 val
+par y 10 val
+par style 5 val
+par label 5 val
+par width 4 val
+par color 5 val
+lv 0:23:116 9 1
+lv 0:23:120 10 2
+lv 0:23:123 10 3
+cs 0:23:52 5 -
+cs 0:23:70 5 %
+cf 0:23:87 4 #3FF0000000000000
+cs 0:23:105 5 %
+call 0:23:111 1 5 7
+eval 0:23:111
+block 0:23:109 1
+end
+fn 6 xlinf fn 1 4 0 0:24:1
+par ax 9 val
+par x 4 val
+par style 5 val
+par color 5 val
+lv 0:24:72 9 1
+lv 0:24:76 4 2
+cs 0:24:41 5 --
+cs 0:24:60 5 %
+call 0:24:66 1 6 4
+eval 0:24:66
+block 0:24:64 1
+end
+fn 7 xlabex fn 1 2 0 0:25:1
+par ax 9 val
+par s 5 val
+lv 0:25:38 9 1
+lv 0:25:42 5 2
+call 0:25:31 1 7 2
+eval 0:25:31
+block 0:25:29 1
+end
+fn 8 ylabex fn 1 2 0 0:26:1
+par ax 9 val
+par s 5 val
+lv 0:26:38 9 1
+lv 0:26:42 5 2
+call 0:26:31 1 8 2
+eval 0:26:31
+block 0:26:29 1
+end
+fn 9 titlf fn 1 2 0 0:27:1
+par ax 9 val
+par s 5 val
+lv 0:27:36 9 1
+lv 0:27:40 5 2
+call 0:27:30 1 9 2
+eval 0:27:30
+block 0:27:28 1
+end
+fn 10 legenx fn 1 2 0 0:28:1
+par ax 9 val
+par loc 5 val
+lv 0:28:54 9 1
+cs 0:28:32 5 northeast
+call 0:28:47 1 10 2
+eval 0:28:47
+block 0:28:45 1
+end
+fn 11 grix fn 1 2 0 0:29:1
+par ax 9 val
+par on 2 val
+lv 0:29:43 9 1
+cb 0:29:30 2 1
+call 0:29:38 1 11 2
+eval 0:29:38
+block 0:29:36 1
+end
+fn 12 xlif fn 1 3 0 0:30:1
+par ax 9 val
+par lo 4 val
+par hi 4 val
+lv 0:30:44 9 1
+lv 0:30:48 4 2
+lv 0:30:52 4 3
+call 0:30:39 1 12 3
+eval 0:30:39
+block 0:30:37 1
+end
+fn 13 ylif fn 1 3 0 0:31:1
+par ax 9 val
+par lo 4 val
+par hi 4 val
+lv 0:31:44 9 1
+lv 0:31:48 4 2
+lv 0:31:52 4 3
+call 0:31:39 1 13 3
+eval 0:31:39
+block 0:31:37 1
+end
+fn 14 x_tickz fn 1 2 0 0:32:1
+par ax 9 val
+par labels 12 val
+lv 0:32:47 9 1
+lv 0:32:51 12 2
+call 0:32:39 1 14 2
+eval 0:32:39
+block 0:32:37 1
+end
+fn 15 y_tickz fn 1 2 0 0:33:1
+par ax 9 val
+par labels 12 val
+lv 0:33:47 9 1
+lv 0:33:51 12 2
+call 0:33:39 1 15 2
+eval 0:33:39
+block 0:33:37 1
+end
+fn 16 y_reversf fn 1 1 0 0:34:1
+par ax 9 val
+lv 0:34:36 9 1
+call 0:34:26 1 16 1
+eval 0:34:26
+block 0:34:24 1
+end
+fn 17 axis_equax fn 1 1 0 0:35:1
+par ax 9 val
+lv 0:35:38 9 1
+call 0:35:27 1 17 1
+eval 0:35:27
+block 0:35:25 1
+end
+fn 18 save_svh fn 1 2 0 0:36:1
+par fig 8 val
+par path 5 val
+lv 0:36:44 8 1
+lv 0:36:49 5 2
+call 0:36:35 1 18 2
+eval 0:36:35
+block 0:36:33 1
+end
+#end

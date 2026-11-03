@@ -1,0 +1,3 @@
+// r_plot_size_big -- height 100001 > SEA_LIM_PLOT_PX: invalid figure size 960x100001 (LANGUAGE.md 12.2)
+printf("start\n")
+let fig = figure(1, 1, height: 100001)

@@ -1,0 +1,105 @@
+# plot_legend_pair.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_legend_pair.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_legend_pair.svg
+canvas 960 720
+heading -
+panels 3
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 3
+count markers 2
+count xline 1
+count grid 0
+count legend 1
+count legend-line 2
+count legend-marker 2
+legend first
+legend second
+legend third
+subpaths 0 1
+subpaths 1 1
+subpaths 2 1
+color line 0 #0072bd
+color line 1 #d95319
+color line 2 #edb120
+color markers 0 #d95319
+color markers 1 #edb120
+color xline 0 #7e2f8e
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 6
+ytick2 5.0
+ytick2 5.2
+ytick2 5.4
+ytick2 5.6
+ytick2 5.8
+ytick2 6.0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 2
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0

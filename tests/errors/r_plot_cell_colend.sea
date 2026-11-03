@@ -1,0 +1,6 @@
+// r_plot_cell_colend -- col + colspan > ncols: PANEL_CELL with the slots row, col, rowspan, colspan, nrows, ncols
+// (LANGUAGE.md 12.2; DESIGN.md 2.14.2)
+printf("start\n")
+let fig = figure(2, 3)
+let ok = panel(fig, 1, 1)
+let ax = panel(fig, 0, 1, colspan: 3)

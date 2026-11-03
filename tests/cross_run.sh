@@ -18,7 +18,7 @@
 # links the compiler's .s and compares the run exactly like tests/run.sh (same sidecars, .meta
 # keys, output format and exit status: 0 all passed, 1 any failed, 2 setup error).
 #
-# Variants (Decision 104): every program, error, passes, accept and ports case is built once and
+# Variants (Decision 104): every program, error, passes, accept, ports and plots case is built once and
 # run twice, first with SEA_KERNELS unset (the best usable variant, avx2 on a host that passes the
 # setup check) and then with SEA_KERNELS=sse2, against the same expected files; a failure of the
 # second run is named `FAIL <name> [sse2]: ...`. The setup requires AVX2 (`grep -qw avx2
@@ -41,6 +41,12 @@
 # cross_accept.sh drops it for its byte comparison with the packed NAME.out. A run that fails one of
 # those checks is a failure as for every port. The totals line reads
 # `passed: P  failed: F, D deferred`.
+#
+# plots/NAME (phase 9, DESIGN.md 2.14.8 "Cross", L-la): NAME.s with NAME.out (the Mac's standard output,
+# possibly empty) and NAME.expect/ (every SVG file the case's .struct names, at its path, subdirectories
+# included), run like a program case under each variant (heap check, status 0, standard error empty
+# but the heap line) and compared byte for byte: the output, each expected file, and no other file
+# (the .struct check itself runs on the Mac only, in tests/plots.sh).
 #
 # fusion/NAME (phase 7, DESIGN.md 2.12.10, the temporaries check; tests/fusion.sh's check on the
 # host): NAME.s with the sidecar NAME.fusion (`k=K`, `per_iteration=N`). The build is run, under
@@ -349,6 +355,7 @@ do_case() {
     passes) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     accept) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     ports) [ -f "$base.out" ] && [ -f "$base.expect/$_n.json" ] || { fail "$name" "missing $_n.out or $_n.expect/$_n.json"; return; } ;;
+    plots) [ -f "$base.out" ] && [ -d "$base.expect" ] || { fail "$name" "missing $_n.out or $_n.expect/"; return; } ;;
     esac
     asm_link "$name" "$base.s" "" || return
     # the one build is run under every variant (Decision 104); a failure of the second is labelled
@@ -441,7 +448,7 @@ run_variant() {
     [ $ok = 1 ] && pass
 }
 
-for k in programs errors passes accept ports; do
+for k in programs errors passes accept ports plots; do
     for n in $(case_names $k); do do_case $k "$n"; done
 done
 

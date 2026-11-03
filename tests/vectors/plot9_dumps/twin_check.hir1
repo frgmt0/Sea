@@ -1,0 +1,250 @@
+#sea 1
+#target arm64-macos
+#file twin_check.sea
+tvec 10 4
+tvec 11 3
+tvec 12 5
+tfvec 13 4 2
+fn 1 .main main 1 0 0 0:1:1
+block 0:1:1 0
+end
+fn 2 g inl 8 4 7 0:1:1
+par ax 9 val
+par x 10 val
+par k 11 val
+par s 12 val
+loc fig 8 let 0:2:9
+loc p 9 let 0:3:9
+loc tw 9 let 0:4:9
+loc .t1 9 let 0:5:10
+loc .t2 10 let 0:5:14
+loc .t3 10 let 0:5:17
+loc .t4 5 let 0:5:27
+ci 0:2:22 3 2
+ci 0:2:25 3 3
+cs 0:2:47 5 h
+ci 0:16:64 3 960
+ci 0:2:36 3 600
+call 0:2:15 8 3 5
+seq 0:2:15 8 0
+bind 0:2:5 5
+lv 0:3:25 8 5
+ci 0:3:30 3 1
+ci 0:3:33 3 0
+ci 0:17:54 3 1
+ci 0:3:45 3 2
+call 0:3:19 9 4 5
+bind 0:3:5 6
+lv 0:4:21 9 6
+call 0:4:14 9 5 1
+bind 0:4:5 7
+lv 0:5:10 9 1
+bind 0:5:10 8
+lv 0:5:14 10 2
+bind 0:5:14 9
+lv 0:5:17 10 2
+bind 0:5:17 10
+lv 0:5:27 12 4
+ci 0:5:29 3 0
+idx 0:5:27 5 1
+bind 0:5:27 11
+lv 0:5:10 9 8
+lv 0:5:14 10 9
+lv 0:5:17 10 10
+cs 0:5:40 5 o
+lv 0:5:27 5 11
+cf 0:19:87 4 #3FF0000000000000
+cs 0:19:105 5 %
+call 0:5:5 1 6 7
+seq 0:5:5 1 4
+eval 0:5:5
+lv 0:6:10 9 6
+lv 0:6:13 11 3
+cf 0:6:17 4 #3FF0000000000000
+cf 0:6:22 4 #4000000000000000
+row 0:6:17 13 2
+arr 0:6:16 13 1
+dyn 0:6:16 10
+cs 0:20:52 5 -
+cs 0:20:70 5 %
+cf 0:20:87 4 #3FF0000000000000
+cs 0:20:105 5 %
+call 0:6:5 1 7 7
+eval 0:6:5
+lv 0:7:11 9 7
+cf 0:7:15 4 #3FF0000000000000
+cs 0:21:41 5 --
+cs 0:7:25 5 #00ff00
+call 0:7:5 1 8 4
+eval 0:7:5
+lv 0:8:10 9 1
+cf 0:8:14 4 #0000000000000000
+cf 0:8:17 4 #4004000000000000
+call 0:8:5 1 9 3
+eval 0:8:5
+lv 0:9:10 9 1
+cb 0:23:30 2 1
+call 0:9:5 1 10 2
+eval 0:9:5
+lv 0:10:12 9 6
+cs 0:10:20 5 best
+call 0:10:5 1 11 2
+eval 0:10:5
+lv 0:11:13 9 1
+lv 0:11:17 12 4
+call 0:11:5 1 12 2
+eval 0:11:5
+lv 0:12:15 9 7
+call 0:12:5 1 13 1
+eval 0:12:5
+lv 0:13:14 8 5
+cs 0:13:19 5 g.svg
+call 0:13:5 1 14 2
+eval 0:13:5
+lv 0:14:12 8 5
+ret 0:14:5 1
+block 0:1:56 13
+end
+fn 3 figurf fn 8 5 0 0:16:1
+par nrows 3 val
+par ncols 3 val
+par name 5 val
+par width 3 val
+par height 3 val
+lv 0:16:110 3 1
+lv 0:16:117 3 2
+cs 0:16:47 5 %
+ci 0:16:64 3 960
+ci 0:16:83 3 720
+call 0:16:103 8 3 5
+ret 0:16:96 1
+block 0:16:94 1
+end
+fn 4 panex fn 9 5 0 0:17:1
+par fig 8 val
+par row 3 val
+par col 3 val
+par rowspan 3 val
+par colspan 3 val
+lv 0:17:98 8 1
+lv 0:17:103 3 2
+lv 0:17:108 3 3
+ci 0:17:54 3 1
+ci 0:17:72 3 1
+call 0:17:92 9 4 5
+ret 0:17:85 1
+block 0:17:83 1
+end
+fn 5 twin_z fn 9 1 0 0:18:1
+par ax 9 val
+lv 0:18:45 9 1
+call 0:18:38 9 5 1
+ret 0:18:31 1
+block 0:18:29 1
+end
+fn 6 plof fn 1 7 0 0:19:1
+par ax 9 val
+par x 10 val
+par y 10 val
+par style 5 val
+par label 5 val
+par width 4 val
+par color 5 val
+lv 0:19:116 9 1
+lv 0:19:120 10 2
+lv 0:19:123 10 3
+cs 0:19:52 5 -
+cs 0:19:70 5 %
+cf 0:19:87 4 #3FF0000000000000
+cs 0:19:105 5 %
+call 0:19:111 1 6 7
+eval 0:19:111
+block 0:19:109 1
+end
+fn 7 plog fn 1 7 0 0:20:1
+par ax 9 val
+par x 11 val
+par y 10 val
+par style 5 val
+par label 5 val
+par width 4 val
+par color 5 val
+lv 0:20:116 9 1
+lv 0:20:120 11 2
+lv 0:20:123 10 3
+cs 0:20:52 5 -
+cs 0:20:70 5 %
+cf 0:20:87 4 #3FF0000000000000
+cs 0:20:105 5 %
+call 0:20:111 1 7 7
+eval 0:20:111
+block 0:20:109 1
+end
+fn 8 xlinf fn 1 4 0 0:21:1
+par ax 9 val
+par x 4 val
+par style 5 val
+par color 5 val
+lv 0:21:72 9 1
+lv 0:21:76 4 2
+cs 0:21:41 5 --
+cs 0:21:60 5 %
+call 0:21:66 1 8 4
+eval 0:21:66
+block 0:21:64 1
+end
+fn 9 xlif fn 1 3 0 0:22:1
+par ax 9 val
+par lo 4 val
+par hi 4 val
+lv 0:22:44 9 1
+lv 0:22:48 4 2
+lv 0:22:52 4 3
+call 0:22:39 1 9 3
+eval 0:22:39
+block 0:22:37 1
+end
+fn 10 grix fn 1 2 0 0:23:1
+par ax 9 val
+par on 2 val
+lv 0:23:43 9 1
+cb 0:23:30 2 1
+call 0:23:38 1 10 2
+eval 0:23:38
+block 0:23:36 1
+end
+fn 11 legenx fn 1 2 0 0:24:1
+par ax 9 val
+par loc 5 val
+lv 0:24:54 9 1
+cs 0:24:32 5 northeast
+call 0:24:47 1 11 2
+eval 0:24:47
+block 0:24:45 1
+end
+fn 12 x_tickz fn 1 2 0 0:25:1
+par ax 9 val
+par labels 12 val
+lv 0:25:47 9 1
+lv 0:25:51 12 2
+call 0:25:39 1 12 2
+eval 0:25:39
+block 0:25:37 1
+end
+fn 13 y_reversf fn 1 1 0 0:26:1
+par ax 9 val
+lv 0:26:36 9 1
+call 0:26:26 1 13 1
+eval 0:26:26
+block 0:26:24 1
+end
+fn 14 save_svh fn 1 2 0 0:27:1
+par fig 8 val
+par path 5 val
+lv 0:27:44 8 1
+lv 0:27:49 5 2
+call 0:27:35 1 14 2
+eval 0:27:35
+block 0:27:33 1
+end
+#end

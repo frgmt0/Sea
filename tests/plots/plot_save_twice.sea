@@ -1,0 +1,10 @@
+// plot_save_twice -- save_svg draws the state at that moment: the second file has the later series and title;
+// a file in a directory made by make_dir (LANGUAGE.md 12.2, 2.14.2 "When things happen"; L-kg, L-la)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+plot(ax, [0.0, 1.0], [0.0, 1.0])
+save_svg(fig, "first.svg")
+plot(ax, [0.0, 2.0], [1.0, 3.0])
+title(ax, "later")
+make_dir("out")
+save_svg(fig, "out/second.svg")

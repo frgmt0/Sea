@@ -65,6 +65,15 @@
     \m 19, LINE_STYLE, R, -, s, "invalid line style \"%s\""
     \m 20, COLOR, R, -, s, "invalid color \"%s\""
     \m 21, USER, R, -, s, "%s"
+// run time, phase 9: invalid plot arguments (LANGUAGE.md 9.2, 12; DESIGN.md 2.14.2)
+    \m 22, FIGURE_GRID, R, -, ii, "invalid figure grid %dx%d"
+    \m 23, FIGURE_SIZE, R, -, ii, "invalid figure size %dx%d"
+    \m 24, PANEL_CELL, R, -, iiiiii, "panel at %d,%d spanning %dx%d is outside the %dx%d grid"
+    \m 25, PANEL_TAKEN, R, -, ii, "grid cell %d,%d already holds a panel"
+    \m 26, AXIS_LIMITS, R, -, ff, "invalid axis limits %g, %g"
+    \m 27, LEGEND_LOC, R, -, s, "invalid legend location \"%s\""
+    \m 28, CONTOUR_LEVELS, R, -, i, "invalid number of contour levels %d"
+    \m 29, PLOT_WIDTH, R, -, f, "invalid width %g"
 // driver and pass 1: lexical and syntax errors (LANGUAGE.md 3, Appendix A)
     \m 100, LINE_TOO_LONG, D, over, -, "line too long"
     \m 101, ILLEGAL_CHAR, C1, byte, -, "illegal character"
@@ -164,7 +173,7 @@
 .endm
 
 // One past the last run-time code: _sea_err accepts 1 .. SEA_E_RT_END-1.
-.equiv SEA_E_RT_END,            22
+.equiv SEA_E_RT_END,            30
 
 // ---------------------------------------------------------------------
 // The errno text table (LANGUAGE.md 9.2: the reason in cannot open /

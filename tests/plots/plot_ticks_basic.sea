@@ -1,0 +1,13 @@
+// plot_ticks_basic -- the step rule of DESIGN.md 2.14.6 rule 5 on 0 ... 6, 0.1 ... 0.95 and -3 ... 7, and the
+// default limits of rule 4 (LANGUAGE.md 12.5); the tick texts from tests/vectors/plot9_cases.py
+let fig = figure(3, 1, height: 720)
+let a0 = panel(fig, 0, 0)
+title(a0, "zero to six")
+plot(a0, [0.0, 6.0], [0.1, 0.95])
+let a1 = panel(fig, 1, 0)
+title(a1, "minus three to seven")
+plot(a1, [-3.0, 7.0], [-0.25, 0.3])
+let a2 = panel(fig, 2, 0)
+title(a2, "fractions")
+plot(a2, [0.5, 2.25], [100.0, 940.0])
+save_svg(fig, "plot_ticks_basic.svg")

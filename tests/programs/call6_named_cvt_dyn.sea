@@ -1,0 +1,15 @@
+// call6_named_cvt_dyn -- named calls out of parameter order passing a dynamic i64[] and a range
+// (0..3) = [0, 1, 2] (LANGUAGE.md 5.1) to an f64[3] and an f64[] parameter: element-wise conversion
+// (4.2 (c)), the shape check of the fixed-size parameter (4.5) passes. Before 9b this crashed sealoop
+// ("bad record", seacheck's cty): a pre-existing defect fixed in 9b.
+// f(b: 5, a: v) = 1 + 3 + 5 = 9; f(b: 1, a: 0..3) = 0 + 2 + 1 = 3; g(b: 4, a: 0..3) = 1 + 4 = 5.
+fn f(a: f64[3], b: i64 = 2) -> f64 {
+    return a[0] + a[2] + f64(b)
+}
+fn g(a: f64[], b: i64 = 2) -> f64 { return a[1] + f64(b) }
+let v: i64[] = [1, 2, 3]
+let w = f(b: 5, a: v)
+printf("%g\n", w)
+let r = f(b: 1, a: (0..3))
+printf("%g\n", r)
+printf("%g\n", g(b: 4, a: (0..3)))

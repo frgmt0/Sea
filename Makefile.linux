@@ -54,7 +54,8 @@ ASFLAGS_BASE := --64 --fatal-warnings -I include -I tests
 # The runtime flags (DESIGN.md 4.7.1): Sea's contract files, then Baysick's.
 RT_ASFLAGS := --64 --fatal-warnings -I include -I $(BAYSICK)/include
 # Every runtime file: rt_args rt_arr rt_clock rt_err rt_file (phase 6: make_dir and the JSON
-# emitter) rt_fmt rt_main rt_math rt_mem rt_out rt_sort rt_str.
+# emitter) rt_fmt rt_main rt_math rt_mem rt_out rt_plot (phase 9: the plotting library,
+# DESIGN.md 2.14.5) rt_sort rt_str.
 RT_SRCS    := $(wildcard runtime/x86_64_linux/*.s)
 RT_OBJS    := $(patsubst runtime/x86_64_linux/%.s,$(BUILD)/obj/%.o,$(RT_SRCS))
 

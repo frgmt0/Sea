@@ -40,8 +40,9 @@
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
 12525 REM filled(v, n) | (v, r, c) 13 len (a vector or str) 14 rows cols (a matrix) 15 numel (a
 12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find*, from 4g-1 25 lower, 26 args (min, max
-12535 REM of other than two positional arguments: 16), from 8c (sc9red lla) 27 lu 28 chol 29 solve 30 rcond 31 eig_sym;
-12536 REM any other is not supported yet. Untyped
+12535 REM of other than two positional arguments: 16), from 8c (sc9red lla) 27 lu 28 chol 29 solve 30 rcond 31 eig_sym,
+12536 REM from 9b (sc9plot ck_plot) 32-52 the 21 plotting calls (pcls); any other is not supported yet (the
+12537 REM guard, unreachable from 9b: every predeclared function has a class, L-kx). Untyped
 12540 REM constants are f64 where f64 is taken (classes 3-5), the other's type in min, max and where,
 12545 REM else i64 (LANGUAGE 4.2); an i64 for an f64 is converted. The overload is judged on the element
 12550 REM types; array arguments of an elemental function (2-10) are then broadcast (lbc, LANGUAGE 6.3)
@@ -75,8 +76,13 @@
 12630 IF G9 + ABS(H - 2) = 0 THEN 12645
 12632 LET Z = 16
 12634 GOTO 12645
-12635 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", L$, "", "", 1
+12635 CALL "pcls": L$, Z
+12636 IF Z > 0 THEN 12641
+12637 CALL "er": N(), X(), X$(), J, "NOT_SUPPORTED", L$, "", "", 1
 12640 GOTO 13610
+12641 CALL "ck_plot": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), J, Z, Z9
+12642 IF Z9 = 0 THEN 13610
+12643 GOTO 13545
 12645 REM the arguments: no ref, one value each; U(i) the type, V(i) the element type, K(i) the rank
 12650 LET E = 0
 12655 LET A = N(N(J, 7), 8)
@@ -278,6 +284,7 @@
 13585 LET A = N(A, 8)
 13590 NEXT I
 13595 CALL "er": N(), X(), X$(), J, "NO_OVERLOAD", L$, B$, "", 2
+13597 IF Z > 31 THEN 13610
 13600 GOTO 12911
 13605 LET M(J, 1) = D
 13610 SUBEND

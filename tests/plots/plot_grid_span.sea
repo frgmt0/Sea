@@ -1,0 +1,13 @@
+// plot_grid_span -- a 2 x 3 grid with row and column spans; the panels are written in creation order
+// (LANGUAGE.md 12.2; DESIGN.md 2.14.6 item 5), options in either order
+let fig = figure(2, 3)
+let a = panel(fig, 0, 0, colspan: 1, rowspan: 2)
+let b = panel(fig, 0, 1, colspan: 2)
+let c = panel(fig, 1, 2)
+let d = panel(fig, 1, 1, rowspan: 1)
+title(a, "tall")
+title(b, "wide")
+title(c, "right")
+title(d, "middle")
+plot(b, [0.0, 10.0], [0.0, 20.0])
+save_svg(fig, "plot_grid_span.svg")

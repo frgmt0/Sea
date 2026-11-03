@@ -1,0 +1,11 @@
+// plot_ticks_narrow -- the narrow range 1 ... 1.00001 whose %g texts would repeat: every tick of that axis is
+// written %.{q}g with the smallest q of 7 ... 17 that separates adjacent texts (Decision 142 (a); LANGUAGE.md 12.5)
+let fig = figure(2, 1, height: 480)
+let a0 = panel(fig, 0, 0)
+title(a0, "narrow")
+plot(a0, [1.0, 1.00001], [0.0, 1.0])
+let a1 = panel(fig, 1, 0)
+title(a1, "narrow explicit")
+xlim(a1, 1000.0, 1000.0005)
+ylim(a1, -1.0, 1.0)
+save_svg(fig, "plot_ticks_narrow.svg")

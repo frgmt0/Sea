@@ -1,0 +1,5 @@
+// r_plot_open -- save_svg into a missing directory creates none (LANGUAGE.md 12.2, 9.2; CANNOT_OPEN)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+save_svg(fig, "missing/a.svg")

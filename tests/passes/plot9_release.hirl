@@ -1,0 +1,108 @@
+#sea 1
+#target arm64-macos
+#file plot9_release.sea
+tstruct 10 S 2
+fd a 7
+fd k 3
+tvec 11 3
+fn 1 .main main 1 0 1 0:1:1
+loc fig 6 let 0:18:5
+ci 0:18:18 3 1
+ci 0:18:21 3 2
+cs 0:18:11 5 %
+ci 0:18:11 3 960
+ci 0:18:11 3 720
+lib 0:18:11 6 figure 5
+bind 0:18:1 1
+lv 0:19:21 6 1
+ci 0:19:26 3 0
+call 0:19:19 3 2 2
+fconv 0:19:8 1 - - - d
+ftext 0:19:8 1 %20
+lv 0:19:32 6 1
+ci 0:19:37 3 1
+call 0:19:30 3 2 2
+fconv 0:19:8 1 - - - d
+ftext 0:19:8 1 %0A
+fmt 0:19:8 1 4
+lib 0:19:1 1 printf 1
+eval 0:19:1
+block 0:1:1 2
+end
+fn 2 g fn 3 2 6 0:2:1
+par fig 6 val
+par n 3 val
+loc ax 7 let 0:3:9
+loc c 3 var 0:5:9
+loc i 3 for 0:6:9
+loc F 6 let 0:7:13
+loc b 7 let 0:12:9
+loc s 10 let 0:13:9
+lv 0:3:20 6 1
+ci 0:3:25 3 0
+lv 0:3:28 3 2
+ci 0:3:14 3 1
+ci 0:3:14 3 1
+lib 0:3:14 7 panel 5
+bind 0:3:5 3
+lv 0:4:8 3 2
+ci 0:4:12 3 0
+bin 0:4:8 2 gt
+lv 0:4:23 3 2
+ret 0:4:16 1
+block 0:4:14 1
+if 0:4:5 0
+ci 0:5:13 3 0
+bind 0:5:5 4
+ci 0:6:14 3 0
+ci 0:6:17 3 3
+rng 0:6:14 11 0 0
+ci 0:7:24 3 1
+ci 0:7:27 3 1
+cs 0:7:17 5 %
+ci 0:7:17 3 960
+ci 0:7:17 3 720
+lib 0:7:17 6 figure 5
+bind 0:7:9 6
+lv 0:8:12 3 5
+ci 0:8:17 3 0
+bin 0:8:12 2 eq
+cont 0:8:21
+block 0:8:19 1
+if 0:8:9 0
+lv 0:9:12 3 5
+ci 0:9:17 3 2
+bin 0:9:12 2 eq
+break 0:9:21
+block 0:9:19 1
+if 0:9:9 0
+lv 0:10:9 3 4
+lv 0:10:13 3 4
+lv 0:10:17 3 5
+bin 0:10:13 3 add
+asg 0:10:9 set
+block 0:6:19 4
+forr 0:6:5 5
+lv 0:12:13 7 3
+bind 0:12:5 7
+lv 0:13:20 7 3
+ci 0:13:27 3 1
+slit 0:13:13 10 2
+bind 0:13:5 8
+lv 0:14:11 7 7
+cs 0:14:14 5 b
+lib 0:14:5 1 title 2
+eval 0:14:5
+lv 0:15:12 10 8
+fld 0:15:12 7 0
+cs 0:15:17 5 s
+lib 0:15:5 1 xlabel 2
+eval 0:15:5
+lv 0:16:12 3 4
+lv 0:16:16 10 8
+fld 0:16:16 3 1
+bin 0:16:12 3 add
+ret 0:16:5 1
+block 0:2:34 9
+end
+#end

@@ -215,8 +215,29 @@
     \m 59, RCOND, sea_rcond, S, p, f
     \m 60, EIG_SYM, sea_eig_sym, S, p, p
     \m 61, EIG_SYM_GEN, sea_eig_sym_gen, S, pp, p
+    \m 62, FIGURE, sea_figure, S, iipii, p
+    \m 63, PANEL, sea_panel, S, piiii, p
+    \m 64, TWIN_Y, sea_twin_y, S, p, p
+    \m 65, SAVE_SVG, sea_save_svg, S, pp, -
+    \m 66, PLOT, sea_plot, S, pppppfp, -
+    \m 67, XLINE, sea_xline, S, pfpp, -
+    \m 68, BAR, sea_bar, S, pppfpp, -
+    \m 69, BARH, sea_barh, S, ppfpp, -
+    \m 70, CONTOUR, sea_contour, S, ppppiip, -
+    \m 71, IMAGE, sea_image, S, ppppi, -
+    \m 72, XLABEL, sea_xlabel, -, pp, -
+    \m 73, YLABEL, sea_ylabel, -, pp, -
+    \m 74, TITLE, sea_title, -, pp, -
+    \m 75, LEGEND, sea_legend, S, pp, -
+    \m 76, GRID, sea_grid, -, pi, -
+    \m 77, XLIM, sea_xlim, S, pff, -
+    \m 78, YLIM, sea_ylim, S, pff, -
+    \m 79, X_TICKS, sea_x_ticks, S, pp, -
+    \m 80, Y_TICKS, sea_y_ticks, S, pp, -
+    \m 81, Y_REVERSE, sea_y_reverse, -, p, -
+    \m 82, AXIS_EQUAL, sea_axis_equal, -, p, -
 .endm
-.equiv SEA_ENT_COUNT,           61  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           82  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm

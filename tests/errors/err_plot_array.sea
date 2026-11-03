@@ -1,0 +1,4 @@
+// err_plot_array -- an array of Axes: 258 at the element type (LANGUAGE.md 4.1; DESIGN.md 2.14.4)
+fn nax(v: Axes[]) -> i64 {
+    return len(v)
+}

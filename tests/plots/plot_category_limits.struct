@@ -1,0 +1,60 @@
+# plot_category_limits.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_category_limits.sea; DESIGN.md 2.14.8 "The .struct format")
+# a: xlim 0.5 ... 2.5 over the labels p q r: rule 1, numeric ticks 0.5 ... 2.5 step 0.5
+# b: labels u v w give x -0.5 ... 2.5 (rule 2), y 0 ... 10; pw 408, ph 648: ux = 3/408 < uy = 10/648,
+# so x widens about 1 to 1 -+ (10/648)*408/2 = -2.148 ... 4.148 with numeric ticks (rule 6)
+file plot_category_limits.svg
+canvas 960 720
+heading -
+panels 2
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 4
+xtick -2
+xtick 0
+xtick 2
+xtick 4
+count ytick 6
+ytick 0
+ytick 2
+ytick 4
+ytick 6
+ytick 8
+ytick 10
+count ytick2 0

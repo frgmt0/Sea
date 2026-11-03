@@ -1,0 +1,16 @@
+// plot_cycle -- eight series without a colour take the cycle #0072bd ... #a2142f and wrap to #0072bd; series
+// with `color:` or a style letter between them do not advance it (LANGUAGE.md 12.3; L-kh)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+plot(ax, x, [0.0, 0.0])
+plot(ax, x, [1.0, 1.0])
+plot(ax, x, [2.0, 2.0])
+plot(ax, x, [-1.0, -1.0], color: "#123456")
+plot(ax, x, [3.0, 3.0])
+plot(ax, x, [4.0, 4.0])
+plot(ax, x, [5.0, 5.0])
+plot(ax, x, [-2.0, -2.0], style: "k:")
+plot(ax, x, [6.0, 6.0])
+plot(ax, x, [7.0, 7.0])
+save_svg(fig, "plot_cycle.svg")

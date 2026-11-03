@@ -1,0 +1,10 @@
+// plot_minimal -- a 1 x 1 figure, one 3-point line, default limits and ticks (DESIGN.md 2.14.6 rules 4-5:
+// x 1 ... 3 with step 0.5, y 2 ... 4 with step 0.5), a title and both labels (LANGUAGE.md 12.2-12.5)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+plot(ax, [1.0, 2.0, 3.0], [2.0, 4.0, 3.0])
+title(ax, "Minimal")
+xlabel(ax, "x [m]")
+ylabel(ax, "y [m]")
+save_svg(fig, "plot_minimal.svg")
+printf("saved\n")

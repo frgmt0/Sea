@@ -1,0 +1,59 @@
+# plot_ticks_zero.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_ticks_zero.sea; DESIGN.md 2.14.8 "The .struct format")
+# zero ranges by rule 4
+file plot_ticks_zero.svg
+canvas 960 480
+heading -
+panels 2
+panel 0
+title at zero
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick -1.0
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+count ytick 7
+ytick 4.4
+ytick 4.6
+ytick 4.8
+ytick 5.0
+ytick 5.2
+ytick 5.4
+ytick 5.6
+count ytick2 0
+panel 1
+title negative
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick -44
+xtick -42
+xtick -40
+xtick -38
+xtick -36
+count ytick 5
+ytick 1.8
+ytick 1.9
+ytick 2.0
+ytick 2.1
+ytick 2.2
+count ytick2 0

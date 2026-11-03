@@ -584,20 +584,8 @@ block 0:3:24 1
 fn 0:3:1 f 0 1 1
 prog 1''')
 
-case('res_err_handle', ('rerr 259 handle types at a handle type of a signature (its type node)',
-                        '(DESIGN.md 3.4.1, 2.6.2)'),
-     '''fn f(a: Figure) {
-    printf("x\\n")
-}
-''', '''type 0:3:9 Figure s 0
-param 0:3:6 a 0 0
-name 0:4:5 printf
-str 0:4:12 x%0A
-call 0:4:5 1
-cstmt 0:4:5
-block 0:3:17 1
-fn 0:3:1 f 0 1 0
-prog 1''')
+# res_err_handle (rerr 259 `handle types` at a parameter of type Figure) was retired by sub-phase 9b:
+# the phase-rule table is empty from 9b (DESIGN.md 2.14.4, L-kx); tests/vectors/plot9_cases.py deletes it
 
 case('res_err_unknown_struct', ('rerr 229 unknown struct type at an undeclared type name of a',
                                 'signature (its type node) (DESIGN.md 3.4.1, 2.6.2)'),

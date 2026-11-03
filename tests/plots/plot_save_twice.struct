@@ -1,0 +1,66 @@
+# plot_save_twice.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_save_twice.sea; DESIGN.md 2.14.8 "The .struct format")
+file first.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+file out/second.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title later
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+count ytick 7
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+ytick 2.0
+ytick 2.5
+ytick 3.0
+count ytick2 0

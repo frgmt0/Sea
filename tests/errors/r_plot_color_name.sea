@@ -1,0 +1,5 @@
+// r_plot_color_name -- color "red": a name is not a colour (LANGUAGE.md 12.3; COLOR)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+xline(ax, 0.5, color: "red")

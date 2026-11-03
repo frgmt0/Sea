@@ -1,0 +1,6 @@
+// err_plot_unknown_option -- a name plot does not take: 224 at the narg (DESIGN.md 2.14.4)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = zeros(3)
+let y = zeros(3)
+plot(ax, x, y, size: 2.0)

@@ -1,0 +1,7 @@
+// err_plot_args -- plot with a matrix y: 243 at the call (DESIGN.md 2.14.2 "Signatures", 2.14.4)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = zeros(3)
+let y = zeros(3)
+let M = ones(2, 2)
+plot(ax, x, M)

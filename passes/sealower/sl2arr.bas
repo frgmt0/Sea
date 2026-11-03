@@ -706,20 +706,26 @@
 18340 GOTO 18280
 18350 RETURN
 19340 REM ==== library functions of 4d (rule 36): the arguments, then the function; zeros ones filled len rows cols numel reach sea.hirl as sealoop's records (3.5.9 L1-L3); sort argsort (R16, rule 24) at 33600;
-19342 REM lu chol solve rcond eig_sym (R35, rule 39, 8c) at 34053. W2 counts from 8 frame: x1 = U0 at
+19342 REM lu chol solve rcond eig_sym (R35, rule 39, 8c) at 34053; the 21 plotting calls (R36, rule 39, 9b: K5$, W2 33-53) at 34063. W2 counts from 8 frame: x1 = U0 at
 19345 REM entry (the arguments above it), x2 = the next argument, x3 = the function; 19575: the result is D2 (R9 = D2), the arguments popped
 19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    |print   |make_dir |lu       |chol     |solve    |rcond    |eig_sym  "
 19370 LET W2$ = S$(H(X, 0))
+19372 LET K5$ = "|figure     |panel      |twin_y     |save_svg   |plot       |xline      |bar        |barh       |contour    |image      "
+19374 LET K5$ = K5$ & "|xlabel     |ylabel     |title      |legend     |grid       |xlim       |ylim       |x_ticks    |y_ticks    |y_reverse  |axis_equal "
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
-19390 IF W2 = 0 THEN 2360
+19382 IF W2 > 0 THEN 19395
+19384 LET W2 = POS(K5$, "|" & W2$ & " ")
+19386 IF W2 = 0 THEN 2360
+19388 LET W2 = (W2 - 1) / 12 + 26
 19395 LET W2 = W2 + 7
-19400 IF H(X, 6) < VAL(SEG$("11211111111111122323221101111211", W2, W2)) THEN 2360
-19410 IF H(X, 6) > VAL(SEG$("22311111111111122323221101111212", W2, W2)) THEN 2360
+19400 IF H(X, 6) < VAL(SEG$("11211111111111122323221101111211551274657522222332211", W2, W2)) THEN 2360
+19410 IF H(X, 6) > VAL(SEG$("22311111111111122323221101111212551274657522222332211", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
 19430 LET S = 49
 19440 GOTO 8000
 19550 LET Z6 = W(W0 + 3)
 19560 LET W2 = W(W0 + 5)
+19565 IF W2 > 32 THEN 34065
 19570 ON W2 - 7 GOTO 20870, 21210, 22060, 22060, 22060, 22060, 22060, 22190, 22310, 22310, 22600, 22730, 22980, 33600, 33600, 42400, 42400, 42400, 34000, 34000, 34053, 34053, 34053, 34053, 34053
 19575 LET R9 = D2
 19580 GOTO 3083

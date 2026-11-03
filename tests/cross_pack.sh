@@ -4,7 +4,8 @@
 # usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]
 #   -o BUNDLE_DIR  output directory; must not exist or must be empty (else exit 2)
 #   PATTERN        only pack cases whose name (programs/NAME, errors/NAME, passes/NAME,
-#                  accept/NAME, ports/NAME, rt/NAME, fusion/NAME, la/NAME) contains one of the patterns (matched literally)
+#                  accept/NAME, ports/NAME, rt/NAME, fusion/NAME, plots/NAME, la/NAME) contains one of the patterns
+#                  (matched literally)
 #
 # Environment:
 #   SEA      the driver (default: build/sea of the Sea repository); the pass executables are
@@ -35,6 +36,11 @@
 # the sidecar NAME.fusion (lines `k=K` and `per_iteration=N`, from the program's header lines
 # `// fusion K: K` and `// Allocations per iteration: N.`, as tests/fusion.sh reads them); the host runs
 # it with K and K + 1 under SEA_HEAP_CHECK=count and checks the difference of the allocation counts.
+# plots/NAME (phase 9, DESIGN.md 2.14.8 "Cross", L-la): the Mac runs tests/plots.sh for the case (build,
+# run under the heap check, tests/plot_struct.py on NAME.struct; a failure is a pack failure); the case
+# is then compiled like a program case, with NAME.out (the Mac's standard output, possibly empty) and
+# NAME.expect/PATH for every file the .struct names (subdirectories included): the host runs it under
+# both variants and compares the output and each SVG byte for byte (the existing NAME.expect/ check).
 # A case whose compilation fails gets NAME.packfail ("status <n>", then stderr) instead of NAME.s.
 #
 # Exit status: 0 the bundle is complete (even with .packfail files), 2 setup error.
@@ -94,7 +100,7 @@ trap 'rm -rf "$TMP"; exit 2' HUP INT TERM PIPE
 mkdir -p "$BUNDLE/include" "$BUNDLE/runtime/x86_64_linux" "$BUNDLE/tests/rt/x86_64_linux" \
     "$BUNDLE/baysick/include" "$BUNDLE/baysick/src/runtime_x86_64_linux" \
     "$BUNDLE/cases/programs" "$BUNDLE/cases/errors" "$BUNDLE/cases/passes" "$BUNDLE/cases/accept" \
-    "$BUNDLE/cases/ports" "$BUNDLE/cases/fusion" \
+    "$BUNDLE/cases/ports" "$BUNDLE/cases/fusion" "$BUNDLE/cases/plots" \
     || setup_fail "cannot create bundle directory '$BUNDLE'"
 echo "sea-x86_64-linux-bundle 1" > "$BUNDLE/BUNDLE" || setup_fail "cannot write $BUNDLE/BUNDLE"
 printf '%s\n' "$PATTERNS" > "$BUNDLE/PATTERNS" || setup_fail "cannot write $BUNDLE/PATTERNS"
@@ -393,6 +399,31 @@ for src in "$ROOT"/tests/fusion/*.sea; do
     pack_sea fusion "$ROOT/tests/fusion" "$nm"
     printf 'k=%s\nper_iteration=%s\n' "$fk" "$fn" > "$BUNDLE/cases/fusion/$nm.fusion" \
         || setup_fail "cannot write $nm.fusion"
+    PACKED=$((PACKED + 1))
+done
+
+# plots/NAME (DESIGN.md 2.14.8 "Cross", L-la): tests/plots.sh checks the case on the Mac (--only: exactly
+# this case) and saves its standard output and the files its .struct names (--save-out); a Mac run that
+# fails is a pack failure (NAME.packfail). The case is then compiled like a program case; NAME.out and
+# NAME.expect/ (the saved files at their paths) are its expected files on the host.
+for src in "$ROOT"/tests/plots/*.sea; do
+    [ -e "$src" ] || continue
+    nm=$(basename "$src" .sea)
+    selected "plots/$nm" || continue
+    rm -rf "$TMP/plt"
+    SEA="$SEA" LIRCHK="$LIRCHK" sh "$ROOT/tests/plots.sh" --save-out "$TMP/plt" --only "$nm" >"$TMP/plt.out" 2>"$TMP/plt.err"
+    st=$?
+    if [ $st -eq 2 ]; then setup_fail "tests/plots.sh: $(head -3 "$TMP/plt.err" | tr '\n' ' ')"; fi
+    if [ $st -eq 0 ] && [ -f "$TMP/plt/$nm.out" ] && [ -d "$TMP/plt/$nm.expect" ]; then
+        if pack_sea plots "$ROOT/tests/plots" "$nm"; then
+            dest=$BUNDLE/cases/plots/$nm
+            /bin/cp -f "$TMP/plt/$nm.out" "$dest.out" || setup_fail "cannot write $nm.out"
+            /bin/cp -R "$TMP/plt/$nm.expect" "$dest.expect" || setup_fail "cannot write $nm.expect"
+        fi
+    else
+        cat "$TMP/plt.out" "$TMP/plt.err" > "$TMP/plt.all"
+        packfail "$BUNDLE/cases/plots/$nm" "$st" "$TMP/plt.all"
+    fi
     PACKED=$((PACKED + 1))
 done
 

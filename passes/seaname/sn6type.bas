@@ -35,8 +35,8 @@
 8770 LET B = VAL(SEG$("43256789", P, P))
 8780 SUBEND
 8785 REM ---- tyres: the type of type node I, looked up by tylk (DESIGN 3.4.2 "Resolving a type
-8790 REM node"): the base, then the dims left to right, then the shape, then the phase rule (2.6.2,
-8795 REM from 8c: the handle types Figure and Axes only); the first error is the node's
+8790 REM node"): the base, then the dims left to right, then the shape (from 9b no phase rule: every
+8795 REM handle type resolves, DESIGN 2.14.4, L-kx); the first error is the node's
 8800 REM and its type is then 0. M(I,1) = the type (a predefined id or a T row), M(I,9) = 1 (done).
 8805 REM A new array type is created here (tarr; the types limit at node X(19), set by the caller).
 8810 REM Locals: B base (-1 a struct), H shape (1 s 2 v 3 m 4 fv 5 fm), V(k,0) the node of dim k,
@@ -119,11 +119,9 @@
 9140 LET A$ = SEG$("FigureAxesLuChol", VAL(SEG$("01071113", 2 * P - 1, 2 * P)), VAL(SEG$("06101216", 2 * P - 1, 2 * P)))
 9145 CALL "er": N(), X(), X$(), I, "ELEMENT_TYPE", A$, "", "", 1
 9150 GOTO 9200
-9155 REM the phase rule (DESIGN 2.6.2, 2.13.3), after every error above: the handle types 6 and 7
-9160 REM (Lu and Chol are the types 8 and 9 from 8c); a struct base is its struct type
-9165 LET A$ = "handle types"
-9168 IF B >= 8 THEN 9190
-9170 IF B >= 6 THEN 9198
+9155 REM the type (from 9b no phase rule, DESIGN 2.14.4, L-kx: the handle types 6-9 resolve as
+9160 REM every base word does); a struct base is its struct type
+9170 IF B >= 6 THEN 9190
 9175 IF B <> -1 THEN 9190
 9180 LET B = Y(M(I, 2), 2)
 9185 IF B = 0 THEN 9200
@@ -134,7 +132,6 @@
 9194 LET E2 = INT(H / 5) * (((V(2, 1) * 65536 + V(2, 2)) * 65536 + V(2, 3)) * 65536 + V(2, 4))
 9196 CALL "tarr": T(), N(), X(), X$(), H - 1, B, E1, E2, R
 9197 GOTO 9200
-9198 CALL "er": N(), X(), X$(), I, "NOT_SUPPORTED", A$, "", "", 1
 9200 LET M(I, 1) = R
 9205 SUBEND
 9210 REM ---- tarr: R = the T row of the array type K (1 T[], 2 T[,], 3 T[n], 4 T[r,c]) of element id

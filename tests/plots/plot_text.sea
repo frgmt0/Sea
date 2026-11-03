@@ -1,0 +1,11 @@
+// plot_text -- text escaping: & < > " escaped, control bytes other than tab written as spaces, UTF-8 copied,
+// in a title, the labels, a legend label and category labels (LANGUAGE.md 12.7, 12.8; L-kp)
+let fig = figure(1, 1, name: "a\x01b")
+let ax = panel(fig, 0, 0)
+title(ax, "T\x00x\x1fy\tz")
+xlabel(ax, "<x> & \"y\"")
+ylabel(ax, "temp µm")
+plot(ax, [0.0, 1.0], [0.0, 1.0], label: "l\x07m")
+legend(ax)
+y_ticks(ax, ["\x02a", "b"])
+save_svg(fig, "plot_text.svg")

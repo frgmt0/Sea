@@ -14,6 +14,9 @@
 //                 11.1; DESIGN.md 4.8, 2.11.6)
 //   _sea_fmt_g    (private to the runtime) an f64 as Sea's printf("%g")
 //                 prints it, for _sea_err's `f` arguments (DESIGN.md 2.6.2)
+//   _sea_fmt_num  (private to the runtime) one finite f64 under `%.<p>f`
+//                 or `%.<p>g` (snprintf), for rt_plot.s's SVG writer
+//                 (DESIGN.md 2.14.6, L-ld)
 //   _sea_fmt_sink (private to the runtime) the growing text buffer that
 //                 _sea_error and _sea_format format into (DESIGN.md 4.5),
 //                 three u64:
@@ -75,6 +78,10 @@
 .equ RTF_PREC_DEFAULT,  6
 // Buffer of _sea_fmt_g: "%g" text is at most 13 bytes ("-2.22507e-308").
 .equ RTF_GBUF,          32
+// Destination size of _sea_fmt_num (rt_plot.s gives at least this many
+// bytes): `%.4f` of -DBL_MAX is 1 + 309 + 1 + 4 bytes + NUL = 316, and a
+// line width (any finite f64) is written `%.2f`; `%.17g` is at most 24.
+.equ RTF_NUMBUF,        336
 // The sink descriptor _sea_fmt_sink and its first size.
 .equ RTF_SINK_PTR,      0
 .equ RTF_SINK_LEN,      8
@@ -941,6 +948,36 @@ _sea_fmt_g:
 3:  add sp, sp, #RTF_GBUF
     ldr x19, [sp, #16]
     ldp x29, x30, [sp], #32
+    ret
+
+// ---------------------------------------------------------------------
+// _sea_fmt_num -- one finite f64 under one C conversion, for the SVG
+//   writer of rt_plot.s (DESIGN.md 2.14.6 "Notation"; L-ld).
+//   Purpose : snprintf(dst, RTF_NUMBUF, "%.<prec><letter>", x) through
+//             Lrt_fmt_float (the C locale, no flags): `%.2f` of
+//             coordinates, `%.{p}f`, `%g` and `%.{q}g` of tick labels.
+//             The caller never passes NaN or +-Inf (2.14.6: every value
+//             written is finite).
+//   Inputs  : x0 = destination (at least RTF_NUMBUF bytes; the text and
+//             a NUL are written), w1 = letter ('f' or 'g'), x2 =
+//             precision (0 .. RTF_PREC_MAX, or -1: C's default 6),
+//             d0 = x (finite)
+//   Outputs : x0 = length of the text (the NUL not counted)
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: none
+//   Frame   : 16 bytes (frame record)
+// ---------------------------------------------------------------------
+    .private_extern _sea_fmt_num
+    .p2align 2
+_sea_fmt_num:
+    stp x29, x30, [sp, #-16]!
+    mov x29, sp
+    mov x3, x0                      // the buffer: the destination itself
+    mov w0, w1                      // the letter
+    mov w1, #0                      // no flags
+    mov x4, #RTF_NUMBUF             // %.2f of -DBL_MAX fits (1 + 309 + 3 + NUL)
+    bl Lrt_fmt_float                // x0 = length; x1 = 0 (prec <= RTF_PREC_MAX)
+    ldp x29, x30, [sp], #16
     ret
 
 // ---------------------------------------------------------------------

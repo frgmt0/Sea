@@ -1,0 +1,94 @@
+#sea 1
+#target arm64-macos
+#file plot9_release.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+li i1 1
+li i2 2
+la p3 d1
+li i4 960
+li i5 720
+rcall sea_figure 0:18 1 p6 5 i1 i2 p3 i4 i5
+li i7 0
+call g 1 i8 2 p6 i7
+li i9 1
+call g 1 i10 2 p6 i9
+sa p11 s1
+sti i8 p11 - 0 0
+sti i10 p11 - 0 8
+la p12 d2
+rcall sea_printf 0:19 0 2 p12 p11
+release p6
+ret 0
+endfunc
+func g fn 0:2:1 2 p1 i2 1 i
+slot s1 16 8
+li i3 0
+li i4 1
+li i5 1
+rcall sea_panel 0:3 1 p6 5 p1 i3 i2 i4 i5
+li i7 0
+icmp gt i8 i2 i7
+if 1 i8
+release p6
+ret 1 i2
+endif 1
+li i9 0
+li i10 0
+li i11 3
+li i12 1
+rcount i13 i14 i10 i11 i12 0 0:6
+if 2 i14
+loop 3 i15 i10 i13 i12
+li i16 1
+li i17 1
+la p18 d3
+li i19 960
+li i20 720
+rcall sea_figure 0:7 1 p21 5 i16 i17 p18 i19 i20
+li i22 0
+icmp eq i23 i15 i22
+if 4 i23
+release p21
+next 3
+endif 4
+li i24 2
+icmp eq i25 i15 i24
+if 5 i25
+release p21
+exit 3
+endif 5
+iaddc i9 i9 i15 0:10
+release p21
+endloop 3
+endif 2
+mov p26 p6
+retain p26
+sa p27 s1
+retain p6
+stp p6 p27 - 0 0
+li i28 1
+sti i28 p27 - 0 8
+la p29 d4
+rcall sea_title - 0 2 p26 p29
+ldp p30 p27 - 0 0
+la p31 d5
+rcall sea_xlabel - 0 2 p30 p31
+ldi i32 p27 - 0 8
+iaddc i33 i9 i32 0:16
+ldp p34 p27 - 0 0
+release p34
+release p26
+release p6
+ret 1 i33
+endfunc
+str d1 %
+fmt d2 4
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+str d3 %
+str d4 b
+str d5 s
+#end

@@ -1,4 +1,4 @@
-// sea/tests/rt/arm64_macos/rt_err_last.s -- the last run-time code, SEA_E_RT_END-1 (21)
+// sea/tests/rt/arm64_macos/rt_err_last.s -- run-time code 21 (USER, `%s`), the last code before phase 9; since phase 9 the run-time codes end at SEA_E_RT_END-1 = 29 (PLOT_WIDTH), and codes 22-29 are tested by the rt_plot_err_* programs
 .include "errors.inc"
 .include "rt.inc"
 

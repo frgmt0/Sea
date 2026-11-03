@@ -1,0 +1,8 @@
+// struct_order_cvt_dyn -- a struct literal with its fields out of declaration order initialising an
+// f64[3] field from a dynamic i64[] (LANGUAGE.md 4.2 (c), 4.5's shape check passes, 4.6). Before 9b
+// this crashed sealoop ("bad record", seacheck's cty): a pre-existing defect fixed in 9b.
+// p.a[1] = 2, p.b = len(v) = 3.
+struct P { a: f64[3], b: i64 }
+let v: i64[] = [1, 2, 3]
+let p = P { b: len(v), a: v }
+printf("%g %d\n", p.a[1], p.b)

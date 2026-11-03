@@ -28,6 +28,10 @@
 #   sea_json_st    u64: the address of the emitter's state block, 0 while no
 #                  write_json is running (the arm64 runtime's _sea_json_st;
 #                  read by the rt tests to see the state freed)
+#   sea_file_put   (path, bytes, len, site, cap) write a whole file:
+#                  open, sea_write_all, close, the block (bytes, cap)
+#                  freed unless cap is 0 (DESIGN.md 2.14.6, L-lc, L-ld;
+#                  for SAVE_SVG). See its header below.
 # Uses: sea_alloc, sea_free_block, sea_retain, sea_release (rt_mem.s),
 #   sea_write_all (rt_out.s), sea_err (rt_err.s); glibc memcpy, memchr,
 #   mkdir, open, close, snprintf, __errno_location through the PLT.
@@ -1225,6 +1229,148 @@ sea_json_abort:
     popq %rbp
 2:  ret
     .size sea_json_abort, . - sea_json_abort
+
+# ---------------------------------------------------------------------
+# sea_file_put -- write a whole file in one go (DESIGN.md 2.14.6 "The
+#   byte buffer and the file", L-lc, L-ld; private to the runtime, for
+#   rt_plot.s's SAVE_SVG).
+#   Purpose : open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666) (the umask
+#             applies; a NUL-terminated copy of the path, freed at once;
+#             a path holding a NUL byte is EINVAL), sea_write_all, close.
+#             A failed open is sea_err(CANNOT_OPEN, site, {path, errno});
+#             a failed write closes the descriptor (that close's result
+#             ignored) and is CANNOT_WRITE with the write's errno; a
+#             failed close is CANNOT_WRITE with close's errno. Each errno
+#             is read before any other call can change it. The same
+#             host constants and errno handling as JSON_OPEN and
+#             JSON_CLOSE above. The caller's byte block (when cap is not
+#             0) is freed with sea_free_block(bytes, cap) before an error
+#             is reported and after the write (2.14.6: "The buffer is
+#             freed before an error is reported and after the write"),
+#             which L-ld's four arguments cannot express without its
+#             size: hence the fifth, as in the arm64 runtime.
+#   Inputs  : %rdi = the path string (borrowed), %rsi = the bytes, %rdx
+#             = their count (>= 0), %rcx = site, %r8 = cap: the size of
+#             the block at the bytes to free, or 0 (not freed)
+#   Outputs : none (returns when the file is written and closed)
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = the path, %r12 = the
+#             bytes, %r13 = the count, %r14 = site, %r15 = the
+#             NUL-terminated copy, then the descriptor, %rbp = frame
+#             pointer; 0(%rsp) = the saved errno, 8(%rsp) = cap
+#   Frame   : 56 bytes (%rbp %rbx %r12-%r15) + 24 = 80 bytes; %rsp = 0
+#             (mod 16) at every call
+# ---------------------------------------------------------------------
+    .globl sea_file_put
+    .hidden sea_file_put
+    .type sea_file_put, @function
+    .p2align 4
+sea_file_put:
+    pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
+    subq $24, %rsp                  # errno, cap, pad; %rsp = 0 (mod 16)
+    movq %rdi, %rbx
+    movq %rsi, %r12
+    movq %rdx, %r13
+    movq %rcx, %r14
+    movq %r8, 8(%rsp)               # cap
+    # 1. The NUL-terminated path (out of memory at the site).
+    movq %rbx, %rdi
+    movq %r14, %rsi
+    call .Lrt_file_cpath            # %rax = the copy, %rdx = holds a NUL
+    movq %rax, %r15
+    movq $RT_FILE_EINVAL, 0(%rsp)   # a NUL byte in the path: EINVAL
+    testq %rdx, %rdx
+    jnz .Lrt_file_put_openfail
+    # 2. open(copy, O_WRONLY | O_CREAT | O_TRUNC, 0666).
+    movq %r15, %rdi
+    movl $RT_FILE_O_WCT, %esi
+    movl $RT_FILE_JSON_MODE, %edx
+    xorl %eax, %eax                 # variadic: no vector registers
+    call open@PLT
+    movslq %eax, %rax
+    movq %rax, 0(%rsp)              # the descriptor for now
+    testq %rax, %rax
+    jns 1f
+    call __errno_location@PLT
+    movslq (%rax), %rax
+    movq %rax, 0(%rsp)              # the errno of open, saved first
+    jmp .Lrt_file_put_openfail
+1:  movq %r15, %rdi                 # opened: free the copy
+    movq SEA_STR_LEN(%rbx), %rsi
+    incq %rsi
+    call sea_free_block
+    movq 0(%rsp), %r15              # %r15 = the descriptor from here on
+    # 3. Every byte.
+    movl %r15d, %edi
+    movq %r12, %rsi
+    movq %r13, %rdx
+    call sea_write_all              # %rax = 0 or the errno
+    testq %rax, %rax
+    jz 2f
+    movq %rax, 0(%rsp)              # the write's errno
+    movl %r15d, %edi
+    call close@PLT                  # result ignored
+    jmp .Lrt_file_put_writefail
+    # 4. close.
+2:  movl %r15d, %edi
+    call close@PLT
+    testl %eax, %eax
+    jz 3f
+    call __errno_location@PLT
+    movslq (%rax), %rax
+    movq %rax, 0(%rsp)              # the errno of close
+    jmp .Lrt_file_put_writefail
+3:  call .Lrt_file_put_free         # written: the caller's block freed
+    addq $24, %rsp
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+.Lrt_file_put_openfail:
+    movq %r15, %rdi                 # the copy, freed before the report
+    movq SEA_STR_LEN(%rbx), %rsi
+    incq %rsi
+    call sea_free_block
+    movl $SEA_E_CANNOT_OPEN, %edi
+    jmp 4f
+.Lrt_file_put_writefail:
+    movl $SEA_E_CANNOT_WRITE, %edi
+4:  movl %edi, 16(%rsp)            # the code, kept across the free
+    call .Lrt_file_put_free         # the caller's block, freed before the report
+    movl 16(%rsp), %edi
+    movq %r14, %rsi                 # site
+    movq %rbx, %rdx                 # the path, as given
+    movq 0(%rsp), %rcx              # the saved errno
+    call .Lrt_file_raise            # noreturn
+    ud2
+    .size sea_file_put, . - sea_file_put
+
+# .Lrt_file_put_free -- sea_file_put's tail: sea_free_block(bytes, cap)
+#   unless cap is 0. Called from sea_file_put's frame only (%r12 = the
+#   bytes; cap at 8(%rsp) there, 16(%rsp) here past the return address).
+#   Clobbers: all caller-saved registers. Frame: 8 (%rbp); %rsp = 0
+#   (mod 16) at the call.
+    .p2align 4
+.Lrt_file_put_free:
+    movq 16(%rsp), %rsi             # cap
+    testq %rsi, %rsi
+    jz 1f
+    pushq %rbp                      # %rsp = 0 (mod 16)
+    movq %rsp, %rbp
+    movq %r12, %rdi
+    call sea_free_block
+    movq %rbp, %rsp
+    popq %rbp
+1:  ret
 
 # ---------------------------------------------------------------------
 # Constant data.

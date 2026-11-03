@@ -1,0 +1,5 @@
+// r_plot_style_xline -- a marker in xline's style (LANGUAGE.md 12.3: xline takes no marker; L-ki)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+xline(ax, 1.0, style: "--o")

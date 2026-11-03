@@ -1,0 +1,114 @@
+#sea 1
+#target arm64-macos
+#file plot9_rcall.sea
+func .main main 0:1:1 0 0
+slot s1 16 8
+slot s2 8 8
+li i1 1
+li i2 2
+la p3 d1
+li i4 400
+li i5 720
+rcall sea_figure 0:1 1 p6 5 i1 i2 p3 i4 i5
+li i7 0
+li i8 1
+li i9 1
+li i10 1
+rcall sea_panel 0:2 1 p11 5 p6 i7 i8 i9 i10
+rcall sea_twin_y 0:3 1 p12 1 p11
+sa p13 s1
+lf f14 #0000000000000000
+stf f14 p13 - 0 0
+lf f15 #3FF0000000000000
+stf f15 p13 - 0 8
+li i16 2
+li i17 1
+li i18 1
+li i19 1
+rcall sea_arr_new_u 0:4 1 p20 4 i17 i18 i16 i19
+ldp p21 p20 - 0 40
+li i22 16
+mcopy p21 p13 i22
+la p23 d2
+la p24 d3
+lf f25 #4000000000000000
+la p26 d4
+rcall sea_plot 0:5 0 7 p12 p20 p20 p23 p24 f25 p26
+lf f27 #3FE0000000000000
+la p28 d5
+la p29 d6
+rcall sea_xline 0:6 0 4 p11 f27 p28 p29
+la p30 d7
+rcall sea_xlabel - 0 2 p11 p30
+la p31 d8
+rcall sea_ylabel - 0 2 p12 p31
+la p32 d9
+rcall sea_title - 0 2 p11 p32
+la p33 d10
+rcall sea_legend 0:10 0 2 p11 p33
+li i34 0
+rcall sea_grid - 0 2 p11 i34
+lf f35 #BFF0000000000000
+lf f36 #4000000000000000
+rcall sea_xlim 0:12 0 3 p11 f35 f36
+lf f37 #0000000000000000
+lf f38 #4008000000000000
+rcall sea_ylim 0:13 0 3 p12 f37 f38
+li i39 2
+li i40 4
+li i41 1
+li i42 1
+rcall sea_arr_new 0:14 1 p43 4 i40 i41 i39 i42
+ldp p44 p43 - 0 40
+la p45 d11
+retain p45
+stp p45 p44 - 0 0
+la p46 d12
+retain p46
+stp p46 p44 - 0 8
+rcall sea_x_ticks 0:14 0 2 p11 p43
+release p43
+li i47 1
+li i48 4
+li i49 1
+li i50 1
+rcall sea_arr_new 0:15 1 p51 4 i48 i49 i47 i50
+ldp p52 p51 - 0 40
+la p53 d13
+retain p53
+stp p53 p52 - 0 0
+rcall sea_y_ticks 0:15 0 2 p12 p51
+release p51
+rcall sea_y_reverse - 0 1 p12
+rcall sea_axis_equal - 0 1 p11
+la p54 d14
+rcall sea_save_svg 0:18 0 2 p6 p54
+ldi i55 p20 - 0 16
+sa p56 s2
+sti i55 p56 - 0 0
+la p57 d15
+rcall sea_printf 0:19 0 2 p57 p56
+release p20
+release p12
+release p11
+release p6
+ret 0
+endfunc
+str d1 r
+str d2 r--
+str d3 a
+str d4 #102030
+str d5 :
+str d6 #00ff00
+str d7 x
+str d8 y
+str d9 t
+str d10 south
+str d11 p
+str d12 q
+str d13 u
+str d14 r.svg
+fmt d15 2
+fconv - - - d i
+ftext %0A
+#end

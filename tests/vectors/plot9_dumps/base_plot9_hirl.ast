@@ -1,0 +1,73 @@
+#sea 1
+#target arm64-macos
+#file plot9_hirl.sea
+pname 0:1:5 fig
+name 0:1:11 figure
+int 0:1:18 1
+int 0:1:21 1
+call 0:1:11 2
+let 0:1:1 0
+pname 0:2:5 ax
+name 0:2:10 panel
+name 0:2:16 fig
+int 0:2:21 0
+int 0:2:24 0
+call 0:2:10 3
+let 0:2:1 0
+pname 0:3:5 x
+type 0:3:8 f64 v 0
+float 0:3:17 #3FF0000000000000
+float 0:3:22 #4000000000000000
+float 0:3:27 #4008000000000000
+row 0:3:17 3
+array 0:3:16 1
+let 0:3:1 1
+name 0:4:1 plot
+name 0:4:6 ax
+float 0:4:10 #4000000000000000
+name 0:4:16 x
+bin 0:4:10 mul
+float 0:4:20 #3FF0000000000000
+bin 0:4:10 add
+name 0:4:25 x
+str 0:4:35 fit
+narg 0:4:28 label
+call 0:4:1 4
+cstmt 0:4:1
+name 0:5:1 plot
+name 0:5:6 ax
+name 0:5:10 x
+int 0:5:12 0
+int 0:5:15 2
+range 0:5:12 0 0
+index 0:5:10 1
+float 0:5:20 #4010000000000000
+float 0:5:25 #4014000000000000
+row 0:5:20 2
+array 0:5:19 1
+str 0:5:38 o
+narg 0:5:31 style
+call 0:5:1 4
+cstmt 0:5:1
+name 0:6:1 x_ticks
+name 0:6:9 ax
+str 0:6:14 a
+str 0:6:19 b
+row 0:6:14 2
+array 0:6:13 1
+call 0:6:1 2
+cstmt 0:6:1
+name 0:7:1 save_svg
+name 0:7:10 fig
+str 0:7:15 h.svg
+call 0:7:1 2
+cstmt 0:7:1
+name 0:8:1 printf
+str 0:8:8 %25g%0A
+name 0:8:16 x
+int 0:8:18 2
+index 0:8:16 1
+call 0:8:1 2
+cstmt 0:8:1
+prog 8
+#end

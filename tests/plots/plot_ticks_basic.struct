@@ -1,0 +1,90 @@
+# plot_ticks_basic.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_ticks_basic.sea; DESIGN.md 2.14.8 "The .struct format")
+# x 0 ... 6: step 1; y 0.1 ... 0.95: step 0.2, limits 0 ... 1; x -3 ... 7: step 2
+file plot_ticks_basic.svg
+canvas 960 720
+heading -
+panels 3
+panel 0
+title zero to six
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 7
+xtick 0
+xtick 1
+xtick 2
+xtick 3
+xtick 4
+xtick 5
+xtick 6
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 1
+title minus three to seven
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 7
+xtick -4
+xtick -2
+xtick 0
+xtick 2
+xtick 4
+xtick 6
+xtick 8
+count ytick 7
+ytick -0.3
+ytick -0.2
+ytick -0.1
+ytick 0.0
+ytick 0.1
+ytick 0.2
+ytick 0.3
+count ytick2 0
+panel 2
+title fractions
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 6
+ytick 0
+ytick 200
+ytick 400
+ytick 600
+ytick 800
+ytick 1000
+count ytick2 0

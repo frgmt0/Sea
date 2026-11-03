@@ -1,0 +1,75 @@
+# plot_style.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_style.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_style.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 15
+count markers 13
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+subpaths 1 1
+subpaths 2 1
+subpaths 3 1
+subpaths 4 1
+subpaths 5 1
+subpaths 6 1
+subpaths 7 1
+subpaths 8 1
+subpaths 9 1
+subpaths 10 1
+subpaths 11 1
+subpaths 12 1
+subpaths 13 1
+subpaths 14 1
+color line 0 #0072bd
+color line 1 #d95319
+color line 2 #edb120
+color line 3 #7e2f8e
+color line 4 #ff0000
+color line 5 #00a000
+color line 6 #0000ff
+color line 7 #00bfbf
+color line 8 #bf00bf
+color line 9 #000000
+color line 10 #a2142f
+color line 11 #a1b2c3
+color line 12 #00ff00
+color line 13 #0072bd
+color line 14 #ff0000
+color markers 0 #77ac30
+color markers 1 #4dbeee
+color markers 2 #a2142f
+color markers 3 #0072bd
+color markers 4 #d95319
+color markers 5 #edb120
+color markers 6 #7e2f8e
+color markers 7 #77ac30
+color markers 8 #4dbeee
+color markers 9 #bfbf00
+color markers 10 #000000
+color markers 11 #ffffff
+color markers 12 #0072bd
+count xtick 5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+count ytick 8
+ytick 0
+ytick 5
+ytick 10
+ytick 15
+ytick 20
+ytick 25
+ytick 30
+ytick 35
+count ytick2 0

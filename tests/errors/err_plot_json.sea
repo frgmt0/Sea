@@ -1,0 +1,3 @@
+// err_plot_json -- write_json of a Figure: 243 at the call (LANGUAGE.md 11.4)
+let fig = figure(1, 1)
+write_json("f.json", fig)

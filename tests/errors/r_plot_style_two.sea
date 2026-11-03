@@ -1,0 +1,7 @@
+// r_plot_style_two -- two markers in a style (LANGUAGE.md 12.3: at most one marker; L-ki)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let y = [2.0, 3.0]
+plot(ax, x, y, style: "os")

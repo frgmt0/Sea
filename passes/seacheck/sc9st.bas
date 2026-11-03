@@ -383,14 +383,14 @@
 23220 IF M(J, 9) = 0 THEN 23230
 23225 CALL "wr": X(), "seq" & Q$ & " " & STR$(B)
 23230 SUBEND
-23235 REM ---- cty: Q = the type of value V as written, after its cvt, dyn or fix (em_node) ----------
+23235 REM ---- cty: Q = the type of value V as written, after its cvt, then its dyn or fix (em_node writes both, 9b) ---
 23240 SUB "cty": N(), M(), V, Q
 23245 LET Q = M(V, 1)
 23250 IF M(V, 7) = 0 THEN 23270
 23255 LET Q = 4
 23260 IF M(V, 7) = 1 THEN 23285
 23265 LET Q = M(V, 7)
-23267 GOTO 23285
+23267 GOTO 23270
 23270 IF N(V, 0) < 27 THEN 23285
 23275 IF N(V, 0) = 31 THEN 23285
 23280 IF M(V, 5) < 10 THEN 23285

@@ -1,0 +1,294 @@
+# plot_legend_loc.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_legend_loc.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_legend_loc.svg
+canvas 960 720
+heading -
+panels 9
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend north
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend south
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 2
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend east
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 3
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend west
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 4
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend northeast
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 5
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend northwest
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 6
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend southeast
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 7
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend southwest
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 8
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend best
+subpaths 0 1
+subpaths 1 1
+color line 0 #0072bd
+color line 1 #d95319
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0

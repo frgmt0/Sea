@@ -1,0 +1,10 @@
+// plot_ticks_wide -- 1e6-wide and wider ranges: steps of 1e6 and more are written %g (DESIGN.md 2.14.6
+// "Tick labels"; LANGUAGE.md 12.5)
+let fig = figure(2, 1, height: 480)
+let a0 = panel(fig, 0, 0)
+title(a0, "millions")
+plot(a0, [0.0, 3500000.0], [-20000000.0, 120000000.0])
+let a1 = panel(fig, 1, 0)
+title(a1, "below a million")
+plot(a1, [0.0, 350000.0], [1000000000.0, 1000000000.0])
+save_svg(fig, "plot_ticks_wide.svg")

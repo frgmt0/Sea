@@ -6,7 +6,7 @@
 19425 REM any all nnz and desc: of sort argsort are checked here: a dim: value i64 (201), constant (237),
 19430 REM 0 or 1 (262), in that order, at the value; a desc: value bool (201); then (value first, DESIGN
 19435 REM 2.6.2) a name given twice is 225 at the second narg. Any other name of a library function is
-19440 REM 224 (L-by); a named argument of a Sea function is ck_ucall's (M(J,1) its value's type), of
+19440 REM 224 (L-by), but an option of a plotting call is pnarg's (sc9plot, 9b); a named argument of a Sea function is ck_ucall's (M(J,1) its value's type), of
 19442 REM anything else the call's error. M(J,1) the value's type (0 after an error), M(J,5) the dim
 19445 REM value, which is then written as one ci (M(first node,8) = -J, em_expr) --------------------
 19450 SUB "ck_narg": N(), M(), Y(), T(), C(), S$(), X(), X$(), J
@@ -16,6 +16,10 @@
 19475 IF N(G, 0) <> 30 THEN 19658
 19480 IF M(G, 2) >= -8 THEN 19540
 19485 LET C$ = "|" & S$(N(G, 6)) & "|"
+19486 CALL "pcls": S$(N(G, 6)), Z
+19487 IF Z = 0 THEN 19490
+19488 CALL "pnarg": N(), M(), Y(), T(), C(), S$(), X(), X$(), J, Z
+19489 GOTO 19658
 19490 IF S$(N(J, 6)) <> "dim" THEN 19500
 19495 IF POS("|sum|mean|variance|std|max|min|any|all|nnz|", C$) > 0 THEN 19515
 19500 IF S$(N(J, 6)) <> "desc" THEN 19510

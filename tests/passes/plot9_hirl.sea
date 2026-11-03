@@ -1,0 +1,14 @@
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x: f64[] = [1.0, 2.0, 3.0]
+plot(ax, 2.0 * x + 1.0, x, label: "fit")
+plot(ax, x[0..2], [4.0, 5.0], style: "o")
+x_ticks(ax, ["a", "b"])
+save_svg(fig, "h.svg")
+printf("%g\n", x[2])
+// plot9_hirl -- R36 (DESIGN.md 2.14.4): the plotting `lib`s stay in sea.hirl with their children
+// rewritten by R10: the fused tree 2.0 * x + 1.0 materialized into the temporary the call reads (F1,
+// a `lib` is a barrier: one nest at the call), the selection x[0..2] materialized at its position, the
+// fixed-size [4.0, 5.0]'s `dyn` turned into L10's copy at the call's position (Decision 39), the str[]
+// literal and the handles copied as they are; the inserted defaults are constants at the call's position.
+// Output: x[2] = 3.

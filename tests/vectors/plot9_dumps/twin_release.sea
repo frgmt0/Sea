@@ -1,0 +1,23 @@
+struct S { a: Chol, k: i64 }
+fn g(fig: Lu    , n: i64) -> i64 {
+    let ax = panex(fig, 0, n)
+    if n > 0 { return n }
+    var c = 0
+    for i in 0..3 {
+        let F = figurf(1, 1)
+        if i == 0 { continue }
+        if i == 2 { break }
+        c = c + i
+    }
+    let b = ax
+    let s = S { a: ax, k: 1 }
+    titlf(b, "b")
+    xlabex(s.a, "s")
+    return c + s.k
+}
+let fig = figurf(1, 2)
+printf("%d %d\n", g(fig, 0), g(fig, 1))
+fn figurf(nrows: i64, ncols: i64, name: str = "", width: i64 = 960, height: i64 = 720) -> Lu { return figurf(nrows, ncols) }
+fn panex(fig: Lu, row: i64, col: i64, rowspan: i64 = 1, colspan: i64 = 1) -> Chol { return panex(fig, row, col) }
+fn titlf(ax: Chol, s: str) { titlf(ax, s) }
+fn xlabex(ax: Chol, s: str) { xlabex(ax, s) }

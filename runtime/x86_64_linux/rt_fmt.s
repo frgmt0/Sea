@@ -19,6 +19,8 @@
 #   sea_fmt_sink (.globl + .hidden: private to the runtime) the growing
 #                text buffer sea_error and sea_format format into
 #                (RTF_SINK_*)
+#   sea_fmt_num  (.globl + .hidden: private to the runtime, L-ld) one
+#                finite f64 under %.<p>f or %.<p>g, for rt_plot.s
 # Uses:
 #   sea_alloc, sea_free_block, sea_live (rt_mem.s) the sink's blocks and
 #                sea_error's string object; sea_err (rt_err.s)
@@ -72,6 +74,9 @@
 .equ RTF_PREC_DEFAULT,  6
 # Buffer of sea_fmt_g: "%g" text is at most 13 bytes ("-2.22507e-308").
 .equ RTF_GBUF,          32
+# Destination size of sea_fmt_num: its longest text is %.4f of -DBL_MAX
+# (1 + 309 + 1 + 4 bytes; %.{p}f has p <= 4, DESIGN.md 2.14.6) + NUL.
+.equ RTF_NUMDST,        352
 # Bits of +Inf shifted left by one: |bits| << 1 >= this means NaN or Inf.
 .equ RTF_INF2,          0xFFE0000000000000
 # The sink sea_fmt_sink (internal, DESIGN.md 4.5): a descriptor of three
@@ -1052,6 +1057,40 @@ sea_fmt_g:
     popq %rbp
     ret
     .size sea_fmt_g, . - sea_fmt_g
+
+# ---------------------------------------------------------------------
+# sea_fmt_num -- one finite f64 under one C conversion (DESIGN.md
+#   2.14.6 "Notation", L-ld; private to the runtime, for rt_plot.s).
+#   Purpose : the text of snprintf(dst, RTF_NUMDST, "%.<prec><letter>",
+#             x): the SVG writer's %.2f coordinates, %.{p}f and %g tick
+#             labels and Decision 142's %.{q}g. A pure C conversion: no
+#             sign is normalized (the caller adds 0.0 where -0 must be 0)
+#             and no MATLAB spelling is used (the caller never passes a
+#             NaN or an infinity, DESIGN.md 2.14.6 "Tick labels").
+#   Inputs  : %rdi = destination (at least RTF_NUMDST bytes: the text
+#             and snprintf's NUL), %esi = letter ('f' or 'g'), %rdx =
+#             precision (0 .. 17; never above RTF_PREC_MAX, so no zero
+#             is left out), %xmm0 = x (finite)
+#   Outputs : %rax = the text's length (the NUL after it not counted)
+#   Clobbers: all caller-saved registers, flags
+#   Callee-saved used: %rbp = frame pointer
+#   Frame   : 8 bytes (%rbp); %rsp = 0 (mod 16) at the call
+# ---------------------------------------------------------------------
+    .globl sea_fmt_num
+    .hidden sea_fmt_num
+    .type sea_fmt_num, @function
+    .p2align 4
+sea_fmt_num:
+    pushq %rbp                      # entered at 8 (mod 16): now 0
+    movq %rsp, %rbp
+    movq %rdi, %rcx                 # the buffer is the destination itself
+    movl %esi, %edi                 # the letter
+    xorl %esi, %esi                 # no flags: "%.<prec><letter>"
+    movl $RTF_NUMDST, %r8d          # its size, NUL included
+    call .Lrt_fmt_float             # %rax = length (no zeros to insert: prec <= 17)
+    popq %rbp
+    ret
+    .size sea_fmt_num, . - sea_fmt_num
 
     .bss
     .p2align 3

@@ -1,0 +1,26 @@
+fn g(ax: Axes, x: f64[], k: i64[], s: str[]) -> Figure {
+    let fig = figure(2, 3, height: 600, name: "h")
+    let p: Axes = panel(fig, 1, 0, colspan: 2)
+    let tw = twin_y(p)
+    plot(ax, x, x, label: s[0], style: "o")
+    plot(p, k, [1.0, 2.0])
+    xline(tw, 1, color: "#00ff00")
+    xlim(ax, 0, 2.5)
+    grid(ax)
+    legend(p, loc: "best")
+    x_ticks(ax, s)
+    y_reverse(tw)
+    save_svg(fig, "g.svg")
+    return fig
+}
+// plot9_check -- pass 2a's tree for the plotting calls (DESIGN.md 2.14.2 "Signatures", 2.14.4 seacheck's
+// written form; L-kg): `lib NAME n` with every parameter in the table's order, an omitted option as its
+// default constant at the call's position (figure's width 960, panel's rowspan 1, plot's style "-",
+// label "", width 1.0, color "", xline's style "--", grid's on true); `lib figure` of type 6 (Figure),
+// `lib panel` and `lib twin_y` of type 7 (Axes), the others type 1 under `eval`; figure's options given
+// out of order are all constants, so its `seq` binds nothing (`seq ... 0`, L-dc); plot's `label: s[0]`
+// before `style:` binds every non-constant argument (ax, x, x, s[0]) to .t1-.t4 in source order (L-cp);
+// an i64[] argument's `cvt` at the argument, a fixed-size f64[2]'s `dyn` at the call (Decision 39); an
+// untyped literal typed by its f64 parameter (`cf`); Figure and Axes resolve as types 6 and 7 in a
+// parameter, the result and an annotation (seaname, no phase-rule error from 9b, L-kx). g is never
+// called, so .main is empty and there is no .hir. Code at lines 1-15.

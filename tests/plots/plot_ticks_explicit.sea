@@ -1,0 +1,13 @@
+// plot_ticks_explicit -- explicit limits keep their values and get only the ticks of the step inside them
+// (DESIGN.md 2.14.6 rules 1 and 5: c0 = ceil(lo / s)); the data outside does not matter (LANGUAGE.md 12.5)
+let fig = figure(2, 1, height: 480)
+let a0 = panel(fig, 0, 0)
+title(a0, "explicit")
+plot(a0, [0.0, 100.0], [0.0, 1.0])
+xlim(a0, 0.3, 2.7)
+ylim(a0, -0.15, 0.85)
+let a1 = panel(fig, 1, 0)
+title(a1, "explicit wide")
+xlim(a1, -17.0, 123.0)
+ylim(a1, 0.001, 0.0042)
+save_svg(fig, "plot_ticks_explicit.svg")

@@ -1,0 +1,32 @@
+# plot_text.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_text.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_text.svg
+canvas 960 720
+heading a b
+panels 1
+panel 0
+title T x y	z
+xlabel <x> & "y"
+ylabel temp µm
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend l m
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 2
+ytick  a
+ytick b
+count ytick2 0

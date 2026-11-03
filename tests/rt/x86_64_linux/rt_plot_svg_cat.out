@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" class="sea-figure" width="344" height="172" viewBox="0 0 344 172" font-family="sans-serif">
+<rect class="canvas" x="0" y="0" width="344" height="172" fill="#ffffff"/>
+<g class="panel" id="p0">
+<clipPath id="c0"><rect x="56.00" y="28.00" width="100.00" height="100.00"/></clipPath>
+<rect class="plot-area" x="56.00" y="28.00" width="100.00" height="100.00" fill="#ffffff"/>
+<g class="data" clip-path="url(#c0)">
+<path class="line" d="M56.00 128.00 L106.00 78.00 L156.00 28.00" fill="none" stroke="#0072bd" stroke-width="1.00"/>
+</g>
+<rect class="axes-box" x="56.00" y="28.00" width="100.00" height="100.00" fill="none" stroke="#262626" stroke-width="1.00"/>
+<path class="tick-marks" d="M56.00 128.00 v-5.00 M81.00 128.00 v-5.00 M106.00 128.00 v-5.00 M131.00 128.00 v-5.00 M156.00 128.00 v-5.00 M56.00 128.00 h5.00 M56.00 103.00 h5.00 M56.00 78.00 h5.00 M56.00 53.00 h5.00 M56.00 28.00 h5.00" fill="none" stroke="#262626" stroke-width="1.00"/>
+<text class="xtick" x="56.00" y="142.00" font-size="10" text-anchor="middle">0.0</text>
+<text class="xtick" x="81.00" y="142.00" font-size="10" text-anchor="middle">0.5</text>
+<text class="xtick" x="106.00" y="142.00" font-size="10" text-anchor="middle">1.0</text>
+<text class="xtick" x="131.00" y="142.00" font-size="10" text-anchor="middle">1.5</text>
+<text class="xtick" x="156.00" y="142.00" font-size="10" text-anchor="middle">2.0</text>
+<text class="ytick" x="50.00" y="131.50" font-size="10" text-anchor="end">0.0</text>
+<text class="ytick" x="50.00" y="106.50" font-size="10" text-anchor="end">0.5</text>
+<text class="ytick" x="50.00" y="81.50" font-size="10" text-anchor="end">1.0</text>
+<text class="ytick" x="50.00" y="56.50" font-size="10" text-anchor="end">1.5</text>
+<text class="ytick" x="50.00" y="31.50" font-size="10" text-anchor="end">2.0</text>
+</g>
+<g class="panel" id="p1">
+<clipPath id="c1"><rect x="228.00" y="28.00" width="100.00" height="100.00"/></clipPath>
+<rect class="plot-area" x="228.00" y="28.00" width="100.00" height="100.00" fill="#ffffff"/>
+<g class="data" clip-path="url(#c1)">
+<path class="line" d="M253.00 128.00 L278.00 78.00 L303.00 28.00" fill="none" stroke="#0072bd" stroke-width="1.00"/>
+</g>
+<rect class="axes-box" x="228.00" y="28.00" width="100.00" height="100.00" fill="none" stroke="#262626" stroke-width="1.00"/>
+<path class="tick-marks" d="M228.00 128.00 v-5.00 M253.00 128.00 v-5.00 M278.00 128.00 v-5.00 M303.00 128.00 v-5.00 M328.00 128.00 v-5.00 M228.00 128.00 h5.00 M228.00 103.00 h5.00 M228.00 78.00 h5.00 M228.00 53.00 h5.00 M228.00 28.00 h5.00" fill="none" stroke="#262626" stroke-width="1.00"/>
+<text class="xtick" x="228.00" y="142.00" font-size="10" text-anchor="middle">-1</text>
+<text class="xtick" x="253.00" y="142.00" font-size="10" text-anchor="middle">0</text>
+<text class="xtick" x="278.00" y="142.00" font-size="10" text-anchor="middle">1</text>
+<text class="xtick" x="303.00" y="142.00" font-size="10" text-anchor="middle">2</text>
+<text class="xtick" x="328.00" y="142.00" font-size="10" text-anchor="middle">3</text>
+<text class="ytick" x="222.00" y="131.50" font-size="10" text-anchor="end">0</text>
+<text class="ytick" x="222.00" y="106.50" font-size="10" text-anchor="end">1</text>
+<text class="ytick" x="222.00" y="81.50" font-size="10" text-anchor="end">2</text>
+<text class="ytick" x="222.00" y="56.50" font-size="10" text-anchor="end">3</text>
+<text class="ytick" x="222.00" y="31.50" font-size="10" text-anchor="end">4</text>
+</g>
+</svg>
+live 0

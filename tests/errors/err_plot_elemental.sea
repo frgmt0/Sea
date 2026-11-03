@@ -1,0 +1,5 @@
+// err_plot_elemental -- a plotting call has effects: 228 inside an elemental function, at the call (L-dj)
+elemental fn mark(x: f64) -> f64 {
+    let fig = figure(1, 1)
+    return x
+}

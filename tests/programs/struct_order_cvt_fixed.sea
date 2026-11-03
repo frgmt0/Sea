@@ -1,0 +1,7 @@
+// struct_order_cvt_fixed -- a struct literal with its fields out of declaration order initialising an
+// f64[] field from a fixed-size i64[3] (LANGUAGE.md 4.2 (c), 4.6). Before 9b this crashed sealoop
+// ("bad record", seacheck's cty): a pre-existing defect fixed in 9b. p.a[1] = 2, p.b = len(v) = 3.
+struct P { a: f64[], b: i64 }
+let v: i64[3] = [1, 2, 3]
+let p = P { b: len(v), a: v }
+printf("%g %d\n", p.a[1], p.b)

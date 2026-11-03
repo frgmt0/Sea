@@ -1,0 +1,31 @@
+# plot_minimal.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_minimal.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_minimal.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title Minimal
+xlabel x [m]
+ylabel y [m]
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+xtick 3.0
+count ytick 5
+ytick 2.0
+ytick 2.5
+ytick 3.0
+ytick 3.5
+ytick 4.0
+count ytick2 0

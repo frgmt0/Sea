@@ -1,0 +1,51 @@
+# plot_cycle.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_cycle.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_cycle.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 10
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+subpaths 1 1
+subpaths 2 1
+subpaths 3 1
+subpaths 4 1
+subpaths 5 1
+subpaths 6 1
+subpaths 7 1
+subpaths 8 1
+subpaths 9 1
+color line 0 #0072bd
+color line 1 #d95319
+color line 2 #edb120
+color line 3 #123456
+color line 4 #7e2f8e
+color line 5 #77ac30
+color line 6 #4dbeee
+color line 7 #000000
+color line 8 #a2142f
+color line 9 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick -2
+ytick 0
+ytick 2
+ytick 4
+ytick 6
+ytick 8
+count ytick2 0

@@ -1,0 +1,36 @@
+let fig = figurf(1, 2, name: "r", width: 400)
+let ax = panex(fig, 0, 1)
+let t = twin_z(ax)
+let x: f64[] = [0.0, 1.0]
+plof(t, x, x, style: "r--", label: "a", width: 2.0, color: "#102030")
+xlinf(ax, 0.5, style: ":", color: "#00ff00")
+xlabex(ax, "x")
+ylabex(t, "y")
+titlf(ax, "t")
+legenx(ax, loc: "south")
+grix(ax, on: false)
+xlif(ax, -1.0, 2.0)
+ylif(t, 0.0, 3.0)
+x_tickz(ax, ["p", "q"])
+y_tickz(t, ["u"])
+y_reversf(t)
+axis_equax(ax)
+save_svh(fig, "r.svg")
+printf("%d\n", len(x))
+fn figurf(nrows: i64, ncols: i64, name: str = "", width: i64 = 960, height: i64 = 720) -> Lu { return figurf(nrows, ncols) }
+fn panex(fig: Lu, row: i64, col: i64, rowspan: i64 = 1, colspan: i64 = 1) -> Chol { return panex(fig, row, col) }
+fn twin_z(ax: Chol) -> Chol { return twin_z(ax) }
+fn plof(ax: Chol, x: f64[], y: f64[], style: str = "-", label: str = "", width: f64 = 1.0, color: str = "") { plof(ax, x, y) }
+fn xlinf(ax: Chol, x: f64, style: str = "--", color: str = "") { xlinf(ax, x) }
+fn xlabex(ax: Chol, s: str) { xlabex(ax, s) }
+fn ylabex(ax: Chol, s: str) { ylabex(ax, s) }
+fn titlf(ax: Chol, s: str) { titlf(ax, s) }
+fn legenx(ax: Chol, loc: str = "northeast") { legenx(ax) }
+fn grix(ax: Chol, on: bool = true) { grix(ax) }
+fn xlif(ax: Chol, lo: f64, hi: f64) { xlif(ax, lo, hi) }
+fn ylif(ax: Chol, lo: f64, hi: f64) { ylif(ax, lo, hi) }
+fn x_tickz(ax: Chol, labels: str[]) { x_tickz(ax, labels) }
+fn y_tickz(ax: Chol, labels: str[]) { y_tickz(ax, labels) }
+fn y_reversf(ax: Chol) { y_reversf(ax) }
+fn axis_equax(ax: Chol) { axis_equax(ax) }
+fn save_svh(fig: Lu, path: str) { save_svh(fig, path) }

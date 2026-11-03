@@ -69,4 +69,8 @@
 .equiv SEA_LCACHE_PER_CLASS,    8           /* cached free large blocks per power-of-two size class (4.1) */
 .equiv SEA_LCACHE_MAX_BYTES,    268435456   /* cached free large blocks in all, 256 MiB (4.1) */
 
+// ---- Plotting limits (LANGUAGE.md 12.2; DESIGN.md 2.14.6, 2.14.7) ---------
+.equiv SEA_LIM_PLOT_GRID,       64          /* largest nrows and ncols of figure -> invalid figure grid */
+.equiv SEA_LIM_PLOT_PX,         100000      /* largest width and height of figure -> invalid figure size; SVG coordinate clamp */
+
 .endif

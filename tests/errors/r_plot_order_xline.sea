@@ -1,0 +1,5 @@
+// r_plot_order_xline -- xline with a bad style and colour reports the style (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+xline(ax, 0.0, color: "x", style: "o")

@@ -1,0 +1,5 @@
+// err_plot_ref -- a ref argument: 255 naming the parameter x (DESIGN.md 2.14.2; L-jm)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+var v = zeros(3)
+plot(ax, ref v, v)

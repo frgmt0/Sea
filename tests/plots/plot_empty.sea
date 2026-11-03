@@ -1,0 +1,11 @@
+// plot_empty -- an empty series (it takes a cycle colour, is listed in the legend, draws an empty path), a
+// panel with nothing (limits 0 ... 1), a figure with no panel (LANGUAGE.md 12.3; 2.14.2 "Empty and non-finite data")
+let e: f64[] = []
+let f0 = figure(1, 1)
+save_svg(f0, "nopanel.svg")
+let fig = figure(1, 2)
+let a = panel(fig, 0, 0)
+let b = panel(fig, 0, 1)
+plot(a, e, e, label: "none")
+legend(a)
+save_svg(fig, "empty.svg")

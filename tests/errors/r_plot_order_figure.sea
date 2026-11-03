@@ -1,0 +1,3 @@
+// r_plot_order_figure -- figure with a bad grid and size reports the grid (L-kg)
+printf("start\n")
+let fig = figure(65, 1, width: 0)

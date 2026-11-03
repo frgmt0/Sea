@@ -1,0 +1,7 @@
+// r_plot_style_lines -- two line parts ("-" then ":") in a style (LANGUAGE.md 12.3; L-ki)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let y = [2.0, 3.0]
+plot(ax, x, y, style: "-:")

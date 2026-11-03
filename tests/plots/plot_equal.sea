@@ -1,0 +1,12 @@
+// plot_equal -- axis_equal on a wide and on a tall panel: the axis with the smaller unit is widened about its
+// centre and its ticks recomputed as explicit-limit ticks (DESIGN.md 2.14.6 rule 6 with the layout of 2.14.6)
+let wide = figure(1, 1, width: 800, height: 400)
+let a = panel(wide, 0, 0)
+plot(a, [0.0, 1.0], [0.0, 1.0])
+axis_equal(a)
+save_svg(wide, "wide.svg")
+let tall = figure(1, 1, width: 400, height: 800)
+let b = panel(tall, 0, 0)
+plot(b, [0.0, 2.0], [0.0, 1.0])
+axis_equal(b)
+save_svg(tall, "tall.svg")

@@ -1,0 +1,10 @@
+// plot_ticks_zero -- zero ranges: at 0 widened to -1 ... 1, at 5 to 4.5 ... 5.5 (v -+ |v|/10), at -40, then
+// the default step (DESIGN.md 2.14.6 rule 4; LANGUAGE.md 12.5)
+let fig = figure(2, 1, height: 480)
+let a0 = panel(fig, 0, 0)
+title(a0, "at zero")
+plot(a0, [0.0, 0.0], [5.0, 5.0])
+let a1 = panel(fig, 1, 0)
+title(a1, "negative")
+plot(a1, [-40.0, -40.0], [2.0, 2.0])
+save_svg(fig, "plot_ticks_zero.svg")

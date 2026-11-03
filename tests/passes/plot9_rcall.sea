@@ -1,0 +1,27 @@
+let fig = figure(1, 2, name: "r", width: 400)
+let ax = panel(fig, 0, 1)
+let t = twin_y(ax)
+let x: f64[] = [0.0, 1.0]
+plot(t, x, x, style: "r--", label: "a", width: 2.0, color: "#102030")
+xline(ax, 0.5, style: ":", color: "#00ff00")
+xlabel(ax, "x")
+ylabel(t, "y")
+title(ax, "t")
+legend(ax, loc: "south")
+grid(ax, on: false)
+xlim(ax, -1.0, 2.0)
+ylim(t, 0.0, 3.0)
+x_ticks(ax, ["p", "q"])
+y_ticks(t, ["u"])
+y_reverse(t)
+axis_equal(ax)
+save_svg(fig, "r.svg")
+printf("%d\n", len(x))
+// plot9_rcall -- rule 39's rows for the 17 entries of 9b (DESIGN.md 2.14.4, 2.14.5) in sea.lir1: each
+// `rcall <sym> <site> nr R na args` with the operands in the lib's child order (the entry's argument
+// order), the site `0:LINE` for an S entry and `-` for XLABEL, YLABEL, TITLE, GRID, Y_REVERSE and
+// AXIS_EQUAL; PLOT's six p operands and its f width (pppppfp: on x86_64 its site is the seventh
+// integer-class argument, in the outgoing stack slot, L-ku); strings as `la` of their `str` data; the bool
+// `on: false` as `li 0` (class i); the owned str[] temporaries released right after their rcall; the
+// borrowed locals neither retained nor released; the handle results owned and released at the end
+// (rules 15, 16). Output: len(x) = 2.

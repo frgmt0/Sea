@@ -1471,7 +1471,7 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+` or from `format`) | `out of memory` |
 | stack overflow | `stack overflow` |
 | file or directory cannot be created/written (`write_json`, `save_svg`, `make_dir`) | `cannot open '%s': %s`, `cannot write '%s': %s`, `cannot create directory '%s': %s` (reason from a fixed table of errno texts so both targets print the same bytes) |
-| invalid plot argument (§12.3) | `invalid line style "%s"`, `invalid color "%s"` |
+| invalid plot argument (§12) | `invalid line style "%s"`, `invalid color "%s"`, `invalid figure grid %dx%d`, `invalid figure size %dx%d`, `panel at %d,%d spanning %dx%d is outside the %dx%d grid`, `grid cell %d,%d already holds a panel`, `invalid axis limits %g, %g`, `invalid legend location "%s"`, `invalid number of contour levels %d`, `invalid width %g` |
 | user `error(fmt, …)` | the formatted message |
 
 The compiler may evaluate an expression without allocating the intermediate arrays its operators would produce (fusion, DESIGN.md §5.1). It never allocates more than the operator-by-operator evaluation, so a program that runs out of memory may instead complete; it never reports `out of memory` where that evaluation would not.
@@ -1882,13 +1882,21 @@ lines per target, an estimate; DESIGN.md §2.7).
 | `twin_y(ax)` | a second `Axes` sharing `ax`'s x-axis with its own y-axis on the right (`yyaxis right`) |
 | `save_svg(fig, path)` | write the file (`exportgraphics`) |
 
+`nrows` and `ncols` are 1 to 64 and `width` and `height` 1 to 100 000 (`invalid figure grid`,
+`invalid figure size`). A panel's cells must lie inside the grid (`panel at R,C spanning RSxCS is
+outside the NRxNC grid`) and may not overlap an earlier panel's (`grid cell R,C already holds a
+panel`). `twin_y` of an axes that already has a twin returns that twin, and `twin_y` of a twin
+returns the twin itself; a pair of axes shares its x-axis, title, x label, grid, legend and limits
+of x, and each has its own y-axis. A `Figure` or `Axes` value refers to the figure: dropping an
+`Axes` value never removes what was drawn on it.
+
 ### 12.3 Series
 
 | Function | Meaning |
 |----------|---------|
 | `plot(ax, x, y, style: "-", label: "", width: 1.0, color: "")` | a polyline and/or markers |
 | `xline(ax, x, style: "--", color: "")` | a full-height vertical reference line (W5's LSL/USL lines) |
-| `bar(ax, x, h, width: 0.8, label: "", color: "")` | vertical bars centred on `x`, `width` in units of the smallest x spacing (`bar(x, h, 1)` is `width: 1`) |
+| `bar(ax, x, h, width: 0.8, label: "", color: "")` | vertical bars centred on `x`, `width` in units of the smallest positive difference between two finite `x` values (1 when there are fewer than two distinct ones; `bar(x, h, 1)` is `width: 1`); bars rise from 0, and a bar whose height or `x` is not finite is not drawn |
 | `barh(ax, h, width: 0.8, label: "", color: "")` | horizontal bars at y = 0, 1, … |
 | `contour(ax, x, y, Z, levels: 10, labels: false, color: "")` | iso-lines of `Z` (`len(y) × len(x)`) |
 | `image(ax, x, y, Z, colorbar: false)` | `imagesc`: cell colours from `Z` scaled to its min … max |
@@ -1898,8 +1906,16 @@ lines per target, an estimate; DESIGN.md §2.7).
   (triangles), `x`, `+`, `*`, `.` (dot), drawn 6 px wide; colour letter `r g b c m y k w`
   (`#ff0000 #00a000 #0000ff #00bfbf #bf00bf #bfbf00 #000000 #ffffff`). An unknown letter is a
   run-time error `invalid line style "%s"`.
+* A style holds at most one line part, one marker and one colour letter, in any order; `--` and
+  `-.` are read before `-`. With a marker and no line part only markers are drawn; with neither, a
+  solid line. `xline` takes no marker.
 * **`color`** is `""` (use the style letter, else the axes' next cycle colour) or `#rrggbb`
-  (W2's MATLAB `[0.75 0.75 0.75]` is `"#bfbfbf"`); anything else is a run-time error.
+  (hex digits of either case, written in lower case; W2's MATLAB `[0.75 0.75 0.75]` is
+  `"#bfbfbf"`); anything else is a run-time error. A series
+  without a colour from `color` or its style takes the axes' next cycle colour and advances the
+  cycle; a series with one does not advance it. A `twin_y` axes' cycle starts at its second colour
+  (`#d95319`). A `contour` without `color` draws each level in the colour map's colour of that level
+  (§12.6); with `color`, every level in that colour.
 * **Colour cycle**, per axes, in this order: `#0072bd #d95319 #edb120 #7e2f8e #77ac30 #4dbeee
   #a2142f`.
 * **Non-finite data**: a NaN or ±Inf `x` or `y` breaks a polyline (the segment is not drawn, as
@@ -1919,25 +1935,43 @@ which is `"northeast"` in v1), `grid(ax, on: true)`, `xlim(ax, lo, hi)`, `ylim(a
 both axes, `axis equal`). Images are drawn with y up (MATLAB's `axis xy`) and the axes fitted to
 the image (`axis tight`).
 
+`xlabel`, `title`, `xlim`, `grid`, `legend`, `x_ticks` and `axis_equal` of a `twin_y` axes act on
+the pair; `ylabel`, `ylim`, `y_ticks` and `y_reverse` on its own y-axis. A legend lists the
+labelled line and bar series of the pair in call order; with no labelled series no legend is drawn.
+Category labels set the ticks to 0, 1, …, n − 1 and the default limits to −0.5 … n − 0.5 (widened
+to the data when it extends further); an empty list returns to numeric ticks (`let none: str[] =
+[]` then `x_ticks(ax, none)`: a bare `[]` argument has no type, §6.9). `xline` does not change the
+automatic limits. When a pair holds an image, both its x-axis and both y-axes keep their data
+limits exactly (no nice widening).
+
 ### 12.5 Geometry and scales
 
 * **Canvas**: the SVG is `width × height` px with a white background. An overall heading, if
   `name` is set, takes a 24 px band at the top. The rest is divided into equal grid cells; each
   panel's plot area is its cell (or span of cells) minus margins of 56 px left, 16 px right, 28 px
-  top and 44 px bottom (68 px right when it has a `twin_y` axis or a colorbar).
+  top and 44 px bottom (68 px right when it has a `twin_y` axis or a colorbar, 120 px with both).
 * **Limits**: by default the data range extended to "nice" ticks. The tick step is the smallest
   of `{1, 2, 5} × 10^k` that gives at most 7 intervals over the data range, computed by
   repeated multiplication and division by 10 (no `log10`); the limits are the multiples of the
   step that enclose the data. A zero data range is widened to ±1 (or ±|v|/10). Explicit
-  `xlim`/`ylim` replace the default.
+  `xlim`/`ylim` replace the default. An axis without finite data has the limits 0 … 1. The step
+  is the first of …, 1·10ᵏ, 2·10ᵏ, 5·10ᵏ, 1·10ᵏ⁺¹, … (k from −300 to 300) for which
+  ⌈hi/step⌉ − ⌊lo/step⌋ ≤ 7, where 10ᵏ is 10 multiplied k times for k ≥ 0 and 1 divided by 10⁻ᵏ
+  for k < 0. Explicit limits, and axes holding an image, keep their limits exactly and get the
+  ticks of that step that lie inside them; an axis whose limits admit no step with at most 7
+  intervals (magnitudes near the `f64` range) has no ticks. A zero range is widened only when the
+  widened limits are finite; otherwise the axis takes v − 1 … v + 1 when that is a non-zero range,
+  else 0 … 1.
 * **Tick labels**: the value at each tick printed with `%.{p}f`, where `p` is the number of
   decimals of the step (0 for steps ≥ 1), except that steps of 10⁶ or more, or below 10⁻⁴, use
-  `%g`.
+  `%g`. A tick value −0 is written as 0. When two adjacent tick labels of an axis would be equal,
+  the axis writes every tick with `%.{q}g`, q the smallest of 7 … 17 that makes adjacent labels
+  differ.
 * **Coordinates** are written with `%.2f`. All layout arithmetic uses only `+ − × ÷`,
   comparisons, `floor` and `ceil`, so it is class E.
-* **Legend**: a box in the requested corner, 8 px from the plot area's edges, one row of 16 px
-  per labelled series (a 20 px line or marker sample, then the label), box width = 40 px + the
-  widest label (§12.7).
+* **Legend**: a box in the requested corner, 8 px from the plot area's edges, 16 px per labelled
+  series plus 8 px high, one row of 16 px per labelled series (a 20 px line or marker sample, then
+  the label), box width = 40 px + the widest label (§12.7).
 
 ### 12.6 Contours and images
 
@@ -1955,13 +1989,19 @@ the image (`axis tight`).
   Sea's own 256-entry map, defined by linear interpolation between five anchors (`#30123b`,
   `#4686fb`, `#1ae4b6`, `#faba39`, `#7a0403`), each channel rounded with `round`. A `colorbar` is a
   vertical strip with the same map and ticks.
+* A cell corner is above a level when its value is not less than the level. The colour of level k
+  of n is the map entry ⌊256·k / (n + 1)⌋. An image cell's entry is ⌊256 (z − min) / (max − min)⌋,
+  255 for z ≥ max and 0 for z ≤ min, and 0 for every cell when max = min or max − min is not
+  finite; NaN cells are white. Without finite cells, or when max − min is not finite, a contour has
+  no level.
 
 ### 12.7 Text in figures
 
 SVG text uses `font-family="sans-serif"` and fixed sizes (heading and titles 14 px, labels
 12 px, ticks 10 px). Layout that depends on text width (legend boxes) estimates it as
 0.6 × font size per byte. No font metrics are read, so the output does not depend on installed
-fonts; a viewer's font may make text slightly narrower or wider than the estimate.
+fonts; a viewer's font may make text slightly narrower or wider than the estimate. Bytes below
+0x20 other than tab, line feed and carriage return are written as spaces.
 
 ### 12.8 Determinism and what is tested
 

@@ -1,0 +1,26 @@
+figure: tag 3 count 1 live +2
+fields:2 3 640 480 axes 0/8 series 0/8 name kept 1 name count 2
+panel: tag 4 count 1 fig 1 idx 0 fig count 2 live +3
+occupancy: 2 2 0
+record 0: kind 0 base 0 twin -1 row 0 col 1 span 2x1 cycle 0
+twin: idx 1 axes 2 fig count 3
+record 0: kind 0 base 0 twin 1 row 0 col 1 span 2x1 cycle 0
+record 1: kind 1 base 0 twin -1 row 0 col 1 span 2x1 cycle 1
+again: idx 1 of the twin: idx 1 new handles 1 axes 2 fig count 5 live +6
+two released: fig count 3 live +4 freed +2
+figure handle released: live +4 fig count 2
+twin released: live +3 name count 2
+last handle released: live +1 freed +5 name count 1
+axes 1/8
+axes 2/8
+axes 3/8
+axes 4/8
+axes 5/8
+axes 6/8
+axes 7/8
+axes 8/8
+axes 9/16
+record 7: kind 0 base 7 twin -1 row 2 col 1 span 1x1 cycle 0
+record 8: kind 0 base 8 twin -1 row 2 col 2 span 1x1 cycle 0
+occupancy: 7 7 7
+end: live +0 freed +16

@@ -4,10 +4,10 @@ acceptance program (DESIGN.md 6.2 "4h", 6.3, 8 row 4h, work package T1).
 
 Run with `timeout 120 uv run --no-project python tests/vectors/prel4h_cases.py`. It writes
 programs/prel_*, programs/heap_prel_*, errors/r_prel_* (run time), errors/err_prel_*,
-errors/err_ns_lib_figure (compile time), and accept/w5_stats.{sea,keys,wl}. Tests it used to write
-and no longer writes: errors/err_prel_named and errors/err_ns_lib_format (retired by sub-phase 6b),
-errors/err_ns_matmul (retired by sub-phase 8b) and errors/err_ns_lib_solve (retired by sub-phase 8c,
-DESIGN.md 2.13.3).
+and accept/w5_stats.{sea,keys,wl}. Tests it used to write and no longer writes:
+errors/err_prel_named and errors/err_ns_lib_format (retired by sub-phase 6b), errors/err_ns_matmul
+(retired by sub-phase 8b), errors/err_ns_lib_solve (retired by sub-phase 8c, DESIGN.md 2.13.3) and
+errors/err_ns_lib_figure (retired by sub-phase 9b, DESIGN.md 2.14.4).
 
 Every expected byte is derived here from LANGUAGE.md and DESIGN.md, never from a run of the compiler:
 
@@ -649,8 +649,8 @@ def compile_errors():
     # phase rule (call6_cases.py deletes it)
     # err_ns_lib_solve (`solve` until phase 8) was retired by sub-phase 8c: the five library names of
     # LANGUAGE.md 10.8 left the phase rule (DESIGN.md 2.13.3); tests/vectors/la8_cases.py deletes it
-    err_c('err_ns_lib_figure', ['a call of figure: its name until phase 9, at the call (DESIGN.md 2.6.2; L-z)'],
-          'let fig = figure(1, 1)\n', 'figure(', 'figure', 'not supported yet: figure')
+    # err_ns_lib_figure (`figure` until phase 9) was retired by sub-phase 9b: the 21 plotting names left
+    # the phase rule (DESIGN.md 2.14.4, L-kx); tests/vectors/plot9_cases.py deletes it
 
 
 # ============================================================ W5 acceptance (L-aa, 6.3)

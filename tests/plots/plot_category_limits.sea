@@ -1,0 +1,14 @@
+// plot_category_limits -- the limits rules in numbered order (DESIGN.md 2.14.6, the lead's reading): explicit
+// limits (rule 1) give numeric step ticks although category labels are set, category ticks arise only
+// under rule 2; axis_equal (rule 6) recomputes the changed axis with numeric explicit-limit ticks, a
+// category axis included (LANGUAGE.md 12.4, 12.5)
+let fig = figure(1, 2)
+let a = panel(fig, 0, 0)
+plot(a, [0.0, 4.0], [0.0, 1.0])
+x_ticks(a, ["p", "q", "r"])
+xlim(a, 0.5, 2.5)
+let b = panel(fig, 0, 1)
+plot(b, [0.0, 2.0], [0.0, 10.0])
+x_ticks(b, ["u", "v", "w"])
+axis_equal(b)
+save_svg(fig, "plot_category_limits.svg")

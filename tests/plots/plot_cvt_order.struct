@@ -1,0 +1,41 @@
+# plot_cvt_order.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_cvt_order.sea; DESIGN.md 2.14.8 "The .struct format")
+# x data 0.5 ... 3 (step 0.5), y data 1 ... 5 (step 1); the second line takes the first cycle
+# colour, #0072bd, since the first gave color:
+file plot_cvt_order.svg
+canvas 800 600
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 2
+count markers 1
+count xline 0
+count grid 0
+count legend 1
+count legend-line 2
+count legend-marker 1
+legend fixed
+legend dyn
+subpaths 0 1
+subpaths 1 1
+color line 0 #102030
+color line 1 #0072bd
+color markers 0 #102030
+count xtick 6
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+xtick 3.0
+count ytick 5
+ytick 1
+ytick 2
+ytick 3
+ytick 4
+ytick 5
+count ytick2 0

@@ -92,7 +92,7 @@ SEA_ASSERT (sea_chk_ph == 2),                               "R and P messages ha
 .endm
 SEA_ERROR_LIST SEA_CHK_E
 SEA_ASSERT (sea_chk_nr == SEA_E_RT_END),                    "SEA_E_RT_END is one past the last run-time code"
-SEA_ASSERT (SEA_E_USER == (SEA_E_RT_END - 1)),              "the user error is the last run-time code"
+SEA_ASSERT (SEA_E_USER == 21),                              "the user error keeps code 21 (codes are never renumbered)"
 
 // Walk the errno list: ids dense from 0; record 0 is the fallback.
 .set sea_chk_ne, 0

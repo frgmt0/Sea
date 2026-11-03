@@ -1,0 +1,10 @@
+// plot_xline -- reference lines are not data for the limits; their colours follow the series rule (cycle,
+// letter, color:); a NaN position draws an empty path (LANGUAGE.md 12.3, 12.4; L-kh, L-kj)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+plot(ax, [0.0, 1.0], [0.0, 2.0])
+xline(ax, 5.0)
+xline(ax, nan, style: "r:")
+xline(ax, 0.5, style: "-", color: "#ABCDEF")
+xline(ax, -inf)
+save_svg(fig, "plot_xline.svg")

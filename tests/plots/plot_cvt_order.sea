@@ -1,0 +1,13 @@
+// plot_cvt_order -- i64 arrays for f64[] parameters in plotting calls whose options are given out of
+// order: the fixed-size i64[3] x and the dynamic i64[] y are converted element by element (LANGUAGE.md
+// 4.2 (c)) and bound in source order with the other arguments (L-cp); before 9b such a reordered call
+// with a converted array argument crashed sealoop ("bad record", seacheck's cty; a pre-existing defect
+// fixed in 9b, the user-function form is programs/call6_named_cvt_*)
+let k: i64[3] = [1, 2, 3]
+let m: i64[] = [3, 1, 2]
+let fig = figure(1, 1, height: 600, width: 800)
+let a = panel(fig, 0, 0)
+plot(a, k, [2.0, 4.0, 5.0], color: "#102030", width: 2.0, label: "fixed", style: "o-")
+plot(a, [0.5, 1.5, 2.5], m, label: "dyn", style: "--")
+legend(a, loc: "south")
+save_svg(fig, "plot_cvt_order.svg")

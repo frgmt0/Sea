@@ -1,0 +1,5 @@
+// r_plot_legend -- legend(ax, loc: "middle"): not a compass name or best (LANGUAGE.md 12.4; LEGEND_LOC)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+legend(ax, loc: "middle")

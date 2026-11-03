@@ -1,0 +1,1 @@
+err_plot_kind.sea:6:1: error: no overload of 'plot' accepts (Figure, f64[], f64[])

@@ -1,0 +1,7 @@
+// r_plot_width_inf -- plot with an infinite width (LANGUAGE.md 12.3; PLOT_WIDTH: not finite)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let y = [2.0, 3.0]
+plot(ax, x, y, width: inf)

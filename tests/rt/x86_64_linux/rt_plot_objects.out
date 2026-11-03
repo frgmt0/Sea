@@ -1,0 +1,22 @@
+figure: live 1 freed 0 rc 1 tag 3 nrows 2 ncols 3 w 640 h 480 name 1 namerc 2 nax 0 axcap 8 nsr 0 srcap 8 zero 0
+panel A: live 2 freed 0 rc 1 tag 4 fig 1 idx 0 | kind 0 base 0 twin -1 row 0 col 1 rs 2 cs 2 cyc 0 figrc 2 nax 1 occ0 6 occ1 6
+panel B: idx 1 kind 0 base 1 twin -1 row 1 col 0 rs 1 cs 1 occ0 6 occ1 7 nax 2 figrc 3 live 3 freed 0
+twin T: idx 2 kind 1 base 0 twin -1 row 0 col 1 rs 2 cs 2 cyc 1 Atwin 2 nax 3 figrc 4 live 4 freed 0
+twin again: T2idx 2 T3idx 2 nax 3 figrc 6 live 6 freed 0
+plot 0: kind 1 ax 0 color FF0000 line 2 mark 1 width 4000000000000000 label 1 S2rc 2 n 3 data 1 2 3 4 5 6 Acyc 0 nsr 1
+plot 1: color 0072BD line 0 mark 1 label 0 Acyc 1
+plot 2: color ABCDEF line 3 mark 0 Acyc 1
+plot 3: ax 2 color D95319 line 4 Tcyc 2
+xline 4: kind 2 ax 1 color 0072BD line 2 mark 0 xpos 3FE0000000000000 n 0 data 0 | xline 5: color 000000 line 1 Bcyc 1
+plot 6: color 00A000 line 1 mark 0 n 0 data 0
+grow: nsr 10 srcap 16 s0 n 3 data 1 2 3 4 5 6 s9 color 7E2F8E mark 8 Bcyc 4
+wrap: s10 77AC30 s11 4DBEEE s12 A2142F s13 0072BD Bcyc 8 nsr 14
+strings: Axlab 1 Atitle 1 Aylab 0 Tylab 1 Txlab 0 Ttitle 0 Bylab 1 S3rc 3 S4rc 3
+legend: southwest 8 best 5 T 0
+grid: on 1 off 0 on 1
+flags: A 15 xlo BFF0000000000000 xhi 4000000000000000 ylo 0000000000000000 yhi 0000000000000000 T 18 Tylo 0000000000000000 Tyhi 4014000000000000 Txlo 0000000000000000 B 0
+ticks: Anx 2 Any 0 A0 1 A1 1 Bny 2 Tny 0 Tnx 0 S5rc 3 S6rc 3
+none: Axcat 0 Anx 0 S5rc 2 S6rc 2
+release fig: live 6 freed 0 figrc 5
+release A B T T2: live 2 freed 4 figrc 1
+release T3: live 0 freed 6 S1 1 S2 1 S3 1 S4 1 S5 1 S6 1

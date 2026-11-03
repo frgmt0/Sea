@@ -1,0 +1,5 @@
+// r_plot_order_plot -- plot with a length mismatch and a bad style reports the shape (parameter order, L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+plot(ax, zeros(3), zeros(2), style: "?")

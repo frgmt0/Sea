@@ -1,0 +1,7 @@
+// r_plot_shape -- plot of a 5-vector against a 4-vector: the two shapes in argument order (LANGUAGE.md 12.3; SHAPE_MISMATCH)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = zeros(5)
+let y = zeros(4)
+plot(ax, x, y)

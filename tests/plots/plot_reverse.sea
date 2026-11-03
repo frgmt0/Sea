@@ -1,0 +1,13 @@
+// plot_reverse -- y_reverse turns the axis downward and keeps its ticks and texts; on a twin it acts on the
+// twin's y-axis only; set twice it stays on (LANGUAGE.md 12.4; L-km)
+let fig = figure(1, 2)
+let a = panel(fig, 0, 0)
+plot(a, [0.0, 1.0, 2.0], [3.0, 1.0, 2.0])
+y_reverse(a)
+y_reverse(a)
+let b = panel(fig, 0, 1)
+plot(b, [0.0, 1.0], [0.0, 1.0])
+let t = twin_y(b)
+plot(t, [0.0, 1.0], [10.0, 30.0])
+y_reverse(t)
+save_svg(fig, "plot_reverse.svg")

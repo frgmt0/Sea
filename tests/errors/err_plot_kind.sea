@@ -1,0 +1,6 @@
+// err_plot_kind -- a Figure where Axes is taken: 243 (DESIGN.md 2.14.4: handle parameters take exactly their type)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = zeros(3)
+let y = zeros(3)
+plot(fig, x, y)

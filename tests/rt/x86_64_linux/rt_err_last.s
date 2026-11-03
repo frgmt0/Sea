@@ -1,4 +1,4 @@
-# sea/tests/rt/x86_64_linux/rt_err_last.s -- the last run-time code, SEA_E_RT_END-1 (21)
+# sea/tests/rt/x86_64_linux/rt_err_last.s -- run-time code 21 (USER, "%s"), the last code before phase 9 (SEA_E_RT_END is now 30; codes 22-27 and 29 are tested by rt_plot_err_*)
 .include "errors.inc"
 .include "rt.inc"
 

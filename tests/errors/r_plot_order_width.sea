@@ -1,0 +1,7 @@
+// r_plot_order_width -- plot with a bad width and colour reports the width (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let y = [2.0, 3.0]
+plot(ax, x, y, color: "#zz0000", width: -1)

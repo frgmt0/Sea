@@ -190,7 +190,21 @@ after phase 8 passes every program with no relief, DESIGN.md §2.7 "Measured at 
 2026-11-02 after one independent review: Decisions 131–142, each the recommended option (133 (b),
 the others (a)), lead decisions L-ke–L-lf; DESIGN.md §2.14, §8 rows 9a–9d, §9): the `Figure`/`Axes`
 objects, the 21 plotting calls as runtime entries 62–82, the SVG writer, contours, embedded PNG
-images, the six ports' figures. **Next:** 9b (WP-CONTRACT first and alone, DESIGN.md §2.14.10).
+images, the six ports' figures. **9b is done** (2026-11-03: WP-CONTRACT's `rt.inc` entries 62–82,
+`errors.inc` codes 22–29 and the two plot limits; the 21 plotting calls and the handle types
+`Figure`/`Axes` through `seaname`, `seacheck` (the new part `sc9plot.bas`: options, defaults,
+overloads, the written form), `sealoop` (R36) and `sealower` (rule 39's 21 rows), the phase rule
+gone (259 unreachable); `rt_plot.s` (objects, layout, limits and ticks, the SVG writer of lines,
+markers, reference lines, legends and twins; 3 656 lines on arm64, 3 618 on x86_64),
+`_sea_fmt_num`, `_sea_file_put` and `sea_free`'s `Figure`/`Axes` branches in both runtimes; a
+pre-existing `cty` defect fixed; 26 `tests/plots/` programs checked by `tests/plots.sh` and
+`tests/plot_struct.py` (`make test-plots`, needs `uv`) and byte-identical in the cross case kind
+`plots/`, 34 `r_plot_*` and 12 `err_plot_*` errors, `plot9_*` dumps, rt 229 cases on arm64 and 211
+on x86_64; `make test` passes (stage 1 331, programs 2 425, plots 26, accept 2 + 6) and `make cross`
+passes 1 194 cases (default 978, `sse2` 978, once-only 214; host 2 170 passed, 0 failed, 4
+deferred; Mac 4 passed, 0 failed); lead decisions L-lg–L-lq; measured: `seacheck` 7 335 built lines, `sealoop` 6 715,
+`sealower` 6 885, no relief, DESIGN.md §2.7 "Measured after 9b"). **Next:** 9c (bars, contours,
+images, PNG; DESIGN.md §2.14.10).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -224,7 +238,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders,
   MATMUL on exact data, and LU, CHOL, the solves, RCOND and EIG (DESIGN.md §2.13.8) under every
   usable variant, with the header `tests/la/gen_consts.sh` writes;
-  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
+  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-plots` (`sh tests/plots.sh [-v] [pattern]`: the `tests/plots/` programs run under the heap check, then `tests/plot_struct.py` on each `NAME.struct`; needs `uv`; DESIGN.md §2.14.8), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.

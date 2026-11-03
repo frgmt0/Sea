@@ -1,0 +1,63 @@
+# plot_ticks_tiny.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_ticks_tiny.sea; DESIGN.md 2.14.8 "The .struct format")
+# steps < 1e-4 use %g
+file plot_ticks_tiny.svg
+canvas 960 480
+heading -
+panels 2
+panel 0
+title tiny
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 8
+xtick 0
+xtick 5e-06
+xtick 1e-05
+xtick 1.5e-05
+xtick 2e-05
+xtick 2.5e-05
+xtick 3e-05
+xtick 3.5e-05
+count ytick 5
+ytick 0.0002
+ytick 0.0003
+ytick 0.0004
+ytick 0.0005
+ytick 0.0006
+count ytick2 0
+panel 1
+title offset tiny
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.49999
+xtick 0.5
+xtick 0.50001
+xtick 0.50002
+xtick 0.50003
+xtick 0.50004
+count ytick 7
+ytick -1.5e-05
+ytick -1e-05
+ytick -5e-06
+ytick 0
+ytick 5e-06
+ytick 1e-05
+ytick 1.5e-05
+count ytick2 0

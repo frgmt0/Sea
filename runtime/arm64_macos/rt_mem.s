@@ -28,8 +28,9 @@
 //       contents of the block are unspecified (a recycled block is not
 //       clean). The live counter is not touched: the object
 //       constructors (rt_arr.s, rt_str.s, rt_args.s, rt_fmt.s, and
-//       rt_lu.s's sea_lu and sea_chol for the handles) count the objects
-//       they make, and _sea_free uncounts them.
+//       rt_lu.s's sea_lu and sea_chol, rt_plot.s's sea_figure, sea_panel
+//       and sea_twin_y for the handles) count the objects they make, and
+//       _sea_free uncounts them.
 //   _sea_free_block (x0 = block, x1 = the request b it was allocated
 //               with, or any b of the same class) -> nothing
 //   _sea_retain (x0 = object or 0)    clobbers x9 only
@@ -73,6 +74,32 @@
 .equ RT_MEM_H_F,        64          /* bytes before the factor */
 .if (RT_MEM_H_N != SEA_OBJ_HDR) || (RT_MEM_H_F != (SEA_OBJ_HDR + 48))
     .error "rt_mem: the handle layout is SEA_OBJ_HDR + 48 bytes of fields"
+.endif
+// The Figure and Axes objects' private layouts (DESIGN.md 2.14.6
+// "Objects", "Freeing", "Block sizes"; L-kw: the same offsets as
+// rt_plot.s's RTP_* equates and the tests' readings).
+.equ RT_MEM_F_NAME,     48          /* ptr  the name, a retained str */
+.equ RT_MEM_F_NAX,      56          /* u64  axes records */
+.equ RT_MEM_F_AXCAP,    64          /* u64  their capacity */
+.equ RT_MEM_F_AXT,      72          /* ptr  the axes table (256-byte records) */
+.equ RT_MEM_F_NSR,      80          /* u64  series records */
+.equ RT_MEM_F_SRCAP,    88          /* u64  their capacity */
+.equ RT_MEM_F_SRT,      96          /* ptr  the series table (128-byte records) */
+.equ RT_MEM_F_SIZE,     704         /* the Figure block */
+.equ RT_MEM_A_FIG,      16          /* ptr  an Axes' figure (counted) */
+.equ RT_MEM_A_SIZE,     32          /* the Axes block */
+.equ RT_MEM_AX_SIZE,    256         /* an axes record */
+.equ RT_MEM_AX_TITLE,   56          /* str title, x label, y label at 56, 64, 72 */
+.equ RT_MEM_AX_XCAT,    128         /* ptr x category labels, count at 136 */
+.equ RT_MEM_AX_YCAT,    144         /* ptr y category labels, count at 152 */
+.equ RT_MEM_SR_SIZE,    128         /* a series record */
+.equ RT_MEM_SR_KIND,    0           /* 1 line, 2 xline, 3 bar, 4 barh, 5 contour, 6 image */
+.equ RT_MEM_SR_LABEL,   48          /* str  the label, or 0 */
+.equ RT_MEM_SR_N,       56          /* u64  n */
+.equ RT_MEM_SR_M,       64          /* u64  m */
+.equ RT_MEM_SR_DATA,    72          /* ptr  the data block, or 0 */
+.if RT_MEM_F_NAME != (SEA_OBJ_HDR + 32)
+    .error "rt_mem: the Figure layout follows SEA_OBJ_HDR"
 .endif
 
     .section __TEXT,__text,regular,pure_instructions
@@ -304,17 +331,26 @@ _sea_release:
 //             (SEA_ARR_SIZE + cap * esize bytes) is freed. A string's
 //             block (SEA_STR_BYTES + length) is freed. An Lu or Chol
 //             handle (L-is) holds no reference: its block (RT_MEM_H_F +
-//             8 n^2 bytes, + 4 n for an Lu's pivots) is freed. The live
+//             8 n^2 bytes, + 4 n for an Lu's pivots) is freed. An Axes
+//             (L-lb) releases its figure through _sea_release (which
+//             frees the figure at 0), then its 32-byte block is freed. A
+//             Figure releases its name and every string it retained
+//             (each axes record's title, x label, y label and category
+//             labels, each series' label), frees every uncounted block
+//             it owns by its exact size (DESIGN.md 2.14.6 "Block
+//             sizes": each series' data block, the category label
+//             blocks, both tables), then its 704-byte block. The live
 //             counter drops by one and the freed counter rises by one.
-//             Figure and Axes objects (phase 9) are not created yet, so
-//             any other tag is a corrupted object and traps (brk) rather
-//             than freeing memory of unknown size.
+//             Any other tag is a corrupted object and traps (brk)
+//             rather than freeing memory of unknown size.
 //   Inputs  : x0 = the object (count 0 just reached; never static)
 //   Outputs : none
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags
 //   Callee-saved used: x19 = object, x20 = element cursor, x21 = elements
 //             left, x22 = descriptor, x23 = element size, x24 = number of
-//             reference fields, x25 = field index
+//             reference fields, x25 = field index; for a Figure x20 =
+//             record, x21 = records left, x22 = x or y labels, x23 =
+//             label cursor, x24 = labels left, x25 = their count
 //   Frame   : 80 bytes (frame record + x19..x25, pad)
 // ---------------------------------------------------------------------
     .globl _sea_free
@@ -334,6 +370,10 @@ _sea_free:
     b.eq Lrt_mem_free_handle
     cmp w9, #SEA_TAG_CHOL
     b.eq Lrt_mem_free_handle
+    cmp w9, #SEA_TAG_AXES
+    b.eq Lrt_mem_free_axes
+    cmp w9, #SEA_TAG_FIGURE
+    b.eq Lrt_mem_free_fig
     cmp w9, #SEA_TAG_ARRAY
     b.ne Lrt_mem_free_badtag
 
@@ -390,6 +430,92 @@ Lrt_mem_free_handle:
     add x1, x1, x10, lsl #2         // and the pivots
 1:  add x1, x1, #RT_MEM_H_F
     mov x0, x19
+    bl _sea_free_block
+    b Lrt_mem_free_count
+Lrt_mem_free_axes:
+    // An Axes: release its figure (freed at 0), then its block.
+    ldr x0, [x19, #RT_MEM_A_FIG]
+    bl _sea_release
+    mov x0, x19
+    mov x1, #RT_MEM_A_SIZE
+    bl _sea_free_block
+    b Lrt_mem_free_count
+Lrt_mem_free_fig:
+    // A Figure: the name, then each axes record's strings and category
+    // label blocks (x20 = record, x21 = records left, x22 = 0 for x, 16
+    // for y, x23 = label cursor, x24 = labels left).
+    ldr x0, [x19, #RT_MEM_F_NAME]
+    bl _sea_release
+    ldr x20, [x19, #RT_MEM_F_AXT]
+    ldr x21, [x19, #RT_MEM_F_NAX]
+Lrt_mem_fig_ax:
+    cbz x21, Lrt_mem_fig_series
+    ldr x0, [x20, #RT_MEM_AX_TITLE]
+    bl _sea_release
+    ldr x0, [x20, #(RT_MEM_AX_TITLE + 8)]   // the x label
+    bl _sea_release
+    ldr x0, [x20, #(RT_MEM_AX_TITLE + 16)]  // the y label
+    bl _sea_release
+    mov x22, #0                     // the x labels, then the y labels
+1:  add x9, x20, x22
+    ldr x23, [x9, #RT_MEM_AX_XCAT]  // the block (0 when there is none)
+    ldr x24, [x9, #(RT_MEM_AX_XCAT + 8)]
+    cbz x23, 3f
+    mov x25, x24                    // its size is 8 x the count
+2:  cbz x24, 21f
+    ldr x0, [x23], #8               // release each label
+    bl _sea_release
+    sub x24, x24, #1
+    b 2b
+21: add x9, x20, x22
+    ldr x0, [x9, #RT_MEM_AX_XCAT]
+    lsl x1, x25, #3
+    bl _sea_free_block
+3:  add x22, x22, #(RT_MEM_AX_YCAT - RT_MEM_AX_XCAT)
+    cmp x22, #(RT_MEM_AX_YCAT - RT_MEM_AX_XCAT)
+    b.ls 1b
+    add x20, x20, #RT_MEM_AX_SIZE   // the next record
+    sub x21, x21, #1
+    b Lrt_mem_fig_ax
+Lrt_mem_fig_series:
+    // Each series: its label, then its data block by its exact size:
+    // 16 n (line, bar), 8 n (barh), 8 (n + m + n m) (contour, image),
+    // none for an xline or when the size is 0 (pointer 0).
+    ldr x20, [x19, #RT_MEM_F_SRT]
+    ldr x21, [x19, #RT_MEM_F_NSR]
+Lrt_mem_fig_sr:
+    cbz x21, Lrt_mem_fig_tables
+    ldr x0, [x20, #RT_MEM_SR_LABEL]
+    bl _sea_release
+    ldr x0, [x20, #RT_MEM_SR_DATA]
+    cbz x0, 4f                      // no block
+    ldr x9, [x20, #RT_MEM_SR_KIND]
+    ldr x10, [x20, #RT_MEM_SR_N]
+    lsl x1, x10, #4                 // 16 n
+    cmp x9, #3
+    b.ls 3f                         // line (1), bar (3)
+    lsl x1, x10, #3                 // 8 n
+    cmp x9, #4
+    b.eq 3f                         // barh
+    ldr x11, [x20, #RT_MEM_SR_M]    // contour, image: 8 (n + m + n m)
+    madd x12, x10, x11, x10
+    add x12, x12, x11
+    lsl x1, x12, #3
+3:  bl _sea_free_block
+4:  add x20, x20, #RT_MEM_SR_SIZE
+    sub x21, x21, #1
+    b Lrt_mem_fig_sr
+Lrt_mem_fig_tables:
+    ldr x0, [x19, #RT_MEM_F_AXT]    // the axes table: 256 x its capacity
+    ldr x9, [x19, #RT_MEM_F_AXCAP]
+    lsl x1, x9, #8
+    bl _sea_free_block
+    ldr x0, [x19, #RT_MEM_F_SRT]    // the series table: 128 x its capacity
+    ldr x9, [x19, #RT_MEM_F_SRCAP]
+    lsl x1, x9, #7
+    bl _sea_free_block
+    mov x0, x19
+    mov x1, #RT_MEM_F_SIZE
     bl _sea_free_block
     b Lrt_mem_free_count
 Lrt_mem_free_str:

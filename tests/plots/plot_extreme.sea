@@ -1,0 +1,12 @@
+// plot_extreme -- data and explicit limits near +-1.7e308: an axis that admits no step has no ticks; NaN, +-Inf
+// and huge coordinates are clamped (no number overflows the file); a zero range at 1.7e308 widens to v +- 1,
+// which rounds to v, and so takes 0 ... 1 (DESIGN.md 2.14.6 rules 4-5, "Mapping"; L-kk, L-kl)
+let fig = figure(3, 1)
+let a = panel(fig, 0, 0)
+plot(a, [-1.7e+308, 1.7e+308], [0.0, 1.0], style: "-o")
+let b = panel(fig, 1, 0)
+plot(b, [0.0, 1.0, 2.0], [nan, inf, -inf], style: "-+")
+xlim(b, -1.7e+308, 1.7e+308)
+let c = panel(fig, 2, 0)
+plot(c, [1.7e+308, 1.7e+308], [1.7e+308, -1.7e+308], style: "s")
+save_svg(fig, "plot_extreme.svg")

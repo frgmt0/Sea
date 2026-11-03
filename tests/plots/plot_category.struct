@@ -1,0 +1,77 @@
+# plot_category.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_category.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_category.svg
+canvas 960 720
+heading -
+panels 3
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count xtick 3
+xtick low
+xtick mid
+xtick high
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 2
+ytick A & B
+ytick C
+count ytick2 0
+panel 2
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick 0
+xtick 1
+xtick 2
+xtick 3
+xtick 4
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0

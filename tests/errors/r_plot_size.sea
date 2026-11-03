@@ -1,0 +1,3 @@
+// r_plot_size -- figure with width 0: invalid figure size 0x720 (LANGUAGE.md 12.2; FIGURE_SIZE)
+printf("start\n")
+let fig = figure(1, 1, width: 0)

@@ -1,0 +1,13 @@
+let fig = figurf(1, 1)
+let ax = panex(fig, 0, 0)
+let x: f64[] = [1.0, 2.0, 3.0]
+plof(ax, 2.0 * x + 1.0, x, label: "fit")
+plof(ax, x[0..2], [4.0, 5.0], style: "o")
+x_tickz(ax, ["a", "b"])
+save_svh(fig, "h.svg")
+printf("%g\n", x[2])
+fn figurf(nrows: i64, ncols: i64, name: str = "", width: i64 = 960, height: i64 = 720) -> Lu { return figurf(nrows, ncols) }
+fn panex(fig: Lu, row: i64, col: i64, rowspan: i64 = 1, colspan: i64 = 1) -> Chol { return panex(fig, row, col) }
+fn plof(ax: Chol, x: f64[], y: f64[], style: str = "-", label: str = "", width: f64 = 1.0, color: str = "") { plof(ax, x, y) }
+fn x_tickz(ax: Chol, labels: str[]) { x_tickz(ax, labels) }
+fn save_svh(fig: Lu, path: str) { save_svh(fig, path) }

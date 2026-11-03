@@ -1,0 +1,4 @@
+// err_plot_eq -- handles cannot be compared: 240 at the left operand (LANGUAGE.md 4.1)
+let f = figure(1, 1)
+let g = f
+let same = f == g

@@ -1,0 +1,36 @@
+# plot_xline.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_xline.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_xline.svg
+canvas 960 720
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 4
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+color xline 0 #d95319
+color xline 1 #ff0000
+color xline 2 #abcdef
+color xline 3 #edb120
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+ytick 2.0
+count ytick2 0

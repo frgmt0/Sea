@@ -1,0 +1,5 @@
+// r_plot_limits_inf -- xlim(ax, -inf, 0): limits must be finite (LANGUAGE.md 12.4)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+xlim(ax, -inf, 0)

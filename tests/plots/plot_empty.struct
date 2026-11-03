@@ -1,0 +1,65 @@
+# plot_empty.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_empty.sea; DESIGN.md 2.14.8 "The .struct format")
+file nopanel.svg
+canvas 960 720
+heading -
+panels 0
+file empty.svg
+canvas 960 720
+heading -
+panels 2
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+legend none
+subpaths 0 0
+color line 0 #0072bd
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0

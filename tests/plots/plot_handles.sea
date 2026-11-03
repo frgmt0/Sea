@@ -1,0 +1,26 @@
+// plot_handles -- handles in a struct field, passed and returned; every Axes value is dropped (decorate's
+// locals) before save_svg and the drawing stays (L-ke); a figure kept alive by an Axes value only; the heap
+// check finds no live object (LANGUAGE.md 4.1, 12.1; DESIGN.md 2.14.8 "The heap check with handles")
+struct Slot {
+    ax: Axes
+    k: i64
+}
+fn draw(a: Axes, y: f64[]) -> Axes {
+    plot(a, [0.0, 1.0], y)
+    return a
+}
+fn lone() -> Axes {
+    let f = figure(1, 1, name: "orphan")
+    return panel(f, 0, 0)
+}
+fn decorate(fig: Figure) {
+    plot(panel(fig, 0, 0), [0.0, 1.0], [1.0, 2.0])
+    let s = Slot { ax: panel(fig, 0, 1), k: 1 }
+    let a2 = draw(s.ax, [3.0, 4.0])
+    title(a2, "kept")
+}
+let fig = figure(1, 2, name: "handles")
+decorate(fig)
+let o = lone()
+plot(o, [0.0, 1.0], [0.0, 1.0])
+save_svg(fig, "plot_handles.svg")

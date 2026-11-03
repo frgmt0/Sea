@@ -1,0 +1,6 @@
+// err_plot_missing -- a missing positional argument: 243 (DESIGN.md 2.14.4: plot(ax, x))
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = zeros(3)
+let y = zeros(3)
+plot(ax, x)

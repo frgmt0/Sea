@@ -1,0 +1,5 @@
+// r_plot_limits_nan -- ylim with a NaN low limit: %g writes NaN (LANGUAGE.md 12.4, 9.2)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+ylim(ax, nan, 1)

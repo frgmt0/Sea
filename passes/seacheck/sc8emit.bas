@@ -267,7 +267,8 @@
 15715 REM writing jumps past node -M(J,8): a powk exponent, the literal 2^63 under neg, or the callee
 15720 REM of printf (whose arguments are written between the format pieces, em_printf), or the value of a
 15722 REM dim: option (narg -M(J,8), written as one ci of the value M(narg,5); DESIGN 3.5.5), or the
-15723 REM callee of a Sea function called with a named or an omitted argument (em_uarg, then the call) --
+15723 REM callee of a Sea function called with a named or an omitted argument (em_uarg, then the call), or of
+15724 REM a plotting call (M(call,9) >= 10: em_plot writes it whole, sc9plot) --
 15725 SUB "em_expr": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), E
 15730 LET J = M(E, 0)
 15735 IF J > E THEN 15800
@@ -281,12 +282,15 @@
 15748 CALL "pos": N(), N(G, 7), P$
 15749 CALL "wr": X(), "ci " & P$ & " 3 " & STR$(M(G, 5))
 15750 IF N(G, 0) <> 35 THEN 15760
-15751 IF M(N(G, 7), 2) < 1 THEN 15755
+15751 IF M(N(G, 7), 2) < 1 THEN 15758
 15752 CALL "em_uarg": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 15753 CALL "em_node": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 15754 GOTO 15756
 15755 CALL "em_printf": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 15756 CALL "embd": N(), M(), X(), G
+15757 GOTO 15760
+15758 IF M(G, 9) < 10 THEN 15755
+15759 CALL "em_plot": N(), M(), Y(), T(), W(), C(), S$(), X(), X$(), G
 15760 LET J = G + 1
 15765 GOTO 15735
 15770 IF N(J, 0) <> 30 THEN 15785

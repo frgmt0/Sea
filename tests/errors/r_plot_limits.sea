@@ -1,0 +1,5 @@
+// r_plot_limits -- xlim(ax, 1, 1): lo must be below hi (LANGUAGE.md 12.4; AXIS_LIMITS)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+xlim(ax, 1, 1)

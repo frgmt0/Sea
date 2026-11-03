@@ -1,0 +1,109 @@
+#sea 1
+#target arm64-macos
+#file plot9_check.sea
+tvec 10 4
+tvec 11 3
+tvec 12 5
+tfvec 13 4 2
+fn 1 .main main 1 0 0 0:1:1
+block 0:1:1 0
+end
+fn 2 g inl 6 4 7 0:1:1
+par ax 7 val
+par x 10 val
+par k 11 val
+par s 12 val
+loc fig 6 let 0:2:9
+loc p 7 let 0:3:9
+loc tw 7 let 0:4:9
+loc .t1 7 let 0:5:10
+loc .t2 10 let 0:5:14
+loc .t3 10 let 0:5:17
+loc .t4 5 let 0:5:27
+ci 0:2:22 3 2
+ci 0:2:25 3 3
+cs 0:2:47 5 h
+ci 0:2:15 3 960
+ci 0:2:36 3 600
+lib 0:2:15 6 figure 5
+seq 0:2:15 6 0
+bind 0:2:5 5
+lv 0:3:25 6 5
+ci 0:3:30 3 1
+ci 0:3:33 3 0
+ci 0:3:19 3 1
+ci 0:3:45 3 2
+lib 0:3:19 7 panel 5
+bind 0:3:5 6
+lv 0:4:21 7 6
+lib 0:4:14 7 twin_y 1
+bind 0:4:5 7
+lv 0:5:10 7 1
+bind 0:5:10 8
+lv 0:5:14 10 2
+bind 0:5:14 9
+lv 0:5:17 10 2
+bind 0:5:17 10
+lv 0:5:27 12 4
+ci 0:5:29 3 0
+idx 0:5:27 5 1
+bind 0:5:27 11
+lv 0:5:10 7 8
+lv 0:5:14 10 9
+lv 0:5:17 10 10
+cs 0:5:40 5 o
+lv 0:5:27 5 11
+cf 0:5:5 4 #3FF0000000000000
+cs 0:5:5 5 %
+lib 0:5:5 1 plot 7
+seq 0:5:5 1 4
+eval 0:5:5
+lv 0:6:10 7 6
+lv 0:6:13 11 3
+cvt 0:6:13 10
+cf 0:6:17 4 #3FF0000000000000
+cf 0:6:22 4 #4000000000000000
+row 0:6:17 13 2
+arr 0:6:16 13 1
+dyn 0:6:5 10
+cs 0:6:5 5 -
+cs 0:6:5 5 %
+cf 0:6:5 4 #3FF0000000000000
+cs 0:6:5 5 %
+lib 0:6:5 1 plot 7
+eval 0:6:5
+lv 0:7:11 7 7
+cf 0:7:15 4 #3FF0000000000000
+cs 0:7:5 5 --
+cs 0:7:25 5 #00ff00
+lib 0:7:5 1 xline 4
+eval 0:7:5
+lv 0:8:10 7 1
+cf 0:8:14 4 #0000000000000000
+cf 0:8:17 4 #4004000000000000
+lib 0:8:5 1 xlim 3
+eval 0:8:5
+lv 0:9:10 7 1
+cb 0:9:5 2 1
+lib 0:9:5 1 grid 2
+eval 0:9:5
+lv 0:10:12 7 6
+cs 0:10:20 5 best
+lib 0:10:5 1 legend 2
+eval 0:10:5
+lv 0:11:13 7 1
+lv 0:11:17 12 4
+lib 0:11:5 1 x_ticks 2
+eval 0:11:5
+lv 0:12:15 7 7
+lib 0:12:5 1 y_reverse 1
+eval 0:12:5
+lv 0:13:14 6 5
+cs 0:13:19 5 g.svg
+lib 0:13:5 1 save_svg 2
+eval 0:13:5
+lv 0:14:12 6 5
+ret 0:14:5 1
+block 0:1:56 13
+end
+#end

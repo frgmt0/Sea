@@ -1,0 +1,29 @@
+s0: kind 1 ax 0 colour 0072bd line 1 mark 0 width 3ff0000000000000 label [7] n 2 data 1
+s1: kind 1 ax 0 colour d95319 line 2 mark 0 width 4004000000000000 label - n 2 data 1
+s2: kind 1 ax 0 colour ff00aa line 3 mark 0 width 3ff0000000000000 label - n 2 data 1
+s3: kind 1 ax 0 colour edb120 line 4 mark 0 width 3ff0000000000000 label - n 2 data 1
+s4: kind 1 ax 0 colour 7e2f8e line 0 mark 1 width 3ff0000000000000 label - n 2 data 1
+s5: kind 1 ax 0 colour 77ac30 line 1 mark 2 width 3ff0000000000000 label - n 2 data 1
+s6: kind 1 ax 0 colour 4dbeee line 3 mark 3 width 3ff0000000000000 label - n 2 data 1
+s7: kind 1 ax 0 colour ff0000 line 0 mark 4 width 3ff0000000000000 label - n 2 data 1
+s8: kind 1 ax 0 colour a2142f line 0 mark 5 width 3ff0000000000000 label - n 2 data 1
+s9: kind 1 ax 0 colour 0072bd line 0 mark 6 width 3ff0000000000000 label - n 2 data 1
+s10: kind 1 ax 0 colour 00a000 line 0 mark 7 width 3ff0000000000000 label - n 2 data 1
+s11: kind 1 ax 0 colour 0000ff line 0 mark 8 width 3ff0000000000000 label - n 2 data 1
+s12: kind 1 ax 0 colour 00bfbf line 0 mark 9 width 3ff0000000000000 label - n 2 data 1
+s13: kind 1 ax 0 colour d95319 line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s14: kind 1 ax 0 colour 00a000 line 2 mark 1 width 3ff0000000000000 label - n 2 data 1
+s15: kind 1 ax 0 colour edb120 line 4 mark 9 width 3ff0000000000000 label - n 2 data 1
+s16: kind 1 ax 0 colour bf00bf line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s17: kind 1 ax 0 colour bfbf00 line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s18: kind 1 ax 0 colour 000000 line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s19: kind 1 ax 0 colour 000001 line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s20: kind 1 ax 1 colour d95319 line 1 mark 0 width 3ff0000000000000 label - n 2 data 1
+s21: kind 2 ax 1 colour edb120 line 2 mark 0 width 3ff0000000000000 label - n 0 data 0
+s22: kind 2 ax 0 colour 7e2f8e line 1 mark 0 width 3ff0000000000000 label - n 0 data 0
+s23: kind 1 ax 0 colour 77ac30 line 1 mark 0 width 3ff0000000000000 label [e] n 0 data 0
+series 24/32
+s0 data 3ff0000000000000 4000000000000000 3ff0000000000000 4000000000000000 a copy 1 argument count 1 label count 2
+xline positions 4012000000000000 c000000000000000
+cycles: base 12 twin 3
+after the figure: label count 1

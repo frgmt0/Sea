@@ -1,0 +1,9 @@
+// plot_heading -- the 24 px heading band with a name holding & < > " (escaped in the file, read back
+// unescaped), a non-default canvas; a second figure without a name has no heading (LANGUAGE.md 12.2, 12.5, 12.8)
+let f1 = figure(1, 1, name: "Q & A <1> \"x\"", width: 640, height: 480)
+let a1 = panel(f1, 0, 0)
+plot(a1, [0.0, 1.0], [0.0, 1.0])
+save_svg(f1, "named.svg")
+let f2 = figure(1, 1, width: 320, height: 240)
+let a2 = panel(f2, 0, 0)
+save_svg(f2, "plain.svg")

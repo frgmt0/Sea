@@ -107,7 +107,9 @@ the user's agreement. Phase 0 (§8) did:
    decisions L-jw–L-kd of §9): **phase 8 is complete**; **phase 9** (plotting, §8 row 9) has
    started: sub-phase 9a is **done** (2026-11-02; revised after one independent review and agreed:
    §2.14, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions
-   L-ke–L-lf of §9); next is 9b (WP-CONTRACT first and alone, §2.14.10).
+   L-ke–L-lf of §9); sub-phase 9b (the contract, the front end and the runtime core) is **done**
+   (2026-11-03; §2.7 "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq of
+   §9); next is 9c (bars, contours, images and PNG, §2.14.10).
    Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -549,7 +551,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Next: 9b (WP-CONTRACT first and alone, §2.14.10).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Next: 9c (bars, contours, images and PNG, §2.14.10).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -1010,6 +1012,8 @@ files by absolute path for the same reason).
 | `SEA_CHUNK_BYTES` | 1048576 | chunk refilling the small-block free lists (1 MiB) | §4.1 |
 | `SEA_LCACHE_PER_CLASS` | 8 | cached free large blocks per power-of-two size class | §4.1 |
 | `SEA_LCACHE_MAX_BYTES` | 268435456 | cached free large blocks in all (256 MiB) | §4.1 |
+| `SEA_LIM_PLOT_GRID` | 64 | largest `nrows` and `ncols` of `figure` (`invalid figure grid`); the occupancy map is 64 words | LANGUAGE.md §12.2; §2.14.7 |
+| `SEA_LIM_PLOT_PX` | 100000 | largest `width` and `height` of `figure` (`invalid figure size`); the coordinate clamp of the SVG writer | LANGUAGE.md §12.2; §2.14.6, §2.14.7 |
 
 #### 2.6.2 `errors.inc`
 
@@ -1023,8 +1027,8 @@ to this table. A code is never reused or renumbered; a new message is appended i
 
 **Fields of an error record.**
 
-* `code`: run-time codes are dense from 1 (`_sea_err` accepts 1 … `SEA_E_RT_END` − 1 = 21,
-  `SEA_E_RT_END` = 22) because the runtime's table is indexed by them; the driver's and pass 1's
+* `code`: run-time codes are dense from 1 (`_sea_err` accepts 1 … `SEA_E_RT_END` − 1 = 29,
+  `SEA_E_RT_END` = 30 from phase 9, §2.14.2) because the runtime's table is indexed by them; the driver's and pass 1's
   codes are 100 … 199, pass 2's 200 … 399, the capacity code 400 … 499, the passes' internal
   checks 500 … 599. The assembler name is `SEA_E_<NAME>`; LIR's `chk` record names the code by
   `<NAME>` (§3.6.4), and pass 4 turns it into `SEA_E_<NAME>`.
@@ -1120,6 +1124,14 @@ it equals the error record.
 | 19 | `LINE_STYLE` | R | - | `s` | `invalid line style "%s"` | LANGUAGE.md §9.2, §12.3 |
 | 20 | `COLOR` | R | - | `s` | `invalid color "%s"` | LANGUAGE.md §9.2 |
 | 21 | `USER` | R | - | `s` | `%s` | LANGUAGE.md §9.2 ("the formatted message"); the text `%s` is defined here |
+| 22 | `FIGURE_GRID` | R | - | `ii` | `invalid figure grid %dx%d` | LANGUAGE.md §9.2, §12.2 (phase 9, §2.14.2) |
+| 23 | `FIGURE_SIZE` | R | - | `ii` | `invalid figure size %dx%d` | LANGUAGE.md §9.2, §12.2 (phase 9, §2.14.2) |
+| 24 | `PANEL_CELL` | R | - | `iiiiii` | `panel at %d,%d spanning %dx%d is outside the %dx%d grid` | LANGUAGE.md §9.2, §12.2 (phase 9, §2.14.2) |
+| 25 | `PANEL_TAKEN` | R | - | `ii` | `grid cell %d,%d already holds a panel` | LANGUAGE.md §9.2, §12.2 (phase 9, §2.14.2) |
+| 26 | `AXIS_LIMITS` | R | - | `ff` | `invalid axis limits %g, %g` | LANGUAGE.md §9.2, §12.4 (phase 9, §2.14.2) |
+| 27 | `LEGEND_LOC` | R | - | `s` | `invalid legend location "%s"` | LANGUAGE.md §9.2, §12.4 (phase 9, §2.14.2) |
+| 28 | `CONTOUR_LEVELS` | R | - | `i` | `invalid number of contour levels %d` | LANGUAGE.md §9.2, §12.3 (phase 9, §2.14.2) |
+| 29 | `PLOT_WIDTH` | R | - | `f` | `invalid width %g` | LANGUAGE.md §9.2, §12.3 (phase 9, §2.14.2) |
 | 100 | `LINE_TOO_LONG` | D | over | - | `line too long` | LANGUAGE.md §3.1 |
 | 101 | `ILLEGAL_CHAR` | C1 | byte | - | `illegal character` | LANGUAGE.md §3.1 |
 | 102 | `UNTERMINATED_COMMENT` | C1 | token | - | `unterminated comment` | LANGUAGE.md §3.2 |
@@ -1437,11 +1449,11 @@ and the tests of the removed words, and phase 6 and later remove these:
 | a named argument other than `dim:` and `desc:` of the library calls of 4f (at the `narg` node) | `named arguments` | phase 6 |
 | a parameter default (at the `param` node) | `default arguments` | phase 6 |
 | `%` with an `f64` operand (Decision 23) | `f64 %` | phase 6 |
-| a handle type (`Figure`, `Axes`, at its `type` node; `Lu` and `Chol` until 8c) | `handle types` | phases 8 (`Lu`, `Chol`: removed in 8c, §2.13.3) and 9 |
+| a handle type (`Figure`, `Axes`, at its `type` node; `Lu` and `Chol` until 8c) | `handle types` | phases 8 (`Lu`, `Chol`: removed in 8c, §2.13.3) and 9 (`Figure`, `Axes`: removed in 9b, §2.14.4) |
 | a call of `format`, `write_json`, `print` or `make_dir` | its name | phase 6 |
 | a call of `ind2sub` whose first argument is an array (from 4e, Decision 33) | `ind2sub` | phase 6 |
 | a call of `solve`, `lu`, `chol`, `rcond` or `eig_sym` | its name | phase 8 (removed in 8c, §2.13.3) |
-| a call of `figure`, `panel`, `twin_y`, `plot`, `bar`, `barh`, `contour`, `image`, `xline`, `legend`, `title`, `xlabel`, `ylabel`, `xlim`, `ylim`, `x_ticks`, `y_ticks`, `grid`, `axis_equal`, `y_reverse` or `save_svg` | its name | phase 9 |
+| a call of `figure`, `panel`, `twin_y`, `plot`, `bar`, `barh`, `contour`, `image`, `xline`, `legend`, `title`, `xlabel`, `ylabel`, `xlim`, `ylim`, `x_ticks`, `y_ticks`, `grid`, `axis_equal`, `y_reverse` or `save_svg` | its name | phase 9 (removed in 9b, §2.14.4) |
 
 Phase 6 removes its rows in the steps of §2.11.2 (6b, 6c, 6d; agreed 2026-10-26), whose "Readings fixed by
 phase 6" fix the front end's reading of named and default arguments, elemental functions and the
@@ -1450,6 +1462,10 @@ Phase 8 removes its rows in the steps of §2.13.3's table: 8b the `@` row (2026-
 `err_ns_matmul` retired), 8c the five library names and `Lu` and `Chol` from the `handle types`
 row, which then names `Figure` and `Axes` only, until phase 9 (2026-11-01; `err_ns_lib_solve`
 retired).
+Phase 9 removes the last two rows in 9b (§2.14.4's table: the `handle types` row for `Figure` and
+`Axes`, and the 21 plotting names; `err_ns_lib_figure`, `err_ns_handle` and
+`passes/res_err_handle` retired). From 9b the table in force is empty and `not supported yet: %s`
+(259) is unreachable; its code stays in `errors.inc`, since a code is never reused (L-kx).
 Every other predeclared function of LANGUAGE.md Appendix C is implemented after phase 4. The
 operand errors of `@` (LANGUAGE.md §6.2) are reported as in v1 from 4d on, before the `@` row
 is considered: a scalar operand or a `bool` array operand is `operator '@' cannot be applied to %s and %s`
@@ -1614,7 +1630,7 @@ object file (by each runtime's `_sea_err`).
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_E_RT_END` | 22 | one past the last run-time code: records 0 … 21 |
+| `SEA_E_RT_END` | 30 | one past the last run-time code: records 0 … 29 |
 | `SEA_ERRNO_COUNT` | 23 | number of errno records (ids 0 … 22) |
 | `SEA_ERRTAB_MSG` | 0 | ptr: NUL-terminated message text |
 | `SEA_ERRTAB_ARGS` | 8 | ptr: NUL-terminated `args` letters (empty for `-`) |
@@ -3551,6 +3567,56 @@ stress line, then `seafuse`'s 515 and 1 015 and `seagen_x64`'s 883 under 7 000; 
 1 979 under 9 000 at its stress line, its longest line still exactly 255 bytes; `seaopt` has
 exactly the 2 free letters the condition requires. `sealower` also passes with the 370 of
 "Remaining after phase 7" (7 211 and 7 396).
+
+**Measured after 9b** (2026-11-03, the 9b tree at its integration; the measurement after 9b of
+§2.14.7, built and counted as in "Measured after 8b": `nice -n 19 make BUILD=<dir> -j2 passes` and
+`make BUILD=<dir> check-limits` on a fresh private build). Every `check-limits` verdict is ok. 9b
+changed four passes: `seaname` (`sn6type.bas`: the phase-rule branch removed, every handle type
+resolves, L-kx), `seacheck` (the new part `sc9plot.bas` 26000–27255 with `pcls`, `psig`, `pnarg`,
+`ck_plot`, `ptyp` and `em_plot`, reached from `ck_lib`'s fallback at `sc6call.bas` 12635 and from
+`ck_narg` at `sc9red.bas` 19486, L-lk; `cty`'s fix at `sc9st.bas` 23235–23267, L-lm; `em_plot`'s call
+from `sc8emit.bas` 15751–15759), `sealoop` (`lpbmat.bas` 55500–55526: R36, L-lo) and
+`sealower` (rule 39's 21 rows: `sl2arr.bas` 19372–19410 and 19565, `sl3hirl.bas` 34063–34069, the
+array operands at `sl4fix.bas` 40162, L-ln; the `entries` capacity 128); `seaexpand` and `seafuse`
+needed no change, and every pass gains the ten `DATA` lines of the contract changes (eight error
+records, two `consts`), the six that load `entries` 21 more. No pass uses a new array letter, so the
+free letters are those after 8c.
+
+| Pass | Built lines | After 8c | 9b increment | `FOR`s | String bytes | Longest line | Free numeric array letters |
+|------|------------:|---------:|-------------:|-------:|-------------:|-------------:|------|
+| `seaparse` | 3 953 | 3 943 | +10 | 74 | 2 581 | 166 | 17 (as after 8c) |
+| `seaname` | 5 632 | 5 625 | +7 | 139 | 3 169 | 210 | 13 (as after 8c) |
+| `seacheck` | 7 335 | 7 059 | +276 | 206 | 6 822 | 194 | 14 (as after 8c) |
+| `seaexpand` | 4 810 | 4 800 | +10 | 121 | 5 928 | 155 | 2 (`I W`) |
+| `seafuse` | 6 495 | 6 485 | +10 | 153 | 13 029 | 234 | 5 (`B D J S X`) |
+| `sealoop` | 6 715 | 6 689 | +26 | 106 | 12 947 | 234 | 3 (`B X Y`) |
+| `sealower` | 6 885 | 6 841 | +44 | 131 | 5 528 | 255 | 3 (`C S X`) |
+| `seaopt` | 5 670 | 5 639 | +31 | 162 | 6 174 | 179 | 2 (`S V`) |
+| `sealopt` | 5 593 | 5 562 | +31 | 217 | 6 231 | 179 | 0 |
+| `seavec` | 5 870 | 5 839 | +31 | 213 | 6 424 | 179 | 0 |
+| `seagen_a64` | 5 299 | 5 268 | +31 | 136 | 4 817 | 135 | 0 |
+| `seagen_x64` | 6 148 | 6 117 | +31 | 144 | 5 814 | 189 | 0 |
+
+Against §2.14.7: no pass exceeds its projection. `seacheck` 7 335 is inside 7 319–7 549 (no
+7 000 condition, Decision 82 (a)), 1 665 under 9 000 as built, 7 585 and 7 710 with its 250
+remaining; `sealoop` 6 715 is below 6 739–6 819 (its +26 under the 50–130 estimate,
+R36 keeping its validation), **285 under 7 000**, more than the 100 that would have dropped R36's
+validation, 7 715 and 8 215 with its 1 000 remaining; `sealower` 6 885 is below 6 932–7 012 (+44
+under the 91–171 estimate), 6 945 and 6 975 with its 60 remaining, its longest line still
+exactly 255 bytes (the dispatch's `ON … GOTO` not lengthened: the plotting rows branch at 19565);
+`seaname` 5 632 is inside 5 625–5 645; the passes 9b did not touch took only the generated lines
+and equal their projections (`seaparse` 3 953, `seaexpand` 4 810, `seafuse` 6 495, `seaopt` 5 670,
+`sealopt` 5 593, `seavec` 5 870, `seagen_a64` 5 299, `seagen_x64` 6 148). `sealoop`'s longest line
+grows from 208 to 234 bytes (R36's name list at 55506). Every free-letter condition holds as after
+8c. **The measurement after 9b passes every program; no relief is needed** before 9c's code.
+
+**Measured test counts after 9b** (2026-11-03, the final tree, by the lead). `make test`: every
+group passes (driver 122, rt 229, la: `la_check` 31 042 cases under `neon` and `la/la_link`
+passed, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6;
+`check-contracts` 138 names, 220 records, 296 formats); `make cross`: 1 194 cases packed, 0 failed
+to compile; variant default (`avx2`) 978 passed and 0 failed, `sse2` 978 and 0, once-only 214 and
+0; host total 2 170 passed, 0 failed and 4 deferred (W2 and W3 under each variant, Decision 127),
+judged on the Mac by `tests/cross_accept.sh`: 4 passed, 0 failed (x86_64 rt 211).
 
 ### 2.8 Numbers inside the compiler
 
@@ -7011,6 +7077,8 @@ the integer registers in order and, past the sixth on x86_64, in the outgoing st
 calls `snprintf` as `rt_fmt.s` does (C locale; exact on both C libraries, as the JSON emitter's
 `%.17g` relies on). `f64(n)` converts an integer exactly (every integer here is below 2⁵³). Every
 operation is one IEEE operation in the order written, no FMA; `floor`/`ceil` are exact.
+`_sea_fmt_num` is a pure conversion: where this section writes a value + 0.0 (so −0 is 0), the
+caller adds the +0.0 before the call (L-li).
 
 **Objects** (private to the runtimes, the same layout in both; `tests/rt` reads these offsets, so
 they change only with that test, as L-jr):
@@ -7027,7 +7095,7 @@ they change only with that test, as L-jr):
   index.
 * *Axes record* (256 bytes, zero-filled when made): 0 kind (0 base, 1 twin), 8 the base's index (its
   own for a base), 16 the twin's index (−1 if none; a twin's −1), 24 row, 32 col, 40 rowspan, 48
-  colspan, 56 title, 64 x label, 72 y label (retained `str`s or 0), 80 flags (bit 0 grid, bit 1
+  colspan (a twin record copies its base's row, col, rowspan and colspan when it is made), 56 title, 64 x label, 72 y label (retained `str`s or 0), 80 flags (bit 0 grid, bit 1
   y reversed, bit 2 axis equal, bit 3 x limits set, bit 4 y limits set), 88 legend location (0
   none, then 1 … 8 for `north south east west northeast northwest southeast southwest`; `best` is
   5), 96 x lo, 104 x hi, 112 y lo, 120 y hi (`f64`), 128 the x category labels (a block of `str`
@@ -7080,9 +7148,14 @@ x_i + hw for each drawn bar (Bars, below; hw = width · Δ / 2) to x, and, when 
 and each drawn bar's h_i to y; a
 `barh` series gives i − width / 2 and i + width / 2 for i = 0 … n − 1 to y, and 0 and each finite h
 to x; a contour series its finite x and y coordinates; an image series its extent (below); an
-`xline` nothing. The x axis of a pair takes the extents of both axes' series.
+`xline` nothing. The x axis of a pair takes the extents of both axes' series. An extent end is
+replaced only by a strictly smaller (lo) or strictly greater (hi) value, so of equal values the
+first wins (L-lh).
 
-**Limits** of one axis (§12.5; L-kk), given the extent [lo, hi] (none if no value):
+**Limits** of one axis (§12.5; L-kk), given the extent [lo, hi] (none if no value). The rules apply
+in their numbered order, the first that applies deciding the limits and the ticks (L-lg): explicit
+limits (rule 1) and rule 6's recomputation give numeric ticks even on an axis with category labels;
+category ticks arise only under rule 2.
 
 1. *Explicit* (`xlim`/`ylim` set): those values; ticks by step 5 below on [lo, hi].
 2. *Category* (labels set, n > 0): lo = −0.5 and hi = f64(n) − 0.5 when the axis has no extent,
@@ -7107,7 +7180,8 @@ to x; a contour series its finite x and y coordinates; an image series its exten
    count is converted to an integer only after it has passed "≤ 7". For explicit and tight limits
    the ticks are (c0 + f64(i)) · s for c0 = ceil(lo / s) and i = 0 … floor(hi / s) − c0 (none when
    that is negative; at most 8). A tick equal to the one before it (possible only when |lo| / s
-   exceeds 2⁵³) or not finite is not drawn; no tick loop runs on a floating-point counter.
+   exceeds 2⁵³; compared with the last tick appended, L-lh) or not finite is not drawn; no tick
+   loop runs on a floating-point counter.
 6. *Axis equal* (on the base axes, after 1–5 for both axes): ux = (xhi − xlo) / pw, uy = (yhi − ylo)
    / ph; if ux > uy, the y limits become c − (ux · ph) / 2 and c + (ux · ph) / 2 with c = (ylo +
    yhi) / 2, else the x limits likewise with uy · pw; the changed axis's ticks are recomputed by
@@ -7119,7 +7193,8 @@ the k of the step, except that `%g` is used when s ≥ 1e6 or s < 1e-4; a catego
 adjacent numeric ticks of an axis would get equal texts (`%g` keeps six significant digits, so
 1 and 1.000002 are both `1`), every numeric tick of that axis is written `%.{q}g` with q the
 smallest of 7 … 17 that makes all adjacent texts differ (Decision 142 (a); 17 digits always do,
-since equal tick values are not drawn). Every value written is finite: no rule above draws a
+since equal tick values are not drawn): q = 7, 8, … is tried in turn, stopping at the first that
+makes every adjacent pair differ, else q = 17 (L-lh). Every value written is finite: no rule above draws a
 non-finite tick, so `_sea_fmt_num` never formats NaN or ±∞.
 
 **Mapping** (L-kl). X(v) = px + ((v − xlo) / (xhi − xlo)) · pw; Y(v) = py + ph − ((v − ylo) /
@@ -7146,7 +7221,7 @@ Text widths are 0.6 × font size per byte (§12.7). The document, in this order:
 1. `<?xml version="1.0" encoding="UTF-8"?>`
 2. `<svg xmlns="http://www.w3.org/2000/svg" class="sea-figure" width="{W}" height="{H}" viewBox="0 0 {W} {H}" font-family="sans-serif">`
 3. `<rect class="canvas" x="0" y="0" width="{W}" height="{H}" fill="#ffffff"/>`
-4. if the name is not empty: `<text class="heading" x="{W/2}" y="17.00" font-size="14" text-anchor="middle">{t}</text>` (x = f64(W) / 2).
+4. if the name is not empty: `<text class="heading" x="{W/2}" y="17.00" font-size="14" text-anchor="middle">{t}</text>` (x = f64(W) / 2, written `%.2f`, L-li).
 5. for each base axes, in creation order (k = 0, 1, … its rank among the bases):
    1. `<g class="panel" id="p{k}">` (k as `%d`)
    2. `<clipPath id="c{k}"><rect x="{px}" y="{py}" width="{pw}" height="{ph}"/></clipPath>`
@@ -7282,10 +7357,12 @@ into the SVG buffer.
 
 **The byte buffer and the file** (L-lc). The SVG is built in one growing uncounted block (initial
 65 536 bytes, doubled by copy when full; `OUT_OF_MEMORY` if it cannot grow), then written by
-`_sea_file_put(path, bytes, length, site)` (L-ld): `open(path, O_WRONLY|O_CREAT|O_TRUNC, 0666)`
+`_sea_file_put(path, bytes, length, site, cap)` (L-ld): `open(path, O_WRONLY|O_CREAT|O_TRUNC, 0666)`
 (failure: `CANNOT_OPEN`, the path and the errno), `_sea_write_all` (failure: close, then
 `CANNOT_WRITE`), `close` (failure: `CANNOT_WRITE`), the same host constants and errno handling as
-`rt_file.s`'s JSON writer. The buffer is freed before an error is reported and after the write. No
+`rt_file.s`'s JSON writer. With cap ≠ 0, `_sea_file_put` frees the block (bytes, cap) with
+`_sea_free_block` before an error is reported and after the write; `SAVE_SVG` passes the buffer
+and its capacity, so the buffer is freed on every path (cap 0 frees nothing). No
 file is created before the document is complete; a failed write may leave a partial file.
 
 #### 2.14.7 Capacity and limits
@@ -7629,7 +7706,7 @@ ends with `make test` and `make cross` passing.
 | Sub-phase | Contents | Done when |
 |-----------|----------|-----------|
 | 9a | **Phase-9 specification** (documents only): §2.14 (scope, the semantic contract with the proposed LANGUAGE.md text, the ports' figures against §12, front end and later passes, entries 62–82, the library's algorithms and SVG grammar, capacity, tests, the ports, these rows, Decisions 131–142, lead decisions L-ke – L-lf); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 131–142. **Done** (2026-11-02): the specification revised after one independent review and agreed, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text; next 9b (WP-CONTRACT first and alone) |
-| 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code |
+| 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code. **Done** (2026-11-03): WP-CONTRACT's `rt.inc` entries 62–82 (`SEA_ENT_COUNT` 82), `errors.inc` codes 22–29 (`SEA_E_RT_END` 30), `limits.inc`'s `SEA_LIM_PLOT_GRID` and `SEA_LIM_PLOT_PX` in their own section (L-lp), the `entries` capacity 128 and LANGUAGE.md's agreed text; the front end: `seaname` (the phase-rule branch removed, every handle type resolves; 259 unreachable, L-kx), `seacheck` (the new part `sc9plot.bas`: the class table 32–52 by `pcls` from `ck_lib` and `ck_narg` (L-lk), the options and their defaults, the overloads with `cvt`, `dyn` and the typing of untyped constants (L-ll), 224, 225, 243, 255, and the written form with every parameter and the evaluation-order temporaries, §3.5.5), `sealoop` (R36, `lpbmat.bas` 55500–55526, L-lo), `sealower` (rule 39's 21 rows through `K5$`, the operand classes checked against the entries, L-ln; `Figure` and `Axes` locals in class p), `seafuse` and `seaexpand` unchanged; `rt_plot.s` in both runtimes (`FIGURE`, `PANEL`, `TWIN_Y`, `SAVE_SVG`, `PLOT`, `XLINE` and the property entries 72–82; layout, extents, limits and ticks, the SVG writer of lines, markers and reference lines, legends, category ticks, twins, the buffer), `rt_fmt.s`'s `_sea_fmt_num` (L-li), `rt_file.s`'s `_sea_file_put` and `rt_mem.s`'s `Figure` and `Axes` branches of `sea_free` (L-lb, L-lj); `rt_plot.s` 3 656 lines on arm64 and 3 618 on x86_64; the deepest path `SAVE_SVG`'s, 2 368 bytes below the incoming sp on arm64 and 3 632 on x86_64, the other entries at most 256 and 168 (§4.8); the review's findings fixed: the x86_64 runtime aligned to the numbered order of the limits rules (L-lg), `_sea_file_put` given a fifth argument so the SVG buffer no longer leaks on a file error (L-ld), a twin record's cell fields copied from its base (§2.14.6), a `ref` argument past the last parameter counted and reported as 243 (L-ll), the pre-existing `cty` defect (a latent `sealoop` `BAD_RECORD` for reordered calls and struct literals converting an `i64` array, L-lm), `KEY~` on every `.struct` key and the T2 dumps made reproducible by `tests/vectors/plot9_dumps.py` (L-lq); tests: 26 `plots/plot_*` programs with their `.struct` (`plot_cvt_order` the review's), 34 run-time errors `r_plot_*`, 12 compile errors `err_plot_*`, `err_ns_lib_figure`, `err_ns_handle` and `passes/res_err_handle` retired, the programs `call6_named_cvt_{fixed,dyn}` and `struct_order_cvt_{fixed,dyn}`, the dumps `passes/plot9_{check,hirl,rcall,release}`, `plot9_cases.py`'s tick part, `tests/plots.sh` and `tests/plot_struct.py` with `make test-plots`, the cross case kind `plots/`, the rt group 229 cases on arm64 and 211 on x86_64 (§6.2, §6.6.1); sizes in §2.7 "Measured after 9b" (`seaname` 5 632, `seacheck` 7 335, `sealoop` 6 715, 285 under 7 000, `sealower` 6 885, its longest line still 255 bytes; no new array letter; within §2.14.7's projections; no relief needed); lead decisions L-lg–L-lq; next 9c; `make test` (driver 122, rt 229, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6) and `make cross` (1 194 cases packed, 0 failed to compile; default variant 978/0, `sse2` 978/0, once-only 214/0; host 2 170 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 211) pass |
 | 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass |
 | 9d | **The ports' figures, acceptance, close-out** (after 9c; Decisions 131, 138). **WP-PORT** the six `ports/NAME.sea` (the `--figures` arm and block; W2's header `svg=approx`); **WP-STRUCT** the six `ports/NAME.struct` (from the MATLAB scripts, by an author who does not write the ports); **WP-ACCEPT** `tests/accept.sh` (one run with both flags, the run-directory rule, step 4); **WP-CROSS** `tests/cross_pack.sh`, `tests/cross_run.sh`, `tests/cross.sh`, `tests/cross_accept.sh` (the `--figures` argument, the packed SVG, the kept SVG, Decision 138's comparison, the `svg=approx` header key); the compile times recorded in §6.3; then the gate after phase 9 (§2.14.7) | row 9's "done when": the plot tests pass; every port writes its figure with `--figures` and passes its structural check (`tests/accept.sh` on the Mac; `make cross`: W1, W3, W4, W5, W7 byte-identical SVGs under both variants, W2 by Decision 138); `make test` and `make cross` pass; the gate after phase 9 applied, a failing program getting a relief agreed with the user before phase 10 |
 
@@ -7884,8 +7961,10 @@ with it on 2026-11-02 (§9, "Lead decisions of phase 9"):
   creates no file and a failed write may leave a partial one.
 * **L-ld** (private helpers, not entries, no `rt.inc` record) `_sea_fmt_num(dst, letter, prec, x)`
   in `rt_fmt.s` (one finite `f64` under `f` or `g` with the given precision, through
-  `Lrt_fmt_float`); `_sea_file_put(path, bytes, len, site)` in `rt_file.s` (the open/write/close of
-  L-lc with `rt_file.s`'s errno handling); `_sea_crc32`, `_sea_adler32`, `_sea_b64` and the PNG
+  `Lrt_fmt_float`); `_sea_file_put(path, bytes, len, site, cap)` in `rt_file.s` (the open/write/close
+  of L-lc with `rt_file.s`'s errno handling; with cap ≠ 0 it frees the block (bytes, cap) before an
+  error is reported and after the write; amended in 9b from four arguments, whose buffer leaked on a
+  file error); `_sea_crc32`, `_sea_adler32`, `_sea_b64` and the PNG
   builder in `rt_png.s`; visibility `.private_extern` on arm64 and `.globl` with `.hidden` on x86_64
   (as L-js).
 * **L-le** (drawing order) The data group draws the pair's series in call order, a twin's series
@@ -7894,6 +7973,63 @@ with it on 2026-11-02 (§9, "Lead decisions of phase 9"):
 * **L-lf** (order of the 9b build) All 21 ids enter `rt.inc` with WP-CONTRACT, before 9c's code, as
   8b did for 51–61; until 9c a program calling `bar`, `barh`, `contour` or `image` compiles and
   fails only at link, and no 9b test calls them.
+
+Lead decisions of sub-phase 9b (the readings of its work packages and of its review, found in their
+builds and recorded 2026-11-03 at its integration; each states the code as built, and those that
+change bytes are also written into §2.14.6, which stays the single source):
+
+* **L-lg** (9b, agreed 2026-11-03; the limits rules) The limits rules of §2.14.6 apply in their
+  numbered order. Explicit limits (rule 1) and rule 6's recomputation give numeric ticks even on an
+  axis with category labels; category ticks arise only under rule 2. The lead's ruling; the x86_64
+  runtime was aligned to it in the review.
+* **L-lh** (9b, agreed 2026-11-03; ties and repeated texts) An extent end is updated only on a
+  strict `<` (lo) or `>` (hi), so of equal values the first wins. The suppression of an equal tick
+  compares with the last tick appended. Decision 142's loop tries q = 7 … 17 in turn and stops at
+  the first q that makes all adjacent texts differ, else q = 17.
+* **L-li** (9b, agreed 2026-11-03; `_sea_fmt_num`) `_sea_fmt_num` is a pure conversion; the callers
+  add +0.0 where §2.14.6 asks for it. Its destination buffer holds every finite `f64` (336 bytes on
+  arm64, 352 on x86_64; target-local). The heading's x `{W/2}` is f64(W) / 2 written `%.2f`.
+* **L-lj** (9b, agreed 2026-11-03; field contents) The figure allocates both tables (capacity 8)
+  when it is created. The axes record's string fields keep a retained `""` (the writer tests the
+  length); a series' label stores 0 for `""`. These are target-local field contents with no effect
+  on the bytes written; `tests/rt` reads the offsets per target.
+* **L-lk** (9b, agreed 2026-11-03; WP-CHECK, the passes agent's L-lg) The 21 plotting classes 32–52
+  are looked up by `sc9plot`'s `pcls`, called from `ck_lib`'s fallback (`sc6call.bas` 12635) and
+  from `ck_narg`. One table serves the call and its named options; `NOT_SUPPORTED` stays as an
+  unreachable guard (L-kx).
+* **L-ll** (9b, agreed 2026-11-03; settling untyped constants) An untyped integer constant passed
+  positionally beyond the positional parameters is typed `i64`, and the 243 message lists it as
+  `i64`. An untyped value of a named option takes the option's type (`f64` for an `f` option, else
+  `i64`). A `ref` argument past the last positional parameter is counted and reported as 243.
+* **L-lm** (9b, agreed 2026-11-03; `cty`, a pre-existing defect fixed in 9b) The type of a bound
+  value as written is its type after its `cvt` and then its `dyn` or `fix`. This fixes a latent
+  `sealoop` `BAD_RECORD` for reordered calls and struct literals that pass an `i64` array to an
+  `f64` array parameter or field. Tests: the programs `call6_named_cvt_fixed`,
+  `call6_named_cvt_dyn`, `struct_order_cvt_fixed`, `struct_order_cvt_dyn` and
+  `plots/plot_cvt_order`.
+* **L-ln** (9b, agreed 2026-11-03; WP-LOWER) The 21 rows find their entry by the `lib`'s name in
+  capitals, through a separate table of 12-byte slots, `K5$` (W2 33–53). Validation uses the
+  entry's Args classes. Array operands are allowed for `plot bar barh contour image x_ticks
+  y_ticks` (`sl4fix.bas` 40162).
+* **L-lo** (9b, agreed 2026-11-03; WP-LOOP) R36 checks only the children of an array type (a dynamic
+  `f64` vector or matrix, or a dynamic `str` vector) and copies the node; the scalar and handle
+  classes are checked in `sealower`.
+* **L-lp** (9b, agreed 2026-11-03; contract) The plotting limits sit in their own section at the end
+  of `limits.inc`, so the `DATA` positions that `tests/check_data.sh` checks stay unchanged.
+  `tests/include_asserts.inc`'s assertion that `USER` is the last run-time code becomes
+  `SEA_E_USER == 21`.
+* **L-lq** (9b, agreed 2026-11-03; tests)
+  * `tests/plots.sh` accepts `--save-out DIR` and `--only NAME` for cross packing.
+  * A `.struct` bare key with no value is malformed (exit 2), and `subpaths` counts the `M`
+    commands of a path's `d`.
+  * `KEY~` works on every key: keys with selector fields (`count`, `subpaths`, `color`) keep their
+    selectors literal and match the regex against the last field; `file~` and `panel~` select the
+    single match and fail on none or several; `canvas~` matches `W H` and `panels~` the decimal
+    count.
+  * The T2 dumps are reproduced by `tests/vectors/plot9_dumps.py`; the hand check against §2.14.4,
+    rule 39 and Decision 39 is the authority.
+  * The rt tests' hand-derived SVG bytes (`rt_plot_svg*`, `rt_plot_svg_cat`) test the runtime
+    against §2.14.6, not the language; this is consistent with Decision 140 (a).
 
 #### 2.14.13 Sections amended when agreed
 
@@ -9076,6 +9212,30 @@ mismatches between dynamic extents remain run-time checks (LANGUAGE.md §4.10).
   node of its own (the identity: s keeps its own position and ownership, so no pass after 2a sees
   the call); a prelude function
   (`linspace`, `meshgrid`, `setdiff`, `bincount`) is a `call` of its prelude `fn` (§2.5).
+* **Library calls of phase 9** (from 9b; §2.14.2 "Signatures", §2.14.4 "Written form"; L-kg). Each
+  of the 21 plotting calls is written `lib NAME n` with **every** parameter of §2.14.2's table, in
+  the table's order, n its parameter count (`figure` 5, `panel` 5, `twin_y` 1, `save_svg` 2, `plot`
+  7, `xline` 4, `bar` 6, `barh` 5, `contour` 7, `image` 5, `xlabel` `ylabel` `title` `legend`
+  `grid` 2, `xlim` `ylim` 3, `x_ticks` `y_ticks` 2, `y_reverse` `axis_equal` 1); the child order is
+  the entry's argument order (§4.8, entries 62–82). A given argument is written as pass 2a checked
+  it: an `i64` scalar or array where `f64` is taken gets its `cvt` at the argument, a fixed-size
+  array its `dyn` at the call's position (as L-jq), an untyped literal is typed by its parameter
+  (`cf` for an `f` parameter; L-ll for the untyped constants past the positional parameters and the
+  named options). An omitted option is its default as a constant node at the **call's position**
+  (`ci`, `cf`, `cb`, `cs`: `figure`'s `name` `""`, `width` 960, `height` 720; `panel`'s `rowspan`
+  and `colspan` 1; `plot`'s `style` `"-"`, `label` `""`, `width` 1.0, `color` `""`; `xline`'s
+  `style` `"--"`, `color` `""`; `bar`'s and `barh`'s `width` 0.8, `label` `""`, `color` `""`;
+  `contour`'s `levels` 10, `labels` false, `color` `""`; `image`'s `colorbar` false; `legend`'s `loc`
+  `"northeast"`; `grid`'s `on` true), as 4f inserts `sort`'s `cb 0`. When the source order of the
+  given arguments differs from the parameter order (a named option given before an earlier one),
+  "Evaluation order" above applies exactly as for a user function's named arguments (L-cp): every
+  given argument that is not a constant is bound in source order to a `.t`*n* local, the `lib`
+  reads them as `lv`, the inserted defaults follow at their parameter positions, and the `lib` is
+  the value of a `seq` of those `bind`s (`seq … 0` when every bound value is a constant, L-dc). No
+  `narg` node survives. The type is `Figure` (6) for `figure`, `Axes` (7) for `panel` and `twin_y`,
+  else 1 (no value: the call is an `eval` statement); an argument error leaves `figure`, `panel`
+  and `twin_y` their fixed type and the others type 1. The type of a bound value is its type after
+  its `cvt` and then its `dyn` or `fix` (L-lm). `passes/plot9_check` shows the form.
 
 #### 3.5.6 `sea.hir1` and `sea.hir` compared
 
@@ -9307,7 +9467,8 @@ for 4e and 4f (Decision 29); they are implemented with 4e (in 4e-0 `sealoop` wro
 and `sealower` rejected them as `BAD_RECORD`). The meanings above include the refinements R1–R11 of
 4e (Decision 31, "What `sealoop` rewrites in 4e" below), R12–R16 of 4f (Decision 38, "What
 `sealoop` rewrites in 4f" below), R17–R25 of 4g (Decision 44, "What `sealoop` rewrites in 4g"
-below) and R35 of 8b ("What `sealoop` rewrites in 8b" below); no record or field was added for
+below), R35 of 8b ("What `sealoop` rewrites in 8b" below) and R36 of 9b ("What `sealoop` rewrites
+in 9b" below); no record or field was added for
 them, and 4f adds one word, `and`,
 to the enumeration `wop` of `passes.txt` (R13). 4g's needs (a replacing store of a reference
 element, address arithmetic, struct copies), which this paragraph once announced as further
@@ -10239,6 +10400,18 @@ operand types and needs no change (L-jj). The nodes and `.l` locals of L21 count
 `SEA_LIM_NODES` and `SEA_LIM_SYMBOLS` as every rewrite's ("Capacity" below), reported at the `bin`'s
 position.
 
+**What `sealoop` rewrites in 9b** (§2.14.4; lead decision L-lo). `lpbmat.bas` 55500–55526 takes the
+`lib`s of the 21 plotting names that R35's list (55410) does not hold; any other `lib` goes on at
+5324 as before.
+
+| R36 | R10 is narrowed (from 9b; narrows R10 as R35 does): a `lib` of `figure panel twin_y save_svg plot xline bar barh contour image xlabel ylabel title legend grid xlim ylim x_ticks y_ticks y_reverse axis_equal` stays in `sea.hirl` with its children already rewritten: each child of an array type a dynamic `f64` vector or matrix or a dynamic `str` vector with no array expression of R10 (an `lv`, a materialized selection, view or fused tree, an L10 `dyn`); each scalar child any scalar expression; each handle child any expression of type 6 or 7. `sealoop` copies it after its children, and L18 and L20 copy it as any node; `sealower` lowers it by rule 39 (§3.6.6) |
+
+`sealoop` validates only the children of an array type: each must be a dynamic `f64` vector or
+matrix or a dynamic `str` vector (element `f64` or `str`, rank 1 or 2 for `f64`, rank 1 for `str`,
+not fixed-size), else `BAD_RECORD`; it checks no scalar or handle child, whose classes `sealower`
+validates against the entry's Args (`sl3hirl.bas` 34030, `sl4fix.bas` 40162; L-jj's reading:
+`seaval` checks formats, not types). The dump `passes/plot9_hirl` shows R36.
+
 **Capacity.** `sealoop` counts `sea.hirl` as a whole: all its nodes against `SEA_LIM_NODES`
 (`program too large: nodes`), all its locals, the new `.l` locals included, against
 `SEA_LIM_SYMBOLS` (`symbols`), and all its types, the appended `tptr` types (and from 4f the type F8, R14) included, against
@@ -10646,6 +10819,49 @@ each `rcall <symbol> <site> 1 pR 2 pA pB` with the site the `@`'s line, its resu
 released (the entry borrows it); the compiled code makes no check (L-iv). The dumps `la8_mm_rcall`
 and `la8_mm_conv` (§6.2) show them. The rows of 8c (`lu`, `chol`, `solve`, `rcond`, `eig_sym`)
 follow with it.
+
+Phase 9 adds 21 rows (9b, §2.14.4; lead decision L-ln), one per plotting `lib` that R36 left
+(§3.5.9). `sl2arr.bas` 19372–19410 finds the name in the table `K5$` of 12-byte slots (W2 33 for
+`figure` … 53 for `axis_equal`) and checks the child count; 19565 sends the call to `sl3hirl.bas`
+34063–34069, which names the entry by the `lib`'s name in capitals and lowers it generically from
+its record as `PRINT` is lowered: the operands by rule 1 in the `lib`'s child order, which is the
+entry's argument order; `rcall <symbol> <site> …` with the site (the call's line) for an `S` entry;
+a `p` result (`FIGURE`, `PANEL`, `TWIN_Y`) owned (count 1); each owned operand temporary released
+right after the `rcall`; a borrowed `lv` neither retained nor released; a `bool` child as class
+`i`; an `f` operand (`width`, `lo`, `hi`, `xline`'s `x`) as class `f`. Each operand's class is
+checked against the entry's Args, else `BAD_RECORD`; an array operand is accepted only for `plot`,
+`bar`, `barh`, `contour`, `image`, `x_ticks` and `y_ticks` (`sl4fix.bas` 40162).
+
+| Node | Entry | Operands |
+|------|-------|----------|
+| `lib figure` | `FIGURE` | nrows, ncols, name, width, height |
+| `lib panel` | `PANEL` | fig, row, col, rowspan, colspan |
+| `lib twin_y` | `TWIN_Y` | ax |
+| `lib save_svg` | `SAVE_SVG` | fig, path |
+| `lib plot` | `PLOT` | ax, x, y, style, label, width, color |
+| `lib xline` | `XLINE` | ax, x, style, color |
+| `lib bar` | `BAR` | ax, x, h, width, label, color |
+| `lib barh` | `BARH` | ax, h, width, label, color |
+| `lib contour` | `CONTOUR` | ax, x, y, Z, levels, labels, color |
+| `lib image` | `IMAGE` | ax, x, y, Z, colorbar |
+| `lib xlabel` | `XLABEL` | ax, s |
+| `lib ylabel` | `YLABEL` | ax, s |
+| `lib title` | `TITLE` | ax, s |
+| `lib legend` | `LEGEND` | ax, loc |
+| `lib grid` | `GRID` | ax, on |
+| `lib xlim` | `XLIM` | ax, lo, hi |
+| `lib ylim` | `YLIM` | ax, lo, hi |
+| `lib x_ticks` | `X_TICKS` | ax, labels |
+| `lib y_ticks` | `Y_TICKS` | ax, labels |
+| `lib y_reverse` | `Y_REVERSE` | ax |
+| `lib axis_equal` | `AXIS_EQUAL` | ax |
+
+A `Figure` or `Axes` local is a reference local (rules 15, 16, L-jo: class `p`): released at the
+end of its block and on every exit, retained when copied, its struct field released with the
+struct. The dumps `plot9_rcall` (the `rcall`s with their sites, `PLOT`'s seven integer-class
+operands) and `plot9_release` (a `Figure` and an `Axes` local released on every exit) show them.
+The rows of `bar`, `barh`, `contour` and `image` are in place from 9b; their entries are 9c's, so a
+program calling them links only from 9c (L-lf).
 
 Rules 1–14 are the scalar subset of phase 1–3; rules 15–38 are the arrays, structs, strings,
 reference counts and copy on write of phase 4 (§8, sub-phases 4d–4h), each introduced by the
@@ -12115,7 +12331,13 @@ the GEMM kernel (§4.3). No other dependency.
   elements (u64), data pointer (64-byte aligned, `rows × cols` elements, column-major).
 * **Strings**: reference count, length, bytes (not NUL-terminated).
 * **Handles** (`Figure`, `Axes`, `Lu`, `Chol`): reference-counted runtime objects with private
-  layouts.
+  layouts. From 9b (§2.14.6, L-ke, L-lb) a `Figure` (`SEA_TAG_FIGURE`) is one 704-byte block that
+  owns a store: its name and the strings it retained, an axes table and a series table (uncounted
+  blocks of 256- and 128-byte records, capacity 8 from creation, doubled when full, L-lj), each
+  series' data block and the category label blocks, every block freed by its exact size. An `Axes`
+  (`SEA_TAG_AXES`) is a 32-byte block that holds a counted reference to its figure and the index
+  of its axes record in the figure's store; nothing refers back to an `Axes`, so no cycle exists,
+  and the figure lives while any `Figure` or `Axes` value refers to it.
 * **Small blocks** (≤ 4 KiB) come from per-size-class free lists refilled from 1 MiB chunks.
 * **Large blocks** (> 4 KiB) come from `mmap`. A freed large block goes to a cache keyed by its
   size rounded up to a power of two (at most 8 blocks per size and 256 MiB in all; beyond that it
@@ -12152,8 +12374,9 @@ symbols `_sea_alloc` and `_sea_free_block` of §4.5, not contract):
 * *Failure.* A request whose size does not fit (for an array, rows · cols · esize + 64 above 2⁶²)
   or an `mmap` that fails is `_sea_err(SEA_E_OUT_OF_MEMORY, site)`, with the site of the entry
   that allocates (§4.8).
-* *Live objects.* The runtime counts the arrays, strings and handles (`Lu`, `Chol`, L-is)
-  allocated and not yet freed (a 64-bit counter: +1 per allocated object, −1 per freed object;
+* *Live objects.* The runtime counts the arrays, strings and handles (`Lu`, `Chol`, L-is; from 9b
+  `Figure` and `Axes`, L-lb, counted by their constructors and by `sea_free`; the store a figure
+  owns is uncounted) allocated and not yet freed (a 64-bit counter: +1 per allocated object, −1 per freed object;
   static objects are never counted); `SEA_HEAP_CHECK` reports it (§4.5).
 
 ### 4.2 Ownership and the cost model
@@ -12291,7 +12514,7 @@ changes speed, never output, except for class-R results.
 | strings | concatenation, comparison, `lower` |
 | formatting | the pre-parsed `printf` engine (LANGUAGE.md §11.1): integers by own code; finite `f64` through `snprintf` with a built single-conversion format; NaN/Inf and `%d`-on-`f64` per MATLAB |
 | JSON | the emitter that `write_json` expands into (LANGUAGE.md §11.4), with `%.17g` numbers, a 64 KiB buffer |
-| plotting | `Figure`/`Axes` objects, layout, SVG writer, PNG (stored deflate, CRC-32, Adler-32) and base64 (LANGUAGE.md §12) |
+| plotting | `Figure`/`Axes` objects, layout, SVG writer, PNG (stored deflate, CRC-32, Adler-32) and base64 (LANGUAGE.md §12; §2.14.6). From 9b `rt_plot.s` (the objects, entries 62–67 and 72–82, limits and ticks, the SVG writer of lines and reference lines, the buffer); bars, contours, images and PNG from 9c (`rt_plot2.s`, `rt_png.s`) |
 | I/O | buffered stdout/stderr; `make_dir`; errno → fixed message table |
 | clock | `now()` via `clock_gettime(CLOCK_MONOTONIC)` |
 | math | `log exp sin cos pow hypot`, scalar and vector forms with identical results (Decision 6): table-driven range reduction and polynomials, one algorithm for both targets, using only IEEE `+ − × ÷ sqrt` and exact integer operations (no FMA, which SSE2 lacks — the cost is part of Decision 1), verified ≤ 1 ulp against high-precision references (§6.2); the exact algorithms, tables and entry points are §4.10; `round` on x86_64 (LANGUAGE.md §6.7) |
@@ -12317,6 +12540,13 @@ the count helpers, the live counter), `rt_arr.s` (`sea_arr_new`, `sea_arr_new_u`
 `sea_str_f64`), `rt_args.s` (`sea_args`), `rt_sort.s` (`sea_sort`, `sea_argsort`, sub-phase 4f),
 `rt_fmt.s` (gains `sea_error` and the sink) and `rt_main.s` (keeps argc/argv; the heap check).
 
+**Runtime files of phase 9** (both targets, same names; §2.14.5, L-ld): from 9b `rt_plot.s` (new:
+`sea_figure`, `sea_panel`, `sea_twin_y`, `sea_save_svg`, `sea_plot`, `sea_xline` and the property
+entries 72–82; layout, limits and ticks, the SVG writer; 3 656 lines on arm64, 3 618 on x86_64),
+`rt_fmt.s` (gains the private `_sea_fmt_num`, L-li), `rt_file.s` (gains the private
+`_sea_file_put(path, bytes, len, site, cap)`, L-ld) and `rt_mem.s` (`sea_free`'s `Figure` and
+`Axes` branches, §4.8); 9c adds `rt_plot2.s` and `rt_png.s`.
+
 **`SEA_HEAP_CHECK`** (Decision 24; a test aid, not a language feature). When the environment
 variable `SEA_HEAP_CHECK` is exactly `1` at start-up, `main`, after `_sea_main` has returned and
 the final flush of standard output has succeeded, writes `heap: N live objects` and LF to
@@ -12324,7 +12554,8 @@ standard error (N the live-object count of §4.1 in decimal, without sign or pad
 exits with status 0; with any other value, or unset, nothing is written. A run-time error,
 `error` and a failed final flush end the program as LANGUAGE.md §9.2 says, without this line.
 Every array and string a correct program creates is released by the end of `.main` (§3.6.6 rule
-16), so the line reads `heap: 0 live objects` for every program; any other N is a reference-count
+16), and so is every handle (from 9b `Figure` and `Axes` too, counted as objects by the heap check
+and by the count mode; the blocks a figure owns are not objects, §4.1), so the line reads `heap: 0 live objects` for every program; any other N is a reference-count
 error of the compiler or the runtime.
 
 **The count mode** (Decision 105, L-fk). When `SEA_HEAP_CHECK` is exactly `count` at start-up,
@@ -12335,7 +12566,8 @@ of objects the runtime has created since start-up, counting every object that N 
 is made: the arrays of the `sea_arr_new*` entries (and of every runtime entry that builds an
 array through them or the same constructor: `sea_args`, `sea_sort`/`sea_argsort`; the file
 and clock entries and the vector-math entries create none), the `Lu` and `Chol` handles of
-`sea_lu` and `sea_chol` (L-is; a failing `sea_chol` counts none), the copy that `sea_arr_unique` makes of a shared or static array, and every `str` the
+`sea_lu` and `sea_chol` (L-is; a failing `sea_chol` counts none), from 9b the `Figure` of
+`sea_figure` and the `Axes` of `sea_panel` and `sea_twin_y` (L-lb), the copy that `sea_arr_unique` makes of a shared or static array, and every `str` the
 runtime returns (a runtime entry returns a new string each time, never an existing one). A and N
 are unsigned 64-bit decimal numbers, without sign or padding (`heap: 0 allocations, 0 live
 objects` for a program that creates nothing). A is kept without a second increment in the
@@ -12343,7 +12575,7 @@ constructors: the allocator's free path counts the objects it frees (`_sea_freed
 `sea_freed`, 64-bit, `rt_mem.s`), and every constructor already counts its object in the live
 counter and nothing else uncounts one, so A = N + freed, which no creation path can miss. A
 block that is not an object (the output sink's text, a sort's scratch space, the file
-emitters' state) is in neither number. Exactly `1` keeps the line above byte for byte; any value
+emitters' state, a figure's tables, data and label blocks, the SVG buffer) is in neither number. Exactly `1` keeps the line above byte for byte; any value
 other than `1` and `count` (`COUNT`, `2`, `count `, `coun`, the empty string), or unset, writes
 nothing; a run-time error, `error` and a failed flush write no line in either mode.
 
@@ -12523,7 +12755,7 @@ Baysick's do.
 ELF symbol, and pass 4 writes the Mach-O name with a leading `_` on `arm64-macos`). "Site" `S`
 means the entry can fail and pass 4 passes the site index of the `rcall` (§4.9) as one more, last,
 integer argument; "Args" and "Results" are the LIR classes of the `rcall`'s arguments and
-results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 61. "Args" and "Results" are the letters `i f p`, and from phase 7 the vector classes `x` (a 2-lane `f64` vector in a vector register: arm64 `v0`, `v1`; x86_64 `%xmm0`, `%xmm1`) and `y` (a 4-lane vector: `%ymm0`, `%ymm1`; `x86_64-linux` only), as §2.12.8 says.
+results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SEA_ENT_COUNT` = 82. "Args" and "Results" are the letters `i f p`, and from phase 7 the vector classes `x` (a 2-lane `f64` vector in a vector register: arm64 `v0`, `v1`; x86_64 `%xmm0`, `%xmm1`) and `y` (a 4-lane vector: `%ymm0`, `%ymm1`; `x86_64-linux` only), as §2.12.8 says.
 
 | Id | Name | Symbol | Site | Args | Results | Contract |
 |---:|------|--------|------|------|---------|----------|
@@ -12538,7 +12770,7 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 9 | `ARR_NEW` | `sea_arr_new` | `S` | `iiii` | `p` | `(ek, rank, rows, cols, site)`: ek `SEA_EK_F64`, `SEA_EK_I64`, `SEA_EK_BOOL` or `SEA_EK_STR`, rank 1 or 2, cols 1 for a vector. The first of rows, cols (in this order) outside 0 … `SEA_LIM_EXTENT` is `ARRAY_SIZE` with that value; a size that does not fit, or no memory, `OUT_OF_MEMORY` (§4.1). Returns a new array: count 1, `SEA_TAG_ARRAY`, ek, rank, rows, cols, cap rows · cols, data at header + 64, esize 8, 8, 1, 8 by ek, slay 0, the buffer zeroed (§4.1) |
 | 10 | `ARR_NEW_S` | `sea_arr_new_s` | `S` | `piii` | `p` | `(slay, rank, rows, cols, site)`: the same for struct elements, slay the address of a `SEA_SL_*` descriptor (a LIR `slay` record): ek `SEA_EK_STRUCT`, esize `SEA_SL_SIZE`, `SEA_ARR_SLAY` = slay |
 | 11 | `ARR_UNIQUE` | `sea_arr_unique` | `S` | `p` | `p` | `(a, site)`: copy on write. If a's count is 1, returns a. Otherwise allocates an array with a's ek, rank, rows, cols, esize and slay (cap rows · cols), copies the rows · cols · esize data bytes, retains every non-null `str` element and every non-null reference field of every struct element (offsets from the descriptor), then decrements a's count if it is above 1 (a static a, count 0, stays), and returns the copy (count 1). No memory: `OUT_OF_MEMORY` |
-| 12 | `FREE` | `sea_free` | `-` | `p` | `-` | `(obj)`: called by the `release` sequence of pass 4 (§4.9) when a count has just reached 0; never with a static object. An array first releases (decrement, and free at 0, skipping null and static objects) each `str` element, or each reference field of each struct element by its descriptor, then its block is freed; a string's block is freed; the live count drops by one (§4.1). A handle (a `SEA_TAG_LU` or `SEA_TAG_CHOL` object, L-is) is freed as an array is: its block is freed with `_sea_free_block`, the live count drops and the freed count rises by one; it holds no references, so nothing is released first (a `SEA_TAG_FIGURE` or `SEA_TAG_AXES` object stays phase 9's). Cannot fail |
+| 12 | `FREE` | `sea_free` | `-` | `p` | `-` | `(obj)`: called by the `release` sequence of pass 4 (§4.9) when a count has just reached 0; never with a static object. An array first releases (decrement, and free at 0, skipping null and static objects) each `str` element, or each reference field of each struct element by its descriptor, then its block is freed; a string's block is freed; the live count drops by one (§4.1). A handle (a `SEA_TAG_LU` or `SEA_TAG_CHOL` object, L-is) is freed as an array is: its block is freed with `_sea_free_block`, the live count drops and the freed count rises by one; it holds no references, so nothing is released first. An `Axes` (a `SEA_TAG_AXES` object, L-lb) releases its figure through `_sea_release` (which frees the figure when its count reaches 0), then its 32-byte block is freed with `_sea_free_block`; a `Figure` (`SEA_TAG_FIGURE`) releases its name and every string it retained (each axes record's strings and category labels, each series' label), frees with `_sea_free_block` every uncounted block it owns (each series' data block, the category label blocks, the axes table and the series table, each by its exact size, §2.14.6), then its 704-byte block; for both the live count drops and the freed count rises by one. Nothing refers back to an `Axes`, so no cycle exists. Cannot fail |
 | 13 | `STR_CAT` | `sea_str_cat` | `S` | `pp` | `p` | `(a, b, site)`: a new string of a's bytes followed by b's (always a new object). A length above `SEA_LIM_STR_BYTES`, or no memory: `OUT_OF_MEMORY` (LANGUAGE.md §9.2) |
 | 14 | `STR_CMP` | `sea_str_cmp` | `-` | `pp` | `i` | `(a, b)`: −1, 0 or 1 as a is less than, equal to or greater than b, comparing bytes as unsigned values, a proper prefix being the lesser (LANGUAGE.md §4.4: no padding). Cannot fail |
 | 15 | `STR_LOWER` | `sea_str_lower` | `S` | `p` | `p` | `(s, site)`: a new string, the bytes `A`–`Z` (0x41–0x5A) replaced by `a`–`z`, every other byte unchanged (LANGUAGE.md §10.9). No memory: `OUT_OF_MEMORY` |
@@ -12588,6 +12820,27 @@ results, mapped by the calling convention below. `SEA_ENT_<NAME>` is the id; `SE
 | 59 | `RCOND` | `sea_rcond` | `S` | `p` | `f` | `(F, site)`, result in `d0` / `%xmm0`: F an `Lu`; the values of L-io in Decision 129's order, else (1 / est) / ‖A‖₁ with est the estimate of §2.13.6 (no interchanges); fails only by `OUT_OF_MEMORY` (its scratch) |
 | 60 | `EIG_SYM` | `sea_eig_sym` | `S` | `p` | `p` | `(A, site)`: `NOT_SQUARE`; not symmetric: `NOT_SYMMETRIC`. A new `f64` vector of the n eigenvalues, ascending (L-ip) |
 | 61 | `EIG_SYM_GEN` | `sea_eig_sym_gen` | `S` | `pp` | `p` | `(K, M, site)`: `NOT_SQUARE` (K), `NOT_SQUARE` (M), different orders: `SHAPE_MISMATCH` (K's, M's shape), `NOT_SYMMETRIC` (K, then M); then L-iy's order: a non-finite element of K or M gives n NaN, `NOT_POSDEF` (M), a non-finite reduced matrix gives n NaN. A new vector of the eigenvalues of K x = λ M x, ascending |
+| 62 | `FIGURE` | `sea_figure` | `S` | `iipii` | `p` | `(nrows, ncols, name, width, height, site)`: `FIGURE_GRID` (nrows, ncols), `FIGURE_SIZE` (width, height); a new `Figure` (counted in `_sea_live`) with no axes, `name` retained |
+| 63 | `PANEL` | `sea_panel` | `S` | `piiii` | `p` | `(fig, row, col, rowspan, colspan, site)`: `PANEL_CELL`, `PANEL_TAKEN`; a new axes record (base) in fig's store, its cells marked; a new `Axes` handle (counted) referring to fig (fig retained) |
+| 64 | `TWIN_Y` | `sea_twin_y` | `S` | `p` | `p` | `(ax, site)`: the twin record of ax's base, created on the first call (Decision 134 (a)); a new `Axes` handle (counted) referring to it; fails only by `OUT_OF_MEMORY` |
+| 65 | `SAVE_SVG` | `sea_save_svg` | `S` | `pp` | `-` | `(fig, path, site)`: lays out the figure and writes the SVG of §2.14.6 to the file `path` (built completely in memory, then written, L-lc); `CANNOT_OPEN`, `CANNOT_WRITE` (path, errno), `OUT_OF_MEMORY` |
+| 66 | `PLOT` | `sea_plot` | `S` | `pppppfp` | `-` | `(ax, x, y, style, label, width, color, site)`: `SHAPE_MISMATCH` (x's, y's shape), `LINE_STYLE`, `PLOT_WIDTH` (width), `COLOR`; appends a line series with copies of x and y, its colour resolved now (L-kh) |
+| 67 | `XLINE` | `sea_xline` | `S` | `pfpp` | `-` | `(ax, x, style, color, site)`: `LINE_STYLE` (a marker included), `COLOR`; appends a reference line |
+| 68 | `BAR` | `sea_bar` | `S` | `pppfpp` | `-` | `(ax, x, h, width, label, color, site)`: `SHAPE_MISMATCH` (x's, h's shape), `PLOT_WIDTH`, `COLOR`; appends a bar series with copies |
+| 69 | `BARH` | `sea_barh` | `S` | `ppfpp` | `-` | `(ax, h, width, label, color, site)`: `PLOT_WIDTH`, `COLOR`; appends a horizontal bar series |
+| 70 | `CONTOUR` | `sea_contour` | `S` | `ppppiip` | `-` | `(ax, x, y, Z, levels, labels, color, site)`: `SHAPE_EXPECTED` (len(y) × len(x), Z's shape), `CONTOUR_LEVELS` (levels), `COLOR`; appends a contour series with copies of x, y, Z |
+| 71 | `IMAGE` | `sea_image` | `S` | `ppppi` | `-` | `(ax, x, y, Z, colorbar, site)`: `SHAPE_EXPECTED`; appends an image series with copies |
+| 72 | `XLABEL` | `sea_xlabel` | `-` | `pp` | `-` | `(ax, s)`: the pair's x label becomes s (retained; the previous released); cannot fail |
+| 73 | `YLABEL` | `sea_ylabel` | `-` | `pp` | `-` | `(ax, s)`: the y label of ax's own y-axis; cannot fail |
+| 74 | `TITLE` | `sea_title` | `-` | `pp` | `-` | `(ax, s)`: the pair's title; cannot fail |
+| 75 | `LEGEND` | `sea_legend` | `S` | `pp` | `-` | `(ax, loc, site)`: `LEGEND_LOC` (loc); the pair's legend location |
+| 76 | `GRID` | `sea_grid` | `-` | `pi` | `-` | `(ax, on)`: the pair's grid switch; cannot fail |
+| 77 | `XLIM` | `sea_xlim` | `S` | `pff` | `-` | `(ax, lo, hi, site)`: `AXIS_LIMITS` (lo, hi); the pair's x limits |
+| 78 | `YLIM` | `sea_ylim` | `S` | `pff` | `-` | as `XLIM` for ax's own y-axis |
+| 79 | `X_TICKS` | `sea_x_ticks` | `S` | `pp` | `-` | `(ax, labels, site)`: the pair's x category labels (each string retained, the previous ones released); n = 0 returns to numeric ticks; fails only by `OUT_OF_MEMORY` |
+| 80 | `Y_TICKS` | `sea_y_ticks` | `S` | `pp` | `-` | as `X_TICKS` for ax's own y-axis |
+| 81 | `Y_REVERSE` | `sea_y_reverse` | `-` | `p` | `-` | `(ax)`: ax's own y-axis runs downward; cannot fail |
+| 82 | `AXIS_EQUAL` | `sea_axis_equal` | `-` | `p` | `-` | `(ax)`: the pair's base axes get equal data units (§2.14.6); cannot fail |
 
 **Entries of phase 4** (Decision 22: the runtime does memory, copy on write, strings, `error`,
 `args` and sorting; every loop over elements is inline LIR, §3.6.6). They entered `rt.inc`'s
@@ -12658,7 +12911,7 @@ algorithm gives the same bytes, so neither target can differ from the other):
 
 | Name | Value | Meaning |
 |------|------:|---------|
-| `SEA_ENT_COUNT` | 61 | number of entry records |
+| `SEA_ENT_COUNT` | 82 | number of entry records |
 | `SEA_STACK_MARGIN` | 65536 | bytes kept above the guard page: `_sea_stack_limit` = its top + this (§4.6) |
 | `SEA_STACK_LEAF_MAX` | 4096 | a leaf function whose frame is larger is checked too (§4.6) |
 
@@ -12682,6 +12935,14 @@ called directly 480 (at order 200), `sea_la_issym` 0 (a leaf), every entry's own
 x86_64 LU and LU_SOLVE 424, CHOL 456, CHOL_SOLVE 440, SOLVE 456, RCOND 152, EIG_SYM 288,
 EIG_SYM_GEN 440, `sea_la_potrf` 360, `sea_la_issym` 0, every own frame at most 88 but `tql1`'s and
 `sea_la_potrf`'s 168; all far inside `SEA_STACK_MARGIN` and the 512-byte own-frame bound.
+
+**Stack of the plotting entries** (§2.14.5's rule: each entry's own frame at most 512 bytes, the
+deepest path measured and recorded here). 9b, measured (the deepest path below the incoming sp, or
+the return address on x86_64): arm64 `SAVE_SVG` 2 368 bytes (through the layout, the panel, series
+and marker writers, `_sea_fmt_num` and `_sea_file_put`), every other entry of 62–82 that 9b builds
+at most 256; x86_64 `SAVE_SVG` 3 632, every other entry at most 168; every own frame at most 160
+bytes on arm64 and 104 on x86_64. No routine recurses; all far inside `SEA_STACK_MARGIN`. The entries of 9c (`BAR`, `BARH`, `CONTOUR`, `IMAGE`) and the PNG
+path are measured at 9c.
 
 **Reference-counted objects.** Every
 array, string and handle begins with the same 16-byte header, so `retain`/`release` (§3.6.4) work on any of them. A count of `SEA_RC_STATIC` (0) marks a
@@ -14800,7 +15061,11 @@ sea/tests/
                       82–87): a sealower test on hand-written sea.hirl (§3.5.9), for a record
                       sealoop does not write yet; stage.sh runs sealower on it and compares
                       with NAME.lir1
-  plots/NAME.sea      + NAME.struct (the expected structure of each SVG it writes, LANGUAGE.md §12.8)
+  plots/NAME.sea      + NAME.struct (the expected structure of each SVG it writes, LANGUAGE.md §12.8;
+                      the format of §2.14.8, checked by plot_struct.py) [+ NAME.out (expected
+                      stdout, else empty)]; plots.sh runs them (`make test-plots`, from 9b)
+  plots.sh, plot_struct.py  the plot runner and the structural checker of §2.14.8 (Python standard
+                      library only, run under `uv`)
   math/               elementary-function identity tests (§4.10.6): <fn>.vec vectors written by
                       vectors/math_vectors.py from the model vectors/math_model.py, and the
                       C harness math_check.c that checks libsea.a against them (`make
@@ -15838,6 +16103,51 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     §2.13.8 (L-jv): 31 042 cases on the Mac (`neon`), 62 084 on Linux (`avx2` and `sse2`).
   * **8d, the ports**: §2.13.9, listed here when built.
 
+* **Phase-9 tests** (sub-phases 9b–9d, §8; agreed with §2.14, 2026-11-02; the specification is
+  §2.14.8, this list what is built). Every earlier `programs/`, `errors/`, `passes/`, `rt/`,
+  fusion, shape and acceptance case passes unchanged, on the Mac and in `make cross` under both
+  x86_64 variants, except the phase-rule tests 9b retires (§2.14.4). Expected structures and outputs
+  are derived from LANGUAGE.md §12, §9.2 and §2.14, never from a run (§6.1); the SVG bytes are not
+  derived by hand (Decision 13) but checked by structure (`NAME.struct`) and by identical bytes on
+  both targets and both x86_64 variants (§6.6.1). New name prefixes: `plot_*` (the directory
+  `tests/plots/`), `r_plot_*` and `err_plot_*` (errors), `plot9_*` (dumps), `rt_plot_*` (runtime).
+  * **9b, the contract, the front end and the runtime core** (built 2026-11-03). Plot programs
+    (`tests/plots/`, 26, each with its `.struct`; `tests/CORPUS.md` lists each subject):
+    `plot_minimal` (with a `.out`), `plot_heading`, `plot_grid_span`, `plot_style`, `plot_cycle`,
+    `plot_nan`, `plot_empty`, `plot_ticks_basic`, `plot_ticks_explicit`, `plot_ticks_narrow`,
+    `plot_ticks_tiny`, `plot_ticks_wide`, `plot_ticks_zero`, `plot_twin`, `plot_legend_loc`,
+    `plot_legend_pair`, `plot_category`, `plot_category_limits`, `plot_reverse`, `plot_equal`,
+    `plot_xline`, `plot_handles`, `plot_save_twice`, `plot_text`, `plot_extreme` and the review's
+    `plot_cvt_order` (L-lm); the tick lines of the `plot_ticks_*` cases are written by
+    `tests/vectors/plot9_cases.py` (its tick part; `--check` regenerates and compares). Run-time
+    errors (34): `r_plot_grid`, `r_plot_grid_big`, `r_plot_size`, `r_plot_size_big`, the six
+    `r_plot_cell_*` (one per condition of `PANEL_CELL`), `r_plot_taken`, `r_plot_limits`,
+    `r_plot_limits_inf`, `r_plot_limits_nan`, `r_plot_limits_order`, `r_plot_legend`,
+    `r_plot_width`, `r_plot_width_inf`, `r_plot_width_nan`, `r_plot_style`,
+    `r_plot_style_letters`, `r_plot_style_lines`, `r_plot_style_two`, `r_plot_style_xline`,
+    `r_plot_color`, `r_plot_color_name`, `r_plot_shape`, `r_plot_open` and the check-order tests
+    `r_plot_order_figure`, `r_plot_order_panel`, `r_plot_order_plot`, `r_plot_order_style`,
+    `r_plot_order_width`, `r_plot_order_xline`. Compile errors (12): `err_plot_args`,
+    `err_plot_option_positional`, `err_plot_unknown_option`, `err_plot_twice`, `err_plot_missing`,
+    `err_plot_kind`, `err_plot_ref`, `err_plot_array`, `err_plot_eq`, `err_plot_printf`,
+    `err_plot_json`, `err_plot_elemental`; `err_ns_lib_figure`, `err_ns_handle` and
+    `passes/res_err_handle` are retired. Programs of the `cty` fix (L-lm): `call6_named_cvt_fixed`,
+    `call6_named_cvt_dyn`, `struct_order_cvt_fixed`, `struct_order_cvt_dyn`. Dumps (T2, built by
+    hand from §2.14.4, reproduced by `tests/vectors/plot9_dumps.py`, L-lq): `plot9_check` (`.ast` …
+    `.hir1`: every default inserted, the evaluation-order temporaries), `plot9_hirl` (R36),
+    `plot9_rcall` (rule 39's `rcall`s with the site, `PLOT`'s seven integer-class operands) and
+    `plot9_release` (a `Figure` and an `Axes` local released on every exit). Runtime (WP-RT-A64,
+    WP-RT-X64; `tests/rt/<target>/rt_plot_*`): ABI for every entry of 9b, the objects and
+    `sea_free` of both tags with the live and freed counts, the grid, properties and series, the
+    ticks, `_sea_fmt_num`, `_sea_file_put` and its errors, every error with its site and slots and
+    the check orders, and hand-derived SVG bytes (`rt_plot_svg*`, `rt_plot_svg_cat`) that test the
+    runtime against §2.14.6 (L-lq): 58 cases on arm64 and 38 on x86_64, the rt group 229 and 211
+    cases. `tests/plots.sh` and `tests/plot_struct.py` (§2.14.8; `--save-out DIR` and `--only NAME`
+    for the cross packing, the `.struct` readings of L-lq), `make test-plots` after
+    `test-programs` in `make test`, and the case kind `plots/` of the cross run (§6.6.1).
+  * **9c, bars, contours, images, PNG** and **9d, the ports' figures**: §2.14.8 and §2.14.9, listed
+    here when built.
+
 ### 6.3 Workload acceptance
 
 `sea/ports/w1_shaft_design.sea` … `w5_tolerance_mc.sea` and `w7_drivetrain.sea` are the ports. `sea/tests/accept.sh`
@@ -16252,6 +16562,17 @@ the same files the Mac uses (one set for both targets).
   with 0 live objects (§2.12.10). A passing variant prints `ok   fusion/NAME: A allocations at
   K=K, A′ at K=K+1`, and a failure `FAIL fusion/NAME: reason`, the second variant labelled ` [sse2]`
   after the name and the first unlabelled, as for a program case; a pack failure is counted once.
+* `plots/NAME` (9b, §2.14.8 "Cross", L-la, L-lq): every `tests/plots/NAME.sea`. `cross_pack.sh` runs
+  `tests/plots.sh --save-out DIR --only NAME` on the Mac (`--only` runs exactly that case, since a
+  pattern is a substring): the build, the run under the heap check and `plot_struct.py` on
+  `NAME.struct`; a Mac failure is a pack failure (`NAME.packfail` with `plots.sh`'s output; its exit
+  2 is a setup error of `cross_pack.sh`). The case is then compiled like a program case and packed
+  with `NAME.out` (the Mac's standard output, possibly empty) and `NAME.expect/PATH` for every file
+  the `.struct` names (subdirectories included; the existing `NAME.expect/` mechanism). The host
+  runs it like a program case under both variants (heap check, status 0, standard error empty but
+  the heap line) and checks `NAME.out` and `NAME.expect/` byte for byte: the output, each expected
+  SVG, and no other file. The `.struct` check runs on the Mac only. Plot error tests (`r_plot_*`,
+  `err_plot_*`) are ordinary `errors/` cases.
 * `rt/NAME`: every `tests/rt/x86_64_linux/NAME.s` (§4.7.1). Its `.meta` may hold
   `stdout=epipe`, `stdout=slowpipe` and `env=NAME=VALUE` lines (`SEA_KERNELS` and
   `BAYSICK_KERNELS` otherwise unset) and nothing else: no `requires=` (§4.7.1). A program case's
@@ -16447,6 +16768,13 @@ kind (exit 2). At 8d's close the host run packed 1 089 cases (0 failed to compil
 (`avx2`) 911 passed, 0 failed; `sse2` 911 and 0; once-only 176 and 0; 1 998 passed, 0 failed and 4
 deferred, the 4 passing `cross_accept.sh` on the Mac; W1, W4, W5 and W7 stay byte-identical cases.
 
+**As built in 9b** (§2.14.8 "Cross", L-la, L-lq; `cross_pack.sh`, `cross_run.sh`, `plots.sh`). The
+`plots/` cases (the case list above) are packed after the `fusion` cases into
+`<bundle>/cases/plots/`, built once and run per variant like the program cases, and counted in the
+variant lines; `cross_run.sh` requires `NAME.out` and `NAME.expect/` for each (a missing one is a
+FAIL). The ports' `--figures` argument, their packed and kept SVGs and the `svg=approx` comparison
+are 9d's (§2.14.9).
+
 ## 7. What Baysick must grow
 
 ### 7.1 Needs of the compiler, against Baysick 0.6.0
@@ -16590,7 +16918,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 8c | **Factorizations, solves, `rcond`, `eig_sym`, handles** (after 8b and after WP-BSK-OVERLAP has landed in Baysick, contract change 6; Decisions 121–123, 129). Work packages: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the five calls, handles); **WP-FUSE** and **WP-LOOP** (R35 for the `lib`s, if their validation needs it); **WP-LOWER** `passes/sealower/*` (the eight remaining rows); **WP-LU-A64** `runtime/arm64_macos/rt_lu.s` (with the private `sea_la_potrf` and `sea_la_issym`, delivered first, L-jc), `rt_mem.s` (`sea_free`'s handle branch), `tests/rt/arm64_macos/rt_la_lu*`, `rt_la_private*`, `rt_la_free*`; **WP-EIG-A64** `runtime/arm64_macos/rt_eig.s`, `tests/rt/arm64_macos/rt_la_eig*` (calling the private routines through their §2.13.6 interface; merged after WP-LU-A64); **WP-LU-X64** and **WP-EIG-X64** the same under `runtime/x86_64_linux/`; **WP-LACHECK** `tests/la/la_check.c` (the factorization, solve, rcond and eig parts); **T1** `tests/vectors/la8_cases.py` (its RCOND and eig part, with the one-time SciPy check of §2.13.8), `tests/programs/la_lu_*`, `la_chol_*`, `la_solve_*`, `la_eig_*`, `tests/errors/r_la_*`, `err_la_*`, `err_json_handle`, the retirement of `err_ns_lib_solve`, `tests/CORPUS.md`; **T2** `tests/passes/la8_lib_*`; then the measurement after 8c (§2.13.7) | the 8c tests of §2.13.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass; the measurement after 8c recorded in §2.7, any relief agreed before 8d's code. **Done** (2026-11-01): the handle types `Lu` and `Chol` and the five calls through the front end: `seaname` (handle types 8 and 9, 258 by L-jn's walk), `seacheck` (`ck_lib`'s five rows, `cvt` and `dyn` (L-jq), 243, 240 on handles, 210, 255 (L-jm), 224, 258 of arrays, array literals and `filled` holding a handle, 243 of `write_json`), `sealoop` (R35 for the `lib`s), `sealower` (the eight remaining rule-39 rows; handle locals in class p, L-jo), `seafuse` and `seaexpand` unchanged (L-jp); `rt_lu.s` (LU, LU_SOLVE, CHOL, CHOL_SOLVE, SOLVE, RCOND, the private `sea_la_potrf` and `sea_la_issym`, L-js) and `rt_eig.s` (EIG_SYM, EIG_SYM_GEN; L-ju) in both runtimes, `rt_mem.s`'s handle branch of `sea_free`, the handle fields of L-jr and the scratch rules of L-jt; the deepest path 608 bytes below the incoming sp on arm64 and 456 on x86_64 (§4.8); Decision 130 (the user: `rcond` is 0 as soon as a solve's Σ|x| is +∞ or NaN, and when est is 0) and two corrected facts (the identity's `rcond` orders; `dlacn2`'s sign rule confirmed against Reference-LAPACK's source); tests: 23 `programs/la_lu_*`, `la_chol_*`, `la_solve_*`, `la_eig_*`, 26 run-time errors `r_la_*`, 14 compile errors (with `err_json_handle`), `err_ns_lib_solve` retired, the dumps `passes/la8_lib_{check,hirl,rcall,release}`, `la8_cases.py` (254 files) and the one-time `la8_scipy_check.py` (3 000 matrices, largest relative difference 1.21e−14, PASS), `la_check` 31 042 cases on the Mac and 62 084 on Linux, the rt group 171 cases on arm64 and 173 on x86_64 (L-jv; §6.2); a defect found at the integration fixed: `sealower`'s new reading check (`sl3hirl.bas` 30161–30194) used the pass-global constants E7 and E8 (`ESIZE_I64`, `ESIZE_F64` from `FNQ`, `sl0main.bas` 490 and 505) as scratch, so in a program containing one of the five calls every later indexed element access was scaled by the wrong size; the scratch is now H4 and H6, caught by `la_lu_exact`, `la_lu_rcond`, `la_chol_exact`, `la_chol_upper`, `la_solve_nonsym`, `la_solve_sym`, `la_eig_diag` and `la_eig_tridiag`; two independent reviews (passes, runtimes) found no other defect, and three arm64 inconsistencies were aligned with x86_64 (L-jt's cleanup order, `sea_la_issym`'s documented clobbers, SOLVE's W sized only when n > `SEA_LA_NB`); `make test` (driver 122, rt 171, la: `la_check` 31 042 cases and `la/la_link`, stage 1 310, shape 8, fusion 2, protocol 56, programs 2 355, accept 2 + 4) and `make cross` (1 087 cases, default variant 911/0, `sse2` 911/0, once-only 176/0, total 1 998/0) pass; sizes in §2.7 "Measured after 8c" (`seaname` 5 625, `seacheck` 7 059, `sealoop` 6 689, `sealower` 6 841 built lines, no array letter used; no relief); lead decisions L-jm–L-jv; next 8d |
 | 8d | **W2, W3, acceptance; close-out** (after 8c; Decisions 127, 128). Work packages: **WP-PORT** `sea/ports/w2_truss_fem.sea`, `sea/ports/w3_quarter_car.sea` with their `// cross:` header lines (a port defect found in a pass is reported, not worked around); **WP-TOKENS** `sea/ports/w2_truss_fem.tokens`, `sea/ports/w3_quarter_car.tokens`; **WP-CROSS** `tests/cross.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh`, the new `tests/cross_accept.sh` (§2.13.9's items 1–5: the `.meta` key and its whitelist entry, the deferred runs, the return path, the Mac-side comparison, the combined counts; not the `la/*` lines); the compile and compute times recorded in §6.3; then the gate after phase 8 (§2.13.7) | row 8's "done when": `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7 on the Mac (W1, W4, W5, W7 as at 7g); `make cross` passes the six ports under both variants, W2 and W3 by Decision 127; `make test` and `make cross` pass; the gate after phase 8 applied, a failing program getting a relief agreed with the user before phase 9's code **Done** (2026-11-02): port-only, with no compiler or runtime defect found and no pass, runtime, prelude, include or golden change: `ports/w2_truss_fem.sea` (381 lines, header `// cross: compare=accept`) with `ports/w2_truss_fem.tokens` (60 lines) and `ports/w3_quarter_car.sea` (322 lines, header `// cross: compare=accept except=f_nat,c_best`) with `ports/w3_quarter_car.tokens` (41 lines; the token rules of L-kd, W3's lines by L-jz and L-ka, W2's port readings L-kb and L-kc); `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7: W2's every key passes `compare.py --candidate` (the exact keys identical, `fsd_iters` 96, `mechanism_count` 0, `overstressed_count` 158, `e_crit0` 68; the float keys within 6.4e-11 relative; `r_worst` 59 against MATLAB's 61 by the near-tie rule) and its report is equivalent, W3's 27 keys pass (the largest relative difference 9.6e-16) and its report is byte-identical to MATLAB's but for the `Compute time` line (§6.3 "Measured at 8d"); WP-CROSS: `cross_pack.sh` (the `// cross:` header line as a second `.meta` line), `cross_run.sh` (`-k DIR`, `check_meta`'s `compare=accept` lines for ports only, the deferred runs, `, D deferred`), `cross.sh` (the return path `#sea-cross-files N` with the base64 tar, the `awk` splitter, the length check, the combined counts and exit statuses) and the new `cross_accept.sh`, §2.13.9 items 1–5 as built by L-jw–L-jy (§6.6.1 "As built in 8d"), tested on the deferred flow, a truncated base64 stream (exit 2), a corrupted kept JSON (FAIL, exit 1), edits of excepted keys (pass) and of other keys (fail), missing kept files (fail) and an unknown `.meta` line of another kind (exit 2); `make test` (driver 122, rt 171, la: `la_check` 31 042 cases and `la/la_link`, stage 1 310, shape 8, fusion 2, protocol 56, programs 2 355, accept 2 + 6) and `make cross` (1 089 cases packed, 0 failed to compile; default variant 911/0, `sse2` 911/0, once-only 176/0; host 1 998 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed) pass; the gate after phase 8 passes every program with no relief (§2.7 "Measured at the gate after phase 8", the sizes of "Measured after 8c"); lead decisions L-jw–L-kd; phase 8 is complete, next phase 9 (its specification first) |
 | 9a | **Phase-9 specification** (documents only): §2.14 (scope, the semantic contract with the proposed LANGUAGE.md text, the ports' figures against §12, front end and later passes, entries 62–82, the library's algorithms and SVG grammar, capacity, tests, the ports, these rows, Decisions 131–142, lead decisions L-ke – L-lf); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 131–142. **Done** (2026-11-02): the specification revised after one independent review and agreed, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text; next 9b (WP-CONTRACT first and alone) |
-| 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code |
+| 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code. **Done** (2026-11-03): WP-CONTRACT's `rt.inc` entries 62–82 (`SEA_ENT_COUNT` 82), `errors.inc` codes 22–29 (`SEA_E_RT_END` 30), `limits.inc`'s `SEA_LIM_PLOT_GRID` and `SEA_LIM_PLOT_PX` in their own section (L-lp), the `entries` capacity 128 and LANGUAGE.md's agreed text; the front end: `seaname` (the phase-rule branch removed, every handle type resolves; 259 unreachable, L-kx), `seacheck` (the new part `sc9plot.bas`: the class table 32–52 by `pcls` from `ck_lib` and `ck_narg` (L-lk), the options and their defaults, the overloads with `cvt`, `dyn` and the typing of untyped constants (L-ll), 224, 225, 243, 255, and the written form with every parameter and the evaluation-order temporaries, §3.5.5), `sealoop` (R36, `lpbmat.bas` 55500–55526, L-lo), `sealower` (rule 39's 21 rows through `K5$`, the operand classes checked against the entries, L-ln; `Figure` and `Axes` locals in class p), `seafuse` and `seaexpand` unchanged; `rt_plot.s` in both runtimes (`FIGURE`, `PANEL`, `TWIN_Y`, `SAVE_SVG`, `PLOT`, `XLINE` and the property entries 72–82; layout, extents, limits and ticks, the SVG writer of lines, markers and reference lines, legends, category ticks, twins, the buffer), `rt_fmt.s`'s `_sea_fmt_num` (L-li), `rt_file.s`'s `_sea_file_put` and `rt_mem.s`'s `Figure` and `Axes` branches of `sea_free` (L-lb, L-lj); `rt_plot.s` 3 656 lines on arm64 and 3 618 on x86_64; the deepest path `SAVE_SVG`'s, 2 368 bytes below the incoming sp on arm64 and 3 632 on x86_64, the other entries at most 256 and 168 (§4.8); the review's findings fixed: the x86_64 runtime aligned to the numbered order of the limits rules (L-lg), `_sea_file_put` given a fifth argument so the SVG buffer no longer leaks on a file error (L-ld), a twin record's cell fields copied from its base (§2.14.6), a `ref` argument past the last parameter counted and reported as 243 (L-ll), the pre-existing `cty` defect (a latent `sealoop` `BAD_RECORD` for reordered calls and struct literals converting an `i64` array, L-lm), `KEY~` on every `.struct` key and the T2 dumps made reproducible by `tests/vectors/plot9_dumps.py` (L-lq); tests: 26 `plots/plot_*` programs with their `.struct` (`plot_cvt_order` the review's), 34 run-time errors `r_plot_*`, 12 compile errors `err_plot_*`, `err_ns_lib_figure`, `err_ns_handle` and `passes/res_err_handle` retired, the programs `call6_named_cvt_{fixed,dyn}` and `struct_order_cvt_{fixed,dyn}`, the dumps `passes/plot9_{check,hirl,rcall,release}`, `plot9_cases.py`'s tick part, `tests/plots.sh` and `tests/plot_struct.py` with `make test-plots`, the cross case kind `plots/`, the rt group 229 cases on arm64 and 211 on x86_64 (§6.2, §6.6.1); sizes in §2.7 "Measured after 9b" (`seaname` 5 632, `seacheck` 7 335, `sealoop` 6 715, 285 under 7 000, `sealower` 6 885, its longest line still 255 bytes; no new array letter; within §2.14.7's projections; no relief needed); lead decisions L-lg–L-lq; next 9c; `make test` (driver 122, rt 229, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6) and `make cross` (1 194 cases packed, 0 failed to compile; default variant 978/0, `sse2` 978/0, once-only 214/0; host 2 170 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 211) pass |
 | 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass |
 | 9d | **The ports' figures, acceptance, close-out** (after 9c; Decisions 131, 138). **WP-PORT** the six `ports/NAME.sea` (the `--figures` arm and block; W2's header `svg=approx`); **WP-STRUCT** the six `ports/NAME.struct` (from the MATLAB scripts, by an author who does not write the ports); **WP-ACCEPT** `tests/accept.sh` (one run with both flags, the run-directory rule, step 4); **WP-CROSS** `tests/cross_pack.sh`, `tests/cross_run.sh`, `tests/cross.sh`, `tests/cross_accept.sh` (the `--figures` argument, the packed SVG, the kept SVG, Decision 138's comparison, the `svg=approx` header key); the compile times recorded in §6.3; then the gate after phase 9 (§2.14.7) | row 9's "done when": the plot tests pass; every port writes its figure with `--figures` and passes its structural check (`tests/accept.sh` on the Mac; `make cross`: W1, W3, W4, W5, W7 byte-identical SVGs under both variants, W2 by Decision 138); `make test` and `make cross` pass; the gate after phase 9 applied, a failing program getting a relief agreed with the user before phase 10 |
 
@@ -19661,8 +19989,10 @@ reading where LANGUAGE.md or the earlier rules leave a choice, written into §2.
   creates no file and a failed write may leave a partial one.
 * **L-ld** (private helpers, not entries, no `rt.inc` record) `_sea_fmt_num(dst, letter, prec, x)`
   in `rt_fmt.s` (one finite `f64` under `f` or `g` with the given precision, through
-  `Lrt_fmt_float`); `_sea_file_put(path, bytes, len, site)` in `rt_file.s` (the open/write/close of
-  L-lc with `rt_file.s`'s errno handling); `_sea_crc32`, `_sea_adler32`, `_sea_b64` and the PNG
+  `Lrt_fmt_float`); `_sea_file_put(path, bytes, len, site, cap)` in `rt_file.s` (the open/write/close
+  of L-lc with `rt_file.s`'s errno handling; with cap ≠ 0 it frees the block (bytes, cap) before an
+  error is reported and after the write; amended in 9b from four arguments, whose buffer leaked on a
+  file error); `_sea_crc32`, `_sea_adler32`, `_sea_b64` and the PNG
   builder in `rt_png.s`; visibility `.private_extern` on arm64 and `.globl` with `.hidden` on x86_64
   (as L-js).
 * **L-le** (drawing order) The data group draws the pair's series in call order, a twin's series
@@ -19671,3 +20001,60 @@ reading where LANGUAGE.md or the earlier rules leave a choice, written into §2.
 * **L-lf** (order of the 9b build) All 21 ids enter `rt.inc` with WP-CONTRACT, before 9c's code, as
   8b did for 51–61; until 9c a program calling `bar`, `barh`, `contour` or `image` compiles and
   fails only at link, and no 9b test calls them.
+
+Lead decisions of sub-phase 9b (the readings of its work packages and of its review, found in their
+builds and recorded 2026-11-03 at its integration; each states the code as built, and those that
+change bytes are also written into §2.14.6, which stays the single source):
+
+* **L-lg** (9b, agreed 2026-11-03; the limits rules) The limits rules of §2.14.6 apply in their
+  numbered order. Explicit limits (rule 1) and rule 6's recomputation give numeric ticks even on an
+  axis with category labels; category ticks arise only under rule 2. The lead's ruling; the x86_64
+  runtime was aligned to it in the review.
+* **L-lh** (9b, agreed 2026-11-03; ties and repeated texts) An extent end is updated only on a
+  strict `<` (lo) or `>` (hi), so of equal values the first wins. The suppression of an equal tick
+  compares with the last tick appended. Decision 142's loop tries q = 7 … 17 in turn and stops at
+  the first q that makes all adjacent texts differ, else q = 17.
+* **L-li** (9b, agreed 2026-11-03; `_sea_fmt_num`) `_sea_fmt_num` is a pure conversion; the callers
+  add +0.0 where §2.14.6 asks for it. Its destination buffer holds every finite `f64` (336 bytes on
+  arm64, 352 on x86_64; target-local). The heading's x `{W/2}` is f64(W) / 2 written `%.2f`.
+* **L-lj** (9b, agreed 2026-11-03; field contents) The figure allocates both tables (capacity 8)
+  when it is created. The axes record's string fields keep a retained `""` (the writer tests the
+  length); a series' label stores 0 for `""`. These are target-local field contents with no effect
+  on the bytes written; `tests/rt` reads the offsets per target.
+* **L-lk** (9b, agreed 2026-11-03; WP-CHECK, the passes agent's L-lg) The 21 plotting classes 32–52
+  are looked up by `sc9plot`'s `pcls`, called from `ck_lib`'s fallback (`sc6call.bas` 12635) and
+  from `ck_narg`. One table serves the call and its named options; `NOT_SUPPORTED` stays as an
+  unreachable guard (L-kx).
+* **L-ll** (9b, agreed 2026-11-03; settling untyped constants) An untyped integer constant passed
+  positionally beyond the positional parameters is typed `i64`, and the 243 message lists it as
+  `i64`. An untyped value of a named option takes the option's type (`f64` for an `f` option, else
+  `i64`). A `ref` argument past the last positional parameter is counted and reported as 243.
+* **L-lm** (9b, agreed 2026-11-03; `cty`, a pre-existing defect fixed in 9b) The type of a bound
+  value as written is its type after its `cvt` and then its `dyn` or `fix`. This fixes a latent
+  `sealoop` `BAD_RECORD` for reordered calls and struct literals that pass an `i64` array to an
+  `f64` array parameter or field. Tests: the programs `call6_named_cvt_fixed`,
+  `call6_named_cvt_dyn`, `struct_order_cvt_fixed`, `struct_order_cvt_dyn` and
+  `plots/plot_cvt_order`.
+* **L-ln** (9b, agreed 2026-11-03; WP-LOWER) The 21 rows find their entry by the `lib`'s name in
+  capitals, through a separate table of 12-byte slots, `K5$` (W2 33–53). Validation uses the
+  entry's Args classes. Array operands are allowed for `plot bar barh contour image x_ticks
+  y_ticks` (`sl4fix.bas` 40162).
+* **L-lo** (9b, agreed 2026-11-03; WP-LOOP) R36 checks only the children of an array type (a dynamic
+  `f64` vector or matrix, or a dynamic `str` vector) and copies the node; the scalar and handle
+  classes are checked in `sealower`.
+* **L-lp** (9b, agreed 2026-11-03; contract) The plotting limits sit in their own section at the end
+  of `limits.inc`, so the `DATA` positions that `tests/check_data.sh` checks stay unchanged.
+  `tests/include_asserts.inc`'s assertion that `USER` is the last run-time code becomes
+  `SEA_E_USER == 21`.
+* **L-lq** (9b, agreed 2026-11-03; tests)
+  * `tests/plots.sh` accepts `--save-out DIR` and `--only NAME` for cross packing.
+  * A `.struct` bare key with no value is malformed (exit 2), and `subpaths` counts the `M`
+    commands of a path's `d`.
+  * `KEY~` works on every key: keys with selector fields (`count`, `subpaths`, `color`) keep their
+    selectors literal and match the regex against the last field; `file~` and `panel~` select the
+    single match and fail on none or several; `canvas~` matches `W H` and `panels~` the decimal
+    count.
+  * The T2 dumps are reproduced by `tests/vectors/plot9_dumps.py`; the hand check against §2.14.4,
+    rule 39 and Decision 39 is the authority.
+  * The rt tests' hand-derived SVG bytes (`rt_plot_svg*`, `rt_plot_svg_cat`) test the runtime
+    against §2.14.6, not the language; this is consistent with Decision 140 (a).

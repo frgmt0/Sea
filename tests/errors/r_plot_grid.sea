@@ -1,0 +1,4 @@
+// r_plot_grid -- figure with nrows 0: invalid figure grid 0x2 (LANGUAGE.md 12.2, 9.2; FIGURE_GRID, 2.14.2)
+printf("start\n")
+let fig = figure(0, 2)
+printf("never\n")

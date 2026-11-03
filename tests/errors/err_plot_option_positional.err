@@ -1,0 +1,1 @@
+err_plot_option_positional.sea:6:1: error: no overload of 'plot' accepts (Axes, f64[], f64[], str)

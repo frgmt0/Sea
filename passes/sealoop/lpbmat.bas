@@ -1,5 +1,5 @@
 55000 REM ====================================================================================
-55002 REM sealoop part b (lines 55000-59999): the matrix product bin matmul (DESIGN 2.13.4; 55400 R35 of the 8c libs;
+55002 REM sealoop part b (lines 55000-59999): the matrix product bin matmul (DESIGN 2.13.4; 55400 R35 of the 8c libs; 55500 R36 of 9b;
 55004 REM Decisions 124, 125). Entered from 5546 for every bin X of an array type (any other goes to
 55006 REM L7's test at 5551): L7 never takes @. R35: a product of two dynamic f64 operands (pass 2a
 55008 REM wrote a dyn where one was fixed-size) is validated and copied, sealower lowering it by
@@ -153,11 +153,11 @@
 55401 REM of K3$ and K5$): lib lu, chol (one dynamic f64 matrix; the type 8, 9), solve (an Lu, a Chol or a
 55402 REM dynamic f64 matrix, then a dynamic f64 vector or matrix; the dynamic f64 array of its rank), rcond
 55403 REM (an Lu; f64), eig_sym (one or two dynamic f64 matrices; f64[]): validated and copied after its
-55404 REM children (sealower's rule 39 lowers them); any other lib goes on at 5324. B1 the function, C2
+55404 REM children (sealower's rule 39 lowers them); any other lib goes on at R36 (55500). B1 the function, C2
 55405 REM the arity, B2 the child C3, B3 its kind (1 a vector, 2 a matrix, 8 9 a handle, 0 any other),
 55406 REM B4 the row of the kinds child C3 of B1 may have
 55410 LET B1 = POS("|lu     |chol   |solve  |rcond  |eig_sym|", "|" & SEG$(F9$ & "       ", 1, 7) & "|")
-55412 IF B1 = 0 THEN 5324
+55412 IF B1 = 0 THEN 55500
 55414 LET B1 = (B1 - 1) / 8 + 1
 55416 LET C2 = H(X, 5)
 55418 IF C2 < 1 THEN 2900
@@ -195,3 +195,19 @@
 55482 IF E5 <> 4 THEN 2900
 55484 IF F5 <> 0 THEN 2900
 55486 GOTO 5160
+55500 REM ---- R36 (9b, DESIGN 2.14.4): a lib of the 21 plotting calls stays in sea.hirl with its children
+55501 REM rewritten: a child of an array type must be a dynamic f64 vector or matrix or a dynamic str
+55502 REM vector (R10 materialized it: no unrewritten array expression, the check R35 makes); scalar and
+55503 REM handle children are any expression, their classes sealower's (L-jj); copied after its children.
+55504 REM Any other lib goes on at 5324. B2 the child
+55506 IF POS("|figure|panel|twin_y|save_svg|plot|xline|bar|barh|contour|image|xlabel|ylabel|title|legend|grid|xlim|ylim|x_ticks|y_ticks|y_reverse|axis_equal|", "|" & F9$ & "|") = 0 THEN 5324
+55508 LET B2 = X1
+55510 IF B2 = 0 THEN 5160
+55512 LET Y7 = H(B2, 2)
+55514 GOSUB 8700
+55516 IF R5 = 0 THEN 55524
+55518 IF F5 <> 0 THEN 2900
+55520 IF E5 = 4 THEN 55524
+55522 IF E5 * 10 + R5 <> 51 THEN 2900
+55524 LET B2 = H(B2, 4)
+55526 GOTO 55510

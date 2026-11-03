@@ -172,7 +172,6 @@ CLASS = {
     'res_err_default': [('f', 2, '(c) 0 sites, 1 stmt')],
     'res_err_dim': [('f', 2, '(c) 0 sites, 1 stmt')],
     'res_err_first_pos': [('f', 2, '(c) 0 sites, 1 stmt (the second f is not entered)')],
-    'res_err_handle': [('f', 2, '(c) 0 sites, 1 stmt')],
     'res_err_param_redef': [('g', 2, '(c) 0 sites, 1 stmt')],
     'res_err_param_shadow': [('f', 2, '(c) 0 sites, 1 stmt')],
     'res_err_predeclared': [('sqrt', 2, '(b) 1 site (resolved to the entered item)')],

@@ -1,0 +1,7 @@
+// r_plot_taken -- a span over two earlier panels reports the first taken cell with rows ascending, then
+// columns: 1,2 (column order would give 2,0) (LANGUAGE.md 12.2; Decision 133 (b))
+printf("start\n")
+let fig = figure(3, 3)
+let p = panel(fig, 1, 2)
+let q = panel(fig, 2, 0)
+let ax = panel(fig, 1, 0, rowspan: 2, colspan: 3)

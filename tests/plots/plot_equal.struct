@@ -1,0 +1,62 @@
+# plot_equal.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_equal.sea; DESIGN.md 2.14.8 "The .struct format")
+# pw 728, ph 328: the x limits widen
+file wide.svg
+canvas 800 400
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+# pw 328, ph 728: the y limits widen
+file tall.svg
+canvas 400 800
+heading -
+panels 1
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count xtick 5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+count ytick 4
+ytick -1
+ytick 0
+ytick 1
+ytick 2
+count ytick2 0

@@ -1,0 +1,10 @@
+// plot_ticks_tiny -- 1e-5-wide ranges: steps below 1e-4 are written %g, 1e-4 itself %.4f (DESIGN.md 2.14.6
+// "Tick labels")
+let fig = figure(2, 1, height: 480)
+let a0 = panel(fig, 0, 0)
+title(a0, "tiny")
+plot(a0, [0.0, 3e-05], [0.0002, 0.0006])
+let a1 = panel(fig, 1, 0)
+title(a1, "offset tiny")
+plot(a1, [0.5, 0.50004], [-1e-05, 1e-05])
+save_svg(fig, "plot_ticks_tiny.svg")

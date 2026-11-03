@@ -1,0 +1,4 @@
+// err_plot_printf -- an Axes formatted by printf: 210 at the argument (LANGUAGE.md 11.1)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+printf("%g\n", ax)

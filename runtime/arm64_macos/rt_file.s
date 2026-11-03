@@ -17,6 +17,8 @@
 //   _sea_json_str   (s, site)       an escaped string
 //   _sea_json_vec   (a, site)       a dynamic vector as a flat array
 //   _sea_json_mat   (a, site)       a dynamic matrix as an array of rows
+// and (.private_extern, used by rt_plot.s; DESIGN.md 2.14.6, L-ld):
+//   _sea_file_put   (path, bytes, len, site, cap)  write a new file
 // and (.private_extern, used by rt_err.s):
 //   _sea_json_abort ()              flush and close an open JSON file,
 //                                   ignoring failures (L-ca)
@@ -1149,6 +1151,135 @@ _sea_json_abort:
 2:  ldr x19, [sp, #16]
     ldp x29, x30, [sp], #32
     ret
+
+// ---------------------------------------------------------------------
+// _sea_file_put -- write a complete byte range to a new file (DESIGN.md
+//   2.14.6 "The byte buffer and the file", L-lc, L-ld; used by
+//   rt_plot.s's SAVE_SVG).
+//   Purpose : the path copied into a NUL-terminated buffer (a NUL byte
+//             in the path: CANNOT_OPEN with EINVAL), then
+//             open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666) (failure:
+//             CANNOT_OPEN with the path and errno), _sea_write_all
+//             (failure: close, ignoring its result, then CANNOT_WRITE
+//             with the errno of the write), close (failure:
+//             CANNOT_WRITE). The host constants and the errno handling
+//             are the JSON writer's. The caller's byte block (when cap
+//             is not 0) is freed with _sea_free_block(bytes, cap) before
+//             an error is reported and after the write (2.14.6: "the
+//             buffer is freed before an error is reported and after the
+//             write"), which the four arguments of L-ld cannot express
+//             without its size: hence the fifth.
+//   Inputs  : x0 = path (string object, borrowed), x1 = bytes, x2 =
+//             length, x3 = site, x4 = cap: the size of the block at
+//             bytes to free, or 0 (the bytes are not freed)
+//   Outputs : none (an error never returns)
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: x19 = path, x20 = bytes, x21 = length, x22 =
+//             site, x23 = cap, x24 = the path buffer, then the
+//             descriptor, then the errno; x25 = the errno of a failed
+//             write
+//   Frame   : 80 bytes (frame record + x19..x25, pad) + 16 (open's
+//             variadic mode slot at [sp]) = 96 bytes
+// ---------------------------------------------------------------------
+    .private_extern _sea_file_put
+    .p2align 2
+_sea_file_put:
+    stp x29, x30, [sp, #-80]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    stp x21, x22, [sp, #32]
+    stp x23, x24, [sp, #48]
+    str x25, [sp, #64]
+    sub sp, sp, #16                 // open's variadic slot at [sp]
+    mov x19, x0
+    mov x20, x1
+    mov x21, x2
+    mov x22, x3
+    mov x23, x4
+    // The NUL-terminated path.
+    mov x1, x22
+    bl Lrt_file_cpath               // x0 = buffer, x1 = holds a NUL
+    mov x24, x0
+    cbz x1, 1f
+    mov x0, x24                     // a NUL byte: EINVAL, nothing opened
+    ldr x1, [x19, #SEA_STR_LEN]
+    add x1, x1, #1
+    bl _sea_free_block
+    mov x24, #RT_FILE_EINVAL
+    b Lrt_file_put_openfail
+1:  mov x9, #RT_FILE_MODE_FILE
+    str x9, [sp]                    // open's mode is variadic: the stack slot
+    mov x0, x24
+    mov w1, #(RT_FILE_O_WRONLY | RT_FILE_O_CREAT | RT_FILE_O_TRUNC)
+    bl _open                        // fd, or -1 and errno
+    sxtw x25, w0                    // the descriptor (or -1), kept in x25 for now
+    tbz x25, #63, 2f                // opened
+    bl Lrt_file_errno               // x0 = errno of open
+    mov x9, x24
+    mov x24, x0                     // the errno, kept
+    mov x0, x9                      // free the path buffer
+    ldr x1, [x19, #SEA_STR_LEN]
+    add x1, x1, #1
+    bl _sea_free_block
+    b Lrt_file_put_openfail
+2:  mov x0, x24                     // the path buffer is not kept
+    ldr x1, [x19, #SEA_STR_LEN]
+    add x1, x1, #1
+    bl _sea_free_block
+    mov x24, x25                    // x24 = the descriptor from here on
+    // Every byte, then the close.
+    mov w0, w24
+    mov x1, x20
+    mov x2, x21
+    bl _sea_write_all               // x0 = 0 or errno
+    cbz x0, 3f
+    mov x25, x0                     // the write's errno
+    mov w0, w24
+    bl _close                       // result ignored (the write failed)
+    mov x24, x25
+    b Lrt_file_put_writefail
+3:  mov w0, w24
+    bl _close                       // 0, or -1 and errno
+    cbz w0, 4f
+    bl Lrt_file_errno
+    mov x24, x0
+    b Lrt_file_put_writefail
+4:  bl Lrt_file_put_freebuf         // done: the caller's block goes
+    add sp, sp, #16
+    ldr x25, [sp, #64]
+    ldp x23, x24, [sp, #48]
+    ldp x21, x22, [sp, #32]
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #80
+    ret
+Lrt_file_put_openfail:
+    bl Lrt_file_put_freebuf         // x24 = errno (kept: callee-saved)
+    mov w0, #SEA_E_CANNOT_OPEN
+    mov x1, x22
+    mov x2, x19
+    mov x3, x24
+    bl Lrt_file_fail                // noreturn
+Lrt_file_put_writefail:
+    bl Lrt_file_put_freebuf         // x24 = errno
+    mov w0, #SEA_E_CANNOT_WRITE
+    mov x1, x22
+    mov x2, x19
+    mov x3, x24
+    bl Lrt_file_fail                // noreturn
+
+// Lrt_file_put_freebuf -- _sea_free_block(x20, x23) when x23 is not 0
+//   (_sea_file_put's byte block). Clobbers x0-x17, d0-d7, d16-d31,
+//   flags. Frame 16 bytes.
+    .p2align 2
+Lrt_file_put_freebuf:
+    cbz x23, 1f
+    stp x29, x30, [sp, #-16]!
+    mov x29, sp
+    mov x0, x20
+    mov x1, x23
+    bl _sea_free_block
+    ldp x29, x30, [sp], #16
+1:  ret
 
 // ---------------------------------------------------------------------
 // Constant texts.

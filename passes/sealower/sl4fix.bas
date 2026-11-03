@@ -68,8 +68,8 @@
 40156 GOTO 40150
 40158 IF E3 <> E4 THEN 2365
 40160 GOTO 40136
-40161 REM a lib with an array operand: only sort and argsort (R16), lu chol solve eig_sym (R35, 8c; checked at 30162)
-40162 IF POS("|sort|argsort|lu|chol|solve|eig_sym|", "|" & G$(4) & "|") = 0 THEN 2360
+40161 REM a lib with an array operand: only sort and argsort (R16), lu chol solve eig_sym (R35, 8c; checked at 30162), plot bar barh contour image x_ticks y_ticks (R36, 9b; their classes checked at 34030)
+40162 IF POS("|sort|argsort|lu|chol|solve|eig_sym|plot|bar|barh|contour|image|x_ticks|y_ticks|", "|" & G$(4) & "|") = 0 THEN 2360
 40164 GOTO 40124
 40190 REM ---- reading chkb dim: dim 0 or 1, index and extent of type 3 ----------------------------
 40200 LET H(H1, 5) = I(2)

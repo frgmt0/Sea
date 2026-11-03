@@ -59,7 +59,7 @@
 68 REM in SSE2, 4 lanes in AVX2 (VEX); no FMA. Q0 = 1 while the upper halves may be dirty (8700:
 69 REM vzeroupper, L-fd); Q1 Q2 the 32-byte yneg / yabs constants used; Q5 a new mask of the record
 70 REM (9700); T(r,5..7) the extent of a y or 4-lane m register (4790). M(row,0) the 4-lane variant.
-200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(64), Y$(64,5)
+200 DIM E(299), E$(299,5), X(19), X$(19), C(299,4), C$(299), Y(128), Y$(128,5)
 201 DIM N(39,2), N$(39), W$(299), R(399,9), R$(399), F(1499,3), F$(1499), Z(8)
 202 DIM K(60), K$(60), A(399,2), P$(199), M(199,7), Q$(1999), T$(199,3), V$(10,9), U$(32,5)
 203 DIM B$(219999), O(219999,1), G(219999), G$(300), U(60), L(4), Q(200), P(200), J$(300)
@@ -166,7 +166,7 @@
 304 CALL "tb_errors": P$, E(), E$(), 299, E0
 305 CALL "tb_exits": P$, E(), E$(), E0, X(), X$(), 19, N7
 306 CALL "tb_consts": P$, E(), E$(), E0, C(), C$(), 299, C9
-307 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 64, Y9
+307 CALL "tb_entries": P$, E(), E$(), E0, Y(), Y$(), 128, Y9
 308 LET Z(1) = 39
 309 LET Z(2) = 299
 310 LET Z(3) = 399

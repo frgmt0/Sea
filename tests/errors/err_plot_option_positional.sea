@@ -1,0 +1,6 @@
+// err_plot_option_positional -- an option given positionally: one argument more, 243 (L-kg)
+let fig = figure(1, 1)
+let ax = panel(fig, 0, 0)
+let x = zeros(3)
+let y = zeros(3)
+plot(ax, x, y, "-o")
