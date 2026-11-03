@@ -1,0 +1,18 @@
+// plot_image_orient -- a 2 x 3 image with increasing and decreasing x and y (DESIGN.md 2.14.6 "Images", L-kr):
+// the same extent -0.5 ... 2.5 by 5 ... 25 in every panel (the PNG columns and rows mirrored, checked by the
+// cross run's byte identity), tight limits with explicit-limit ticks (rule 3; LANGUAGE.md 12.4, 12.6)
+let fig = figure(2, 2)
+let Z = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0]
+let a0 = panel(fig, 0, 0)
+image(a0, [0.0, 1.0, 2.0], [10.0, 20.0], Z)
+title(a0, "x up, y up")
+let a1 = panel(fig, 0, 1)
+image(a1, [0.0, 1.0, 2.0], [20.0, 10.0], Z)
+title(a1, "x up, y down")
+let a2 = panel(fig, 1, 0)
+image(a2, [2.0, 1.0, 0.0], [10.0, 20.0], Z)
+title(a2, "x down, y up")
+let a3 = panel(fig, 1, 1)
+image(a3, [2.0, 1.0, 0.0], [20.0, 10.0], Z)
+title(a3, "x down, y down")
+save_svg(fig, "plot_image_orient.svg")

@@ -1,0 +1,114 @@
+# plot_image_contour.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_image_contour.sea; DESIGN.md 2.14.8 "The .struct format")
+# b: the pair's x extent takes the twin's line, -1 ... 3; the twin's y-axis is tight at 3 ... 8
+file plot_image_contour.svg
+canvas 960 720
+heading -
+panels 2
+panel 0
+title temperature
+xlabel x [m]
+ylabel y [m]
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #ffffff
+color contour-level 1 #ffffff
+color contour-level 2 #ffffff
+color contour-level 3 #ffffff
+count contour-level 4
+count contour-segment 11
+count contour-label 0
+count image 1
+count colorbar 1
+count colorbar-box 1
+count colorbar-ticks 1
+count xtick 5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+count ytick 4
+ytick -1
+ytick 0
+ytick 1
+ytick 2
+count ytick2 0
+count ctick 6
+ctick 0
+ctick 1
+ctick 2
+ctick 3
+ctick 4
+ctick 5
+segment 0 162.80 316.40 91.60 280.80
+segment 1 234.00 423.20 186.53 352.00
+segment 2 186.53 352.00 162.80 316.40
+segment 3 234.00 280.80 234.00 280.80
+segment 4 290.96 423.20 262.48 352.00
+segment 5 262.48 352.00 234.00 280.80
+segment 6 305.20 316.40 290.96 280.80
+segment 7 335.71 423.20 315.37 352.00
+segment 8 315.37 352.00 305.20 316.40
+segment 9 376.40 423.20 356.06 352.00
+segment 10 356.06 352.00 335.71 280.80
+pixels 0 #426fd5 #4686fb #2cbed2 #a1cb6b #7a0403
+pixels 0 #393f86 #3d57ad #3e98ee #46dc9d #ac4b18
+pixels 0 #30123b #34285f #426fd5 #23d2c4 #e0962e
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 edge
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #d95319
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 1
+count colorbar-box 1
+count colorbar-ticks 1
+count xtick 5
+xtick -1
+xtick 0
+xtick 1
+xtick 2
+xtick 3
+count ytick 4
+ytick -2
+ytick 0
+ytick 2
+ytick 4
+count ytick2 6
+ytick2 3
+ytick2 4
+ytick2 5
+ytick2 6
+ytick2 7
+ytick2 8
+count ctick 6
+ctick 0
+ctick 1
+ctick 2
+ctick 3
+ctick 4
+ctick 5
+pixels 0 #426fd5 #4686fb #2cbed2 #a1cb6b #7a0403
+pixels 0 #393f86 #3d57ad #3e98ee #46dc9d #ac4b18
+pixels 0 #30123b #34285f #426fd5 #23d2c4 #e0962e

@@ -17,13 +17,20 @@
 //   _sea_xlim, _sea_ylim (ax, d0 = lo, d1 = hi, site)
 //   _sea_x_ticks, _sea_y_ticks (ax, labels, site)
 //   _sea_y_reverse, _sea_axis_equal (ax)
-// BAR, BARH, CONTOUR and IMAGE (series kinds 3 .. 6) are sub-phase 9c's
-// (rt_plot2.s, L-lf); until then no series of those kinds exists, so the
-// writer draws kinds 1 (line) and 2 (xline) only.
+// BAR, BARH, CONTOUR and IMAGE (series kinds 3 .. 6) are rt_plot2.s's
+// (sub-phase 9c): the writer here hands their extents, their elements and
+// the colorbar (item 9) to it, and places the colorbar in the layout (mr,
+// L-ko); a barh series is a bar entry of the legend.
+// Defines (private, .private_extern, for rt_plot2.s; each an alias of
+// the local routine of the same name with the prefix Lrtp_): the writer
+// routines _sea_plot_bput, _bcstr, _f2, _bcolor, _xywh, _textel, _mapx,
+// _mapy, _widen, _ticks_in, _tickfmt, _tickpath, _ticktexts, and the
+// entry helpers _sea_plot_color, _resolve, _append.
 // Uses: _sea_alloc, _sea_free_block, _sea_retain, _sea_release,
 //       _sea_live (rt_mem.s), _sea_err (rt_err.s), _sea_fmt_num
-//       (rt_fmt.s), _sea_file_put (rt_file.s), memcpy, memset, memcmp
-//       (libSystem).
+//       (rt_fmt.s), _sea_file_put (rt_file.s), _sea_plot2_extent,
+//       _sea_plot2_cbar, _sea_plot2_series, _sea_plot2_colorbar
+//       (rt_plot2.s), memcpy, memset, memcmp (libSystem).
 //
 // OBJECTS (DESIGN.md 2.14.6 "Objects"; the RTP_* offsets below, the same
 // in both runtimes, read by tests/rt and by rt_mem.s's sea_free). A
@@ -129,6 +136,7 @@
 .equ RTP_K_LINE,    1               /* series kinds */
 .equ RTP_K_XLINE,   2
 .equ RTP_K_BAR,     3
+.equ RTP_K_BARH,    4
 .equ RTP_K_IMAGE,   6
 .equ RTP_MK_DOT,    9               /* the marker `.`, filled */
 .if (RTP_F_OCC + 8 * SEA_LIM_PLOT_GRID) != RTP_F_SIZE
@@ -172,6 +180,7 @@
 .equ RS_PH,         96
 .equ RS_FIRST,      104             /* 1 before the first item of a path */
 .equ RS_TIGHT,      112             /* 1 when the pair holds an image (rule 3) */
+.equ RS_CBAR,       120             /* the pair's colorbar image record, or 0 (rt_plot2.s) */
 .equ RS_AX,         128             /* the pair's x-axis */
 .equ RS_AY,         (RS_AX + AS_SIZE)   /* the base's y-axis */
 .equ RS_AT,         (RS_AY + AS_SIZE)   /* the twin's y-axis */
@@ -278,6 +287,7 @@ Lrtp_k:
     KDEF F40, 28, 40.0
     KDEF FOUR, 29, 4.0
     KDEF F10, 30, 10.0
+    KDEF M120, 31, 120.0        /* right margin with a twin and a colorbar */
 .if SEA_LIM_PLOT_PX != 100000
     .error "rt_plot: K_P and K_P2 are SEA_LIM_PLOT_PX and twice it"
 .endif
@@ -303,6 +313,8 @@ Lrtp_k:
 //   Frame   : 48 bytes (frame record + x19..x22)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_bput
+_sea_plot_bput:
 Lrtp_bput:
     stp x29, x30, [sp, #-48]!
     mov x29, sp
@@ -352,6 +364,8 @@ Lrtp_bput:
 //   Frame   : none (tail call of Lrtp_bput)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_bcstr
+_sea_plot_bcstr:
 Lrtp_bcstr:
     mov x1, #0
 1:  ldrb w9, [x0, x1]               // its length
@@ -384,6 +398,8 @@ Lrtp_bbyte:
 //   Frame   : 16 bytes (frame record)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_f2
+_sea_plot_f2:
 Lrtp_f2:
     stp x29, x30, [sp, #-16]!
     mov x29, sp
@@ -434,6 +450,8 @@ Lrtp_bint:
 //   Frame   : 32 bytes (frame record, 7 bytes of text at sp+16)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_bcolor
+_sea_plot_bcolor:
 Lrtp_bcolor:
     stp x29, x30, [sp, #-32]!
     mov x29, sp
@@ -549,6 +567,8 @@ Lrtp_bstr:
 //   Frame   : 64 bytes (frame record, x19, pad, d8..d11)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_xywh
+_sea_plot_xywh:
 Lrtp_xywh:
     stp x29, x30, [sp, #-64]!
     mov x29, sp
@@ -587,6 +607,8 @@ Lrtp_xywh:
 //   Frame   : 64 bytes (frame record + x19..x22 + d8, d9)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_textel
+_sea_plot_textel:
 Lrtp_textel:
     stp x29, x30, [sp, #-64]!
     mov x29, sp
@@ -674,6 +696,8 @@ Lrtp_clamp:
 //   Frame   : none (leaf, tail call of Lrtp_clamp)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_mapx
+_sea_plot_mapx:
 Lrtp_mapx:
     ldr d1, [x28, #(RS_AX + AS_LO)]
     ldr d2, [x28, #(RS_AX + AS_HI)]
@@ -695,6 +719,8 @@ Lrtp_mapx:
 //   Frame   : none (leaf, tail call of Lrtp_clamp)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_mapy
+_sea_plot_mapy:
 Lrtp_mapy:
     ldr d1, [x0, #AS_LO]
     ldr d2, [x0, #AS_HI]
@@ -885,6 +911,8 @@ Lrtp_addtick:
 //   Frame   : 64 bytes (frame record + x19..x21, pad, d8, d9)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_ticks_in
+_sea_plot_ticks_in:
 Lrtp_ticks_in:
     stp x29, x30, [sp, #-64]!
     mov x29, sp
@@ -942,6 +970,8 @@ Lrtp_ticks_in:
 //   Frame   : none (leaf)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_widen
+_sea_plot_widen:
 Lrtp_widen:
     ldr x9, [x0, #AS_EXT]
     cbz x9, 3f                      // no extent: 0 .. 1
@@ -1231,6 +1261,8 @@ Lrtp_distinct:
 //   Frame   : 32 bytes (frame record + x19, x20)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_tickfmt
+_sea_plot_tickfmt:
 Lrtp_tickfmt:
     stp x29, x30, [sp, #-32]!
     mov x29, sp
@@ -1336,6 +1368,8 @@ Lrtp_ticktext:
 //   Frame   : 96 bytes (frame record + x19..x23, pad, d8..d10, pad)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_tickpath
+_sea_plot_tickpath:
 Lrtp_tickpath:
     stp x29, x30, [sp, #-96]!
     mov x29, sp
@@ -1402,6 +1436,8 @@ Lrtp_tickpath:
 //   Frame   : 96 bytes (frame record + x19..x25, pad, d8, d9)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_ticktexts
+_sea_plot_ticktexts:
 Lrtp_ticktexts:
     stp x29, x30, [sp, #-96]!
     mov x29, sp
@@ -1490,7 +1526,9 @@ Lrtp_extend:
 // ---------------------------------------------------------------------
 // Lrtp_extents -- the extents of the pair being written: a line series
 //   gives its x values to the x-axis and its y values to its own y-axis;
-//   an xline nothing; RS_TIGHT is set when the pair holds an image.
+//   an xline nothing; kinds 3 .. 6 (bars, contours, images) theirs by
+//   rt_plot2.s's _sea_plot2_extent; RS_TIGHT is set when the pair holds
+//   an image.
 //   Inputs  : x28 = Lrtp_st (RS_FIG, RS_BIDX, RS_TIDX set)
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags
 //   Callee-saved used: x19 = series record, x20 = records left
@@ -1521,7 +1559,18 @@ Lrtp_extents:
     b.ne 3f
     mov x9, #1
     str x9, [x28, #RS_TIGHT]
-3:  cmp x13, #RTP_K_LINE
+3:  cmp x13, #RTP_K_BAR
+    b.lo 31f
+    mov x0, x19                     // kinds 3 .. 6: rt_plot2.s, with its
+    ldr x10, [x19, #RTP_SR_AX]      // own y-axis
+    ldr x11, [x28, #RS_BIDX]
+    add x1, x28, #RS_AY
+    cmp x10, x11
+    b.eq 32f
+    add x1, x28, #RS_AT
+32: bl _sea_plot2_extent
+    b 5f
+31: cmp x13, #RTP_K_LINE
     b.ne 5f
     add x0, x28, #RS_AX             // x values to the x-axis
     ldr x1, [x19, #RTP_SR_DATA]
@@ -1904,6 +1953,8 @@ Lrtp_leg_loop:
     ldr x9, [x19, #RTP_SR_KIND]
     cmp x9, #RTP_K_BAR
     b.eq Lrtp_leg_bar
+    cmp x9, #RTP_K_BARH             // a barh series' sample is a bar's too
+    b.eq Lrtp_leg_bar
     ldr x9, [x19, #RTP_SR_LINE]
     cbz x9, 1f
     // The line sample: M{bx+6} {yc} H{bx+26}.
@@ -2009,8 +2060,11 @@ Lrtp_legentry:
     cbz x9, 1f
     ldr x9, [x12, #RTP_SR_KIND]
     cmp x9, #RTP_K_LINE
-    ccmp x9, #RTP_K_BAR, #4, ne
-    b.ne 1f
+    b.eq 2f
+    sub x10, x9, #RTP_K_BAR         // a bar (3) or barh (4) series
+    cmp x10, #(RTP_K_BARH - RTP_K_BAR)
+    b.hi 1f
+2:
     ldr x9, [x12, #RTP_SR_AX]
     ldr x10, [x28, #RS_BIDX]
     ldr x11, [x28, #RS_TIDX]
@@ -2059,9 +2113,11 @@ Lrtp_panel:
     tbnz x10, #63, 1f
     add x21, x9, x10, lsl #8        // the twin's record
 1:  str x21, [x28, #RS_TWIN]
+    bl _sea_plot2_cbar              // RS_CBAR: the pair's colorbar image, or 0
 
     // ---- Layout: cw = W / ncols, ch = (H - hb) / nrows, the cell span,
-    // the margins (mr 16, or 68 with a twin), pw and ph at least 1.
+    // the margins (mr 16, or 68 with a twin or a colorbar, 120 with both,
+    // L-ko), pw and ph at least 1.
     ldr x9, [x24, #RTP_F_W]
     ucvtf d0, x9
     ldr x9, [x24, #RTP_F_NCOLS]
@@ -2091,9 +2147,15 @@ Lrtp_panel:
     ldr x9, [x20, #RTP_AX_RSPAN]
     ucvtf d3, x9
     fmul d3, d3, d14                // h = f64(rowspan) * ch
-    LDK d15, M16                    // mr
-    cbz x21, 3f
-    LDK d15, M68
+    LDK d15, M16                    // mr: 16 ...
+    ldr x9, [x28, #RS_CBAR]
+    cbz x21, 31f
+    LDK d15, M68                    // ... 68 with a twin ...
+    cbz x9, 3f
+    LDK d15, M120                   // ... 120 with a twin and a colorbar ...
+    b 3f
+31: cbz x9, 3f
+    LDK d15, M68                    // ... 68 with a colorbar
 3:  LDK d4, M56
     fadd d8, d0, d4                 // px = x0 + 56
     LDK d5, M28
@@ -2223,8 +2285,10 @@ Lrtp_panel:
     bl Lrtp_line
     b 9f
 81: cmp x9, #RTP_K_XLINE
-    b.ne 9f                         // kinds 3 .. 6: sub-phase 9c
+    b.ne 82f
     bl Lrtp_xline
+    b 9f
+82: bl _sea_plot2_series            // kinds 3 .. 6: rt_plot2.s
 9:  add x22, x22, #RTP_SR_SIZE
     sub x23, x23, #1
     b 8b
@@ -2286,8 +2350,12 @@ Lrtp_panel:
     LDK d1, SIX
     fadd d0, d0, d1                 // px + pw + 6
     bl Lrtp_ticktexts
-    // ---- 5.10: the labels (5.9, the colorbar, is sub-phase 9c's).
-12: ldr x9, [x20, #RTP_AX_XLAB]
+    // ---- 5.9: the colorbar, if the pair has one (rt_plot2.s).
+12: ldr x9, [x28, #RS_CBAR]
+    cbz x9, 121f
+    bl _sea_plot2_colorbar
+    // ---- 5.10: the labels.
+121: ldr x9, [x20, #RTP_AX_XLAB]
     cbz x9, 13f
     ldr x4, [x9, #SEA_STR_LEN]
     cbz x4, 13f
@@ -2475,6 +2543,8 @@ _sea_save_svg:
 //   Frame   : 64 bytes (frame record + x19..x24)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_append
+_sea_plot_append:
 Lrtp_append:
     stp x29, x30, [sp, #-64]!
     mov x29, sp
@@ -2927,6 +2997,8 @@ Lrtp_style_bad:
 //   Frame   : none (leaf)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_color
+_sea_plot_color:
 Lrtp_color:
     ldr x9, [x0, #SEA_STR_LEN]
     add x10, x0, #SEA_STR_BYTES
@@ -2970,6 +3042,8 @@ Lrtp_color:
 //   Frame   : none (leaf)
 // ---------------------------------------------------------------------
     .p2align 2
+    .private_extern _sea_plot_resolve
+_sea_plot_resolve:
 Lrtp_resolve:
     tbz x0, #63, 1f                 // the argument
     mov x0, x1

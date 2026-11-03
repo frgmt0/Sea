@@ -1,0 +1,696 @@
+# plot_contour_cases.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_contour_cases.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_contour_cases.svg
+canvas 1200 960
+heading -
+panels 18
+panel 0
+title case 1
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 140.00 196.00 56.00 112.00
+panel 1
+title case 2
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 380.00 196.00 464.00 112.00
+panel 2
+title case 3
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 704.00 112.00 536.00 112.00
+panel 3
+title case 4
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 944.00 112.00 860.00 28.00
+panel 4
+title case 5
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 1100.00 196.00 1184.00 112.00
+segment 1 1100.00 28.00 1016.00 112.00
+panel 5
+title case 6
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 140.00 436.00 140.00 268.00
+panel 6
+title case 7
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 380.00 268.00 296.00 352.00
+panel 7
+title case 8
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 620.00 268.00 536.00 352.00
+panel 8
+title case 9
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 860.00 436.00 860.00 268.00
+panel 9
+title case 10
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 1100.00 436.00 1016.00 352.00
+segment 1 1184.00 352.00 1100.00 268.00
+panel 10
+title case 11
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 224.00 592.00 140.00 508.00
+panel 11
+title case 12
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 464.00 592.00 296.00 592.00
+panel 12
+title case 13
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 620.00 676.00 704.00 592.00
+panel 13
+title case 14
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 1
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 860.00 676.00 776.00 592.00
+panel 14
+title saddle 5 low centre
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 1044.00 676.00 1016.00 648.00
+segment 1 1184.00 592.00 1100.00 508.00
+panel 15
+title saddle 10 low centre
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 196.00 916.00 224.00 888.00
+segment 1 140.00 748.00 56.00 832.00
+panel 16
+title saddle 5 high centre
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 380.00 916.00 464.00 832.00
+segment 1 359.00 748.00 296.00 811.00
+panel 17
+title saddle 10 high centre
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #1ce4b5
+count contour-level 1
+count contour-segment 2
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 599.00 916.00 536.00 853.00
+segment 1 704.00 832.00 620.00 748.00

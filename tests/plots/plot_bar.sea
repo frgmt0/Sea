@@ -1,0 +1,15 @@
+// plot_bar -- bars (LANGUAGE.md 12.3; DESIGN.md 2.14.6 "Bars", L-kq): delta from unsorted x (0.5 here, so
+// hw = 0.2), a NaN and an infinite height not drawn, a zero height drawn (height 0), negative heights,
+// a NaN x not drawn and not in delta, width: in units of delta, colour by color: and by the cycle, a
+// bar label in the legend (legend-bar, L-kn), i64 heights converted and an untyped width: 1 (2.14.2)
+let fig = figure(1, 2)
+let a = panel(fig, 0, 0)
+bar(a, [3.0, 1.0, 2.5, 0.0, 4.0, 5.5], [2.0, -1.5, nan, 0.0, inf, 3.0])
+bar(a, [1.0, nan, 2.0], [1.0, 1.0, -2.0], width: 1.5, label: "wide", color: "#00AA00")
+legend(a)
+let b = panel(fig, 0, 1)
+let counts: i64[] = [4, 0, 7]
+bar(b, [10.0, 20.0, 30.0], counts, width: 1, label: "counts")
+plot(b, [10.0, 30.0], [5.0, 5.0], label: "level")
+legend(b, loc: "northwest")
+save_svg(fig, "plot_bar.svg")

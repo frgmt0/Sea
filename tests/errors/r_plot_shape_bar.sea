@@ -1,0 +1,5 @@
+// r_plot_shape_bar -- bar of a 3-vector x against a 2-vector h: the two shapes in argument order (2.14.2; SHAPE_MISMATCH)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+bar(ax, zeros(3), zeros(2))

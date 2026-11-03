@@ -1,0 +1,99 @@
+# plot_bar.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_bar.sea; DESIGN.md 2.14.8 "The .struct format")
+# a: drawn bars 3, 1, 0, 5.5 of the first series and 1, 2 of the second; x -0.2 ... 5.7, y -2 ... 3
+# b: delta 10, hw 5: x 5 ... 35, y 0 ... 7; the line takes the second cycle colour
+file plot_bar.svg
+canvas 960 720
+heading -
+panels 2
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 0
+count legend-marker 0
+count legend-bar 1
+legend wide
+count bars 2
+count bar 6
+color bars 0 #0072bd
+color bars 1 #00aa00
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 8
+xtick -1
+xtick 0
+xtick 1
+xtick 2
+xtick 3
+xtick 4
+xtick 5
+xtick 6
+count ytick 6
+ytick -2
+ytick -1
+ytick 0
+ytick 1
+ytick 2
+ytick 3
+count ytick2 0
+count ctick 0
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 1
+count legend-line 1
+count legend-marker 0
+count legend-bar 1
+legend counts
+legend level
+subpaths 0 1
+color line 0 #d95319
+count bars 1
+count bar 3
+color bars 0 #0072bd
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick 5
+xtick 10
+xtick 15
+xtick 20
+xtick 25
+xtick 30
+xtick 35
+count ytick 8
+ytick 0
+ytick 1
+ytick 2
+ytick 3
+ytick 4
+ytick 5
+ytick 6
+ytick 7
+count ytick2 0
+count ctick 0

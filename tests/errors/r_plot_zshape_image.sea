@@ -1,0 +1,6 @@
+// r_plot_zshape_image -- image with Z 2x2 where len(y) x len(x) is 3x2 (2.14.2)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let Z = zeros(2, 2)
+image(ax, zeros(2), zeros(3), Z)

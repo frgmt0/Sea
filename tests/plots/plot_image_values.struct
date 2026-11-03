@@ -1,0 +1,175 @@
+# plot_image_values.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_image_values.sea; DESIGN.md 2.14.8 "The .struct format")
+# c: the single cell spans 2.5 ... 3.5 by 6.5 ... 7.5; d: x -0.5 ... 5.5, the colorbar of Z3 (0 ... 10)
+file plot_image_values.svg
+canvas 960 720
+heading -
+panels 4
+panel 0
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 1
+count colorbar-box 1
+count colorbar-ticks 1
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick -0.5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+count ytick2 0
+count ctick 5
+ctick 0.0
+ctick 0.5
+ctick 1.0
+ctick 1.5
+ctick 2.0
+pixels 0 #1ce4b5 #30123b #7a0403
+pixels 0 #ffffff #7a0403 #30123b
+panel 1
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 1
+count colorbar-box 1
+count colorbar-ticks 1
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick -0.5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+count ytick2 0
+count ctick 5
+ctick 4.6
+ctick 4.8
+ctick 5.0
+ctick 5.2
+ctick 5.4
+pixels 0 #30123b #30123b #30123b
+pixels 0 #30123b #30123b #30123b
+panel 2
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 5
+xtick 2.6
+xtick 2.8
+xtick 3.0
+xtick 3.2
+xtick 3.4
+count ytick 5
+ytick 6.6
+ytick 6.8
+ytick 7.0
+ytick 7.2
+ytick 7.4
+count ytick2 0
+count ctick 0
+pixels 0 #30123b
+panel 3
+title -
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 3
+count colorbar 1
+count colorbar-box 1
+count colorbar-ticks 1
+count xtick 6
+xtick 0
+xtick 1
+xtick 2
+xtick 3
+xtick 4
+xtick 5
+count ytick 5
+ytick -0.5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+count ytick2 0
+count ctick 6
+ctick 0
+ctick 2
+ctick 4
+ctick 6
+ctick 8
+ctick 10
+pixels 0 #7a0403 #30123b
+pixels 0 #30123b #7a0403
+pixels 1 #1ce4b5 #30123b
+pixels 1 #30123b #7a0403
+pixels 2 #1ce4b5 #30123b
+pixels 2 #30123b #7a0403

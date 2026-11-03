@@ -1,0 +1,23 @@
+// plot_image_values -- image cells (LANGUAGE.md 12.6; DESIGN.md 2.14.6 "Images", item 9, L-kr, L-ko): NaN white
+// and +-Inf at the map's ends with a colorbar over the finite range 0 ... 2 (its ctick texts), a constant
+// image (entry 0) whose colorbar range 5 is widened to 4.5 ... 5.5 as rule 4, a single cell (half a unit
+// each side), and three images of which the last with colorbar: true gives the colorbar
+let fig = figure(2, 2)
+let a = panel(fig, 0, 0)
+let Za = [nan, inf, 0.0; 1.0, -inf, 2.0]
+image(a, [0.0, 1.0, 2.0], [0.0, 1.0], Za, colorbar: true)
+let b = panel(fig, 0, 1)
+let Zb = [5.0, 5.0, 5.0; 5.0, 5.0, 5.0]
+image(b, [0.0, 1.0, 2.0], [0.0, 1.0], Zb, colorbar: true)
+let c = panel(fig, 1, 0)
+var Zs = zeros(1, 1)
+Zs[0, 0] = 2.0
+image(c, [3.0], [7.0], Zs)
+let d = panel(fig, 1, 1)
+let Z1 = [0.0, 1.0; 1.0, 0.0]
+let Z2 = [0.0, 100.0; 50.0, 0.0]
+let Z3 = [0.0, 10.0; 5.0, 0.0]
+image(d, [0.0, 1.0], [0.0, 1.0], Z1, colorbar: true)
+image(d, [2.0, 3.0], [0.0, 1.0], Z3, colorbar: true)
+image(d, [4.0, 5.0], [0.0, 1.0], Z2)
+save_svg(fig, "plot_image_values.svg")

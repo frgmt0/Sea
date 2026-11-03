@@ -1,0 +1,7 @@
+// r_plot_color_bar -- bar with color "#GG0000": not hex digits (LANGUAGE.md 12.3; COLOR)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let h = [2.0, 3.0]
+bar(ax, x, h, color: "#GG0000")

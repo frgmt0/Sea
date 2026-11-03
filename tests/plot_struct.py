@@ -26,6 +26,19 @@ pattern; the `~` follows the key with no space). The keys and what each checks:
                    all of them in document order, must equal the list of these lines exactly
   color CLASS I C  the stroke (line, xline, markers, contour-level) or fill (bars) of the panel's
                    I-th element of class CLASS is C
+  clabel T         repeated, like legend: the list of the panel's contour-label texts, all of them
+                   in document order
+  segment I X1 Y1 X2 Y2
+                   the panel's I-th contour-segment element (0-based, document order) has exactly
+                   these x1, y1, x2, y2 attribute strings (compared as written, e.g. 123.45)
+  pixels I ROW     repeated per image: the panel's I-th `image` element of class image (never the
+                   colorbar) has an href `data:image/png;base64,B`; B is decoded (base64, strict)
+                   and checked as a PNG: the signature, chunks IHDR (8-bit RGB: depth 8, colour
+                   type 2, compression 0, filter method 0, no interlace) ... IDAT ... IEND with
+                   every CRC-32 correct, the IDAT data a zlib stream that decompresses to h rows of
+                   a filter byte 0 and 3w bytes; the consecutive `pixels I` lines are its rows from
+                   the top, each the row's pixels as #rrggbb separated by single spaces: as many
+                   lines as the height, as many pixels per line as the width
 
 Elements are matched by their local name in the SVG namespace and by a class token. Texts are
 compared after XML unescaping (ElementTree's), byte for byte. A `~` line matches the text with
@@ -37,6 +50,8 @@ selector fields the selectors stay literal and the regex is the last field:
   canvas~ RX       RX matches "W H" of the root; panels~ RX matches the decimal panel count
   count~ CLASS RX  RX matches the decimal count of CLASS; subpaths~ I RX the decimal M count;
   color~ CLASS I RX  RX matches the stroke or fill
+  segment~ I RX    RX matches "X1 Y1 X2 Y2" of the I-th contour-segment
+  pixels~ I RX     RX matches that row's text
   the text keys    RX matches the text (`-` is then an ordinary pattern, not "none")
 A panel key before any `panel` of the current file, a `panel` before any `file`, an unknown key, a
 malformed value (a count that is not a decimal number, a colour class other than the five above, a
@@ -46,10 +61,13 @@ Output: `PASS` and exit 0; `FAIL: STRUCT:LINE: <the first difference>` and exit 
 `plot_struct.py: <reason>` on standard error and exit 2.
 """
 
+import base64
+import binascii
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
+import zlib
 
 NS = 'http://www.w3.org/2000/svg'
 SVG = '{%s}' % NS
@@ -58,12 +76,15 @@ XML_DECL = b'<?xml version="1.0" encoding="UTF-8"?>\n'
 FILE_KEYS = ('canvas', 'heading', 'panels')
 TEXT1_KEYS = ('title', 'xlabel', 'ylabel', 'ylabel2')
 LIST_KEYS = {'xtick': 'xtick', 'ytick': 'ytick', 'ytick2': 'ytick2', 'ctick': 'ctick',
-             'legend': 'legend-label'}
-PANEL_KEYS = TEXT1_KEYS + tuple(LIST_KEYS) + ('count', 'subpaths', 'color')
+             'legend': 'legend-label', 'clabel': 'contour-label'}
+PANEL_KEYS = TEXT1_KEYS + tuple(LIST_KEYS) + ('count', 'subpaths', 'color', 'segment', 'pixels')
 COLOR_ATTR = {'line': 'stroke', 'xline': 'stroke', 'markers': 'stroke', 'contour-level': 'stroke',
               'bars': 'fill'}
 KEY_RE = re.compile(r'[a-z][a-z0-9]*~?')
 NUM_RE = re.compile(r'[0-9]+')
+PIXEL_RE = re.compile(r'#[0-9a-f]{6}( #[0-9a-f]{6})*')
+PNG_SIG = b'\x89PNG\r\n\x1a\n'
+HREF_PREFIX = 'data:image/png;base64,'
 CLASS_RE = re.compile(r'[A-Za-z0-9_-]+')
 
 
@@ -169,13 +190,13 @@ def check_value_forms(path, recs):
     for n, (i, key, rx, v) in enumerate(recs):
         where = '%s:%d' % (path, i)
         if rx:
-            if key in ('count', 'subpaths', 'color'):
+            if key in ('count', 'subpaths', 'color', 'segment', 'pixels'):
                 nsel = 2 if key == 'color' else 1
                 sel, pat = split_rx(where, key, v, nsel)
                 if key == 'count' and not CLASS_RE.fullmatch(sel[0]):
                     raise Setup('%s: count~ wants "CLASS RX"' % where)
-                if key == 'subpaths' and not NUM_RE.fullmatch(sel[0]):
-                    raise Setup('%s: subpaths~ wants "I RX"' % where)
+                if key in ('subpaths', 'segment', 'pixels') and not NUM_RE.fullmatch(sel[0]):
+                    raise Setup('%s: %s~ wants "I RX"' % (where, key))
                 if key == 'color' and (sel[0] not in COLOR_ATTR or not NUM_RE.fullmatch(sel[1])):
                     raise Setup('%s: color~ wants "CLASS I RX" with CLASS one of %s'
                                 % (where, ' '.join(sorted(COLOR_ATTR))))
@@ -227,6 +248,14 @@ def check_value_forms(path, recs):
             if len(p) != 3 or p[0] not in COLOR_ATTR or not NUM_RE.fullmatch(p[1]):
                 raise Setup('%s: color wants "CLASS I C" with CLASS one of %s'
                             % (where, ' '.join(sorted(COLOR_ATTR))))
+        elif key == 'segment':
+            p = v.split(' ')
+            if len(p) != 5 or not NUM_RE.fullmatch(p[0]) or any(x == '' for x in p):
+                raise Setup('%s: segment wants "I X1 Y1 X2 Y2"' % where)
+        elif key == 'pixels':
+            p = v.split(' ', 1)
+            if len(p) != 2 or not NUM_RE.fullmatch(p[0]) or not PIXEL_RE.fullmatch(p[1]):
+                raise Setup('%s: pixels wants "I #rrggbb ..." (lower-case hex, single spaces)' % where)
     if not seen_file:
         raise Setup('%s: no file line' % path)
 
@@ -241,6 +270,57 @@ def show(want, rx):
     return ('~ %s' % want.pattern) if rx else repr(want)
 
 
+def png_rows(data):
+    """The rows (from the top) of a PNG as lists of '#rrggbb', or raise ValueError with the reason.
+    Checks the signature, IHDR (8-bit RGB, deflate, filter method 0, no interlace), IHDR first and
+    IEND last, every chunk's CRC-32, the IDAT data (all IDAT chunks joined) as a zlib stream holding
+    h rows of filter byte 0 and 3w bytes, and nothing after IEND."""
+    if not data.startswith(PNG_SIG):
+        raise ValueError('no PNG signature')
+    pos = len(PNG_SIG)
+    chunks = []
+    while pos < len(data):
+        if pos + 12 > len(data):
+            raise ValueError('truncated chunk at byte %d' % pos)
+        n = int.from_bytes(data[pos:pos + 4], 'big')
+        typ = data[pos + 4:pos + 8]
+        body = data[pos + 8:pos + 8 + n]
+        if len(body) != n or pos + 12 + n > len(data):
+            raise ValueError('truncated chunk %r' % typ)
+        crc = int.from_bytes(data[pos + 8 + n:pos + 12 + n], 'big')
+        if crc != (zlib.crc32(typ + body) & 0xFFFFFFFF):
+            raise ValueError('bad CRC-32 in chunk %r' % typ)
+        chunks.append((typ, body))
+        pos += 12 + n
+        if typ == b'IEND':
+            break
+    if pos != len(data):
+        raise ValueError('bytes after IEND')
+    if not chunks or chunks[0][0] != b'IHDR' or chunks[-1][0] != b'IEND':
+        raise ValueError('chunks are not IHDR ... IEND')
+    ih = chunks[0][1]
+    if len(ih) != 13:
+        raise ValueError('IHDR of %d bytes' % len(ih))
+    w, h = int.from_bytes(ih[0:4], 'big'), int.from_bytes(ih[4:8], 'big')
+    if ih[8:13] != bytes([8, 2, 0, 0, 0]) or w < 1 or h < 1:
+        raise ValueError('IHDR is not an 8-bit RGB image (got %r)' % ih)
+    idat = b''.join(body for typ, body in chunks if typ == b'IDAT')
+    try:
+        raw = zlib.decompress(idat)
+    except zlib.error as e:
+        raise ValueError('IDAT does not decompress: %s' % e)
+    stride = 1 + 3 * w
+    if len(raw) != h * stride:
+        raise ValueError('raw data of %d bytes, %dx%d needs %d' % (len(raw), w, h, h * stride))
+    rows = []
+    for r in range(h):
+        line = raw[r * stride:(r + 1) * stride]
+        if line[0] != 0:
+            raise ValueError('row %d has filter %d' % (r, line[0]))
+        rows.append(['#%02x%02x%02x' % tuple(line[1 + 3 * c:4 + 3 * c]) for c in range(w)])
+    return rows
+
+
 class Checker:
     def __init__(self, path, rundir):
         self.path = path
@@ -249,6 +329,7 @@ class Checker:
         self.panels = []
         self.panel = None
         self.lists = {}
+        self.pixels = {}
 
     def fail(self, line, msg):
         raise Fail('%s:%d: %s' % (self.path, line, msg))
@@ -276,6 +357,7 @@ class Checker:
         self.panels = of_class(root, 'panel', 'g')
         self.panel = None
         self.lists = {}
+        self.pixels = {}
 
     def end_panel(self):
         """Compare the accumulated list keys of the panel just ended."""
@@ -295,6 +377,33 @@ class Checker:
                 self.fail(entries[-1][0], '%s: %d text(s) expected, the panel has %d: %r'
                           % (key, len(entries), len(got), got))
         self.lists = {}
+        images = of_class(self.panel, 'image', 'image')
+        for i, entries in sorted(self.pixels.items()):
+            first = entries[0][0]
+            if i >= len(images):
+                self.fail(first, 'pixels %d: the panel has %d image element(s) of class image'
+                          % (i, len(images)))
+            href = images[i].get('href') or ''
+            if not href.startswith(HREF_PREFIX):
+                self.fail(first, 'pixels %d: the href does not start with %r' % (i, HREF_PREFIX))
+            try:
+                data = base64.b64decode(href[len(HREF_PREFIX):], validate=True)
+            except (binascii.Error, ValueError) as e:
+                self.fail(first, 'pixels %d: the base64 does not decode: %s' % (i, e))
+            try:
+                rows = png_rows(data)
+            except ValueError as e:
+                self.fail(first, 'pixels %d: bad PNG: %s' % (i, e))
+            for r, (line, rx, want) in enumerate(entries):
+                if r >= len(rows):
+                    self.fail(line, 'pixels %d: row %d expected, the PNG has %d row(s)' % (i, r, len(rows)))
+                got = ' '.join(rows[r])
+                if not text_matches(want, rx, got):
+                    self.fail(line, 'pixels %d row %d: expected %s, found %r' % (i, r, show(want, rx), got))
+            if len(rows) != len(entries):
+                self.fail(entries[-1][0], 'pixels %d: %d row(s) expected, the PNG has %d'
+                          % (i, len(entries), len(rows)))
+        self.pixels = {}
 
     def one_text(self, line, scope, cls, name, rx, want, what):
         els = of_class(scope, cls, name)
@@ -311,7 +420,10 @@ class Checker:
 
     def run(self, recs):
         for line, key, rx, v in recs:
-            if rx and key not in ('heading',) + TEXT1_KEYS + tuple(LIST_KEYS):
+            if rx and key == 'pixels':
+                (i,), pat = v
+                self.pixels.setdefault(int(i), []).append((line, True, pat))
+            elif rx and key not in ('heading',) + TEXT1_KEYS + tuple(LIST_KEYS):
                 self.run_rx(line, key, v)
             elif key == 'file':
                 self.end_panel()
@@ -354,6 +466,18 @@ class Checker:
                 if got != n:
                     self.fail(line, 'subpaths %d: expected %d M commands, found %d in %r'
                               % (i, n, got, d))
+            elif key == 'segment':
+                p = v.split(' ')
+                i = int(p[0])
+                segs = of_class(self.panel, 'contour-segment')
+                if i >= len(segs):
+                    self.fail(line, 'segment %d: the panel has %d contour-segment element(s)' % (i, len(segs)))
+                got = [segs[i].get(a) for a in ('x1', 'y1', 'x2', 'y2')]
+                if got != p[1:]:
+                    self.fail(line, 'segment %d: expected x1 y1 x2 y2 = %s, found %r' % (i, ' '.join(p[1:]), got))
+            elif key == 'pixels':
+                i, row = v.split(' ', 1)
+                self.pixels.setdefault(int(i), []).append((line, False, row))
             elif key == 'color':
                 cls, i, c = v.split(' ')
                 i = int(i)
@@ -402,6 +526,14 @@ class Checker:
             (cls,), v = v
             got = str(len(of_class(self.panel, cls)))
             what = 'count %s' % cls
+        elif key == 'segment':
+            (i,), v = v
+            i = int(i)
+            segs = of_class(self.panel, 'contour-segment')
+            if i >= len(segs):
+                self.fail(line, 'segment %d: the panel has %d contour-segment element(s)' % (i, len(segs)))
+            got = ' '.join(segs[i].get(a) or '' for a in ('x1', 'y1', 'x2', 'y2'))
+            what = 'segment %d' % i
         elif key == 'subpaths':
             (i,), v = v
             i = int(i)

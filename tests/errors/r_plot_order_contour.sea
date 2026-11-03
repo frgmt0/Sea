@@ -1,0 +1,8 @@
+// r_plot_order_contour -- contour with a wrong Z, levels 0 and a bad colour reports the shape (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = zeros(4)
+let y = zeros(3)
+let Z = zeros(4, 4)
+contour(ax, x, y, Z, color: "?", levels: 0)

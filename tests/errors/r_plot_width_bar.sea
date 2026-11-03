@@ -1,0 +1,7 @@
+// r_plot_width_bar -- bar with width 0: invalid width 0 (LANGUAGE.md 12.3; PLOT_WIDTH, 2.14.2)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let h = [2.0, 3.0]
+bar(ax, x, h, width: 0)

@@ -1,0 +1,22 @@
+// plot_image_contour -- W4's form: an image with its colorbar, a contour over it and axis_equal on one axes
+// (LANGUAGE.md 12.4-12.6; DESIGN.md 2.14.6 rules 3 and 6 with mr 68 for the colorbar, L-ko, L-le): the
+// tight extent -0.25 ... 2.25 by -0.25 ... 1.25 widened in y by rule 6; then an image with a twin whose
+// line takes its y-axis tight too (rule 3, the twin included), axis_equal with mr 120 (twin and colorbar)
+let fig = figure(1, 2)
+let x = [0.0, 0.5, 1.0, 1.5, 2.0]
+let y = [0.0, 0.5, 1.0]
+let T = [0.0, 0.25, 1.0, 2.25, 4.0; 0.5, 0.75, 1.5, 2.75, 4.5; 1.0, 1.25, 2.0, 3.25, 5.0]
+let a = panel(fig, 0, 0)
+image(a, x, y, T, colorbar: true)
+contour(a, x, y, T, levels: 4, color: "#ffffff")
+axis_equal(a)
+title(a, "temperature")
+xlabel(a, "x [m]")
+ylabel(a, "y [m]")
+let b = panel(fig, 0, 1)
+image(b, x, y, T, colorbar: true)
+let t = twin_y(b)
+plot(t, [-1.0, 3.0], [3.0, 8.0], label: "edge")
+ylabel(t, "edge")
+axis_equal(b)
+save_svg(fig, "plot_image_contour.svg")

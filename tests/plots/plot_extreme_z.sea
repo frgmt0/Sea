@@ -1,0 +1,20 @@
+// plot_extreme_z -- cells near +-1.7e308 (DESIGN.md 2.14.6 "Images", "Contour levels", "Bars"; L-kl, L-kr, L-ks):
+// an image whose zmax - zmin overflows (every finite cell entry 0) with a colorbar over -1.7e308 ... 1.7e308
+// that admits no step (no ctick); a contour on it with no level; a bar series whose hw overflows (no bar,
+// no extent: limits 0 ... 1); a contour whose levels 2 and 3 overflow (f64(k) * d) and are skipped; an
+// image whose extent ends overflow (not drawn)
+let fig = figure(2, 3)
+let Z = [-1.7e+308, 1.7e+308; 0.0, 1.0]
+let a = panel(fig, 0, 0)
+image(a, [0.0, 1.0], [0.0, 1.0], Z, colorbar: true)
+let b = panel(fig, 0, 1)
+contour(b, [0.0, 1.0], [0.0, 1.0], Z, labels: true)
+let c = panel(fig, 0, 2)
+bar(c, [-1.7e+308, 1.7e+308], [1.0, 2.0])
+let d = panel(fig, 1, 0)
+let Zd = [0.0, 1.7e+308; 0.0, 1.7e+308]
+contour(d, [0.0, 1.0], [0.0, 1.0], Zd, levels: 3, labels: true)
+let e = panel(fig, 1, 1)
+let Ze = [1.0, 2.0; 3.0, 4.0]
+image(e, [-1.7e+308, 1.7e+308], [0.0, 1.0], Ze)
+save_svg(fig, "plot_extreme_z.svg")

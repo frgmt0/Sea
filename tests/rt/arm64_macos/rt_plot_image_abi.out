@@ -1,0 +1,14 @@
+figure: ok
+panel: ok
+twin_y: ok
+panel 2: ok
+bar: ok
+bar coloured: ok
+barh: ok
+legend: ok
+contour: ok
+contour coloured: ok
+image: ok
+image on the twin: ok
+axis_equal: ok
+save_svg: ok

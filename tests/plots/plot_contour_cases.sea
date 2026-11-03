@@ -1,0 +1,82 @@
+// plot_contour_cases -- marching squares (DESIGN.md 2.14.6 "Contour levels and marching squares", L-ks):
+// one 2 x 2 grid per case 1 ... 14 (corner a = Z[0,0] bit 1, b = Z[0,1] bit 2, c = Z[1,1] bit 4,
+// d = Z[1,0] bit 8 set when above the level 0.5), one segment each, two for the saddles 5 and 10; the
+// saddles again with the centre strictly below and strictly above the level (cases 5 and 10 themselves
+// have it equal to the level, which counts as above); levels: 1, the
+// colour map entry floor(256 / 2) = 128 (#1ce4b5, Decision 132 (a)) (LANGUAGE.md 12.6)
+let fig = figure(4, 5, width: 1200, height: 960)
+let x = [0.0, 1.0]
+let y = [0.0, 1.0]
+let a1 = panel(fig, 0, 0)
+let z1 = [1.0, 0.0; 0.0, 0.0]
+contour(a1, x, y, z1, levels: 1)
+title(a1, "case 1")
+let a2 = panel(fig, 0, 1)
+let z2 = [0.0, 1.0; 0.0, 0.0]
+contour(a2, x, y, z2, levels: 1)
+title(a2, "case 2")
+let a3 = panel(fig, 0, 2)
+let z3 = [1.0, 1.0; 0.0, 0.0]
+contour(a3, x, y, z3, levels: 1)
+title(a3, "case 3")
+let a4 = panel(fig, 0, 3)
+let z4 = [0.0, 0.0; 0.0, 1.0]
+contour(a4, x, y, z4, levels: 1)
+title(a4, "case 4")
+let a5 = panel(fig, 0, 4)
+let z5 = [1.0, 0.0; 0.0, 1.0]
+contour(a5, x, y, z5, levels: 1)
+title(a5, "case 5")
+let a6 = panel(fig, 1, 0)
+let z6 = [0.0, 1.0; 0.0, 1.0]
+contour(a6, x, y, z6, levels: 1)
+title(a6, "case 6")
+let a7 = panel(fig, 1, 1)
+let z7 = [1.0, 1.0; 0.0, 1.0]
+contour(a7, x, y, z7, levels: 1)
+title(a7, "case 7")
+let a8 = panel(fig, 1, 2)
+let z8 = [0.0, 0.0; 1.0, 0.0]
+contour(a8, x, y, z8, levels: 1)
+title(a8, "case 8")
+let a9 = panel(fig, 1, 3)
+let z9 = [1.0, 0.0; 1.0, 0.0]
+contour(a9, x, y, z9, levels: 1)
+title(a9, "case 9")
+let a10 = panel(fig, 1, 4)
+let z10 = [0.0, 1.0; 1.0, 0.0]
+contour(a10, x, y, z10, levels: 1)
+title(a10, "case 10")
+let a11 = panel(fig, 2, 0)
+let z11 = [1.0, 1.0; 1.0, 0.0]
+contour(a11, x, y, z11, levels: 1)
+title(a11, "case 11")
+let a12 = panel(fig, 2, 1)
+let z12 = [0.0, 0.0; 1.0, 1.0]
+contour(a12, x, y, z12, levels: 1)
+title(a12, "case 12")
+let a13 = panel(fig, 2, 2)
+let z13 = [1.0, 0.0; 1.0, 1.0]
+contour(a13, x, y, z13, levels: 1)
+title(a13, "case 13")
+let a14 = panel(fig, 2, 3)
+let z14 = [0.0, 1.0; 1.0, 1.0]
+contour(a14, x, y, z14, levels: 1)
+title(a14, "case 14")
+let s5low = panel(fig, 2, 4)
+let w5low = [0.6, 0.0; 0.0, 1.0]
+contour(s5low, x, y, w5low, levels: 1)
+title(s5low, "saddle 5 low centre")
+let s10low = panel(fig, 3, 0)
+let w10low = [0.0, 0.6; 1.0, 0.0]
+contour(s10low, x, y, w10low, levels: 1)
+title(s10low, "saddle 10 low centre")
+let s5high = panel(fig, 3, 1)
+let w5high = [1.0, 0.0; 0.2, 1.0]
+contour(s5high, x, y, w5high, levels: 1)
+title(s5high, "saddle 5 high centre")
+let s10high = panel(fig, 3, 2)
+let w10high = [0.2, 1.0; 1.0, 0.0]
+contour(s10high, x, y, w10high, levels: 1)
+title(s10high, "saddle 10 high centre")
+save_svg(fig, "plot_contour_cases.svg")

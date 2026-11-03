@@ -1,0 +1,8 @@
+// r_plot_zshape -- contour with Z 4x3 where len(y) x len(x) is 3x4 (LANGUAGE.md 12.3; 2.14.2: shape mismatch: expected %s, got %s)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = zeros(4)
+let y = zeros(3)
+let Z = zeros(4, 3)
+contour(ax, x, y, Z)

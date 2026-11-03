@@ -1,0 +1,27 @@
+// plot_contour_levels -- contour levels (LANGUAGE.md 12.6; DESIGN.md 2.14.6, L-ks, Decision 132 (a)): 3 levels
+// with labels (map entries 64, 128, 192), the default 10 levels, levels: 1 with color: (upper case, written
+// lower case), a NaN corner that skips its cell so the upper levels have no segment, no level element and
+// no label, a constant Z with no level; a contour without a colour does not advance the cycle (L-kh)
+let fig = figure(2, 3)
+let x = [0.0, 1.0, 2.0, 3.0]
+let y = [0.0, 1.0, 2.0]
+let Z = [0.0, 1.0, 2.0, 3.0; 2.0, 3.0, 4.0, 5.0; 4.0, 5.0, 6.0, 7.0]
+let a = panel(fig, 0, 0)
+contour(a, x, y, Z, levels: 3, labels: true)
+plot(a, [0.0, 3.0], [0.0, 2.0])
+title(a, "three levels")
+let b = panel(fig, 0, 1)
+contour(b, x, y, Z, color: "#FF8000", levels: 1)
+title(b, "one level, colour")
+let c = panel(fig, 0, 2)
+let Zn = [0.0, 1.0, nan; 2.0, 3.0, 9.0]
+contour(c, [0.0, 1.0, 2.0], [0.0, 1.0], Zn, levels: 3, labels: true)
+title(c, "NaN corner")
+let d = panel(fig, 1, 0)
+let Zc = [5.0, 5.0; 5.0, 5.0]
+contour(d, [0.0, 1.0], [0.0, 1.0], Zc, labels: true)
+title(d, "constant")
+let e = panel(fig, 1, 1)
+contour(e, x, y, Z)
+title(e, "ten levels")
+save_svg(fig, "plot_contour_levels.svg")

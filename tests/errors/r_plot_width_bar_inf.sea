@@ -1,0 +1,7 @@
+// r_plot_width_bar_inf -- bar with an infinite width (PLOT_WIDTH: not finite)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let h = [2.0, 3.0]
+bar(ax, x, h, width: inf)

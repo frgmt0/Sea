@@ -1,0 +1,7 @@
+// r_plot_order_bar_width -- bar with a bad colour and width reports the width (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+let x = [0.0, 1.0]
+let h = [2.0, 3.0]
+bar(ax, x, h, color: "?", width: -1)

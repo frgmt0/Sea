@@ -109,7 +109,9 @@ the user's agreement. Phase 0 (§8) did:
    §2.14, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions
    L-ke–L-lf of §9); sub-phase 9b (the contract, the front end and the runtime core) is **done**
    (2026-11-03; §2.7 "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq of
-   §9); next is 9c (bars, contours, images and PNG, §2.14.10).
+   §9); sub-phase 9c (bars, contours, images and PNG) is **done** (2026-11-03; §2.7 "Runtime sizes
+   at 9c"; lead decisions L-lr–L-lz of §9); next is 9d (the ports' figures, acceptance and
+   close-out, §2.14.10).
    Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -551,7 +553,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Next: 9c (bars, contours, images and PNG, §2.14.10).
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Sub-phase 9c is done (2026-11-03; bars, contours, images and PNG: `rt_plot2.s` and `rt_png.s` in both runtimes; runtime sizes in §2.7, "Runtime sizes at 9c"; lead decisions L-lr–L-lz). Next: 9d (the ports' figures, acceptance and close-out, §2.14.10).
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -3617,6 +3619,27 @@ passed, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, a
 to compile; variant default (`avx2`) 978 passed and 0 failed, `sse2` 978 and 0, once-only 214 and
 0; host total 2 170 passed, 0 failed and 4 deferred (W2 and W3 under each variant, Decision 127),
 judged on the Mac by `tests/cross_accept.sh`: 4 passed, 0 failed (x86_64 rt 211).
+
+**Runtime sizes at 9c** (2026-11-03, the 9c tree; the measurement §2.14.5 and §2.14.7 promise,
+counted in source lines with `wc -l`). No pass changed in 9c, so the pass sizes are those of
+"Measured after 9b".
+
+| Runtime | `rt_plot.s` | `rt_plot2.s` | `rt_png.s` | Together |
+|---------|------------:|-------------:|-----------:|---------:|
+| arm64 | 3 730 | 2 225 | 332 | 6 287 |
+| x86_64 | 3 682 | 2 083 | 362 | 6 127 |
+
+Both exceed §2.14.5's estimates (3 300–5 100 lines on arm64, 3 800–5 900 on x86_64). No Baysick
+limit applies to the runtime (the runtimes are assembly, not Baysick programs), so no relief is
+needed or asked for.
+
+**Measured test counts after 9c** (2026-11-03, the final tree, by the lead). `make test`: every
+group passes (driver 122, rt 256, la: `la_check` 31 042 cases under `neon` and `la/la_link`
+passed, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 441, plots 34, accept 2 + 6;
+`check-contracts` 138 names, 220 records, 296 formats); `make cross`: 1 235 cases packed, 0 failed
+to compile; variant default (`avx2`) 1 002 passed and 0 failed, `sse2` 1 002 and 0, once-only 231
+and 0; host total 2 235 passed, 0 failed and 4 deferred (W2 and W3 under each variant, Decision
+127), judged on the Mac by `tests/cross_accept.sh`: 4 passed, 0 failed (x86_64 rt 228).
 
 ### 2.8 Numbers inside the compiler
 
@@ -7146,8 +7169,9 @@ px = x0 + 56; py = y0 + 28; pw = w − 56 − mr; ph = h − 28 − 44; pw and p
 series gives its x values to x and its y values to its own y-axis; a bar series gives x_i − hw and
 x_i + hw for each drawn bar (Bars, below; hw = width · Δ / 2) to x, and, when a bar is drawn, 0
 and each drawn bar's h_i to y; a
-`barh` series gives i − width / 2 and i + width / 2 for i = 0 … n − 1 to y, and 0 and each finite h
-to x; a contour series its finite x and y coordinates; an image series its extent (below); an
+`barh` series gives i − width / 2 and i + width / 2 for i = 0 … n − 1 to y (width / 2 computed
+once), and 0 (unconditionally, also when it is empty or has no finite h) and each finite h
+to x (L-ls); a contour series its finite x and y coordinates; an image series its extent (below); an
 `xline` nothing. The x axis of a pair takes the extents of both axes' series. An extent end is
 replaced only by a strictly smaller (lo) or strictly greater (hi) value, so of equal values the
 first wins (L-lh).
@@ -7161,7 +7185,7 @@ category ticks arise only under rule 2.
 2. *Category* (labels set, n > 0): lo = −0.5 and hi = f64(n) − 0.5 when the axis has no extent,
    else lo = min(−0.5, extent lo), hi = max(f64(n) − 0.5, extent hi);
    ticks at 0, 1, …, n − 1 where lo ≤ i ≤ hi, labelled with the strings.
-3. *Tight* (the pair holds an image, on either of its axes): the pair's x-axis and both y-axes,
+3. *Tight* (the pair holds an image series, drawn or not, on either of its axes, L-lt): the pair's x-axis and both y-axes,
    a twin's included, take the extent itself (widened as in 4 if empty or of zero width); ticks
    by step 5 on [lo, hi].
 4. *Default*: no extent: lo = 0, hi = 1; lo = hi = v: lo = v − |v|/10 and hi = v + |v|/10, or −1
@@ -7238,13 +7262,15 @@ Text widths are 0.6 × font size per byte (§12.7). The document, in this order:
    8. per x tick: `<text class="xtick" x="{X}" y="{py+ph+14}" font-size="10" text-anchor="middle">{t}</text>`;
       per base y tick: `<text class="ytick" x="{px-6}" y="{Y+3.5}" font-size="10" text-anchor="end">{t}</text>`;
       per twin y tick: `<text class="ytick2" x="{px+pw+6}" y="{Y+3.5}" font-size="10" text-anchor="start">{t}</text>`.
-   9. if the pair has an image with `colorbar: true` (the last one, L-ko), at xc = px + pw + 12
-      (+ 52 with a twin): `<image class="colorbar" x="{xc}" y="{py}" width="12.00" height="{ph}" preserveAspectRatio="none" style="image-rendering:pixelated" href="data:image/png;base64,{b}"/>`
+   9. if the pair has an image with `colorbar: true` (the last one, drawn or not, L-ko, L-lu), at
+      xc = ((px + pw) + 12) (+ 52 with a twin), the additions in that order (L-lu): `<image class="colorbar" x="{xc}" y="{py}" width="12.00" height="{ph}" preserveAspectRatio="none" style="image-rendering:pixelated" href="data:image/png;base64,{b}"/>`
       (a 1 × 256 PNG, row r the map entry 255 − r), `<rect class="colorbar-box" x="{xc}" y="{py}" width="12.00" height="{ph}" fill="none" stroke="#262626" stroke-width="1.00"/>`,
       `<path class="colorbar-ticks" d="{d}" fill="none" stroke="#262626" stroke-width="1.00"/>` (`M{xc+12} {Y} h-3.00` per tick)
       and per tick `<text class="ctick" x="{xc+16}" y="{Y+3.5}" font-size="10" text-anchor="start">{t}</text>`;
       the ticks are an explicit-limit axis over the image's min … max (zero width or no finite cell
-      widened as rule 4 of the limits), mapped like a y-axis onto py … py + ph.
+      widened as rule 4 of the limits, that widening only, then the explicit-limit ticks and the
+      normal tick texts), mapped like a y-axis onto py … py + ph; the `colorbar-ticks` path is
+      written even with no tick (empty `d`) (L-lu).
    10. if the x label is not empty: `<text class="xlabel" x="{px+pw/2}" y="{py+ph+34}" font-size="12" text-anchor="middle">{t}</text>`;
        if the base y label is not empty: `<text class="ylabel" font-size="12" text-anchor="middle" transform="translate({px-42} {py+ph/2}) rotate(-90)">{t}</text>`;
        if the twin's is: `<text class="ylabel2" font-size="12" text-anchor="middle" transform="translate({px+pw+48} {py+ph/2}) rotate(90)">{t}</text>`.
@@ -7271,18 +7297,20 @@ Text widths are 0.6 × font size per byte (§12.7). The document, in this order:
 * *Bar series*: `<g class="bars" fill="{c}">`, per drawn bar `<rect class="bar" x="{x}" y="{y}" width="{w}" height="{h}"/>`
   (x = min(X(a), X(b)), w = |X(b) − X(a)| for a = x_i − hw, b = x_i + hw; y and h likewise from
   Y(0) and Y(h_i)), then `</g>`; a `barh` series the same with the roles of the axes exchanged (a,
-  b = i ∓ width / 2 on y, 0 and h_i on x).
-* *Contour series*: `<g class="contour" fill="none" stroke-width="1.00">`; for each level k = 1 …
+  b = i ∓ width / 2 on y, 0 and h_i on x). A series that draws no bar still writes its empty
+  `<g class="bars" fill="{c}">` group (L-ls).
+* *Contour series*: `<g class="contour" fill="none" stroke-width="1.00">` (always written, L-lv); for each level k = 1 …
   n that has a segment, `<g class="contour-level" stroke="{c}">`, then `<line class="contour-segment" x1="{X}" y1="{Y}" x2="{X}" y2="{Y}"/>`
   per segment in the order below, then `</g>`; then `</g>`; then, with `labels: true`, for each
   such level ascending `<text class="contour-label" x="{X}" y="{Y}" font-size="10" text-anchor="middle">{t}</text>`
   at the midpoint ((X1 + X2) / 2, (Y1 + Y2) / 2 of the clamped coordinates) of the level's first
-  segment, t the level written `%g`.
+  segment, t the level written `%g` of L_k with no +0.0 added (L-lv).
 * *Image series*: `<image class="image" x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="none" style="image-rendering:pixelated" href="data:image/png;base64,{b}"/>`
   when it has a cell and its extent is finite; nothing otherwise.
 
 *Legend* (§12.4, §12.5; L-kn), drawn when the pair's location is set and it has at least one
-labelled line or bar series: n entries (those series of both axes, call order), lw = 7.2 × the
+labelled line, bar or `barh` series (a labelled `barh` series is an entry drawn with the bar sample
+even when it draws no bar, L-ls): n entries (those series of both axes, call order), lw = 7.2 × the
 largest label's byte count, bw = 40 + lw, bh = 16 · n + 8; bx = px + pw − 8 − bw (east side), px +
 8 (west), px + (pw − bw) / 2 (north, south); by = py + 8 (north side), py + ph − 8 − bh (south),
 py + (ph − bh) / 2 (east, west). `<g class="legend">`, `<rect class="legend-box" x="{bx}" y="{by}" width="{bw}" height="{bh}" fill="#ffffff" stroke="#262626" stroke-width="0.50"/>`,
@@ -7306,7 +7334,8 @@ smallest and largest finite cell: NaN white (`#ffffff`); else, if there is no fi
 zmin, or zmax − zmin is not finite (it overflows for cells near ±1.7e308), entry 0, so no
 NaN or infinite value reaches the `floor` or its integer conversion; else z ≥ zmax gives 255,
 z ≤ zmin 0, else floor(((z − zmin) / (zmax − zmin)) · 256), 255 if that is 256. An image whose extent ends are not finite, or with no cell, is not drawn and
-gives no extent.
+gives no extent: it draws nothing and gives no extent unless n, m ≥ 1 and all four ends are
+finite; then x gets a, b and its own y-axis a_y, b_y (L-lt).
 
 **The colour map** (§12.6). Anchors A0 … A4 = `#30123b`, `#4686fb`, `#1ae4b6`, `#faba39`, `#7a0403`.
 Entry e (0 … 255): p = f64(4 · e) / 255; s = min(floor(p), 3); f = p − f64(s); each channel
@@ -7324,9 +7353,10 @@ floor(256 · k / (n + 1)) in integer arithmetic. For each level ascending, the c
 order (j = 0 … len(x) − 2 outer, i = 0 … len(y) − 2 inner): corners a = Z[i,j] at (x[j], y[i]), b
 = Z[i,j+1] at (x[j+1], y[i]), c = Z[i+1,j+1] at (x[j+1], y[i+1]), d = Z[i+1,j] at (x[j], y[i+1]); a
 cell with a non-finite corner value or coordinate is skipped. A corner is *above* when its value ≥
-L. The edges: e0 from a to b, e1 from b to c, e2 from d to c, e3 from a to d (each from its first
+L (a corner equal to the level counts as above, L-lv). The edges: e0 from a to b, e1 from b to c, e2 from d to c, e3 from a to d (each from its first
 corner, so a shared edge gives the same point in both cells); an edge is crossed when its corners
-differ; its point is p1 + t · (p2 − p1) per coordinate with t = (L − z1) / (z2 − z1), z1, p1 the
+differ; its point is p1 + t · (p2 − p1) in both coordinates, the constant one included, so a
+non-finite t clamps both (L-lv), with t = (L − z1) / (z2 − z1), z1, p1 the
 first corner's value and position. Exactly two crossed edges give one segment from the lower-numbered
 edge's point to the higher's. Four (the saddles: a and c above, b and d not, or the reverse) are
 resolved by the centre m = ((a + b) + (c + d)) / 4: when the centre's state (m ≥ L) equals a's, the
@@ -7435,7 +7465,8 @@ objects`), so `Figure` and `Axes` releases are tested by every plot test.
 §2.14.9). A text file of lines; leading blanks are ignored, and so are empty lines and lines whose
 first non-blank byte is `#`. Every other line is `KEY VALUE` (one space; VALUE the rest of the line,
 possibly empty) or `KEY~ REGEX` (a Python `re.fullmatch` pattern; the `~` follows the key with no
-space). Keys:
+space). `segment~ I RX` matches `X1 Y1 X2 Y2` joined by single spaces; `pixels~ I RX` matches that
+row's text. Keys:
 
 | Key | Value | Checks |
 |-----|-------|--------|
@@ -7450,12 +7481,17 @@ space). Keys:
 | `xtick`, `ytick`, `ytick2`, `ctick` | text | repeated: the panel's tick label texts of that class, all of them, in document order (when one line of a key is given, the list must match exactly) |
 | `legend` | text | repeated: the panel's `legend-label` texts, all of them, in order |
 | `color` | `CLASS I c` | the `stroke` (for `line`, `xline`, `markers`, `contour-level`) or `fill` (for `bars`) of the I-th element of that class is `c` |
+| `clabel` | text | repeated: the panel's `contour-label` texts, all of them, in document order (as `legend`) |
+| `segment` | `I X1 Y1 X2 Y2` | the panel's I-th `contour-segment` element (0-based, document order) has exactly these `x1`, `y1`, `x2`, `y2` attribute strings (compared byte for byte as written, `%.2f`) |
+| `pixels` | `I ROW` | repeated per image: the panel's I-th `image` element of class `image` (never the colorbar) has an `href` `data:image/png;base64,B`; B decodes (strict base64) to a PNG with the signature, IHDR first (8-bit RGB: depth 8, colour type 2, compression 0, filter method 0, no interlace) and IEND last, every chunk's CRC-32 correct, the IDAT data a zlib stream that decompresses to h rows of a filter byte 0 and 3w bytes; the consecutive `pixels I` lines are its rows from the top, each the row's pixels as `#rrggbb` (lower case) separated by single spaces, as many lines as the height and as many pixels per line as the width |
 
 A key absent is not checked; texts are compared after XML unescaping, byte for byte. A file with an
 unknown key, a `panel` before any `file`, or a malformed line is a setup error. For tiny figures
 every count is derived by hand from §12 and §2.14.6 (one `line` per series with a line part, one
 `markers` per series with a marker, one `bar` per drawn bar, the tick labels of §2.14.6's limits
-rules, …); a value that cannot be derived by hand is not written (§6.1).
+rules, …); a value that cannot be derived by hand is not written (§6.1). `segment` and `pixels`
+values are derived by `plot9_cases.py` from §2.14.6's layout, mapping, clamp, marching squares,
+image orientation and colour map, transcribed in IEEE binary64, never from a run.
 
 **The runner** (Decision 137 (a)). `tests/plot_struct.py` (the Python standard library only:
 `xml.etree.ElementTree` for the parse, `re`), run as `timeout 120 uv run --no-project python
@@ -7707,7 +7743,7 @@ ends with `make test` and `make cross` passing.
 |-----------|----------|-----------|
 | 9a | **Phase-9 specification** (documents only): §2.14 (scope, the semantic contract with the proposed LANGUAGE.md text, the ports' figures against §12, front end and later passes, entries 62–82, the library's algorithms and SVG grammar, capacity, tests, the ports, these rows, Decisions 131–142, lead decisions L-ke – L-lf); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 131–142. **Done** (2026-11-02): the specification revised after one independent review and agreed, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text; next 9b (WP-CONTRACT first and alone) |
 | 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code. **Done** (2026-11-03): WP-CONTRACT's `rt.inc` entries 62–82 (`SEA_ENT_COUNT` 82), `errors.inc` codes 22–29 (`SEA_E_RT_END` 30), `limits.inc`'s `SEA_LIM_PLOT_GRID` and `SEA_LIM_PLOT_PX` in their own section (L-lp), the `entries` capacity 128 and LANGUAGE.md's agreed text; the front end: `seaname` (the phase-rule branch removed, every handle type resolves; 259 unreachable, L-kx), `seacheck` (the new part `sc9plot.bas`: the class table 32–52 by `pcls` from `ck_lib` and `ck_narg` (L-lk), the options and their defaults, the overloads with `cvt`, `dyn` and the typing of untyped constants (L-ll), 224, 225, 243, 255, and the written form with every parameter and the evaluation-order temporaries, §3.5.5), `sealoop` (R36, `lpbmat.bas` 55500–55526, L-lo), `sealower` (rule 39's 21 rows through `K5$`, the operand classes checked against the entries, L-ln; `Figure` and `Axes` locals in class p), `seafuse` and `seaexpand` unchanged; `rt_plot.s` in both runtimes (`FIGURE`, `PANEL`, `TWIN_Y`, `SAVE_SVG`, `PLOT`, `XLINE` and the property entries 72–82; layout, extents, limits and ticks, the SVG writer of lines, markers and reference lines, legends, category ticks, twins, the buffer), `rt_fmt.s`'s `_sea_fmt_num` (L-li), `rt_file.s`'s `_sea_file_put` and `rt_mem.s`'s `Figure` and `Axes` branches of `sea_free` (L-lb, L-lj); `rt_plot.s` 3 656 lines on arm64 and 3 618 on x86_64; the deepest path `SAVE_SVG`'s, 2 368 bytes below the incoming sp on arm64 and 3 632 on x86_64, the other entries at most 256 and 168 (§4.8); the review's findings fixed: the x86_64 runtime aligned to the numbered order of the limits rules (L-lg), `_sea_file_put` given a fifth argument so the SVG buffer no longer leaks on a file error (L-ld), a twin record's cell fields copied from its base (§2.14.6), a `ref` argument past the last parameter counted and reported as 243 (L-ll), the pre-existing `cty` defect (a latent `sealoop` `BAD_RECORD` for reordered calls and struct literals converting an `i64` array, L-lm), `KEY~` on every `.struct` key and the T2 dumps made reproducible by `tests/vectors/plot9_dumps.py` (L-lq); tests: 26 `plots/plot_*` programs with their `.struct` (`plot_cvt_order` the review's), 34 run-time errors `r_plot_*`, 12 compile errors `err_plot_*`, `err_ns_lib_figure`, `err_ns_handle` and `passes/res_err_handle` retired, the programs `call6_named_cvt_{fixed,dyn}` and `struct_order_cvt_{fixed,dyn}`, the dumps `passes/plot9_{check,hirl,rcall,release}`, `plot9_cases.py`'s tick part, `tests/plots.sh` and `tests/plot_struct.py` with `make test-plots`, the cross case kind `plots/`, the rt group 229 cases on arm64 and 211 on x86_64 (§6.2, §6.6.1); sizes in §2.7 "Measured after 9b" (`seaname` 5 632, `seacheck` 7 335, `sealoop` 6 715, 285 under 7 000, `sealower` 6 885, its longest line still 255 bytes; no new array letter; within §2.14.7's projections; no relief needed); lead decisions L-lg–L-lq; next 9c; `make test` (driver 122, rt 229, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6) and `make cross` (1 194 cases packed, 0 failed to compile; default variant 978/0, `sse2` 978/0, once-only 214/0; host 2 170 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 211) pass |
-| 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass |
+| 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass. **Done** (2026-11-03): `rt_plot2.s` and `rt_png.s` in both runtimes (the entries `BAR`, `BARH`, `CONTOUR` and `IMAGE`; marching squares; the colour map; the colorbar; PNG with stored deflate, CRC-32, Adler-32 and base64), `rt_plot.s`'s dispatch of series kinds 3–6, the colorbar in the layout and the legend's `barh` entries; sizes in §2.7 "Runtime sizes at 9c" (arm64 `rt_plot.s` 3 730, `rt_plot2.s` 2 225, `rt_png.s` 332 lines, 6 287 together; x86_64 3 682, 2 083 and 362, 6 127 together; both above §2.14.5's estimates, no Baysick limit applying, no relief); the deepest path `SAVE_SVG`'s, 2 624 bytes below the incoming sp on arm64 (through the image, PNG and colorbar path) and 3 648 on x86_64, every own frame of `rt_plot2.s` and `rt_png.s` at most 128 bytes on arm64 and 72 on x86_64 (§4.8); one independent review: no runtime defect, the x86_64 colorbar's scratch moved from `.bss` to `sea_alloc` and header comments corrected, and the test gap it found (no check of contour segments, labels or image pixels against spec-derived values) closed with the `.struct` keys `clabel`, `segment` and `pixels` (L-lz); tests: 8 `plots/` programs with `.struct` (`plot_bar`, `plot_barh`, `plot_contour_cases`, `plot_contour_levels`, `plot_image_orient`, `plot_image_values`, `plot_image_contour`, `plot_extreme_z`), 16 run-time errors (`r_plot_levels`, `r_plot_levels_neg`, `r_plot_zshape`, `r_plot_zshape_image`, `r_plot_width_bar`, `r_plot_width_bar_inf`, `r_plot_width_barh`, `r_plot_shape_bar`, `r_plot_color_bar`, `r_plot_color_barh`, `r_plot_color_contour`, `r_plot_order_bar`, `r_plot_order_bar_width`, `r_plot_order_barh`, `r_plot_order_contour`, `r_plot_order_levels`), `plot9_cases.py`'s 9c part (309 files, with `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets), `tests/plot_struct.py`'s keys `clabel`, `segment` and `pixels`, and the rt group 256 cases on arm64 (27 new) and 228 on x86_64 (17 new); lead decisions L-lr–L-lz; next 9d; `make test` (driver 122, rt 256, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 441, plots 34, accept 2 + 6) and `make cross` (1 235 cases packed, 0 failed to compile; default variant 1 002/0, `sse2` 1 002/0, once-only 231/0; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 228) pass |
 | 9d | **The ports' figures, acceptance, close-out** (after 9c; Decisions 131, 138). **WP-PORT** the six `ports/NAME.sea` (the `--figures` arm and block; W2's header `svg=approx`); **WP-STRUCT** the six `ports/NAME.struct` (from the MATLAB scripts, by an author who does not write the ports); **WP-ACCEPT** `tests/accept.sh` (one run with both flags, the run-directory rule, step 4); **WP-CROSS** `tests/cross_pack.sh`, `tests/cross_run.sh`, `tests/cross.sh`, `tests/cross_accept.sh` (the `--figures` argument, the packed SVG, the kept SVG, Decision 138's comparison, the `svg=approx` header key); the compile times recorded in §6.3; then the gate after phase 9 (§2.14.7) | row 9's "done when": the plot tests pass; every port writes its figure with `--figures` and passes its structural check (`tests/accept.sh` on the Mac; `make cross`: W1, W3, W4, W5, W7 byte-identical SVGs under both variants, W2 by Decision 138); `make test` and `make cross` pass; the gate after phase 9 applied, a failing program getting a relief agreed with the user before phase 10 |
 
 Row 9 itself becomes: "**Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours,
@@ -8030,6 +8066,50 @@ change bytes are also written into §2.14.6, which stays the single source):
     rule 39 and Decision 39 is the authority.
   * The rt tests' hand-derived SVG bytes (`rt_plot_svg*`, `rt_plot_svg_cat`) test the runtime
     against §2.14.6, not the language; this is consistent with Decision 140 (a).
+
+Lead decisions of sub-phase 9c (the readings of its work packages and of its review, found in their
+builds and recorded 2026-11-03 at its integration; each states the code as built, and those that
+change bytes are also written into §2.14.6, which stays the single source):
+
+* **L-lr** (9c, agreed 2026-11-03; the known answers' files) In `rt_plot_kat.out` the `crc32` and
+  `adler32` lines alternate per input in §2.14.8's order; the empty base64 input is the line
+  `b64 0 ` (TEXT empty, one trailing blank); the 21 846 × 1 PNG's 65 538 pixel bytes (r, g, b per
+  pixel, left to right) are the seeded sequence's first 65 538 bytes; the PNG lines come in the
+  order 1 × 1, 2 × 2, 21 846 × 1, 1 × 256, `pngb64` after the first two; hex upper case, 8 digits.
+* **L-ls** (9c, agreed 2026-11-03; barh extents) A `barh` series gives 0 to x unconditionally (also
+  when it is empty or has no finite h), then each finite hᵢ; its y-axis gets i − width/2 and
+  i + width/2 for every i = 0 … n − 1, width/2 computed once. A labelled `barh` series is a legend
+  entry drawn with the bar sample, as a `bar` series is, even when it draws no bar; a series that
+  draws no bar still writes its empty `<g class="bars">` group.
+* **L-lt** (9c, agreed 2026-11-03; image extent) An image draws nothing and gives no extent unless
+  n, m ≥ 1 and all four ends are finite; then x gets a, b and its own y-axis a_y, b_y. Rule 3
+  (tight limits) applies when the pair holds any image series, drawn or not.
+* **L-lu** (9c, agreed 2026-11-03; colorbar) The colorbar is that of the pair's last image with
+  `colorbar: true`, whether or not that image is drawn; xc = ((px + pw) + 12) (+ 52 with a twin),
+  the additions in that order; its ticks use rule 4's widening only, then the explicit-limit ticks
+  and the normal tick texts; the `colorbar-ticks` path is written even with no tick (empty `d`).
+* **L-lv** (9c, agreed 2026-11-03; contours) The outer `contour` group is always written, a level's
+  group only when the level has a segment; the labels follow the outer `</g>`, one per drawn level
+  ascending, `%g` of L_k with no `+0.0`; both coordinates of an edge point use p1 + t · (p2 − p1),
+  the constant one included, so a non-finite t clamps both; a corner equal to a level counts as
+  above it (≥).
+* **L-lw** (9c, agreed 2026-11-03; level colour) floor(256k/(n + 1)) is computed exactly in integer
+  arithmetic on both targets; n + 1 is converted as a signed integer, so `levels` is in practice
+  bounded far below 2⁵³ by the level loop (both targets alike; no test).
+* **L-lx** (9c, agreed 2026-11-03; private helpers, L-ld) Besides `_sea_crc32`, `_sea_adler32`,
+  `_sea_b64` (x86_64 `sea_crc32`, `sea_adler32`, `sea_b64`, `.hidden`), each runtime has a PNG
+  builder (arm64 `_sea_png(raw, rawlen, w, h, site)`, x86_64 `sea_png(raw, w, h, site)`), the
+  colour map table built at first use, `rt_plot2.s` hooks for extents, the colorbar and the series
+  writers, and private aliases (`.private_extern` / `.hidden`) of `rt_plot.s`'s writer routines; all
+  target-local, none a contract.
+* **L-ly** (9c, agreed 2026-11-03; scratch memory) All PNG and colorbar scratch comes from
+  `_sea_alloc` uncounted and is freed with `_sea_free_block` (the review moved x86_64's colorbar raw
+  data from a static buffer); every check of entries 68–71 runs before any allocation, so no error
+  path leaks.
+* **L-lz** (9c, agreed 2026-11-03; `.struct` keys of 9c) The review found no check of contour
+  segments, labels or image pixels against spec-derived values (a mistake common to both runtimes
+  would pass the cross run); the keys `clabel`, `segment` and `pixels` are added to §2.14.8's
+  table, their values derived by `plot9_cases.py` from §2.14.6 alone.
 
 #### 2.14.13 Sections amended when agreed
 
@@ -12514,7 +12594,7 @@ changes speed, never output, except for class-R results.
 | strings | concatenation, comparison, `lower` |
 | formatting | the pre-parsed `printf` engine (LANGUAGE.md §11.1): integers by own code; finite `f64` through `snprintf` with a built single-conversion format; NaN/Inf and `%d`-on-`f64` per MATLAB |
 | JSON | the emitter that `write_json` expands into (LANGUAGE.md §11.4), with `%.17g` numbers, a 64 KiB buffer |
-| plotting | `Figure`/`Axes` objects, layout, SVG writer, PNG (stored deflate, CRC-32, Adler-32) and base64 (LANGUAGE.md §12; §2.14.6). From 9b `rt_plot.s` (the objects, entries 62–67 and 72–82, limits and ticks, the SVG writer of lines and reference lines, the buffer); bars, contours, images and PNG from 9c (`rt_plot2.s`, `rt_png.s`) |
+| plotting | `Figure`/`Axes` objects, layout, SVG writer, PNG (stored deflate, CRC-32, Adler-32) and base64 (LANGUAGE.md §12; §2.14.6). From 9b `rt_plot.s` (the objects, entries 62–67 and 72–82, limits and ticks, the SVG writer of lines and reference lines, the buffer); bars, contours, images and PNG from 9c (`rt_plot2.s`, `rt_png.s`: entries 68–71, marching squares, the colour map, the colorbar) |
 | I/O | buffered stdout/stderr; `make_dir`; errno → fixed message table |
 | clock | `now()` via `clock_gettime(CLOCK_MONOTONIC)` |
 | math | `log exp sin cos pow hypot`, scalar and vector forms with identical results (Decision 6): table-driven range reduction and polynomials, one algorithm for both targets, using only IEEE `+ − × ÷ sqrt` and exact integer operations (no FMA, which SSE2 lacks — the cost is part of Decision 1), verified ≤ 1 ulp against high-precision references (§6.2); the exact algorithms, tables and entry points are §4.10; `round` on x86_64 (LANGUAGE.md §6.7) |
@@ -12545,7 +12625,10 @@ the count helpers, the live counter), `rt_arr.s` (`sea_arr_new`, `sea_arr_new_u`
 entries 72–82; layout, limits and ticks, the SVG writer; 3 656 lines on arm64, 3 618 on x86_64),
 `rt_fmt.s` (gains the private `_sea_fmt_num`, L-li), `rt_file.s` (gains the private
 `_sea_file_put(path, bytes, len, site, cap)`, L-ld) and `rt_mem.s` (`sea_free`'s `Figure` and
-`Axes` branches, §4.8); 9c adds `rt_plot2.s` and `rt_png.s`.
+`Axes` branches, §4.8); 9c adds `rt_plot2.s` (`sea_bar`, `sea_barh`, `sea_contour`, `sea_image`,
+their element writers, marching squares, the colour map, the colorbar; 2 225 lines on arm64, 2 083
+on x86_64) and `rt_png.s` (the PNG builder, CRC-32, Adler-32, base64; 332 and 362 lines), and
+`rt_plot.s` dispatches series kinds 3–6 to them (§2.7 "Runtime sizes at 9c").
 
 **`SEA_HEAP_CHECK`** (Decision 24; a test aid, not a language feature). When the environment
 variable `SEA_HEAP_CHECK` is exactly `1` at start-up, `main`, after `_sea_main` has returned and
@@ -12941,8 +13024,14 @@ deepest path measured and recorded here). 9b, measured (the deepest path below t
 the return address on x86_64): arm64 `SAVE_SVG` 2 368 bytes (through the layout, the panel, series
 and marker writers, `_sea_fmt_num` and `_sea_file_put`), every other entry of 62–82 that 9b builds
 at most 256; x86_64 `SAVE_SVG` 3 632, every other entry at most 168; every own frame at most 160
-bytes on arm64 and 104 on x86_64. No routine recurses; all far inside `SEA_STACK_MARGIN`. The entries of 9c (`BAR`, `BARH`, `CONTOUR`, `IMAGE`) and the PNG
-path are measured at 9c.
+bytes on arm64 and 104 on x86_64. No routine recurses; all far inside `SEA_STACK_MARGIN`. 9c,
+measured: arm64 `SAVE_SVG` 2 624 bytes below the incoming sp (through the image, PNG and colorbar
+path; 2 368 on 9b's data), the own frames of `BAR` 128, `BARH` 96, `CONTOUR` 128 and `IMAGE` 96,
+the deepest paths with their callees 224, 192, 272 and 192, every own frame of `rt_plot2.s` and
+`rt_png.s` at most 128; x86_64 `SAVE_SVG` 3 648 below the return address (panel, colorbar, tick
+texts, `sea_fmt_num`, `snprintf`, with `%g` of a 1e300 range; 9b 3 632), the own frames of `BAR`
+72, `BARH` 56, `CONTOUR` 72, `IMAGE` 56 and `sea_png` 72, with their callees 160, 144, 216 and
+168. All far inside `SEA_STACK_MARGIN` and the 512-byte own-frame bound.
 
 **Reference-counted objects.** Every
 array, string and handle begins with the same 16-byte header, so `retain`/`release` (§3.6.4) work on any of them. A count of `SEA_RC_STATIC` (0) marks a
@@ -16145,8 +16234,19 @@ Test names carry the spec area: `lex_*`, `res_*` (`sea.res`, §3.4.1), `type_*`,
     cases. `tests/plots.sh` and `tests/plot_struct.py` (§2.14.8; `--save-out DIR` and `--only NAME`
     for the cross packing, the `.struct` readings of L-lq), `make test-plots` after
     `test-programs` in `make test`, and the case kind `plots/` of the cross run (§6.6.1).
-  * **9c, bars, contours, images, PNG** and **9d, the ports' figures**: §2.14.8 and §2.14.9, listed
-    here when built.
+  * **9c, bars, contours, images, PNG** (built 2026-11-03). Plot programs (`tests/plots/`, 8 more,
+    34 in all, each with its `.struct`): `plot_bar`, `plot_barh`, `plot_contour_cases`,
+    `plot_contour_levels`, `plot_image_orient`, `plot_image_values`, `plot_image_contour` and
+    `plot_extreme_z`; their contour segments, labels and image pixels are checked by the `.struct`
+    keys `segment`, `clabel` and `pixels` (L-lz). Run-time errors (16 more): `r_plot_levels`,
+    `r_plot_levels_neg`, `r_plot_zshape`, `r_plot_zshape_image`, `r_plot_width_bar`,
+    `r_plot_width_bar_inf`, `r_plot_width_barh`, `r_plot_shape_bar`, `r_plot_color_bar`,
+    `r_plot_color_barh`, `r_plot_color_contour`, `r_plot_order_bar`, `r_plot_order_bar_width`,
+    `r_plot_order_barh`, `r_plot_order_contour` and `r_plot_order_levels`. T1's generator part
+    `plot9_cases.py` (309 files, among them `rt_plot_kat.out` and `rt_plot_cmap.out` of both
+    targets, L-lr). Runtime tests: 27 new on arm64 and 17 on x86_64, the rt group 256 and 228
+    cases. The cross case kind `plots/` carries the new programs unchanged.
+  * **9d, the ports' figures**: §2.14.9, listed here when built.
 
 ### 6.3 Workload acceptance
 
@@ -16919,7 +17019,7 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 8d | **W2, W3, acceptance; close-out** (after 8c; Decisions 127, 128). Work packages: **WP-PORT** `sea/ports/w2_truss_fem.sea`, `sea/ports/w3_quarter_car.sea` with their `// cross:` header lines (a port defect found in a pass is reported, not worked around); **WP-TOKENS** `sea/ports/w2_truss_fem.tokens`, `sea/ports/w3_quarter_car.tokens`; **WP-CROSS** `tests/cross.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh`, the new `tests/cross_accept.sh` (§2.13.9's items 1–5: the `.meta` key and its whitelist entry, the deferred runs, the return path, the Mac-side comparison, the combined counts; not the `la/*` lines); the compile and compute times recorded in §6.3; then the gate after phase 8 (§2.13.7) | row 8's "done when": `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7 on the Mac (W1, W4, W5, W7 as at 7g); `make cross` passes the six ports under both variants, W2 and W3 by Decision 127; `make test` and `make cross` pass; the gate after phase 8 applied, a failing program getting a relief agreed with the user before phase 9's code **Done** (2026-11-02): port-only, with no compiler or runtime defect found and no pass, runtime, prelude, include or golden change: `ports/w2_truss_fem.sea` (381 lines, header `// cross: compare=accept`) with `ports/w2_truss_fem.tokens` (60 lines) and `ports/w3_quarter_car.sea` (322 lines, header `// cross: compare=accept except=f_nat,c_best`) with `ports/w3_quarter_car.tokens` (41 lines; the token rules of L-kd, W3's lines by L-jz and L-ka, W2's port readings L-kb and L-kc); `tests/accept.sh` passes W1, W2, W3, W4, W5 and W7: W2's every key passes `compare.py --candidate` (the exact keys identical, `fsd_iters` 96, `mechanism_count` 0, `overstressed_count` 158, `e_crit0` 68; the float keys within 6.4e-11 relative; `r_worst` 59 against MATLAB's 61 by the near-tie rule) and its report is equivalent, W3's 27 keys pass (the largest relative difference 9.6e-16) and its report is byte-identical to MATLAB's but for the `Compute time` line (§6.3 "Measured at 8d"); WP-CROSS: `cross_pack.sh` (the `// cross:` header line as a second `.meta` line), `cross_run.sh` (`-k DIR`, `check_meta`'s `compare=accept` lines for ports only, the deferred runs, `, D deferred`), `cross.sh` (the return path `#sea-cross-files N` with the base64 tar, the `awk` splitter, the length check, the combined counts and exit statuses) and the new `cross_accept.sh`, §2.13.9 items 1–5 as built by L-jw–L-jy (§6.6.1 "As built in 8d"), tested on the deferred flow, a truncated base64 stream (exit 2), a corrupted kept JSON (FAIL, exit 1), edits of excepted keys (pass) and of other keys (fail), missing kept files (fail) and an unknown `.meta` line of another kind (exit 2); `make test` (driver 122, rt 171, la: `la_check` 31 042 cases and `la/la_link`, stage 1 310, shape 8, fusion 2, protocol 56, programs 2 355, accept 2 + 6) and `make cross` (1 089 cases packed, 0 failed to compile; default variant 911/0, `sse2` 911/0, once-only 176/0; host 1 998 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed) pass; the gate after phase 8 passes every program with no relief (§2.7 "Measured at the gate after phase 8", the sizes of "Measured after 8c"); lead decisions L-jw–L-kd; phase 8 is complete, next phase 9 (its specification first) |
 | 9a | **Phase-9 specification** (documents only): §2.14 (scope, the semantic contract with the proposed LANGUAGE.md text, the ports' figures against §12, front end and later passes, entries 62–82, the library's algorithms and SVG grammar, capacity, tests, the ports, these rows, Decisions 131–142, lead decisions L-ke – L-lf); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 131–142. **Done** (2026-11-02): the specification revised after one independent review and agreed, Decisions 131–142 decided by the user, each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text; next 9b (WP-CONTRACT first and alone) |
 | 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code. **Done** (2026-11-03): WP-CONTRACT's `rt.inc` entries 62–82 (`SEA_ENT_COUNT` 82), `errors.inc` codes 22–29 (`SEA_E_RT_END` 30), `limits.inc`'s `SEA_LIM_PLOT_GRID` and `SEA_LIM_PLOT_PX` in their own section (L-lp), the `entries` capacity 128 and LANGUAGE.md's agreed text; the front end: `seaname` (the phase-rule branch removed, every handle type resolves; 259 unreachable, L-kx), `seacheck` (the new part `sc9plot.bas`: the class table 32–52 by `pcls` from `ck_lib` and `ck_narg` (L-lk), the options and their defaults, the overloads with `cvt`, `dyn` and the typing of untyped constants (L-ll), 224, 225, 243, 255, and the written form with every parameter and the evaluation-order temporaries, §3.5.5), `sealoop` (R36, `lpbmat.bas` 55500–55526, L-lo), `sealower` (rule 39's 21 rows through `K5$`, the operand classes checked against the entries, L-ln; `Figure` and `Axes` locals in class p), `seafuse` and `seaexpand` unchanged; `rt_plot.s` in both runtimes (`FIGURE`, `PANEL`, `TWIN_Y`, `SAVE_SVG`, `PLOT`, `XLINE` and the property entries 72–82; layout, extents, limits and ticks, the SVG writer of lines, markers and reference lines, legends, category ticks, twins, the buffer), `rt_fmt.s`'s `_sea_fmt_num` (L-li), `rt_file.s`'s `_sea_file_put` and `rt_mem.s`'s `Figure` and `Axes` branches of `sea_free` (L-lb, L-lj); `rt_plot.s` 3 656 lines on arm64 and 3 618 on x86_64; the deepest path `SAVE_SVG`'s, 2 368 bytes below the incoming sp on arm64 and 3 632 on x86_64, the other entries at most 256 and 168 (§4.8); the review's findings fixed: the x86_64 runtime aligned to the numbered order of the limits rules (L-lg), `_sea_file_put` given a fifth argument so the SVG buffer no longer leaks on a file error (L-ld), a twin record's cell fields copied from its base (§2.14.6), a `ref` argument past the last parameter counted and reported as 243 (L-ll), the pre-existing `cty` defect (a latent `sealoop` `BAD_RECORD` for reordered calls and struct literals converting an `i64` array, L-lm), `KEY~` on every `.struct` key and the T2 dumps made reproducible by `tests/vectors/plot9_dumps.py` (L-lq); tests: 26 `plots/plot_*` programs with their `.struct` (`plot_cvt_order` the review's), 34 run-time errors `r_plot_*`, 12 compile errors `err_plot_*`, `err_ns_lib_figure`, `err_ns_handle` and `passes/res_err_handle` retired, the programs `call6_named_cvt_{fixed,dyn}` and `struct_order_cvt_{fixed,dyn}`, the dumps `passes/plot9_{check,hirl,rcall,release}`, `plot9_cases.py`'s tick part, `tests/plots.sh` and `tests/plot_struct.py` with `make test-plots`, the cross case kind `plots/`, the rt group 229 cases on arm64 and 211 on x86_64 (§6.2, §6.6.1); sizes in §2.7 "Measured after 9b" (`seaname` 5 632, `seacheck` 7 335, `sealoop` 6 715, 285 under 7 000, `sealower` 6 885, its longest line still 255 bytes; no new array letter; within §2.14.7's projections; no relief needed); lead decisions L-lg–L-lq; next 9c; `make test` (driver 122, rt 229, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6) and `make cross` (1 194 cases packed, 0 failed to compile; default variant 978/0, `sse2` 978/0, once-only 214/0; host 2 170 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 211) pass |
-| 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass |
+| 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass. **Done** (2026-11-03): `rt_plot2.s` and `rt_png.s` in both runtimes (the entries `BAR`, `BARH`, `CONTOUR` and `IMAGE`; marching squares; the colour map; the colorbar; PNG with stored deflate, CRC-32, Adler-32 and base64), `rt_plot.s`'s dispatch of series kinds 3–6, the colorbar in the layout and the legend's `barh` entries; sizes in §2.7 "Runtime sizes at 9c" (arm64 `rt_plot.s` 3 730, `rt_plot2.s` 2 225, `rt_png.s` 332 lines, 6 287 together; x86_64 3 682, 2 083 and 362, 6 127 together; both above §2.14.5's estimates, no Baysick limit applying, no relief); the deepest path `SAVE_SVG`'s, 2 624 bytes below the incoming sp on arm64 (through the image, PNG and colorbar path) and 3 648 on x86_64, every own frame of `rt_plot2.s` and `rt_png.s` at most 128 bytes on arm64 and 72 on x86_64 (§4.8); one independent review: no runtime defect, the x86_64 colorbar's scratch moved from `.bss` to `sea_alloc` and header comments corrected, and the test gap it found (no check of contour segments, labels or image pixels against spec-derived values) closed with the `.struct` keys `clabel`, `segment` and `pixels` (L-lz); tests: 8 `plots/` programs with `.struct` (`plot_bar`, `plot_barh`, `plot_contour_cases`, `plot_contour_levels`, `plot_image_orient`, `plot_image_values`, `plot_image_contour`, `plot_extreme_z`), 16 run-time errors (`r_plot_levels`, `r_plot_levels_neg`, `r_plot_zshape`, `r_plot_zshape_image`, `r_plot_width_bar`, `r_plot_width_bar_inf`, `r_plot_width_barh`, `r_plot_shape_bar`, `r_plot_color_bar`, `r_plot_color_barh`, `r_plot_color_contour`, `r_plot_order_bar`, `r_plot_order_bar_width`, `r_plot_order_barh`, `r_plot_order_contour`, `r_plot_order_levels`), `plot9_cases.py`'s 9c part (309 files, with `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets), `tests/plot_struct.py`'s keys `clabel`, `segment` and `pixels`, and the rt group 256 cases on arm64 (27 new) and 228 on x86_64 (17 new); lead decisions L-lr–L-lz; next 9d; `make test` (driver 122, rt 256, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 441, plots 34, accept 2 + 6) and `make cross` (1 235 cases packed, 0 failed to compile; default variant 1 002/0, `sse2` 1 002/0, once-only 231/0; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 228) pass |
 | 9d | **The ports' figures, acceptance, close-out** (after 9c; Decisions 131, 138). **WP-PORT** the six `ports/NAME.sea` (the `--figures` arm and block; W2's header `svg=approx`); **WP-STRUCT** the six `ports/NAME.struct` (from the MATLAB scripts, by an author who does not write the ports); **WP-ACCEPT** `tests/accept.sh` (one run with both flags, the run-directory rule, step 4); **WP-CROSS** `tests/cross_pack.sh`, `tests/cross_run.sh`, `tests/cross.sh`, `tests/cross_accept.sh` (the `--figures` argument, the packed SVG, the kept SVG, Decision 138's comparison, the `svg=approx` header key); the compile times recorded in §6.3; then the gate after phase 9 (§2.14.7) | row 9's "done when": the plot tests pass; every port writes its figure with `--figures` and passes its structural check (`tests/accept.sh` on the Mac; `make cross`: W1, W3, W4, W5, W7 byte-identical SVGs under both variants, W2 by Decision 138); `make test` and `make cross` pass; the gate after phase 9 applied, a failing program getting a relief agreed with the user before phase 10 |
 
 ## 9. Decisions (agreed)
@@ -20058,3 +20158,47 @@ change bytes are also written into §2.14.6, which stays the single source):
     rule 39 and Decision 39 is the authority.
   * The rt tests' hand-derived SVG bytes (`rt_plot_svg*`, `rt_plot_svg_cat`) test the runtime
     against §2.14.6, not the language; this is consistent with Decision 140 (a).
+
+Lead decisions of sub-phase 9c (the readings of its work packages and of its review, found in their
+builds and recorded 2026-11-03 at its integration; each states the code as built, and those that
+change bytes are also written into §2.14.6, which stays the single source):
+
+* **L-lr** (9c, agreed 2026-11-03; the known answers' files) In `rt_plot_kat.out` the `crc32` and
+  `adler32` lines alternate per input in §2.14.8's order; the empty base64 input is the line
+  `b64 0 ` (TEXT empty, one trailing blank); the 21 846 × 1 PNG's 65 538 pixel bytes (r, g, b per
+  pixel, left to right) are the seeded sequence's first 65 538 bytes; the PNG lines come in the
+  order 1 × 1, 2 × 2, 21 846 × 1, 1 × 256, `pngb64` after the first two; hex upper case, 8 digits.
+* **L-ls** (9c, agreed 2026-11-03; barh extents) A `barh` series gives 0 to x unconditionally (also
+  when it is empty or has no finite h), then each finite hᵢ; its y-axis gets i − width/2 and
+  i + width/2 for every i = 0 … n − 1, width/2 computed once. A labelled `barh` series is a legend
+  entry drawn with the bar sample, as a `bar` series is, even when it draws no bar; a series that
+  draws no bar still writes its empty `<g class="bars">` group.
+* **L-lt** (9c, agreed 2026-11-03; image extent) An image draws nothing and gives no extent unless
+  n, m ≥ 1 and all four ends are finite; then x gets a, b and its own y-axis a_y, b_y. Rule 3
+  (tight limits) applies when the pair holds any image series, drawn or not.
+* **L-lu** (9c, agreed 2026-11-03; colorbar) The colorbar is that of the pair's last image with
+  `colorbar: true`, whether or not that image is drawn; xc = ((px + pw) + 12) (+ 52 with a twin),
+  the additions in that order; its ticks use rule 4's widening only, then the explicit-limit ticks
+  and the normal tick texts; the `colorbar-ticks` path is written even with no tick (empty `d`).
+* **L-lv** (9c, agreed 2026-11-03; contours) The outer `contour` group is always written, a level's
+  group only when the level has a segment; the labels follow the outer `</g>`, one per drawn level
+  ascending, `%g` of L_k with no `+0.0`; both coordinates of an edge point use p1 + t · (p2 − p1),
+  the constant one included, so a non-finite t clamps both; a corner equal to a level counts as
+  above it (≥).
+* **L-lw** (9c, agreed 2026-11-03; level colour) floor(256k/(n + 1)) is computed exactly in integer
+  arithmetic on both targets; n + 1 is converted as a signed integer, so `levels` is in practice
+  bounded far below 2⁵³ by the level loop (both targets alike; no test).
+* **L-lx** (9c, agreed 2026-11-03; private helpers, L-ld) Besides `_sea_crc32`, `_sea_adler32`,
+  `_sea_b64` (x86_64 `sea_crc32`, `sea_adler32`, `sea_b64`, `.hidden`), each runtime has a PNG
+  builder (arm64 `_sea_png(raw, rawlen, w, h, site)`, x86_64 `sea_png(raw, w, h, site)`), the
+  colour map table built at first use, `rt_plot2.s` hooks for extents, the colorbar and the series
+  writers, and private aliases (`.private_extern` / `.hidden`) of `rt_plot.s`'s writer routines; all
+  target-local, none a contract.
+* **L-ly** (9c, agreed 2026-11-03; scratch memory) All PNG and colorbar scratch comes from
+  `_sea_alloc` uncounted and is freed with `_sea_free_block` (the review moved x86_64's colorbar raw
+  data from a static buffer); every check of entries 68–71 runs before any allocation, so no error
+  path leaks.
+* **L-lz** (9c, agreed 2026-11-03; `.struct` keys of 9c) The review found no check of contour
+  segments, labels or image pixels against spec-derived values (a mistake common to both runtimes
+  would pass the cross run); the keys `clabel`, `segment` and `pixels` are added to §2.14.8's
+  table, their values derived by `plot9_cases.py` from §2.14.6 alone.

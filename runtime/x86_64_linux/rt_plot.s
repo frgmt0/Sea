@@ -20,13 +20,19 @@
 #   sea_xlim sea_ylim (ax, site; lo, hi in %xmm0, %xmm1)
 #   sea_x_ticks sea_y_ticks (ax, labels, site)
 #   sea_y_reverse sea_axis_equal (ax)
-# The entries of 9c (BAR, BARH, CONTOUR, IMAGE: rt_plot2.s) are not
-# defined yet (L-lf); no series record of their kinds 3 - 6 can exist
-# until they are, so the writer below draws kinds 1 (line) and 2 (xline)
-# and the places that 9c's kinds join are named where they occur.
+# The entries of 9c (BAR, BARH, CONTOUR, IMAGE) are in rt_plot2.s; this
+# file draws kinds 1 (line) and 2 (xline) and hands the series kinds 3 - 6
+# to rt_plot2.s for their extents (sea_plt2_ext) and elements
+# (sea_plt2_draw), and the colorbar of item 9 (sea_plt2_colorbar).
+# Shared with rt_plot2.s (.globl + .hidden, private to the runtime, named
+# sea_plt_*: aliases of the local routines and the writer's state below,
+# so this file's own code and bytes are unchanged by them): the routines
+# raise recs grow colorarg rescol room put f2 color map ext widen inside
+# texts tick floor, and the state site bufp bufn px py pw ph axd trec cbar.
 # Uses: sea_alloc, sea_free_block, sea_retain, sea_release, sea_live
 #   (rt_mem.s); sea_err (rt_err.s); sea_fmt_num (rt_fmt.s); sea_file_put
-#   (rt_file.s); glibc memcpy through the PLT.
+#   (rt_file.s); sea_plt2_ext, sea_plt2_draw, sea_plt2_colorbar
+#   (rt_plot2.s); glibc memcpy through the PLT.
 #
 # OBJECTS (DESIGN.md 2.14.6 "Objects", L-ke, L-kf; the offsets RTP_* are
 # the same in both runtimes and read by tests/rt): a Figure is one
@@ -60,9 +66,11 @@
 # with it clear, as the ABI guarantees on entry). The local routines
 # (.Lrt_plot_*) state their own clobbers. Stack: every entry's own frame
 # is at most 104 bytes below its return address (asserted below 512); the
-# deepest own path is SAVE_SVG (104) + the panel writer (96) + a series
-# or legend writer (96) + the marker writer (40) + the %.2f writer (24)
-# + sea_fmt_num, each with its return address; below it run sea_alloc,
+# deepest own path of this file is SAVE_SVG (104) + the panel writer (96)
+# + a series or legend writer (96) + the marker writer (40) + the %.2f
+# writer (24) + sea_fmt_num, each with its return address (with 9c the
+# deepest own path passes rt_plot2.s's contour writer: its header);
+# below it run sea_alloc,
 # sea_fmt_num's snprintf, sea_file_put and sea_err, whose frames
 # SEA_STACK_MARGIN covers (the measured total: DESIGN.md 4.8).
 # =====================================================================
@@ -241,6 +249,20 @@
 .macro AXD reg, n
     leaq (.Lrt_plot_axd + (\n) * RTP_A_SIZE)(%rip), \reg
 .endm
+# SHAREF name / SHARED name -- a hidden global alias (a function / an
+# object) at this place, for rt_plot2.s (see the file header).
+.macro SHAREF name
+    .globl \name
+    .hidden \name
+    .type \name, @function
+\name:
+.endm
+.macro SHARED name
+    .globl \name
+    .hidden \name
+    .type \name, @object
+\name:
+.endm
 
     .text
 
@@ -260,6 +282,7 @@
 #   Callee-saved used: none.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_floor
 .Lrt_plot_floor:
     movq %xmm0, %rax
     btrq $63, %rax                  # |x|'s bits
@@ -461,6 +484,7 @@
 #   Frame   : none (tail jump to the leaf .Lrt_plot_clamp)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_map
 .Lrt_plot_map:
     imulq $RTP_A_SIZE, %rdi, %rcx
     leaq .Lrt_plot_axd(%rip), %rax
@@ -494,6 +518,7 @@
 #   Clobbers: %rax, %rcx, flags.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_ext
 .Lrt_plot_ext:
     NONFIN %xmm0, 3f
     cmpq $0, RTP_A_EHAS(%rdi)
@@ -525,6 +550,7 @@
 #   Frame   : 40 bytes (%rbp %rbx %r12 %r13 %r14)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_room
 .Lrt_plot_room:
     pushq %rbp
     movq %rsp, %rbp
@@ -570,6 +596,7 @@
 #   Frame   : 24 bytes (%rbp %rbx %r12)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_put
 .Lrt_plot_put:
     pushq %rbp
     movq %rsp, %rbp
@@ -598,6 +625,7 @@
 #   Callee-saved used: %rbp.  Frame: 24 bytes (%rbp + the value + pad)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_f2
 .Lrt_plot_f2:
     pushq %rbp
     movq %rsp, %rbp
@@ -650,6 +678,7 @@
 #   Callee-saved used: %rbx = the colour, %rbp.  Frame: 24 bytes
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_color
 .Lrt_plot_color:
     pushq %rbp
     movq %rsp, %rbp
@@ -810,6 +839,7 @@
 #   Frame   : 8 bytes (%rbp), %rsp rounded down to 16, six slots
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_raise
 .Lrt_plot_raise:
     pushq %rbp
     movq %rsp, %rbp
@@ -833,6 +863,7 @@
 #   Clobbers: %r9, flags.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_recs
 .Lrt_plot_recs:
     movq RTP_AH_FIG(%rdi), %rcx
     movq RTP_AH_IDX(%rdi), %r8
@@ -859,6 +890,7 @@
 #             index, %rbp.  Frame: 56 bytes (ENTER 8)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_grow
 .Lrt_plot_grow:
     ENTER 8
     leaq (%rdi,%rsi), %rbx
@@ -1021,6 +1053,7 @@
 #   Clobbers: %rcx, %rdx, %rsi, flags.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_colorarg
 .Lrt_plot_colorarg:
     movq SEA_STR_LEN(%rdi), %rcx
     movq $-1, %rax
@@ -1062,6 +1095,7 @@
 #   Clobbers: %rcx, %rdx, %r8, %r9, flags.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_rescol
 .Lrt_plot_rescol:
     movq %rsi, %rax
     testq %rax, %rax
@@ -1812,6 +1846,7 @@ sea_axis_equal:
 #   Clobbers: %rax, %rcx, %xmm2, %xmm3, flags.  Frame: none (leaf)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_widen
 .Lrt_plot_widen:
     cmpq $0, RTP_A_EHAS(%rdi)
     je 5f
@@ -1896,6 +1931,7 @@ sea_axis_equal:
 #   Frame   : 72 bytes (ENTER 24)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_inside
 .Lrt_plot_inside:
     ENTER 24
     movq %rdi, %rbx
@@ -2179,6 +2215,7 @@ sea_axis_equal:
 #   Frame   : 56 bytes (ENTER 8)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_texts
 .Lrt_plot_texts:
     ENTER 8
     movq %rdi, %rbx
@@ -2230,6 +2267,7 @@ sea_axis_equal:
 #   Frame   : none (calls only the leaf .Lrt_plot_map)
 # ---------------------------------------------------------------------
     .p2align 4
+SHAREF sea_plt_tick
 .Lrt_plot_tick:
     imulq $RTP_A_SIZE, %rdi, %r8
     leaq .Lrt_plot_axd(%rip), %rax
@@ -2426,9 +2464,16 @@ sea_save_svg:
     AXD %r15, 2
     cmpq .Lrt_plot_tidx(%rip), %rax
     jne 5f                          # another panel's series
-3:  cmpq $RTP_SK_LINE, RTP_SR_KIND(%r13)
-    jne 5f                          # an xline gives no extent (kinds 3 - 6: 9c)
-    movq RTP_SR_N(%r13), %rax
+3:  movq RTP_SR_KIND(%r13), %rax
+    cmpq $RTP_SK_LINE, %rax
+    je 31f
+    cmpq $RTP_SK_BAR, %rax
+    jb 5f                           # an xline gives no extent
+    movq %r13, %rdi                 # kinds 3 - 6: rt_plot2.s
+    movq %r15, %rsi
+    call sea_plt2_ext
+    jmp 5f
+31: movq RTP_SR_N(%r13), %rax
     movq %rax, 0(%rsp)
     movq RTP_SR_DATA(%r13), %rax
     movq %rax, 8(%rsp)
@@ -2549,6 +2594,7 @@ sea_save_svg:
 1:  movq %r13, .Lrt_plot_trec(%rip)
     # Does the pair hold an image (tight limits), one with a colorbar?
     movq $0, .Lrt_plot_tight(%rip)
+    movq $0, .Lrt_plot_cbar(%rip)   # the colorbar's image (the last one, L-ko)
     xorl %r15d, %r15d               # the colorbar flag
     movq RTP_FG_SRT(%rbx), %rcx
     movq RTP_FG_NSR(%rbx), %rdx
@@ -2565,6 +2611,7 @@ sea_save_svg:
     cmpq $0, RTP_SR_FLAG(%rcx)
     je 22f
     movl $1, %r15d
+    movq %rcx, .Lrt_plot_cbar(%rip)
 22: addq $RTP_SR_SIZE, %rcx
     decq %rdx
     jmp 2b
@@ -2692,8 +2739,10 @@ sea_save_svg:
     call .Lrt_plot_wline
     jmp 24f
 23: cmpq $RTP_SK_XLINE, %rax
-    jne 24f                         # (kinds 3 - 6: 9c)
+    jne 26f
     call .Lrt_plot_wxline
+    jmp 24f
+26: call sea_plt2_draw              # kinds 3 - 6: rt_plot2.s (%rdi, %rsi)
 24: addq $RTP_SR_SIZE, %r14
     decq %r15
     jmp 21b
@@ -2823,8 +2872,12 @@ sea_save_svg:
     LIT "</text>\n"
     incq %r14
     jmp 44b
+    # 5.9: the colorbar of the pair's last image with colorbar: true.
+50: cmpq $0, .Lrt_plot_cbar(%rip)
+    je 59f
+    call sea_plt2_colorbar
     # 5.10: the axis labels.
-50: movq RTP_AX_XLAB(%r12), %rax
+59: movq RTP_AX_XLAB(%r12), %rax
     testq %rax, %rax
     jz 51f
     cmpq $0, SEA_STR_LEN(%rax)
@@ -3596,23 +3649,34 @@ sea_save_svg:
 # =====================================================================
     .bss
     .p2align 3
+SHARED sea_plt_site
 .Lrt_plot_site:  .zero 8            # the running entry's site
+SHARED sea_plt_bufp
 .Lrt_plot_bufp:  .zero 8            # the SVG buffer, its length, its capacity
+SHARED sea_plt_bufn
 .Lrt_plot_bufn:  .zero 8
 .Lrt_plot_bufc:  .zero 8
 .Lrt_plot_fig:   .zero 8            # the figure being written
 .Lrt_plot_brec:  .zero 8            # the panel's base record, twin record (or 0)
+SHARED sea_plt_trec
 .Lrt_plot_trec:  .zero 8
 .Lrt_plot_bidx:  .zero 8            # their indices (the twin's -1 if none)
 .Lrt_plot_tidx:  .zero 8
 .Lrt_plot_tight: .zero 8            # 1 when the pair holds an image
+SHARED sea_plt_cbar
+.Lrt_plot_cbar:  .zero 8            # the pair's last image record with colorbar: true, or 0
 .Lrt_plot_hb:    .zero 8            # f64 the heading band, the cell size
 .Lrt_plot_cw:    .zero 8
 .Lrt_plot_ch:    .zero 8
+SHARED sea_plt_px
 .Lrt_plot_px:    .zero 8            # f64 the panel's plot area
+SHARED sea_plt_py
 .Lrt_plot_py:    .zero 8
+SHARED sea_plt_pw
 .Lrt_plot_pw:    .zero 8
+SHARED sea_plt_ph
 .Lrt_plot_ph:    .zero 8
-.Lrt_plot_axd:   .zero 3 * RTP_A_SIZE # the axis descriptors x, y, the twin's y
+SHARED sea_plt_axd
+.Lrt_plot_axd:   .zero 4 * RTP_A_SIZE # the axis descriptors x, y, the twin's y, the colorbar's (rt_plot2.s)
 
     .section .note.GNU-stack,"",@progbits

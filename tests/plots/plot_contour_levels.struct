@@ -1,0 +1,247 @@
+# plot_contour_levels.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_contour_levels.sea; DESIGN.md 2.14.8 "The .struct format")
+# c: zmin 0 and zmax 9 over the finite cells, levels 2.25, 4.5, 6.75; only the first cell is drawn
+# (range 0 ... 3), so only level 1 has a segment (colour entry 64)
+file plot_contour_levels.svg
+canvas 960 720
+heading -
+panels 5
+panel 0
+title three levels
+xlabel -
+ylabel -
+ylabel2 -
+count line 1
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+subpaths 0 1
+color line 0 #0072bd
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #4686fb
+color contour-level 1 #1ce4b5
+color contour-level 2 #f8b838
+count contour-level 3
+count contour-segment 8
+count contour-label 3
+clabel 1.75
+clabel 3.5
+clabel 5.25
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+xtick 3.0
+count ytick 5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+ytick 2.0
+count ytick2 0
+count ctick 0
+segment 0 138.67 262.00 56.00 190.00
+segment 1 200.67 316.00 138.67 262.00
+segment 2 138.67 136.00 56.00 64.00
+segment 3 221.33 208.00 180.00 172.00
+segment 4 180.00 172.00 138.67 136.00
+segment 5 304.00 280.00 221.33 208.00
+segment 6 221.33 82.00 159.33 28.00
+segment 7 304.00 154.00 221.33 82.00
+panel 1
+title one level, colour
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #ff8000
+count contour-level 1
+count contour-segment 4
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+xtick 3.0
+count ytick 5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+ytick 2.0
+count ytick2 0
+count ctick 0
+segment 0 458.67 136.00 376.00 64.00
+segment 1 541.33 208.00 500.00 172.00
+segment 2 500.00 172.00 458.67 136.00
+segment 3 624.00 280.00 541.33 208.00
+panel 2
+title NaN corner
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #4686fb
+count contour-level 1
+count contour-segment 1
+count contour-label 1
+clabel 2.25
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+segment 0 820.00 136.00 727.00 28.00
+panel 3
+title constant
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 6
+xtick 0.0
+xtick 0.2
+xtick 0.4
+xtick 0.6
+xtick 0.8
+xtick 1.0
+count ytick 6
+ytick 0.0
+ytick 0.2
+ytick 0.4
+ytick 0.6
+ytick 0.8
+ytick 1.0
+count ytick2 0
+count ctick 0
+panel 4
+title ten levels
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 1
+color contour-level 0 #383c80
+color contour-level 1 #4066c6
+color contour-level 2 #428ef5
+color contour-level 3 #32b1db
+color contour-level 4 #22d3c2
+color contour-level 5 #42dc9f
+color contour-level 6 #93cd72
+color contour-level 7 #e8bd43
+color contour-level 8 #d6872a
+color contour-level 9 #a84616
+count contour-level 10
+count contour-segment 26
+count contour-label 0
+count image 0
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+xtick 3.0
+count ytick 5
+ytick 0.0
+ytick 0.5
+ytick 1.0
+ytick 1.5
+ytick 2.0
+count ytick2 0
+count ctick 0
+segment 0 428.61 676.00 376.00 630.18
+segment 1 458.67 656.36 376.00 584.36
+segment 2 481.21 676.00 458.67 656.36
+segment 3 458.67 610.55 376.00 538.55
+segment 4 533.82 676.00 458.67 610.55
+segment 5 458.67 564.73 421.09 532.00
+segment 6 421.09 532.00 376.00 492.73
+segment 7 541.33 636.73 458.67 564.73
+segment 8 586.42 676.00 541.33 636.73
+segment 9 458.67 518.91 376.00 446.91
+segment 10 541.33 590.91 473.70 532.00
+segment 11 473.70 532.00 458.67 518.91
+segment 12 624.00 662.91 541.33 590.91
+segment 13 458.67 473.09 376.00 401.09
+segment 14 541.33 545.09 526.30 532.00
+segment 15 526.30 532.00 458.67 473.09
+segment 16 624.00 617.09 541.33 545.09
+segment 17 458.67 427.27 413.58 388.00
+segment 18 541.33 499.27 458.67 427.27
+segment 19 624.00 571.27 578.91 532.00
+segment 20 578.91 532.00 541.33 499.27
+segment 21 541.33 453.45 466.18 388.00
+segment 22 624.00 525.45 541.33 453.45
+segment 23 541.33 407.64 518.79 388.00
+segment 24 624.00 479.64 541.33 407.64
+segment 25 624.00 433.82 571.39 388.00

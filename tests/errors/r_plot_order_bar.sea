@@ -1,0 +1,5 @@
+// r_plot_order_bar -- bar with a length mismatch, a bad width and a bad colour reports the shape (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+bar(ax, zeros(2), zeros(3), color: "?", width: 0)

@@ -1,0 +1,5 @@
+// r_plot_color_barh -- barh with color "b": a style letter is not a colour (COLOR)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+barh(ax, [1.0], color: "b")

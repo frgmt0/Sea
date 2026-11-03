@@ -1,0 +1,11 @@
+bar 0: kind 3 ax 0 color 0072BD width 3FE0000000000000 label 1 Src 2 n 3 copy 1 data 2 0 1 1 2 3 Acyc 1 nsr 1
+bar 1: color AB12CD label 0 n 0 data 0 Acyc 1
+barh 2: kind 4 color D95319 width 3FE999999999999A label 1 Src 2 n 3 copy 1 data 1 2 3 Acyc 2
+contour 3: kind 5 color -1 n 3 m 2 levels 4 flag 1 label 0 copy 1 data 2 0 1 0 1 1 4 2 5 3 6 Acyc 2
+contour 4: color 00FF00 levels 1 flag 0 Acyc 2
+contour 5: n 3 m 0 data 2 0 1
+image 6: kind 6 color 0 n 3 m 2 flag 1 label 0 copy 1 data 2 0 1 0 1 1 4 2 5 3 6 Acyc 2
+image 7: n 0 m 0 data 0 flag 0 nsr 8
+args: X3rows 3 X3_0 2 Zrows 2 Zcols 3
+release A: live 1 freed 1
+release fig: live 0 freed 2 S1 1 S2 1

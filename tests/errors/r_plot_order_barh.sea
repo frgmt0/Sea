@@ -1,0 +1,5 @@
+// r_plot_order_barh -- barh with a bad colour and a NaN width reports the width (L-kg)
+printf("start\n")
+let fig = figure(2, 2)
+let ax = panel(fig, 0, 0)
+barh(ax, [1.0], color: "#1", width: nan)

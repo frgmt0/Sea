@@ -203,8 +203,17 @@ pre-existing `cty` defect fixed; 26 `tests/plots/` programs checked by `tests/pl
 on x86_64; `make test` passes (stage 1 331, programs 2 425, plots 26, accept 2 + 6) and `make cross`
 passes 1 194 cases (default 978, `sse2` 978, once-only 214; host 2 170 passed, 0 failed, 4
 deferred; Mac 4 passed, 0 failed); lead decisions L-lg–L-lq; measured: `seacheck` 7 335 built lines, `sealoop` 6 715,
-`sealower` 6 885, no relief, DESIGN.md §2.7 "Measured after 9b"). **Next:** 9c (bars, contours,
-images, PNG; DESIGN.md §2.14.10).
+`sealower` 6 885, no relief, DESIGN.md §2.7 "Measured after 9b"). **9c is done** (2026-11-03: bars, contours,
+images and PNG: `rt_plot2.s` (`BAR`, `BARH`, `CONTOUR`, `IMAGE`, marching squares, the colour map,
+the colorbar) and `rt_png.s` (PNG with stored deflate, CRC-32, Adler-32, base64) in both runtimes,
+`rt_plot.s`'s dispatch of series kinds 3–6; runtime sizes 6 287 lines on arm64 and 6 127 on x86_64,
+above the estimates, DESIGN.md §2.7 "Runtime sizes at 9c"; one independent review, no runtime
+defect; 8 more `tests/plots/` programs (34), 16 more `r_plot_*` errors, `plot9_cases.py`'s 9c part,
+the `.struct` keys `clabel`, `segment` and `pixels`, rt 256 cases on arm64 and 228 on x86_64;
+`make test` passes (programs 2 441, plots 34) and `make cross` passes 1 235 cases (default
+1 002, `sse2` 1 002, once-only 231; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0
+failed); lead decisions L-lr–L-lz). **Next:** 9d (the
+ports' figures, acceptance, close-out; DESIGN.md §2.14.10).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).

@@ -1,0 +1,158 @@
+# plot_image_orient.struct -- derived by tests/vectors/plot9_cases.py from LANGUAGE.md 12 and DESIGN.md 2.14.6
+# (the model of the calls in plot_image_orient.sea; DESIGN.md 2.14.8 "The .struct format")
+file plot_image_orient.svg
+canvas 960 720
+heading -
+panels 4
+panel 0
+title x up, y up
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick 5
+ytick 10
+ytick 15
+ytick 20
+ytick 25
+count ytick2 0
+count ctick 0
+pixels 0 #74d384 #e0962e #7a0403
+pixels 0 #30123b #426fd5 #2cbed2
+panel 1
+title x up, y down
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick 5
+ytick 10
+ytick 15
+ytick 20
+ytick 25
+count ytick2 0
+count ctick 0
+pixels 0 #30123b #426fd5 #2cbed2
+pixels 0 #74d384 #e0962e #7a0403
+panel 2
+title x down, y up
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick 5
+ytick 10
+ytick 15
+ytick 20
+ytick 25
+count ytick2 0
+count ctick 0
+pixels 0 #7a0403 #e0962e #74d384
+pixels 0 #2cbed2 #426fd5 #30123b
+panel 3
+title x down, y down
+xlabel -
+ylabel -
+ylabel2 -
+count line 0
+count markers 0
+count xline 0
+count grid 0
+count legend 0
+count bars 0
+count bar 0
+count contour 0
+count contour-level 0
+count contour-segment 0
+count contour-label 0
+count image 1
+count colorbar 0
+count colorbar-box 0
+count colorbar-ticks 0
+count xtick 7
+xtick -0.5
+xtick 0.0
+xtick 0.5
+xtick 1.0
+xtick 1.5
+xtick 2.0
+xtick 2.5
+count ytick 5
+ytick 5
+ytick 10
+ytick 15
+ytick 20
+ytick 25
+count ytick2 0
+count ctick 0
+pixels 0 #2cbed2 #426fd5 #30123b
+pixels 0 #7a0403 #e0962e #74d384

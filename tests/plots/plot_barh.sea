@@ -1,0 +1,22 @@
+// plot_barh -- horizontal bars at y = 0 ... n - 1 (LANGUAGE.md 12.3; DESIGN.md 2.14.6 "Data extents", "Bar
+// series"): the y extent i -+ width / 2, the x extent 0 and the finite heights, a NaN height not drawn;
+// with y_ticks the category limits -0.5 ... n - 0.5 (rule 2) and y_reverse; colours by color: and the cycle;
+// a labelled series of NaN heights and an empty labelled series: the x extent gets 0 unconditionally
+// (2.14.6 "Data extents" read literally), no bar is drawn, the legend entry is still written
+let fig = figure(2, 2)
+let a = panel(fig, 0, 0)
+barh(a, [3.0, -1.0, nan, 2.0], label: "h")
+y_ticks(a, ["w", "x", "y", "z"])
+y_reverse(a)
+legend(a, loc: "southeast")
+let b = panel(fig, 0, 1)
+barh(b, [0.5, 1.5, 4.0], width: 0.5, color: "#123ABC")
+barh(b, [-2.0])
+let c = panel(fig, 1, 0)
+barh(c, [nan, nan], label: "all NaN")
+legend(c)
+let none: f64[] = []
+let d = panel(fig, 1, 1)
+barh(d, none, label: "empty")
+legend(d)
+save_svg(fig, "plot_barh.svg")
