@@ -35,13 +35,13 @@
 12500 SUBEND
 12505 REM ---- ck_lib: call J of a library function (LANGUAGE 10): printf error format (ck_printf), print
 12507 REM make_dir, write_json (lout), and by class Z
-12510 REM 1 now() 2 idiv(i64, i64) 3 log exp sin cos sqrt floor ceil trunc round (f64) 4 isnan(f64)
+12510 REM 1 now() 2 idiv bitand bitor bitxor shl shr sar (i64, i64), bitnot(i64) (phase L) 3 log exp sin cos sqrt floor ceil trunc round (f64) 4 isnan(f64)
 12515 REM 5 pow hypot (f64, f64) 6 abs sign (i64 | f64) 7 min max (n, n) 8 where(bool, x, x) 9
 12520 REM ind2sub(i64, i64) -> (i64, i64) 10 sub2ind(i64, i64, i64) 11 zeros ones (n) | (r, c) 12
 12525 REM filled(v, n) | (v, r, c) 13 len (a vector or str) 14 rows cols (a matrix) 15 numel (a
 12530 REM vector or matrix), from 4f (sc9red) 16-24 the reductions, sort, argsort, find*, from 4g-1 25 lower, 26 args (min, max
 12535 REM of other than two positional arguments: 16), from 8c (sc9red lla) 27 lu 28 chol 29 solve 30 rcond 31 eig_sym,
-12536 REM from 9b (sc9plot ck_plot) 32-52 the 21 plotting calls (pcls); any other is not supported yet (the
+12536 REM from 9b (sc9plot ck_plot) 32-52 the 21 plotting calls (pcls), from phase L 53-57 the text calls; any other is not supported yet (the
 12537 REM guard, unreachable from 9b: every predeclared function has a class, L-kx). Untyped
 12540 REM constants are f64 where f64 is taken (classes 3-5), the other's type in min, max and where,
 12545 REM else i64 (LANGUAGE 4.2); an i64 for an f64 is converted. The overload is judged on the element
@@ -68,6 +68,7 @@
 12605 LET Q$ = Q$ & "|sub2ind 10|zeros 11|ones 11|filled 12|len 13|rows 14|cols 14|numel 15|"
 12606 LET Q$ = Q$ & "sum 16|mean 17|variance 17|std 17|argmax 18|argmin 18|nnz 19|any 20|all 20|sort 21|"
 12607 LET Q$ = Q$ & "argsort 22|find 23|find_first 24|find_last 24|lower 25|args 26|lu 27|chol 28|solve 29|rcond 30|eig_sym 31|"
+12608 LET Q$ = Q$ & "bitand 02|bitor 02|bitxor 02|bitnot 02|shl 02|shr 02|sar 02|"
 12610 LET P = POS(Q$, "|" & L$ & " ")
 12615 IF P = 0 THEN 12635
 12620 LET Z = VAL(SEG$(Q$, P + LEN(L$) + 2, P + LEN(L$) + 3))
@@ -169,11 +170,16 @@
 12975 ON Z GOTO 12980, 12990, 13035, 13035, 13070, 13100, 13125, 13165, 12990, 13220, 13250, 13285, 13340, 13360, 13375
 12980 IF H = 0 THEN 13395
 12985 GOTO 13545
-12990 IF H <> 2 THEN 13545
+12988 REM bitnot (class 2, L-mo): one i64 argument (13015), the others of the class two
+12990 IF L$ = "bitnot" THEN 13015
+12992 IF H <> 2 THEN 13545
 12995 IF V(1) <> 3 THEN 13545
 13000 IF V(2) <> 3 THEN 13545
 13005 LET D = 3
 13010 GOTO 13460
+13015 IF H <> 1 THEN 13545
+13020 IF V(1) <> 3 THEN 13545
+13025 GOTO 13005
 13035 IF H <> 1 THEN 13545
 13040 CALL "num": V(1), Q
 13045 IF Q = 0 THEN 13545
@@ -355,6 +361,10 @@
 13920 REM an argument of error type (0: a failed constant, reported at its declaration) is settled
 13925 IF V = 0 THEN 13985
 13930 IF C$ = "s" THEN 13965
+13931 REM x X take an i64 only (bool refused, unlike d i; LANGUAGE 11.1, L-mm)
+13932 IF POS("xX", C$) = 0 THEN 13935
+13933 LET B$ = "i64"
+13934 IF V <> 3 THEN 13975
 13935 IF V = 3 THEN 13985
 13940 IF V = 4 THEN 13985
 13945 IF V <> 2 THEN 13955
@@ -443,8 +453,8 @@
 14360 LET I = I + 1
 14365 GOTO 14335
 14370 LET C$ = SEG$(F$, I, I)
-14375 IF POS("diFfEeGgs", C$) = 0 THEN 14460
-14380 REM C leaves # with d i s and 0 with s undefined: invalid here (LANGUAGE 11.1)
+14375 IF POS("diFfEeGgsxX", C$) = 0 THEN 14460
+14380 REM C leaves # with d i s and 0 with s undefined: invalid here (LANGUAGE 11.1); + and space with x X are kept
 14385 IF G < 16 THEN 14395
 14390 IF POS("dis", C$) > 0 THEN 14460
 14395 IF C$ <> "s" THEN 14405

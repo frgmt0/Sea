@@ -1,0 +1,4 @@
+// err_lib_redefine -- split is predeclared (LANGUAGE.md Appendix C): fn split is 212 at the item
+fn split(x: i64) -> i64 {
+    return x
+}

@@ -1,0 +1,2 @@
+// err_lib_bit_f64 -- bitand(1.5, 1): 243 at the call, as idiv(1.5, 2) (DESIGN.md 2.15.4)
+let b = bitand(1.5, 1)

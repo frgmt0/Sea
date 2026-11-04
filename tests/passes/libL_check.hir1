@@ -1,0 +1,106 @@
+#sea 1
+#target arm64-macos
+#file libL_check.sea
+tvec 10 3
+tvec 11 5
+fn 1 .main main 1 0 0 0:1:1
+block 0:1:1 0
+end
+fn 2 g inl 3 4 10 0:1:1
+par path 5 val
+par s 5 val
+par v 10 val
+par k 3 val
+loc L 11 let 0:2:9
+loc F 11 let 0:3:9
+loc t 5 let 0:4:9
+loc a 3 let 0:5:9
+loc b 3 let 0:6:9
+loc x 4 let 0:7:9
+loc c 3 let 0:8:9
+loc d 3 let 0:9:9
+loc w 10 let 0:10:9
+loc e 10 let 0:11:9
+lv 0:2:24 5 1
+lib 0:2:13 11 read_lines 1
+bind 0:2:5 5
+lv 0:3:19 5 2
+cs 0:3:22 5 ,
+lib 0:3:13 11 split 2
+bind 0:3:5 6
+lv 0:4:20 5 2
+ci 0:4:23 3 1
+lv 0:4:26 3 4
+lib 0:4:13 5 substr 3
+bind 0:4:5 7
+lv 0:5:23 5 7
+ci 0:5:13 3 10
+lib 0:5:13 3 parse_i64 2
+bind 0:5:5 8
+lv 0:6:23 5 7
+ci 0:6:32 3 16
+lib 0:6:13 3 parse_i64 2
+bind 0:6:5 9
+lv 0:7:23 11 6
+ci 0:7:25 3 0
+idx 0:7:23 5 1
+lib 0:7:13 4 parse_f64 1
+bind 0:7:5 10
+lv 0:8:20 3 8
+ci 0:8:23 3 255
+lib 0:8:13 3 bitand 2
+lv 0:8:37 3 9
+lv 0:8:40 3 4
+lib 0:8:31 3 bitor 2
+bin 0:8:13 3 add
+lv 0:8:52 3 8
+ci 0:8:56 3 1
+un 0:8:55 3 neg
+lib 0:8:45 3 bitxor 2
+bin 0:8:13 3 add
+bind 0:8:5 11
+lv 0:9:20 3 11
+lib 0:9:13 3 bitnot 1
+lv 0:9:29 3 11
+ci 0:9:32 3 2
+lib 0:9:25 3 shl 2
+bin 0:9:13 3 add
+lv 0:9:41 3 11
+lv 0:9:44 3 4
+lib 0:9:37 3 shr 2
+bin 0:9:13 3 add
+lv 0:9:53 3 11
+ci 0:9:56 3 63
+lib 0:9:49 3 sar 2
+bin 0:9:13 3 add
+bind 0:9:5 12
+lv 0:10:24 10 3
+ci 0:10:27 3 4
+lib 0:10:20 10 shr 2
+ci 0:10:31 3 15
+lib 0:10:13 10 bitand 2
+bind 0:10:5 13
+lv 0:11:20 10 3
+lib 0:11:13 10 bitnot 1
+bind 0:11:5 14
+lv 0:12:12 3 11
+lv 0:12:16 3 12
+bin 0:12:12 3 add
+lv 0:12:24 11 5
+lib 0:12:20 3 len 1
+bin 0:12:12 3 add
+lv 0:12:29 10 13
+ci 0:12:31 3 0
+idx 0:12:29 3 1
+bin 0:12:12 3 add
+lv 0:12:36 10 14
+ci 0:12:38 3 0
+idx 0:12:36 3 1
+bin 0:12:12 3 add
+lv 0:12:47 4 10
+lib 0:12:43 3 i64 1
+bin 0:12:12 3 add
+ret 0:12:5 1
+block 0:1:50 11
+end
+#end

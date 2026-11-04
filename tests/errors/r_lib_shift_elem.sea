@@ -1,0 +1,6 @@
+// r_lib_shift_elem -- an array of counts: the first failing element in increasing linear order is reported (LANGUAGE.md
+// 10.14, 8.5): counts 1 63 64 -5 70, so 64
+let n: i64[] = [1, 63, 64, -5, 70]
+printf("start\n")
+let r = shl(3, n)
+printf("never %d\n", r[0])

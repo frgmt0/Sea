@@ -1,0 +1,6 @@
+// r_lib_shift_64 -- shr(1, 64): a count above 63 is invalid shift count 64 (LANGUAGE.md 10.14, 9.2); the counts 0
+// and 63 before it are valid
+let k = 64
+printf("%d %d\n", shr(1, 0), shr(-1, 63))
+printf("%d\n", shr(1, k))
+printf("never\n")

@@ -1,0 +1,23 @@
+// lib_bit_ops -- the seven bitwise functions on scalars (LANGUAGE.md 10.14): bitand, bitor, bitxor of every pair of
+// 0, 1, -1, -2^63, 2^63 - 1 and mixed patterns; bitnot of each; shl, shr, sar of each by 0, 1, 31, 32, 63 (shr
+// logical, sar arithmetic, shl dropping the bits shifted out); the examples of 10.14; expected values from exact
+// integers masked to 64 bits (two's complement)
+let vals: i64[] = [0, 1, -1, -9223372036854775808, 9223372036854775807, 0x0F0F_0F0F_0F0F_0F0F, 0x1234_5678_9ABC_DEF0, -6]
+let counts: i64[] = [0, 1, 31, 32, 63]
+for a in vals {
+    for b in vals {
+        printf("%d %d: and %d or %d xor %d\n", a, b, bitand(a, b), bitor(a, b), bitxor(a, b))
+    }
+}
+for a in vals {
+    printf("not %d = %d\n", a, bitnot(a))
+}
+for a in vals {
+    for n in counts {
+        printf("%d by %d: shl %d shr %d sar %d\n", a, n, shl(a, n), shr(a, n), sar(a, n))
+    }
+}
+printf("%d %d\n", shl(1, 63), shl(3, 63))
+printf("%d %d %d\n", shr(-1, 60), sar(-16, 2), sar(-1, 63))
+printf("%d %d\n", shr(-16, 2), shl(-16, 2))
+printf("%d %d %d\n", bitnot(bitnot(12345)), bitxor(bitxor(77, -1), -1), bitand(-1, bitnot(0)))

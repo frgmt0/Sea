@@ -567,7 +567,8 @@ An immutable sequence of bytes, by convention UTF-8 (Sea never decodes it except
 and SVG writers, §11.4, §12.8, which escape bytes as specified there). Operations: `+`
 concatenation, `==` `!=` `<` `<=` `>` `>=` (byte-wise lexicographic, unsigned; no blank
 padding: `"a" != "a "`), `len(s)` (bytes), and the functions of §10.9. No mutation; building is
-`+` and `format`. Substrings and splitting are later library work (§10.13).
+`+` and `format`, taking apart is `substr` and `split`, and `parse_i64` and `parse_f64` read numbers
+(§10.9). Byte access and the slice syntax `s[a..b]` are later library work (§10.13).
 
 ### 4.5 Arrays
 
@@ -1294,8 +1295,8 @@ elemental fn name(…) -> R { … }          §8.5
   ones included, whatever the order of the parameters they name (§6.8); an omitted argument's
   default is a constant, so when it is evaluated cannot be observed.
 * **Effects.** A function **has effects** if it writes output (`printf`, `print`, `write_json`,
-  `make_dir`, `save_svg`, the plotting calls), has a `ref` parameter, or calls a function with
-  effects. `error` is not an effect in this sense. Elemental functions may not have effects
+  `make_dir`, `save_svg`, the plotting calls), reads a file (`read_lines`), has a `ref` parameter,
+  or calls a function with effects. `error` is not an effect in this sense. Elemental functions may not have effects
   (§8.5).
 * **Overloading**: none for user functions (one name, one function). Library functions are
   overloaded by arity and argument types as listed in §10.
@@ -1468,9 +1469,12 @@ The run-time error messages (texts in `errors.inc`, with substitutions):
 | `chol` of a matrix that is not positive definite | `matrix is not positive definite` |
 | `eig_sym` of a non-symmetric matrix | `matrix is not symmetric` |
 | non-square matrix where square required | `matrix is not square (%s)` |
-| out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+` or from `format`) | `out of memory` |
+| out of memory (also a `str` of more than 2³¹ − 1 bytes, from `+` or from `format`, or a line of `read_lines` longer than 2³¹ − 1 bytes) | `out of memory` |
 | stack overflow | `stack overflow` |
-| file or directory cannot be created/written (`write_json`, `save_svg`, `make_dir`) | `cannot open '%s': %s`, `cannot write '%s': %s`, `cannot create directory '%s': %s` (reason from a fixed table of errno texts so both targets print the same bytes) |
+| file or directory cannot be created/written/read (`read_lines`, `write_json`, `save_svg`, `make_dir`) | `cannot open '%s': %s`, `cannot write '%s': %s`, `cannot read '%s': %s`, `cannot create directory '%s': %s` (reason from a fixed table of errno texts so both targets print the same bytes) |
+| text that is not a number (`parse_i64`, `parse_f64`, §10.9) | `cannot parse "%s" as i64 in base %d`, `cannot parse "%s" as f64`, `invalid base %d` |
+| `split` with an empty separator (§10.9) | `empty separator` |
+| shift count outside 0 … 63 (§10.14) | `invalid shift count %d` |
 | invalid plot argument (§12) | `invalid line style "%s"`, `invalid color "%s"`, `invalid figure grid %dx%d`, `invalid figure size %dx%d`, `panel at %d,%d spanning %dx%d is outside the %dx%d grid`, `grid cell %d,%d already holds a panel`, `invalid axis limits %g, %g`, `invalid legend location "%s"`, `invalid number of contour levels %d`, `invalid width %g` |
 | user `error(fmt, …)` | the formatted message |
 
@@ -1501,7 +1505,9 @@ The library is specified to the level the workloads need, with its exactness cla
 is replaced, its name is given. Every function here is class E unless marked **R**.
 
 **Scope rule (§1.2).** v1 contains what the six acceptance workloads (W1–W5 and W7) use, plus a small core whose
-inclusion is justified in the table where it is not obvious. Everything else that a numerical
+inclusion is justified in the table where it is not obvious, and the text library of §10.9, §10.10
+and §10.14 (`read_lines`, `split`, `substr`, `parse_i64`, `parse_f64`, the bitwise functions,
+`%x`), which the CAN-log workload W8 uses (DESIGN.md §2.15). Everything else that a numerical
 language will eventually want is listed in §10.13 ("Later") and is not part of v1: no partial
 specification of it exists in this document.
 
@@ -1713,6 +1719,59 @@ shapes in argument order.
 | `format(fmt, args…)` | the formatted `str` (§11.1; MATLAB `sprintf`; W1's `DG-%03d` labels, W1/W2's legend strings) |
 | `str(x)` | `i64`: decimal; `f64`: `%.17g` (§11.4) for a finite value, and `nan`, `inf`, `-inf` for the others (C's spelling; `printf` keeps its own, §11.1); `bool`: `true`/`false`; `str`: x unchanged. Scalars only (not elemental): an array argument is `no overload of 'str' accepts (…)` |
 | `lower(s)` | ASCII lower case (W1's `switch lower(finish)`) of a `str`; any other argument, an array included, is `no overload of 'lower' accepts (…)` |
+| `substr(s, lo, hi)` | the bytes `lo … hi − 1` of `s` as a new `str` (below) |
+| `split(s, sep)` | `str[]`: the fields of `s` between the occurrences of the non-empty `sep` (below) |
+| `parse_i64(s, base: 10)` | `i64`: the integer written in `s` in the given base (below) |
+| `parse_f64(s)` | `f64`: the number written in `s` (below) |
+
+The text functions take scalars only (`parse_f64(fields)` of a `str[]` is `no overload of
+'parse_f64' accepts (…)`), and an untyped integer literal argument is `i64`. The options of
+`parse_i64` are given by name only (§8.1): `parse_i64(s, 16)` is `no overload of 'parse_i64' accepts
+(str, i64)`. A call whose value is never used is still evaluated and still reports its error (§5.4):
+`let x = parse_i64("z")` with `x` unused stops with `cannot parse "z" as i64 in base 10`.
+
+**`substr(s, lo, hi)`** gives the bytes at the positions of the range `lo..hi` (§5.1: `lo`, `lo + 1`,
+…, `hi − 1`; empty when `lo >= hi`) as a new `str`, checked as that range is checked against an
+extent `len(s)` in dimension 0 (§5.4): an empty range never fails (`substr(s, 9, 2)` is `""` for any
+`s`); otherwise `lo` outside `0 … len(s) − 1` is `index lo out of bounds for dimension 0 of extent
+len(s)`, and else `hi − 1` outside it is the same message with `hi − 1`. So `substr("(1.5)", 1, 4)` is
+`"1.5"`, `substr("ab", 0, 3)` reports `index 2 out of bounds for dimension 0 of extent 2`,
+`substr("ab", -1, 1)` reports `index -1 …`.
+
+**`split(s, sep)`**: `sep` must not be empty (`empty separator`). The occurrences of `sep` in `s` are
+found left to right without overlap (after a match the scan continues after it); the result has one
+more element than there are occurrences: the bytes before the first, between consecutive ones, and
+after the last. Empty fields are kept and nothing is trimmed: `split("a,,b", ",")` is `["a", "", "b"]`,
+`split(",a,", ",")` is `["", "a", ""]`, `split("", ",")` is `[""]`, `split("abc", ",")` is `["abc"]`,
+`split("aaa", "aa")` is `["", "a"]`, `split("a::b", "::")` is `["a", "b"]`. Every element is a new
+string. More than 2³¹ − 1 fields is `invalid array size %d`; no memory `out of memory`.
+
+**`parse_i64(s, base: 10)`**: `base` must be 2 … 36 (`invalid base %d`, checked first). Then `s` must be,
+in full, an optional sign `+` or `-` followed by one or more digits of the base, where `0`–`9` are
+0–9 and `a`–`z` and `A`–`Z` are 10–35; no blank, no `_`, no `0x` prefix, no other byte. Its value
+must be in −2⁶³ … 2⁶³ − 1. Otherwise the error is `cannot parse "%s" as i64 in base %d` with the
+whole text and the base. So `parse_i64("-123")` is −123, `parse_i64("18FF50E5", base: 16)` is
+419 385 573, `parse_i64("ff", base: 16)` is 255, `parse_i64("-9223372036854775808")` is −2⁶³,
+`parse_i64("101", base: 2)` is 5; `""`, `"+"`, `" 5"`, `"5 "`, `"1_000"`, `"0x1F"` (base 16), `"12a"`
+(base 10), `"9223372036854775808"` are errors. A text is quoted as given, whatever its bytes and
+length.
+
+**`parse_f64(s)`**: `s` must be, in full, one of the words `inf`, `Inf`, `+inf`, `+Inf` (+∞), `-inf`,
+`-Inf` (−∞), `nan`, `NaN` (a NaN), or a decimal number
+
+```
+[ "+" | "-" ] ( digits [ "." [ digits ] ] | "." digits ) [ ( "e" | "E" ) [ "+" | "-" ] digits ]
+digits := one or more of 0-9
+```
+
+whose value is the IEEE-754 binary64 value nearest to its exact decimal value, ties to even (the
+rule of §3.4 for literals), a value too large becoming ±∞ and one too small the nearest subnormal
+or ±0; the sign of a zero is kept (`"-0"` is −0.0). The words are those Sea itself writes (`str`
+writes `nan` `inf` `-inf`, `printf` writes `NaN` `Inf` `-Inf`), so `parse_f64(str(x))` returns x for
+every x but the NaN payloads, which are not observable (§6.5). Anything else is `cannot parse "%s"
+as f64`: `""`, `"."`, `"1.2.3"`, `" 1"`, `"1e"`, `"0x1p3"`, `"Infinity"`, `"-nan"`, `"1_0"`. So
+`parse_f64("1700000000.123456")` is the double 1700000000.12345600128173828125 (exactly),
+`parse_f64(".5")` and `parse_f64("5e-1")` are 0.5, `parse_f64("1e309")` is +∞.
 
 ### 10.10 Program environment and files
 
@@ -1723,8 +1782,25 @@ shapes in argument order.
 | `make_dir(path)` | create a directory if it does not exist (MATLAB `if ~exist(d,'dir'), mkdir(d)`): one level, no parent is created; an existing directory is not an error; an existing file at the path, a missing parent or any other failure is the run-time error `cannot create directory '%s': %s` (§9.2) |
 | `write_json(path, value)` | §11.4 |
 | `save_svg(fig, path)` | §12 |
+| `read_lines(path)` | `str[]`: the lines of the file `path`, in file order (below) |
 
 Paths are host paths relative to the working directory (§11.3).
+
+**`read_lines(path)`** opens the file `path`, reads all its bytes and returns them as a new `str[]`
+of lines. A line ends at each LF byte (0x0A), which is not part of the line. A CR byte (0x0D)
+immediately before that LF is removed too. After the last LF, the bytes that remain (if any) are one
+more line, from which one CR at the very end of the file is removed. So `a\nb` and `a\nb\n` both
+give `["a", "b"]`, `a\r\nb\r\n` gives `["a", "b"]`, `a\n\n` gives `["a", ""]`, `\n` gives `[""]`,
+`a\r\r\n` gives `["a\r"]`, `a\rb` gives `["a\rb"]`, `a\r` gives `["a"]`, and an empty file gives the
+empty `str[]` (these are §3.1's rules for source lines). Every other byte is kept as it is (NUL,
+bytes ≥ 0x80, a UTF-8 byte order mark): Sea never decodes text (§4.4). Errors, in this order: a
+path holding a NUL byte (reported with the reason `Invalid argument`) or a failed `open` is `cannot
+open '%s': %s` (the path as given and the errno text: `cannot open 'can.log': No such file or
+directory`); a failed `read` is `cannot read '%s': %s` (a directory gives `cannot read 'logs': Is a
+directory`); more than 2³¹ − 1 lines is `invalid array size %d` with their number, a line longer than
+2³¹ − 1 bytes or no memory `out of memory` (§9.2). Nothing is returned before the whole file is
+read; the file is not kept open. `read_lines` has effects (§8.1): it cannot appear in an
+elemental function and is never removed as dead.
 
 ### 10.11 Random numbers
 
@@ -1746,10 +1822,29 @@ library section with its own tests, and changes nothing above.
 | reductions and scans | `prod dot norm cumsum cumprod diff` |
 | linear algebra | `inv det eye diag`, QR/least squares, nonsymmetric `eig` |
 | arrays | `push reverse zeros_like accumulate` |
-| strings | `upper join split starts_with ends_with find_str parse_f64 parse_i64 byte`, substrings `s[a..b]` |
-| files and environment | `create fprintf write close read_lines is_dir is_file getenv eprintf exit assert` |
-| language | `match` on `i64`; `printf` conversions `%x %X %c`; i64 bitwise operations |
+| strings | `upper join starts_with ends_with find_str byte`, the slice syntax `s[a..b]` |
+| files and environment | `create fprintf write close is_dir is_file getenv eprintf exit assert` |
+| language | `match` on `i64`; `printf` conversions `%c %o`; bitwise operators |
 | plotting | `yline`, log axes, PNG files (§12.9) |
+
+### 10.14 Bitwise operations on `i64`
+
+Functions on the 64-bit two's-complement representation (class E). They are elemental (§8.5):
+`i64` arrays (dynamic or fixed-size) are accepted with §6.3's broadcasting, as `idiv` does.
+
+| Function | Result |
+|----------|--------|
+| `bitand(a, b)`, `bitor(a, b)`, `bitxor(a, b)` | bit by bit |
+| `bitnot(a)` | every bit inverted (−a − 1) |
+| `shl(a, n)` | the bits moved n places left, zeros entering, the bits leaving discarded (never `integer overflow`: `shl(1, 63)` is −2⁶³, `shl(3, 63)` is −2⁶³) |
+| `shr(a, n)` | logical: n places right with zeros entering (`shr(-1, 60)` is 15) |
+| `sar(a, n)` | arithmetic: copies of the sign bit entering (`sar(-16, 2)` is −4, `sar(-1, 63)` is −1) |
+
+`n` must be 0 … 63, else `invalid shift count %d` with n, reported after both arguments are
+evaluated; on arrays the first failing element in increasing linear order, as for any elemental
+check (§8.5). None of them is a constant expression (§7.2): a mask is written as a literal
+(`0x3FFFF`). `&` and `|` remain the `bool` operators of §6.4 and `^` the power of §6.5. (MATLAB
+`bitand`, `bitor`, `bitxor`, `bitshift`.)
 
 ## 11. Text output
 
@@ -1778,7 +1873,11 @@ the number of conversions (`format "…" expects 3 arguments, found 2`); loops p
 | `d`, `i` | `i64`; `f64`; `bool` | `i64`: decimal. `bool`: `0` or `1`. `f64` (MATLAB rule): an integral finite value prints as the integer it is (exactly, any magnitude; −0.0 is the integer 0, so it prints `0`, or `+0` with the `+` flag), with C's integer rules for the flags and the precision (`%.3d` of 7.0 is `007`, `%.0d` of 0.0 prints no digits); NaN, Inf, −Inf print as `NaN`, `Inf`, `-Inf` padded with spaces to the width (non-finite values below); a non-integral value prints as `%e` with the same flags and width and precision 6, whatever precision was given (MATLAB prints `1.500000e+00` for `sprintf('%d', 1.5)`; W1 prints `L10h`, which can be NaN, with `%8d`) |
 | `f`, `F`, `e`, `E`, `g`, `G` | `f64`; `i64` (converted) | C99 semantics for finite values; NaN/Inf as for `d` (MATLAB spelling, not C's `nan`/`inf`) |
 | `s` | `str` | the bytes; precision truncates to that many bytes; width pads with spaces (counts bytes) |
+| `x`, `X` | `i64` (an untyped literal is `i64`) | the 64 bits as an unsigned hexadecimal number, `x` with the digits `0-9a-f`, `X` with `0-9A-F` (`%x` of −1 is `ffffffffffffffff`), with C99's rules: the precision is the minimum number of digits (zeros in front; a precision 0 with the value 0 prints no digit); `#` puts `0x` or `0X` before a non-zero value; the output is laid out in C's order, the prefix, then the zeros (of the precision, or of the `0` flag up to the width when there is no precision and no `-`), then the digits, then the spaces of the width on the left (or on the right with `-`); the `0` flag is ignored when a precision is given. Any other argument type is a compile error with the conversion as written and `i64` (`printf("%x", 1.5)` is `format "%x" expects i64, found f64`, `printf("%08X", true)` is `format "%08X" expects i64, found bool`; unlike `%d`, `bool` is not accepted). `printf("%08X", 0x18FF50E5)` prints `18FF50E5`, `printf("%#x", 255)` prints `0xff`, `printf("%#x", 0)` prints `0`, `printf("%#010x", 255)` prints `0x000000ff`, `printf("%#.4x", 255)` prints `0x00ff` |
 | `%%` | — | `%` |
+
+The flags `+` and space are accepted and have no effect on `x` and `X` (C defines them for signed
+conversions only): `printf("%+x", 255)` and `printf("% x", 255)` print `ff`.
 
 Any other conversion, flag combination C leaves undefined (such as `0` with `%s`, or `#` with
 `%d`, `%i` or `%s`), or argument type is a compile error. Width and precision are at most
@@ -1810,8 +1909,9 @@ newline anywhere: newlines are written by the program (`\n`).
 
 ### 11.3 Files and streams
 
-Sea v1 writes files only through `write_json` (§11.4) and `save_svg` (§12), and creates
-directories with `make_dir`; general file output is in §10.13. Paths are host paths, relative to
+Sea v1 reads files only through `read_lines` (§10.10), writes them only through `write_json`
+(§11.4) and `save_svg` (§12), and creates directories with `make_dir`; general file output is in
+§10.13. Paths are host paths, relative to
 the process's working directory (the ports write `output/…` and `<name>.json` relative to it;
 the acceptance harness chooses the directory, DESIGN.md §6.3). Standard output is buffered (64 KiB) and
 flushed when full, before anything is written to standard error, and at exit. Standard error is
@@ -2178,17 +2278,21 @@ step struct true var while`, and the type names `bool f64 i64 str`.
 **Predeclared constants:** `pi inf nan eps`. **Predeclared handle types:** `Figure Axes Lu Chol`.
 
 **Predeclared functions** (§10–§13), v1:
-`abs all any args argmax argmin argsort axis_equal bar barh bincount ceil chol cols contour cos
-eig_sym error exp figure filled find find_first find_last floor format grid hypot idiv image
-ind2sub isnan legend len linspace log lower lu make_dir max mean meshgrid min nnz now numel ones
-panel plot pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str
-sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim y_reverse
-y_ticks ylabel ylim zeros`.
+`abs all any args argmax argmin argsort axis_equal bar barh bincount bitand bitnot bitor bitxor
+ceil chol cols contour cos eig_sym error exp figure filled find find_first find_last floor format
+grid hypot idiv image ind2sub isnan legend len linspace log lower lu make_dir max mean meshgrid
+min nnz now numel ones panel parse_f64 parse_i64 plot pow print printf rcond read_lines round
+rows sar save_svg setdiff shl shr sign sin solve sort split sqrt std str sub2ind substr sum title
+trunc twin_y variance where write_json x_ticks xlabel xline xlim y_reverse y_ticks ylabel ylim
+zeros`.
 
 (`str` is both a type name and the conversion `str(x)`; `f64` and `i64` are conversions through
 the `conv_type "(" expr ")"` form; `bool` is only a type name, with no conversion. The later library of §10.13 adds names to this
 list; adding a predeclared name can break a program that uses it as a local, which is why
-§10.13 lists the planned names now.)
+§10.13 lists the planned names now. Of the names phase L added, `split`, `parse_f64`, `parse_i64`
+and `read_lines` were listed in §10.13 beforehand; `substr`, `bitand`, `bitor`, `bitxor`, `bitnot`,
+`shl`, `shr` and `sar` were not, so a program that used one of them as a local name now gets `local
+name shadows a predeclared name`, and as a top-level name `redefinition of predeclared name`.)
 
 ### Appendix D. A complete port: W5 (Monte Carlo tolerance stack-up)
 

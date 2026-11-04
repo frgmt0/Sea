@@ -1,25 +1,27 @@
-26000 REM ==== sc9plot: the 21 plotting calls of phase 9 (DESIGN 2.14.2 "Signatures", 2.14.4 "seacheck";
-26005 REM LANGUAGE 12; lead decisions L-kg, L-kx): the class table, the options, the overloads and the
+26000 REM ==== sc9plot: the table-driven library calls of phases 9 and L: the 21 plotting calls (DESIGN 2.14.2 "Signatures", 2.14.4 "seacheck";
+26005 REM LANGUAGE 12; lead decisions L-kg, L-kx) and the five text calls (DESIGN 2.15.2, 2.15.4; L-mn, L-mo): the class table, the options, the overloads and the
 26010 REM written form (every parameter, defaults as constants, the temporaries of evaluation order) ====
 26015 REM ---- pcls: Z = the class of library function L$ when it is one of the 21 plotting calls (32
-26020 REM figure ... 52 axis_equal, DESIGN 2.14.4), else 0. Slots of 12 bytes, so "|name " is aligned ---
+26020 REM figure ... 52 axis_equal, DESIGN 2.14.4) or the text calls (53 read_lines ... 57 substr, DESIGN 2.15.4), else 0. Slots of 12 bytes, so "|name " is aligned ---
 26025 SUB "pcls": L$, Z
 26030 LET Z = 0
 26035 LET Q$ = "|figure     |panel      |twin_y     |save_svg   |plot       |xline      |bar        |barh       "
 26040 LET Q$ = Q$ & "|contour    |image      |xlabel     |ylabel     |title      |legend     |grid       |xlim       "
 26045 LET Q$ = Q$ & "|ylim       |x_ticks    |y_ticks    |y_reverse  |axis_equal "
+26047 LET Q$ = Q$ & "|read_lines |split      |parse_i64  |parse_f64  |substr     "
 26050 LET P = POS(Q$, "|" & L$ & " ")
 26055 IF P = 0 THEN 26065
 26060 LET Z = 32 + (P - 1) / 12
 26065 SUBEND
-26070 REM ---- psig: the signature of plotting class Z (DESIGN 2.14.2's table, by its group G): C$ the
+26070 REM ---- psig: the signature of table class Z (DESIGN 2.14.2's table, by its group G): C$ the
 26075 REM codes of the parameters in order (h Figure, a Axes, i i64, f f64, b bool, s str, v f64[], m
 26080 REM f64[,], S str[]), the first N1 positional, the rest options (named only); P$ their names,
 26085 REM blank-separated; D$ the options' defaults as sea.hir1 writes their constants, |-separated (a ci
 26090 REM value, cf bits, cb 0 or 1, an escaped cs) ---------------------------------------------------
 26095 SUB "psig": Z, C$, N1, P$, D$
-26100 LET G = VAL(SEG$("010203040506070809101111111213141415150303", 2 * Z - 63, 2 * Z - 62))
+26100 LET G = VAL(SEG$("0102030405060708091011111112131414151503031617181920", 2 * Z - 63, 2 * Z - 62))
 26105 LET C$ = "ii/sii   hii/ii   a/       hs/      avv/ssfs af/ss    avv/fss  av/fss   avvm/ibs avvm/b   as/      a/s      a/b      aff/     aS/      "
+26107 LET C$ = C$ & "s/       ss/      s/i      s/       sii/     "
 26110 LET C$ = SEG$(C$, 9 * G - 8, 9 * G)
 26115 LET C$ = SEG$(C$, 1, POS(C$, " ") - 1)
 26120 LET N1 = POS(C$, "/") - 1
@@ -29,10 +31,12 @@
 26140 LET P$ = P$ & "ax x h width label color       ax h width label color         ax x y Z levels labels color   "
 26145 LET P$ = P$ & "ax x y Z colorbar              ax s                           ax loc                         "
 26150 LET P$ = P$ & "ax on                          ax lo hi                       ax labels                      "
+26152 LET P$ = P$ & "path                           s sep                          s base                         s                              s lo hi"
 26155 LET P$ = SEG$(P$, 31 * G - 30, 31 * G)
 26160 LET D$ = "%|960|720              1|1                                                                  "
 26165 LET D$ = D$ & "-|%|#3FF0000000000000|%--|%                   #3FE999999999999A|%|%  #3FE999999999999A|%|%  "
 26170 LET D$ = D$ & "10|0|%                 0                                             northeast              1"
+26172 LET D$ = D$ & "                                                                                                                  10"
 26175 LET D$ = SEG$(D$, 23 * G - 22, 23 * G) & " "
 26180 LET D$ = SEG$(D$, 1, POS(D$, " ") - 1)
 26185 SUBEND
@@ -99,8 +103,13 @@
 26490 CALL "psig": Z, C$, N1, P$, D$
 26495 LET N2 = LEN(C$)
 26500 LET M(J, 1) = 1
-26505 IF Z > 34 THEN 26515
+26502 REM the type, after an argument error too: 6 Figure, 7 Axes, 1 none; the text calls (L-mo) str[] (53 read_lines, 54 split), i64 (55), f64 (56), str (57)
+26505 IF Z > 34 THEN 26511
 26510 LET M(J, 1) = 7 - INT(1 / (Z - 31))
+26511 IF Z < 53 THEN 26515
+26512 LET M(J, 1) = VAL(SEG$("00345", Z - 52, Z - 52))
+26513 IF Z > 54 THEN 26515
+26514 CALL "tarr": T(), N(), X(), X$(), 1, 5, 0, 0, M(J, 1)
 26515 REM a ref argument past the positional parameters is counted only: 243 by the count below
 26520 LET E = 0
 26525 LET H1 = 0

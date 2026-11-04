@@ -106,7 +106,7 @@
 .equiv SEA_FMT_NCONV,           8   /* u64  number of conversion pieces (= arguments) */
 .equiv SEA_FMT_PIECES,          16  /* SEA_FP_SIZE-byte pieces in order */
 .equiv SEA_FP_KIND,             0   /* u8   SEA_FPK_* */
-.equiv SEA_FP_CONV,             1   /* u8   ASCII conversion letter d i f F e E g G s; 0 for text */
+.equiv SEA_FP_CONV,             1   /* u8   ASCII conversion letter d i f F e E g G s x X; 0 for text */
 .equiv SEA_FP_FLAGS,            2   /* u8   SEA_FF_* bits; 0 for text */
 .equiv SEA_FP_CLS,              3   /* u8   SEA_CLS_* of the argument; 0 for text */
 .equiv SEA_FP_WIDTH,            4   /* i32  width, -1 absent (and for text) */
@@ -236,8 +236,13 @@
     \m 80, Y_TICKS, sea_y_ticks, S, pp, -
     \m 81, Y_REVERSE, sea_y_reverse, -, p, -
     \m 82, AXIS_EQUAL, sea_axis_equal, -, p, -
+    \m 83, READ_LINES, sea_read_lines, S, p, p
+    \m 84, SPLIT, sea_split, S, pp, p
+    \m 85, PARSE_I64, sea_parse_i64, S, pi, i
+    \m 86, PARSE_F64, sea_parse_f64, S, p, f
+    \m 87, SUBSTR, sea_substr, S, pii, p
 .endm
-.equiv SEA_ENT_COUNT,           82  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
+.equiv SEA_ENT_COUNT,           87  /* number of entry records (ids 1 .. SEA_ENT_COUNT) */
 .macro SEA_ENTDEF id, name, sym, site, args, res
 .equiv SEA_ENT_\name, \id
 .endm

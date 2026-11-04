@@ -1,0 +1,1 @@
+err_fmt_hex_bool.sea:2:18: error: format "%08X" expects i64, found bool

@@ -1,0 +1,62 @@
+#sea 1
+#target arm64-macos
+#file libL_bits.sea
+pname 0:1:5 id
+int 0:1:10 419385573
+let 0:1:1 0
+pname 0:4:5 p
+name 0:4:9 bitand
+name 0:4:16 shr
+name 0:4:20 id
+int 0:4:24 8
+call 0:4:16 2
+int 0:4:28 262143
+call 0:4:9 2
+let 0:4:1 0
+pname 0:5:5 a
+int 0:5:10 6
+neg 0:5:9
+let 0:5:1 0
+pname 0:6:5 n
+int 0:6:9 3
+let 0:6:1 0
+pname 0:7:5 q
+name 0:7:9 bitor
+name 0:7:15 a
+int 0:7:18 1
+call 0:7:9 2
+name 0:7:23 bitxor
+name 0:7:30 a
+name 0:7:33 n
+call 0:7:23 2
+bin 0:7:9 add
+name 0:7:38 bitnot
+name 0:7:45 a
+call 0:7:38 1
+bin 0:7:9 add
+let 0:7:1 0
+pname 0:8:5 r
+name 0:8:9 shl
+name 0:8:13 a
+name 0:8:16 n
+call 0:8:9 2
+name 0:8:21 sar
+name 0:8:25 a
+name 0:8:28 n
+call 0:8:21 2
+bin 0:8:9 add
+name 0:8:33 shr
+name 0:8:37 a
+int 0:8:40 60
+call 0:8:33 2
+bin 0:8:9 add
+let 0:8:1 0
+name 0:9:1 printf
+str 0:9:8 %25d%20%25d%20%25d%0A
+name 0:9:22 p
+name 0:9:25 q
+name 0:9:28 r
+call 0:9:1 4
+cstmt 0:9:1
+prog 7
+#end

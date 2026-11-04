@@ -807,10 +807,10 @@
 34060 LET Q1$ = SEG$("LU CHOL SOLVE RCOND EIG_SYM LU_SOLVE CHOL_SOLVE EIG_SYM_GEN", VAL(SEG$("0104091521293849", 2 * K7 - 1, 2 * K7)), VAL(SEG$("0207131927364759", 2 * K7 - 1, 2 * K7)))
 34062 GOTO 34006
 34063 REM ---- rule 39's 21 rows of 9b (DESIGN 2.14.4; from 19565: W2 33 figure ... 53 axis_equal; operands U(Z6+1 .. U0) in the lib's child order, the entry's argument order): the entry named by the lib's name in
-34064 REM capitals (FIGURE ... AXIS_EQUAL), lowered from its record as 34006 lowers PRINT (a p result owned; a bool child class i; each operand's class checked against the entry's Args)
+34064 REM capitals (FIGURE ... AXIS_EQUAL; Lb: W2 54-58 READ_LINES SPLIT PARSE_I64 PARSE_F64 SUBSTR), lowered from its record as 34006 lowers PRINT (a p result owned; a bool child class i; each operand's class checked against the entry's Args)
 34065 LET Q1$ = ""
 34066 FOR K7 = 1 TO LEN(S$(H(X, 0)))
-34067 LET Q1$ = Q1$ & SEG$("ABCDEFGHIJKLMNOPQRSTUVWXYZ_", POS("abcdefghijklmnopqrstuvwxyz_", SEG$(S$(H(X, 0)), K7, K7)), POS("abcdefghijklmnopqrstuvwxyz_", SEG$(S$(H(X, 0)), K7, K7)))
+34067 LET Q1$ = Q1$ & SEG$("ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", POS("abcdefghijklmnopqrstuvwxyz_0123456789", SEG$(S$(H(X, 0)), K7, K7)), POS("abcdefghijklmnopqrstuvwxyz_0123456789", SEG$(S$(H(X, 0)), K7, K7)))
 34068 NEXT K7
 34069 GOTO 34006
 34098 REM ---- (31034) a rarg E2 whose parent is a tmp (E2 + 1): that tmp's parent (its last sibling + 1) is an inline xblk (H5 its iblk), so a ref local stands only there (2.11.5 validation)

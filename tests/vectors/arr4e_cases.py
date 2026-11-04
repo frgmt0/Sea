@@ -924,13 +924,13 @@ prog('arr_fixed_vals', ['fixed-size arrays (LANGUAGE.md 4.5; Decision 32): local
     ('printf("%g %g\\n", a[0], b[0])', '1 9'),           # a value: a is unchanged
     ('let s = scale2([1.5, 2.0], 2.0)', None),
     ('printf("%g %g %d\\n", s[0], s[1], len(s))', '3 4 2'),
-    ('let (lo, hi) = split([1, 2, 3, 4])', None),
+    ('let (lo, hi) = parts([1, 2, 3, 4])', None),
     ('printf("%d %d %d %d\\n", lo[0], lo[1], hi[0], hi[1])', '1 2 3 4'),
     ('var p = [0, 0]', None),
     ('var q = [0, 0]', None),
-    ('(p, q) = split([5, 6, 7, 8])', None),
+    ('(p, q) = parts([5, 6, 7, 8])', None),
     ('printf("%d %d %d %d\\n", p[0], p[1], q[0], q[1])', '5 6 7 8'),
-    ('let (_, h2) = split([1, 1, 2, 9])', None),
+    ('let (_, h2) = parts([1, 1, 2, 9])', None),
     ('printf("%d\\n", h2[1])', '9'),
     ('var c = [1.0, 2.0, 3.0]', None),
     ('bump(ref c)', None),                               # 2 2 3, then doubled
@@ -960,7 +960,7 @@ prog('arr_fixed_vals', ['fixed-size arrays (LANGUAGE.md 4.5; Decision 32): local
 fn scale2(v: f64[2], k: f64) -> f64[2] {
     return v * k
 }
-fn split(v: i64[4]) -> (i64[2], i64[2]) {
+fn parts(v: i64[4]) -> (i64[2], i64[2]) {
     return ([v[0], v[1]], [v[2], v[3]])
 }
 fn bump(ref v: f64[3]) {

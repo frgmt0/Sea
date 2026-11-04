@@ -1,0 +1,2 @@
+// err_fmt_hex_bool -- %08X of a bool: 210 at the argument; unlike %d, bool is not accepted (LANGUAGE.md 11.1)
+printf("%08X\n", true)

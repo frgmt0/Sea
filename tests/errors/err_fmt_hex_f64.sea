@@ -1,0 +1,2 @@
+// err_fmt_hex_f64 -- %x of an f64: 210 at the argument with the conversion as written and i64 (LANGUAGE.md 11.1)
+printf("%x\n", 1.5)

@@ -226,8 +226,19 @@ specified** (La, agreed 2026-11-03 after one independent review: Decisions 143�
 (a), Decision 150 (the user's rulings: blanks and `0x` rejected by the parse functions, `shl` drops
 bits, `+`/space ignored with `%x`), lead decisions L-me–L-mx; DESIGN.md §2.15, §8 rows La–Lc, §9):
 `read_lines`, `split`, `substr`, `parse_i64`/`parse_f64`, the bitwise functions `bitand bitor
-bitxor bitnot shl shr sar`, `%x`/`%X`, runtime entries 83–87, errors 30–35. **Next:** Lb
-(WP-CONTRACT first and alone, DESIGN.md §2.15.9), then Lc; W8 (an ESP32 controller sketch
+bitxor bitnot shl shr sar`, `%x`/`%X`, runtime entries 83–87, errors 30–35. **Lb is done**
+(2026-11-04: the contract (errors 30–35, entries 83–87, `enum conv x X`, LANGUAGE.md amended,
+§3.4.1's `split` renamed `parts`); the twelve names through `seaname`, `seacheck` (bitwise in
+class 2, the text calls as classes 53–57 in `sc9plot.bas`, `%x`), `seafuse` (`shl shr sar` among
+the calls with a run-time check, so they fuse only as a root, lead decision L-my), `sealoop`
+(`K4$`, R37 no code) and `sealower` (rule 40, rule 39's five rows); the other passes and both code
+generators unchanged; `%x`/`%X` in `rt_fmt.s` of both runtimes; the rt `NAME.files/` sidecar in
+the runners and the cross scripts; the text calls compile and are dumped but their programs are
+not run until Lc; `make test` passes (rt 258, stage 1 354, programs 2 498, plots 34, accept 2 + 6,
+`lib_check` 366) and `make cross` passes 1 250 cases (default 1 015, `sse2` 1 015, once-only 233;
+host 2 263 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); measured: `seacheck` 7 360 built
+lines, `sealoop` 6 721, `sealower` 6 943, no relief, DESIGN.md §2.7 "Measured after Lb"). **Next:**
+Lc (the text runtime, its tests, the gate after phase L, DESIGN.md §2.15.9); W8 (an ESP32 controller sketch
 simulated on the host, writing a CAN log that a Sea port reads, decodes and plots) is specified
 after phase L, before phase 10.
 

@@ -1,0 +1,2 @@
+// err_lib_shadow -- a local named substr: 213 at the binding (LANGUAGE.md 3.3, Appendix C)
+let substr = 1

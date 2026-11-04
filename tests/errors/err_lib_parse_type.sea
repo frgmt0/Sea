@@ -1,0 +1,2 @@
+// err_lib_parse_type -- parse_f64 of an f64: 243 at the call (DESIGN.md 2.15.2)
+let x = parse_f64(1.5)

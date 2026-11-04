@@ -331,13 +331,13 @@
 4973 LET R9 = U(U0, 1)
 4974 LET U0 = U0 - Q6
 4975 GOTO 3090
-4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14); error (34); format (rule 39: as printf, entry FORMAT, its owned result into D2)
-4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  |error  |format "
+4980 REM ---- lib: printf (rule 8), now (9), f64 and i64 (10), idiv (11); log exp sin cos pow hypot (14); error (34); format (rule 39: as printf, entry FORMAT, its owned result into D2); bitand ... sar (40, 5577)
+4985 LET K3$ = "|printf |now    |f64    |i64    |idiv   |log    |exp    |sin    |cos    |pow    |hypot  |error  |format |bitand |bitor  |bitxor |bitnot |shl    |shr    |sar    "
 4990 LET W2$ = S$(H(X, 0))
 4995 GOSUB 1875
 5000 IF W2 = 0 THEN 19360
-5005 IF H(X, 6) <> VAL(SEG$("1011211112211", W2, W2)) THEN 2360
-5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600, 5020, 5020
+5005 IF H(X, 6) <> VAL(SEG$("10112111122112221222", W2, W2)) THEN 2360
+5010 ON W2 GOTO 5020, 5335, 5390, 5390, 5500, 8600, 8600, 8600, 8600, 8600, 8600, 5020, 5020, 5577, 5577, 5577, 5577, 5577, 5577, 5577
 5015 REM printf: frame x1 = U0 at entry, x2 = the next piece of the fmt
 5020 LET X2 = H(X, 7)
 5025 IF H(X2, 1) <> 13 THEN 2365
@@ -436,6 +436,10 @@
 5565 GOSUB 7775
 5570 GOSUB 7575
 5575 GOTO 3088
+5576 REM bitand bitor bitxor bitnot shl shr sar (W2 14-20, kept in W(W0 + 5)): every operand by rule 1 (resume 47), then rule 40 at 8020
+5577 LET W(W0 + 5) = W2
+5578 LET S = 47
+5579 GOTO 8000
 5585 REM 5590: L1$ = "rcall <symbol> <site or -> <nr>" of entry row Q9; its results go after it
 5590 LET L1$ = "rcall " & Y$(Q9, 2) & " -"
 5592 LET S7 = 1
@@ -871,7 +875,50 @@
 8005 GOSUB 7966
 8007 LET W(W0 + 4) = H(W(W0 + 4), 8)
 8010 IF W(W0 + 4) > 0 THEN 7366
-8015 ON S - 37 GOTO 8627, 2365, 13000, 2365, 2365, 2365, 2365, 2365, 34810, 2365, 2365, 19550
+8015 ON S - 37 GOTO 8627, 2365, 13000, 2365, 2365, 2365, 2365, 2365, 34810, 8020, 2365, 19550
+8016 REM ---- rule 40 (Lb, DESIGN 2.15.4): W2 14-20, the i operands A (U(E1 + 1)) and B or N (U(U0)); bitand bitor bitxor: iand ior ixor R A B; bitnot: li M -1, ixor R A M; shl shr sar: li Z 0,
+8017 REM li K 63, icmp lt L N Z, icmp gt G N K, ior C L G (Z K L G C new, in U(U0 + 1 .. U0 + 5, 1)), chk C SHIFT_COUNT site 1 N, ishl ishr isar R A N; R the destination (7468)
+8020 LET W2 = W(W0 + 5)
+8022 LET E1 = W(W0 + 3)
+8024 GOSUB 7391
+8026 IF C1 <> 1 THEN 2360
+8028 FOR I = E1 + 1 TO U0
+8030 IF V(U(I, 1), 1) <> 1 THEN 2360
+8032 NEXT I
+8034 LET V3 = U(E1 + 1, 1)
+8036 LET V4 = U(U0, 1)
+8038 IF W2 < 17 THEN 8080
+8040 IF W2 > 17 THEN 8050
+8042 GOSUB 7416
+8044 LET V4 = N2
+8046 LET L1$ = "li" & FNR$(V4) & " -1"
+8048 GOTO 8078
+8050 IF U0 > 199990 THEN 2365
+8052 FOR I = 1 TO 5
+8054 GOSUB 7416
+8056 LET U(U0 + I, 1) = N2
+8058 NEXT I
+8060 LET L1$ = "li" & FNR$(U(U0 + 1, 1)) & " 0"
+8062 GOSUB 7670
+8064 LET L1$ = "li" & FNR$(U(U0 + 2, 1)) & " 63"
+8066 GOSUB 7670
+8068 LET L1$ = "icmp lt" & FNR$(U(U0 + 3, 1)) & FNR$(V4) & FNR$(U(U0 + 1, 1))
+8069 GOSUB 7695
+8070 LET L1$ = "icmp gt" & FNR$(U(U0 + 4, 1)) & FNR$(V4) & FNR$(U(U0 + 2, 1))
+8071 GOSUB 7695
+8072 LET L1$ = "ior" & FNR$(U(U0 + 5, 1)) & FNR$(U(U0 + 3, 1)) & FNR$(U(U0 + 4, 1))
+8073 GOSUB 7695
+8074 GOSUB 7775
+8075 LET L1$ = "chk" & FNR$(U(U0 + 5, 1)) & " SHIFT_COUNT " & Z9$ & " 1" & FNR$(V4)
+8076 GOSUB 7695
+8077 GOTO 8080
+8078 GOSUB 7670
+8080 GOSUB 7468
+8082 LET V2 = D2
+8084 LET O$ = SEG$("iandior ixorixorishlishrisar", 4 * W2 - 55, 4 * W2 - 53 + SGN(ABS(W2 - 15)))
+8086 GOSUB 7575
+8088 LET U0 = E1
+8090 GOTO 3088
 8100 REM ---- reading tasg: n, then one cv flag per target (0, or 1 of a scalar result, R10), in M
 8105 LET H(H1, 6) = I(2)
 8110 LET H(H1, 0) = M1 + 1

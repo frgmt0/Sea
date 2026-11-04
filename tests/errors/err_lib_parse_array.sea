@@ -1,0 +1,4 @@
+// err_lib_parse_array -- parse_i64 of a str[]: the text calls take scalars only, 243 at the call (DESIGN.md 2.15.2,
+// L-mt)
+let t = ["1", "2"]
+let x = parse_i64(t)

@@ -1,9 +1,9 @@
 const N = 2 * 3
-fn split(x: f64) -> (f64, i64) {
+fn parts(x: f64) -> (f64, i64) {
     let k = i64(x)
     return (x ^ 2, k + N)
 }
-let (a, b) = split(pi)
+let (a, b) = parts(pi)
 for i in 0..b {
     printf("%g\n", a)
 }

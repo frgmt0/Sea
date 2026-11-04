@@ -1,0 +1,65 @@
+#sea 1
+#target arm64-macos
+#file libL_rcall.sea
+func .main main 0:1:1 0 0
+slot s1 32 8
+la p1 d1
+retain p1
+rcall sea_read_lines 0:2 1 p2 1 p1
+li i3 0
+ldi i4 p2 - 0 16
+chkb i3 i4 0 0:3
+ldp p5 p2 - 0 40
+ldp p6 p5 i3 8 0
+la p7 d2
+rcall sea_split 0:3 1 p8 2 p6 p7
+li i9 0
+ldi i10 p8 - 0 16
+chkb i9 i10 0 0:4
+ldp p11 p8 - 0 40
+ldp p12 p11 i9 8 0
+li i13 1
+li i14 18
+rcall sea_substr 0:4 1 p15 3 p12 i13 i14
+li i16 2
+ldi i17 p8 - 0 16
+chkb i16 i17 0 0:5
+ldp p18 p8 - 0 40
+ldp p19 p18 i16 8 0
+li i20 16
+rcall sea_parse_i64 0:5 1 i21 2 p19 i20
+la p22 d3
+li i23 10
+rcall sea_parse_i64 0:6 1 i24 2 p22 i23
+li i25 0
+li i26 4
+rcall sea_substr 0:7 1 p27 3 p15 i25 i26
+rcall sea_parse_f64 0:7 1 f28 1 p27
+release p27
+ldi i29 p8 - 0 16
+sa p30 s1
+sti i29 p30 - 0 0
+sti i21 p30 - 0 8
+sti i24 p30 - 0 16
+stf f28 p30 - 0 24
+la p31 d4
+rcall sea_printf 0:8 0 2 p31 p30
+release p15
+release p8
+release p2
+release p1
+ret 0
+endfunc
+str d1 can.log
+str d2 %20
+str d3 42
+fmt d4 8
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - g f
+ftext %0A
+#end

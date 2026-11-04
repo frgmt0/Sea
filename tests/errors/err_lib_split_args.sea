@@ -1,0 +1,2 @@
+// err_lib_split_args -- split with one argument: 243 at the call with the argument types (DESIGN.md 2.15.2)
+let p = split("a,b")

@@ -33,6 +33,9 @@
 #
 # How each conversion is made (LANGUAGE.md 11.1, DESIGN.md 4.5):
 #   * integers (i64, bool; %d of an integral f64 below 2^63) by own code;
+#     %x and %X (i64 only, L-mm) by own code too: the 64 bits as an
+#     unsigned value, digits by a shift-by-4 loop, the prefix 0x / 0X
+#     laid out like a sign (no snprintf);
 #     %d of an integral f64 of magnitude >= 2^63 takes its exact digits
 #     from snprintf("%.0f", |x|), which is exact for an integral value;
 #   * finite f64 for f F e E g G (and %d of a non-integral f64, which is
@@ -137,7 +140,8 @@
 #   Clobbers: all caller-saved registers, flags
 #   Callee-saved used: %rbx = current piece, %r12 = pieces left,
 #             %r13 = next argument slot, %r14 = site index, %r15 = the
-#             argument slot value, %rbp = frame pointer (locals RTF_*)
+#             argument slot value, %rbp = frame pointer (locals RTF_*;
+#             RTF_SL is the sign length, the prefix length 0 or 2 of x X)
 #   Frame   : 48 bytes (%rbp %rbx %r12-%r15) + RTF_FRAME (locals,
 #             conversion buffer at 0(%rsp), pad) = 1640 bytes
 # ---------------------------------------------------------------------
@@ -184,8 +188,8 @@ sea_printf:
     movq %rax, RTF_P(%rbp)
     movq (%r13), %r15
     addq $SEA_SLOT_SIZE, %r13
-    # Dispatch on the letter: s, d/i, else the float letters f F e E g G
-    # (pass 2 admits no other letter, LANGUAGE.md 11.1).
+    # Dispatch on the letter: s, d/i, x/X, else the float letters
+    # f F e E g G (pass 2 admits no other letter, LANGUAGE.md 11.1).
     movq RTF_L(%rbp), %rax
     cmpl $115, %eax                 # 's'
     je .Lrt_fmt_printf_str
@@ -193,6 +197,10 @@ sea_printf:
     je .Lrt_fmt_printf_int
     cmpl $105, %eax                 # 'i'
     je .Lrt_fmt_printf_int
+    cmpl $120, %eax                 # 'x'
+    je .Lrt_fmt_printf_hex
+    cmpl $88, %eax                  # 'X'
+    je .Lrt_fmt_printf_hex
 
     # ---- f F e E g G -------------------------------------------------
     # An i64 argument is converted (round to nearest, ties to even:
@@ -312,6 +320,62 @@ sea_printf:
     incq %rdi
     decq %rcx
     jnz 7b
+    jmp .Lrt_fmt_printf_inttail
+
+    # ---- x X (L-mm, DESIGN.md 2.15.6) -----------------------------------
+    # The slot's 64 bits are an unsigned magnitude (-1 is sixteen f's); +
+    # and space are ignored (Decision 150 (d)). The "sign" of the integer
+    # layout is the prefix 0x / 0X, present only with # and a non-zero
+    # value, so .Lrt_fmt_emit lays the field out in C99's order: spaces,
+    # prefix, zeros (precision, or the 0 flag up to the width), digits.
+    # No snprintf: the digit loop shifts by 4.
+    #   Inputs : RTF_L = 'x' or 'X', %r15 = the bits, RTF_F = flags, RTF_P
+    #   Output : RTF_SL = prefix length (0 or 2), then .Lrt_fmt_printf_inttail
+.Lrt_fmt_printf_hex:
+    movq RTF_L(%rbp), %rsi          # the letter, for the prefix
+    movl $55, %edi                  # 'A' - 10: the base of the X digits
+    cmpl $120, %esi
+    jne 1f
+    movl $87, %edi                  # 'a' - 10: the base of the x digits
+1:  movq $0, RTF_SL(%rbp)
+    testl $SEA_FF_ALT, RTF_F(%rbp)
+    jz 2f
+    testq %r15, %r15
+    jz 2f                           # no prefix for the value 0
+    movb $48, 0(%rsp)               # '0'
+    movb %sil, 1(%rsp)              # x or X
+    movq $2, RTF_SL(%rbp)
+2:  cmpq $0, RTF_P(%rbp)            # C: precision 0 with the value 0
+    jne 3f                          # prints no digits
+    testq %r15, %r15
+    jnz 3f
+    xorl %eax, %eax
+    jmp .Lrt_fmt_printf_inttail
+    # Digits right to left at the end of the buffer, then moved to
+    # 0(%rsp) + prefix length.
+3:  movq %r15, %rax
+    leaq RTF_BUF(%rsp), %r8         # end of the buffer
+4:  movl %eax, %edx
+    andl $15, %edx                  # next nibble
+    leal 48(%rdx), %ecx             # '0' form
+    leal (%rdx,%rdi), %esi          # letter form
+    cmpl $10, %edx
+    cmovael %esi, %ecx              # nibble >= 10: a letter
+    decq %r8
+    movb %cl, (%r8)
+    shrq $4, %rax
+    jnz 4b
+    leaq RTF_BUF(%rsp), %rax
+    subq %r8, %rax                  # number of digits (1 .. 16)
+    movq RTF_SL(%rbp), %rdi
+    addq %rsp, %rdi                 # destination after the prefix
+    movq %rax, %rcx
+5:  movb (%r8), %dl
+    movb %dl, (%rdi)
+    incq %r8
+    incq %rdi
+    decq %rcx
+    jnz 5b
     jmp .Lrt_fmt_printf_inttail
 
     # %d of an f64 (bits in %r15): MATLAB rule (LANGUAGE.md 11.1).

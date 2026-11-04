@@ -1,0 +1,123 @@
+#sea 1
+#target arm64-macos
+#file libL_check.sea
+type 0:1:12 str s 0
+param 0:1:6 path 0 0
+type 0:1:20 str s 0
+param 0:1:17 s 0 0
+type 0:1:28 i64 v 0
+param 0:1:25 v 0 0
+type 0:1:38 i64 s 0
+param 0:1:35 k 0 0
+type 0:1:46 i64 s 0
+pname 0:2:9 L
+name 0:2:13 read_lines
+name 0:2:24 path
+call 0:2:13 1
+let 0:2:5 0
+pname 0:3:9 F
+name 0:3:13 split
+name 0:3:19 s
+str 0:3:22 ,
+call 0:3:13 2
+let 0:3:5 0
+pname 0:4:9 t
+name 0:4:13 substr
+name 0:4:20 s
+int 0:4:23 1
+name 0:4:26 k
+call 0:4:13 3
+let 0:4:5 0
+pname 0:5:9 a
+name 0:5:13 parse_i64
+name 0:5:23 t
+call 0:5:13 1
+let 0:5:5 0
+pname 0:6:9 b
+name 0:6:13 parse_i64
+name 0:6:23 t
+int 0:6:32 16
+narg 0:6:26 base
+call 0:6:13 2
+let 0:6:5 0
+pname 0:7:9 x
+name 0:7:13 parse_f64
+name 0:7:23 F
+int 0:7:25 0
+index 0:7:23 1
+call 0:7:13 1
+let 0:7:5 0
+pname 0:8:9 c
+name 0:8:13 bitand
+name 0:8:20 a
+int 0:8:23 255
+call 0:8:13 2
+name 0:8:31 bitor
+name 0:8:37 b
+name 0:8:40 k
+call 0:8:31 2
+bin 0:8:13 add
+name 0:8:45 bitxor
+name 0:8:52 a
+int 0:8:56 1
+neg 0:8:55
+call 0:8:45 2
+bin 0:8:13 add
+let 0:8:5 0
+pname 0:9:9 d
+name 0:9:13 bitnot
+name 0:9:20 c
+call 0:9:13 1
+name 0:9:25 shl
+name 0:9:29 c
+int 0:9:32 2
+call 0:9:25 2
+bin 0:9:13 add
+name 0:9:37 shr
+name 0:9:41 c
+name 0:9:44 k
+call 0:9:37 2
+bin 0:9:13 add
+name 0:9:49 sar
+name 0:9:53 c
+int 0:9:56 63
+call 0:9:49 2
+bin 0:9:13 add
+let 0:9:5 0
+pname 0:10:9 w
+name 0:10:13 bitand
+name 0:10:20 shr
+name 0:10:24 v
+int 0:10:27 4
+call 0:10:20 2
+int 0:10:31 15
+call 0:10:13 2
+let 0:10:5 0
+pname 0:11:9 e
+name 0:11:13 bitnot
+name 0:11:20 v
+call 0:11:13 1
+let 0:11:5 0
+name 0:12:12 c
+name 0:12:16 d
+bin 0:12:12 add
+name 0:12:20 len
+name 0:12:24 L
+call 0:12:20 1
+bin 0:12:12 add
+name 0:12:29 w
+int 0:12:31 0
+index 0:12:29 1
+bin 0:12:12 add
+name 0:12:36 e
+int 0:12:38 0
+index 0:12:36 1
+bin 0:12:12 add
+name 0:12:47 x
+conv 0:12:43 i64
+bin 0:12:12 add
+return 0:12:5 1
+block 0:1:50 11
+fn 0:1:1 g 0 4 1
+prog 1
+#end

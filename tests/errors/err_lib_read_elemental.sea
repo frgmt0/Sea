@@ -1,0 +1,5 @@
+// err_lib_read_elemental -- read_lines has effects (DESIGN.md L-me): 228 at the call inside an elemental function
+elemental fn f(x: i64) -> i64 {
+    let lines = read_lines("in.txt")
+    return x
+}

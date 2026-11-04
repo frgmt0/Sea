@@ -1,0 +1,16 @@
+let id = 0x18FF50E5
+// line 4 is DESIGN.md 2.15.4's example of rule 40 (id in i1, so its records are the example's
+// registers); this comment keeps it at line 4
+let p = bitand(shr(id, 8), 0x3FFFF)
+let a = -6
+let n = 3
+let q = bitor(a, 1) + bitxor(a, n) + bitnot(a)
+let r = shl(a, n) + sar(a, n) + shr(a, 60)
+printf("%d %d %d\n", p, q, r)
+// libL_bits -- rule 40 (DESIGN.md 2.15.4, 3.6.6; L-ml): the operands left to right by rule 1, then
+// bitand `iand`, bitor `ior`, bitxor `ixor`, bitnot `li M -1` and `ixor` (never LIR bnot, which is
+// logical), shl/shr/sar the count check `li 0`, `li 63`, `icmp lt`, `icmp gt`, `ior`, `chk ...
+// SHIFT_COUNT 0:LINE 1 N` and then `ishl`/`ishr`/`isar`; line 4 is 2.15.4's example record for record
+// (id in i1: li i2 8 ... iand i10 i8 i9). Output: p = bitand(shr(0x18FF50E5, 8), 0x3FFFF) = 0xFF50
+// = 65360; q = bitor(-6, 1) + bitxor(-6, 3) + bitnot(-6) = -5 + -7 + 5 = -7; r = shl(-6, 3) +
+// sar(-6, 3) + shr(-6, 60) = -48 + -1 + 15 = -34. Code at lines 1-9.

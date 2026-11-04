@@ -495,7 +495,7 @@ for src in "$ROOT"/tests/rt/x86_64_linux/*.s; do
     selected "rt/$nm" || continue
     base=${src%.s}
     cp "$src" "$BUNDLE/tests/rt/x86_64_linux/$nm.s" || setup_fail "cannot copy $src"
-    sidecars "$base" "$BUNDLE/tests/rt/x86_64_linux/$nm" out err status meta
+    sidecars "$base" "$BUNDLE/tests/rt/x86_64_linux/$nm" out err status meta files
     PACKED=$((PACKED + 1))
 done
 

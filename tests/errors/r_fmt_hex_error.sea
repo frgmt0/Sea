@@ -1,0 +1,5 @@
+// r_fmt_hex_error -- error formats %X like format (LANGUAGE.md 9.3, 11.1): error("%04X", 255) stops with the message
+// 00FF at the line of the call, after the output before it
+printf("start\n")
+error("%04X", 255)
+printf("never\n")

@@ -1,0 +1,4 @@
+// r_lib_shift_neg -- shl(1, -1): a count below 0 is invalid shift count -1 (LANGUAGE.md 10.14, 9.2), at the call's line
+printf("start\n")
+printf("%d\n", shl(1, -1))
+printf("never\n")

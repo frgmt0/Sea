@@ -21,7 +21,7 @@ enum cvtype f64 i64 str
 enum hbinop add sub mul div mod pow matmul eq ne lt le gt ge band bor and or cat
 enum unop neg not
 enum view T flat col row
-enum conv d i f F e E g G s
+enum conv d i f F e E g G s x X
 enum fkind main fn elem inl
 enum pmode val ref
 enum lmut let var for

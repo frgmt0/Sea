@@ -1,0 +1,2 @@
+// err_lib_bit_arity -- bitor with one argument: 243 at the call (DESIGN.md 2.15.2)
+let b = bitor(1)

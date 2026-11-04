@@ -367,7 +367,7 @@ v[0] += empty(ref v)
 ''', 'v[0] += empty', OOB % (0, 0, 0))
 
 # ================================================================ locals, parameters, results
-# total(v) sums in index order: [0, 1, 2] -> 3; scaled(v, 2) returns a new array [0, 2, 4]; split
+# total(v) sums in index order: [0, 1, 2] -> 3; scaled(v, 2) returns a new array [0, 2, 4]; parts
 # returns (the first half, the second half) of [0, 1, 2, 3]: lengths 2 and 2, elements 0 1 / 2 3;
 # the same array may be both results (dup); a matrix parameter and result (tr: the transpose by
 # loops) of a 2 x 3 matrix A[i, j] = i + 10 j: tr is 3 x 2 with T[2, 1] = A[1, 2] = 21.
@@ -386,7 +386,7 @@ fn scaled(v: f64[], c: f64) -> f64[] {
     }
     return w
 }
-fn split(v: f64[]) -> (f64[], f64[]) {
+fn parts(v: f64[]) -> (f64[], f64[]) {
     let h = len(v) / 2
     var a = zeros(i64(h))
     var b = zeros(len(v) - i64(h))
@@ -422,7 +422,7 @@ var u = zeros(4)
 for i in 0..4 {
     u[i] = f64(i)
 }
-let (p, q) = split(u)
+let (p, q) = parts(u)
 printf("%d %d %g %g %g %g\\n", len(p), len(q), p[0], p[1], q[0], q[1])
 let (d1, d2) = dup(filled(3, 2))
 printf("%d %d\\n", d1[0], d2[1])

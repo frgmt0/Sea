@@ -1,0 +1,14 @@
+let v: i64[] = [0x1234, -1, 255, 4096]
+let w = bitand(shr(v, 4), 0xF)
+let z = bitxor(sar(v, 3), bitnot(v))
+let f = split("a,b", ",")
+let n = parse_i64(f[0], base: 16) + len(substr(f[1], 0, 1))
+let lines = read_lines("in.txt")
+let y = parse_f64("2.5")
+printf("%d %d %d %d %g\n", w[0], z[1], n, len(lines), y)
+// libL_hirl -- sealoop on the phase-L calls (DESIGN.md 2.15.4): the bitwise functions are elemental (K4$),
+// so L7 rewrites bitand(shr(v, 4), 0xF) and bitxor(sar(v, 3), bitnot(v)) over the i64[] v into rule 22's
+// loops with the scalar libs inside (fused by seafuse: shr and sar in the list of elemental calls with a
+// run-time check, bitand, bitxor and bitnot in the list of calls that cannot fail; one nest per let);
+// R37: the text libs (split, parse_i64 with base: 16, substr, read_lines, parse_f64) stay in sea.hirl
+// with their scalar children rewritten. No .out: the text entries link from Lc. Code at lines 1-8.

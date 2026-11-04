@@ -123,7 +123,7 @@
 14580 SUBEND
 14585 REM ---- cpre: the effects and the cycles of the call pre-pass (DESIGN 2.11.2, L-cq; LANGUAGE 8.1,
 14590 REM 8.5). A fn has effects when it has a ref parameter, calls printf print write_json make_dir
-14595 REM save_svg or a plotting function of LANGUAGE 12, or calls a fn with effects (error is none): a
+14595 REM save_svg or a plotting function of LANGUAGE 12, read_lines (L-me), or calls a fn with effects (error is none): a
 14600 REM worklist fixpoint over the callers. 228 at every call in an elemental fn's body of a library
 14605 REM fn or a fn with effects; 232 at every call F -> G with F reached from an elemental fn E and G
 14610 REM reaching E (the call lies on a cycle through E). er keeps the first in source order, 228
@@ -135,7 +135,7 @@
 14640 DIM A(99999,3), B(49999,5), Z(49999)
 14645 LET L$ = "|printf|print|write_json|make_dir|save_svg|axis_equal|bar|barh|contour|figure|grid|"
 14650 LET L$ = L$ & "image|legend|panel|plot|title|twin_y|x_ticks|xlabel|xline|xlim|y_reverse|y_ticks|"
-14655 LET L$ = L$ & "ylabel|ylim|"
+14655 LET L$ = L$ & "ylabel|ylim|read_lines|"
 14660 LET E = 0
 14665 FOR S = 2 TO X(33)
 14670 FOR H = 0 TO 5

@@ -1,0 +1,15 @@
+let path = "can.log"
+let lines = read_lines(path)
+let f = split(lines[0], " ")
+let t = substr(f[0], 1, 18)
+let id = parse_i64(f[2], base: 16)
+let k = parse_i64("42")
+let x = parse_f64(substr(t, 0, 4))
+printf("%d %d %d %g\n", len(f), id, k, x)
+// libL_rcall -- rule 39's five rows (DESIGN.md 2.15.4, 2.15.5): `rcall sea_read_lines`, `sea_split`,
+// `sea_substr`, `sea_parse_i64`, `sea_parse_f64`, each with the site 0:LINE (all five are S entries),
+// the operands in the lib's child order (parse_i64's base, given or the default 10, as its second
+// operand); the str[] and str results p owned (released at the end, rules 15 and 16), parse_i64's i
+// and parse_f64's f results; the borrowed locals and elements neither retained nor released by the
+// rcall; the owned temporary substr(t, 0, 4) released right after the parse_f64 that reads it. No
+// .out: the text entries link from Lc. Code at lines 1-8.

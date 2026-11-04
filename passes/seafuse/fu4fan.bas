@@ -152,14 +152,14 @@
 30260 IF POS("|matmul|cat|", "|" & F9$ & "|") > 0 THEN 30297
 30262 IF POS("|add|sub|mul|div|mod|pow|", "|" & F9$ & "|") > 0 THEN 30252
 30263 GOTO 30298
-30264 IF POS("|where|isnan|sign|sqrt|floor|ceil|trunc|round|log|exp|sin|cos|pow|hypot|f64|", "|" & F9$ & "|") > 0 THEN 30298
+30264 IF POS("|where|isnan|sign|sqrt|floor|ceil|trunc|round|log|exp|sin|cos|pow|hypot|f64|bitand|bitor|bitxor|bitnot|", "|" & F9$ & "|") > 0 THEN 30298
 30266 IF F9$ <> "min" THEN 30270
 30267 IF H(H(X3, 3), 4) > 0 THEN 30298
 30268 GOTO 30297
 30270 IF F9$ <> "max" THEN 30272
 30271 GOTO 30267
 30272 IF F9$ = "abs" THEN 30252
-30274 IF POS("|i64|idiv|sub2ind|", "|" & F9$ & "|") > 0 THEN 30295
+30274 IF POS("|i64|idiv|sub2ind|shl|shr|sar|", "|" & F9$ & "|") > 0 THEN 30295
 30276 GOTO 30297
 30280 REM an emap: its callee validated (H(X3,5)); quiet when the callee's body is (L-ei)
 30282 LET X9 = X
@@ -348,7 +348,7 @@
 30785 IF H(H(X6, 3), 2) = 4 THEN 30798
 30786 GOTO 30797
 30787 IF K2 <> 12 THEN 30797
-30788 IF POS("|isnan|sign|sqrt|floor|ceil|trunc|round|log|exp|sin|cos|pow|hypot|f64|min|max|", "|" & F9$ & "|") > 0 THEN 30798
+30788 IF POS("|isnan|sign|sqrt|floor|ceil|trunc|round|log|exp|sin|cos|pow|hypot|f64|min|max|bitand|bitor|bitxor|bitnot|", "|" & F9$ & "|") > 0 THEN 30798
 30789 IF F9$ = "where" THEN 30796
 30790 IF F9$ <> "abs" THEN 30797
 30793 IF H(X6, 2) = 4 THEN 30798

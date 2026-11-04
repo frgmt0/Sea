@@ -41,6 +41,9 @@
 //
 // How each conversion is made (LANGUAGE.md 11.1, DESIGN.md 4.5):
 //   * integers (i64, bool; %d of an integral f64 below 2^63) by own code;
+//     %x and %X (i64 only, L-mm) by own code too: the 64 bits as an
+//     unsigned value, digits by a shift-by-4 loop, the prefix 0x / 0X
+//     laid out like a sign (no snprintf);
 //     %d of an integral f64 of magnitude >= 2^63 takes its exact digits
 //     from snprintf("%.0f", |x|), which is exact for an integral value;
 //   * finite f64 for f F e E g G (and %d of a non-integral f64, which is
@@ -121,7 +124,7 @@ _sea_printf:
 //   Callee-saved used: x19 = current piece, x20 = pieces left,
 //             x21 = next argument slot, x22 = site index,
 //             x23 = conversion letter, then the sign length (0 or 1) of
-//             an integer conversion, x24 = flags (SEA_FF_*),
+//             an integer conversion (the prefix length, 0 or 2, of x X), x24 = flags (SEA_FF_*),
 //             x25 = argument class (SEA_CLS_*), x26 = width (-1 absent),
 //             x27 = precision (-1 absent), x28 = the argument slot value
 //   Frame   : 96 bytes (frame record + x19..x28) + RTF_BUF (conversion
@@ -162,14 +165,18 @@ Lrt_fmt_printf_conv:
     ldrsw x26, [x19, #SEA_FP_WIDTH]
     ldrsw x27, [x19, #SEA_FP_PREC]
     ldr x28, [x21], #SEA_SLOT_SIZE
-    // Dispatch on the letter: s, d/i, else the float letters f F e E g G
-    // (pass 2 admits no other letter, LANGUAGE.md 11.1).
+    // Dispatch on the letter: s, d/i, x/X, else the float letters
+    // f F e E g G (pass 2 admits no other letter, LANGUAGE.md 11.1).
     cmp w23, #'s'
     b.eq Lrt_fmt_printf_str
     cmp w23, #'d'
     b.eq Lrt_fmt_printf_int
     cmp w23, #'i'
     b.eq Lrt_fmt_printf_int
+    cmp w23, #'x'
+    b.eq Lrt_fmt_printf_hex
+    cmp w23, #'X'
+    b.eq Lrt_fmt_printf_hex
 
     // ---- f F e E g G -------------------------------------------------
     // An i64 argument is converted (round to nearest, ties to even:
@@ -276,6 +283,55 @@ Lrt_fmt_printf_intu:
     strb w15, [x9], #1
     subs x13, x13, #1
     b.ne 3b
+    b Lrt_fmt_printf_inttail
+
+    // ---- x X (L-mm, DESIGN.md 2.15.6) ---------------------------------
+    // The slot's 64 bits are an unsigned magnitude (-1 is sixteen f's);
+    // + and space are ignored (Decision 150 (d)). The "sign" of the
+    // integer layout is the prefix 0x / 0X, present only with # and a
+    // non-zero value, so Lrt_fmt_emit lays the field out in C99's order:
+    // spaces, prefix, zeros (precision, or 0 flag up to the width), digits.
+    // No snprintf: the digit loop shifts by 4.
+    //   Inputs : w23 = 'x' or 'X', x28 = the bits, w24 = flags, x27 = precision
+    //   Uses   : x23 = prefix length (0 or 2) afterwards, x9-x17
+Lrt_fmt_printf_hex:
+    cmp w23, #'x'
+    mov w16, #('A' - 10)            // digit base for X
+    mov w17, #('a' - 10)            // digit base for x
+    csel w16, w17, w16, eq
+    mov w17, w23                    // the letter, for the prefix
+    mov x23, #0                     // prefix length
+    tst w24, #SEA_FF_ALT
+    b.eq 1f
+    cbz x28, 1f                     // no prefix for the value 0
+    mov w9, #'0'
+    strb w9, [sp]
+    strb w17, [sp, #1]              // 0x or 0X
+    mov x23, #2
+1:  cbnz x27, 2f                    // C: precision 0 with the value 0
+    cbnz x28, 2f                    // prints no digits
+    mov x0, #0
+    b Lrt_fmt_printf_inttail
+    // Digits right to left at the end of the buffer, then moved to
+    // [sp + prefix length].
+2:  mov x10, x28
+    add x12, sp, #RTF_BUF           // end of the buffer
+3:  and w15, w10, #15               // next nibble
+    add w14, w15, #'0'
+    add w9, w15, w16                // letter form
+    cmp w15, #10
+    csel w15, w14, w9, lo
+    strb w15, [x12, #-1]!
+    lsr x10, x10, #4
+    cbnz x10, 3b
+    add x14, sp, #RTF_BUF
+    sub x0, x14, x12                // number of digits (1 .. 16)
+    add x9, sp, x23                 // destination after the prefix
+    mov x13, x0
+4:  ldrb w15, [x12], #1
+    strb w15, [x9], #1
+    subs x13, x13, #1
+    b.ne 4b
     b Lrt_fmt_printf_inttail
 
     // %d of an f64 (bits in x28): MATLAB rule (LANGUAGE.md 11.1).

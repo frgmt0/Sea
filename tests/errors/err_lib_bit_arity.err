@@ -1,0 +1,1 @@
+err_lib_bit_arity.sea:2:9: error: no overload of 'bitor' accepts (i64)

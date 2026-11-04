@@ -1,0 +1,5 @@
+// r_lib_shift_sar -- sar with a count of 100 is invalid shift count 100 (LANGUAGE.md 10.14), whatever the value shifted
+printf("%d\n", sar(-1, 63))
+let n = 100
+let r = sar(-1, n)
+printf("never %d\n", r)

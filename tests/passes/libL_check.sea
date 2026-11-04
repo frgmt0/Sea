@@ -1,0 +1,22 @@
+fn g(path: str, s: str, v: i64[], k: i64) -> i64 {
+    let L = read_lines(path)
+    let F = split(s, ",")
+    let t = substr(s, 1, k)
+    let a = parse_i64(t)
+    let b = parse_i64(t, base: 16)
+    let x = parse_f64(F[0])
+    let c = bitand(a, 0xFF) + bitor(b, k) + bitxor(a, -1)
+    let d = bitnot(c) + shl(c, 2) + shr(c, k) + sar(c, 63)
+    let w = bitand(shr(v, 4), 0xF)
+    let e = bitnot(v)
+    return c + d + len(L) + w[0] + e[0] + i64(x)
+}
+// libL_check -- pass 2a's tree for the twelve phase-L functions (DESIGN.md 2.15.2 "Signatures", 2.15.4
+// seacheck's written form; L-mn, L-mo): `lib NAME n` at the name's position with the children in parameter
+// order; read_lines and split of type str[] (a rank-1 dynamic str[], here type 11), substr str (5),
+// parse_i64 i64 (3), parse_f64 f64 (4); parse_i64's omitted base written as `ci 10` at the call's position
+// (`lib parse_i64 2`), the named `base: 16` as its constant at its own position (no seq: the one option
+// comes last); the seven bitwise functions of class 2 with i64 results, untyped literals `ci` (i64), a
+// negative literal as `un neg`; bitnot `lib bitnot 1`; on an i64[] argument the result is i64[] (type 10)
+// with the scalar broadcast. g is never called, so .main is empty and there is no .hir. Code at lines
+// 1-13.

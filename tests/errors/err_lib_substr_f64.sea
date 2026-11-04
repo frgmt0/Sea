@@ -1,0 +1,2 @@
+// err_lib_substr_f64 -- substr with an f64 position: 243 at the call (DESIGN.md 2.15.2)
+let s = substr("abc", 0.5, 2)

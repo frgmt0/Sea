@@ -1,0 +1,2 @@
+// err_lib_bitnot_bool -- bitnot of a bool: 243 at the call (DESIGN.md 2.15.4: bitnot takes one i64)
+let b = bitnot(true)

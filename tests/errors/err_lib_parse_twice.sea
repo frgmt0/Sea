@@ -1,0 +1,2 @@
+// err_lib_parse_twice -- base given twice: 225 at the second narg (DESIGN.md 2.15.2)
+let v = parse_i64("ff", base: 16, base: 8)

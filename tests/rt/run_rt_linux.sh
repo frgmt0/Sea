@@ -27,6 +27,7 @@
 #   NAME.out     expected stdout bytes (absent: empty)
 #   NAME.err     expected stderr bytes (absent: empty)
 #   NAME.status  expected exit status, one number (absent: 0)
+#   NAME.files/  optional: fixtures, copied into the program's fresh working directory first
 #   NAME.meta    key=value lines:
 #                  stdout=epipe       standard output is a pipe whose reading
 #                                     end is closed before the program starts
@@ -204,6 +205,8 @@ for src in "$TESTDIR"/*.s; do
     for kv in $(meta_all "$meta" env); do envargs="$envargs $kv"; done
 
     rm -rf "$TMP/work"; mkdir "$TMP/work"
+    # NAME.files/ (optional): fixtures copied into the fresh working directory first (L-mp)
+    if [ -d "$base.files" ]; then cp -R "$base.files/." "$TMP/work/" || { fail "$name" "cannot copy $name.files"; continue; }; fi
     rm -f "$TMP/r.out" "$TMP/r.err" "$TMP/r.out.fifo"
     # shellcheck disable=SC2086
     run_limited "$TIMEOUT" "$TMP/work" env $envargs sh "$TMP/runit.sh" "$TMP/exe" "$mode" "$TMP/r.out" "$TMP/r.err" 2>/dev/null

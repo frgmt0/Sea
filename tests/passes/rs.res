@@ -22,11 +22,11 @@ rname 0:4:24 N cst 1
 bin 0:4:20 add
 return 0:4:5 2
 block 0:2:32 2
-rfn 0:2:1 split 2 1 2 2 10 4
+rfn 0:2:1 parts 2 1 2 2 10 4
 rpname 0:6:6 a 1
 rpname 0:6:9 b 2
 ptuple 0:6:5 2
-rname 0:6:14 split fn 2
+rname 0:6:14 parts fn 2
 rname 0:6:20 pi pd 0
 call 0:6:14 1
 let 0:6:1 0

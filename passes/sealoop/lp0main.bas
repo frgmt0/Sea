@@ -120,7 +120,7 @@
 510 REM the library functions of L1-L3 in the order of their codes (lp1walk), the elemental ones, L13-L14 (lp7red)
 515 LET K3$ = "|zeros  |ones   |filled |len    |rows   |cols   |numel  "
 517 LET K4$ = "|f64|i64|isnan|abs|sign|sqrt|floor|ceil|trunc|round|min|max|log|exp|sin|cos|pow|hypot|"
-518 LET K4$ = K4$ & "idiv|where|sub2ind|"
+518 LET K4$ = K4$ & "idiv|where|sub2ind|bitand|bitor|bitxor|bitnot|shl|shr|sar|"
 519 LET K5$ = "|sum        |mean       |variance   |std        |max        |min        |argmax     |argmin     |nnz        |any        |all        |find       |find_first |find_last  |sort       |argsort    "
 520 REM ==== (A) reading sea.hir =================================================================
 525 CALL "io_hdr": 1, P$, E(), E$(), E0, N(), N$(), W$(), Z(5), V8, T$, H$(), 100, N1, L$

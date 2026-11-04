@@ -1,0 +1,65 @@
+#sea 1
+#target arm64-macos
+#file libL_bits.sea
+func .main main 0:1:1 0 0
+slot s1 24 8
+li i1 419385573
+li i2 8
+li i3 0
+li i4 63
+icmp lt i5 i2 i3
+icmp gt i6 i2 i4
+ior i7 i5 i6
+chk i7 SHIFT_COUNT 0:4 1 i2
+ishr i8 i1 i2
+li i9 262143
+iand i10 i8 i9
+li i11 -6
+li i12 3
+li i13 1
+ior i14 i11 i13
+ixor i15 i11 i12
+iaddc i16 i14 i15 0:7
+li i17 -1
+ixor i18 i11 i17
+iaddc i19 i16 i18 0:7
+li i20 0
+li i21 63
+icmp lt i22 i12 i20
+icmp gt i23 i12 i21
+ior i24 i22 i23
+chk i24 SHIFT_COUNT 0:8 1 i12
+ishl i25 i11 i12
+li i26 0
+li i27 63
+icmp lt i28 i12 i26
+icmp gt i29 i12 i27
+ior i30 i28 i29
+chk i30 SHIFT_COUNT 0:8 1 i12
+isar i31 i11 i12
+iaddc i32 i25 i31 0:8
+li i33 60
+li i34 0
+li i35 63
+icmp lt i36 i33 i34
+icmp gt i37 i33 i35
+ior i38 i36 i37
+chk i38 SHIFT_COUNT 0:8 1 i33
+ishr i39 i11 i33
+iaddc i40 i32 i39 0:8
+sa p41 s1
+sti i10 p41 - 0 0
+sti i19 p41 - 0 8
+sti i40 p41 - 0 16
+la p42 d1
+rcall sea_printf 0:9 0 2 p42 p41
+ret 0
+endfunc
+fmt d1 6
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %20
+fconv - - - d i
+ftext %0A
+#end

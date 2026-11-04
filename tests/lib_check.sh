@@ -2737,9 +2737,9 @@ rejects "an rpname with the local number 0" res "$T/mut/r11" BAD_RECORD "$(lineo
 rejects "an rtup record in sea.ast (codes 50-63 are sea.res only)" ast "$T/ex/res" BAD_RECORD "$(lineof "$T/ex/res" '^rtup ')" "unknown opcode 'rtup' for format ast"
 mut_del "$T/ex/res" '^rtup ' > "$T/mut/r13"
 rejects "an rint record in sea.ast, not only rtup" ast "$T/mut/r13" BAD_RECORD "$(lineof "$T/mut/r13" '^rint ')" "unknown opcode 'rint' for format ast"
-mut_rep "$T/ex/res" '^rfn 0:2:1 split 0 1 2 2 10 4$' 'rfn 0:2:1 split 0 1 2 2 11 4' > "$T/mut/r14"
+mut_rep "$T/ex/res" '^rfn 0:2:1 parts 0 1 2 2 10 4$' 'rfn 0:2:1 parts 0 1 2 2 11 4' > "$T/mut/r14"
 rejects "an rfn result type that is not defined" res "$T/mut/r14" BAD_RECORD "$(lineof "$T/ex/res" '^rfn ')" "defined type id"
-mut_rep "$T/ex/res" '^rfn 0:2:1 split 0 1 2 2 10 4$' 'rfn 0:2:1 split 0 1 2 2 0 0' > "$T/mut/r15"
+mut_rep "$T/ex/res" '^rfn 0:2:1 parts 0 1 2 2 10 4$' 'rfn 0:2:1 parts 0 1 2 2 0 0' > "$T/mut/r15"
 (echo res; cat "$T/mut/r15") > "$T/v.in"
 expect "seaval accepts the type 0 (a type with an error) in sea.res" "$T/seaval" "$T/v.in" 0 /dev/null /dev/null
 mut_rep "$T/ex/hir1" '^cf 0:6:27 ' 'cf 0:6:27 4 #3FE0000000000000' > "$T/mut/h0"

@@ -1,0 +1,63 @@
+#sea 1
+#target arm64-macos
+#file libL_rcall.sea
+pname 0:1:5 path
+str 0:1:12 can.log
+let 0:1:1 0
+pname 0:2:5 lines
+name 0:2:13 read_lines
+name 0:2:24 path
+call 0:2:13 1
+let 0:2:1 0
+pname 0:3:5 f
+name 0:3:9 split
+name 0:3:15 lines
+int 0:3:21 0
+index 0:3:15 1
+str 0:3:25 %20
+call 0:3:9 2
+let 0:3:1 0
+pname 0:4:5 t
+name 0:4:9 substr
+name 0:4:16 f
+int 0:4:18 0
+index 0:4:16 1
+int 0:4:22 1
+int 0:4:25 18
+call 0:4:9 3
+let 0:4:1 0
+pname 0:5:5 id
+name 0:5:10 parse_i64
+name 0:5:20 f
+int 0:5:22 2
+index 0:5:20 1
+int 0:5:32 16
+narg 0:5:26 base
+call 0:5:10 2
+let 0:5:1 0
+pname 0:6:5 k
+name 0:6:9 parse_i64
+str 0:6:19 42
+call 0:6:9 1
+let 0:6:1 0
+pname 0:7:5 x
+name 0:7:9 parse_f64
+name 0:7:19 substr
+name 0:7:26 t
+int 0:7:29 0
+int 0:7:32 4
+call 0:7:19 3
+call 0:7:9 1
+let 0:7:1 0
+name 0:8:1 printf
+str 0:8:8 %25d%20%25d%20%25d%20%25g%0A
+name 0:8:25 len
+name 0:8:29 f
+call 0:8:25 1
+name 0:8:33 id
+name 0:8:37 k
+name 0:8:40 x
+call 0:8:1 5
+cstmt 0:8:1
+prog 8
+#end

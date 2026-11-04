@@ -1,0 +1,19 @@
+// lib_bit_untyped -- untyped integer literal arguments of the bitwise functions are i64 (LANGUAGE.md 4.2, 10.14) and
+// every result is i64: printed with %d, added to an i64, divided with / (giving f64, 6.5), used as an index and as a
+// count; hex and _ literals; an i64 result in an f64 context is converted (4.2)
+let a = bitand(12, 10)
+let b = bitor(12, 10)
+let c = bitxor(12, 10)
+let d = bitnot(0)
+printf("%d %d %d %d\n", a, b, c, d)
+let x: i64 = shl(1, 40)
+printf("%d\n", x + 1)
+printf("%g\n", shr(10, 1) / 4)
+let w = [10, 20, 30, 40]
+printf("%d\n", w[bitand(7, 3)])
+printf("%d\n", shl(1, sar(126, 1)))
+printf("%d\n", bitand(0x18FF_50E5, 0x3FFFF))
+printf("%d\n", idiv(sar(-9, 1), 2))
+let y: f64 = 0.5
+printf("%g\n", y + shl(3, 2))
+printf("%d\n", shr(-9223372036854775808, 63))

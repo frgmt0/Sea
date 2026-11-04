@@ -1,0 +1,4 @@
+// err_lib_bit_f64_array -- sar of an f64[]: the bitwise functions accept i64 arrays only, 243 at the call
+// (LANGUAGE.md 10.14)
+let v = zeros(3)
+let b = sar(v, 1)

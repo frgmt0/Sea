@@ -50,7 +50,7 @@
 9705 IF H(X, 1) > 42 THEN 31996
 9710 ON H(X, 1) - 38 GOTO 12800, 13290, 2365, 2365
 9715 IF S > 59 THEN 32010
-9720 ON S - 38 GOTO 12860, 8005, 13620, 13740, 13870, 14270, 53520, 8005, 2365, 2365, 8005, 14900, 24210, 24350
+9720 ON S - 38 GOTO 12860, 8005, 13620, 13740, 13870, 14270, 53520, 8005, 8005, 2365, 8005, 14900, 24210, 24350
 9730 REM ---- class of an array or tptr type (7395 for T1 > 5): p ----------------------------------
 9740 IF T1 <= 9 THEN 2360
 9750 IF T(T1, 1) = 2 THEN 2360
@@ -711,15 +711,15 @@
 19360 LET K4$ = "|abs     |sign    |sqrt    |floor   |ceil    |trunc   |round   |isnan   |min     |max     |where   |ind2sub |sub2ind |sort    |argsort |str     |lower   |args    |print   |make_dir |lu       |chol     |solve    |rcond    |eig_sym  "
 19370 LET W2$ = S$(H(X, 0))
 19372 LET K5$ = "|figure     |panel      |twin_y     |save_svg   |plot       |xline      |bar        |barh       |contour    |image      "
-19374 LET K5$ = K5$ & "|xlabel     |ylabel     |title      |legend     |grid       |xlim       |ylim       |x_ticks    |y_ticks    |y_reverse  |axis_equal "
+19374 LET K5$ = K5$ & "|xlabel     |ylabel     |title      |legend     |grid       |xlim       |ylim       |x_ticks    |y_ticks    |y_reverse  |axis_equal |read_lines |split      |parse_i64  |parse_f64  |substr     "
 19380 LET W2 = INT((POS(K4$, "|" & W2$ & " ") + 8) / 9)
 19382 IF W2 > 0 THEN 19395
 19384 LET W2 = POS(K5$, "|" & W2$ & " ")
 19386 IF W2 = 0 THEN 2360
 19388 LET W2 = (W2 - 1) / 12 + 26
 19395 LET W2 = W2 + 7
-19400 IF H(X, 6) < VAL(SEG$("11211111111111122323221101111211551274657522222332211", W2, W2)) THEN 2360
-19410 IF H(X, 6) > VAL(SEG$("22311111111111122323221101111212551274657522222332211", W2, W2)) THEN 2360
+19400 IF H(X, 6) < VAL(SEG$("1121111111111112232322110111121155127465752222233221112213", W2, W2)) THEN 2360
+19410 IF H(X, 6) > VAL(SEG$("2231111111111112232322110111121255127465752222233221112213", W2, W2)) THEN 2360
 19420 LET W(W0 + 5) = W2
 19430 LET S = 49
 19440 GOTO 8000

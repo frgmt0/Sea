@@ -109,12 +109,12 @@
 440 REM slots 1-4 constants, 5-8 handle types, 9- functions; a name is found as "|name " (pdx)
 445 SUB "sc_pd": X$()
 450 LET L$ = "pi inf nan eps Figure Axes Lu Chol abs all any args argmax argmin argsort axis_equal "
-455 LET L$ = L$ & "bar barh bincount ceil chol cols contour cos eig_sym error exp figure filled find "
-460 LET L$ = L$ & "find_first find_last floor format grid hypot idiv image ind2sub isnan legend len "
-465 LET L$ = L$ & "linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel plot "
-470 LET L$ = L$ & "pow print printf rcond round rows save_svg setdiff sign sin solve sort sqrt std str "
-475 LET L$ = L$ & "sub2ind sum title trunc twin_y variance where write_json x_ticks xlabel xline xlim "
-480 LET L$ = L$ & "y_reverse y_ticks ylabel ylim zeros "
+455 LET L$ = L$ & "bar barh bincount bitand bitnot bitor bitxor ceil chol cols contour cos eig_sym error exp "
+460 LET L$ = L$ & "figure filled find find_first find_last floor format grid hypot idiv image ind2sub isnan "
+465 LET L$ = L$ & "legend len linspace log lower lu make_dir max mean meshgrid min nnz now numel ones panel "
+470 LET L$ = L$ & "parse_f64 parse_i64 plot pow print printf rcond read_lines round rows sar save_svg setdiff "
+475 LET L$ = L$ & "shl shr sign sin solve sort split sqrt std str sub2ind substr sum title trunc twin_y "
+480 LET L$ = L$ & "variance where write_json x_ticks xlabel xline xlim y_reverse y_ticks ylabel ylim zeros "
 485 LET R$ = ""
 490 LET S = 1
 495 LET P = POS(L$, " ", S)

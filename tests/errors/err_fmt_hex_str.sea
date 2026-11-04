@@ -1,0 +1,2 @@
+// err_fmt_hex_str -- %#x of a str in format: 210 at the argument (LANGUAGE.md 11.1)
+let s = format("id %#x", "12")

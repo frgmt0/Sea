@@ -1,0 +1,9 @@
+// r_lib_shift_order -- the count is checked after both arguments are evaluated (LANGUAGE.md 10.14; DESIGN.md L-ml): the
+// first argument's call prints before invalid shift count 64 is reported
+fn first() -> i64 {
+    printf("first evaluated\n")
+    return 1
+}
+printf("start\n")
+let r = shl(first(), 64)
+printf("never %d\n", r)

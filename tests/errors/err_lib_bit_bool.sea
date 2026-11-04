@@ -1,0 +1,2 @@
+// err_lib_bit_bool -- shl of a bool: 243 at the call (DESIGN.md 2.15.4)
+let b = shl(true, 1)

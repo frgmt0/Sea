@@ -1,0 +1,5 @@
+// r_lib_shift_unused -- shl(1, 64) whose result is never read still reports invalid shift count 64 (DESIGN.md 2.15.2,
+// L-me: the chk of rule 40 is kept by 5.8), at the call's line, after the output before it
+printf("start\n")
+let u = shl(1, 64)
+printf("never\n")

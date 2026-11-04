@@ -74,6 +74,13 @@
     \m 27, LEGEND_LOC, R, -, s, "invalid legend location \"%s\""
     \m 28, CONTOUR_LEVELS, R, -, i, "invalid number of contour levels %d"
     \m 29, PLOT_WIDTH, R, -, f, "invalid width %g"
+// run time, phase L: the text library (LANGUAGE.md 9.2, 10.9, 10.10, 10.14; DESIGN.md 2.15.2)
+    \m 30, CANNOT_READ, R, -, se, "cannot read '%s': %s"
+    \m 31, PARSE_I64, R, -, si, "cannot parse \"%s\" as i64 in base %d"
+    \m 32, PARSE_F64, R, -, s, "cannot parse \"%s\" as f64"
+    \m 33, PARSE_BASE, R, -, i, "invalid base %d"
+    \m 34, SPLIT_SEP, R, -, -, "empty separator"
+    \m 35, SHIFT_COUNT, R, -, i, "invalid shift count %d"
 // driver and pass 1: lexical and syntax errors (LANGUAGE.md 3, Appendix A)
     \m 100, LINE_TOO_LONG, D, over, -, "line too long"
     \m 101, ILLEGAL_CHAR, C1, byte, -, "illegal character"
@@ -173,7 +180,7 @@
 .endm
 
 // One past the last run-time code: _sea_err accepts 1 .. SEA_E_RT_END-1.
-.equiv SEA_E_RT_END,            30
+.equiv SEA_E_RT_END,            36
 
 // ---------------------------------------------------------------------
 // The errno text table (LANGUAGE.md 9.2: the reason in cannot open /

@@ -199,7 +199,7 @@
 55501 REM rewritten: a child of an array type must be a dynamic f64 vector or matrix or a dynamic str
 55502 REM vector (R10 materialized it: no unrewritten array expression, the check R35 makes); scalar and
 55503 REM handle children are any expression, their classes sealower's (L-jj); copied after its children.
-55504 REM Any other lib goes on at 5324. B2 the child
+55504 REM Any other lib goes on at 5324; there R37 (Lb, DESIGN 2.15.4): read_lines split substr parse_i64 parse_f64, of scalar children, are copied after them as args and lower are. B2 the child
 55506 IF POS("|figure|panel|twin_y|save_svg|plot|xline|bar|barh|contour|image|xlabel|ylabel|title|legend|grid|xlim|ylim|x_ticks|y_ticks|y_reverse|axis_equal|", "|" & F9$ & "|") = 0 THEN 5324
 55508 LET B2 = X1
 55510 IF B2 = 0 THEN 5160

@@ -575,7 +575,7 @@ for src in "$BUNDLE"/tests/rt/x86_64_linux/*.s; do
     esac
     envargs="-u SEA_KERNELS -u BAYSICK_KERNELS -u SEA_HEAP_CHECK"
     for kv in $(meta_all "$base.meta" env); do envargs="$envargs $kv"; done
-    WORK=$(mktemp -d "$TMP/work.XXXXXX") || { fail "$name" "cannot prepare the work directory"; continue; }
+    newwork "$base" || { fail "$name" "cannot prepare the work directory"; continue; }
     rm -f "$TMP/r.out" "$TMP/r.err" "$TMP/r.out.fifo"
     # shellcheck disable=SC2086
     run_limited "$TIMEOUT" /dev/null "$WORK" env $envargs sh "$TMP/runrt.sh" "$TMP/prog" "$mode" "$TMP/r.out" "$TMP/r.err" 2>/dev/null

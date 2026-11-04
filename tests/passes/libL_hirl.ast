@@ -1,0 +1,85 @@
+#sea 1
+#target arm64-macos
+#file libL_hirl.sea
+pname 0:1:5 v
+type 0:1:8 i64 v 0
+int 0:1:17 4660
+int 0:1:26 1
+neg 0:1:25
+int 0:1:29 255
+int 0:1:34 4096
+row 0:1:17 4
+array 0:1:16 1
+let 0:1:1 1
+pname 0:2:5 w
+name 0:2:9 bitand
+name 0:2:16 shr
+name 0:2:20 v
+int 0:2:23 4
+call 0:2:16 2
+int 0:2:27 15
+call 0:2:9 2
+let 0:2:1 0
+pname 0:3:5 z
+name 0:3:9 bitxor
+name 0:3:16 sar
+name 0:3:20 v
+int 0:3:23 3
+call 0:3:16 2
+name 0:3:27 bitnot
+name 0:3:34 v
+call 0:3:27 1
+call 0:3:9 2
+let 0:3:1 0
+pname 0:4:5 f
+name 0:4:9 split
+str 0:4:15 a,b
+str 0:4:22 ,
+call 0:4:9 2
+let 0:4:1 0
+pname 0:5:5 n
+name 0:5:9 parse_i64
+name 0:5:19 f
+int 0:5:21 0
+index 0:5:19 1
+int 0:5:31 16
+narg 0:5:25 base
+call 0:5:9 2
+name 0:5:37 len
+name 0:5:41 substr
+name 0:5:48 f
+int 0:5:50 1
+index 0:5:48 1
+int 0:5:54 0
+int 0:5:57 1
+call 0:5:41 3
+call 0:5:37 1
+bin 0:5:9 add
+let 0:5:1 0
+pname 0:6:5 lines
+name 0:6:13 read_lines
+str 0:6:24 in.txt
+call 0:6:13 1
+let 0:6:1 0
+pname 0:7:5 y
+name 0:7:9 parse_f64
+str 0:7:19 2.5
+call 0:7:9 1
+let 0:7:1 0
+name 0:8:1 printf
+str 0:8:8 %25d%20%25d%20%25d%20%25d%20%25g%0A
+name 0:8:28 w
+int 0:8:30 0
+index 0:8:28 1
+name 0:8:34 z
+int 0:8:36 1
+index 0:8:34 1
+name 0:8:40 n
+name 0:8:43 len
+name 0:8:47 lines
+call 0:8:43 1
+name 0:8:55 y
+call 0:8:1 6
+cstmt 0:8:1
+prog 8
+#end
