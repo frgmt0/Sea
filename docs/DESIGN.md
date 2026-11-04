@@ -122,10 +122,12 @@ the user's agreement. Phase 0 (§8) did:
    (2026-11-04; §2.7 "Measured after Lb", which calls for no relief; lead decision L-my of §9);
    sub-phase Lc (the text runtime on both targets, its tests and the gate) is **done** (2026-11-04;
    §2.7 "Runtime sizes at Lc" and "Measured at the gate after phase L", which passes every program
-   with no relief; lead decisions L-mz–L-ne of §9): **phase L is complete**; next is the
-   specification of W8, then phase 10.
-   The W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea
-   port reads, decodes and plots) is specified after phase L; both come before phase 10.
+   with no relief; lead decisions L-mz–L-ne of §9): **phase L is complete**; sub-phase W8a, the
+   specification of the workload W8 (an ESP32 controller sketch simulated on the host, writing a
+   CAN log that a Sea port reads, decodes and plots), is **done** (2026-11-04, revised after one
+   independent review and agreed: §2.16, §8 rows W8a–W8d; Decisions 151–160 each decided by the
+   user as option (a); lead decisions L-nf–L-ny of §9 agreed with the text); next W8b, then W8c,
+   W8d and phase 10.
    Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -567,9 +569,9 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Sub-phase 9c is done (2026-11-03; bars, contours, images and PNG: `rt_plot2.s` and `rt_png.s` in both runtimes; runtime sizes in §2.7, "Runtime sizes at 9c"; lead decisions L-lr–L-lz). Sub-phase 9d is done (2026-11-03; the six ports' figures with their `.struct` files, accepted by `tests/accept.sh` and the cross run, W2's SVG by Decision 138; §6.3 "Measured at 9d"; §2.7 "Measured at the gate after phase 9", which passes every program with no relief; lead decisions L-ma–L-md): phase 9 is complete. Phase L (the text library the user agreed on 2026-11-02, §8 row L) has started: sub-phase La is done (2026-11-03, revised after one independent review and agreed: §2.15, Decisions 143–149 each decided as option (a), Decision 150 the user's four rulings, lead decisions L-me–L-mx agreed with the text). Sub-phase Lb is done (2026-11-04; the contract, the front end of the twelve names, the bitwise functions and `%x`/`%X` with their tests, the rt `NAME.files/` sidecar; sizes in §2.7, "Measured after Lb", which calls for no relief; lead decision L-my). Sub-phase Lc is done (2026-11-04; the text runtime on both targets, `rt_text.s` and `READ_LINES`, with its tests; runtime sizes in §2.7, "Runtime sizes at Lc"; the gate after phase L passes every program with no relief, §2.7 "Measured at the gate after phase L"; lead decisions L-mz–L-ne): phase L is complete. Next: the specification of the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea port reads, decodes and plots), then phase 10.
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Sub-phase 9c is done (2026-11-03; bars, contours, images and PNG: `rt_plot2.s` and `rt_png.s` in both runtimes; runtime sizes in §2.7, "Runtime sizes at 9c"; lead decisions L-lr–L-lz). Sub-phase 9d is done (2026-11-03; the six ports' figures with their `.struct` files, accepted by `tests/accept.sh` and the cross run, W2's SVG by Decision 138; §6.3 "Measured at 9d"; §2.7 "Measured at the gate after phase 9", which passes every program with no relief; lead decisions L-ma–L-md): phase 9 is complete. Phase L (the text library the user agreed on 2026-11-02, §8 row L) has started: sub-phase La is done (2026-11-03, revised after one independent review and agreed: §2.15, Decisions 143–149 each decided as option (a), Decision 150 the user's four rulings, lead decisions L-me–L-mx agreed with the text). Sub-phase Lb is done (2026-11-04; the contract, the front end of the twelve names, the bitwise functions and `%x`/`%X` with their tests, the rt `NAME.files/` sidecar; sizes in §2.7, "Measured after Lb", which calls for no relief; lead decision L-my). Sub-phase Lc is done (2026-11-04; the text runtime on both targets, `rt_text.s` and `READ_LINES`, with its tests; runtime sizes in §2.7, "Runtime sizes at Lc"; the gate after phase L passes every program with no relief, §2.7 "Measured at the gate after phase L"; lead decisions L-mz–L-ne): phase L is complete. Sub-phase W8a, the specification of the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea port reads, decodes and plots), is done (2026-11-04, revised after one independent review and agreed: §2.16, Decisions 151–160 each decided by the user as option (a), lead decisions L-nf–L-ny agreed with the text). Next: W8b, then W8c, W8d and phase 10.
 
-**Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
+**Scope of Sea v1.** LANGUAGE.md §1.2: what the seven acceptance workloads (W1–W5, W7 and W8, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
 LANGUAGE.md §1.3.
 
@@ -607,11 +609,12 @@ elemental function, view, COW, prelude, intrinsic, handle type, port).
 3. **Free, tiny, portable.** Standalone native binaries, no giant runtime; targets
    `arm64-macos` and `x86_64-linux`, mirroring Baysick.
 
-### 1.2 Measured by the six workloads
+### 1.2 Measured by the seven workloads
 
-Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc` and `w7_drivetrain`
-(the user added W7, an off-road buggy drivetrain study, to the acceptance set on 2026-10-29;
-Decision 114), a Sea port (§6.3):
+Sea v1 is done when, for each of `w1_shaft_design` … `w5_tolerance_mc`, `w7_drivetrain` and
+`w8_ev_can` (the user added W7, an off-road buggy drivetrain study, to the acceptance set on
+2026-10-29, Decision 114, and W8, the EV CAN log workload of §2.16, on 2026-11-04, Decision 157),
+a Sea port (§6.3):
 
 1. **reproduces the numbers**: its JSON export passes `compare.py`'s rules (`RULES` in
    `sea/workloads/reference_py/compare.py`) against the MATLAB reference
@@ -623,7 +626,7 @@ Decision 114), a Sea port (§6.3):
 4. **writes its figures** as SVG files (LANGUAGE.md §12) when asked to.
 
 **Versions** (Decision 79): every Sea version 0.y.z is an alpha; 1.0.0 is the general-availability
-version and means v1 is done by the definition above (all six workloads, phase 10 of §8). No git
+version and means v1 is done by the definition above (all seven workloads, phase 10 of §8). No git
 tag or release procedure is required, so the driver's `sea 0.1.0` (§2.2) already denotes an alpha.
 
 **The MATLAB baseline.** `reference/baseline_timings_matlab.json` (Decision 7, sea commit
@@ -665,6 +668,16 @@ wrote `reference/w7_drivetrain.json` and `.txt`:
 Its bests (total 8.625 s, compute 8.602 s) are W7's pass criterion: wherever "faster than MATLAB"
 (below) and §6.5 name the baseline's best, W7's is this file's. No single-threaded W7 file exists
 (the single-threaded table is reported, not compared).
+
+**W8 joins the set (decided 2026-11-04, Decision 157; its specification, §2.16, agreed the same
+day).** The user decided that the EV CAN workload `w8_ev_can` (an ESP32 controller sketch
+simulated on the Mac, its committed CAN log, `sea/workloads/w8_ev_can.m` and the port
+`ports/w8_ev_can.sea`; §2.16) joins the acceptance set as W7 did, with its own MATLAB timing file
+`reference/baseline_timings_matlab_w8_ev_can.json` written by `run_all(false, 5, 'default',
+{'w8_ev_can'})` in sub-phase W8c; the committed W1–W5 baseline stays untouched. W8's bests in that
+file are its pass criterion wherever this section and §6.5 name the baseline's best, as W7's are.
+With the agreement the set became W1–W5, W7 and W8 and this section's "six workloads" seven
+(§2.16.15, done 2026-11-04); W8's timing table is added here when the user has run it (W8c).
 
 The comparison is valid only on the machine the files name (the user's M2 Pro); §6.5 requires
 the Sea measurement to name its machine.
@@ -9520,6 +9533,1202 @@ sub-phase, as 9b–9d did:
   `include/rt.inc` (entries 83–87, `SEA_ENT_COUNT`, the `SEA_FP_CONV` comment),
   `include/passes.txt` (`enum conv`); `include/limits.inc` unchanged; no capacity line changes.
 
+### 2.16 W8: the EV CAN workload (sub-phase W8a)
+
+**Status: agreed 2026-11-04** (drafted that day, revised after one independent review, and agreed
+by the user with Decisions 158–160 each as option (a)). This section is the specification
+of the acceptance workload W8 `w8_ev_can`, written as sub-phase W8a in the way La specified phase L
+(§2.15). W8 is the workload phase L was built for: an original ESP32 Arduino sketch controls a
+dual-motor electric car over CAN; on the Mac the same sketch, unmodified, runs against a small
+Arduino/ESP32 mock and a deterministic model of the two motor controllers and the vehicle, and the
+mock writes every bus frame to a `candump -L` log; a Sea port reads that log at run time, decodes
+it with §2.15's text library, analyses it and plots it, and is accepted against a MATLAB script
+that does the same. The user decided the seven design questions on 2026-11-04, each as option (a):
+they are **Decisions 151–157** (§2.16.13, mirrored in §9 as "Decisions of W8"), Decision 157 being
+W8's place in the acceptance set (§1.2). The questions this text left to the user are **Decisions
+158–160** (§2.16.13), decided by the user on 2026-11-04 with the agreement, each as option (a); the
+readings taken because one answer is clearly
+right are the lead decisions **L-nf – L-ny** (§2.16.14, mirrored in §9 as "Lead decisions of W8").
+No code, test or contract file changes with W8a; the document sections it changed, with the draft
+and with the agreement, and those that change with the later sub-phases are listed in §2.16.15. The design is original (the workloads' originality rule,
+`sea/workloads/README.md`): the car, the message set, the control law, the model and every number
+below are invented for this benchmark, and nothing is derived from any outside text or code.
+
+#### 2.16.1 Scope
+
+**What exists today** (sea commit 1190b4c, phase L complete):
+
+* *The text library* (§2.15, LANGUAGE.md §10.9, §10.10, §10.14, §11.1): `read_lines`, `split`,
+  `substr`, `parse_i64` (base 2–36), `parse_f64`, `bitand bitor bitxor bitnot shl shr sar`, and
+  `%x`/`%X` with C99's flags. §2.15.3's worked example decodes a `candump -L` log with them and runs
+  as the program test `lib_candump`; it fixes the remote-frame form W8's simulator writes,
+  `<id>#R`.
+* *Acceptance* (§6.3): `tests/accept.sh` builds each `ports/NAME.sea`, runs it once with
+  `--export-reference --figures` in a fresh directory `T/run` that must then hold exactly the
+  executable, `NAME.json`, `output/` and `output/NAME.svg`, and judges the JSON with `compare.py
+  --candidate`, the report with `compare_report.py` and the token map `ports/NAME.tokens`, and the
+  figure with `plot_struct.py` and `ports/NAME.struct`. A port has no input file today: the run
+  directory rule leaves no room for one. On the Linux host each port is a `ports` cross case
+  (§6.6.1) whose run directory is made by `cross_run.sh`'s `newwork`, which already copies a case's
+  `NAME.files/` fixtures and lets `check_files` accept them unchanged.
+* *MATLAB*: `run_all.m` runs a named set of workloads, writes `reference/<name>.json` and `.txt`
+  and, for a set other than the default, the timing file `baseline_timings_matlab_<names>.json`
+  (W7's precedent, Decision 114). Only the user runs MATLAB.
+* *The user's ESP32 setup*: `arduino-cli` with the core `esp32:esp32` 3.3.7 under
+  `~/Library/Arduino15`, the board `esp32:esp32:esp32` (the flash script
+  `/Users/jason/Code/eng1/flash` uses the FQBN `esp32:esp32:esp32:UploadSpeed=115200`, 115 200
+  baud, and resolves a sketch given as a folder path `D` whose `D/<basename D>.ino` exists). The
+  core ships both the polled TWAI driver `driver/twai.h` (with its types in `hal/twai_types.h` and
+  `hal/twai_types_deprecated.h`) and the newer callback driver `esp_twai.h`/`esp_twai_onchip.h`;
+  W8 uses the first (L-nh).
+* *No C++ in the repositories*: the compiler and runtimes contain no C (Baysick's and Sea's rule);
+  C appears only in test harnesses (`tests/math/`, `tests/la/`, Baysick's `tests/kern/`, `bench/`)
+  compiled with `xcrun cc`.
+
+**What W8 adds** (sub-phases W8b–W8d, §2.16.12):
+
+* **The sketch** `sea/workloads/w8_ev_can/w8_ev_can/w8_ev_can.ino` with the header `w8_can_msgs.h`
+  beside it (§2.16.4): the vehicle control unit (VCU) of a rear-wheel-drive car with one motor per
+  rear wheel; it reads two pedal tracks and a steering angle by ADC, computes a torque request and
+  a yaw-based left/right split, sends torque commands over TWAI, and receives feedback from the two
+  motor controllers and a yaw-rate sensor. It compiles with `arduino-cli` for the user's board and,
+  unmodified, for the host.
+* **The host simulator** `w8sim` (§2.16.5, §2.16.6): the mock of the Arduino and TWAI API, a
+  bit-timed CAN bus with arbitration, the two motor controllers (MCU), the yaw-rate sensor (IMU),
+  the vehicle, the scripted pedal and steering traces and the deliberate faults; C++20 built with
+  `xcrun c++`, integer arithmetic only.
+* **The committed log** `sea/workloads/w8_ev_can/w8_ev_can.log` (120 s, 85 621 frames, 3 607 634
+  bytes, §2.16.7) and the targets `make w8-sim`, `make w8-log` (rebuild and byte-compare),
+  `make w8-log-update` and `make w8-sketch` (the `arduino-cli` compile check). `make test` and
+  `make cross` never need a C++ compiler (Decision 153).
+* **The MATLAB reference** `sea/workloads/w8_ev_can.m` (§2.16.8), run once by the user.
+* **The Sea port** `sea/ports/w8_ev_can.sea` with `w8_ev_can.tokens` and `w8_ev_can.struct`
+  (§2.16.9), and the port fixtures of acceptance (Decision 158).
+
+**Not in W8**: a change to the language, the compiler, the runtimes or a contract file (the
+feature-gap audit, §2.16.10, finds none needed); extended (29-bit) identifiers, CAN FD, error
+frames and bus-off (the simulated bus has no bit errors); a battery, thermal or tyre-slip model;
+regenerative braking beyond a fixed coast torque; a hardware log in acceptance (Decision 154);
+flashing the board (the user's); speed (phase 10, which measures W8 with the others).
+
+**Contract changes**: none. No `include/*.inc`, `passes.txt`, error code, runtime entry or limit
+changes. The test-infrastructure changes are listed with their sub-phases (§2.16.12): the port
+fixture in `tests/accept.sh` and `tests/cross_pack.sh` (Decision 158), W8's entry in
+`compare.py`'s `RULES`, `run_all.m`'s workload lists, `.gitattributes`, and the `Makefile` targets.
+
+#### 2.16.2 Parts, files and the bus
+
+**Nodes.** Four nodes share one classic CAN bus at 500 kbit/s (bit time 2 µs), all with 11-bit
+identifiers:
+
+| Node | Where it lives | Transmits | Receives |
+|------|----------------|-----------|----------|
+| VCU (the sketch) | the ESP32, or the host build of the sketch | `0x101 0x102 0x120 0x121 0x710`, remote frames `0x381#R 0x382#R` | `0x0A0 0x181 0x182 0x381 0x382` |
+| MCU L (left rear motor controller) | the model | `0x181`, the reply `0x381` | `0x101`, the remote frame `0x381` |
+| MCU R (right rear motor controller) | the model | `0x182`, the reply `0x382` | `0x102`, the remote frame `0x382` |
+| IMU (yaw-rate sensor) | the model | `0x0A0` | nothing |
+
+**Files** (all under `sea/workloads/w8_ev_can/`, outside the compiler and the runtimes, so the rule
+"no C in the compiler or runtimes" holds; Decision 155):
+
+| Path | Contents | Owner |
+|------|----------|-------|
+| `w8_ev_can/w8_ev_can.ino` | the sketch (§2.16.4); the folder name equals the sketch name, as `arduino-cli` and the flash script require | W8b WP-SKETCH |
+| `w8_ev_can/w8_can_msgs.h` | the message set of §2.16.3 as C++ constants and inline pack/unpack helpers, included by the sketch and by the model (L-np) | W8b WP-SKETCH |
+| `host/include/Arduino.h`, `host/include/driver/twai.h` | the mock's headers (§2.16.5) | W8b WP-MOCK |
+| `host/mock_core.cpp`, `host/mock_twai.cpp`, `host/sim.h`, `host/main.cpp`, `host/sketch.cpp` | the clock, scheduler, GPIO/ADC and Serial; the TWAI driver and the bus; the shared declarations; the command line and the event loop; the translation unit that includes `../w8_ev_can/w8_ev_can.ino` | W8b WP-MOCK |
+| `host/model.cpp`, `host/model.h` | the MCUs, the IMU, the vehicle, the traces, the faults and the generators (§2.16.6) | W8b WP-MODEL |
+| `w8_ev_can.log` | the committed bus log (§2.16.7) | W8b integration |
+| `serial.txt`, `bench_serial.txt` | the sketch's Serial output in the simulated car run and in a 5 s simulated bench run (§2.16.7) | W8b integration |
+
+The host files are outside the sketch folder, because `arduino-cli` compiles every `.cpp` and `.h`
+of a sketch folder (L-nv). The user flashes with `./flash
+/Users/jason/Code/baysick/sea/workloads/w8_ev_can/w8_ev_can` (the script's folder-path form).
+
+#### 2.16.3 The CAN message set
+
+All frames are classic data or remote frames with 11-bit identifiers. Byte k is the k-th data byte
+on the wire (byte 0 first). **Intel** (little-endian) signals have their least significant byte at
+the lower byte number; **Motorola** (big-endian) signals their most significant byte there. A
+bit-field inside a byte counts bit 0 as the least significant bit. Signed signals are two's
+complement of their stated width. Reserved bits are 0. The physical value is raw × scale.
+
+**Messages** (sender's period and phase from boot, t = 0; §2.16.5 defines the clock):
+
+| ID | Name | Sender | Period | First at | DLC | Byte order | Checksum | Counter |
+|----|------|--------|-------:|---------:|----:|------------|----------|---------|
+| `0x0A0` | `IMU_YAW` | IMU | 10 ms | 7 ms | 3 | Intel | none | 8 bits, byte 2 |
+| `0x101` | `TQ_CMD_L` | VCU | 10 ms | 10 ms | 4 | Intel | byte 3 | 4 bits, byte 2 bits 0–3 |
+| `0x102` | `TQ_CMD_R` | VCU | 10 ms | 10 ms | 4 | Intel | byte 3 | 4 bits, byte 2 bits 0–3 |
+| `0x120` | `VCU_DRIVER` | VCU | 10 ms | 10 ms | 8 | Intel | none | 4 bits, bits 12–15 |
+| `0x121` | `VCU_YAW` | VCU | 10 ms | 10 ms | 8 | Intel | byte 7 | 4 bits, byte 6 bits 0–3 |
+| `0x181` | `MCU_FB_L` | MCU L | 10 ms | 2 ms | 8 | Motorola | byte 7 | 4 bits, byte 6 bits 0–3 |
+| `0x182` | `MCU_FB_R` | MCU R | 10 ms | 2.5 ms | 8 | Motorola | byte 7 | 4 bits, byte 6 bits 0–3 |
+| `0x381` | `MCU_INFO_L` | VCU (remote), MCU L (reply) | 1 s | 50 ms | 6 | Intel | none | none |
+| `0x382` | `MCU_INFO_R` | VCU (remote), MCU R (reply) | 1 s | 50 ms | 6 | Intel | none | none |
+| `0x710` | `VCU_HB` | VCU | 100 ms | 100 ms | 2 | — | none | 8 bits, byte 1 |
+
+The four VCU frames of a control step (`0x101 0x102 0x120 0x121`) carry the same 4-bit counter,
+which counts control steps modulo 16 (step 1 sends 1). The heartbeat counter counts heartbeats
+modulo 256 (the first is 1), the IMU counter IMU frames modulo 256 (the first, at 7 ms, is 0), and
+each MCU counter its feedback frames modulo 16 (the first, at 2 ms or 2.5 ms, is 0); a dropped
+frame (§2.16.6) still consumes its counter value.
+
+**Signals:**
+
+| Message | Signal | Bits | Width | Signed | Scale | Unit | Range of raw values |
+|---------|--------|------|------:|:------:|------:|------|---------------------|
+| `IMU_YAW` | `YawRate` | bytes 0–1 | 16 | yes | 0.001 | rad/s | −32 768 … 32 767 |
+| | `Counter` | byte 2 | 8 | no | 1 | — | 0 … 255 |
+| `TQ_CMD_L/R` | `TorqueCmd` | bytes 0–1 | 16 | yes | 0.1 | N·m (motor shaft) | −1 000 … 1 000 |
+| | `Counter` | byte 2 bits 0–3 | 4 | no | 1 | — | 0 … 15 |
+| | `Enable` | byte 2 bit 4 | 1 | no | 1 | — | 0, 1 |
+| | `State` | byte 2 bits 5–7 | 3 | no | 1 | — | 0 … 3 (below) |
+| | `Checksum` | byte 3 | 8 | no | — | — | below |
+| `VCU_DRIVER` | `PedalPos` | bits 0–9 of the 16-bit Intel word in bytes 0–1 | 10 | no | 0.001 | — (fraction of travel) | 0 … 1 000 |
+| | `State` | bits 10–11 of that word | 2 | no | 1 | — | 0 … 3 |
+| | `Counter` | bits 12–15 of that word | 4 | no | 1 | — | 0 … 15 |
+| | `TorqueReq` | bytes 2–3 | 16 | yes | 0.1 | N·m (sum of both motors) | −200 … 2 000 |
+| | `SteerAngle` | bytes 4–5 | 16 | yes | 0.001 | rad (road wheel, positive left) | −350 … 350 |
+| | `VehSpeed` | bytes 6–7 | 16 | yes | 0.01 | m/s | −32 768 … 32 767 |
+| `VCU_YAW` | `YawRateDes` | bytes 0–1 | 16 | yes | 0.001 | rad/s | −32 768 … 32 767 |
+| | `YawRateMeas` | bytes 2–3 | 16 | yes | 0.001 | rad/s | the IMU value the step used |
+| | `TorqueSplit` | bytes 4–5 | 16 | yes | 0.1 | N·m (right minus left target) | −400 … 400 |
+| | `Counter` | byte 6 bits 0–3 | 4 | no | 1 | — | 0 … 15 |
+| | `FbTimeoutL`, `FbTimeoutR` | byte 6 bits 4, 5 | 1 each | no | 1 | — | 0, 1 |
+| | `AppsImplausible` | byte 6 bit 6 | 1 | no | 1 | — | 0, 1 |
+| | `YawLimit` | byte 6 bit 7 | 1 | no | 1 | — | 0, 1 |
+| | `Checksum` | byte 7 | 8 | no | — | — | below |
+| `MCU_FB_L/R` | `TorqueAct` | bytes 0–1 (byte 0 the high byte) | 16 | yes | 0.1 | N·m (motor shaft) | −32 768 … 32 767 |
+| | `Speed` | bytes 2–3 (byte 2 high) | 16 | yes | 1 | rev/min (motor) | −32 768 … 32 767 |
+| | `DcCurrent` | byte 4 (bits 11–4) and byte 5 bits 4–7 (bits 3–0) | 12 | yes | 0.5 | A | −1 024 … 1 023 |
+| | `Status` | byte 5 bits 0–3: bit 0 `READY`, bit 1 `DERATE`, bit 2 `CMD_TIMEOUT`, bit 3 reserved | 4 | no | — | — | — |
+| | `Counter` | byte 6 bits 0–3 (bits 4–7 reserved) | 4 | no | 1 | — | 0 … 15 |
+| | `Checksum` | byte 7 | 8 | no | — | — | below |
+| `MCU_INFO_L/R` | `Firmware` | bytes 0–1 | 16 | no | — | major in the high byte, minor in the low | L `0x0213` (2.19), R `0x0212` (2.18) |
+| | `Serial` | bytes 2–5 | 32 | no | — | — | L `0x4C0A1001`, R `0x4C0A1002` |
+| `VCU_HB` | `State` | byte 0 | 8 | no | 1 | — | 0 … 3 |
+| | `Counter` | byte 1 | 8 | no | 1 | — | 0 … 255 |
+
+The **VCU states** are 0 `INIT`, 1 `RUN`, 2 `FAULT_FB`, 3 `FAULT_APPS` (§2.16.4).
+
+**Checksum** (the frames marked in the table): over a frame with identifier I and data bytes b0 …
+b(D−1), D its DLC, the checksum byte b(D−1) is
+
+```
+S  = (I & 0xFF) + (I >> 8) + b0 + b1 + ... + b(D-2)
+CS = (S & 0xFF) XOR 0xFF
+```
+
+so a frame is valid when its last byte equals CS of the bytes before it. In Sea:
+`bitxor(bitand(s, 0xFF), 0xFF)`.
+
+**`w8_can_msgs.h`** (L-np) holds this table in code: one constant per identifier
+(`W8_ID_IMU_YAW` 0x0A0, `W8_ID_TQ_CMD_L` 0x101, `W8_ID_TQ_CMD_R` 0x102, `W8_ID_VCU_DRIVER` 0x120,
+`W8_ID_VCU_YAW` 0x121, `W8_ID_MCU_FB_L` 0x181, `W8_ID_MCU_FB_R` 0x182, `W8_ID_MCU_INFO_L` 0x381,
+`W8_ID_MCU_INFO_R` 0x382, `W8_ID_VCU_HB` 0x710) and one per DLC (`W8_DLC_IMU_YAW` 3, …,
+`W8_DLC_MCU_INFO` 6, the remote frames' code included), the state numbers (`W8_ST_INIT` 0 …
+`W8_ST_FAULT_APPS` 3), the status bits (`W8_FB_READY` 1, `W8_FB_DERATE` 2, `W8_FB_CMD_TIMEOUT` 4),
+and these `static inline` functions, which are its whole API:
+
+| Function | Meaning |
+|----------|---------|
+| `int32_t w8_tdiv32(int32_t a, int32_t b)`, `int64_t w8_tdiv64(int64_t a, int64_t b)` | a / b truncated toward zero, b > 0 |
+| `int32_t w8_clamp32(int32_t x, int32_t lo, int32_t hi)`, `int64_t w8_clamp64(int64_t x, int64_t lo, int64_t hi)` | x limited to lo … hi |
+| `uint8_t w8_checksum(uint32_t id, const uint8_t *data, uint8_t dlc)` | CS of the formula above over `data[0 … dlc−2]` |
+| `void w8_put_le16(uint8_t *p, int32_t v)`, `int32_t w8_get_le16s(const uint8_t *p)` | an Intel 16-bit field: the low 16 bits of v written as p[0] (low), p[1]; read back sign-extended |
+| `void w8_put_be16(uint8_t *p, int32_t v)`, `int32_t w8_get_be16s(const uint8_t *p)` | a Motorola 16-bit field: p[0] high, p[1] low; read back sign-extended |
+| `void w8_put_cur_status(uint8_t *p, int32_t cur, uint32_t status)`, `int32_t w8_get_cur(const uint8_t *p)`, `uint32_t w8_get_status(const uint8_t *p)` | `DcCurrent` and `Status` in p[0] (byte 4) and p[1] (byte 5): p[0] = bits 11–4 of cur, p[1] = (bits 3–0 of cur) << 4 \| status; the current read back sign-extended from 12 bits |
+| `uint32_t w8_get_u16le(const uint8_t *p)` | an unsigned Intel 16-bit word (the `VCU_DRIVER` word and the firmware) |
+
+The sketch and the model use only these to build and read frames; nothing else in the header has
+behaviour.
+
+**Remote frames.** At step k with k mod 100 = 5 (t = 50 ms, 1.05 s, …, 119.05 s: 120 times) the
+VCU sends the remote frames `0x381` and `0x382`, each with the DLC code 6 on the wire; the
+addressed MCU queues its data reply (DLC 6) 600 µs after the end of the remote frame. The log
+writes a remote frame as `<id>#R`, without its DLC code (§2.15.3); the analysis takes the code from
+this table (6 for `0x381` and `0x382`, 0 for any other identifier).
+
+**Worked examples.** `101#7A003350`: `TorqueCmd` = 0x007A = 122 → 12.2 N·m; byte 2 = 0x33: counter
+3, enable 1, state 1 (`RUN`); S = 0x01 + 0x01 + 0x7A + 0x00 + 0x33 = 175 = 0xAF, CS = 0xAF XOR 0xFF
+= 0x50 ✓. `182#FF6710E1FDB3096C` (bytes chosen to show every field and both sign extensions; it
+is not a frame of the committed log, whose first line of `0x182` frames §2.16.7 shows): `TorqueAct` raw 0xFF67 = 65 383, sign-extended
+`sar(shl(65383, 48), 48)` = −153 → −15.3 N·m; `Speed` 0x10E1 = 4 321 rev/min; `DcCurrent` raw
+`bitor(shl(0xFD, 4), shr(0xB3, 4))` = 0xFDB = 4 059, `sar(shl(4059, 52), 52)` = −37 → −18.5 A;
+`Status` 0xB3 & 0x0F = 3 (`READY`, `DERATE`); counter 9; S = 0x82 + 0x01 + 0xFF + 0x67 + 0x10 + 0xE1
++ 0xFD + 0xB3 + 0x09 = 1 171, 1 171 & 0xFF = 0x93, CS = 0x6C ✓. (Both checked with a throwaway
+script, L-nq.)
+
+**Frame length on the wire** (the simulator's bus timing, §2.16.5, and the analysis's bus load,
+§2.16.8, use this one rule; L-ng). The unstuffed bit sequence of a frame with identifier I, remote
+bit R (0 data, 1 remote), DLC code d and data bytes b0 … (none for a remote frame) is, in order,
+most significant bit first in every field: SOF (0), the 11 identifier bits, R, IDE (0), r0 (0), the
+4 bits of d, the data bytes (8 bits each, byte 0 first), and the 15-bit CRC. The CRC is computed
+over the bits from SOF to the last data bit with the register c = 0 and, for each bit x,
+
+```
+n = x XOR ((c >> 14) & 1);   c = (c << 1) & 0x7FFF;   if n = 1 then c = c XOR 0x4599
+```
+
+and its 15 bits are c's bits 14 … 0. So the sequence has n0 = 34 + 8·D bits (D the number of data
+bytes, 0 for a remote frame). **Stuff bits**: walking the n0 bits in order with a run counter (the
+first bit starts a run of 1; a bit equal to the previous one, a stuff bit counting as previous,
+lengthens the run, another starts a new run of 1), whenever a run reaches 5 one stuff bit of the
+opposite value is counted and starts a new run of 1 (a stuff bit after the last CRC bit counts). With
+s stuff bits the frame occupies **L = n0 + s + 10** bit times on the bus (the CRC delimiter, the
+ACK slot and delimiter, and 7 EOF bits), and the bus is idle for the 3-bit intermission after it:
+**B = L + 3** bit times are charged to the frame. Examples: `101#7A003350` has n0 = 66, CRC 0x3164,
+s = 4, L = 80 (160 µs), B = 83; `182#FF6710E1FDB3096C` n0 = 98, CRC 0x5B01, s = 4, L = 112, B = 115;
+`381#R` (d = 6) n0 = 34, CRC 0x13A9, s = 1, L = 45, B = 48; `182#0000000000010972` (§2.16.7's
+log line) n0 = 98, CRC 0x5631, s = 11, L = 119, B = 122.
+
+#### 2.16.4 The controller sketch
+
+Decision 151 (a): an agent writes an original sketch in W8b; the user reviews it (and may flash
+it) before W8c. It must follow this section exactly, because the analysis of §2.16.8 recomputes
+the control law from the logged frames and counts every disagreement.
+
+**Hardware.** ESP32 (`esp32:esp32:esp32`); TWAI TX on GPIO 21, RX on GPIO 22, through a CAN
+transceiver in the car; pedal track A on GPIO 36, pedal track B on GPIO 39, the steering-angle
+sensor on GPIO 34 (all ADC1, input-only pins, read with 12-bit resolution, 0 … 4095); the mode
+strap on GPIO 25 (`INPUT_PULLUP`): **LOW** (strapped to ground in the car) selects the **car mode**,
+**HIGH** (open, as on a bare board) the **bench mode** (L-ni).
+
+**Portability rules** (L-nw), so that one source compiles for the ESP32 (32-bit `long`) and the Mac
+(64-bit `long`): only fixed-width integer types (`int32_t`, `uint32_t`, `int64_t`, …), `bool` and
+`char`; no `long`, `float` or `double` anywhere in the sketch or the header; `micros()` and
+`millis()` results converted to `uint32_t` at once and compared by `(int32_t)(a - b)`; every
+function defined or declared before its first use (the host build does not run Arduino's
+prototype generation); `twai_message_t` set by zero-initialization (`twai_message_t m = {};`) and
+field assignment, never by designated initializers (its union holds an anonymous struct); no
+`delay` in `loop()`; integer division written with `/` on non-negative operands or through the
+header's `w8_tdiv32`/`w8_tdiv64` (C++'s truncation toward zero, b > 0, stated so the analysis can
+mirror it; this text writes both as tdiv); clamping through the header's non-template
+`w8_clamp32`/`w8_clamp64`, never a template such as `std::clamp` or `std::min` called with mixed
+`int32_t` and `int` arguments (on the ESP32 `int32_t` is `long`, so such a call does not deduce one
+type); every `printf`-style format of a fixed-width value written with `<inttypes.h>`'s macros
+(`"%" PRIu32`, `"%08" PRIX32`, …). Arithmetic stays within `int32_t` except where a product is
+marked 64-bit below. **Serial output**: every line ends in LF only, written with `Serial.print` of
+a buffer that ends in `\n`; `Serial.println` is never used.
+
+**`setup()`**: `Serial.begin(921600)` (the bench log is about 16 kB/s, more than 115 200 baud
+carries, so the monitor runs as `./flash monitor --baud 921600`); `pinMode(25, INPUT_PULLUP)`; bench = `digitalRead(25) ==
+HIGH`; `analogReadResolution(12)`; the TWAI driver installed with
+`TWAI_GENERAL_CONFIG_DEFAULT(GPIO_NUM_21, GPIO_NUM_22, mode)` where mode is `TWAI_MODE_NORMAL` in
+the car and `TWAI_MODE_NO_ACK` on the bench, then `tx_queue_len = 16`, `rx_queue_len = 32`,
+`TWAI_TIMING_CONFIG_500KBITS()`, `TWAI_FILTER_CONFIG_ACCEPT_ALL()`, and `twai_start()`; a failed
+install or start prints `# twai start failed` and leaves `loop()` doing nothing. Then it prints the
+banner `# w8_ev_can 1.0 car` or `# w8_ev_can 1.0 bench`, and sets `nextStep = micros() + 10000`
+and the step number k = 0.
+
+**`loop()`**: `now = (uint32_t)micros()`; every frame waiting in the receive queue is taken with
+`twai_receive(&m, 0)` and handled (below); then, if `(int32_t)(now - nextStep) >= 0`, k increases
+by 1, the control step runs with `now`, and `nextStep += 10000`. Received frames are therefore
+always handled before the step that follows them.
+
+**Handling a received frame** (car mode): a `0x181`/`0x182` data frame with DLC 8 and a valid
+checksum stores `TorqueAct`, `Speed` and the time `now` as that motor's last valid feedback; one
+with a wrong checksum or DLC is ignored. A `0x0A0` data frame with DLC 3 stores `YawRate` as
+r_meas. The first `0x381`/`0x382` data reply of each motor prints `# MCU L fw 2.19 serial
+4C0A1001` (`R` for `0x382`; the firmware as major.minor with two minor digits, the serial with
+`"%08" PRIX32`) and later replies print nothing. Other
+frames are ignored. **Bench mode**: every received frame (with self-reception these are the VCU's
+own frames, §2.16.7) is printed as one log line (§2.16.7) and otherwise ignored.
+
+**The control step** (every 10 ms, step k at t = 10 000·k µs in the simulator). Inputs:
+rawA = `analogRead(36)`, rawB = `analogRead(39)`, rawS = `analogRead(34)`.
+
+1. *Pedal*: pA = clamp(tdiv((rawA − 410)·1000, 3276), 0, 1000); pB = clamp(tdiv((rawB −
+   205)·1000, 1638), 0, 1000); `implausible` = |pA − pB| > 100; `appsBad` = min(`appsBad` + 1,
+   10) if implausible, else 0 (consecutive implausible steps, updated in every state, saturating at
+   10; it starts at 0); p = tdiv(pA + pB, 2);
+   deadband: pd = 0 if p < 50, else tdiv((p − 50)·1000, 950) (0 … 1000).
+2. *Steering*: δ = tdiv((rawS − 2048)·350, 2048) [mrad, road wheel, positive left].
+3. *Feedback timeouts*: motor m is timed out when it has no valid feedback yet or
+   `(uint32_t)(now − lastFb[m]) > 50000` µs. Then, in every state, `okSteps` = 0 if either motor
+   is timed out, else min(`okSteps` + 1, 10) (consecutive steps without a timeout, this one
+   included, saturating at 10; it starts at 0).
+4. *Speed*: with nL, nR the last valid `Speed` values (0 before the first), v_mm = tdiv((nL +
+   nR)·1745, 1000) [mm/s] and v_cs = tdiv(v_mm, 10) [0.01 m/s]; v_cs is what `VehSpeed` carries and
+   what the law uses.
+5. *State machine* (evaluated after steps 1–4 and before the outputs, which use the new state;
+   only the rule of the current state is tested, so a step makes at most one transition):
+   * `INIT` → `RUN` when k ≥ 50, neither motor is timed out, `appsBad` = 0 and pd = 0.
+   * `RUN` → `FAULT_FB` when either motor is timed out; else `RUN` → `FAULT_APPS` when `appsBad`
+     = 10.
+   * `FAULT_FB` → `RUN` when `okSteps` = 10 and pd = 0.
+   * `FAULT_APPS` → `RUN` when `appsBad` = 0 and pd = 0.
+   A state change prints `# <s>.<us> state <NAME>` and LF (the time since boot from a 64-bit
+   microsecond count kept from `micros()`'s wraps, split into `uint32_t` seconds and microseconds
+   printed with `"%" PRIu32 ".%06" PRIu32`).
+6. *Torque request* T_req [0.1 N·m, both motors together]: in `RUN`, 2·pd if pd > 0, else −200
+   (coast regeneration, −20 N·m) if v_cs > 300, else 0; in every other state 0.
+7. *Yaw-rate demand* (neutral steer; every state): r_des = tdiv(v_cs·10·δ, 2400) [mrad/s; the
+   product 64-bit]; if v_cs > 100, r_lim = tdiv(800000, v_cs) (8 m/s² of lateral acceleration) and
+   r_des is clamped to ±r_lim, `YawLimit` = 1 when the clamp changed it, else 0.
+8. *Split* ΔT [0.1 N·m, right minus left]: in `RUN`, clamp(tdiv(200·r_des + 600·(r_des −
+   r_meas), 1000), −400, 400) (r_meas the last IMU value, 0 before the first); in every other
+   state 0. Positive ΔT gives the right wheel more torque, which yaws the car to the left
+   (positive yaw).
+9. *Wheel targets*: tR = clamp(tdiv(T_req + ΔT, 2), −1000, 1000), tL = clamp(tdiv(T_req − ΔT, 2),
+   −1000, 1000).
+10. *Rate limit*: cmdL = cmdL + clamp(tL − cmdL, −50, 50), the same for R (5 N·m per step, 500 N·m/s;
+    both start at 0).
+11. *Transmit* with `twai_transmit(&m, 0)`, in this order: `0x101` (cmdL, counter k mod 16,
+    `Enable` = 1 unless the state is `INIT`, `State`), `0x102` (cmdR, likewise), `0x120` (p, state,
+    counter, T_req, δ, v_cs), `0x121` (r_des, r_meas, ΔT, counter, the two timeout flags,
+    `implausible`, `YawLimit`); then, when k mod 10 = 0, `0x710` (state, heartbeat counter); then,
+    when k mod 100 = 5, the remote frames `0x381` and `0x382` (DLC code 6). A transmit that returns
+    anything but `ESP_OK` is counted in a `txFail` counter, which the sketch prints in no frame
+    (the queue of 16 never fills at 7 frames per step).
+    In bench mode every transmitted frame has `self = 1` (self-reception request).
+
+So everything the law reads (p, v_cs, δ, r_meas) and everything it writes (T_req, r_des, ΔT, the
+commands) is in the frames of one step, and steps 6–10 can be recomputed by hand from the log
+(§2.16.8, A6). Example: p = 450, v_cs = 1500 (15 m/s), δ = 120 mrad, r_meas = 410, state `RUN`,
+previous commands cmdL = 300, cmdR = 380: pd = tdiv(400 000, 950) = 421, T_req = 842; r_des =
+tdiv(1500·10·120, 2400) = 750, r_lim = tdiv(800000, 1500) = 533, so r_des = 533 and `YawLimit` = 1;
+ΔT = clamp(tdiv(200·533 + 600·123, 1000), ±400) = tdiv(180 400, 1000) = 180; tR = tdiv(1022, 2) =
+511, tL = tdiv(662, 2) = 331; cmdR = 380 + 50 = 430, cmdL = 300 + 31 = 331.
+
+#### 2.16.5 The host mock
+
+The host build compiles the sketch unmodified: `host/sketch.cpp` is the two lines `#include
+"Arduino.h"` and `#include "../w8_ev_can/w8_ev_can.ino"`, compiled with the mock's include
+directory first on the path. The mock provides **exactly** the following (L-nh); anything else the
+sketch used would be a compile error on the host, which is the intended check:
+
+| Header | Provided | Semantics in the simulator |
+|--------|----------|----------------------------|
+| `Arduino.h` | `<stdint.h> <stdbool.h> <stddef.h> <stdio.h> <stdlib.h> <string.h> <inttypes.h>` included; `LOW` 0, `HIGH` 1, `INPUT` 0x01, `INPUT_PULLUP` 0x05 (the core's values) | — |
+| | `unsigned long micros()`, `unsigned long millis()` | the simulated time t (µs, from 0 at boot) modulo 2³², and ⌊t/1000⌋ modulo 2³²; reading the clock does not advance it |
+| | `void delay(uint32_t)`, `void delayMicroseconds(uint32_t)` | advance t by ms·1000 or µs, processing every model and bus event on the way (`loop()` is not called meanwhile) |
+| | `void pinMode(uint8_t, uint8_t)`, `int digitalRead(uint8_t)` | `pinMode` is recorded and has no effect; `digitalRead(25)` is `LOW` (car) unless `w8sim --bench` (then `HIGH`); every other pin reads `LOW` |
+| | `uint16_t analogRead(uint8_t)`, `void analogReadResolution(uint8_t)` | pins 36, 39 and 34 return the values the model latched at its last 1 ms tick (§2.16.6), other pins 0; only 12 bits is accepted (any other value stops `w8sim` with status 2) |
+| | `Serial`: `void begin(unsigned long)`, `size_t print(const char *)` | the bytes appended to the Serial output file as they are (the sketch ends every line with its own LF and never calls `println`, §2.16.4, which the mock therefore does not declare) |
+| `driver/twai.h` | `esp_err_t` (`int`), `ESP_OK` 0, `ESP_FAIL` −1, `ESP_ERR_INVALID_ARG` 0x102, `ESP_ERR_INVALID_STATE` 0x103, `ESP_ERR_TIMEOUT` 0x107; `TickType_t` (`uint32_t`); `gpio_num_t` with `GPIO_NUM_21`, `GPIO_NUM_22` and `TWAI_IO_UNUSED`; `twai_mode_t`, `twai_message_t` (the union of the flag bit-fields `extd rtr ss self dlc_non_comp reserved` with `flags`, then `identifier`, `data_length_code`, `data[8]`), `TWAI_MSG_FLAG_*`, `twai_general_config_t`, `twai_timing_config_t`, `twai_filter_config_t`, `twai_clock_source_t`, the macros `TWAI_GENERAL_CONFIG_DEFAULT`, `TWAI_TIMING_CONFIG_500KBITS` (the plain-ESP32 values: `quanta_resolution_hz` 8 000 000, `tseg_1` 11, `tseg_2` 4, `sjw` 2) and `TWAI_FILTER_CONFIG_ACCEPT_ALL`, with the core 3.3.7 field order and types (read from `driver/twai.h`, `hal/twai_types.h` and `hal/twai_types_deprecated.h` of `esp32-libs/3.3.7`) | — |
+| | `esp_err_t twai_driver_install(const twai_general_config_t *, const twai_timing_config_t *, const twai_filter_config_t *)` | checks the bit rate quanta/(1 + tseg_1 + tseg_2) = 500 000 (else `ESP_ERR_INVALID_ARG`), records the mode and the queue lengths |
+| | `esp_err_t twai_start(void)` | starts the node (`ESP_ERR_INVALID_STATE` before an install) |
+| | `esp_err_t twai_transmit(const twai_message_t *, TickType_t)` | `ticks_to_wait` must be 0 (else `w8sim` stops with status 2); `ESP_ERR_INVALID_STATE` before `twai_start`, `ESP_ERR_INVALID_ARG` for a DLC above 8 or an extended identifier, `ESP_ERR_TIMEOUT` when the transmit queue holds `tx_queue_len` frames, else the frame is queued at time t and `ESP_OK`. Rejecting an extended identifier is a deliberate departure from the real driver, which sends it; it is harmless because the sketch never sends one, and it keeps the bus model to standard frames |
+| | `esp_err_t twai_receive(twai_message_t *, TickType_t)` | `ticks_to_wait` must be 0; the oldest frame of the receive queue and `ESP_OK`, or `ESP_ERR_TIMEOUT` when it is empty; a frame arriving at a full queue (`rx_queue_len`) is lost and counted |
+
+The real header's other functions (`twai_get_status_info`, the `_v2` forms, alerts, recovery) are
+not declared by the mock and not used by the sketch.
+
+**The event loop** (`host/main.cpp`; time t in integer µs; L-nj). Events are kept with their
+times and processed in increasing time order; the event times are the model's ticks (multiples of
+1 000), the model's frame times (§2.16.6), the bus's frame ends and idle instants (any µs), and the
+sketch's **loop times** t = 50·i (i ≥ 0; the **loop period** is 50 µs, so the sketch polls every
+50 µs). `setup()` runs first, at t = 0, before any event. At one time t the steps are, in this order:
+(1) the model's 1 ms tick, if t is a tick time; (2) the model's frame enqueues of time t (IMU, then
+MCU L's feedback, MCU R's feedback, then replies); (3) the bus: the frame ending at t (if any) is
+delivered and logged, and if the bus is idle at t the queue heads arbitrate (below); (4) the
+sketch's `loop()`, if t is a loop time and t < the run's end; (5) the bus arbitrates again if it is
+still idle, so a frame `loop()` queued at t on an idle bus starts at t. A frame that ends at time t
+is in the VCU's receive queue for the `loop()` at that t. The run's end is 120 000 000 µs (car) or
+5 000 000 µs (bench): events at exactly the end are processed (a frame ending then is logged), but
+`loop()` does not run at the end, and the simulation stops after it.
+
+**The bus** (L-ng). Each node has a FIFO transmit queue (the VCU's of `tx_queue_len` = 16 frames,
+each model node's of 8, which never fill). When the bus is idle at time t and at least one queue is
+non-empty, the frames at the heads of the queues arbitrate: the one with the smallest 12-bit value
+(identifier << 1) | R wins (a data frame beats a remote frame of the same identifier), starts at t
+and ends at t + 2·L µs (L of §2.16.3); the bus is idle again at t + 2·L + 6 (the intermission).
+Losers stay at their queue heads. A frame queued while the bus is idle starts at its queue time.
+At its end time the frame is delivered to every other node (the VCU's receive queue, or the model
+node it addresses), and in bench mode also to the VCU itself when it has `self = 1`, and it is
+written to the log (§2.16.7). Bit errors, error frames and retransmissions do not occur. In car
+mode every frame is acknowledged. In bench mode `TWAI_MODE_NO_ACK` needs no acknowledgement and the
+MCU and IMU nodes are silent (they neither transmit nor receive), while the rest of the model runs
+unchanged: it ticks, follows the traces, latches the ADC and draws `S_ADC` as in the car run (so
+`VCU_DRIVER` carries the scripted pedal and steering), and draws no other generator (no feedback
+or IMU frame is scheduled). The log holds exactly the frames whose end time is at most the run's
+end.
+
+**Command line**: `w8sim [--bench] [--seconds N] [--log FILE] --serial FILE`; the car run is
+`--seconds 120 --log FILE --serial FILE` (120 is the default), the bench run `--bench --seconds 5
+--serial FILE`. `--log` is required without `--bench` and optional with it (a bench bus log, if
+asked for, is written in the car log's format and compared with nothing). Exit status 0, or 2 with
+a message on standard error for a usage error, an unsupported call (above) or a file that cannot
+be written.
+
+#### 2.16.6 The motor and vehicle model
+
+Integer arithmetic only (L-nf): int64 state, `tdiv(a, b)` C++'s truncation toward zero (b > 0),
+`clamp(x, lo, hi)`, no floating-point type anywhere. The model runs a **tick** every 1 000 µs at t =
+1 000·j (j ≥ 1), in this order: traces, ADC latch, MCU L, MCU R, vehicle, wheel speeds. Frames are
+queued at their own times (below) from the values of the last tick.
+
+**Parameters:**
+
+| Quantity | Value | In the equations |
+|----------|------:|------------------|
+| vehicle mass | 900 kg | 900 |
+| gear ratio motor : wheel | 9.0 | 9 |
+| wheel radius | 0.300 m | F [mN] = 30·T [mN·m] |
+| track | 1.500 m | half track 0.75 m |
+| wheelbase | 2.400 m | 2 400 000 µm |
+| rolling resistance | Crr·m·g = 0.012·900·9.81 = 105.948 N | 105 948 mN |
+| aerodynamic drag | ½ρC_dA = ½·1.2·0.60 = 0.36 N·s²/m² | 36·v²/10¹¹ mN, v in µm/s |
+| characteristic speed (understeer) | 25 m/s | 625 m²/s² |
+| yaw relaxation time | 0.150 s | 150 ticks |
+| yaw inertia | 1 200 kg·m² | ΔF/1 600 (below) |
+| motor peak torque | 100 N·m | 1 000 (0.1 N·m) |
+| motor power limit | 30 kW | T_pow = tdiv(2 864 789, max(\|n\|, 1)) (0.1 N·m) |
+| motor speed limit | torque fades from 8 000 to 0 at 9 000 rev/min | below |
+| motor torque lag | 8 ms first order | ÷8 per tick |
+| DC link voltage | 350 V | in K_m, K_g |
+| motor efficiency (both directions) | 0.92 | K_m = 1 537 437, K_g = 1 816 442 |
+
+**Traces** (piecewise linear in t_ms = t/1000 between breakpoints (t_i, y_i), y = y_i +
+tdiv((y_(i+1) − y_i)·(t_ms − t_i), t_(i+1) − t_i) for t_i ≤ t_ms < t_(i+1), the last value after
+the last breakpoint; pedal travel q in ‰, road-wheel steering angle δ_true in mrad, positive left):
+
+* q: (0, 0) (1 000, 0) (1 500, 600) (6 000, 600) (7 000, 300) (12 000, 300) (12 500, 0) (16 000, 0)
+  (17 000, 450) (30 000, 450) (31 000, 0) (33 000, 0) (34 000, 1 000) (42 000, 1 000) (43 000, 0)
+  (48 000, 0) (49 000, 400) (74 000, 400) (74 500, 0) (78 000, 0) (79 000, 700) (92 000, 700)
+  (93 000, 500) (97 000, 500) (97 500, 0) (100 000, 0) (101 000, 350) (115 000, 350) (116 000, 0)
+  (120 000, 0).
+* δ_true: (0, 0) (18 000, 0) (19 000, 120) (27 000, 120) (28 000, 0) (50 000, 0) (51 000, 80)
+  (53 000, −80) (55 000, 80) (57 000, −80) (59 000, 80) (61 000, −80) (63 000, 80) (65 000, −80)
+  (67 000, 80) (69 000, −80) (70 000, 0) (82 000, 0) (83 000, −150) (89 000, −150) (90 000, 0)
+  (106 000, 0) (107 000, 60) (113 000, 60) (114 000, 0) (120 000, 0).
+
+So the run is a launch, a part-throttle cruise and coast, a long left curve, a full-throttle run
+into the power and speed limits, a ten-second slalom, a right curve, and a gentle left curve.
+
+**Generators**: four independent 32-bit xorshift generators (x ← x XOR (x << 13), x ← x XOR (x >>
+17), x ← x XOR (x << 5), all on `uint32_t`, each step returning the new x), seeded `S_ADC` =
+0x1D872B41, `S_MOT` = 0x6C8E9CF5, `S_IMU` = 0x3A1F4B27, `S_BUS` = 0x5BD1E995. `uniform(G, k)` =
+(next(G) mod (2k + 1)) − k, an integer in −k … k. Each generator is drawn only where named below, in
+time order, so a change to one source of noise moves no other. The draws, exactly:
+
+| Generator | Draws | When |
+|---|---|---|
+| `S_ADC` | 3 per tick (A, B, S) | in the tick, in the car run and the bench run alike |
+| `S_MOT` | 1 per scheduled feedback frame | at the frame's scheduled time; a dropped or blackout frame draws and discards the value, a late frame keeps the value of its scheduled time |
+| `S_IMU` | 1 per IMU frame | at the frame's time |
+| `S_BUS` | 1 per scheduled feedback frame, plus 1 for a late one | at the frame's scheduled time, including blackout frames (the draws are made and discarded) |
+
+At one time the order is: the tick's `S_ADC` draws (step (1) of §2.16.5), then the frame enqueues
+(step (2)): the IMU frame's `S_IMU` draw, MCU L's feedback frame (its `S_MOT` draw, then its `S_BUS`
+draw or draws), MCU R's feedback frame (likewise). In the bench run only `S_ADC` is drawn (§2.16.5).
+
+**ADC latch** (every tick; three draws of `S_ADC` in the order A, B, S):
+rawA = clamp(410 + tdiv(q·3276, 1000) + uniform(S_ADC, 2), 0, 4095);
+rawB = clamp(205 + tdiv(q·1638, 1000) + uniform(S_ADC, 2), 0, 4095);
+rawS = clamp(2048 + tdiv(δ_true·2048, 350) + uniform(S_ADC, 1), 0, 4095).
+**Pedal fault**: for 95 000 ≤ t_ms < 95 300, rawB = 0 (track B open), after its draw.
+
+**MCU m** (L, then R; every tick). The MCU latched, at the end time of the last `0x101` (L) or
+`0x102` (R) frame with DLC 4 and a valid checksum, its `TorqueCmd` c, its `Enable` and that time.
+`CMD_TIMEOUT` = 1 when no such frame has arrived yet or the last arrived more than 30 000 µs ago.
+The target before the limits is c if `Enable` = 1 and `CMD_TIMEOUT` = 0, else 0. With n the motor
+speed of the last tick: T_lim = min(1000, T_pow(n)); if |n| ≥ 9 000, T_lim = 0; else if |n| ≥ 8 000,
+T_lim = tdiv(T_lim·(9000 − |n|), 1000). T_t = clamp(target, −T_lim, T_lim); `DERATE` = (T_t ≠
+target). The shaft torque T_act [mN·m] follows T_act ← T_act + tdiv(100·T_t − T_act, 8) (starting
+at 0). `READY` = 1 always.
+
+**Vehicle** (every tick, after both MCUs; v in µm/s ≥ 0, r in µrad/s, both starting at 0; the new
+values from the old ones and this tick's T_act):
+
+```
+F_L = 30*T_act_L;  F_R = 30*T_act_R                                      [mN]
+F_d = 0 if v = 0, else 105948 + tdiv(36*v*v, 100000000000)               [mN]
+v'  = max(0, v + tdiv(F_L + F_R - F_d, 900))
+r_ss = 0 if v = 0, else tdiv(v*du, 2400000 + tdiv(v*v, 260416667))      du = 1000*delta_true [urad]
+r'  = 0 if v = 0, else r + tdiv(r_ss - r, 150) + tdiv(F_R - F_L, 1600)
+```
+
+(Explicit Euler over 1 ms: the drive force accelerates the mass against rolling and aerodynamic
+drag with no reversing; the yaw rate relaxes to the understeering steady state v·δ/(L(1 +
+v²/v_ch²)) in 150 ms and is pushed by the yaw moment (F_R − F_L)·0.75 m over 1 200 kg·m².)
+**Wheel speeds**: v_L = v' − tdiv(3·r', 4), v_R = v' + tdiv(3·r', 4) [µm/s]; n_m =
+tdiv(v_m·286479, 1000000000) [rev/min] (60·9/(2π·0.3) = 286.479 rev/min per m/s).
+
+**Frames of the model**:
+
+* *Feedback* of MCU L at t = 10 000·j + 2 000 and of MCU R at t = 10 000·j + 2 500 (j = 0 … 11 999):
+  `TorqueAct` = clamp(tdiv(T_act, 100) + uniform(S_MOT, 2), −32 768, 32 767) (the `S_MOT` draw of
+  the frame's scheduled time, made for every scheduled frame as in the table above); `Speed` = n;
+  `DcCurrent` = clamp(tdiv(T_act·n, K), −1024, 1023) with K = K_m when T_act·n ≥ 0 (motoring:
+  2·T_act·ω/(0.92·350), ω in rad/s) and K_g otherwise (generating: ×0.92); `Status` (`READY`,
+  `DERATE`, `CMD_TIMEOUT` of the last tick); the counter; the checksum.
+* *IMU* at t = 10 000·j + 7 000: `YawRate` = clamp(tdiv(r, 1000) + uniform(S_IMU, 3), −32 768,
+  32 767), the counter.
+* *Replies* to remote frames: 600 µs after the remote frame's end, with the constants of §2.16.3.
+
+**Deliberate faults** (so that the analysis has real events to find; L-nu). For every scheduled
+feedback frame, in time order (L before R at each j), one draw u = next(`S_BUS`) mod 1 000, and for
+u ∈ {2, 3} a second draw w = next(`S_BUS`):
+
+| u | Event | Effect |
+|---|-------|--------|
+| 0, 1 | dropped (0.2 %) | the frame is not sent; its counter value is used up |
+| 2, 3 | late (0.2 %) | queued at t + 3 000 + (w mod 4 001) µs (3.000–7.000 ms late), with the values and counter of its scheduled time |
+| 4 | corrupted (0.1 %) | sent on time with its checksum byte XOR 0x5A |
+| 5 … 999 | normal | sent on time |
+
+**Blackout**: MCU R sends none of the feedback frames scheduled in 72 000 000 ≤ t < 72 120 000 µs
+(12 frames; their draws are still made and discarded), which the VCU detects as a feedback timeout
+(§2.16.4: `FAULT_FB`). With the pedal fault, the run's state sequence is therefore `INIT`, `RUN`,
+`FAULT_FB` (from about 72.05 s), `RUN` (after the pedal release at about 74.4 s), `FAULT_APPS` (about
+95.09 s, the tenth implausible step), `RUN` (after the release at about 97.45 s); the exact times are
+the log's (A7), not part of this text.
+
+The draws give, for the 24 000 scheduled feedback frames: MCU L 17 dropped, 23 late, 12 corrupted;
+MCU R 25 dropped, 30 late, 14 corrupted, and the 12 blackout frames; no late frame ends after 120 s;
+no two drops of one motor are adjacent, so no random event causes a timeout. In the analysis's terms
+(§2.16.8): `bad_checksum` 12 (`0x181`) and 14 (`0x182`); `fb_dropped` L 17 and R 37 (25 + 12
+blackout); `fb_late` L 23 and R 30; gap events (A5) L 40 and R 56 (each dropped frame and each late
+frame leaves one gap above 12 000 µs, and the blackout leaves one: 17 + 23 and 25 + 30 + 1). These were computed for this text from
+the generator definition with a throwaway script (L-nq); W8b's log must agree.
+
+#### 2.16.7 The log: format, size and determinism
+
+**Car log** (`w8_ev_can.log`, written by the mock's bus, Decision 153 (a)): one line per frame in
+the order of the frames' end times, each
+
+```
+(<seconds>.<microseconds>) can0 <ID>#<DATA>\n
+```
+
+with the timestamp T0 + t_end, T0 = 1 793 750 400 s (2026-11-04 00:00:00 UTC) and t_end the frame's
+end time (§2.16.5), printed `(%010u.%06u)` (ten digits of seconds, six of microseconds); one space;
+the interface `can0`; one space; the identifier as three upper-case hex digits; `#`; and the data as
+two upper-case hex digits per byte, or `R` for a remote frame. LF line ends, no other bytes, no
+blank line, the last line ended by LF; for example `(1793750400.092738) can0 182#0000000000010972`, MCU R's tenth feedback frame
+(j = 9): the VCU is still in `INIT`, so the commands are 0 with `Enable` = 0 and the car stands
+(T_act = 0, n = 0, `DcCurrent` 0); the twentieth `S_MOT` draw gives noise 0, so `TorqueAct` is 0;
+`Status` is `READY` only (valid commands keep arriving, so `CMD_TIMEOUT` = 0); the counter is 9; S =
+0x82 + 0x01 + 0x01 + 0x09 = 0x8D, CS = 0x72. No fault event falls on j ≤ 11, MCU L's frame of j = 9
+has ended by 92 500 µs, so the frame starts on an idle bus at 92 500 µs and ends 2·119 µs later.
+A line has 25 bytes before the identifier, so the lines carry 38 (`0x101`, `0x102`), 46 (`0x120`,
+`0x121`, `0x181`, `0x182`), 36 (`0x0A0`), 34 (`0x710`), 42 (`0x381`, `0x382` data) and 31 (remote)
+bytes each, LF included.
+
+**Size** (L-nq): the car run logs 11 999 control steps (step 12 000 at t = 120 s ends after the end)
+of 4 frames, 1 199 heartbeats, 240 remote frames and their 240 replies, 12 000 IMU frames and 24 000
+− 54 feedback frames (42 dropped, 12 blackout): **85 621 lines and 3 607 634 bytes**.
+
+**Bench log** (bench mode, §2.16.4; Decision 154 (a)). On the ESP32, the mode strap open, the sketch
+prints over Serial every frame it receives as `(<seconds>.<microseconds>) twai0 <ID>#<DATA>` and LF
+(no CR; the seconds with `"%010" PRIu32` and the microseconds with `"%06" PRIu32`, §2.16.4),
+the timestamp being the time since boot from a 64-bit microsecond count kept from `micros()`'s
+wraps, taken when `loop()` handles the frame; Serial also carries the banner line and the ESP32's
+boot messages. Differences from the car log: the interface is `twai0`; the times are since boot and
+are handling times (up to one loop late, so several frames can share a time and the bus-overlap
+check of A3 does not apply); only the VCU's own frames appear (self-reception; nothing answers
+remote frames, and the VCU stays in `INIT` with `Enable` = 0); other lines precede and may follow
+the frames. Self-reception on a real board needs the TX signal to reach RX: by Decision 160 (a) the
+bench has one jumper wire from GPIO 21 (TX) to GPIO 22 (RX) and no transceiver. `w8sim --bench --seconds 5` simulates the same and writes its Serial output to
+`bench_serial.txt` (committed: the banner and 2 055 frame lines: 499 steps of 4 frames, 49
+heartbeats, 10 remote frames; L-nq); the port reads either file
+with `--log` (§2.16.9) and skips every line that does not start with `(` (counted, `n_skipped`).
+A capture from a real board (`arduino-cli monitor --baud 921600` saved to a file) must start at the
+banner line: the ROM boot output before it, which can hold bytes that are not valid text at a
+mismatched baud rate, is trimmed by the user before Sea reads the file. A1's rule (a malformed
+frame line is an error) is unchanged; only lines before the banner are trimmed, never frame lines.
+
+**`serial.txt`**: the car run's Serial output: the banner, the two `# MCU …` lines and one line per
+state change (five).
+
+**Determinism** (L-nf). The log must not depend on the host, the compiler or its flags: the sketch,
+the header and the simulator use no floating-point type or value. `make w8-log` checks it three
+ways over the sketch, `w8_can_msgs.h` and every file under `host/`: (1) `grep -w -e float -e
+double` finds nothing; (2) after comments and string and character literals are stripped, no
+decimal floating literal remains, that is nothing matches the extended regular expression
+`[0-9]\.[0-9]|[0-9][eE][+-]?[0-9]` (hexadecimal integer literals such as `0x1E5` are excluded
+before matching, so their digits `E` are not taken for an exponent); (3) both builds below
+compile with `-Wfloat-conversion -Wdouble-promotion` under `-Werror`, so an implicit floating
+conversion cannot hide. All arithmetic is integer with truncating division and values far inside
+`int64_t`; nothing reads the clock, the environment, a locale, an address or an unordered
+container; output is written with `snprintf` of integer conversions and `fwrite`. The simulator is
+built on the Mac only, `xcrun c++ -std=c++20 -O2 -Wall -Wextra -Wfloat-conversion
+-Wdouble-promotion -Werror -I workloads/w8_ev_can/host/include` (from the `sea` directory), into
+`build/w8/w8sim` (`make w8-sim`).
+
+**`make w8-log`** (Mac; never part of `make test` or `make cross`): builds `w8sim` twice, as above
+and with `-O0 -g -fsanitize=undefined,address -fno-sanitize-recover=all` (an undefined operation
+would stop the second build's run), runs each for the car run and the bench run into a temporary
+directory, and compares exactly three outputs of each build byte for byte (`cmp`): the car run's
+bus log with `w8_ev_can.log`, the car run's Serial output with `serial.txt` and the bench run's
+Serial output with `bench_serial.txt` (the bench run is given no `--log`, §2.16.5); it also runs
+the three checks of the floating-point rule above. It prints `w8-log: identical (85621 lines, 3607634
+bytes)` and exits 0, or names the first differing file and exits 1. **`make w8-log-update`**
+rebuilds and overwrites the three committed files (used once in W8b; later only with the user's
+agreement, because a new log invalidates `reference/w8_ev_can.json` and needs a new MATLAB run).
+**`make w8-sketch`** runs `arduino-cli compile --fqbn esp32:esp32:esp32:UploadSpeed=115200
+--warnings all workloads/w8_ev_can/w8_ev_can` (needs `arduino-cli` and the 3.3.7 core; compile
+only, no upload) and requires exit 0 and no line of its output matching `w8_ev_can.ino:L:C: warning`
+or `w8_can_msgs.h:L:C: warning` (L and C a line and a column number; the extended regular
+expression `(w8_ev_can\.ino|w8_can_msgs\.h):[0-9]+:[0-9]+: warning`), so a warning inside the
+core's own files, which the sketch cannot fix, does not fail it.
+`.gitattributes` gains `workloads/w8_ev_can/** -text`, so the committed files stay byte-exact.
+
+#### 2.16.8 The MATLAB reference `w8_ev_can.m`
+
+Decision 152 (a): `sea/workloads/w8_ev_can.m`, written in W8c like W1–W7 (the header comment with
+the method, the flags `SEA_EXPORT_REFERENCE`, `SEA_PLOT`, `SEA_SAVE_FIGURES` read with `exist`,
+`wlName`, `wlDir`, a report with `fprintf`, the figure, `write_reference`), is the oracle. The user
+runs it once (W8c); no agent runs MATLAB. It reads `fullfile(wlDir, 'w8_ev_can',
+'w8_ev_can.log')`; `tCompute = tic` comes immediately before the file is read and
+`computeSeconds = toc(tCompute)` after the analysis (L-nn). It uses base MATLAB only: `readlines`,
+`strlength`, `startsWith`, `extractBetween`/`extractBefore`/`extractAfter`, `split`, `hex2dec`,
+`str2double`, `bitand`, `bitor`, `bitxor`, `bitshift`, `fix`, `mod`, `abs`, `min`, `max`, `sum`,
+`sqrt`, `find`, `zeros`, `numel`, `sprintf`, `compose`, `fprintf`, `jsonencode`, and for the figure
+`figure`, `tiledlayout`, `nexttile`, `plot`, `hold`, `bar`, `yyaxis`, `legend`, `title`, `xlabel`,
+`ylabel`, `grid`, `xticks`, `xticklabels`, `exportgraphics`. Every quantity below is an integer computed exactly
+(all intermediate values are below 2⁵³) or a fixed short sequence of IEEE operations (divisions,
+multiplications by constants, `sqrt`) on such integers in the stated order, so the script may decode and count with vectorized string and array operations as it
+likes: the results do not depend on the order of exact integer sums (L-nl). Indices it exports are
+1-based. In Sea and in MATLAB, `tdiv(a, b)` (b > 0) is truncation toward zero: `fix(a / b)` in
+MATLAB, exact because |a| < 2³¹ here, and `a >= 0 ? idiv(a, b) : -idiv(-a, b)` in the port.
+
+**The analysis** (normative for the script and the port; the key names of the JSON in brackets):
+
+* **A1 Decode.** Every line is read; empty lines are ignored; a line whose first byte is not `(` is
+  skipped and counted [`n_skipped`]; every other line is decoded as §2.15.3's `decode_line` does,
+  with three differences: the timestamp is split at `.` into a seconds part and a microseconds part
+  of exactly six digits, each parsed in base 10, t = seconds·1 000 000 + microseconds (exact
+  integers; never `parse_f64`, L-nk); the identifier must have three hex digits (standard); and the
+  interface field must be the same on every frame [`iface`]. A malformed line, a time earlier than
+  the line before, or a second interface stops the program with an error naming the line. t_rel =
+  t − t of the first frame; span = t_rel of the last frame [`n_frames`, `span_s` = span /
+  1 000 000].
+* **A2 Counts** over the ten identifiers of §2.16.3 in ascending order [`ids`, the identifiers as
+  decimal numbers]: data frames [`frame_counts`] and remote frames [`remote_counts`] of each; a frame
+  of another identifier is counted in [`n_unknown`] and otherwise only charged its bus bits. Per
+  identifier, over its data frames: [`period_ms`] = (t_last − t_first) / (1000·(n − 1)) (NaN when n <
+  2) and [`max_gap_ms`] = the largest difference of consecutive times / 1 000 (0 when n < 2).
+* **A3 Bus.** Every frame's L and B by §2.16.3 (a remote frame with the DLC code of the table);
+  [`bus_bits`] = ΣB, [`stuff_bits`] = Σs; [`bus_load`] = `bus_bits / (0.5 * span)` (the fraction of
+  the 500 kbit/s capacity). With W = ⌊span / 100 000⌋ windows, frame i belongs to window w = ⌊t_rel
+  / 100 000⌋ when w < W, and [`bus_load_win`] is the W values (Σ B of window w) / 50 000;
+  [`bus_load_max`] its largest value and [`bus_load_max_win`] the 1-based index of its first
+  occurrence. [`bus_overlaps`] counts the frames i ≥ 2 with t_i − 2·L_i < t_(i−1) + 6 (a frame that
+  would have started before the previous one's intermission ended; 0 for a correct simulator).
+* **A4 Checksums** of every data frame of `0x101 0x102 0x121 0x181 0x182` by §2.16.3; [`bad_checksum`]
+  holds, per identifier of A2, the number of failing frames (0 for the identifiers without a
+  checksum).
+* **A5 Counters, drops and late frames.** For each of `0x101 0x102 0x120 0x121`, each consecutive
+  pair of its frames whose counters differ by other than 1 modulo 16 [`vcu_counter_gaps`, the sum].
+  For `0x0A0`, Σ ((c_i − c_(i−1)) mod 256 − 1) [`imu_dropped`]. For each motor (`0x181` index 1,
+  `0x182` index 2), over all its frames, valid checksum or not, with g_i = (c_i − c_(i−1)) mod 16 and
+  Δ_i = t_i − t_(i−1): [`fb_dropped`] = Σ (g_i − 1); [`fb_late`] = the number of i with g_i = 1 and
+  Δ_i > 12 000 µs; and every i with Δ_i > 12 000 µs is a gap event, listed in time order as
+  [`gap_t_L`]/[`gap_t_R`] = t_rel_i / 1 000 000 and [`gap_ms_L`]/[`gap_ms_R`] = Δ_i / 1 000 (drops,
+  late frames and the blackout all appear; L-nu).
+* **A6 VCU cycles and the law.** [`vcu_cycles`] = the number of `0x121` frames. Each `0x121` frame
+  is matched with the last `0x101`, `0x102` and `0x120` frames before it in the log; when one is
+  missing or its counter differs, the cycle counts in [`cycle_mismatch`] and is skipped below. For
+  each matched cycle, with the fields of §2.16.3 and the previous `0x101`/`0x102` frames'
+  `TorqueCmd` as prevL/prevR (0 for the first), the law of §2.16.4 is recomputed and each
+  disagreement counted: [`law_treq_mismatch`] (`TorqueReq` against step 6 from `PedalPos`, `State`
+  and `VehSpeed`), [`law_rdes_mismatch`] (`YawRateDes` and `YawLimit` against step 7 from
+  `VehSpeed` and `SteerAngle`), [`law_dt_mismatch`] (`TorqueSplit` against step 8 from `State`,
+  `YawRateDes` and `YawRateMeas`), [`law_cmd_mismatch`] (either `TorqueCmd` against steps 9 and 10
+  from `TorqueReq`, `TorqueSplit` and prevL/prevR). All four are 0 for the committed log (L-nr).
+* **A7 States.** Over all `0x120` frames: the number in each state [`state_cycles`, INIT RUN FAULT_FB
+  FAULT_APPS]; every frame after the first whose state differs from the previous `0x120` frame's is
+  a change, listed as [`state_change_t`] = t_rel / 1 000 000 and [`state_change_to`] = the new
+  state's number. The first `0x120` frame is not a change (it has no previous frame), whatever its
+  state.
+* **A8 Torque tracking**, per motor m, from its commands (all `0x101`/`0x102` frames: times and
+  `TorqueCmd`) and its checksum-valid feedback frames (times t_i and `TorqueAct` a_i, n_m of them).
+  For each lag ℓ = 0, 1 000, …, 50 000 µs (51 values), cost(ℓ) = Σ_i |a_i − h(t_i − ℓ)|, where h(τ)
+  is the `TorqueCmd` of the last command frame of m with time ≤ τ, or 0 before the first (the
+  command as the MCU holds it). [`lag_cost`] is the 2 × 51 integer matrix (row 1 left, row 2 right);
+  the response delay [`delay_ms`] is ℓ/1 000 at the first smallest cost (L-nt); [`track_err`] =
+  cost(ℓ_best) / (10·n_m) in N·m (NaN when n_m = 0). Also [`torque_cmd_max`] = max |`TorqueCmd`| /
+  10, [`torque_act_max`] = max |`TorqueAct`| / 10 (N·m), [`speed_max_rpm`] = max |`Speed`|,
+  [`current_max_A`] = max |`DcCurrent`| / 2, [`derate_frames`] and [`cmd_timeout_frames`] = the
+  frames with `DERATE` and `CMD_TIMEOUT` set (valid frames only; a maximum over no frame is 0).
+* **A9 Torque vectoring.** Over the matched cycles in `RUN` with |`YawRateDes`| ≥ 50: x =
+  `YawRateDes`, y = `TorqueCmd` of `0x102` − `TorqueCmd` of `0x101`; [`split_n`] their number;
+  sxx = Σx², sxy = Σxy (exact integers); [`split_gain`] = `100 * (sxy / sxx)` in N·m per rad/s (NaN
+  when sxx = 0). Over all matched cycles in `RUN`, with e = `YawRateDes` − `YawRateMeas` and se = Σe²
+  over n of them: [`yaw_err_rms`] = `sqrt(se / n) / 1000` in rad/s (NaN when n = 0). [`yaw_limit_cycles`]
+  = the matched cycles with `YawLimit` = 1.
+* **A10 Motor controllers.** Per motor: [`rtr_requests`] its remote frames; [`rtr_answered`] those
+  followed, before the next remote frame of that identifier or the end of the log, by a data frame
+  of it; [`rtr_latency_max_us`] the largest time from a remote frame to that first data frame (0 if
+  none); [`mcu_fw`] and [`mcu_serial`] from its first data frame (0 if none).
+* **A11 Speed.** [`v_max`] = max `VehSpeed` / 100 (m/s) over the `0x120` frames.
+
+**JSON keys and their rules** (`compare.py`'s `RULES["w8_ev_can"]`, added in W8c; every value is
+expected to be identical to MATLAB's, so the integer keys are `exact` and the derived floats carry
+a 1e-15 relative bound only against a last-bit difference in the fixed short sequence of IEEE
+operations that derives each from exact integers, in the stated order):
+
+```python
+"w8_ev_can": {
+    "workload": ("exact",), "iface": ("exact",), "n_frames": ("exact",),
+    "n_skipped": ("exact",), "n_unknown": ("exact",), "span_s": ("num", 0.0, 1e-15),
+    "ids": ("exact",), "frame_counts": ("exact",), "remote_counts": ("exact",),
+    "period_ms": ("num", 0.0, 1e-15), "max_gap_ms": ("num", 0.0, 1e-15),
+    "bad_checksum": ("exact",),
+    "bus_bits": ("exact",), "stuff_bits": ("exact",), "bus_load": ("num", 0.0, 1e-15),
+    "bus_load_win": ("num", 0.0, 1e-15), "bus_load_max": ("num", 0.0, 1e-15),
+    "bus_load_max_win": ("exact",), "bus_overlaps": ("exact",),
+    "vcu_counter_gaps": ("exact",), "imu_dropped": ("exact",),
+    "fb_dropped": ("exact",), "fb_late": ("exact",),
+    "gap_t_L": ("num", 0.0, 1e-15), "gap_ms_L": ("num", 0.0, 1e-15),
+    "gap_t_R": ("num", 0.0, 1e-15), "gap_ms_R": ("num", 0.0, 1e-15),
+    "vcu_cycles": ("exact",), "cycle_mismatch": ("exact",),
+    "law_treq_mismatch": ("exact",), "law_rdes_mismatch": ("exact",),
+    "law_dt_mismatch": ("exact",), "law_cmd_mismatch": ("exact",),
+    "state_cycles": ("exact",), "state_change_t": ("num", 0.0, 1e-15),
+    "state_change_to": ("exact",),
+    "delay_ms": ("exact",), "lag_cost": ("exact",), "track_err": ("num", 0.0, 1e-15),
+    "torque_cmd_max": ("num", 0.0, 1e-15), "torque_act_max": ("num", 0.0, 1e-15),
+    "speed_max_rpm": ("exact",), "current_max_A": ("num", 0.0, 1e-15),
+    "derate_frames": ("exact",), "cmd_timeout_frames": ("exact",),
+    "split_n": ("exact",), "split_gain": ("num", 0.0, 1e-15),
+    "yaw_err_rms": ("num", 0.0, 1e-15), "yaw_limit_cycles": ("exact",),
+    "rtr_requests": ("exact",), "rtr_answered": ("exact",),
+    "rtr_latency_max_us": ("exact",), "mcu_fw": ("exact",), "mcu_serial": ("exact",),
+    "v_max": ("num", 0.0, 1e-15),
+},
+```
+
+`workload` is `"w8_ev_can"`. The two-element keys are [left, right]; `lag_cost` is a list of two
+rows. The gap and state-change lists have the lengths the log gives (jsonencode writes a one-element
+list as a number and an empty one as `[]`; `compare.py` flattens both sides, §11.4's note). A NaN is
+`null` on both sides.
+
+**The report** (the script's `fprintf` calls, which the port mirrors and the token map is written
+from; `name` lists the state names `INIT RUN FAULT_FB FAULT_APPS`; `%03X` and `%08X` exercise §11.1's
+`%X` in the port):
+
+```matlab
+fprintf('\n=== W8  EV CAN log: dual-motor torque vectoring ===\n');
+fprintf('Log: %d frames on %s over %.6f s; %d other lines skipped, %d unknown identifiers\n', ...
+    nFrames, iface, spanS, nSkipped, nUnknown);
+fprintf('Bus 500 kbit/s: %d bits incl. %d stuff bits, mean load %.3f %%, peak %.3f %% in window %d of %d (100 ms); overlaps %d\n', ...
+    busBits, stuffBits, 100 * busLoad, 100 * busLoadMax, iMaxWin, nWin, busOverlaps);
+fprintf('%5s %8s %7s %11s %12s %7s\n', 'ID', 'frames', 'remote', 'period[ms]', 'max-gap[ms]', 'bad-cs');
+% one line per identifier of A2; csText is sprintf('%d', badChecksum(i)) for the five checksummed
+% identifiers and '-' for the others
+fprintf('%5s %8d %7d %11.3f %12.3f %7s\n', sprintf('%03X', ids(i)), frameCounts(i), remoteCounts(i), ...
+    periodMs(i), maxGapMs(i), csText);
+fprintf('Feedback: left dropped %d late %d, right dropped %d late %d; IMU dropped %d; VCU counter gaps %d\n', ...
+    fbDropped(1), fbLate(1), fbDropped(2), fbLate(2), imuDropped, vcuCounterGaps);
+% for m = 1, 2 with side = 'left', 'right'
+fprintf('MCU %-5s firmware %d.%02d serial %08X, %d of %d remote requests answered, max latency %d us\n', ...
+    side, bitshift(mcuFw(m), -8), bitand(mcuFw(m), 255), mcuSerial(m), rtrAnswered(m), ...
+    rtrRequests(m), rtrLatencyMax(m));
+fprintf('VCU: %d cycles, %d mismatched; law mismatches: request %d, yaw demand %d, split %d, commands %d\n', ...
+    vcuCycles, cycleMismatch, lawTreq, lawRdes, lawDt, lawCmd);
+fprintf('Cycles per state: INIT %d, RUN %d, FAULT_FB %d, FAULT_APPS %d\n', stateCycles);
+% one line per state change, in time order
+fprintf('  state %-10s from %10.6f s\n', name{stateChangeTo(k) + 1}, stateChangeT(k));
+fprintf('%-6s %9s %13s %12s %12s %8s %8s %9s\n', 'motor', 'delay[ms]', 'mean-err[Nm]', ...
+    'max-cmd[Nm]', 'max-act[Nm]', 'derated', 'max-rpm', 'max-I[A]');
+% for m = 1, 2
+fprintf('%-6s %9d %13.4f %12.1f %12.1f %8d %8d %9.1f\n', side, delayMs(m), trackErr(m), ...
+    torqueCmdMax(m), torqueActMax(m), derateFrames(m), speedMaxRpm(m), currentMaxA(m));
+fprintf('Torque vectoring: %d cycles, gain %.4f N m per rad/s; yaw error RMS %.5f rad/s; yaw limit in %d cycles\n', ...
+    splitN, splitGain, yawErrRms, yawLimitCycles);
+fprintf('Top speed %.2f m/s\n', vMax);
+fprintf('Compute time: %.3f s\n', computeSeconds);
+```
+
+The token map `ports/w8_ev_can.tokens` (W8d) names, for each numeric token that prints a JSON key,
+its rule: every integer-valued token (each count, the window index and window count, the delays in
+ms, the latencies) is `exact`, and so are the hex identifier column (`%03X`), the hex serial
+(`%08X`) and both firmware parts (`%d.%02d`, split at `.` as in §6.4), because the default rule
+(one unit of the last printed digit) would let 101 pass for 102; each float token is `json <key>`
+(the percentages as `num` rules converted to percent, §6.4, L-eg). No numeric token of the report
+is left to the default rule (the `Compute time` line is not compared, §6.4). Every token is
+expected to be identical to MATLAB's.
+
+**The figure** (Decision 156 (a); MATLAB `tiledlayout(fig, 2, 2)`, the port `figure(2, 2, name: "W8
+EV CAN log")`, 960 × 720; the reading rules of §2.14.3):
+
+| Panel | MATLAB | Sea |
+|-------|--------|-----|
+| 0 (`nexttile` 1) | over t_rel ∈ [49 s, 59 s): `plot` of the left commands (x = t_rel/10⁶ of the `0x101` frames, y = `TorqueCmd`/10), the left valid feedback (`TorqueAct`/10), the right commands, the right feedback, each `'-'`, with `hold on`; `legend({'L command', 'L measured', 'R command', 'R measured'})`; `xlabel('Time [s]')`, `ylabel('Torque [N m]')`, `title(sprintf('Torque tracking, delay L %d ms, R %d ms', delayMs(1), delayMs(2)))`, `grid on` | `a0 = panel(fig, 0, 0)`; four `plot(a0, x, y, style: "-", label: …)` in that order; `legend(a0)`; the labels and `format(…)` title as MATLAB's; `grid(a0)` |
+| 1 (`nexttile` 2) | `plot(x(1:4:end), y(1:4:end), '.')` of A9's x/1 000 (rad/s) and y/10 (N·m), label `cycles`; `plot([xmin xmax], splitGain*[xmin xmax], '-')` with xmin, xmax of all of A9's x/1 000, label `fit`; `legend`; `xlabel('Yaw rate demand [rad/s]')`, `ylabel('Torque split R-L [N m]')`, `title('Torque split vs yaw demand')`, `grid on` | `a1 = panel(fig, 0, 1)`; `plot(a1, x[0..$ step 4], y[0..$ step 4], style: ".", label: "cycles")`; `plot(a1, [xmin, xmax], [g*xmin, g*xmax], style: "-", label: "fit")`; `legend(a1)`; labels, title, `grid(a1)` |
+| 2 (`nexttile` 3) | `yyaxis left; plot((0:W-1)*0.1, 100*busLoadWin, '-')`, label `bus load`, `ylabel('Load per 100 ms [%]')`; `yyaxis right; plot(gapTL, gapMsL, 'o')` label `left gaps`, `plot(gapTR, gapMsR, 's')` label `right gaps`, `ylabel('Feedback gap [ms]')`; `legend`; `xlabel('Time [s]')`; `title(sprintf('Bus load, mean %.2f %%', 100*busLoad))`; `grid on` | `a2 = panel(fig, 1, 0)`; `plot(a2, …, style: "-", label: "bus load")`; `let a2r = twin_y(a2)`; `plot(a2r, …, style: "o", label: "left gaps")`, `plot(a2r, …, style: "s", label: "right gaps")`; `ylabel(a2r, …)`; `legend(a2)`; the rest as MATLAB's |
+| 3 (`nexttile` 4) | `bar(1:10, frameCounts)`; `xticks(1:10); xticklabels(compose('%03X', ids))` (the ten identifiers as three hex digits); `xlabel('Identifier')`, `ylabel('Data frames')`, `title(sprintf('%d frames in %.1f s', nFrames, spanS))` | `a3 = panel(fig, 1, 1)`; `bar(a3, [0.0, 1, …, 9], frameCounts)`; `x_ticks(a3, labels)` with `format("%03X", id)` (category positions 0 … 9, L-ky); labels, `format(…)` title |
+
+The window x of panel 2 is `(w * 100000) / 1000000` in the port (MATLAB's `(0:W-1)*0.1` prints
+the same ticks; the SVG is not compared with MATLAB's PNG, Decision 13). `ports/w8_ev_can.struct`
+(W8d, written from the script by an author who does not write the port):
+
+```
+file output/w8_ev_can.svg
+canvas 960 720
+heading W8 EV CAN log
+panels 4
+panel 0
+title~ Torque tracking, delay L [0-9]+ ms, R [0-9]+ ms
+xlabel Time [s]
+ylabel Torque [N m]
+ylabel2 -
+count line 4
+legend L command
+legend L measured
+legend R command
+legend R measured
+panel 1
+title Torque split vs yaw demand
+xlabel Yaw rate demand [rad/s]
+ylabel Torque split R-L [N m]
+ylabel2 -
+count markers 1
+count line 1
+legend cycles
+legend fit
+panel 2
+title~ Bus load, mean [0-9]+\.[0-9]{2} %
+xlabel Time [s]
+ylabel Load per 100 ms [%]
+ylabel2 Feedback gap [ms]
+count line 1
+count markers 2
+legend bus load
+legend left gaps
+legend right gaps
+panel 3
+title~ [0-9]+ frames in [0-9]+\.[0-9] s
+xlabel Identifier
+ylabel Data frames
+ylabel2 -
+count bars 1
+count legend 0
+xtick 0A0
+xtick 101
+xtick 102
+xtick 120
+xtick 121
+xtick 181
+xtick 182
+xtick 381
+xtick 382
+xtick 710
+```
+
+**Running it** (W8c, the user, in MATLAB R2026a with the current folder `sea/workloads`):
+`run_all(false, 5, 'default', {'w8_ev_can'})` writes `reference/w8_ev_can.json`,
+`reference/w8_ev_can.txt` and `reference/baseline_timings_matlab_w8_ev_can.json`; then
+`run_all(true, 1, 'default', {'w8_ev_can'})` saves the figure `output/w8_ev_can.png` for the user's
+review (one repetition writes no timing file and captures no report; its JSON is identical). The
+user commits the three `reference/` files.
+
+#### 2.16.9 The Sea port `ports/w8_ev_can.sea`
+
+Written in W8d from `w8_ev_can.m` and this section (a port defect found in a pass is reported, not
+worked around). Options: `--export-reference` (write `w8_ev_can.json` to the working directory),
+`--figures` (write `output/w8_ev_can.svg`), `--log PATH` (read PATH instead of `w8_ev_can.log`;
+not used by acceptance, L-no). It reads the log with `read_lines` from the working directory.
+
+**Where the log comes from** (Decision 158 (a)). The port's leading comment block
+holds the line `// fixture: workloads/w8_ev_can/w8_ev_can.log` (a path relative to the `sea`
+directory). `tests/accept.sh` copies each such file into `T/run` under its base name before the run,
+and the run-directory rule of §6.3 becomes: `T/run` holds exactly the executable, `NAME.json`,
+`output/`, `output/NAME.svg` and the port's fixtures, each fixture byte-identical to its source
+after the run. `cross_pack.sh` packs each fixture into the case's `NAME.files/` (so the 3.6 MB log
+travels in the bundle), where `cross_run.sh`'s `newwork` and `check_files` already copy and verify
+it (§2.16.1). A port may hold several `// fixture:` lines, one file each; a missing fixture source,
+a malformed `// fixture:` line, the same line twice, two fixtures with the same base name (from
+different directories), or a fixture whose base name is `NAME.json`, `NAME` or `output` is a setup
+error (exit 2). Phase 10's
+`bench/workloads.sh` copies the fixtures the same way.
+
+**Readings of the port** (L-nm): the frames are decoded into parallel arrays (`t: i64[]`, `id:
+i64[]`, `rtr: bool[]`, `dlc: i64[]`, `data: i64[,]` of n × 8), allocated once to the number of
+lines and cut to the frame count, never as an array of structs with an array field per frame; the
+per-identifier lists are index vectors made with `find`; the gap and state-change lists are
+preallocated and cut (Sea has no append, §6.3's W7 gap 2); the identifier dispatch is an `if`
+chain (`match` on `i64` is later work, LANGUAGE.md §10.13); `tdiv` is the helper above; every sum
+is an `i64` sum, never an `f64` `sum` (whose pinned 8-lane order would differ from MATLAB's only
+beyond 2⁵³, but L-nl keeps the integers exact); the derived floats are written exactly as A1–A11
+write them. The compute time is measured with `now()` from before `read_lines` to after A11 (L-nn).
+The empty-set conventions of A2, A8 and A9 (a maximum over nothing is 0, a ratio with a zero
+denominator NaN) let the same code read a bench log (no feedback, no IMU), whose report then prints
+zeros and `NaN`.
+
+**Acceptance and cross**: §6.3 "W8 acceptance" and §2.16.11.
+
+#### 2.16.10 Feature-gap audit
+
+Every Sea feature the port needs, against LANGUAGE.md (no gap in the language; one in the test
+infrastructure):
+
+| Need | Sea feature | Where | Status |
+|------|-------------|-------|--------|
+| read the log | `read_lines(path) -> str[]` | §10.10 | exists |
+| fields, timestamp parts | `split(s, sep)`, `substr`, `len` | §10.9 | exists |
+| hex identifiers and bytes, decimal seconds and µs | `parse_i64(s, base: 16)`, `parse_i64(s)` | §10.9 | exists |
+| remote frames | `str` comparison `d == "R"` | §4.4, §6.4 | exists |
+| signals, sign extension, counters, checksums, CRC-15, stuffing | `bitand bitor bitxor shl shr sar`, `%` and `idiv` on `i64` | §10.14, §6.6 | exists |
+| truncating division of the law | none built in; `tdiv` written with `idiv` | §6.6 | met in the port (L-nm) |
+| identifier dispatch | `if` chains (no `match` on `i64`) | §7.4, §10.13 | met in the port |
+| growing lists | none (no append); preallocate and cut with slices | §5.2, §10.13 | met in the port, as W7 |
+| parallel arrays, an `i64[,]` of bytes | dynamic arrays, `filled`, `zeros` | §4.5, §10.2 | exists |
+| absolute values, maxima, first minimum | `abs` (`i64`), `max`, `min`, `argmin` | §10.4, §10.5 | exists |
+| exact sums | `sum` of `i64[]` (checked), scalar loops | §10.5 | exists |
+| RMS | `sqrt` (correctly rounded) | §10.4 | exists |
+| index lists | `find`, slices with steps (`x[0..$ step 4]`) | §10.6, §5.1 | exists |
+| options | `args()`, `match` on `str` | §10.10, §7.6 | exists |
+| report | `printf` with `%d %s %f %X %03X %08X %-10s` | §11.1 | exists |
+| export | `write_json` of a struct with `i64[]`, `f64[]`, `str`, `i64[,]` fields, NaN as `null` | §11.4 | exists |
+| figure | `figure panel twin_y plot bar x_ticks legend title xlabel ylabel grid save_svg make_dir`, `format` | §12.2–§12.4, §11.1 | exists (no `yline` needed, L-ns) |
+| timing | `now()` | §13 | exists |
+| an input file in acceptance | — | §6.3 | **gap**: the run-directory rule allows no input file; Decision 158 resolves it in `accept.sh` and `cross_pack.sh` (W8d) |
+
+#### 2.16.11 Cross-target identity
+
+Every W8 output is class E: decoding and analysis are integer operations, and each derived float
+is a fixed short sequence of IEEE operations (divisions, multiplications by constants, `sqrt`) on
+exact integers in the stated order, identical on both targets and both x86_64
+variants (L-nl). So W8 is an ordinary byte-identical `ports` cross case, like W1, W4, W5 and W7 (no
+`// cross:` header line, Decision 127 not involved): `make cross` runs it under both variants with
+`--export-reference --figures`, its standard output compared with the Mac's byte for byte but for
+the `Compute time` line, its `w8_ev_can.json` and `output/w8_ev_can.svg` byte for byte, and the
+fixture `w8_ev_can.log` unchanged (§6.6, §6.6.1). The log itself is the same bytes on both targets
+because it is committed, not generated (Decision 153); the simulator never runs on Linux.
+
+#### 2.16.12 Sub-phases (the rows of §8)
+
+W8a this specification; W8b the sketch, the simulator and the committed log; W8c the MATLAB
+reference, run by the user; W8d the port and its acceptance. They run in this order, because each
+reads what the one before produced (the log, then the reference). Each ends with `make test` and
+`make cross` passing; no sub-phase changes a pass, a runtime, the prelude or a contract file.
+
+| Sub-phase | Contents | Done when |
+|-----------|----------|-----------|
+| W8a | **W8 specification** (documents only): §2.16 (scope, parts and files, the message set, the sketch, the mock, the model, the log and its determinism, the MATLAB reference with its keys, report and figure, the port, the feature-gap audit, cross-target identity, these rows, Decisions 151–160, lead decisions L-nf – L-ny), §0, §1.2, §6.3, §8, §9, `sea/CLAUDE.md`'s status | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and decided Decisions 158–160. **Done** (2026-11-04): the specification revised after one independent review and agreed, Decisions 151–160 each decided by the user as option (a), lead decisions L-nf–L-ny agreed with the text, the amendments of §2.16.15 that come with the agreement made (§1.2, §6.3, row 10, LANGUAGE.md §1.2, §1.3 and §10); next W8b |
+| W8b | **Sketch, simulator, committed log** (after W8a; Decisions 151, 153–155). **WP-SKETCH** `workloads/w8_ev_can/w8_ev_can/w8_ev_can.ino` and `w8_can_msgs.h` (§2.16.3, §2.16.4; an original sketch, reviewed by the user; WP-SKETCH writes `w8_can_msgs.h` first, and WP-MODEL, which uses its helpers, starts only once it exists); **WP-MOCK** `workloads/w8_ev_can/host/include/Arduino.h`, `host/include/driver/twai.h`, `host/mock_core.cpp`, `host/mock_twai.cpp`, `host/sim.h`, `host/main.cpp`, `host/sketch.cpp` (§2.16.5; WP-MOCK writes `host/sim.h`, the interface between the mock and the model, first); **WP-MODEL** `host/model.cpp`, `host/model.h` (§2.16.6); **WP-BUILD** `sea/Makefile` (`w8-sim`, `w8-log`, `w8-log-update`, `w8-sketch`; none of them in `make test`), `.gitattributes`, the command list of `sea/CLAUDE.md`; then the integration: `make w8-log-update` once and the three committed files `w8_ev_can.log`, `serial.txt`, `bench_serial.txt`; then one independent read-only review of the sketch and the simulator against §2.16.3–§2.16.7 | `make w8-log` passes (both builds byte-identical to the committed files); the log has 85 621 lines and 3 607 634 bytes and the fault counts of §2.16.6 (L 17 dropped, 23 late, 12 corrupted; R 25, 30, 14 and the 12 blackout frames), checked by a throwaway count over the committed log (`timeout 120 uv run --no-project python` with a script in the scratch directory, not committed) that must give `bad_checksum` 12 (`0x181`) and 14 (`0x182`), `fb_dropped` L 17 and R 37, `fb_late` L 23 and R 30, and gap events L 40 and R 56 by A4 and A5; `bench_serial.txt` has the banner and 2 055 frame lines; `serial.txt` shows the five state changes in §2.16.6's order; `make w8-sketch` passes (compile only; flashing is the user's); the floating-point checks of §2.16.7 pass (`grep -w -e float -e double` and the floating-literal check find nothing in the sketch, the header and the host files, and both builds compile with `-Wfloat-conversion -Wdouble-promotion -Werror`); `make test` and `make cross` pass unchanged; the user has reviewed the sketch |
+| W8c | **MATLAB reference** (after W8b; Decisions 152, 156, 157, 159). **WP-MATLAB** `workloads/w8_ev_can.m` (§2.16.8, written from this text, never from the simulator's code); **WP-RULES** `workloads/reference_py/compare.py` (`RULES["w8_ev_can"]` of §2.16.8), `workloads/run_all.m` (`w8_ev_can` in its workload lists, as `w7_drivetrain` is), `workloads/README.md` (W8's row, its feature-matrix column, its run commands and its separate baseline); with Decision 159 (a) **WP-NUMPY** `workloads/reference_py/w8_ev_can.py` and `run_all.py`'s list (by an agent that did not write `w8_ev_can.m`), run to write `reference/w8_ev_can.py.json`; then the hand-over to the user, who runs §2.16.8's two `run_all` calls and commits `reference/w8_ev_can.json`, `reference/w8_ev_can.txt` and `reference/baseline_timings_matlab_w8_ev_can.json` | the three MATLAB files are committed and §1.2 records W8's timing table; `compare.py` (NumPy mode) reports every W8 key `ok` (with Decision 159 (a)); `compare.py --self-test` passes; `make test` passes unchanged |
+| W8d | **Port and acceptance** (after W8c; Decisions 157, 158). **WP-PORT** `ports/w8_ev_can.sea` (with its `// fixture:` line; §2.16.9); **WP-TOKENS** `ports/w8_ev_can.tokens`; **WP-STRUCT** `ports/w8_ev_can.struct` (§2.16.8, by an author who does not write the port); **WP-ACCEPT** `tests/accept.sh` (fixtures and the amended run-directory rule) and `tests/cross_pack.sh` (fixtures into `NAME.files/`), each with its setup errors tested; the compile and compute times recorded in §6.3 | `tests/accept.sh` passes W1, W2, W3, W4, W5, W7 and W8 (every key of `reference/w8_ev_can.json`, the report equivalent, the structural check); the port run with `--log workloads/w8_ev_can/bench_serial.txt` exits 0 (its report recorded, not compared); `make cross` passes W8 under both variants, byte-identical to the Mac but for the `Compute time` line; `make test` and `make cross` pass; W8 is accepted |
+
+Row W8 itself (§8, between rows L and 10): "**The EV CAN workload W8.** An original ESP32 controller
+sketch simulated on the Mac against an Arduino/TWAI mock and a deterministic motor and vehicle model,
+its committed `candump -L` log, the MATLAB reference and the Sea port (specified in sub-phase W8a;
+built in W8b–W8d, §2.16)" | "W8 accepted on both targets (§6.3 "W8 acceptance"); `make w8-log`
+reproduces the committed log".
+
+#### 2.16.13 Decisions of W8
+
+Decisions 151–157 were asked on 2026-11-04 with the outline of this workload and decided by the user
+the same day, each as option (a); this text records them with their options. Decisions 158–160 are
+the questions this text left to the user, each with a recommendation; the user decided them on
+2026-11-04 with the agreement, each as option (a). Mirrored in §9 ("Decisions of W8").
+
+151. **Who writes the controller sketch.** Options: (a) **an agent writes an original sketch to
+     §2.16.4; the user reviews it and flashes it to the board if they wish**; (b) the user writes
+     the sketch and the agents build the mock and the model around it (the control law and the
+     message set then follow the user's code, and the analysis is written after it); (c) an
+     existing example sketch is adapted (excluded by the workloads' originality rule). Recommended:
+     (a). Affects §2.16.4, §2.16.12 (W8b). **Decided: (a)** (the user, 2026-11-04).
+152. **The reference oracle.** Options: (a) **a MATLAB script `sea/workloads/w8_ev_can.m`, written
+     like W1–W7; the user runs it once to produce `reference/w8_ev_can.json`, the `.txt` report and
+     the figure; no agent runs MATLAB**; (b) a NumPy script only, run by the agents (W8 would be the
+     one workload without a MATLAB reference and without a MATLAB timing, so "faster than MATLAB"
+     could not be judged); (c) the simulator writes the expected analysis itself (the oracle would
+     share the simulator's code and defects). Recommended: (a). Affects §1.2, §2.16.8, §2.16.12
+     (W8c). **Decided: (a)** (the user, 2026-11-04).
+153. **How the log reaches the tests.** Options: (a) **a fixed committed log of a few MB; a
+     separate target (`make w8-log`) rebuilds it with the simulator and checks it is
+     byte-identical; ordinary `make test` and `make cross` need no C++ compiler**; (b) the log is
+     generated by `make test` before acceptance (every test run, and the Mac half of `make cross`,
+     then needs `xcrun c++`, and a compiler change could silently change the reference input); (c)
+     a short log generated at test time plus the committed one. Recommended: (a). Affects §2.16.7,
+     §2.16.11, §2.16.12. **Decided: (a)** (the user, 2026-11-04).
+154. **The real ESP32.** Options: (a) **optional: the same `.ino` compiles and flashes; in TWAI
+     self-test mode (no other node needed) it prints a real log over Serial in the same format,
+     which Sea can read too; acceptance uses only the simulated log**; (b) required: a hardware log
+     is part of acceptance (acceptance would depend on a board and a bench); (c) no hardware path
+     (the sketch would not be checked against the real core). Recommended: (a). Affects §2.16.4,
+     §2.16.7, §2.16.9, Decision 160. **Decided: (a)** (the user, 2026-11-04).
+155. **Where the sketch, the mock and the model live.** Options: (a) **`sea/workloads/w8_ev_can/`
+     (the sketch folder, the mock, the motor and vehicle model and their build), outside the
+     compiler and the runtimes, so the rule "no C in the compiler or runtimes" still holds**; (b) a
+     repository of its own as a submodule; (c) `sea/tools/w8/`, beside the compiler's tools.
+     Recommended: (a) (the user had no preference). Affects §2.16.2, §2.16.12. **Decided: (a)** (the
+     user, 2026-11-04).
+156. **What the analysis and the figure show.** Options: (a) **per motor, commanded against
+     measured torque and the response delay; for the pair, the torque split against the yaw demand;
+     the bus load, the frame counts and every dropped or late frame; a four-panel figure**; (b) frame
+     counts and bus load only, one panel; (c) (a) plus spectra of the signals (an FFT, which Sea does
+     not have). Recommended: (a). Affects §2.16.8. **Decided: (a)** (the user, 2026-11-04).
+157. **W8 in the acceptance set.** Options: (a) **W8 joins the acceptance set as W7 did (Decision
+     114), with its own MATLAB timing file `reference/baseline_timings_matlab_w8_ev_can.json`; the
+     committed W1–W5 baseline stays untouched**; (b) W8 stays a reference workload outside the set,
+     as W6 is; (c) W8 joins and all seven workloads are rerun into the main baseline file.
+     Recommended: (a). Affects §1.2 (the set, the versions paragraph, W8's baseline), §6.3, §6.5,
+     §8 (rows W8 and 10), LANGUAGE.md §1.2 and §10 (with the agreement, §2.16.15). **Decided: (a)**
+     (the user, 2026-11-04).
+158. **How the acceptance run gets the log** (§6.3's run directory may hold only the
+     executable and what the port writes). Options: (a) **a header line `// fixture: PATH` in the
+     port (PATH relative to `sea/`); `tests/accept.sh` copies each fixture into the run directory,
+     which may then also hold the fixtures, unchanged; `cross_pack.sh` packs them as the case's
+     `NAME.files/`, which the host already copies and checks; a port may hold several such lines,
+     and the same line twice or two fixtures with the same base name are a setup error**; (b) a
+     committed copy
+     `ports/w8_ev_can.files/w8_ev_can.log` copied as the tests' `NAME.files/` are (the same rule
+     change, but a second 3.6 MB copy of the log to keep identical); (c) `accept.sh` passes the port
+     `--log <absolute path>` into the workloads directory (per-port arguments in `accept.sh`, a run
+     that reads outside its directory, and a host bundle that must rebuild the same path).
+     Recommended: (a): one committed copy, a header line in the style of Decision 127's `// cross:`
+     line, and `cross_run.sh` unchanged. Affects §6.3, §6.6.1, §2.16.9, §2.16.10, `tests/accept.sh`,
+     `tests/cross_pack.sh` (W8d), `bench/workloads.sh` (phase 10). **Decided: (a)** (the user,
+     2026-11-04).
+159. **A NumPy cross-check of the MATLAB script** (W1–W7 each have one in
+     `reference_py/`, written before MATLAB could be run). Options: (a) **yes: `reference_py/
+     w8_ev_can.py`, written in W8c from §2.16.8 by an agent that did not write `w8_ev_can.m`, run
+     before the script goes to the user; `reference/w8_ev_can.py.json` committed and compared in
+     `compare.py`'s NumPy mode**; (b) no: MATLAB is the only reference, and a defect of the script
+     shows only when the port disagrees after the user's run, which then needs a second run.
+     Recommended: (a): two independent readings of §2.16.8 agree before the user spends a MATLAB
+     run, as for W1–W7. Affects §2.16.12 (W8c), `workloads/README.md`. **Decided: (a)** (the user,
+     2026-11-04).
+160. **How the bench lets the ESP32 hear itself** (Decision 154's hardware log needs the
+     controller to receive its own frames). The core 3.3.7 offers, in the polled driver
+     `driver/twai.h`, `TWAI_MODE_NO_ACK` with the per-frame self-reception flag `self`, and in the
+     newer `esp_twai_onchip.h` a node configuration with `flags.enable_self_test` and
+     `flags.enable_loopback`. Options: (a) **the polled driver with `TWAI_MODE_NO_ACK` and `self = 1`
+     (§2.16.4), and one jumper wire from GPIO 21 (TX) to GPIO 22 (RX), no transceiver: the
+     controller then reads its own bits**; (b) the same code with a CAN transceiver board on the
+     bench (terminated), as in the car; (c) the newer driver with `enable_loopback`, which this text
+     has not established to work without any wire on the original ESP32, and which changes the API
+     the sketch uses and the mock must copy (event callbacks and receive in interrupt context instead
+     of a polled queue). Recommended: (a): no extra hardware beyond a wire, the same code as (b), and
+     the small polled mock of §2.16.5; whether (a) works on the user's board is checked when the user
+     first flashes it (not part of acceptance). Affects §2.16.4, §2.16.5, §2.16.7. **Decided: (a)**
+     (the user, 2026-11-04).
+
+#### 2.16.14 Lead decisions of W8
+
+Readings taken because one answer is clearly right, agreed by the user with the text and Decisions
+158–160 on 2026-11-04 (§9, "Lead decisions of W8"):
+
+* **L-nf** (integers only) The sketch, its header and the simulator use no floating-point type and
+  only integer arithmetic with truncating division (`tdiv`), every value far inside `int64_t`
+  (the largest product, v·v in µm/s, is about 10¹⁵): the log then depends on no compiler, flag or
+  library, and the sketch computes on the ESP32 exactly what it computes on the Mac. `make w8-log`
+  checks the absence of `float` and `double` with `grep -w`, the absence of decimal floating
+  literals (after comments and string and character literals are stripped, nothing matches
+  `[0-9]\.[0-9]|[0-9][eE][+-]?[0-9]`, hexadecimal literals excluded), builds both simulators with
+  `-Wfloat-conversion -Wdouble-promotion -Werror`, and runs an `-O0` build with the
+  undefined-behaviour and address sanitizers beside the `-O2` build.
+* **L-ng** (the bus) The simulated bus charges every frame its exact length with stuff bits and
+  CRC-15 (§2.16.3) and arbitrates by identifier, so frame times, bus load and arbitration delays are
+  real; the analysis computes the same lengths from the logged bytes (A3), which exercises the
+  bitwise functions on every frame and checks the simulator through `bus_overlaps`. Timestamps are
+  end-of-frame times, as a receiver sees them.
+* **L-nh** (the TWAI API) The sketch uses the polled `driver/twai.h` (install, start, transmit and
+  receive with zero wait), which the core 3.3.7 ships for the plain ESP32 beside the newer callback
+  driver; the mock declares exactly the types, macros and four functions of §2.16.5 with the core's
+  signatures and field order, so a use of anything else fails to compile on the host. The core's
+  types header notes that the legacy types remain until IDF 6.0; a future core without them would
+  need a new sketch API, a change agreed then.
+* **L-ni** (the mode strap) GPIO 25 with the internal pull-up: open (a bare board) is the bench mode,
+  grounded (the car) the car mode; the mock reads it `LOW` unless `--bench`. A bare board can
+  therefore never send torque commands with `Enable` = 1 (it stays `INIT` without feedback).
+* **L-nj** (the event loop) The simulator calls `loop()` every 50 µs of simulated time and processes
+  events at equal times in a fixed order (model tick, model frames, bus, sketch); a received frame is
+  handled at most 50 µs after its end, and the control step starts exactly at its 10 ms boundary.
+* **L-nk** (timestamps) The car log's time base is T0 = 1 793 750 400 s (2026-11-04 00:00:00 UTC), so
+  its lines look like a real `candump -L` log; the analysis splits a timestamp at `.` and parses two
+  integers, so every time is an exact integer microsecond (about 1.8·10¹⁵, below 2⁵³, so MATLAB's
+  doubles hold it exactly), and `parse_f64` is not used.
+* **L-nl** (exact analysis) Every key is an integer computed exactly or a fixed short sequence of
+  IEEE operations (divisions, multiplications by constants, `sqrt`) on exact integers in the order
+  A1–A11 state, every sum below 2⁵³ (the largest, se, sxx
+  and sxy of A9, stay below 10¹⁴): MATLAB and Sea agree bit for bit, the outputs are class E, and the
+  rules are `exact` or 1e-15 relative.
+* **L-nm** (the port's data layout) Parallel arrays and an n × 8 `i64` byte matrix instead of an
+  array of structs with an array field (85 621 heap arrays); preallocation and slices instead of
+  append; `tdiv` written with `idiv`; `i64` sums.
+* **L-nn** (the timed region) Reading and decoding the log is the workload's main work, so the
+  compute time of both the script and the port runs from before reading the file to after the
+  analysis, the report and the figure outside it, as in W1–W7.
+* **L-no** (other logs) `--log PATH` lets the port analyse a bench or hardware log; lines not starting
+  with `(` (banner, boot messages) are skipped and counted, and the empty-set conventions of A2, A8
+  and A9 keep a log without feedback frames from failing. A capture from a real board must start at
+  the banner line (the ROM boot output before it trimmed by the user, §2.16.7), so that A1 stays
+  strict: a malformed frame line is still an error. Acceptance uses neither.
+* **L-np** (one message table in code) `w8_can_msgs.h` beside the sketch holds the identifiers,
+  layouts and pack/unpack helpers, used by the sketch and by the model; a layout defect would then be
+  shared by both, but the MATLAB script and the port decode the log independently from §2.16.3, so it
+  cannot pass unnoticed.
+* **L-nq** (numbers computed for this text) The log size, the fault counts of the generator, the
+  bench line count, the checksums, CRCs and stuff counts of the worked examples, and T0 were computed
+  with throwaway scripts (`uv run --no-project python`) from the definitions written here; W8b's
+  outputs must agree with them, and a disagreement is a defect of W8b or of this text, decided before
+  the log is committed.
+* **L-nr** (the law in the log) The VCU sends every input and output of its law in the frames of one
+  step, matched by the shared counter (A6), so the analysis recomputes the law by hand from the log;
+  the four `law_*_mismatch` keys and `cycle_mismatch` are part of acceptance and are 0.
+* **L-ns** (no reference line) Sea has `xline` but no `yline` (LANGUAGE.md §12.3); the figure needs
+  neither (the fit in panel 1 is a two-point line), so no library change is asked for.
+* **L-nt** (response delay) The delay is the dead time ℓ (0–50 ms in 1 ms steps) that minimizes the
+  summed absolute difference between the measured torque and the command held from ℓ earlier: an
+  integer search with an exact first minimum, robust to the rate limiter and to derating, which
+  defeat a step-response definition.
+* **L-nu** (faults and their definitions) Drops, late frames and corrupt checksums at 0.2 %, 0.2 %
+  and 0.1 % of the feedback frames, a 120 ms blackout of MCU R and a 300 ms open pedal track give
+  every analysis a few dozen real events, two of them causing VCU faults; a drop is seen as a
+  counter step above 1 modulo 16 (the blackout's 12 frames stay below 16), a late frame as a counter
+  step of 1 after more than 12 ms (a late frame is at least 13 ms after its predecessor, bus jitter
+  under 1 ms), and every interval above 12 ms is a gap event plotted in panel 2.
+* **L-nv** (files) The sketch folder holds only the sketch and its header, because `arduino-cli`
+  compiles every source file of a sketch folder; the folder name equals the sketch name, as the
+  flash script requires.
+* **L-nw** (portability) The rules of §2.16.4 (fixed-width types, no `long`, `uint32_t` clock
+  arithmetic, declarations before use, no designated initializer of `twai_message_t`) are what makes
+  "unmodified on both" hold between the ESP32's 32-bit and the Mac's 64-bit `long` and without
+  Arduino's prototype generation on the host. For the same reason no `clamp(T, T, T)`-style
+  template (`std::clamp`, `std::min`, `std::max`) is called with mixed `int32_t` and `int`
+  arguments or literals: `int32_t` is `int` on one target and `long` on the other, so such a call
+  deduces on one and fails on the other; the sketch uses the non-template `w8_clamp32` and
+  `w8_clamp64` of `w8_can_msgs.h`, and formats use `PRIu32`/`PRIX32`, never `%lu`.
+* **L-nx** (outside `make test`) `make w8-log`, `make w8-log-update` and `make w8-sketch` are
+  developer targets, run in W8b and whenever the sketch or the simulator changes; `make test` and
+  `make cross` read only the committed files.
+* **L-ny** (the model's scope) The model is the least that gives the analysis real dynamics: first
+  order motor torque with power and speed limits, longitudinal motion with rolling and aerodynamic
+  drag and no reversing, and a first-order yaw rate with understeer and the torque-difference yaw
+  moment; no tyre slip, battery, temperature or lateral velocity state. Its parameters are invented.
+
+#### 2.16.15 Sections amended with the agreement
+
+Edited with the draft (2026-11-04): §0, §1.2 (W8 joins the set by Decision 157), §6.3 ("W8
+acceptance"), §8 (row W8 and the rows W8a–W8d), §9 (Decisions 151–160, lead decisions L-nf – L-ny)
+and `sea/CLAUDE.md`'s status.
+
+Done with the agreement (2026-11-04):
+
+* **§0** and `sea/CLAUDE.md`: W8a done and agreed, next W8b.
+* **§1.2**: "Measured by the seven workloads", the set W1–W5, W7 and W8, and the versions
+  paragraph's "all seven workloads"; §0's "Scope of Sea v1" names the seven workloads.
+* **§2.16** and **§9**: Decisions 158–160 decided as option (a), lead decisions L-nf – L-ny agreed,
+  the status lines updated.
+* **§6.3**: the "W8 acceptance" paragraph records the agreement and Decision 158 (a).
+* **§8**: row 10's "all seven workloads"; row W8 started; row W8a done.
+* **LANGUAGE.md** (Decision 114's pattern): §1.2 and §10's scope rule name the seven acceptance
+  workloads (W1–W5, W7 and W8); §1.3's non-goal row no longer names `split` and file input among the
+  unused library functions (phase L added `split` and `read_lines`, which W8 uses); the "six
+  acceptance workloads" of §4.2's and §8.5's rationales updated.
+
+With the later sub-phases:
+
+* **§0** and `sea/CLAUDE.md` (W8b–W8d done as they finish).
+* **§1.2** (W8c: W8's MATLAB timing table).
+* **§6.3** (W8d: the run-directory rule with the fixtures of Decision 158; "Measured at W8d").
+* **§6.5** (phase 10: seven workloads; W8's pass criterion from its own baseline file, as W7's).
+* **§6.6**, **§6.6.1** (W8d: W8 among the byte-identical ports; the fixtures of ports packed into
+  `NAME.files/`).
+* **§8** (W8b–W8d done as they finish).
+* **Files outside the documents**: `sea/workloads/README.md`, `reference_py/compare.py`, `run_all.m`
+  (W8c); `sea/Makefile`, `.gitattributes`, `sea/CLAUDE.md`'s command list (W8b); `tests/accept.sh`,
+  `tests/cross_pack.sh` (W8d).
+
 ## 3. Intermediate files
 
 The passes of §2.1 communicate through ten text files in the temporary directory (six before
@@ -17859,6 +19068,19 @@ W2 20.31 s, W3 6.16 s, W4 22.20 s, W5 4.62 s, W7 18.87 s, all far under `SEA_COM
 compute time the report prints is unaffected (taken before the figures). The lead decisions of 9d
 are L-ma–L-md (§9).
 
+**W8 acceptance** (Decision 157; specified in §2.16, sub-phase W8a, agreed 2026-11-04; built in
+W8d). The port is `sea/ports/w8_ev_can.sea` with its token map and structural file,
+written from `sea/workloads/w8_ev_can.m` (§2.16.8, §2.16.9). `tests/accept.sh` takes it as every
+port, with one addition (Decision 158 (a)): the port's `// fixture:` line names the
+committed log `workloads/w8_ev_can/w8_ev_can.log`, which `accept.sh` copies into the run directory
+before the run, and the run-directory rule above then admits the fixtures, unchanged, beside the
+executable, `NAME.json` and `output/NAME.svg`. Every key of `reference/w8_ev_can.json` must pass its
+rule (§2.16.8: integers exact, derived floats 1e-15 relative; all expected bit-identical), the
+report must be equivalent and the figure must pass `ports/w8_ev_can.struct`. On the Linux host W8 is
+a byte-identical `ports` case (class E throughout, §2.16.11), its fixture packed as `NAME.files/`.
+The log is reproduced by `make w8-log`, not by `make test` (Decision 153). No feature gap of the
+language: §2.16.10.
+
 **Phase-4 acceptance** (Decision 19; the "done when" of phase 4, §8). Until phase 6 brings
 `write_json`, the acceptance programs write a JSON subset with `printf` and are checked on the
 named keys only:
@@ -18416,7 +19638,8 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants (specified in sub-phase 8a; built in the sub-phases 8b–8d below, §2.13) | W2 and W3 complete and accepted on both targets. **Complete** (2026-11-02): 8a–8d done, W2 and W3 accepted on the Mac by `tests/accept.sh` with W1, W4, W5 and W7 (§6.3, "Measured at 8d") and on the Linux host under both variants by Decision 127's deferred comparison (`tests/cross_accept.sh`: 4 passed, 0 failed), the gate after phase 8 passed with no relief (§2.7, "Measured at the gate after phase 8"); next phase 9 |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images (specified in sub-phase 9a; built in the sub-phases 9b–9d below, §2.14) | the plot tests pass; every port writes its figure with `--figures` and passes its structural check. **Complete** (2026-11-03): 9a–9d done, the plot tests pass, all six ports write their figures with `--figures` and pass their structural files on the Mac (`tests/accept.sh`) and on the Linux host (byte-identical SVGs for W1, W3, W4, W5 and W7 under both variants, W2 by Decision 138), the gate after phase 9 passed with no relief (§2.7, "Measured at the gate after phase 9"); next the library sub-phase and the W8 workload (to be specified), then phase 10 |
 | L | **Text library.** `read_lines`, `split`, `substr`, `parse_i64`, `parse_f64`, the i64 bitwise functions and `%x`/`%X` (LANGUAGE.md §10.9, §10.10, §10.14, §11.1; specified in sub-phase La; built in the sub-phases Lb–Lc below, §2.15) | the text-library tests pass on both targets; §2.15.3's decode runs as `lib_candump`. **Complete** (2026-11-04): La–Lc done, the text-library tests pass on both targets (`make test`; `make cross`: 2 391 passed, 0 failed, 4 deferred on the host under both variants) and `lib_candump` prints §2.15.3's output, the gate after phase L passed with no relief (§2.7, "Measured at the gate after phase L"); next the specification of the W8 workload, then phase 10 |
-| 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all six workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
+| W8 | **The EV CAN workload W8.** An original ESP32 controller sketch simulated on the Mac against an Arduino/TWAI mock and a deterministic motor and vehicle model, its committed `candump -L` log, the MATLAB reference and the Sea port (specified in sub-phase W8a, agreed 2026-11-04; built in W8b–W8d below, §2.16). **Started** (2026-11-04): W8a done; next W8b | W8 accepted on both targets (§6.3 "W8 acceptance"); `make w8-log` reproduces the committed log |
+| 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all seven workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
 
 **Phase 4 sub-phases** (decided 2026-10-21, Decisions 17–24). They run in this order, because each
 touches the passes the next one extends; inside a sub-phase the passes are written in parallel
@@ -18466,6 +19689,10 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | La | **Phase-L specification** (documents only): §2.15 (scope, the semantic contract with the agreed LANGUAGE.md text, the worked example, front end and later passes, entries 83–87, the runtime algorithms, capacity, tests, these rows, Decisions 143–150, lead decisions L-me – L-mx); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 143–150. **Done** (2026-11-03): §2.15 written, revised after one independent review (the name collisions in dumps, generators and §3.4.1; `cross_run.sh`'s rt loop; `bitnot` in class 2; the text calls' result types; rule 40 in `sl1scal.bas`; the text rows through `K5$`; the `%x` messages and C99 order; the 2³⁰ `read` cap; unused calls keeping their errors; Lc's known-answer files), and agreed; Decisions 143–149 decided as option (a), Decision 150 the user's rulings; lead decisions L-me – L-mx agreed; §0, §8, §9 and `sea/CLAUDE.md` edited with the agreement; `make check-contracts` passes |
 | Lb | **Contract, front end, bitwise, `%x`** (after La). **WP-CONTRACT** first and alone: `include/errors.inc` (codes 30–35, `SEA_E_RT_END` 36), `include/rt.inc` (entries 83–87, `SEA_ENT_COUNT` 87, the `SEA_FP_CONV` comment), `include/passes.txt` (`enum conv` with `x X`), §2.6.2's and §4.8's tables, §3.5.5's and §3.6's `fconv` letters, the LANGUAGE.md text of §2.15.2, §3.4.1's worked example with `split` renamed `parts` together with `tests/lib_check.sh`'s patterns at 2740 and 2742 (which read that example, L-mv); then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the class-2 rows with `bitnot`'s arity test, the five table rows and result types in `sc9plot.bas`, `%x`); **WP-FUSE** `passes/seafuse/*` (the elemental lists); **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (`K4$`, R37); **WP-LOWER** `passes/sealower/*` (rule 39's five rows through `K5$` and 34067's alphabets, rule 40 in `sl1scal.bas`); **WP-GEN** `passes/seagen_a64/*`, `passes/seagen_x64/*` (only if the shift selection or the `x`/`X` letters need a fix); **WP-RT-A64** `runtime/arm64_macos/rt_fmt.s` (`%x`), `tests/rt/arm64_macos/rt_lib_hex*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-RTRUN** `tests/rt/run_rt.sh`, `tests/rt/run_rt_linux.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh` (the rt `NAME.files/` sidecar); **T1** `tests/programs/lib_bit_*`, `fmt_hex`, `tests/errors/r_lib_shift_*`, `r_fmt_hex_error`, `err_lib_*`, `err_fmt_hex_*`, the renames of `fn split` to `parts` (L-mv: `tests/programs/arr_fixed_vals.sea`, `arr_locals_params.sea`, `tests/vectors/arr4e_cases.py`, `arr4d_cases.py`, `tests/passes/rs.sea`, `rs.ast`, `rs.res`, `rs.hir1`), `tests/CORPUS.md`; **T2** `tests/passes/libL_*`; then the measurement after Lb (§2.15.7) | the Lb tests of §2.15.8 pass on both targets and both variants (the text calls' dumps and compile errors included; their programs wait for Lc); every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after Lb recorded in §2.7, any relief agreed before Lc's code. **Done** (2026-11-04): WP-CONTRACT's `errors.inc` codes 30–35 (`SEA_E_RT_END` 36), `rt.inc` entries 83–87 (`SEA_ENT_COUNT` 87), `enum conv` with `x X`, the LANGUAGE.md text of §2.15.2 and §3.4.1's worked example with `split` renamed `parts`; the front end: `seaname` (the twelve names), `seacheck` (`bitand bitor bitxor bitnot shl shr sar` in class 2 with `bitnot`'s arity test at `sc6call.bas` 12990, the five text calls as classes 53–57 in `sc9plot.bas` with their result types at 26511–26514, `%x`/`%X` in `fmtp` and `ck_printf`), `seafuse` (the elemental lists at `fu4fan.bas` 30264, 30274 and 30788; `shl shr sar` among the calls with a run-time check, L-my), `sealoop` (the seven names in `K4$`, `lp0main.bas` 518; R37 needs no code, a comment at `lpbmat.bas` 55504), `sealower` (rule 40 in `sl1scal.bas`: `K3$` 4985, arity string 5005, `ON … GOTO` 5010, the body 8016–8090 with the resume code 47; rule 39's five rows through `K5$` at `sl2arr.bas` 19374 in `seacheck`'s class order `read_lines split parse_i64 parse_f64 substr`, the arity strings 19400 and 19410, the alphabets at `sl3hirl.bas` 34067), `seaexpand`, `seaopt`, `sealopt`, `seavec` and both code generators unchanged (`seaopt` folds none of the `i64` bit operations, and both backends already select `ishl ishr isar iand ior ixor`); `%x`/`%X` in `rt_fmt.s` of both runtimes (arm64 +53 lines of code, x86_64 +60) with `rt_lib_hex` (270 cases); `NAME.files/` fixtures in `run_rt.sh`, `run_rt_linux.sh`, `cross_pack.sh` and `cross_run.sh` (test `rt_fixture_files`); tests: `lib_bit_ops`, `lib_bit_elemental`, `lib_bit_untyped`, `fmt_hex`, `r_lib_shift_*` (7), `r_fmt_hex_error`, 23 compile errors `err_lib_*` and `err_fmt_hex_*`, the L-mv renames, the dumps `passes/libL_{check,hirl,rcall,bits}`; sizes in §2.7 "Measured after Lb" (`seaname` 5 638, `seacheck` 7 360, `seafuse` 6 501, `sealoop` 6 721, `sealower` 6 943; no new array letter; no pass above its projection's upper end; no relief needed); lead decisions L-my; next Lc; `make test` (rt 258, stage 1 354, shape 8, fusion 2, protocol 56, programs 2 498, plots 34, accept 2 + 6, lib_check 366, math) and `make cross` (1 250 cases packed, 0 failed to compile; default variant 1 015/0, `sse2` 1 015/0, once-only 233/0; host 2 263 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed), `make check-contracts` (138 names, 231 records, 296 formats) pass |
 | Lc | **The text runtime, its tests, the gate** (after Lb). **T1** first and before WP-RT's rt tests: `tests/vectors/libL_cases.py` and its generated files (the KAT programs and outputs, `lib_read_lines_big`'s fixture and output, the rt known answers `tests/rt/arm64_macos/rt_lib_kat.out` and `tests/rt/x86_64_linux/rt_lib_kat.out`); **WP-RT-A64** `runtime/arm64_macos/rt_text.s` (new), `rt_file.s` (`READ_LINES`), `rt_str.s` (`_sea_str_make`), `tests/rt/arm64_macos/rt_lib_*` except `rt_lib_kat.out`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; then **T1** `tests/programs/lib_read_lines_*`, `lib_split`, `lib_substr`, `lib_parse_*`, `lib_candump` with their fixtures, `tests/errors/r_lib_*` of the text calls, `tests/CORPUS.md`; the runtime sizes recorded in §2.7; then the gate after phase L (§2.15.7) | row L's "done when": the tests of §2.15.8 pass on both targets and both variants; `lib_candump` prints §2.15.3's output; every earlier output unchanged; `make test` and `make cross` pass; the gate after phase L applied, a failing program getting a relief agreed with the user before W8's code. **Done** (2026-11-04): no compiler pass, contract file or code generator changed (`git diff --stat -- passes include` is empty); **T1** `tests/vectors/libL_cases.py` (writes `tests/rt/<target>/rt_lib_kat.out`, identical on both targets, with 391 cases: 114 `parse_i64`, 206 `parse_f64`, 37 `split`, 34 `substr`; `lib_parse_f64_kat` with 416 texts and 20 literal comparisons; `lib_parse_i64_kat` with 187 texts; `lib_read_lines_big` with its fixture `big.txt`, 200 003 bytes and 1 332 lines); **WP-RT-A64**/**WP-RT-X64** `rt_text.s` (new: `SPLIT`, `PARSE_I64`, `PARSE_F64`, `SUBSTR`), `rt_file.s` (`READ_LINES`) and `rt_str.s` (`_sea_str_make`, the renamed `Lrt_str_from` / `.Lrt_str_of`) in both runtimes, sizes in §2.7 "Runtime sizes at Lc" (arm64 `rt_text.s` 500 lines, about 741 added in all; x86_64 596, about 896; both inside the estimates), stack depths in §4.8 (deepest `PARSE_F64` through `strtod`: 1 344 bytes on arm64, 1 592 steady state on x86_64; every own frame at most 320 and 312 bytes); rt tests: arm64 `rt_lib_abi`, `rt_lib_own`, `rt_lib_read`, `rt_lib_read_big`, `rt_lib_text`, `rt_lib_kat` and 41 `rt_lib_err_*` (among them `rt_lib_err_split_size`, the `ARRAY_SIZE` of `SPLIT` with a 2³¹ − 1-byte string, about 1.1 GB and 2.6 s), x86_64 `rt_lib_abi`, `rt_lib_own`, `rt_lib_lines`, `rt_lib_kat` and 48 `rt_lib_err_*` (among them `read_oom` and `split_oom` by `RLIMIT_AS`); programs `lib_read_lines_{basic,crlf,empty,bytes,twice,big}`, `lib_split`, `lib_substr`, `lib_parse_i64`, `lib_parse_f64`, `lib_parse_{f64,i64}_kat` and `lib_candump` (which prints §2.15.3's output); 25 run-time errors `r_lib_read_{missing,dir,nul,unused}`, `r_lib_split_empty`, `r_lib_substr_{lo,hi,neg}`, `r_lib_parse_i64_{empty,sign,digit,hexdigit,over,under,blank,prefix}`, `r_lib_parse_base_{low,high}`, `r_lib_parse_order`, `r_lib_parse_unused` and `r_lib_parse_f64_{empty,dots,word,hex,blank}`; **not tested**, with the reasons: the `ARRAY_SIZE` of `READ_LINES` and its line-too-long `OUT_OF_MEMORY` (each needs a file over 2 GiB), the capacity-above-2⁶² branch, the `strtod` `end` guard (unreachable after the grammar check), and on arm64 the `OUT_OF_MEMORY` paths through `_sea_alloc` (the x86_64 tests reach `READ_LINES`'s and `SPLIT`'s by `RLIMIT_AS`); the gate after phase L passes every program with no relief, §2.7 "Measured at the gate after phase L"; L-mj confirmed on both hosts (Apple's and glibc's `strtod` match Python's `float()` on all 206 known-answer texts and the 416 program texts); lead decisions L-mz–L-ne; **phase L is complete**, next the specification of W8, then phase 10; `make test` (rt 305, stage 1 354, shape 8, fusion 2, protocol 56, programs 2 536, plots 34, accept 2 + 6, lib_check 366, check_data 114, math 122) and `make cross` (1 340 cases packed, 0 failed to compile; default variant 1 053/0, `sse2` 1 053/0, once-only 285/0; host 2 391 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed) pass |
+| W8a | **W8 specification** (documents only): §2.16 (scope, parts and files, the message set, the sketch, the mock, the model, the log and its determinism, the MATLAB reference with its keys, report and figure, the port, the feature-gap audit, cross-target identity, these rows, Decisions 151–160, lead decisions L-nf – L-ny), §0, §1.2, §6.3, §8, §9, `sea/CLAUDE.md`'s status | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and decided Decisions 158–160. **Done** (2026-11-04): the specification revised after one independent review and agreed, Decisions 151–160 each decided by the user as option (a), lead decisions L-nf–L-ny agreed with the text, the amendments of §2.16.15 that come with the agreement made (§1.2, §6.3, row 10, LANGUAGE.md §1.2, §1.3 and §10); next W8b |
+| W8b | **Sketch, simulator, committed log** (after W8a; Decisions 151, 153–155). **WP-SKETCH** `workloads/w8_ev_can/w8_ev_can/w8_ev_can.ino` and `w8_can_msgs.h` (§2.16.3, §2.16.4; an original sketch, reviewed by the user; WP-SKETCH writes `w8_can_msgs.h` first, and WP-MODEL, which uses its helpers, starts only once it exists); **WP-MOCK** `workloads/w8_ev_can/host/include/Arduino.h`, `host/include/driver/twai.h`, `host/mock_core.cpp`, `host/mock_twai.cpp`, `host/sim.h`, `host/main.cpp`, `host/sketch.cpp` (§2.16.5; WP-MOCK writes `host/sim.h`, the interface between the mock and the model, first); **WP-MODEL** `host/model.cpp`, `host/model.h` (§2.16.6); **WP-BUILD** `sea/Makefile` (`w8-sim`, `w8-log`, `w8-log-update`, `w8-sketch`; none of them in `make test`), `.gitattributes`, the command list of `sea/CLAUDE.md`; then the integration: `make w8-log-update` once and the three committed files `w8_ev_can.log`, `serial.txt`, `bench_serial.txt`; then one independent read-only review of the sketch and the simulator against §2.16.3–§2.16.7 | `make w8-log` passes (both builds byte-identical to the committed files); the log has 85 621 lines and 3 607 634 bytes and the fault counts of §2.16.6 (L 17 dropped, 23 late, 12 corrupted; R 25, 30, 14 and the 12 blackout frames), checked by a throwaway count over the committed log (`timeout 120 uv run --no-project python` with a script in the scratch directory, not committed) that must give `bad_checksum` 12 (`0x181`) and 14 (`0x182`), `fb_dropped` L 17 and R 37, `fb_late` L 23 and R 30, and gap events L 40 and R 56 by A4 and A5; `bench_serial.txt` has the banner and 2 055 frame lines; `serial.txt` shows the five state changes in §2.16.6's order; `make w8-sketch` passes (compile only; flashing is the user's); the floating-point checks of §2.16.7 pass (`grep -w -e float -e double` and the floating-literal check find nothing in the sketch, the header and the host files, and both builds compile with `-Wfloat-conversion -Wdouble-promotion -Werror`); `make test` and `make cross` pass unchanged; the user has reviewed the sketch |
+| W8c | **MATLAB reference** (after W8b; Decisions 152, 156, 157, 159). **WP-MATLAB** `workloads/w8_ev_can.m` (§2.16.8, written from this text, never from the simulator's code); **WP-RULES** `workloads/reference_py/compare.py` (`RULES["w8_ev_can"]` of §2.16.8), `workloads/run_all.m` (`w8_ev_can` in its workload lists, as `w7_drivetrain` is), `workloads/README.md` (W8's row, its feature-matrix column, its run commands and its separate baseline); with Decision 159 (a) **WP-NUMPY** `workloads/reference_py/w8_ev_can.py` and `run_all.py`'s list (by an agent that did not write `w8_ev_can.m`), run to write `reference/w8_ev_can.py.json`; then the hand-over to the user, who runs §2.16.8's two `run_all` calls and commits `reference/w8_ev_can.json`, `reference/w8_ev_can.txt` and `reference/baseline_timings_matlab_w8_ev_can.json` | the three MATLAB files are committed and §1.2 records W8's timing table; `compare.py` (NumPy mode) reports every W8 key `ok` (with Decision 159 (a)); `compare.py --self-test` passes; `make test` passes unchanged |
+| W8d | **Port and acceptance** (after W8c; Decisions 157, 158). **WP-PORT** `ports/w8_ev_can.sea` (with its `// fixture:` line; §2.16.9); **WP-TOKENS** `ports/w8_ev_can.tokens`; **WP-STRUCT** `ports/w8_ev_can.struct` (§2.16.8, by an author who does not write the port); **WP-ACCEPT** `tests/accept.sh` (fixtures and the amended run-directory rule) and `tests/cross_pack.sh` (fixtures into `NAME.files/`), each with its setup errors tested; the compile and compute times recorded in §6.3 | `tests/accept.sh` passes W1, W2, W3, W4, W5, W7 and W8 (every key of `reference/w8_ev_can.json`, the report equivalent, the structural check); the port run with `--log workloads/w8_ev_can/bench_serial.txt` exits 0 (its report recorded, not compared); `make cross` passes W8 under both variants, byte-identical to the Mac but for the `Compute time` line; `make test` and `make cross` pass; W8 is accepted |
 
 ## 9. Decisions (agreed)
 
@@ -20385,6 +21612,95 @@ its options with the recommendation in bold, its reasons, the decision, and what
      LANGUAGE.md §10.9, §10.14, §11.1 (items 5, 9, 10 of §2.15.2), §2.15.4, §2.15.6, §2.15.8, L-mm.
      **Decided** (the user, 2026-11-03).
 
+**Decisions of W8** (written 2026-11-04 with the text of §2.16, sub-phase W8a, agreed by the user
+the same day: 151–157 asked with the workload's outline and decided by the user that day, each as
+option (a); 158–160 decided by the user with the agreement, each as option (a)). Each lists its options with the
+recommendation in bold, its reasons, the decision, and what it affects; §2.16.13 holds the same
+text.
+
+151. **Who writes the controller sketch.** Options: (a) **an agent writes an original sketch to
+     §2.16.4; the user reviews it and flashes it to the board if they wish**; (b) the user writes
+     the sketch and the agents build the mock and the model around it (the control law and the
+     message set then follow the user's code, and the analysis is written after it); (c) an
+     existing example sketch is adapted (excluded by the workloads' originality rule). Recommended:
+     (a). Affects §2.16.4, §2.16.12 (W8b). **Decided: (a)** (the user, 2026-11-04).
+152. **The reference oracle.** Options: (a) **a MATLAB script `sea/workloads/w8_ev_can.m`, written
+     like W1–W7; the user runs it once to produce `reference/w8_ev_can.json`, the `.txt` report and
+     the figure; no agent runs MATLAB**; (b) a NumPy script only, run by the agents (W8 would be the
+     one workload without a MATLAB reference and without a MATLAB timing, so "faster than MATLAB"
+     could not be judged); (c) the simulator writes the expected analysis itself (the oracle would
+     share the simulator's code and defects). Recommended: (a). Affects §1.2, §2.16.8, §2.16.12
+     (W8c). **Decided: (a)** (the user, 2026-11-04).
+153. **How the log reaches the tests.** Options: (a) **a fixed committed log of a few MB; a
+     separate target (`make w8-log`) rebuilds it with the simulator and checks it is
+     byte-identical; ordinary `make test` and `make cross` need no C++ compiler**; (b) the log is
+     generated by `make test` before acceptance (every test run, and the Mac half of `make cross`,
+     then needs `xcrun c++`, and a compiler change could silently change the reference input); (c)
+     a short log generated at test time plus the committed one. Recommended: (a). Affects §2.16.7,
+     §2.16.11, §2.16.12. **Decided: (a)** (the user, 2026-11-04).
+154. **The real ESP32.** Options: (a) **optional: the same `.ino` compiles and flashes; in TWAI
+     self-test mode (no other node needed) it prints a real log over Serial in the same format,
+     which Sea can read too; acceptance uses only the simulated log**; (b) required: a hardware log
+     is part of acceptance (acceptance would depend on a board and a bench); (c) no hardware path
+     (the sketch would not be checked against the real core). Recommended: (a). Affects §2.16.4,
+     §2.16.7, §2.16.9, Decision 160. **Decided: (a)** (the user, 2026-11-04).
+155. **Where the sketch, the mock and the model live.** Options: (a) **`sea/workloads/w8_ev_can/`
+     (the sketch folder, the mock, the motor and vehicle model and their build), outside the
+     compiler and the runtimes, so the rule "no C in the compiler or runtimes" still holds**; (b) a
+     repository of its own as a submodule; (c) `sea/tools/w8/`, beside the compiler's tools.
+     Recommended: (a) (the user had no preference). Affects §2.16.2, §2.16.12. **Decided: (a)** (the
+     user, 2026-11-04).
+156. **What the analysis and the figure show.** Options: (a) **per motor, commanded against
+     measured torque and the response delay; for the pair, the torque split against the yaw demand;
+     the bus load, the frame counts and every dropped or late frame; a four-panel figure**; (b) frame
+     counts and bus load only, one panel; (c) (a) plus spectra of the signals (an FFT, which Sea does
+     not have). Recommended: (a). Affects §2.16.8. **Decided: (a)** (the user, 2026-11-04).
+157. **W8 in the acceptance set.** Options: (a) **W8 joins the acceptance set as W7 did (Decision
+     114), with its own MATLAB timing file `reference/baseline_timings_matlab_w8_ev_can.json`; the
+     committed W1–W5 baseline stays untouched**; (b) W8 stays a reference workload outside the set,
+     as W6 is; (c) W8 joins and all seven workloads are rerun into the main baseline file.
+     Recommended: (a). Affects §1.2 (the set, the versions paragraph, W8's baseline), §6.3, §6.5,
+     §8 (rows W8 and 10), LANGUAGE.md §1.2 and §10 (with the agreement, §2.16.15). **Decided: (a)**
+     (the user, 2026-11-04).
+158. **How the acceptance run gets the log** (§6.3's run directory may hold only the
+     executable and what the port writes). Options: (a) **a header line `// fixture: PATH` in the
+     port (PATH relative to `sea/`); `tests/accept.sh` copies each fixture into the run directory,
+     which may then also hold the fixtures, unchanged; `cross_pack.sh` packs them as the case's
+     `NAME.files/`, which the host already copies and checks; a port may hold several such lines,
+     and the same line twice or two fixtures with the same base name are a setup error**; (b) a
+     committed copy
+     `ports/w8_ev_can.files/w8_ev_can.log` copied as the tests' `NAME.files/` are (the same rule
+     change, but a second 3.6 MB copy of the log to keep identical); (c) `accept.sh` passes the port
+     `--log <absolute path>` into the workloads directory (per-port arguments in `accept.sh`, a run
+     that reads outside its directory, and a host bundle that must rebuild the same path).
+     Recommended: (a): one committed copy, a header line in the style of Decision 127's `// cross:`
+     line, and `cross_run.sh` unchanged. Affects §6.3, §6.6.1, §2.16.9, §2.16.10, `tests/accept.sh`,
+     `tests/cross_pack.sh` (W8d), `bench/workloads.sh` (phase 10). **Decided: (a)** (the user,
+     2026-11-04).
+159. **A NumPy cross-check of the MATLAB script** (W1–W7 each have one in
+     `reference_py/`, written before MATLAB could be run). Options: (a) **yes: `reference_py/
+     w8_ev_can.py`, written in W8c from §2.16.8 by an agent that did not write `w8_ev_can.m`, run
+     before the script goes to the user; `reference/w8_ev_can.py.json` committed and compared in
+     `compare.py`'s NumPy mode**; (b) no: MATLAB is the only reference, and a defect of the script
+     shows only when the port disagrees after the user's run, which then needs a second run.
+     Recommended: (a): two independent readings of §2.16.8 agree before the user spends a MATLAB
+     run, as for W1–W7. Affects §2.16.12 (W8c), `workloads/README.md`. **Decided: (a)** (the user,
+     2026-11-04).
+160. **How the bench lets the ESP32 hear itself** (Decision 154's hardware log needs the
+     controller to receive its own frames). The core 3.3.7 offers, in the polled driver
+     `driver/twai.h`, `TWAI_MODE_NO_ACK` with the per-frame self-reception flag `self`, and in the
+     newer `esp_twai_onchip.h` a node configuration with `flags.enable_self_test` and
+     `flags.enable_loopback`. Options: (a) **the polled driver with `TWAI_MODE_NO_ACK` and `self = 1`
+     (§2.16.4), and one jumper wire from GPIO 21 (TX) to GPIO 22 (RX), no transceiver: the
+     controller then reads its own bits**; (b) the same code with a CAN transceiver board on the
+     bench (terminated), as in the car; (c) the newer driver with `enable_loopback`, which this text
+     has not established to work without any wire on the original ESP32, and which changes the API
+     the sketch uses and the mock must copy (event callbacks and receive in interrupt context instead
+     of a polled queue). Recommended: (a): no extra hardware beyond a wire, the same code as (b), and
+     the small polled mock of §2.16.5; whether (a) works on the user's board is checked when the user
+     first flashes it (not part of acceptance). Affects §2.16.4, §2.16.5, §2.16.7. **Decided: (a)**
+     (the user, 2026-11-04).
+
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
 normative section): L-ac,
@@ -21905,3 +23221,97 @@ a reading where LANGUAGE.md or the earlier rules leave a choice, written into §
 * **L-ne** (two readings of §2.15.8) `lib_parse_f64_kat`'s "300 random doubles written with
   `%.17g` and as their shortest round-trip text" reads as 150 doubles, each written both ways (300
   texts), with about 116 special texts: 416 in all. `lib_read_lines_big`'s fixture is `big.txt`.
+
+**Lead decisions of W8** (written 2026-11-04 with the text of §2.16, sub-phase W8a, revised after one
+independent review, and agreed by the user with the text and Decisions 158–160 on 2026-11-04); each
+is a reading taken because one answer is
+clearly right, written into §2.16:
+
+* **L-nf** (integers only) The sketch, its header and the simulator use no floating-point type and
+  only integer arithmetic with truncating division (`tdiv`), every value far inside `int64_t`
+  (the largest product, v·v in µm/s, is about 10¹⁵): the log then depends on no compiler, flag or
+  library, and the sketch computes on the ESP32 exactly what it computes on the Mac. `make w8-log`
+  checks the absence of `float` and `double` with `grep -w`, the absence of decimal floating
+  literals (after comments and string and character literals are stripped, nothing matches
+  `[0-9]\.[0-9]|[0-9][eE][+-]?[0-9]`, hexadecimal literals excluded), builds both simulators with
+  `-Wfloat-conversion -Wdouble-promotion -Werror`, and runs an `-O0` build with the
+  undefined-behaviour and address sanitizers beside the `-O2` build.
+* **L-ng** (the bus) The simulated bus charges every frame its exact length with stuff bits and
+  CRC-15 (§2.16.3) and arbitrates by identifier, so frame times, bus load and arbitration delays are
+  real; the analysis computes the same lengths from the logged bytes (A3), which exercises the
+  bitwise functions on every frame and checks the simulator through `bus_overlaps`. Timestamps are
+  end-of-frame times, as a receiver sees them.
+* **L-nh** (the TWAI API) The sketch uses the polled `driver/twai.h` (install, start, transmit and
+  receive with zero wait), which the core 3.3.7 ships for the plain ESP32 beside the newer callback
+  driver; the mock declares exactly the types, macros and four functions of §2.16.5 with the core's
+  signatures and field order, so a use of anything else fails to compile on the host. The core's
+  types header notes that the legacy types remain until IDF 6.0; a future core without them would
+  need a new sketch API, a change agreed then.
+* **L-ni** (the mode strap) GPIO 25 with the internal pull-up: open (a bare board) is the bench mode,
+  grounded (the car) the car mode; the mock reads it `LOW` unless `--bench`. A bare board can
+  therefore never send torque commands with `Enable` = 1 (it stays `INIT` without feedback).
+* **L-nj** (the event loop) The simulator calls `loop()` every 50 µs of simulated time and processes
+  events at equal times in a fixed order (model tick, model frames, bus, sketch); a received frame is
+  handled at most 50 µs after its end, and the control step starts exactly at its 10 ms boundary.
+* **L-nk** (timestamps) The car log's time base is T0 = 1 793 750 400 s (2026-11-04 00:00:00 UTC), so
+  its lines look like a real `candump -L` log; the analysis splits a timestamp at `.` and parses two
+  integers, so every time is an exact integer microsecond (about 1.8·10¹⁵, below 2⁵³, so MATLAB's
+  doubles hold it exactly), and `parse_f64` is not used.
+* **L-nl** (exact analysis) Every key is an integer computed exactly or a fixed short sequence of
+  IEEE operations (divisions, multiplications by constants, `sqrt`) on exact integers in the order
+  A1–A11 state, every sum below 2⁵³ (the largest, se, sxx
+  and sxy of A9, stay below 10¹⁴): MATLAB and Sea agree bit for bit, the outputs are class E, and the
+  rules are `exact` or 1e-15 relative.
+* **L-nm** (the port's data layout) Parallel arrays and an n × 8 `i64` byte matrix instead of an
+  array of structs with an array field (85 621 heap arrays); preallocation and slices instead of
+  append; `tdiv` written with `idiv`; `i64` sums.
+* **L-nn** (the timed region) Reading and decoding the log is the workload's main work, so the
+  compute time of both the script and the port runs from before reading the file to after the
+  analysis, the report and the figure outside it, as in W1–W7.
+* **L-no** (other logs) `--log PATH` lets the port analyse a bench or hardware log; lines not starting
+  with `(` (banner, boot messages) are skipped and counted, and the empty-set conventions of A2, A8
+  and A9 keep a log without feedback frames from failing. A capture from a real board must start at
+  the banner line (the ROM boot output before it trimmed by the user, §2.16.7), so that A1 stays
+  strict: a malformed frame line is still an error. Acceptance uses neither.
+* **L-np** (one message table in code) `w8_can_msgs.h` beside the sketch holds the identifiers,
+  layouts and pack/unpack helpers, used by the sketch and by the model; a layout defect would then be
+  shared by both, but the MATLAB script and the port decode the log independently from §2.16.3, so it
+  cannot pass unnoticed.
+* **L-nq** (numbers computed for this text) The log size, the fault counts of the generator, the
+  bench line count, the checksums, CRCs and stuff counts of the worked examples, and T0 were computed
+  with throwaway scripts (`uv run --no-project python`) from the definitions written here; W8b's
+  outputs must agree with them, and a disagreement is a defect of W8b or of this text, decided before
+  the log is committed.
+* **L-nr** (the law in the log) The VCU sends every input and output of its law in the frames of one
+  step, matched by the shared counter (A6), so the analysis recomputes the law by hand from the log;
+  the four `law_*_mismatch` keys and `cycle_mismatch` are part of acceptance and are 0.
+* **L-ns** (no reference line) Sea has `xline` but no `yline` (LANGUAGE.md §12.3); the figure needs
+  neither (the fit in panel 1 is a two-point line), so no library change is asked for.
+* **L-nt** (response delay) The delay is the dead time ℓ (0–50 ms in 1 ms steps) that minimizes the
+  summed absolute difference between the measured torque and the command held from ℓ earlier: an
+  integer search with an exact first minimum, robust to the rate limiter and to derating, which
+  defeat a step-response definition.
+* **L-nu** (faults and their definitions) Drops, late frames and corrupt checksums at 0.2 %, 0.2 %
+  and 0.1 % of the feedback frames, a 120 ms blackout of MCU R and a 300 ms open pedal track give
+  every analysis a few dozen real events, two of them causing VCU faults; a drop is seen as a
+  counter step above 1 modulo 16 (the blackout's 12 frames stay below 16), a late frame as a counter
+  step of 1 after more than 12 ms (a late frame is at least 13 ms after its predecessor, bus jitter
+  under 1 ms), and every interval above 12 ms is a gap event plotted in panel 2.
+* **L-nv** (files) The sketch folder holds only the sketch and its header, because `arduino-cli`
+  compiles every source file of a sketch folder; the folder name equals the sketch name, as the
+  flash script requires.
+* **L-nw** (portability) The rules of §2.16.4 (fixed-width types, no `long`, `uint32_t` clock
+  arithmetic, declarations before use, no designated initializer of `twai_message_t`) are what makes
+  "unmodified on both" hold between the ESP32's 32-bit and the Mac's 64-bit `long` and without
+  Arduino's prototype generation on the host. For the same reason no `clamp(T, T, T)`-style
+  template (`std::clamp`, `std::min`, `std::max`) is called with mixed `int32_t` and `int`
+  arguments or literals: `int32_t` is `int` on one target and `long` on the other, so such a call
+  deduces on one and fails on the other; the sketch uses the non-template `w8_clamp32` and
+  `w8_clamp64` of `w8_can_msgs.h`, and formats use `PRIu32`/`PRIX32`, never `%lu`.
+* **L-nx** (outside `make test`) `make w8-log`, `make w8-log-update` and `make w8-sketch` are
+  developer targets, run in W8b and whenever the sketch or the simulator changes; `make test` and
+  `make cross` read only the committed files.
+* **L-ny** (the model's scope) The model is the least that gives the analysis real dynamics: first
+  order motor torque with power and speed limits, longitudinal motion with rolling and aerodynamic
+  drag and no reversing, and a first-order yaw rate with understeer and the torque-difference yaw
+  moment; no tyre slip, battery, temperature or lateral velocity state. Its parameters are invented.

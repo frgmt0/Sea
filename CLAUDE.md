@@ -253,8 +253,11 @@ files, 391 rt cases per target, the programs `lib_read_lines_*`, `lib_split`, `l
 (default 1 053, `sse2` 1 053, once-only 285; host 2 391 passed, 0 failed, 4 deferred; Mac 4
 passed, 0 failed); lead decisions L-mz–L-ne; the gate after phase L passes every program with no
 relief, DESIGN.md §2.7 "Measured at the gate after phase L"). **Phase L is complete.**
-**Next:** the specification of W8 (an ESP32 controller sketch simulated on the host, writing a CAN
-log that a Sea port reads, decodes and plots), then phase 10 (benchmarks).
+**W8a agreed; next W8b** (2026-11-04, revised after one independent review; DESIGN.md §2.16, §8
+rows W8a–W8d: the workload W8 `w8_ev_can`, an ESP32 controller sketch simulated on the host,
+writing a CAN log that a Sea port reads, decodes and plots; Decisions 151–160 each decided by the
+user as option (a), lead decisions L-nf–L-ny agreed; W8 joins the acceptance set, now seven
+workloads). Then W8c, W8d and phase 10 (benchmarks).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).

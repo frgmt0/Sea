@@ -45,7 +45,7 @@ and deliberately not MATLAB-compatible; and free, tiny, portable native binaries
 
 ### 1.2 Scope of Sea v1
 
-What the six acceptance workloads (W1–W5 and W7, `sea/workloads/`) need, done well,
+What the seven acceptance workloads (W1–W5, W7 and W8, `sea/workloads/`) need, done well,
 plus the small amount of generality that keeps the language coherent. Every feature in this
 specification is required by at least one workload or by the language's own consistency (where a
 library function is included for consistency, §10 says why); features that no workload needs
@@ -59,7 +59,7 @@ Each with the reason. A later version may take any of them up through a new desi
 |----------|--------|
 | MATLAB compatibility (syntax or library names) | decided by the user; Sea follows MATLAB **numerics** where the workloads need them (linspace, round, mod, std, sort, column-major scan order) |
 | Complex numbers | no workload needs them: w3's `eig(Mlin \ Klin)` is a symmetric-definite generalized problem with real eigenvalues, which Sea solves with `eig_sym(K, M)` (§10.8) |
-| Library functions no workload uses (`tan`, `cumsum`, `inv`, `split`, general file I/O, …) | v1 is scoped by the workloads; §10.13 lists them as later library work |
+| Library functions no workload uses (`tan`, `cumsum`, `inv`, binary or random-access file I/O, …; the text input of §10.9 and §10.10, `read_lines` and `split`, is in v1 for W8) | v1 is scoped by the workloads; §10.13 lists them as later library work |
 | `f32`, integer widths other than `i64`, unsigned types | no workload needs them; `f32` would change every result |
 | N-dimensional arrays (rank > 2) | no workload uses them |
 | Sparse matrices | w2 and w4 are dense-solve and stencil problems; sparse support is a separate design |
@@ -510,7 +510,8 @@ is the same error (`arrays cannot hold Lu`).
 
 ### 4.2 Numbers: `f64` and `i64`
 
-**Rationale.** All six acceptance workloads compute in `f64`, and their integers (counts, indices, the
+**Rationale.** The acceptance workloads compute in `f64` (W8 decodes its log in `i64` and derives its
+rates in `f64`), and their integers (counts, indices, the
 LCG state, grid sizes) are exact integers that MATLAB keeps in doubles. Sea gives integers
 their own type because indices and counts are integers by nature, integer loops and address
 arithmetic are faster than conversions, the LCG is exact in `i64` without relying on the
@@ -1386,7 +1387,7 @@ outputs" (`k2 = qc_deriv(…)`) is `let (k2, _, _) = qc_deriv(…)`.
 **Rationale.** MATLAB code is shape-polymorphic because everything is a matrix; W1's
 `shaft_safety` is written with masks (`kb(m1) = …`) precisely so that it works for any shape.
 An elemental function is that code written as plain scalar logic, which is clearer and is also
-the form a compiler can fuse and vectorize. It covers every shape-polymorphic use in the six acceptance
+the form a compiler can fuse and vectorize. It covers every shape-polymorphic use in the seven acceptance
 workloads; full generics are a non-goal (§1.3). (Decision 10 in DESIGN.md §9.)
 
 ### 8.6 Recursion and inlining
@@ -1504,10 +1505,10 @@ The library is specified to the level the workloads need, with its exactness cla
 "Elemental" means the function accepts arrays with broadcasting (§8.5). Where a MATLAB function
 is replaced, its name is given. Every function here is class E unless marked **R**.
 
-**Scope rule (§1.2).** v1 contains what the six acceptance workloads (W1–W5 and W7) use, plus a small core whose
+**Scope rule (§1.2).** v1 contains what the seven acceptance workloads (W1–W5, W7 and W8) use, plus a small core whose
 inclusion is justified in the table where it is not obvious, and the text library of §10.9, §10.10
 and §10.14 (`read_lines`, `split`, `substr`, `parse_i64`, `parse_f64`, the bitwise functions,
-`%x`), which the CAN-log workload W8 uses (DESIGN.md §2.15). Everything else that a numerical
+`%x`), which the CAN-log workload W8 uses (DESIGN.md §2.15, §2.16). Everything else that a numerical
 language will eventually want is listed in §10.13 ("Later") and is not part of v1: no partial
 specification of it exists in this document.
 
