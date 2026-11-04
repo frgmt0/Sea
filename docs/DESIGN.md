@@ -113,10 +113,13 @@ the user's agreement. Phase 0 (§8) did:
    at 9c"; lead decisions L-lr–L-lz of §9); sub-phase 9d (the ports' figures, acceptance and
    close-out) is **done** (2026-11-03; §6.3 "Measured at 9d"; §2.7 "Measured at the gate after
    phase 9", which passes every program with no relief; lead decisions L-ma–L-md of §9): **phase 9
-   is complete**; next are the library sub-phase the user agreed on 2026-11-02 (`read_lines`,
-   `split`, `parse_i64`/`parse_f64`, i64 bitwise operations; LANGUAGE.md §10.13) and the W8
-   workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea port
-   reads, decodes and plots), both still to be specified and both before phase 10.
+   is complete**. Phase L (the text library the user agreed on 2026-11-02, §8 row L: `read_lines`,
+   `split`, `substr`, `parse_i64`/`parse_f64`, the i64 bitwise functions and `%x`/`%X`) has
+   started: sub-phase La is **done** (2026-11-03; revised after one independent review and agreed:
+   §2.15, Decisions 143–149 decided by the user, each as option (a), Decision 150 the user's four
+   rulings, lead decisions L-me–L-mx of §9); next is Lb (WP-CONTRACT first and alone, §2.15.9).
+   The W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea
+   port reads, decodes and plots) is specified after phase L; both come before phase 10.
    Every 0.y.z version is an alpha; 1.0.0 means v1 is done (Decision 79, §1.2).
 
 **Settled by Decision 75** (found in 5b by WP-X64; the new rule lands with 5c-2, before 5d): under
@@ -558,7 +561,7 @@ guarantee), §9.2 (`format` in the out-of-memory row), §10.10 (`make_dir` creat
 above 7 000 built lines at the upper end of phase 6 even after the compaction its `SUB`/`CALL` style
 allows, but within both 9 000 conditions, so Decision 82 gates it as Decision 50 gates
 `sealower`; `sealoop` passes 9 000 at the stress view only with phase 7's fusion, which the gate
-after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Sub-phase 9c is done (2026-11-03; bars, contours, images and PNG: `rt_plot2.s` and `rt_png.s` in both runtimes; runtime sizes in §2.7, "Runtime sizes at 9c"; lead decisions L-lr–L-lz). Sub-phase 9d is done (2026-11-03; the six ports' figures with their `.struct` files, accepted by `tests/accept.sh` and the cross run, W2's SVG by Decision 138; §6.3 "Measured at 9d"; §2.7 "Measured at the gate after phase 9", which passes every program with no relief; lead decisions L-ma–L-md): phase 9 is complete. Next: the library sub-phase the user agreed on 2026-11-02 (`read_lines`, `split`, `parse_i64`/`parse_f64` and i64 bitwise operations, LANGUAGE.md §10.13) and the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea port reads, decodes and plots); both are still to be specified and both come before phase 10.
+after phase 6 decides (Decision 88), or the measurement after 6c earlier. Sub-phase 6b is done (2026-10-28; sizes in §2.7, "Measured after 6b"; the readings its integration fixed are the lead decisions L-cy–L-dh, agreed 2026-10-28). Sub-phase 6c is done (2026-10-28; sizes in §2.7, "Measured after 6c"; lead decisions L-di–L-dq, agreed 2026-10-28); the measurement after 6c triggers no relief, so 6b-0 is not run (Decisions 82 and 87). Sub-phase 6d is done (2026-10-28; sizes in §2.7, "Measured after 6d"; lead decisions L-dr–L-ec, agreed 2026-10-28). Sub-phase 6e is done (2026-10-29; the ports W1 and W5 accepted, §6.3 "Measured at 6e"; lead decisions L-ed–L-eg, agreed 2026-10-29), and the gate after phase 6 passes every program with no relief, phase 7's fusion staying in `sealoop` (§2.7, "Measured at the gate after phase 6"): phase 6 is complete. Next: phase 7 (fusion and SIMD, §8 row 7), starting with its specification: sub-phase 7a is done (2026-10-29, revised after two reviews and agreed: §2.12, Decisions 94–113 each decided as option (a), lead decisions L-eh–L-fl agreed with the text). Sub-phase 7b is done (2026-10-29; sizes in §2.7, "Measured after 7b"; lead decisions L-fm–L-fu). Sub-phase 7d is done (2026-10-29, in parallel with 7c; §2.12.8). Sub-phase 7c is done (2026-10-30; §2.12.3 and §2.12.4 amended with its readings; sizes in §2.7, "Measured after 7c", which calls for no relief under Decision 112; lead decisions L-fv–L-gj, of which L-fv–L-fy were decided by the user on 2026-10-29 and 2026-10-30). Sub-phase 7e is done (2026-10-31; sizes in §2.7, "Measured after 7e"; lead decisions L-gk–L-hp, of which L-gk is Decision 116's; Decisions 115–117 were decided by the user). Sub-phase 7f is done (2026-11-01; the W4 port accepted, §6.3 "Measured at 7f"; sizes in §2.7, "Measured after 7f", and the gate after phase 7 passes every program with no relief, "Measured at the gate after phase 7"; lead decisions L-hq–L-ib; Decisions 118 and 119 were decided by the user). Sub-phase 7g is done (2026-11-01; the W7 port accepted, §6.3 "Measured at 7g"; port-only by Decision 120, decided by the user; lead decisions L-ic–L-ii): the user added W7 (`w7_drivetrain`) to the acceptance set on 2026-10-29 (Decision 114), and phase 7 is complete. Phase 8 (linear algebra, §8 row 8) has started: sub-phase 8a is done (2026-11-01, revised after one independent review and agreed: §2.13, Decisions 121–129 each decided as option (a), lead decisions L-ij–L-jf agreed with the text). Sub-phase 8b is done (2026-11-01; the contract changes and `@`; sizes in §2.7, "Measured after 8b"; lead decisions L-jg–L-jl), and WP-BSK-OVERLAP, the precondition of 8c, has landed in the Baysick repo (commit 8c8dee3). Sub-phase 8c is done (2026-11-01; factorizations, solves, `rcond`, `eig_sym` and the handles; sizes in §2.7, "Measured after 8c", which calls for no relief; Decision 130, amending `rcond`'s overflow rule, decided by the user; lead decisions L-jm–L-jv). Sub-phase 8d is done (2026-11-02; the ports W2 and W3 accepted, port-only with no compiler or runtime defect found, §6.3 "Measured at 8d"; the cross rule of Decision 127 with `tests/cross_accept.sh`; the gate after phase 8 passes every program with no relief, §2.7 "Measured at the gate after phase 8"; lead decisions L-jw–L-kd), and phase 8 is complete. Phase 9 (plotting, §8 row 9) has started: sub-phase 9a is done (2026-11-02, revised after one independent review and agreed: §2.14, Decisions 131–142 each as the recommended option (133 (b), the others (a)), lead decisions L-ke–L-lf agreed with the text). Sub-phase 9b is done (2026-11-03; the contract, the front end and the runtime core: the 21 plotting calls through every pass, `rt_plot.s` in both runtimes, the plot tests and the cross case kind `plots/`; sizes in §2.7, "Measured after 9b", which calls for no relief; lead decisions L-lg–L-lq). Sub-phase 9c is done (2026-11-03; bars, contours, images and PNG: `rt_plot2.s` and `rt_png.s` in both runtimes; runtime sizes in §2.7, "Runtime sizes at 9c"; lead decisions L-lr–L-lz). Sub-phase 9d is done (2026-11-03; the six ports' figures with their `.struct` files, accepted by `tests/accept.sh` and the cross run, W2's SVG by Decision 138; §6.3 "Measured at 9d"; §2.7 "Measured at the gate after phase 9", which passes every program with no relief; lead decisions L-ma–L-md): phase 9 is complete. Phase L (the text library the user agreed on 2026-11-02, §8 row L) has started: sub-phase La is done (2026-11-03, revised after one independent review and agreed: §2.15, Decisions 143–149 each decided as option (a), Decision 150 the user's four rulings, lead decisions L-me–L-mx agreed with the text). Next: Lb (WP-CONTRACT first and alone, §2.15.9), then Lc; the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log that a Sea port reads, decodes and plots) is specified after phase L, and both come before phase 10.
 
 **Scope of Sea v1.** LANGUAGE.md §1.2: what the six acceptance workloads (W1–W5 and W7, `sea/workloads/`)
 need, done well, plus the generality that keeps the language coherent; the non-goals are
@@ -8214,6 +8217,1157 @@ sub-phase, as 8b–8d did:
   `include/errors.inc` (codes 22–29, `SEA_E_RT_END`), `include/limits.inc` (`SEA_LIM_PLOT_GRID`,
   `SEA_LIM_PLOT_PX`); `include/passes.txt` unchanged; the capacity lines of `sealower`, `seagen_a64`
   and `seagen_x64`.
+
+### 2.15 Phase L: the text library (sub-phase La)
+
+**Status: agreed 2026-11-03, revised after one independent review.** This section is the
+specification of phase L of §8 (row L, between rows 9 and 10, "Text library"), written as
+sub-phase La in the way 8a and 9a specified phases 8 and 9 (§2.13, §2.14) and revised after one
+independent review (the name collisions in the dumps, the generators and §3.4.1; `cross_run.sh`'s
+own rt loop; the place of the bitwise functions in `ck_lib` and of rule 40 in `sealower`; the
+`str[]` result type; the `%x` messages and the C99 order of prefix and zeros; the capped `read`
+request; unused calls keeping their errors; the ownership of Lc's known answers). The user agreed
+on 2026-11-02 that a library sub-phase taken from LANGUAGE.md §10.13 comes before phase 10
+(`read_lines`, `split`, `parse_i64`/`parse_f64`, i64 bitwise operations); its purpose is the coming
+workload W8 (an ESP32 controller sketch simulated on the host writes a CAN bus log; a Sea port
+reads the log at run time, decodes the frames, analyses and plots them), which is specified after
+this phase, separately. Its questions are **Decisions 143–150** (§2.15.10, mirrored in §9 as
+"Decisions of phase L"): 143–149 decided by the user as the recommended option (a) on 2026-11-03,
+and Decision 150, the user's four rulings of the same day on readings of the draft (three as
+drafted; the `+` and space flags of `%x` accepted and ignored, changed from the draft's compile
+error). Its smaller readings are the lead decisions **L-me – L-mx** (§2.15.11, mirrored in §9 as
+"Lead decisions of phase L"), agreed with the text. No code, test, contract file or other document
+changes with La: the contract changes are listed in "Contract changes" below and are made by the
+work package WP-CONTRACT of sub-phase Lb, each with its document table in the same change (the
+contract rule of §2.6), and the LANGUAGE.md text of §2.15.2 is added by WP-CONTRACT, the user having
+agreed it. Until the sections listed in §2.15.12 are edited, they describe the code as built (sea
+commit f318e14, phase 9 complete) and this section is the agreed specification.
+
+#### 2.15.1 Scope
+
+**What exists today** (read from the passes, the runtimes and the contract files at f318e14):
+
+* *Strings* (LANGUAGE.md §4.4, §10.9): `str` is an immutable byte string (0 … 2³¹ − 1 bytes,
+  `SEA_LIM_STR_BYTES`) with `+` (entry `STR_CAT`), the six comparisons (`STR_CMP`, byte-wise),
+  `len(s)` (rule 32: `ldi D S - 0 16`, no call), `str(x)` (`STR_I64`, `STR_F64`), `lower(s)`
+  (`STR_LOWER`), `format` (`FORMAT`), element-wise `+` and comparisons on `str[]`, `match` on a
+  `str` scrutinee (§7.6) and element loops over `str[]` (§7.5). A `str` cannot be indexed (250
+  `str cannot be indexed`); there is no substring, byte access, search or split ("Substrings and
+  splitting are later library work (§10.13)", §4.4). Lists of strings are `str[]` (§4.8): a
+  dynamic array of `SEA_EK_STR` elements, each a counted string object, released by `sea_free`
+  (entry `FREE`) element by element.
+* *Arguments*: `args()` (entry 19 `ARGS`, rule 35) returns a fresh `str[]` of the command-line
+  arguments; every port reads its options with `for a in args() { match a { "--figures" => {
+  figures = true } … } }` (W5's lines 25–31). This is the model for a library call that returns a
+  new `str[]`: `rt_args.s` makes one new string object per element (count 1, `_sea_live` + 1) and
+  stores it in an `ARR_NEW` vector of `SEA_EK_STR`.
+* *Files*: Sea reads no file. `rt_file.s` (1 305 lines on arm64, 1 408 on x86_64) writes only:
+  `MAKE_DIR`, the JSON emitter, `_sea_file_put` (9b, private); its private helpers
+  `Lrt_file_cpath` (a NUL-terminated copy of a path, reporting a NUL byte among its bytes),
+  `Lrt_file_errno` and `Lrt_file_fail` (`_sea_err(code, site, {path, errno})`, args `se`) and the
+  host constants `RT_FILE_O_RDONLY` … are what a reader needs. `errors.inc` has `CANNOT_OPEN` 16
+  (`cannot open '%s': %s`) and `CANNOT_WRITE` 17 but no read error; the errno table has `EISDIR`
+  (id 7), `EIO`, `EACCES`, `ENOENT`, `EINVAL`.
+* *i64 operators* (LANGUAGE.md §6.1, §6.4–§6.6): `+ - *` (checked), `/` (to `f64`), `%` and
+  `idiv` (floored), comparisons. `&` and `|` are the element-wise `bool` and/or at precedence 7 and
+  8, below the comparisons (`gc >= LSL & gc <= USL` needs no parentheses), `^` is the power
+  (always `f64`); there is no `~`, `<<` or `>>` token (§3.6) and no bitwise operation on `i64`.
+  The LIR already has `iand ior ixor ishl ishr isar` (§3.6.4: shifts by 0 … 63), selected by both
+  code generators (`a64data.bas` 50535–50560: `and orr eor lsl lsr asr`; `x64data.bas`
+  50540–50570: `andq orq xorq shlq shrq sarq`, the count in `%cl`): `iand` and `ior` are written
+  widely by `sealower` and `seavec`, `ishl` by `seavec` (§2.12.6's address arithmetic), `isar` by
+  `seaopt`'s magic division (`li m k`, `isar d a m`, `seaopt.bas` 15590), `ishr` by `seavec`; only
+  `ixor` has never been written into a compiled program. LIR `bnot` is the *logical* not (1 if the
+  operand is 0).
+* *Formatting* (LANGUAGE.md §11.1): conversions `d i f F e E g G s` (`passes.txt`'s `enum conv`,
+  §3.5.5's `fconv`, §4.8's `SEA_FP_CONV`); `seacheck`'s `fmtp`/`fmtc` (`sc6call.bas` 14000–14515)
+  parse and check them; `rt_fmt.s` prints integers with its own digit loop (`Lrt_fmt_printf_int`,
+  base 10, no `snprintf`) and floats through `snprintf`.
+* *Library names*: the predeclared list is in `seaname`'s `sc_pd` (`sn0main.bas` 450–480) and in
+  `seacheck`'s (`sc0main.bas` 470–500), 12-byte slots searched by `pdx`, which accepts at most 10
+  bytes (`sn2util.bas` 1910, `sc2util.bas` 3145), so a predeclared name has at most 10; `cpre`'s
+  list of library calls with effects (`sn9cls.bas` 14645–14655: `printf print write_json make_dir
+  save_svg` and the plotting calls, L-dj); `ck_lib`'s class table (`sc6call.bas` 12595–12607,
+  classes 1–31, class 2 the elemental `idiv(i64, i64)`) and the plotting part's table-driven
+  classes 32–52 (`sc9plot.bas` `pcls`, `psig`: positional parameters, named options with defaults,
+  every parameter written, §3.5.5 "Library calls of phase 9"); `sealoop`'s elemental list
+  (`lp0main.bas` 517–518, `K4$`: `f64 i64 isnan … hypot idiv where sub2ind`), `seafuse`'s
+  elemental lists (`fu4fan.bas` 30264 the elemental calls that cannot fail, 30274 `i64 idiv
+  sub2ind`, 30788); `sealower`'s rule-36/39 tables (`sl2arr.bas` 19360–19410: `K4$` with `lower`
+  and `args`, `K5$` with the 21 plotting names).
+* *The phase rule* (§2.6.2): the table in force is empty since 9b and 259 is unreachable (L-kx);
+  phase L adds every name with its implementation, so it adds no row (L-mw).
+* *Contract files*: `rt.inc` has entries 1–82 (`SEA_ENT_COUNT` 82) and the `entries` capacity is
+  128 in `sealower`, `seagen_a64` and `seagen_x64` (L-kv), 399 in the `lirrw` passes;
+  `errors.inc` has run-time codes 1–29 (`SEA_E_RT_END` 30); `limits.inc` has no text value beyond
+  `SEA_LIM_STR_BYTES` and `SEA_LIM_EXTENT`. Every pass loads `errors`, `exits`, `consts` and
+  `records`; six load `entries` (§2.6.3).
+* *Tests*: `tests/run.sh` and `tests/cross_run.sh` already support `NAME.in`, `NAME.args`,
+  `NAME.files/` (fixtures copied into the fresh working directory, also for run-time error tests:
+  `errors/r_json_is_dir.files`) and `NAME.expect/`; `.gitattributes` keeps `tests/**` byte-exact
+  (`-text`). The runtime test runners `tests/rt/run_rt.sh` and `run_rt_linux.sh` support `.out`,
+  `.err`, `.status` and `.meta` but no `.files/`; `cross_pack.sh` packs an rt test's sidecars
+  `out err status meta` only (line 498), and `cross_run.sh` runs the x86_64 rt cases itself
+  (lines 564–594, each in a fresh `WORK` directory) without copying any fixture.
+* *Name collisions* (L-mv): a function named `split` is declared by the programs
+  `tests/programs/arr_fixed_vals.sea` 40 and `arr_locals_params.sea` 17, written by the generators
+  `tests/vectors/arr4e_cases.py` 963 and `arr4d_cases.py` 389; by the dump test `tests/passes/rs.sea`
+  2 (called at 6), whose goldens hold the name (`rs.ast` 24, 28; `rs.res` 25, 29; `rs.hir1` 28); and
+  by §3.4.1's worked example (`rs.sea`, its `sea.res` dump and the prose after it), whose `sea.res`
+  block `tests/lib_check.sh` extracts (line 2519) and mutates by patterns naming `split` (lines
+  2740, 2742). No program's expected output contains the name; the three dumps and the document
+  example do. No port or prelude function, and no test, uses any other name this phase adds.
+
+**What phase L implements**, on both targets (the row L of §8, §2.15.9):
+
+* **`read_lines(path) -> str[]`**: the whole file, split into lines (LF; one CR before an LF or at
+  the end of the file removed, as LANGUAGE.md §3.1 reads source text), a missing or unreadable
+  file a run-time error (Decision 145 (a)).
+* **`split(s, sep) -> str[]`**: the fields between non-overlapping occurrences of a non-empty
+  separator string, empty fields kept.
+* **`substr(s, lo, hi) -> str`**: the bytes `lo … hi − 1`, checked exactly as the index range
+  `lo..hi` (Decision 146 (a)).
+* **`parse_i64(s, base: 10) -> i64`** and **`parse_f64(s) -> f64`**: exact grammars, the
+  `f64` result correctly rounded; malformed text a run-time error (Decision 143 (a)).
+* **i64 bitwise functions** `bitand bitor bitxor bitnot shl shr sar`, elemental (Decision
+  144 (a)).
+* **`printf`/`format`/`error` conversions `%x` and `%X`** for `i64` (Decision 147 (a)).
+* Runtime entries 83–87 (§2.15.5), the new errors 30–35 (Decision 148 (a)), the runtime file
+  `rt_text.s` per target, `READ_LINES` in `rt_file.s`, `%x` in `rt_fmt.s`.
+* The tests of §2.15.8, the rt runners' `NAME.files/`, and the worked example of §2.15.3 as a
+  program test, which proves the API sufficient for W8's decode.
+* Every earlier program's output unchanged bit for bit, on both targets and both x86_64 variants.
+
+**Not in phase L**: W8 itself (its sketch, simulator, log, port, reference data and acceptance
+are specified after this phase); substring syntax `s[a..b]` and `$` on a `str`, `byte`,
+`starts_with`, `ends_with`, `find_str`, `join`, `upper` (LANGUAGE.md §10.13; none is needed by
+the decode of §2.15.3, Decision 146); whitespace-run splitting; general file output (`create`,
+`fprintf`, `close`), streaming input, standard input, `getenv`, `exit`; bitwise operators
+(Decision 144); `%c`, `%o`; element-wise forms of the text calls over `str[]` (L-mt); vector
+(SIMD) forms of the bitwise functions (L-mr); speed (phase 10).
+
+**Contract changes** (WP-CONTRACT, the first package of Lb, alone, before any other Lb code):
+
+1. `include/errors.inc` (Decision 148 (a)): the six run-time errors of §2.15.2 ("Run-time
+   errors"), codes 30–35, appended to `SEA_ERROR_LIST` under a comment line `// run time,
+   phase L: the text library (LANGUAGE.md 9.2, 10.9, 10.10, 10.14; DESIGN.md 2.15.2)`, and
+   `SEA_E_RT_END` becomes 36; their rows in §2.6.2's error table in the same change. Every pass
+   grows by six `DATA` lines.
+2. `include/rt.inc`: the five entries of §2.15.5, ids 83–87, appended to `SEA_ENTRY_LIST`
+   (`SEA_ENT_COUNT` becomes 87), their rows moved into §4.8's Id-first table in the same change;
+   the comment of `SEA_FP_CONV` and its §4.8 row gain `x X` (Decision 147 (a)). As in 9b all five
+   ids enter at Lb, so `sealower`'s rows can name them; a program calling an entry whose symbol a
+   runtime does not yet define fails only at link until Lc (L-lf's reading). The `entries`
+   capacity stays 128 (87 used). The six passes that load `entries` grow by five `DATA` lines.
+3. `include/passes.txt` (Decision 147 (a)): `enum conv d i f F e E g G s x X` (one line changed,
+   no record format changes; the `records` block keeps its line count), with §3.5.5's `fconv` row
+   and §3.6's `fconv` text.
+4. `include/limits.inc`: **no change** (L-mu: no new limit; lines are bounded by
+   `SEA_LIM_STR_BYTES`, their number by `SEA_LIM_EXTENT`).
+5. LANGUAGE.md gains the text of §2.15.2 ("Agreed LANGUAGE.md text"), written by WP-CONTRACT,
+   the user having agreed it.
+6. Derived, not contract files: `tests/la/gen_consts.sh`'s header (L-jd) picks up the new values
+   with no change; the rt tests take the codes from `errors.inc` as today.
+
+#### 2.15.2 The semantic contract of phase L
+
+LANGUAGE.md has no text for these functions yet (§10.13 only names them); this subsection is
+their contract, written for the decided options (Decisions 143–150), with the LANGUAGE.md text
+at its end. Every function is class E (LANGUAGE.md §6.8): the same bytes and values on both targets and
+both x86_64 variants.
+
+**Signatures** (read by pass 2a as §2.14.2's are, L-kg: parameters before the first default are
+positional, a parameter with a default is an option given by name only):
+
+| Call | Positional parameters | Options (default) | Result | Elemental |
+|------|------------------------|-------------------|--------|-----------|
+| `read_lines` | `path: str` | — | `str[]` | no |
+| `split` | `s: str, sep: str` | — | `str[]` | no |
+| `substr` | `s: str, lo: i64, hi: i64` | — | `str` | no |
+| `parse_i64` | `s: str` | `base: i64 (10)` | `i64` | no |
+| `parse_f64` | `s: str` | — | `f64` | no |
+| `bitand`, `bitor`, `bitxor` | `a: i64, b: i64` | — | `i64` | yes |
+| `bitnot` | `a: i64` | — | `i64` | yes |
+| `shl`, `shr`, `sar` | `a: i64, n: i64` | — | `i64` | yes |
+
+An untyped integer literal argument is `i64` (LANGUAGE.md §4.2: no parameter here takes `f64`).
+Any other argument type, a missing positional argument, one argument too many or an option given
+positionally (`parse_i64(s, 16)`) is 243 at the `call` (`no overload of 'parse_i64' accepts (str,
+i64)`); an unknown name is 224 at the `narg` (`parse_i64(s, radix: 16)`), a repeated one 225; a
+`ref` argument is 255: for the five text calls naming the parameter (`split(ref s, ",")` is `'s' is
+not a ref parameter`, as for the plotting calls, L-jm), for the seven bitwise functions naming the
+function (`bitand(ref a, 1)` is `'bitand' is not a ref parameter`, as for `idiv` and every other
+call of `ck_lib`'s classes 1–26 today, `sc6call.bas` 12672). The text calls take scalars only
+(`parse_f64(fields)` of a `str[]` is 243, L-mt). The elemental functions accept `i64` arrays
+(dynamic or fixed-size) with LANGUAGE.md §6.3's broadcasting, as `idiv` does, and give an `i64`
+array of the broadcast shape, fixed-size or dynamic by the rule `idiv` follows today. `read_lines`
+has effects (L-me): it cannot appear in an elemental function (228) and is never removed as dead.
+The others have no effects in LANGUAGE.md §8.1's sense (an error is not an effect), but a call
+whose value is never used is still evaluated and still reports its error, as LANGUAGE.md §5.4 says
+of checks (removing or keeping a check never changes which error a program reports): `let x =
+parse_i64("z")` with `x` unused stops with `cannot parse "z" as i64 in base 10`, and so does an
+unused `shl(1, 64)` (L-me).
+
+**`read_lines(path)`** (Decisions 145 (a); L-mf, L-mg). Opens the file `path` (a host path
+relative to the working directory, LANGUAGE.md §11.3), reads all its bytes and returns them as a
+new `str[]` of lines, in file order:
+
+* A line ends at each LF byte (0x0A), which is not part of the line. A CR byte (0x0D) immediately
+  before that LF is removed too. After the last LF, the bytes that remain (if any) are one more
+  line, from which one CR at the very end of the file is removed. So `a\nb` and `a\nb\n` both give
+  `["a", "b"]`, `a\r\nb\r\n` gives `["a", "b"]`, `a\n\n` gives `["a", ""]`, `\n` gives `[""]`,
+  `a\r\r\n` gives `["a\r"]`, `a\rb` gives `["a\rb"]`, `a\r` gives `["a"]`, and an empty file gives
+  the empty `str[]`. These are LANGUAGE.md §3.1's rules for source lines.
+* Every other byte is kept as it is (NUL, bytes ≥ 0x80, a UTF-8 byte order mark): Sea never
+  decodes text (§4.4).
+* Errors, in this order: a path holding a NUL byte (reported with the reason `Invalid argument`,
+  as `make_dir` treats such a path, but with `cannot open`) or a failed `open` is `cannot open
+  '%s': %s` (16, the path as given and the errno text: `cannot open 'can.log': No such file or
+  directory`);
+  a failed `read` is `cannot read '%s': %s` (new code 30; a directory gives `cannot read 'logs':
+  Is a directory`); more than `SEA_LIM_EXTENT` lines is `invalid array size %d` (8) with their
+  number, a line longer than `SEA_LIM_STR_BYTES` or no memory `out of memory` (14). Nothing is
+  returned before the whole file is read; the file is not kept open.
+
+**`split(s, sep)`** (L-mh). `sep` must not be empty (`empty separator`, new code 34). The
+occurrences of `sep` in `s` are found left to right without overlap (after a match the scan
+continues after it); the result has one more element than there are occurrences: the bytes
+before the first, between consecutive ones, and after the last. Empty fields are kept and nothing
+is trimmed: `split("a,,b", ",")` is `["a", "", "b"]`, `split(",a,", ",")` is `["", "a", ""]`,
+`split("", ",")` is `[""]`, `split("abc", ",")` is `["abc"]`, `split("aaa", "aa")` is `["", "a"]`,
+`split("a::b", "::")` is `["a", "b"]`. Every element is a new string. More than `SEA_LIM_EXTENT`
+fields is `invalid array size %d`; no memory `out of memory`.
+
+**`substr(s, lo, hi)`** (Decision 146 (a); L-mk). The bytes at the positions of the range
+`lo..hi` (LANGUAGE.md §5.1: `lo`, `lo + 1`, …, `hi − 1`; empty when `lo >= hi`) as a new `str`,
+checked as that range is checked against an extent `len(s)` in dimension 0 (§5.4): an empty range
+never fails (`substr(s, 9, 2)` is `""` for any `s`); otherwise `lo` outside `0 … len(s) − 1` is
+`index lo out of bounds for dimension 0 of extent len(s)`, and else `hi − 1` outside it is the
+same message with `hi − 1`. So `substr("(1.5)", 1, 4)` is `"1.5"`, `substr("ab", 0, 3)` reports
+`index 2 out of bounds for dimension 0 of extent 2`, `substr("ab", -1, 1)` reports `index -1 …`.
+No memory: `out of memory`.
+
+**`parse_i64(s, base: 10)`** (Decision 143 (a); L-mi). `base` must be 2 … 36 (`invalid base
+%d`, new code 33, checked first). Then `s` must be, in full, an optional sign `+` or `-`
+followed by one or more digits of the base, where `0`–`9` are 0–9 and `a`–`z` and `A`–`Z` are
+10–35; no blank, no `_`, no `0x` prefix, no other byte. Its value must be in −2⁶³ … 2⁶³ − 1.
+Otherwise the error is `cannot parse "%s" as i64 in base %d` (new code 31) with the whole text
+and the base. So `parse_i64("-123")` is −123, `parse_i64("18FF50E5", base: 16)` is 419 385 573,
+`parse_i64("ff", base: 16)` is 255, `parse_i64("-9223372036854775808")` is −2⁶³,
+`parse_i64("101", base: 2)` is 5; `""`, `"+"`, `" 5"`, `"5 "`, `"1_000"`, `"0x1F"` (base 16),
+`"12a"` (base 10), `"9223372036854775808"` are errors.
+
+**`parse_f64(s)`** (Decision 143 (a); L-mj). `s` must be, in full, one of the words `inf`, `Inf`,
+`+inf`, `+Inf` (+∞), `-inf`, `-Inf` (−∞), `nan`, `NaN` (a NaN), or a decimal number
+
+```
+[ "+" | "-" ] ( digits [ "." [ digits ] ] | "." digits ) [ ( "e" | "E" ) [ "+" | "-" ] digits ]
+digits := one or more of 0-9
+```
+
+whose value is the IEEE-754 binary64 value nearest to its exact decimal value, ties to even (the
+rule of LANGUAGE.md §3.4 for literals), a value too large becoming ±∞ and one too small the nearest
+subnormal or ±0; the sign of a zero is kept (`"-0"` is −0.0). The words are those Sea itself
+writes (`str` writes `nan` `inf` `-inf`, `printf` writes `NaN` `Inf` `-Inf`), so `parse_f64(str(x))`
+returns x for every x but the NaN payloads, which are not observable (§6.5). Anything else is
+`cannot parse "%s" as f64` (new code 32): `""`, `"."`, `"1.2.3"`, `" 1"`, `"1e"`, `"0x1p3"`,
+`"Infinity"`, `"-nan"`, `"1_0"`. So `parse_f64("1700000000.123456")` is the double
+1700000000.12345600128173828125 (exactly), `parse_f64(".5")` and `parse_f64("5e-1")` are 0.5, `parse_f64("1e309")`
+is +∞.
+
+**Bitwise functions** (Decision 144 (a); L-ml). On the 64-bit two's-complement representation:
+`bitand(a, b)`, `bitor(a, b)`, `bitxor(a, b)` bit by bit; `bitnot(a)` every bit inverted (−a − 1);
+`shl(a, n)` the bits moved n places left, zeros entering, the bits leaving discarded (never
+`integer overflow`: `shl(1, 63)` is −2⁶³, `shl(3, 63)` is −2⁶³); `shr(a, n)` logical, n places right
+with zeros entering (`shr(-1, 60)` is 15); `sar(a, n)` arithmetic, copies of the sign bit entering
+(`sar(-16, 2)` is −4, `sar(-1, 63)` is −1). `n` must be 0 … 63, else `invalid shift count %d`
+(new code 35) with n, reported after both arguments are evaluated; on arrays the first failing
+element in increasing linear order, as for any elemental check (§8.5). None of them is a constant
+expression (§7.2): a mask is written as a literal (`0x3FFFF`).
+
+**`%x` and `%X`** (Decisions 147 (a), 150 (d); L-mm). Conversions of LANGUAGE.md §11.1 for an
+`i64` argument (an untyped literal is `i64`); any other argument type is 210 with the conversion as
+written and `i64` (`printf("%x", 1.5)` is `format "%x" expects i64, found f64`, `printf("%08X",
+true)` is `format "%08X" expects i64, found bool`; unlike `%d`, `bool` is not accepted). The value
+is the 64 bits as an unsigned hexadecimal number, `x` with the digits `0-9a-f`, `X` with `0-9A-F`
+(`%x` of −1 is `ffffffffffffffff`), with C99's rules (§7.21.6.1): the precision is the minimum
+number of digits (zeros in front; a precision 0 with the value 0 prints no digit); `#` puts `0x`
+or `0X` before a non-zero value; the output is laid out in C's order, the prefix, then the zeros
+(of the precision, or of the `0` flag up to the width when there is no precision and no `-`),
+then the digits, then the spaces of the width on the left (or on the right with `-`); the `0`
+flag is ignored when a precision is given. The flags `+` and space are accepted and have no effect,
+as C defines them for signed conversions only (Decision 150 (d)). `printf("%08X", 0x18FF50E5)`
+prints `18FF50E5`, `printf("%#x", 255)` prints `0xff`, `printf("%#x", 0)` prints `0`,
+`printf("%#010x", 255)` prints `0x000000ff`, `printf("%#.4x", 255)` prints `0x00ff`,
+`printf("%+x", 255)` and `printf("% x", 255)` print `ff`.
+
+**Run-time errors** (LANGUAGE.md §9.2; Decision 148 (a); texts in `errors.inc`; raised by the
+entry, or by the `chk` of rule 40 for the shifts, through `_sea_err(code, site, slots)`, the line
+on standard error `<file>:<line>: error: <message>`, status 1). Existing codes reused: `cannot open
+'%s': %s` (16), `index %d out of bounds for dimension %d of extent %d` (1), `invalid array size
+%d` (8), `out of memory` (14). New codes, appended in the run-time range:
+
+| Name | Code | Args | Text | Raised by |
+|------|-----:|------|------|-----------|
+| `CANNOT_READ` | 30 | `se` | `cannot read '%s': %s` | `read_lines` when `read` fails (the path as given, the errno text) |
+| `PARSE_I64` | 31 | `si` | `cannot parse "%s" as i64 in base %d` | `parse_i64` with a text outside the grammar or the range (the whole text, the base) |
+| `PARSE_F64` | 32 | `s` | `cannot parse "%s" as f64` | `parse_f64` with a text outside the grammar |
+| `PARSE_BASE` | 33 | `i` | `invalid base %d` | `parse_i64` with `base` outside 2 … 36 |
+| `SPLIT_SEP` | 34 | - | `empty separator` | `split` with `sep == ""` |
+| `SHIFT_COUNT` | 35 | `i` | `invalid shift count %d` | `shl`, `shr`, `sar` with n outside 0 … 63 |
+
+The check order of each call is its parameter order (L-kg): `parse_i64` the base, then the text;
+`substr` the range as above; `read_lines` the path's NUL, `open`, `read`, then the count and
+memory. A text is quoted as given, whatever its bytes and length (as `invalid color "%s"`), L-mi.
+
+**Agreed LANGUAGE.md text** (added by WP-CONTRACT of Lb, the user having agreed it; each item
+names its carrier):
+
+1. §4.4, the last two sentences become (Decision 146): "*No mutation; building is `+` and
+   `format`, taking apart is `substr` and `split`, and `parse_i64` and `parse_f64` read numbers
+   (§10.9). Byte access and the slice syntax `s[a..b]` are later library work (§10.13).*"
+2. §8.1, the **Effects** bullet (L-me): "*A function **has effects** if it writes output
+   (`printf`, `print`, `write_json`, `make_dir`, `save_svg`, the plotting calls), reads a file
+   (`read_lines`), has a `ref` parameter, or calls a function with effects.*"
+3. §9.2's table (Decision 148): the row "file or directory cannot be created/written" names
+   `read_lines` beside `write_json`, `save_svg`, `make_dir` and gains `cannot read '%s': %s`; new
+   rows "text that is not a number (`parse_i64`, `parse_f64`, §10.9)" with `cannot parse "%s" as
+   i64 in base %d`, `cannot parse "%s" as f64`, `invalid base %d`; "`split` with an empty
+   separator" with `empty separator`; "shift count outside 0 … 63 (§10.14)" with `invalid shift
+   count %d`; the out-of-memory row's parenthesis gains "*or a line of `read_lines` longer than
+   2³¹ − 1 bytes*".
+4. §10, the scope rule gains (after "a small core …"): "*and the text library of §10.9, §10.10 and
+   §10.14 (`read_lines`, `split`, `substr`, `parse_i64`, `parse_f64`, the bitwise functions,
+   `%x`), which the CAN-log workload W8 uses (DESIGN.md §2.15)*".
+5. §10.9's table gains the rows `substr(s, lo, hi)`, `split(s, sep)`, `parse_i64(s, base: 10)`,
+   `parse_f64(s)` with the texts of the four paragraphs above ("`substr`", "`split`",
+   "`parse_i64`", "`parse_f64`" with the grammar), each function's examples included.
+6. §10.10's table gains `read_lines(path)` with the paragraph "`read_lines`" above.
+7. §10.13's rows (Decisions 144–147): *strings* becomes `upper join starts_with ends_with
+   find_str byte`, the slice syntax `s[a..b]`; *files and environment* loses `read_lines`;
+   *language* becomes `match` on `i64`; `printf` conversions `%c %o`; bitwise operators.
+8. A new **§10.14 Bitwise operations on `i64`** (Decision 144 (a); placed after §10.13 so that
+   §10.13 keeps the number §4.4, §6.6, §9.3 and Appendix C cite): the table of the seven functions
+   with the paragraph "Bitwise functions" above, and: "*`&` and `|` remain the `bool` operators of
+   §6.4 and `^` the power of §6.5. (MATLAB `bitand`, `bitor`, `bitxor`, `bitshift`.)*"
+9. §11.1's conversion table gains the row `x`, `X` | `i64` | the paragraph "`%x` and `%X`"
+   above, with the sentence "*The flags `+` and space are accepted and have no effect on `x` and
+   `X` (C defines them for signed conversions only).*" (Decision 150 (d)); the sentence on
+   undefined flag combinations is unchanged (no combination with `x` or `X` is undefined in C).
+10. §11.3, the first sentence becomes: "*Sea v1 reads files only through `read_lines` (§10.10),
+    writes them only through `write_json` (§11.4) and `save_svg` (§12), and creates directories
+    with `make_dir`; general file output is in §10.13.*"
+11. Appendix C's predeclared functions gain `bitand bitnot bitor bitxor parse_f64 parse_i64
+    read_lines sar shl shr split substr` in alphabetical place, and the closing parenthesis gains:
+    "*Of the names phase L added, `split`, `parse_f64`, `parse_i64` and `read_lines` were listed
+    in §10.13 beforehand; `substr`, `bitand`, `bitor`, `bitxor`, `bitnot`, `shl`, `shr` and `sar`
+    were not, so a program that used one of them as a local name now gets `local name shadows a
+    predeclared name`, and as a top-level name `redefinition of predeclared name`.*"
+
+Decisions 143–150 being decided as written here, no item depends on an open choice.
+
+#### 2.15.3 The worked example: decoding a `candump -L` log
+
+The API is judged by writing W8's decode with it. A `candump -L` log has one frame per line,
+`(<seconds>.<microseconds>) <interface> <id>#<data>`: a standard identifier is 3 hex digits, an
+extended one 8; the data are 0–8 bytes as 2 hex digits each (none: `123#`); a remote frame is
+`<id>#R`. The program below uses only §2.15.2's functions and what LANGUAGE.md already has; it is
+the program test `lib_candump` (§2.15.8), its expected output derived by hand from this section.
+
+```sea
+struct Frame {
+    t: f64          // timestamp [s]
+    id: i64         // identifier, 11 or 29 bits
+    ext: bool       // extended (29-bit) identifier
+    rtr: bool       // remote transmission request
+    dlc: i64        // data length [bytes], 0 ... 8
+    data: i64[]     // the dlc data bytes, each 0 ... 255
+}
+
+// One candump -L line: "(1700000000.123456) can0 123#DEADBEEF", "... 18FF50E5#01020304",
+// "... 7FF#" (no data) or "... 321#R" (remote frame, as W8's simulator writes it; a
+// candump that writes the data length after R, "321#R4", stops at parse_i64 below).
+fn decode_line(line: str) -> Frame {
+    let f = split(line, " ")
+    if len(f) != 3 {
+        error("not a candump -L line: \"%s\"", line)
+    }
+    let ts = f[0]
+    let nt = len(ts)
+    if nt < 3 || substr(ts, 0, 1) != "(" || substr(ts, nt - 1, nt) != ")" {
+        error("bad timestamp \"%s\"", ts)
+    }
+    let t = parse_f64(substr(ts, 1, nt - 1))
+    let p = split(f[2], "#")
+    if len(p) != 2 {
+        error("bad frame \"%s\"", f[2])
+    }
+    let ext = len(p[0]) == 8
+    if !ext && len(p[0]) != 3 {
+        error("bad identifier \"%s\"", p[0])
+    }
+    let id = parse_i64(p[0], base: 16)
+    let idMax = if ext { 0x1FFFFFFF } else { 0x7FF }
+    if id < 0 || id > idMax {
+        error("identifier out of range \"%s\"", p[0])
+    }
+    let d = p[1]
+    let rtr = d == "R"
+    var dlc = 0
+    if !rtr {
+        if len(d) % 2 != 0 || len(d) > 16 {
+            error("bad data \"%s\"", d)
+        }
+        dlc = idiv(len(d), 2)
+    }
+    var data = filled(0, dlc)
+    for k in 0..dlc {
+        data[k] = parse_i64(substr(d, 2 * k, 2 * k + 2), base: 16)
+        if data[k] < 0 {
+            error("bad data byte in \"%s\"", d)
+        }
+    }
+    return Frame { t: t, id: id, ext: ext, rtr: rtr, dlc: dlc, data: data }
+}
+
+// A little-endian signed 16-bit signal in data bytes k and k + 1, times scale [unit per bit].
+fn signal_s16le(fr: Frame, k: i64, scale: f64) -> f64 {
+    if k < 0 || k + 1 >= fr.dlc {
+        error("frame %d: no bytes %d-%d in %d data bytes", fr.id, k, k + 1, fr.dlc)
+    }
+    let raw = bitor(fr.data[k], shl(fr.data[k + 1], 8))   // 0 ... 65535
+    let v = sar(shl(raw, 48), 48)                         // sign-extended: -32768 ... 32767
+    return v * scale
+}
+
+for line in read_lines("can.log") {
+    if len(line) == 0 {
+        continue
+    }
+    let fr = decode_line(line)
+    printf("%.6f id %d ext %d rtr %d dlc %d", fr.t, fr.id, fr.ext, fr.rtr, fr.dlc)
+    if fr.dlc >= 4 {
+        printf(" signal %.2f", signal_s16le(fr, 2, 0.1))
+    }
+    if fr.ext {   // J1939 fields of a 29-bit identifier: priority, PGN (PDU2 form), source
+        printf(" prio %d pgn %d src %d", shr(fr.id, 26), bitand(shr(fr.id, 8), 0x3FFFF), bitand(fr.id, 0xFF))
+    }
+    print("\n")
+}
+```
+
+With the fixture `can.log` holding the four lines `(1700000000.123456) can0 123#DEADBEEF`,
+`(1700000000.123500) can0 18FF50E5#0102030405060708`, `(1700000000.124000) can0 7FF#` and
+`(1700000000.125000) can0 321#R`, each ended by LF, the program prints:
+
+```
+1700000000.123456 id 291 ext 0 rtr 0 dlc 4 signal -416.20
+1700000000.123500 id 419385573 ext 1 rtr 0 dlc 8 signal 102.70 prio 6 pgn 65360 src 229
+1700000000.124000 id 2047 ext 0 rtr 0 dlc 0
+1700000000.125000 id 801 ext 0 rtr 1 dlc 0
+```
+
+Derivation: line 1's bytes 2–3 are `BE EF`, raw = 0xEFBE = 61 374, sign-extended 61 374 − 65 536 =
+−4 162, times 0.1 (the `i64` converted, one IEEE product) −416.20000000000005, printed `%.2f`
+`-416.20`; line 2's are `03 04`, raw 0x0403 = 1 027, 102.7 → `102.70`; 0x18FF50E5 = 419 385 573,
+its bits 26–28 are 6, the identifier shifted right by 8 is 0x18FF50 and 0x18FF50 & 0x3FFFF = 0xFF50 =
+65 360, bits 0–7 0xE5 = 229; the timestamps are the doubles nearest the decimal texts, which `%.6f` prints back
+as written (checked with Python's correctly rounded `float` and `%` under `uv`). With `%x`/`%X`
+(Decision 147 (a)) the identifiers print in candump's form with `printf("%03X", fr.id)` or `%08X`.
+
+**What the example shows.** Reading the file is `read_lines`; the fields are `split` on `" "` and
+`"#"`; the parentheses come off with `substr` and `len`; hex identifiers and data bytes are
+`parse_i64(…, base: 16)` of two-byte `substr`s; the timestamp is `parse_f64`; the frame kind is a
+string comparison (`d == "R"`); the signal and the J1939 fields are the bitwise functions. Nothing
+else is needed: no byte access, no search, no slice syntax, no whitespace splitting (candump -L
+writes single spaces). Error handling is the program's own checks plus the run-time errors of the
+parse calls (Decision 143 (a)); a malformed line stops the program with the line of the failing
+call. A sign before a hex field (`+F`) would parse (L-mi); the checks `id < 0` and `data[k] < 0`
+reject a negative one, and `candump` never writes a sign. The remote-frame test `d == "R"`
+matches the form W8's simulator writes (`<id>#R`, W8 being specified after phase L); a remote
+frame written `321#R4` (the data length after `R`, as recent `candump` versions may write it) is
+not `"R"`, so the decode takes it for data and stops at `parse_i64("R4", base: 16)` with `cannot
+parse "R4" as i64 in base 16`, which is the intended behaviour for a form the example does not
+claim to read.
+
+#### 2.15.4 Front end and the later passes
+
+**The phase rule** (§2.6.2): unchanged and empty. The twelve names enter the predeclared list in
+Lb with their front end; the five text calls compile from Lb and link from Lc (L-lf's reading,
+L-mw). No test names a removed word, since none is removed.
+
+**Pass 1** (`seaparse`): no change (Decision 144 (a): no new token or precedence; the calls and
+the named option are ordinary call syntax).
+
+**`seaname`** (Lb): the twelve names `bitand bitnot bitor bitxor parse_f64 parse_i64 read_lines
+sar shl shr split substr` in `sc_pd`'s list (`sn0main.bas` 450–480; the longest, `read_lines`, has
+10 bytes, exactly the most `pdx` accepts (`sn2util.bas` 1910, `sc2util.bas` 3145); the slot string
+grows by 144 bytes, far below Baysick's 65 536); `read_lines` in `cpre`'s list of calls with effects (`sn9cls.bas` 14645–14655; L-me).
+The tests and examples that define `fn split` are renamed to `parts` by WP-CONTRACT and T1
+(§2.15.1, L-mv). Estimate 3–10 lines, plus six `DATA` lines.
+
+**`seacheck`** (Lb):
+
+* *Names*: the same twelve in `sc0main.bas` 470–500.
+* *Bitwise*: `bitand bitor bitxor shl shr sar` join `ck_lib`'s class 2 (`idiv`'s: two `i64`
+  arguments, untyped literals `i64`, the result `i64`, arrays broadcast by `lbc`, LANGUAGE.md
+  §6.3; `sc6call.bas` 12595–12607), one table entry each; `bitnot` joins class 2 as well, with an
+  arity test at the class's branch (`sc6call.bas` 12990: for the name `bitnot` one argument of type
+  `i64`, the result `i64`; else the shared arity and type errors), so it reaches neither the
+  `lred` path of classes ≥ 16 (12971) nor the reference-argument path (12670–12675), and the
+  error-path result type of class 2 (12915, `i64`) holds for all seven. The written form is `lib
+  bitnot 1`. An `f64` or `bool` argument is 243 with the argument types, exactly as `idiv(1.5, 2)`
+  is today; error 255 names the function, as for `idiv`.
+* *Text calls*: classes 53–57 (`read_lines`, `split`, `parse_i64`, `parse_f64`, `substr`) in the
+  table-driven part of `sc9plot.bas`: `pcls`'s name table gains the five names (positions 22–26,
+  so `32 + (P − 1) / 12` gives 53–57), `psig` their signatures in its codes (`s/`, `ss/`, `s/i`,
+  `s/`, `sii/`: positional before `/`, options after; the names `path`, `s sep`, `s base`, `s`,
+  `s lo hi`; the one default `10` of `base`; `psig`'s group string, read with `SEG$(…, 2 * Z −
+  63, …)`, gains the five groups), and the result type per class: after `sc9plot.bas` 26510
+  (which sets `M(J, 1)` to 6 or 7 for the plotting calls, 1 for the others through 26500), classes
+  53 and 54 set `M(J, 1)` with `CALL "tarr"` (`sc2util.bas` 3535) for a rank-1 dynamic `str[]`
+  (element type 5), 55 sets 3 (`i64`), 56 sets 4 (`f64`), 57 sets 5 (`str`), on the error path too,
+  so an argument error does not change the type of the enclosing expression. The shared argument
+  walk then gives 224, 225, 243, 255 (naming the parameter, L-jm) and the default as for the
+  plotting calls; `ck_lib`'s fallback at 12635 already sends unknown names to this part, and 13597
+  (`IF Z > 31`) already admits classes above 31. The part's header comment says it now holds the
+  table-driven library calls of phases 9 and L.
+* *Written form* (§3.5.5): `lib read_lines 1`, `lib split 2`, `lib substr 3`, `lib parse_i64 2`
+  (the omitted `base` a `ci 10` at the call's position, as 9b inserts defaults; out-of-order
+  evaluation cannot arise, since only one option exists and it comes last), `lib parse_f64 1`,
+  `lib bitand 2` … `lib sar 2`, `lib bitnot 1`, each with its children in parameter order.
+* *`%x %X`* (Decisions 147 (a), 150 (d)): `fmtp`'s letter test (`sc6call.bas` 14375, `"diFfEeGgs"`)
+  gains `xX`; the untyped-literal rule (13805, only `f F e E g G` make a literal `f64`) needs no
+  change, so an untyped literal stays `i64`; `ck_printf`'s argument checks (13895–13990) admit an
+  `i64` argument for `x`/`X` and give 210 for any other with the conversion as written and the
+  expected type `i64` (`format "%x" expects i64, found f64`; a `bool` is refused, unlike `%d`); the
+  flags `+` and space are accepted with `x`/`X` and passed on unchanged (the runtime ignores them),
+  so no new 234 case arises.
+* *Estimate*: names 2–4, the class-2 rows and `bitnot`'s arity test 5–15, the five table rows with
+  their result types 40–100, `%x` 5–20, fixes 20–40: **75–180**, plus six `DATA` lines.
+
+**`seaexpand`** (pass 2b): no rule changes; G12 accepts `lib` nodes of any name, and none of the
+new calls is folded (they are not constant expressions, L-ml). A validation fix, if any, is
+WP-EXPAND's (0–20 lines).
+
+**`seafuse`** (Lb): the elemental bitwise `lib`s fuse as `idiv` does: `bitand bitor bitxor bitnot`
+join the list of elemental calls that cannot fail (`fu4fan.bas` 30264, and 30788 where it lists
+them), `shl shr sar` the list of elemental calls with a run-time check (`fu4fan.bas` 30274, with
+`i64 idiv sub2ind`), so `bitand(shr(v, 8), 0x3FFFF)` over an `i64[]` is one nest. The five text
+`lib`s have scalar arguments and are leaves (their `str[]` results are F1 positions like any array
+value). WP-FUSE confirms the lists' meanings against `fu4fan.bas`; estimate 2–20 lines, plus six
+`DATA` lines.
+
+**`sealoop`** (Lb):
+
+* The seven bitwise names join the elemental list `K4$` (`lp0main.bas` 517–518), so L7 rewrites
+  an array application into the loop of rule 22 and a scalar one is copied, as for `idiv`.
+* **R37** (narrows R10 as R35 and R36 do): a `lib` of the five text names stays in `sea.hirl`
+  with its children rewritten (each a scalar `str` or `i64` expression); `split` and `read_lines`
+  produce a fresh owned `str[]` as `lib args` does today. If the path that carries `lib args` and
+  `lib lower` already copies them unchanged, R37 is that path named, with no code; WP-LOOP
+  confirms it at Lb.
+* *Estimate*: 1–40 lines, plus six `DATA` lines.
+
+**`sealower`** (Lb; `sl1scal.bas` 4985–5010 for rule 40, `sl2arr.bas` 19372–19410 and
+`sl3hirl.bas` 34006–34069 for rule 39's rows, `sl4fix.bas`'s validation):
+
+* **Rule 39** gains five rows, each lowered generically from its entry (operands by rule 1 in the
+  `lib`'s child order, which is the entry's argument order; `rcall` with the site; a `p` result
+  owned; owned temporaries released after the `rcall`; a borrowed `lv` neither retained nor
+  released). They take the plotting calls' path: the five names join `K5$` (`sl2arr.bas`
+  19372–19374, 12-byte slots, so `W2 = (P − 1) / 12 + 26 + 7` gives 54–58), the two arity strings
+  (19400, 19410) gain `12213` (minimum = maximum), and 19565's `IF W2 > 32 THEN 34065` sends them
+  to `sl3hirl.bas` 34063–34069, which writes the entry name in capitals through 34067's alphabet
+  map and lowers it by the generic entry path at 34006 (operand classes checked, the result class
+  from the entry's record). 34067's two alphabets (`"abcdefghijklmnopqrstuvwxyz_"` and its capital
+  twin) gain the digits `0123456789`, since `parse_i64` and `parse_f64` contain digits; no other
+  line changes.
+
+| Node | Entry | Operands | Result |
+|------|-------|----------|--------|
+| `lib read_lines` | `READ_LINES` | path | `p`, owned `str[]` |
+| `lib split` | `SPLIT` | s, sep | `p`, owned `str[]` |
+| `lib substr` | `SUBSTR` | s, lo, hi | `p`, owned `str` |
+| `lib parse_i64` | `PARSE_I64` | s, base | `i` |
+| `lib parse_f64` | `PARSE_F64` | s | `f` |
+
+* **Rule 40** (new, §3.6.6; on scalars, inside rule 22's loop for arrays, whose bodies reach the
+  same scalar path): placed with `idiv` in `sl1scal.bas`: the seven names are appended to the
+  scalar call table `K3$` (4985, W2 14–20), the arity string (5005) gains `2221222`, and 5010's `ON
+  W2 GOTO` gains the targets (the line stays below 255 bytes; 8627's second copy of `K3$`, for the
+  elementary functions only, is unchanged). The operands left to
+  right by rule 1, then `bitand` `iand R A B`, `bitor` `ior R A B`, `bitxor` `ixor R A B`,
+  `bitnot` `li M -1`, `ixor R A M` (never LIR `bnot`, which is logical); `shl`, `shr`, `sar`: `li Z
+  0`, `li K 63`, `icmp lt L N Z`, `icmp gt G N K`, `ior C L G`, `chk C SHIFT_COUNT site 1 N`, then
+  `ishl` / `ishr` / `isar R A N`, the site the call's line. The last instruction writes the
+  destination of rule 2. Example (line 4 `let p = bitand(shr(id, 8), 0x3FFFF)`, `id` in `i1`): `li
+  i2 8`, `li i3 0`, `li i4 63`, `icmp lt i5 i2 i3`, `icmp gt i6 i2 i4`, `ior i7 i5 i6`, `chk i7
+  SHIFT_COUNT 0:4 1 i2`, `ishr i8 i1 i2`, `li i9 262143`, `iand i10 i8 i9`. (`seaopt`'s T1–T4 may
+  later fold the check of a constant count; that is §5.8's business, not this rule's.)
+* `fconv` with the letters `x`, `X` is copied as any `fconv` (class `i`).
+* *Validation*: the five `lib`s with the operand classes of their entries, the seven bitwise
+  `lib`s with `i` operands, else `BAD_RECORD`.
+* *Estimate*: rule 39's rows 3–8 (the table and alphabet lines above), rule 40 30–60, validation
+  5–15: **40–80**, plus five `entries` and six error `DATA` lines (51–91 in all); `sealower`'s
+  longest line (exactly 255 bytes, §2.7) is not one of the lines changed, and each changed line is
+  checked against the 255-byte limit by WP-LOWER.
+
+**Passes 3b, 3c, 3d, 4**: no transformation, template or rule changes. `seaopt`, `sealopt` and
+`seavec` validate the new `rcall` names against the `entries` block (capacity 399) and treat
+`iand … isar` as the pure instructions they already are; an `rcall` in a loop keeps T13 from
+vectorizing it, and an `i64` loop is not vectorized (T13's lanes are `f64`, L-mr). Pass 4 calls
+the entries by §4.8's convention (at most three `i`/`p` arguments plus the site; `PARSE_F64`'s
+result in `d0` / `%xmm0`) and writes `x`/`X` into `SEA_FP_CONV` as it writes every letter (the
+`fconv` reading of `a64.bas` 7960 checks only the class); expected change none beyond the five
+`entries` and six error `DATA` lines; a defect found in the selection of `ishl`, `ishr`, `isar` (already emitted by
+magic division and the index arithmetic) or of `ixor` (the only one new to compiled programs) is
+WP-GEN's fix. `tools/seaval.bas` and `tools/lirchk.bas` need no change (the names and the `conv` enum come
+from the generated blocks).
+
+#### 2.15.5 Runtime entries of phase L
+
+Five entries (written NAME-first, as 7a, 8a and 9a wrote theirs, so that the contract check reads
+only §4.8's Id-first table; WP-CONTRACT moves them there). "Site" `S`: the entry can fail and
+receives the site index as its last integer argument; every argument object is borrowed (never
+retained or released by the entry); every result object is owned (count 1); a failing entry calls
+`_sea_err` and never returns.
+
+| NAME | Id | symbol | Site | Args | Results | Contract |
+|------|---:|--------|------|------|---------|----------|
+| `READ_LINES` | 83 | `sea_read_lines` | `S` | `p` | `p` | `(path, site)`: a new `str[]` (rank 1) of the file's lines by §2.15.2's rule, each a new string (count 1, counted in `_sea_live`); `CANNOT_OPEN` (path, errno; `EINVAL` for a NUL byte in the path), `CANNOT_READ` (path, errno), `ARRAY_SIZE` (the line count), `OUT_OF_MEMORY` |
+| `SPLIT` | 84 | `sea_split` | `S` | `pp` | `p` | `(s, sep, site)`: `SPLIT_SEP`; a new `str[]` of the fields, each a new string; `ARRAY_SIZE` (the field count), `OUT_OF_MEMORY` |
+| `PARSE_I64` | 85 | `sea_parse_i64` | `S` | `pi` | `i` | `(s, base, site)`: `PARSE_BASE` (base), then `PARSE_I64` (s, base); the value in `x0` / `%rax` |
+| `PARSE_F64` | 86 | `sea_parse_f64` | `S` | `p` | `f` | `(s, site)`: `PARSE_F64` (s); the correctly rounded value in `d0` / `%xmm0` (L-mj) |
+| `SUBSTR` | 87 | `sea_substr` | `S` | `pii` | `p` | `(s, lo, hi, site)`: `INDEX_OOB` (index, 0, len(s)) by §2.15.2's rule; a new string of the bytes lo … hi − 1 (a new empty string when lo ≥ hi) |
+
+The Args column is the `rt.inc` record's (§4.8): the LIR classes in argument order, which is the
+`lib`'s child order. No entry takes more than four integer arguments with the site, so none uses
+the outgoing stack slots.
+
+**Shared rules** (both targets, written alike):
+
+* *ABI*: §4.8's convention; arm64 preserves `x19`–`x28`, `x29`, `sp`, `d8`–`d15` and FPCR, x86_64
+  the System V callee-saved registers and MXCSR. No entry changes FPCR/MXCSR (so `strtod` rounds
+  to nearest, L-mj) or uses a thread.
+* *Stack*: each entry's own frame is at most 512 bytes below the incoming `sp` (`PARSE_F64` holds
+  its 256-byte text buffer there); the deepest path (`PARSE_F64` through `strtod`, `READ_LINES`
+  through `open`/`read`) is measured by WP-RT and recorded in §4.8; `SEA_STACK_MARGIN` (64 KiB)
+  covers it. No routine recurses.
+* *Memory*: the strings and arrays made are counted objects (`_sea_live`, so in
+  `SEA_HEAP_CHECK=count`'s total); every scratch block (the path copy, the file buffer, a long
+  `parse_f64` text copy) comes from `_sea_alloc` uncounted and is freed with `_sea_free_block` with
+  its exact size before the entry returns or reports a check of its own (L-mg). A failed
+  allocation is `_sea_err(SEA_E_OUT_OF_MEMORY, site)` through `_sea_alloc`'s path.
+* *Class*: every result is class E: byte copies and comparisons, exact integer arithmetic, and one
+  correctly rounded conversion per `parse_f64` (L-mj).
+* *Files* (per target, same names): **`rt_text.s`** (new: `SPLIT`, `PARSE_I64`, `PARSE_F64`,
+  `SUBSTR`); `rt_file.s` gains `READ_LINES` (it holds `Lrt_file_cpath`, `Lrt_file_errno`,
+  `Lrt_file_fail` and the host constants); `rt_str.s` exports its existing private helper as
+  `_sea_str_make(bytes, len, site)` (arm64: `Lrt_str_from`, `rt_str.s` 64–81, x0 bytes, x1 length,
+  x2 site → x0; x86_64: `.Lrt_str_of`, %rdi, %rsi, %rdx → %rax; renamed and made
+  `.private_extern` / `.hidden`, not duplicated, L-mx): a new counted string of len bytes copied
+  from bytes, used by `rt_text.s` and `READ_LINES`; `rt_fmt.s`'s integer path gains base
+  16 (L-mm). Both Makefiles take the runtime sources by wildcard. Estimates (no Baysick limit
+  applies to the runtimes): arm64 `rt_text.s` 450–700, `READ_LINES` 200–300, `_sea_str_make`'s
+  export 5–15, `%x` 40–80, together **695–1 095**; x86_64 about 15 % more (the ratio of the
+  runtimes, 11 935 / 10 293 at 9a), **800–1 260**; measured and recorded at Lc in §2.7.
+
+#### 2.15.6 The runtime algorithms
+
+*Notation.* n = len(s) (`SEA_STR_LEN`), the bytes at `SEA_STR_BYTES`; positions count from 0;
+"a new string" is `_sea_str_make` (count 1, `SEA_TAG_STR`, bytes 9 … 15 zero, `_sea_live` + 1);
+"the vector" is `ARR_NEW(SEA_EK_STR, 1, count, 1, site)`, which reports `ARRAY_SIZE` with count when
+count > `SEA_LIM_EXTENT` and whose elements start null and are filled in order (a run-time error
+part-way ends the process, so a part-filled vector is never seen).
+
+**`READ_LINES(path, site)`** (L-mf, L-mg):
+
+1. `Lrt_file_cpath(path, site)`: a NUL among the path's bytes frees the copy and is
+   `CANNOT_OPEN` (path, `EINVAL`), as `MAKE_DIR` does.
+2. `fd = open(copy, O_RDONLY)`; the errno is read at once on failure; the copy is freed; a
+   failure is `CANNOT_OPEN` (path, errno).
+3. The buffer B (uncounted) starts at 65 536 bytes (`RTT_CHUNK`, a local equate of the runtime,
+   L-mu); with u bytes used: when u = capacity, B is replaced by a block of twice the capacity (the
+   bytes copied, the old block freed; a capacity above 2⁶² is `OUT_OF_MEMORY`); `r = read(fd, B +
+   u, min(capacity − u, 2³⁰))` (each request capped at 2³⁰ bytes, since Darwin's `read` may refuse a
+   count above `INT_MAX` with `EINVAL`; the cap is `RTT_RDMAX`, a local equate); r > 0 adds r to u
+   and repeats; r = 0 ends the loop; r < 0 with errno `EINTR` (the runtime-local constant
+   `RT_FILE_EINTR` = 4, Darwin's and Linux's value; not in the errno table, since it is never
+   printed) repeats the same `read`; any other failure saves the errno, closes fd, frees B and is
+   `CANNOT_READ` (path, errno). Then `close(fd)` (its result ignored: nothing was written).
+4. The count: 0 when u = 0; else the number of LF bytes in B, plus 1 when B's last byte is not LF.
+5. The vector of that count; then for each line k in order, with [b, e) its bytes (from the byte
+   after the previous LF, or 0, to the next LF exclusive, or u for the last line when B does not end
+   with LF): if e > b and B[e − 1] is CR, e = e − 1 (for a line ended by LF that is "the CR
+   before the LF"; for the last line without LF it is "the CR at the end of the file"); a length
+   e − b above `SEA_LIM_STR_BYTES` is `OUT_OF_MEMORY`; element k = a new string of B[b … e − 1].
+6. B is freed; the vector is returned.
+
+**`SPLIT(s, sep, site)`** (L-mh). m = len(sep); m = 0 is `SPLIT_SEP`. A match at i means
+i + m ≤ n and s[i … i + m − 1] equals sep byte for byte. Pass 1 counts: i = 0, c = 0; while i + m
+≤ n: a match at i gives c = c + 1, i = i + m; else i = i + 1. The vector of c + 1 elements; pass 2
+repeats the scan with b = 0 (the current field's start): at each match at i, the next element is a
+new string of s[b … i − 1] (empty when b = i), b = i + m; after the scan the last element is a new
+string of s[b … n − 1]. Every element is a new object, also when c = 0 (no element shares s).
+
+**`SUBSTR(s, lo, hi, site)`** (L-mk). If lo < hi: lo < 0 or lo ≥ n is `INDEX_OOB` (lo, 0, n); else
+hi − 1 ≥ n is `INDEX_OOB` (hi − 1, 0, n) (hi − 1 does not overflow, since hi > lo ≥ 0); the
+result is a new string of s[lo … hi − 1]. If lo ≥ hi: a new empty string, whatever lo and hi are.
+
+**`PARSE_I64(s, base, site)`** (L-mi). base < 2 or base > 36 is `PARSE_BASE` (base). i = 0; a
+first byte `+` or `-` sets the sign and i = 1; then at least one byte must remain; each remaining
+byte c has the digit value `c − '0'` for `0`–`9`, `c − 'a' + 10` for `a`–`z`, `c − 'A' + 10` for
+`A`–`Z`, and no value otherwise; a byte without a value, a value ≥ base, or no digit is
+`PARSE_I64` (s, base). The magnitude is accumulated negatively, a = 0 and per digit d: a = a · base
+− d, each step tested before it is made (a < ⌈(−2⁶³ + d) / base⌉, computed in integers, is out of
+range), so −2⁶³ is reached exactly; the result is a for `-`, else −a, where a = −2⁶³ without `-` is
+out of range. Out of range is `PARSE_I64` (s, base).
+
+**`PARSE_F64(s, site)`** (L-mj). (1) The eight words of §2.15.2 compared byte for byte (length
+first): +∞, −∞ or the quiet NaN of Sea's `nan` (bits `0x7FF8000000000000`). (2) Otherwise a
+left-to-right scan checks the decimal grammar of §2.15.2 over all n bytes; a failure is
+`PARSE_F64` (s). (3) The bytes are copied with a NUL appended into the frame's 256-byte buffer when
+n < 256 (`RTT_FBUF`), else into an uncounted block of n + 1 bytes; `x = strtod(buf, &end)` (Apple
+libSystem's and glibc's; the C locale, which the runtime never changes, so `.` is the decimal
+point); `end` must be `buf + n` (always true after step 2; otherwise `PARSE_F64`, a guard); the
+host's `ERANGE` is ignored (overflow gives ±`HUGE_VAL` = ±∞, underflow the correctly rounded
+subnormal or zero, which is the rule of §2.15.2); a block is freed; x is returned.
+
+**`%x` and `%X`** (L-mm; `rt_fmt.s`'s `Lrt_fmt_printf_int`, used by `PRINTF`, `FORMAT` and
+`ERROR`). For the letters `x`/`X` the slot's 64 bits are the unsigned magnitude and the sign is
+empty whatever the flags: `+` and space are ignored (Decision 150 (d)); the digit loop shifts by 4
+and writes `0-9a-f` or `0-9A-F`; precision gives the minimum number of digits (zeros in front;
+precision 0 and the value 0 give no digit); `#` and a non-zero value give the prefix `0x` / `0X`.
+The field is laid out in C99's order: the prefix, then the zeros (of the precision; or, with the
+`0` flag and no precision and no `-`, as many as bring the field to the width), then the digits,
+with the spaces of the width before the prefix (or after the digits with `-`). So `%#010x` of 255
+is `0x000000ff` and `%#.4x` of 255 is `0x00ff`. No `snprintf` call.
+
+#### 2.15.7 Capacity and limits
+
+Bases are "Measured after 9b" (§2.7, equal to the gate after phase 9: no pass changed after 9b);
+increments are the estimates of §2.15.4 with the generated lines of the contract changes: six
+error records in every pass, five `entries` lines in the six passes that load them, and no
+`consts` line (no new constant; `SEA_E_RT_END` and `SEA_ENT_COUNT` change value only). The
+"Remaining" column is the work left for v1 after phase L: the reserves of "Remaining after phase 9"
+(§2.14.7) unchanged, phase L being new scope that spends none of them. Estimates, not
+measurements:
+
+| Program | After phase 9 | Phase L | After phase L | ≤ 7 000 built | Remaining | + remaining ≤ 9 000 | + 1.5 × remaining ≤ 9 000 | Free letters |
+|---------|------:|------:|------:|:---:|------:|------:|------:|------|
+| `seaparse` | 3 953 | 6 | 3 959 | yes | 0 | 3 959 | 3 959 | none set |
+| `seaname` | 5 632 | 9–16 | 5 641–5 648 | yes | 50 | 5 698: yes | 5 723: yes | 13 |
+| `seacheck` (Decision 82 (a)) | 7 335 | 81–186 | 7 416–7 521 | not a condition | 250 | 7 771: yes | 7 896: yes | 14 |
+| `seaexpand` | 4 810 | 6–26 | 4 816–4 836 | yes | 0 | 4 836 | 4 836 | none set |
+| `seafuse` | 6 495 | 8–26 | 6 503–6 521 | yes (479 under) | 1 000 | 7 521: yes | 8 021: yes | 5 |
+| `sealoop` | 6 715 | 7–46 | 6 722–6 761 | yes (239 under) | 1 000 | 7 761: yes | 8 261: yes | 3 |
+| `sealower` (Decision 50) | 6 885 | 51–91 | 6 936–6 976 | not a condition | 60 | 7 036: yes | 7 066: yes | 3 |
+| `seaopt` | 5 670 | 11 | 5 681 | yes | 1 000 | 6 681: yes | 7 181: yes | 2 |
+| `sealopt` | 5 593 | 11 | 5 604 | yes | 1 000 | 6 604: yes | 7 104: yes | 0 (waived) |
+| `seavec` | 5 870 | 11 | 5 881 | yes | 1 000 | 6 881: yes | 7 381: yes | 0 (waived) |
+| `seagen_a64` | 5 299 | 11–17 | 5 310–5 316 | yes | 100 | 5 416: yes | 5 466: yes | none set (L-ac) |
+| `seagen_x64` | 6 148 | 11–17 | 6 159–6 165 | yes | 100 | 6 265: yes | 6 315: yes | none set (L-ac) |
+
+**Reading.** Phase L is small in the passes: no pass needs a relief, and none needs a new array
+letter (the new tables are strings in existing variables, the new code reuses each pass's
+scratch). The largest increment is `seacheck`'s (no 7 000 condition, 1 479 under 9 000 at the
+upper end), then `sealower`'s (1 934 under 9 000 at its stress line; its upper end, 6 976, is just
+below the old 7 000 mark, which Decision 50 made no condition), then `sealoop`'s (239 under 7 000 at the upper end, its
+smallest margin; R37 is likely no code at all). The `entries` capacity stays 128 (87 used, 41 to
+spare). No new LIR or HIR limit. **The measurement after Lb** (recorded as "Measured after Lb" in
+§2.7, the sub-phase with every pass increment) applies the conditions of the gate after phase 9
+with the remaining work above; a failure calls for a relief agreed with the user before Lc's code.
+**The gate after phase L** (after Lc, Decision 71's form, recorded as "Measured at the gate after
+phase L"): every program with the "Remaining" column, under the gate after phase 9's exceptions
+(Decisions 50, 78, 82 (a), 98, 141 (a), L-ac).
+
+**Runtime limits** (L-mu): none new. A line or field is a `str`, so at most `SEA_LIM_STR_BYTES`;
+the number of lines or fields is an extent, so at most `SEA_LIM_EXTENT`; the file size is bounded
+by memory (the buffer doubles, its capacity at most 2⁶²) and read in requests of at most 2³⁰ bytes.
+The first buffer (65 536 bytes, `RTT_CHUNK`), the request cap (2³⁰, `RTT_RDMAX`) and `parse_f64`'s
+stack buffer (256 bytes, `RTT_FBUF`) are local equates of the runtimes, not contract values: no
+pass or test outside the runtime uses them, and no output depends on them (L-kw's reading).
+
+**The runtime size** (no Baysick limit): §2.15.5's estimates, 695–1 095 lines on arm64 and
+800–1 260 on x86_64, measured and recorded at Lc in §2.7.
+
+#### 2.15.8 Tests
+
+Expected outputs derive from §2.15.2 (LANGUAGE.md once WP-CONTRACT adds it) and §2.15.6, never from an
+implementation (§6.1). Every program runs under the heap check with no leak (`heap: 0 live
+objects`), so the release of every `str[]`, string and scratch block is tested by every test.
+
+**Fixtures** (`NAME.files/`, the existing mechanism of `tests/run.sh`, `tests/cross_pack.sh` and
+`tests/cross_run.sh`, §6.2, §6.6.1): a test's input files are committed byte-exact under
+`tests/programs/NAME.files/` or `tests/errors/NAME.files/` and copied into its fresh working
+directory; `.gitattributes` (`tests/** -text`) keeps CR, NUL and a missing final LF. A directory
+fixture holds one file (git keeps no empty directory). **What is missing** (WP-RTRUN, L-mp): the
+rt runners gain the sidecar `NAME.files/` (copied into the fresh working directory before the run)
+in `tests/rt/run_rt.sh`, `tests/rt/run_rt_linux.sh` and `tests/cross_run.sh` (whose x86_64 rt
+cases, lines 564–594, run in a fresh `WORK` directory: `$base.files/.` is copied into it before
+`run_limited`), and `cross_pack.sh` packs it for rt tests (its line 498 adds `files` to the
+sidecar list), so `READ_LINES` is tested at the entry level on
+both targets.
+
+**Program tests** (`tests/programs/`, prefix `lib_`, listed in `tests/CORPUS.md`; the outputs
+derived by hand unless a generator is named):
+
+* `lib_read_lines_basic` (fixture `in.txt` = `a\nbb\n\nccc`, no final LF: four lines, printed with
+  their lengths), `lib_read_lines_crlf` (`a\r\nb\r\n`, `a\r\r\n`, a lone CR inside a line, a final
+  `\r` at the end of the file: each of §2.15.2's examples), `lib_read_lines_empty` (an empty file:
+  0 lines; `\n`: one empty line; `\r\n`: one empty line), `lib_read_lines_bytes` (NUL, 0xFF and a
+  UTF-8 BOM kept, printed with `%s` and their lengths), `lib_read_lines_big` (a generated fixture
+  of 200 003 bytes whose CR at offset 65 535 is followed by its LF at 65 536, lines crossing both
+  chunk boundaries: the count, the sum of the lengths, the first and last lines; the fixture and
+  the expected output written by the generator below), `lib_read_lines_twice` (the same file read
+  twice, the two results independent).
+* `lib_split` (every example of §2.15.2, a separator longer than s, a separator equal to s giving
+  `["", ""]`, a multi-byte separator with a partial match at the end), `lib_substr` (full, single
+  byte, empty with lo = hi, empty with lo > hi and both out of range, the last byte).
+* `lib_parse_i64` (bases 2, 8, 10, 16, 36; both signs; −2⁶³ and 2⁶³ − 1; leading zeros; both
+  cases of hex digits), `lib_parse_f64` (`0`, `-0` printed by `str` as `-0`, `1.5`, `.5`, `5.`,
+  `1e3`, `1E-3`, `+2.5`, the eight words, `parse_f64(str(x))` for x = 0.1, 1e300, 5e-324, −0.0),
+  and the generated `lib_parse_i64_kat` and `lib_parse_f64_kat` (below).
+* `lib_bit_ops` (each function on 0, 1, −1, −2⁶³, 2⁶³ − 1 and mixed patterns; shifts by 0, 1, 31,
+  32, 63; `shr` against `sar` on negative values), `lib_bit_elemental` (an `i64[]` and a fixed-size
+  `i64[4]` argument, scalar–array broadcasting, the fused `bitand(shr(v, 4), 0xF)`, a 2 × 3 matrix),
+  `lib_bit_untyped` (untyped literal arguments are `i64`; the result's type through `printf("%d")`).
+* `fmt_hex` (Decisions 147 (a), 150 (d): `%x %X` with width, precision, `-`, `0`, `#`, on 0, 255,
+  −1, −2⁶³, 2⁶³ − 1, through `printf`, `format` and `error`'s message in `r_fmt_hex_error`;
+  including `%#010x` and `%#.4x` of 255, `0x000000ff` and `0x00ff`, the order of prefix, zeros and
+  digits, and `%+x`, `% x`, `%+08X` of 255, `ff`, `ff`, `000000FF`, the flags ignored), its expected
+  bytes derived by hand from C99 §7.21.6.1 (not from Python, whose `'%#x' % 0` is `0x0` where C
+  writes `0`).
+* `lib_candump`: §2.15.3's program with its fixture `can.log`, output as written there.
+
+**The generator** `tests/vectors/libL_cases.py` (T1's, run as `timeout 120 uv run --no-project
+python tests/vectors/libL_cases.py [--check]`, standard library only): writes
+`lib_parse_f64_kat.sea/.out` (about 400 texts: the halfway cases `9007199254740993`,
+`2.2250738585072011e-308`; the subnormal edges `4.9406564584124654e-324`,
+`2.4703282292062328e-324` → the smallest subnormal and `2.4703282292062327e-324` → 0; the overflow
+edge `1.7976931348623158e308` → the largest double and `1.7976931348623159e308` → +∞; mantissas of
+17, 40 and 800 digits; exponents of ±400 and 25 digits; 300 random doubles written with `%.17g`
+and as their shortest round-trip text; each printed `str(parse_f64(t))`, whose `%.17g` identifies
+the double), `lib_parse_i64_kat` (about 200 texts in bases 2–36 including the range ends, printed
+with `%d`), the fixture and output of `lib_read_lines_big`, and the known answers of the rt tests
+as the two files `tests/rt/arm64_macos/rt_lib_kat.out` and `tests/rt/x86_64_linux/rt_lib_kat.out`
+(the only rt files T1 writes; every other `tests/rt/<target>/rt_lib_*` file is WP-RT's).
+The **oracle** is independent of the runtime: Python's `float()` and `int(text, base)`, which are
+correctly rounded and exact, applied only to texts that the generator's own transcription of
+§2.15.2's grammar accepts (Python's parsers accept more: blanks, `_`, `0x`, `infinity`), and `'%.17g'
+%` for the expected text (Python's formatting is correctly rounded, as both C libraries are). The
+`f64` program also prints, for 20 texts, `parse_f64(t) == L` where L is the same text as a Sea
+literal, whose bits the compiler computes with its own exact arithmetic (LANGUAGE.md §3.4, §2.8):
+a second, independent oracle. `--check` regenerates and compares.
+
+**Errors** (`tests/errors/`): run-time `r_lib_read_missing` (`cannot open 'missing.txt': No such
+file or directory`), `r_lib_read_dir` (fixture directory `logs/` holding one file: `cannot read
+'logs': Is a directory`; `open` of a directory with `O_RDONLY` succeeds and `read` fails with
+`EISDIR` on Darwin and Linux, which the test confirms on both hosts), `r_lib_read_nul` (a path
+with a NUL byte: `cannot open '…': Invalid argument`, the NUL written as is), `r_lib_read_unused`
+(the result of a missing file's `read_lines` unused: the error is still reported, L-me),
+`r_lib_parse_unused` (`let u = parse_i64("x")` with `u` never read: the error is still
+reported), `r_lib_shift_unused` (`shl(1, 64)` whose
+result is never read: the error is still reported, since `rcall` and `chk` are kept by §5.8),
+`r_lib_split_empty`, `r_lib_substr_lo` (`substr("ab", 2, 3)`: index 2), `r_lib_substr_hi`
+(`substr("ab", 0, 3)`: index 2), `r_lib_substr_neg` (index −1), `r_lib_parse_i64_empty`,
+`r_lib_parse_i64_sign` (`"-"`), `r_lib_parse_i64_digit` (`"12a"`), `r_lib_parse_i64_hexdigit`
+(`"1G"` in base 16), `r_lib_parse_i64_over` (`"9223372036854775808"`), `r_lib_parse_i64_under`
+(`"-9223372036854775809"`), `r_lib_parse_i64_blank` (`" 5"`), `r_lib_parse_i64_prefix` (`"0x1F"`
+in base 16), `r_lib_parse_base_low` (1), `r_lib_parse_base_high` (37), `r_lib_parse_order` (a bad
+base and a bad text: the base is reported), `r_lib_parse_f64_empty`, `r_lib_parse_f64_dots`
+(`"1.2.3"`), `r_lib_parse_f64_word` (`"Infinity"`), `r_lib_parse_f64_hex` (`"0x1p3"`),
+`r_lib_parse_f64_blank` (`"1.0 "`), `r_lib_shift_neg` (`shl(1, -1)`), `r_lib_shift_64` (`shr(1,
+64)`), `r_lib_shift_elem` (an array of counts: the first failing element in linear order),
+`r_fmt_hex_error` (`error("%04X", 255)`: the message `00FF`); compile-time `err_lib_split_args`
+(243, one argument), `err_lib_parse_positional` (243 `parse_i64(s, 16)`), `err_lib_parse_unknown`
+(224 `radix:`), `err_lib_parse_twice` (225), `err_lib_parse_type` (243 `parse_f64(1.5)`),
+`err_lib_parse_array` (243 `parse_i64` of a `str[]`), `err_lib_substr_f64` (243), `err_lib_bit_f64`
+(243 `bitand(1.5, 1)`), `err_lib_bit_bool` (243), `err_lib_bit_const` (237 `const M = shl(1,
+3)`), `err_lib_read_elemental` (228), `err_lib_ref` (255 `split(ref s, ",")`),
+`err_lib_redefine` (212 `fn split`), `err_lib_shadow` (213, a local named `substr`),
+`err_fmt_hex_f64` (210 `format "%x" expects i64, found f64`), `err_fmt_hex_bool` (210 `format
+"%08X" expects i64, found bool`).
+
+**Dumps** (`tests/passes/libL_*`, T2, goldens derived by hand from §2.15.4): `libL_check` (pass
+2a's `lib` nodes, `parse_i64`'s inserted `ci 10`), `libL_hirl` (R37 and L7 over an `i64[]`
+bitwise expression), `libL_rcall` (rule 39's five `rcall`s with the site and the ownership of the
+`str[]` results), `libL_bits` (rule 40, the example of §2.15.4 included).
+
+**Runtime tests** (`tests/rt/<target>/rt_lib_*`, in the style of the existing ones): ABI
+(callee-saved registers, FPCR/MXCSR, the frame bound) for every entry; ownership (the result's
+count 1, every element a distinct new string, the arguments untouched, the live count after `FREE`
+of the result back to its start); every error with its site and slots; `READ_LINES` on files from
+`NAME.files/` (the line rule, a file larger than two chunks, a directory); `SPLIT`, `SUBSTR`,
+`PARSE_I64` and `PARSE_F64` on the generator's known answers; `%x`/`%X` through `_sea_printf`
+with a hand-built format (`SEA_FP_CONV` `x`/`X`). The cross run takes them as it takes every rt
+test (§4.7.1).
+
+**Cross** (§6.6.1): every `lib_*` program and `r_lib_*` error runs on the host under both variants
+with its fixtures and is compared byte for byte, as any case; no new case kind is needed.
+
+#### 2.15.9 Sub-phases (the rows of §8)
+
+Decision 149 (a): La this specification; Lb the contract, the front end of all twelve functions and
+`%x`, the bitwise functions and `%x` complete with their tests, and the rt runners' fixtures; Lc
+the text runtime entries on both targets with their tests, and the gate. Each ends with `make test`
+and `make cross` passing.
+
+| Sub-phase | Contents | Done when |
+|-----------|----------|-----------|
+| La | **Phase-L specification** (documents only): §2.15 (scope, the semantic contract with the agreed LANGUAGE.md text, the worked example, front end and later passes, entries 83–87, the runtime algorithms, capacity, tests, these rows, Decisions 143–150, lead decisions L-me – L-mx); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 143–150. **Done** (2026-11-03): §2.15 written, revised after one independent review (the name collisions in dumps, generators and §3.4.1; `cross_run.sh`'s rt loop; `bitnot` in class 2; the text calls' result types; rule 40 in `sl1scal.bas`; the text rows through `K5$`; the `%x` messages and C99 order; the 2³⁰ `read` cap; unused calls keeping their errors; Lc's known-answer files), and agreed; Decisions 143–149 decided as option (a), Decision 150 the user's rulings; lead decisions L-me – L-mx agreed; §0, §8, §9 and `sea/CLAUDE.md` edited with the agreement; `make check-contracts` passes |
+| Lb | **Contract, front end, bitwise, `%x`** (after La). **WP-CONTRACT** first and alone: `include/errors.inc` (codes 30–35, `SEA_E_RT_END` 36), `include/rt.inc` (entries 83–87, `SEA_ENT_COUNT` 87, the `SEA_FP_CONV` comment), `include/passes.txt` (`enum conv` with `x X`), §2.6.2's and §4.8's tables, §3.5.5's and §3.6's `fconv` letters, the LANGUAGE.md text of §2.15.2, §3.4.1's worked example with `split` renamed `parts` together with `tests/lib_check.sh`'s patterns at 2740 and 2742 (which read that example, L-mv); then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the class-2 rows with `bitnot`'s arity test, the five table rows and result types in `sc9plot.bas`, `%x`); **WP-FUSE** `passes/seafuse/*` (the elemental lists); **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (`K4$`, R37); **WP-LOWER** `passes/sealower/*` (rule 39's five rows through `K5$` and 34067's alphabets, rule 40 in `sl1scal.bas`); **WP-GEN** `passes/seagen_a64/*`, `passes/seagen_x64/*` (only if the shift selection or the `x`/`X` letters need a fix); **WP-RT-A64** `runtime/arm64_macos/rt_fmt.s` (`%x`), `tests/rt/arm64_macos/rt_lib_hex*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-RTRUN** `tests/rt/run_rt.sh`, `tests/rt/run_rt_linux.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh` (the rt `NAME.files/` sidecar); **T1** `tests/programs/lib_bit_*`, `fmt_hex`, `tests/errors/r_lib_shift_*`, `r_fmt_hex_error`, `err_lib_*`, `err_fmt_hex_*`, the renames of `fn split` to `parts` (L-mv: `tests/programs/arr_fixed_vals.sea`, `arr_locals_params.sea`, `tests/vectors/arr4e_cases.py`, `arr4d_cases.py`, `tests/passes/rs.sea`, `rs.ast`, `rs.res`, `rs.hir1`), `tests/CORPUS.md`; **T2** `tests/passes/libL_*`; then the measurement after Lb (§2.15.7) | the Lb tests of §2.15.8 pass on both targets and both variants (the text calls' dumps and compile errors included; their programs wait for Lc); every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after Lb recorded in §2.7, any relief agreed before Lc's code |
+| Lc | **The text runtime, its tests, the gate** (after Lb). **T1** first and before WP-RT's rt tests: `tests/vectors/libL_cases.py` and its generated files (the KAT programs and outputs, `lib_read_lines_big`'s fixture and output, the rt known answers `tests/rt/arm64_macos/rt_lib_kat.out` and `tests/rt/x86_64_linux/rt_lib_kat.out`); **WP-RT-A64** `runtime/arm64_macos/rt_text.s` (new), `rt_file.s` (`READ_LINES`), `rt_str.s` (`_sea_str_make`), `tests/rt/arm64_macos/rt_lib_*` except `rt_lib_kat.out`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; then **T1** `tests/programs/lib_read_lines_*`, `lib_split`, `lib_substr`, `lib_parse_*`, `lib_candump` with their fixtures, `tests/errors/r_lib_*` of the text calls, `tests/CORPUS.md`; the runtime sizes recorded in §2.7; then the gate after phase L (§2.15.7) | row L's "done when": the tests of §2.15.8 pass on both targets and both variants; `lib_candump` prints §2.15.3's output; every earlier output unchanged; `make test` and `make cross` pass; the gate after phase L applied, a failing program getting a relief agreed with the user before W8's code |
+
+Row L itself (§8): "**Text library.** `read_lines`, `split`, `substr`, `parse_i64`,
+`parse_f64`, the i64 bitwise functions and `%x`/`%X` (LANGUAGE.md §10.9, §10.10, §10.14, §11.1;
+specified in sub-phase La; built in the sub-phases Lb–Lc below, §2.15)" | "the text-library tests
+pass on both targets; §2.15.3's decode runs as `lib_candump`". W8's specification follows phase L
+and is not part of it: its sketch, its simulator, its log format (assumed here to be `candump -L`,
+§2.15.3), its port, its reference outputs and its acceptance are written next, against the API
+this phase builds.
+
+#### 2.15.10 Decisions of phase L
+
+Written with this text, revised after one independent review, and decided by the user on
+2026-11-03: 143–149 each as the recommended option (a); Decision 150 records the user's four
+rulings of the same day. Mirrored in §9 ("Decisions of phase L").
+
+143. **What a malformed number text does** (`parse_i64`, `parse_f64`; LANGUAGE.md has no
+     exceptions, so the choice is how a program learns of the failure). Options: (a) **a run-time
+     error naming the text (`cannot parse "%s" as i64 in base %d`, `cannot parse "%s" as f64`);
+     the program validates beforehand if it wants to skip a line**; (b) a result plus a flag,
+     `let (v, ok) = parse_i64(s)` (a multiple-result library call as `ind2sub` is; the value 0 or
+     NaN when `ok` is false; no parse error code); (c) both: the raising forms of (a) and
+     `try_parse_i64`/`try_parse_f64` returning `(v, ok)`; a sentinel alone (NaN for `parse_f64`)
+     is not offered, since `i64` has no free value. Recommended: (a): W8's log is written by the
+     project's own simulated sketch, so a malformed field is a defect that should stop the run with
+     the file line of the failing call; the decode of §2.15.3 reads naturally; and (c)'s `try_`
+     forms can be added later without changing (a). Under (b) or (c) items 3 and 5 of §2.15.2's
+     LANGUAGE.md text change, `PARSE_I64`/`PARSE_F64` return a second result (Args/Results `pi`/`ii`,
+     `p`/`fi`: a two-result entry, which §4.8's convention has not had so far) and §2.15.3 checks
+     `ok`. Affects LANGUAGE.md §9.2, §10.9, §2.15.2, §2.15.5, §2.15.6, `errors.inc`. **Decided: (a)** (the user, 2026-11-03).
+144. **The spelling of the i64 bitwise operations** (`&` and `|` are already the `bool`
+     element-wise operators at precedence 7 and 8, below the comparisons; `^` is the power; `~`,
+     `<<`, `>>` are not tokens). Options: (a) **elemental functions `bitand bitor bitxor bitnot
+     shl shr sar` (§2.15.2), no syntax change; `&`, `|`, `^` keep their meanings**; (b) operators
+     on `i64`: `&` and `|` overloaded for `i64` operands at their present precedence (so `a & 0xFF
+     == 0` parses as `a & (0xFF == 0)` and is a type error), a new prefix `~` and new `<<` `>>`
+     (logical? arithmetic? one of them a function), xor a function since `^` is power: a lexer,
+     parser and Appendix B change, `seaparse` (3 953 lines) growing by an estimated 60–120
+     lines; (c) operators with C's precedence (bitwise above comparison: changes the
+     meaning of existing `bool` expressions such as `gc >= LSL & gc <= USL`, so it would need new
+     tokens for the bitwise forms, e.g. `.&`). Recommended: (a): no grammar change and no pass-1
+     growth, no precedence trap, the names say what they do (MATLAB uses `bitand bitor bitxor`),
+     the functions are elemental like `idiv`, and the LIR already has the instructions; the cost
+     is that a mask is not a constant expression (L-ml). Affects LANGUAGE.md §10.14 (a), or
+     §3.6, §3.7, §6.1, §6.4, Appendix B (b, c); §2.15.4. **Decided: (a)** (the user, 2026-11-03).
+145. **The form of file input** (§10.13 names `read_lines`; W8 reads one log of a few MB).
+     Options: (a) **`read_lines(path) -> str[]`: the whole file read at once and split into lines
+     by LANGUAGE.md §3.1's rule (LF; one CR before an LF or at the end removed; a final line
+     without LF counts; a final LF adds no empty line; an empty file gives no line)**; (b)
+     `read_text(path) -> str` (the whole file as one string) and lines as `split(text, "\n")`
+     with the program removing CRs (one primitive fewer, but every reader repeats the CRLF and
+     final-newline handling, and a file over 2³¹ − 1 bytes cannot be one `str`); (c) a streaming
+     reader: a new handle type `File` with `open_read`, `read_line`, `at_end`, `close` (no whole
+     file in memory; a new handle type, more entries and errors, effects on every call).
+     Recommended: (a): the decode needs exactly a list of lines, the rule is the one Sea already
+     applies to source files, a file of a few MB is a few MB of strings, and (c) can come later if
+     a workload needs files larger than memory. Affects LANGUAGE.md §10.10, §11.3, §2.15.2,
+     §2.15.5, §2.15.6. **Decided: (a)** (the user, 2026-11-03).
+146. **Substring access** (§10.13 lists `s[a..b]`, `byte`, `starts_with`, `find_str`; the decode of
+     §2.15.3 needs only taking bytes lo … hi − 1). Options: (a) **one function `substr(s, lo, hi)`
+     with exactly the meaning and the checks of the index range `lo..hi` (§5.1, §5.4)**; (b) the
+     slice syntax `s[a..b]`, `s[a..=b]` with `$` = `len(s)`, written by `seacheck` as the same
+     entry (a `str` base of an `idx` with one range; `$` bound to a hidden local of the base; a
+     scalar index on a `str` stays 250): no parser change, but `seacheck` grows by an estimated
+     150–250 lines instead of the few rows of (a), and `seaname`'s `$` binding learns a `str` base;
+     (c) (a) now and (b) later as sugar over the same entry, plus `byte(s, i) -> i64`. Recommended:
+     (a): the smallest change that the decode needs, its semantics are §5.4's so (b) remains a
+     pure syntax addition later, and W8 needs neither `byte` nor a search. Affects LANGUAGE.md §4.4,
+     §10.9, §10.13, §2.15.2, §2.15.4. **Decided: (a)** (the user, 2026-11-03).
+147. **`%x` and `%X` in `printf`/`format`** (§10.13 lists them; a CAN report naturally writes
+     identifiers in hex, as `candump` does, but W8's report is not specified yet). Options: (a)
+     **add `x` and `X` for `i64` with C99's width, precision and `- 0 #` flags (§2.15.2): a
+     `passes.txt` enum line, `seacheck`'s format check, `rt_fmt.s`'s digit loop in base 16**; (b)
+     leave them out; W8 prints decimal identifiers, or builds hex text in Sea (a prelude-free loop
+     over `shr`/`bitand` with a 16-letter `str[]`); (c) a library function `hex(x, digits) -> str`
+     instead of conversions. Recommended: (a): about 60–110 lines in all, the familiar spelling
+     (C, MATLAB `sprintf('%X')`), usable in `format` and `error` messages, and decided now so that
+     W8's report format can rely on it. Affects LANGUAGE.md §11.1, §10.13, `passes.txt`, §3.5.5,
+     §3.6, §4.8 (`SEA_FP_CONV`), §2.15.4, §2.15.6. **Decided: (a)** (the user, 2026-11-03). The flags `+` and space with
+     `x`/`X` are Decision 150 (d).
+148. **The new run-time errors** (§2.15.2's table). Options: (a) **six new codes 30–35:
+     `cannot read '%s': %s`, `cannot parse "%s" as i64 in base %d`, `cannot parse "%s" as f64`,
+     `invalid base %d`, `empty separator`, `invalid shift count %d`; the existing `cannot open`,
+     `index … out of bounds`, `invalid array size` and `out of memory` reused**; (b) fewer codes: one
+     `invalid argument to %s: %s` for the base, the separator and the shift count, and one parse
+     error for both types; (c) no checks for the base, the separator and the count: the base
+     clamped to 2 … 36, an empty separator splitting into single bytes, the count taken mod 64
+     (C's undefined behaviour made defined). Recommended: (a): each message names what failed, as
+     LANGUAGE.md's other messages do; (c) silently turns mistakes into plausible values, which Sea
+     avoids everywhere else (bounds checks, `integer overflow`). Affects LANGUAGE.md §9.2,
+     `errors.inc`, §2.6.2, §2.15.2. **Decided: (a)** (the user, 2026-11-03).
+149. **The sub-phase split** (§2.15.9). Options: (a) **Lb the contract, the front end of all
+     twelve functions and `%x`, the bitwise functions and `%x` finished with their tests, the rt
+     runners' fixtures; Lc the text runtime entries on both targets, their tests and the gate**;
+     (b) one code sub-phase Lb with everything; (c) three: bitwise and `%x`; `read_lines`, `split`
+     and `substr`; the parse functions. Recommended: (a): the front end is one change across the
+     passes made once (as 9b did), the bitwise functions and `%x` need no new runtime file and are
+     tested end to end in Lb, and Lc is pure runtime work against fixed front-end output (as 9c
+     was); (b) puts every package in one integration; (c) touches every pass twice. Affects §8,
+     §2.15.9. **Decided: (a)** (the user, 2026-11-03).
+150. **The user's rulings on four readings of the draft** (2026-11-03, asked with Decisions
+     143–149; each a ruling, not a choice among options): (a) `parse_i64` and `parse_f64` reject
+     leading and trailing blanks (`" 5"`, `"1.0 "` are parse errors), as drafted; (b) `parse_i64`
+     in base 16 rejects a `0x`/`0X` prefix (`"0x1F"` is a parse error), as drafted; (c) `shl`
+     discards the bits shifted out and never reports `integer overflow`, as drafted; (d) the flags
+     `+` and space with `%x`/`%X` are accepted and have no effect, as C defines them for signed
+     conversions only, **changed** from the draft, which made them the compile error 234. Affects
+     LANGUAGE.md §10.9, §10.14, §11.1 (items 5, 9, 10 of §2.15.2), §2.15.4, §2.15.6, §2.15.8, L-mm.
+     **Decided** (the user, 2026-11-03).
+
+#### 2.15.11 Lead decisions of phase L
+
+Readings taken because one answer is clearly right, agreed by the user with the text and
+Decisions 143–150 on 2026-11-03 (§9, "Lead decisions of phase L"):
+
+* **L-me** (effects) `read_lines` has effects in LANGUAGE.md §8.1's sense (it reads a file, whose
+  contents can depend on what the program wrote with `write_json` before): it joins `cpre`'s list
+  (228 in an elemental function), is never removed as dead (so a missing file is reported even when
+  the result is unused) and keeps its place among the other effects. `split`, `substr`, the parse
+  functions and the bitwise functions have no effects (§8.1), but an unused call is never removed
+  either: in `sea.lir` it is an `rcall` (an effect instruction) or a `chk` (a failing one), which
+  §5.8's T10 does not delete, so its run-time error is reported whether or not the result is used
+  (`r_lib_parse_unused`, `r_lib_shift_unused`).
+* **L-mf** (lines) LANGUAGE.md §3.1's rule read for data: a line ends at LF; one CR before that LF,
+  or one CR at the very end of the file, is removed; the bytes after the last LF form a line when
+  there are any; an empty file has no line; every other byte is kept, with no decoding, no BOM
+  removal and no check of UTF-8.
+* **L-mg** (reading) `open(path, O_RDONLY)`, `read` into one growing uncounted buffer (65 536
+  bytes, doubled) in requests of at most 2³⁰ bytes (Darwin's `read` may refuse a larger count)
+  until `read` returns 0, `EINTR` retried (the runtime-local `RT_FILE_EINTR` = 4 on both hosts),
+  `close` with its result ignored; a NUL byte in the path is `cannot open` with `EINVAL`, as
+  `make_dir`'s is `cannot create directory` with `EINVAL`; an `open` failure
+  `cannot open`, a `read` failure `cannot read` (a directory: `EISDIR`); the whole file is read
+  before any string is made; the scratch blocks are freed before every check the entry makes
+  itself. A path is a host path; `-` is a file named `-` (standard input is not read).
+* **L-mh** (split) Non-overlapping occurrences scanned left to right; occurrences + 1 fields;
+  empty fields kept, nothing trimmed, `split("", sep)` is `[""]`; an empty separator is an error,
+  never "split into bytes"; every element a new string, none sharing the argument.
+* **L-mi** (parse_i64) The base is any `i64` expression, checked at run time (2 … 36), before the
+  text; the text is an optional `+`/`-` and digits of the base in either case, nothing else; the
+  value exact in −2⁶³ … 2⁶³ − 1 (the magnitude accumulated negatively so −2⁶³ parses); one error
+  for a syntax and a range failure; the text quoted whole and as is in the message.
+* **L-mj** (parse_f64) The grammar of §2.15.2, wider than Sea's literals (`.5`, `5.` and a leading
+  sign accepted, no `_`), the eight words Sea writes accepted, no hex floats, no blanks, no
+  `infinity`; the value correctly rounded (round to nearest even), overflow ±∞, underflow the
+  nearest subnormal or ±0, the sign of zero kept. The runtime validates the grammar itself, then
+  calls the host `strtod` in the C locale on a NUL-terminated copy, as it calls `snprintf` for
+  output (LANGUAGE.md §11.1, §4.5). Both hosts' `strtod` are believed correctly rounded (Apple's
+  Libc uses David Gay's `gdtoa`, glibc its multi-precision `strtod`); **unverified** on these
+  exact versions until `lib_parse_f64_kat` and the rt known answers pass on both targets against
+  Python's correctly rounded `float()` and the compiler's own literal conversion. If either host
+  differs, Lc stops and the lead brings a Decision (Sea's own conversion in assembly, as phase 3
+  did for the elementary functions) before going on.
+* **L-mk** (substr) `substr(s, lo, hi)` is `s[lo..hi]` in meaning and checks (§5.1, §5.4): an
+  empty range never fails, else the first position, else the last, is reported with dimension 0
+  and extent `len(s)`; the result is always a new string (never the argument retained, even for
+  the whole string).
+* **L-ml** (bitwise) Two's-complement bits; `shl` discards the bits shifted out and never reports
+  `integer overflow`; `shr` logical, `sar` arithmetic; the count 0 … 63 checked after both
+  arguments are evaluated (`invalid shift count`); elemental on `i64` arrays with §6.3's
+  broadcasting, a check failing at the first element in linear order; `bitnot` lowers to `ixor`
+  with −1 (LIR `bnot` is logical); not constant expressions (§7.2), not folded by pass 2.
+* **L-mm** (`%x`) `i64` arguments only (an untyped literal is `i64`; any other type, `bool`
+  included, is 210 `format "%x" expects i64, found T` with the conversion as written); the bits
+  printed unsigned; C99's width, precision and `- 0 #` flags laid out in C's order (prefix, zeros,
+  digits: `%#010x` of 255 is `0x000000ff`); `+` and space accepted and ignored (Decision 150 (d));
+  the runtime's own digit loop in base 16, no `snprintf`.
+* **L-mn** (signatures) The text calls take scalars (`str`, `i64`); `base:` is an option, named
+  only, with the default 10; results: `str[]` for `read_lines` and `split`, `str` for `substr`,
+  `i64`, `f64`; the written form names every parameter (`lib parse_i64 2` with `ci 10` inserted),
+  as 9b's plotting calls do (L-kg).
+* **L-mo** (front-end placement) The seven bitwise functions join `ck_lib`'s class 2 (as `idiv`),
+  `bitnot` by an arity test at the class's branch (no new class, so neither the `lred` path nor
+  the reference-argument path is reached); the text calls are classes 53–57 of `sc9plot.bas`'s
+  table-driven part, reusing its options, defaults and written form, their result types set after
+  26510 (`str[]` through `tarr`, `i64`, `f64`, `str`); `sealoop`'s R37; `sealower`'s rule 40 in
+  `sl1scal.bas` beside `idiv`, and rule 39's rows through `K5$`, the arity strings and the
+  plotting calls' generic entry path (34063–34069, 34006, the alphabets gaining digits), as
+  §2.15.4 writes them.
+* **L-mp** (fixtures for rt tests) `tests/rt/run_rt.sh`, `run_rt_linux.sh` and `tests/cross_run.sh`
+  (its own x86_64 rt loop, lines 564–594) copy `NAME.files/` into the fresh working directory
+  before the run, as `tests/run.sh` does; `cross_pack.sh` packs it for rt tests. No other runner
+  changes: programs and error tests already have fixtures.
+* **L-mq** (entries) Five entries 83–87, all `S`, arguments borrowed, results owned, the elements
+  of a `str[]` result new strings counted in `_sea_live`; `SEA_ENT_COUNT` 87 within the capacity
+  128 (L-kv), so no capacity line changes.
+* **L-mr** (no vector forms) The bitwise functions have no SIMD form: T13 vectorizes `f64` lanes
+  only, so an `i64` loop stays scalar (fused, unrolled by T11 where it applies); phase 10 may
+  measure it.
+* **L-ms** (errors) Six new codes 30–35 (Decision 148 (a)) with the texts of §2.15.2;
+  `CANNOT_OPEN`, `INDEX_OOB`, `ARRAY_SIZE` and `OUT_OF_MEMORY` reused with their texts; the check
+  order of each call is its parameter order.
+* **L-mt** (scalars only) The text calls are not elemental: `str` is not an elemental parameter
+  type (LANGUAGE.md §8.5), and a loop over `str[]` is what W8's decode writes; an element-wise
+  `parse_f64` over a `str[]` is later library work if a workload needs it.
+* **L-mu** (limits) No new contract limit: lines and fields are `str`s (`SEA_LIM_STR_BYTES`) and
+  their number an extent (`SEA_LIM_EXTENT`, reported by `ARR_NEW` as `invalid array size`); the
+  first buffer, the `read` request cap and `parse_f64`'s stack buffer are runtime-local equates
+  (`RTT_CHUNK`, `RTT_RDMAX`, `RTT_FBUF`),
+  which no output depends on (L-kw's reading).
+* **L-mv** (name collisions) The twelve new predeclared names collide only with functions named
+  `split`, all renamed `parts` in Lb (5 bytes, so no dump column moves): WP-CONTRACT renames
+  §3.4.1's worked example and the two `tests/lib_check.sh` patterns that mutate it (2740, 2742)
+  in one change, since `lib_check.sh` reads the document; T1 renames `tests/passes/rs.sea` and its
+  goldens `rs.ast`, `rs.res`, `rs.hir1`, the programs `tests/programs/arr_fixed_vals.sea` and
+  `arr_locals_params.sea`, and their generators `tests/vectors/arr4e_cases.py` and
+  `arr4d_cases.py`. The programs' outputs do not contain the name and stay unchanged; the dumps
+  and the example change only in the name. No port or prelude function uses any of the names.
+* **L-mw** (no phase-rule rows) Every name enters with its front end in Lb; the text calls fail
+  only at link until Lc's runtime defines their symbols (L-lf's reading), so no `not supported
+  yet` row is added and 259 stays unreachable.
+* **L-mx** (private helpers) `_sea_str_make(bytes, len, site)` is `rt_str.s`'s existing private
+  helper exported under that name (arm64 `Lrt_str_from` → `_sea_str_make`, `.private_extern`;
+  x86_64 `.Lrt_str_of` → `sea_str_make`, `.hidden`; renamed, not duplicated, its callers in
+  `rt_str.s` updated); it, the parse and split scanners in `rt_text.s`, and `READ_LINES`'s use of
+  `rt_file.s`'s private routines are target-local, none a contract; `rt_args.s` may later use
+  `_sea_str_make` (no behaviour change, not required by this phase).
+
+#### 2.15.12 Sections amended with the agreement
+
+§0, §8 and §9 were edited with the agreement (2026-11-03); the rest is edited by WP-CONTRACT (the
+tables that mirror a contract file, §3.4.1's example, LANGUAGE.md) or by the integration of each
+sub-phase, as 9b–9d did:
+
+* **§0** (done 2026-11-03: phase L started, La done, next Lb); `sea/CLAUDE.md`'s status (done
+  2026-11-03).
+* **§3.4.1** (WP-CONTRACT of Lb: the worked example's function `split` renamed `parts`, with
+  `tests/lib_check.sh` 2740 and 2742, L-mv).
+* **§2.6.2** (the six error rows 30–35, `SEA_E_RT_END` 36; the phase-rule paragraph says phase L
+  added no row, L-mw).
+* **§2.7**: "Projected for phase L" (§2.15.7's table), "Measured after Lb", the runtime sizes at
+  Lc, the gate after phase L and its measurement.
+* **§3.5.5** (the library calls of phase L: the written forms of §2.15.4; the `fconv` letters `x
+  X`), **§3.5.9** (R37), **§3.6** (`fconv` letters), **§3.6.6** (rule 39's five rows, the new rule
+  40), **§3.9** if its enum text lists the `conv` letters.
+* **§4.5** (the text row of the runtime services; `rt_text.s` and `READ_LINES` among the runtime
+  files), **§4.8** (entries 83–87, `SEA_ENT_COUNT` 87, `SEA_FP_CONV`'s letters, the deepest stack
+  path).
+* **§6.2** ("Phase-L tests" from §2.15.8; the rt `NAME.files/` sidecar in the layout), **§6.6.1**
+  (rt fixtures packed for the host).
+* **§8** (done 2026-11-03: row L between rows 9 and 10 as §2.15.9 writes it, and the rows La–Lc,
+  La done).
+* **§9** (done 2026-11-03: Decisions 143–150 with the user's answers; "Lead decisions of phase L",
+  L-me – L-mx).
+* **LANGUAGE.md** §4.4, §8.1, §9.2, §10 (scope rule), §10.9, §10.10, §10.13, the new §10.14,
+  §11.1, §11.3, Appendix C (the text of §2.15.2, items 1–11, as Decisions 143–150 decided them;
+  §3.6, §3.7, §6.1, §6.4 and Appendix B unchanged, Decision 144 (a)).
+* **Contract files** (WP-CONTRACT of Lb): `include/errors.inc` (codes 30–35, `SEA_E_RT_END`),
+  `include/rt.inc` (entries 83–87, `SEA_ENT_COUNT`, the `SEA_FP_CONV` comment),
+  `include/passes.txt` (`enum conv`); `include/limits.inc` unchanged; no capacity line changes.
 
 ## 3. Intermediate files
 
@@ -17092,6 +18246,7 @@ half-built. Phases 0–2 build the skeleton end to end on the smallest real prog
 | 7 | **Fusion and SIMD.** Statement and adjacent-statement fusion, fused reductions, vectorized loops (NEON; SSE2 + AVX2 multiversioning; scalar replacement and the vectorizer in a pass 3d of their own after `sealopt`, Decision 78; fusion in pass 3a, §2), vector forms of the elementary functions (bit-identical to the scalar forms), buffer reuse (specified in sub-phase 7a, agreed 2026-10-29: Decisions 94–113, §2.12; built in the sub-phases 7b–7f below; under Decision 94 (a) fusion runs in a new program of pass 3a, `seafuse`, ahead of `sealoop`; under Decision 105 (a) the "no temporaries" of the next column is checked by the run-time allocation count of §2.12.10) | W1's grid bisection and W4's red-black solver run fused (no temporaries in `-S` output); W4 complete; every earlier output unchanged bit for bit |
 | 8 | **Linear algebra.** `@` via Baysick's GEMM, Sea's GEMV, LU, Cholesky, triangular solves, `solve`, `rcond`, `eig_sym`; Sea kernel variants (specified in sub-phase 8a; built in the sub-phases 8b–8d below, §2.13) | W2 and W3 complete and accepted on both targets. **Complete** (2026-11-02): 8a–8d done, W2 and W3 accepted on the Mac by `tests/accept.sh` with W1, W4, W5 and W7 (§6.3, "Measured at 8d") and on the Linux host under both variants by Decision 127's deferred comparison (`tests/cross_accept.sh`: 4 passed, 0 failed), the gate after phase 8 passed with no relief (§2.7, "Measured at the gate after phase 8"); next phase 9 |
 | 9 | **Plotting.** The runtime's `Figure`/`Axes` objects, SVG writer, contours, embedded PNG images (specified in sub-phase 9a; built in the sub-phases 9b–9d below, §2.14) | the plot tests pass; every port writes its figure with `--figures` and passes its structural check. **Complete** (2026-11-03): 9a–9d done, the plot tests pass, all six ports write their figures with `--figures` and pass their structural files on the Mac (`tests/accept.sh`) and on the Linux host (byte-identical SVGs for W1, W3, W4, W5 and W7 under both variants, W2 by Decision 138), the gate after phase 9 passed with no relief (§2.7, "Measured at the gate after phase 9"); next the library sub-phase and the W8 workload (to be specified), then phase 10 |
+| L | **Text library.** `read_lines`, `split`, `substr`, `parse_i64`, `parse_f64`, the i64 bitwise functions and `%x`/`%X` (LANGUAGE.md §10.9, §10.10, §10.14, §11.1; specified in sub-phase La; built in the sub-phases Lb–Lc below, §2.15) | the text-library tests pass on both targets; §2.15.3's decode runs as `lib_candump`. La done (2026-11-03); next Lb; W8 is specified after phase L, before phase 10 |
 | 10 | **Benchmarks.** `sea/bench/` kernel and workload benchmarks, published methodology and results | §6.5 passes for all six workloads on the baseline machine; results and machine recorded in `sea/docs/BENCH.md` |
 
 **Phase 4 sub-phases** (decided 2026-10-21, Decisions 17–24). They run in this order, because each
@@ -17139,6 +18294,9 @@ against hand-written goldens (stage.sh). Each starts from its specification text
 | 9b | **Contract, front end, runtime core** (after 9a). **WP-CONTRACT** first and alone: `include/rt.inc` (entries 62–82, `SEA_ENT_COUNT` 82), `include/errors.inc` (codes 22–29, `SEA_E_RT_END` 30), `include/limits.inc` (`SEA_LIM_PLOT_GRID`, `SEA_LIM_PLOT_PX`), §2.6.1, §2.6.2 and §4.8's tables and the `FREE` row, the `entries` capacity lines of `sealower`, `seagen_a64` and `seagen_x64` (128), the LANGUAGE.md text of §2.14.2; then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the 21 calls, the new part `sc9plot.bas`); **WP-FUSE** `passes/seafuse/*` and **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (R36); **WP-LOWER** `passes/sealower/*` (rule 39's 21 rows); **WP-RT-A64** `runtime/arm64_macos/rt_plot.s` (new), `rt_fmt.s` (`_sea_fmt_num`), `rt_file.s` (`_sea_file_put`), `rt_mem.s` (the handle branches), `tests/rt/arm64_macos/rt_plot_*` (objects, core entries, errors, fmt, file); **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-PLOTCHECK** `tests/plot_struct.py`, `tests/plots.sh`, `Makefile` (`test-plots` and its place in `test`), the `plots/` kind in `tests/cross_pack.sh` and `tests/cross_run.sh`; **T1** `tests/vectors/plot9_cases.py` (its tick part), `tests/plots/plot_*` of 9b with their `.struct`, `tests/errors/r_plot_*` and `err_plot_*` of the core entries, the retirements, `tests/CORPUS.md`; **T2** `tests/passes/plot9_*`; then the measurement after 9b (§2.14.7) | the 9b tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after 9b recorded in §2.7, any relief agreed before 9c's code. **Done** (2026-11-03): WP-CONTRACT's `rt.inc` entries 62–82 (`SEA_ENT_COUNT` 82), `errors.inc` codes 22–29 (`SEA_E_RT_END` 30), `limits.inc`'s `SEA_LIM_PLOT_GRID` and `SEA_LIM_PLOT_PX` in their own section (L-lp), the `entries` capacity 128 and LANGUAGE.md's agreed text; the front end: `seaname` (the phase-rule branch removed, every handle type resolves; 259 unreachable, L-kx), `seacheck` (the new part `sc9plot.bas`: the class table 32–52 by `pcls` from `ck_lib` and `ck_narg` (L-lk), the options and their defaults, the overloads with `cvt`, `dyn` and the typing of untyped constants (L-ll), 224, 225, 243, 255, and the written form with every parameter and the evaluation-order temporaries, §3.5.5), `sealoop` (R36, `lpbmat.bas` 55500–55526, L-lo), `sealower` (rule 39's 21 rows through `K5$`, the operand classes checked against the entries, L-ln; `Figure` and `Axes` locals in class p), `seafuse` and `seaexpand` unchanged; `rt_plot.s` in both runtimes (`FIGURE`, `PANEL`, `TWIN_Y`, `SAVE_SVG`, `PLOT`, `XLINE` and the property entries 72–82; layout, extents, limits and ticks, the SVG writer of lines, markers and reference lines, legends, category ticks, twins, the buffer), `rt_fmt.s`'s `_sea_fmt_num` (L-li), `rt_file.s`'s `_sea_file_put` and `rt_mem.s`'s `Figure` and `Axes` branches of `sea_free` (L-lb, L-lj); `rt_plot.s` 3 656 lines on arm64 and 3 618 on x86_64; the deepest path `SAVE_SVG`'s, 2 368 bytes below the incoming sp on arm64 and 3 632 on x86_64, the other entries at most 256 and 168 (§4.8); the review's findings fixed: the x86_64 runtime aligned to the numbered order of the limits rules (L-lg), `_sea_file_put` given a fifth argument so the SVG buffer no longer leaks on a file error (L-ld), a twin record's cell fields copied from its base (§2.14.6), a `ref` argument past the last parameter counted and reported as 243 (L-ll), the pre-existing `cty` defect (a latent `sealoop` `BAD_RECORD` for reordered calls and struct literals converting an `i64` array, L-lm), `KEY~` on every `.struct` key and the T2 dumps made reproducible by `tests/vectors/plot9_dumps.py` (L-lq); tests: 26 `plots/plot_*` programs with their `.struct` (`plot_cvt_order` the review's), 34 run-time errors `r_plot_*`, 12 compile errors `err_plot_*`, `err_ns_lib_figure`, `err_ns_handle` and `passes/res_err_handle` retired, the programs `call6_named_cvt_{fixed,dyn}` and `struct_order_cvt_{fixed,dyn}`, the dumps `passes/plot9_{check,hirl,rcall,release}`, `plot9_cases.py`'s tick part, `tests/plots.sh` and `tests/plot_struct.py` with `make test-plots`, the cross case kind `plots/`, the rt group 229 cases on arm64 and 211 on x86_64 (§6.2, §6.6.1); sizes in §2.7 "Measured after 9b" (`seaname` 5 632, `seacheck` 7 335, `sealoop` 6 715, 285 under 7 000, `sealower` 6 885, its longest line still 255 bytes; no new array letter; within §2.14.7's projections; no relief needed); lead decisions L-lg–L-lq; next 9c; `make test` (driver 122, rt 229, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 425, plots 26, accept 2 + 6) and `make cross` (1 194 cases packed, 0 failed to compile; default variant 978/0, `sse2` 978/0, once-only 214/0; host 2 170 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 211) pass |
 | 9c | **Bars, contours, images, PNG** (after 9b; Decision 132). **WP-RT-A64** `runtime/arm64_macos/rt_plot2.s`, `rt_png.s` (new), `rt_plot.s` (the dispatch of series kinds 3–6 and the colorbar's place in the layout), `tests/rt/arm64_macos/rt_plot_kat.s`, `rt_plot_cmap.s` (against T1's `.out` files), `rt_plot_png*`, `rt_plot_bar*`, `rt_plot_contour*`, `rt_plot_image*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **T1** first and before WP-RT's rt tests: `plot9_cases.py`'s 9c part and the generated `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets (§2.14.8); then `tests/plots/plot_bar*`, `plot_barh`, `plot_contour_*`, `plot_image_*`, `plot_image_contour`, `plot_extreme_z`, `tests/errors/r_plot_levels`, `r_plot_zshape` and the bar errors, `tests/CORPUS.md`; the runtime sizes recorded in §2.7 | the 9c tests of §2.14.8 pass on both targets and both variants; every earlier output unchanged; `make test` and `make cross` pass. **Done** (2026-11-03): `rt_plot2.s` and `rt_png.s` in both runtimes (the entries `BAR`, `BARH`, `CONTOUR` and `IMAGE`; marching squares; the colour map; the colorbar; PNG with stored deflate, CRC-32, Adler-32 and base64), `rt_plot.s`'s dispatch of series kinds 3–6, the colorbar in the layout and the legend's `barh` entries; sizes in §2.7 "Runtime sizes at 9c" (arm64 `rt_plot.s` 3 730, `rt_plot2.s` 2 225, `rt_png.s` 332 lines, 6 287 together; x86_64 3 682, 2 083 and 362, 6 127 together; both above §2.14.5's estimates, no Baysick limit applying, no relief); the deepest path `SAVE_SVG`'s, 2 624 bytes below the incoming sp on arm64 (through the image, PNG and colorbar path) and 3 648 on x86_64, every own frame of `rt_plot2.s` and `rt_png.s` at most 128 bytes on arm64 and 72 on x86_64 (§4.8); one independent review: no runtime defect, the x86_64 colorbar's scratch moved from `.bss` to `sea_alloc` and header comments corrected, and the test gap it found (no check of contour segments, labels or image pixels against spec-derived values) closed with the `.struct` keys `clabel`, `segment` and `pixels` (L-lz); tests: 8 `plots/` programs with `.struct` (`plot_bar`, `plot_barh`, `plot_contour_cases`, `plot_contour_levels`, `plot_image_orient`, `plot_image_values`, `plot_image_contour`, `plot_extreme_z`), 16 run-time errors (`r_plot_levels`, `r_plot_levels_neg`, `r_plot_zshape`, `r_plot_zshape_image`, `r_plot_width_bar`, `r_plot_width_bar_inf`, `r_plot_width_barh`, `r_plot_shape_bar`, `r_plot_color_bar`, `r_plot_color_barh`, `r_plot_color_contour`, `r_plot_order_bar`, `r_plot_order_bar_width`, `r_plot_order_barh`, `r_plot_order_contour`, `r_plot_order_levels`), `plot9_cases.py`'s 9c part (309 files, with `rt_plot_kat.out` and `rt_plot_cmap.out` of both targets), `tests/plot_struct.py`'s keys `clabel`, `segment` and `pixels`, and the rt group 256 cases on arm64 (27 new) and 228 on x86_64 (17 new); lead decisions L-lr–L-lz; next 9d; `make test` (driver 122, rt 256, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 441, plots 34, accept 2 + 6) and `make cross` (1 235 cases packed, 0 failed to compile; default variant 1 002/0, `sse2` 1 002/0, once-only 231/0; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; x86_64 rt 228) pass |
 | 9d | **The ports' figures, acceptance, close-out** (after 9c; Decisions 131, 138). **WP-PORT** the six `ports/NAME.sea` (the `--figures` arm and block; W2's header `svg=approx`); **WP-STRUCT** the six `ports/NAME.struct` (from the MATLAB scripts, by an author who does not write the ports); **WP-ACCEPT** `tests/accept.sh` (one run with both flags, the run-directory rule, step 4); **WP-CROSS** `tests/cross_pack.sh`, `tests/cross_run.sh`, `tests/cross.sh`, `tests/cross_accept.sh` (the `--figures` argument, the packed SVG, the kept SVG, Decision 138's comparison, the `svg=approx` header key); the compile times recorded in §6.3; then the gate after phase 9 (§2.14.7) | row 9's "done when": the plot tests pass; every port writes its figure with `--figures` and passes its structural check (`tests/accept.sh` on the Mac; `make cross`: W1, W3, W4, W5, W7 byte-identical SVGs under both variants, W2 by Decision 138); `make test` and `make cross` pass; the gate after phase 9 applied, a failing program getting a relief agreed with the user before phase 10. **Done** (2026-11-03): no compiler pass and no runtime file changed; **WP-PORT** each of the six `ports/NAME.sea` gained `var figures = false`, the `--figures` arm and the `if figures { … }` block of §2.14.3 (W5 as Appendix D) ending with `make_dir("output")` and `save_svg(fig, "output/NAME.svg")`, and a header listing `--figures` and the figure readings in place of the sentences saying the figures section was not ported; W2's header is `// cross: compare=accept svg=approx`; the report, the JSON and the heap line are identical with and without `--figures` and no computed value changed; source lines before → after: W1 463 → 515, W2 381 → 429, W3 322 → 363, W4 274 → 309, W5 268 → 309, W7 873 → 918; **WP-STRUCT** the six `ports/NAME.struct`, written from the MATLAB scripts and §2.14.9 by an author who had not read the ports or their output (W2's `nElem` 301 from the geometry, every panel without a legend `count legend 0`); **WP-ACCEPT** `tests/accept.sh` runs each port once with `--export-reference --figures`, requires the run directory to hold exactly the executable, `NAME.json`, `output/` and `output/NAME.svg` (checked by relative path over files and directories), runs step 4 `plot_struct.py ports/NAME.struct T/run` (a missing `.struct` fails), and `--save-out` copies the SVG, for all six ports (the `make test-accept` help text, which named W1, W4, W5 and W7, corrected); **WP-CROSS** `cross_pack.sh` (`NAME.args` holds `--export-reference` and `--figures`; `output/NAME.svg` packed as `NAME.expect/output/NAME.svg` for every port; `cross_header` takes ` svg=approx`), `cross_run.sh` (the `.meta` reader takes `svg=approx` for ports only; `defer_variant` requires exactly `NAME.json` and `output/NAME.svg` and keeps `KEEP/ports/NAME.VARIANT.svg`), `cross.sh` (comment only), `cross_accept.sh` (strips ` svg=approx` before `except=`; a missing kept SVG fails; byte equality without `svg=approx`, W3; `plot_struct.py` and the new `tests/svg_skeleton.py` with it, W2), and the new `tests/svg_skeleton.py` (Decision 138 (a)'s comparison, standard library only, exit 0, 1 or 2); the longer port headers moved the lines the `vector` shape lines name, so `tests/shape/w1_shaft_design.shape` has `.main 259 265 sqrt` and `w4_heat_plate.shape` `.main 296 296 sel`, and §2.12's current text follows (L-md); compile times with the figures blocks in §6.3 "Measured at 9d" (recorded, not judged); the gate after phase 9 passes every program with no relief, §2.7 "Measured at the gate after phase 9"; lead decisions L-ma–L-md; **phase 9 is complete**; `make test` (driver 122, rt 256, la: `la_check` 31 042 cases and `la/la_link`, stage 1 331, shape 8, fusion 2, protocol 56, programs 2 441, plots 34, accept 2 + 6) and `make cross` (1 235 cases packed, 0 failed to compile; default variant 1 002/0, `sse2` 1 002/0, once-only 231/0; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed; W1, W4, W5 and W7 byte-identical SVGs and JSONs under both variants, W2 by Decision 138, W3 byte-identical) pass |
+| La | **Phase-L specification** (documents only): §2.15 (scope, the semantic contract with the agreed LANGUAGE.md text, the worked example, front end and later passes, entries 83–87, the runtime algorithms, capacity, tests, these rows, Decisions 143–150, lead decisions L-me – L-mx); no contract file, intermediate format, code or other document changes | `make check-contracts` passes; `make test` passes unchanged; the user has agreed the text and taken Decisions 143–150. **Done** (2026-11-03): §2.15 written, revised after one independent review (the name collisions in dumps, generators and §3.4.1; `cross_run.sh`'s rt loop; `bitnot` in class 2; the text calls' result types; rule 40 in `sl1scal.bas`; the text rows through `K5$`; the `%x` messages and C99 order; the 2³⁰ `read` cap; unused calls keeping their errors; Lc's known-answer files), and agreed; Decisions 143–149 decided as option (a), Decision 150 the user's rulings; lead decisions L-me – L-mx agreed; §0, §8, §9 and `sea/CLAUDE.md` edited with the agreement; `make check-contracts` passes |
+| Lb | **Contract, front end, bitwise, `%x`** (after La). **WP-CONTRACT** first and alone: `include/errors.inc` (codes 30–35, `SEA_E_RT_END` 36), `include/rt.inc` (entries 83–87, `SEA_ENT_COUNT` 87, the `SEA_FP_CONV` comment), `include/passes.txt` (`enum conv` with `x X`), §2.6.2's and §4.8's tables, §3.5.5's and §3.6's `fconv` letters, the LANGUAGE.md text of §2.15.2, §3.4.1's worked example with `split` renamed `parts` together with `tests/lib_check.sh`'s patterns at 2740 and 2742 (which read that example, L-mv); then in parallel: **WP-NAME** `passes/seaname/*`; **WP-CHECK** `passes/seacheck/*` (the class-2 rows with `bitnot`'s arity test, the five table rows and result types in `sc9plot.bas`, `%x`); **WP-FUSE** `passes/seafuse/*` (the elemental lists); **WP-EXPAND** `passes/seaexpand/*` (validation fixes only, if any); **WP-LOOP** `passes/sealoop/*` (`K4$`, R37); **WP-LOWER** `passes/sealower/*` (rule 39's five rows through `K5$` and 34067's alphabets, rule 40 in `sl1scal.bas`); **WP-GEN** `passes/seagen_a64/*`, `passes/seagen_x64/*` (only if the shift selection or the `x`/`X` letters need a fix); **WP-RT-A64** `runtime/arm64_macos/rt_fmt.s` (`%x`), `tests/rt/arm64_macos/rt_lib_hex*`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; **WP-RTRUN** `tests/rt/run_rt.sh`, `tests/rt/run_rt_linux.sh`, `tests/cross_pack.sh`, `tests/cross_run.sh` (the rt `NAME.files/` sidecar); **T1** `tests/programs/lib_bit_*`, `fmt_hex`, `tests/errors/r_lib_shift_*`, `r_fmt_hex_error`, `err_lib_*`, `err_fmt_hex_*`, the renames of `fn split` to `parts` (L-mv: `tests/programs/arr_fixed_vals.sea`, `arr_locals_params.sea`, `tests/vectors/arr4e_cases.py`, `arr4d_cases.py`, `tests/passes/rs.sea`, `rs.ast`, `rs.res`, `rs.hir1`), `tests/CORPUS.md`; **T2** `tests/passes/libL_*`; then the measurement after Lb (§2.15.7) | the Lb tests of §2.15.8 pass on both targets and both variants (the text calls' dumps and compile errors included; their programs wait for Lc); every earlier output unchanged; `make test`, `make check-contracts` and `make cross` pass; the measurement after Lb recorded in §2.7, any relief agreed before Lc's code |
+| Lc | **The text runtime, its tests, the gate** (after Lb). **T1** first and before WP-RT's rt tests: `tests/vectors/libL_cases.py` and its generated files (the KAT programs and outputs, `lib_read_lines_big`'s fixture and output, the rt known answers `tests/rt/arm64_macos/rt_lib_kat.out` and `tests/rt/x86_64_linux/rt_lib_kat.out`); **WP-RT-A64** `runtime/arm64_macos/rt_text.s` (new), `rt_file.s` (`READ_LINES`), `rt_str.s` (`_sea_str_make`), `tests/rt/arm64_macos/rt_lib_*` except `rt_lib_kat.out`; **WP-RT-X64** the same under `runtime/x86_64_linux/`; then **T1** `tests/programs/lib_read_lines_*`, `lib_split`, `lib_substr`, `lib_parse_*`, `lib_candump` with their fixtures, `tests/errors/r_lib_*` of the text calls, `tests/CORPUS.md`; the runtime sizes recorded in §2.7; then the gate after phase L (§2.15.7) | row L's "done when": the tests of §2.15.8 pass on both targets and both variants; `lib_candump` prints §2.15.3's output; every earlier output unchanged; `make test` and `make cross` pass; the gate after phase L applied, a failing program getting a relief agreed with the user before W8's code |
 
 ## 9. Decisions (agreed)
 
@@ -18958,6 +20116,106 @@ lists its options with the recommendation in bold, its reasons, the decision, an
      own. **Decided: (a)** (the user, 2026-11-02).
      Affects LANGUAGE.md §12.5 (§2.14.2 item 6), §2.14.6, L-kk, `plot_ticks_*`.
 
+**Decisions of phase L** (written 2026-11-02/03 with the text of §2.15, revised after one
+independent review, and decided by the user on 2026-11-03: 143–149 each as the recommended option
+(a); 150 the user's four rulings of the same day, one of them (d) changing the draft). Each lists
+its options with the recommendation in bold, its reasons, the decision, and what it affects;
+§2.15.10 holds the same text.
+
+143. **What a malformed number text does** (`parse_i64`, `parse_f64`; LANGUAGE.md has no
+     exceptions, so the choice is how a program learns of the failure). Options: (a) **a run-time
+     error naming the text (`cannot parse "%s" as i64 in base %d`, `cannot parse "%s" as f64`);
+     the program validates beforehand if it wants to skip a line**; (b) a result plus a flag,
+     `let (v, ok) = parse_i64(s)` (a multiple-result library call as `ind2sub` is; the value 0 or
+     NaN when `ok` is false; no parse error code); (c) both: the raising forms of (a) and
+     `try_parse_i64`/`try_parse_f64` returning `(v, ok)`; a sentinel alone (NaN for `parse_f64`)
+     is not offered, since `i64` has no free value. Recommended: (a): W8's log is written by the
+     project's own simulated sketch, so a malformed field is a defect that should stop the run with
+     the file line of the failing call; the decode of §2.15.3 reads naturally; and (c)'s `try_`
+     forms can be added later without changing (a). Under (b) or (c) items 3 and 5 of §2.15.2's
+     LANGUAGE.md text change, `PARSE_I64`/`PARSE_F64` return a second result (Args/Results `pi`/`ii`,
+     `p`/`fi`: a two-result entry, which §4.8's convention has not had so far) and §2.15.3 checks
+     `ok`. Affects LANGUAGE.md §9.2, §10.9, §2.15.2, §2.15.5, §2.15.6, `errors.inc`. **Decided: (a)** (the user, 2026-11-03).
+144. **The spelling of the i64 bitwise operations** (`&` and `|` are already the `bool`
+     element-wise operators at precedence 7 and 8, below the comparisons; `^` is the power; `~`,
+     `<<`, `>>` are not tokens). Options: (a) **elemental functions `bitand bitor bitxor bitnot
+     shl shr sar` (§2.15.2), no syntax change; `&`, `|`, `^` keep their meanings**; (b) operators
+     on `i64`: `&` and `|` overloaded for `i64` operands at their present precedence (so `a & 0xFF
+     == 0` parses as `a & (0xFF == 0)` and is a type error), a new prefix `~` and new `<<` `>>`
+     (logical? arithmetic? one of them a function), xor a function since `^` is power: a lexer,
+     parser and Appendix B change, `seaparse` (3 953 lines) growing by an estimated 60–120
+     lines; (c) operators with C's precedence (bitwise above comparison: changes the
+     meaning of existing `bool` expressions such as `gc >= LSL & gc <= USL`, so it would need new
+     tokens for the bitwise forms, e.g. `.&`). Recommended: (a): no grammar change and no pass-1
+     growth, no precedence trap, the names say what they do (MATLAB uses `bitand bitor bitxor`),
+     the functions are elemental like `idiv`, and the LIR already has the instructions; the cost
+     is that a mask is not a constant expression (L-ml). Affects LANGUAGE.md §10.14 (a), or
+     §3.6, §3.7, §6.1, §6.4, Appendix B (b, c); §2.15.4. **Decided: (a)** (the user, 2026-11-03).
+145. **The form of file input** (§10.13 names `read_lines`; W8 reads one log of a few MB).
+     Options: (a) **`read_lines(path) -> str[]`: the whole file read at once and split into lines
+     by LANGUAGE.md §3.1's rule (LF; one CR before an LF or at the end removed; a final line
+     without LF counts; a final LF adds no empty line; an empty file gives no line)**; (b)
+     `read_text(path) -> str` (the whole file as one string) and lines as `split(text, "\n")`
+     with the program removing CRs (one primitive fewer, but every reader repeats the CRLF and
+     final-newline handling, and a file over 2³¹ − 1 bytes cannot be one `str`); (c) a streaming
+     reader: a new handle type `File` with `open_read`, `read_line`, `at_end`, `close` (no whole
+     file in memory; a new handle type, more entries and errors, effects on every call).
+     Recommended: (a): the decode needs exactly a list of lines, the rule is the one Sea already
+     applies to source files, a file of a few MB is a few MB of strings, and (c) can come later if
+     a workload needs files larger than memory. Affects LANGUAGE.md §10.10, §11.3, §2.15.2,
+     §2.15.5, §2.15.6. **Decided: (a)** (the user, 2026-11-03).
+146. **Substring access** (§10.13 lists `s[a..b]`, `byte`, `starts_with`, `find_str`; the decode of
+     §2.15.3 needs only taking bytes lo … hi − 1). Options: (a) **one function `substr(s, lo, hi)`
+     with exactly the meaning and the checks of the index range `lo..hi` (§5.1, §5.4)**; (b) the
+     slice syntax `s[a..b]`, `s[a..=b]` with `$` = `len(s)`, written by `seacheck` as the same
+     entry (a `str` base of an `idx` with one range; `$` bound to a hidden local of the base; a
+     scalar index on a `str` stays 250): no parser change, but `seacheck` grows by an estimated
+     150–250 lines instead of the few rows of (a), and `seaname`'s `$` binding learns a `str` base;
+     (c) (a) now and (b) later as sugar over the same entry, plus `byte(s, i) -> i64`. Recommended:
+     (a): the smallest change that the decode needs, its semantics are §5.4's so (b) remains a
+     pure syntax addition later, and W8 needs neither `byte` nor a search. Affects LANGUAGE.md §4.4,
+     §10.9, §10.13, §2.15.2, §2.15.4. **Decided: (a)** (the user, 2026-11-03).
+147. **`%x` and `%X` in `printf`/`format`** (§10.13 lists them; a CAN report naturally writes
+     identifiers in hex, as `candump` does, but W8's report is not specified yet). Options: (a)
+     **add `x` and `X` for `i64` with C99's width, precision and `- 0 #` flags (§2.15.2): a
+     `passes.txt` enum line, `seacheck`'s format check, `rt_fmt.s`'s digit loop in base 16**; (b)
+     leave them out; W8 prints decimal identifiers, or builds hex text in Sea (a prelude-free loop
+     over `shr`/`bitand` with a 16-letter `str[]`); (c) a library function `hex(x, digits) -> str`
+     instead of conversions. Recommended: (a): about 60–110 lines in all, the familiar spelling
+     (C, MATLAB `sprintf('%X')`), usable in `format` and `error` messages, and decided now so that
+     W8's report format can rely on it. Affects LANGUAGE.md §11.1, §10.13, `passes.txt`, §3.5.5,
+     §3.6, §4.8 (`SEA_FP_CONV`), §2.15.4, §2.15.6. **Decided: (a)** (the user, 2026-11-03). The flags `+` and space with
+     `x`/`X` are Decision 150 (d).
+148. **The new run-time errors** (§2.15.2's table). Options: (a) **six new codes 30–35:
+     `cannot read '%s': %s`, `cannot parse "%s" as i64 in base %d`, `cannot parse "%s" as f64`,
+     `invalid base %d`, `empty separator`, `invalid shift count %d`; the existing `cannot open`,
+     `index … out of bounds`, `invalid array size` and `out of memory` reused**; (b) fewer codes: one
+     `invalid argument to %s: %s` for the base, the separator and the shift count, and one parse
+     error for both types; (c) no checks for the base, the separator and the count: the base
+     clamped to 2 … 36, an empty separator splitting into single bytes, the count taken mod 64
+     (C's undefined behaviour made defined). Recommended: (a): each message names what failed, as
+     LANGUAGE.md's other messages do; (c) silently turns mistakes into plausible values, which Sea
+     avoids everywhere else (bounds checks, `integer overflow`). Affects LANGUAGE.md §9.2,
+     `errors.inc`, §2.6.2, §2.15.2. **Decided: (a)** (the user, 2026-11-03).
+149. **The sub-phase split** (§2.15.9). Options: (a) **Lb the contract, the front end of all
+     twelve functions and `%x`, the bitwise functions and `%x` finished with their tests, the rt
+     runners' fixtures; Lc the text runtime entries on both targets, their tests and the gate**;
+     (b) one code sub-phase Lb with everything; (c) three: bitwise and `%x`; `read_lines`, `split`
+     and `substr`; the parse functions. Recommended: (a): the front end is one change across the
+     passes made once (as 9b did), the bitwise functions and `%x` need no new runtime file and are
+     tested end to end in Lb, and Lc is pure runtime work against fixed front-end output (as 9c
+     was); (b) puts every package in one integration; (c) touches every pass twice. Affects §8,
+     §2.15.9. **Decided: (a)** (the user, 2026-11-03).
+150. **The user's rulings on four readings of the draft** (2026-11-03, asked with Decisions
+     143–149; each a ruling, not a choice among options): (a) `parse_i64` and `parse_f64` reject
+     leading and trailing blanks (`" 5"`, `"1.0 "` are parse errors), as drafted; (b) `parse_i64`
+     in base 16 rejects a `0x`/`0X` prefix (`"0x1F"` is a parse error), as drafted; (c) `shl`
+     discards the bits shifted out and never reports `integer overflow`, as drafted; (d) the flags
+     `+` and space with `%x`/`%X` are accepted and have no effect, as C defines them for signed
+     conversions only, **changed** from the draft, which made them the compile error 234. Affects
+     LANGUAGE.md §10.9, §10.14, §11.1 (items 5, 9, 10 of §2.15.2), §2.15.4, §2.15.6, §2.15.8, L-mm.
+     **Decided** (the user, 2026-11-03).
+
 **Lead decisions of phase 5** (2026-10-24, within Decisions 58–73, each taken because one answer is
 clearly right, reported to the user and agreed with the phase-5 text; each is written into its
 normative section): L-ac,
@@ -20335,3 +21593,110 @@ change bytes are also written into §2.14.6, which stays the single source):
 * **L-md** (9d, agreed 2026-11-03; shape lines) The ports' longer headers move the source lines the
   `vector` shape lines name: W1 259–265, W4 296 (`rb_half_sweep` 289–298). The `.shape` files and
   §2.12's current text follow; the 7f records keep the lines of their time.
+
+**Lead decisions of phase L** (written 2026-11-02/03 with the text of §2.15, revised after one
+independent review, and agreed by the user together with Decisions 143–150 on 2026-11-03); each is
+a reading where LANGUAGE.md or the earlier rules leave a choice, written into §2.15:
+
+* **L-me** (effects) `read_lines` has effects in LANGUAGE.md §8.1's sense (it reads a file, whose
+  contents can depend on what the program wrote with `write_json` before): it joins `cpre`'s list
+  (228 in an elemental function), is never removed as dead (so a missing file is reported even when
+  the result is unused) and keeps its place among the other effects. `split`, `substr`, the parse
+  functions and the bitwise functions have no effects (§8.1), but an unused call is never removed
+  either: in `sea.lir` it is an `rcall` (an effect instruction) or a `chk` (a failing one), which
+  §5.8's T10 does not delete, so its run-time error is reported whether or not the result is used
+  (`r_lib_parse_unused`, `r_lib_shift_unused`).
+* **L-mf** (lines) LANGUAGE.md §3.1's rule read for data: a line ends at LF; one CR before that LF,
+  or one CR at the very end of the file, is removed; the bytes after the last LF form a line when
+  there are any; an empty file has no line; every other byte is kept, with no decoding, no BOM
+  removal and no check of UTF-8.
+* **L-mg** (reading) `open(path, O_RDONLY)`, `read` into one growing uncounted buffer (65 536
+  bytes, doubled) in requests of at most 2³⁰ bytes (Darwin's `read` may refuse a larger count)
+  until `read` returns 0, `EINTR` retried (the runtime-local `RT_FILE_EINTR` = 4 on both hosts),
+  `close` with its result ignored; a NUL byte in the path is `cannot open` with `EINVAL`, as
+  `make_dir`'s is `cannot create directory` with `EINVAL`; an `open` failure
+  `cannot open`, a `read` failure `cannot read` (a directory: `EISDIR`); the whole file is read
+  before any string is made; the scratch blocks are freed before every check the entry makes
+  itself. A path is a host path; `-` is a file named `-` (standard input is not read).
+* **L-mh** (split) Non-overlapping occurrences scanned left to right; occurrences + 1 fields;
+  empty fields kept, nothing trimmed, `split("", sep)` is `[""]`; an empty separator is an error,
+  never "split into bytes"; every element a new string, none sharing the argument.
+* **L-mi** (parse_i64) The base is any `i64` expression, checked at run time (2 … 36), before the
+  text; the text is an optional `+`/`-` and digits of the base in either case, nothing else; the
+  value exact in −2⁶³ … 2⁶³ − 1 (the magnitude accumulated negatively so −2⁶³ parses); one error
+  for a syntax and a range failure; the text quoted whole and as is in the message.
+* **L-mj** (parse_f64) The grammar of §2.15.2, wider than Sea's literals (`.5`, `5.` and a leading
+  sign accepted, no `_`), the eight words Sea writes accepted, no hex floats, no blanks, no
+  `infinity`; the value correctly rounded (round to nearest even), overflow ±∞, underflow the
+  nearest subnormal or ±0, the sign of zero kept. The runtime validates the grammar itself, then
+  calls the host `strtod` in the C locale on a NUL-terminated copy, as it calls `snprintf` for
+  output (LANGUAGE.md §11.1, §4.5). Both hosts' `strtod` are believed correctly rounded (Apple's
+  Libc uses David Gay's `gdtoa`, glibc its multi-precision `strtod`); **unverified** on these
+  exact versions until `lib_parse_f64_kat` and the rt known answers pass on both targets against
+  Python's correctly rounded `float()` and the compiler's own literal conversion. If either host
+  differs, Lc stops and the lead brings a Decision (Sea's own conversion in assembly, as phase 3
+  did for the elementary functions) before going on.
+* **L-mk** (substr) `substr(s, lo, hi)` is `s[lo..hi]` in meaning and checks (§5.1, §5.4): an
+  empty range never fails, else the first position, else the last, is reported with dimension 0
+  and extent `len(s)`; the result is always a new string (never the argument retained, even for
+  the whole string).
+* **L-ml** (bitwise) Two's-complement bits; `shl` discards the bits shifted out and never reports
+  `integer overflow`; `shr` logical, `sar` arithmetic; the count 0 … 63 checked after both
+  arguments are evaluated (`invalid shift count`); elemental on `i64` arrays with §6.3's
+  broadcasting, a check failing at the first element in linear order; `bitnot` lowers to `ixor`
+  with −1 (LIR `bnot` is logical); not constant expressions (§7.2), not folded by pass 2.
+* **L-mm** (`%x`) `i64` arguments only (an untyped literal is `i64`; any other type, `bool`
+  included, is 210 `format "%x" expects i64, found T` with the conversion as written); the bits
+  printed unsigned; C99's width, precision and `- 0 #` flags laid out in C's order (prefix, zeros,
+  digits: `%#010x` of 255 is `0x000000ff`); `+` and space accepted and ignored (Decision 150 (d));
+  the runtime's own digit loop in base 16, no `snprintf`.
+* **L-mn** (signatures) The text calls take scalars (`str`, `i64`); `base:` is an option, named
+  only, with the default 10; results: `str[]` for `read_lines` and `split`, `str` for `substr`,
+  `i64`, `f64`; the written form names every parameter (`lib parse_i64 2` with `ci 10` inserted),
+  as 9b's plotting calls do (L-kg).
+* **L-mo** (front-end placement) The seven bitwise functions join `ck_lib`'s class 2 (as `idiv`),
+  `bitnot` by an arity test at the class's branch (no new class, so neither the `lred` path nor
+  the reference-argument path is reached); the text calls are classes 53–57 of `sc9plot.bas`'s
+  table-driven part, reusing its options, defaults and written form, their result types set after
+  26510 (`str[]` through `tarr`, `i64`, `f64`, `str`); `sealoop`'s R37; `sealower`'s rule 40 in
+  `sl1scal.bas` beside `idiv`, and rule 39's rows through `K5$`, the arity strings and the
+  plotting calls' generic entry path (34063–34069, 34006, the alphabets gaining digits), as
+  §2.15.4 writes them.
+* **L-mp** (fixtures for rt tests) `tests/rt/run_rt.sh`, `run_rt_linux.sh` and `tests/cross_run.sh`
+  (its own x86_64 rt loop, lines 564–594) copy `NAME.files/` into the fresh working directory
+  before the run, as `tests/run.sh` does; `cross_pack.sh` packs it for rt tests. No other runner
+  changes: programs and error tests already have fixtures.
+* **L-mq** (entries) Five entries 83–87, all `S`, arguments borrowed, results owned, the elements
+  of a `str[]` result new strings counted in `_sea_live`; `SEA_ENT_COUNT` 87 within the capacity
+  128 (L-kv), so no capacity line changes.
+* **L-mr** (no vector forms) The bitwise functions have no SIMD form: T13 vectorizes `f64` lanes
+  only, so an `i64` loop stays scalar (fused, unrolled by T11 where it applies); phase 10 may
+  measure it.
+* **L-ms** (errors) Six new codes 30–35 (Decision 148 (a)) with the texts of §2.15.2;
+  `CANNOT_OPEN`, `INDEX_OOB`, `ARRAY_SIZE` and `OUT_OF_MEMORY` reused with their texts; the check
+  order of each call is its parameter order.
+* **L-mt** (scalars only) The text calls are not elemental: `str` is not an elemental parameter
+  type (LANGUAGE.md §8.5), and a loop over `str[]` is what W8's decode writes; an element-wise
+  `parse_f64` over a `str[]` is later library work if a workload needs it.
+* **L-mu** (limits) No new contract limit: lines and fields are `str`s (`SEA_LIM_STR_BYTES`) and
+  their number an extent (`SEA_LIM_EXTENT`, reported by `ARR_NEW` as `invalid array size`); the
+  first buffer, the `read` request cap and `parse_f64`'s stack buffer are runtime-local equates
+  (`RTT_CHUNK`, `RTT_RDMAX`, `RTT_FBUF`),
+  which no output depends on (L-kw's reading).
+* **L-mv** (name collisions) The twelve new predeclared names collide only with functions named
+  `split`, all renamed `parts` in Lb (5 bytes, so no dump column moves): WP-CONTRACT renames
+  §3.4.1's worked example and the two `tests/lib_check.sh` patterns that mutate it (2740, 2742)
+  in one change, since `lib_check.sh` reads the document; T1 renames `tests/passes/rs.sea` and its
+  goldens `rs.ast`, `rs.res`, `rs.hir1`, the programs `tests/programs/arr_fixed_vals.sea` and
+  `arr_locals_params.sea`, and their generators `tests/vectors/arr4e_cases.py` and
+  `arr4d_cases.py`. The programs' outputs do not contain the name and stay unchanged; the dumps
+  and the example change only in the name. No port or prelude function uses any of the names.
+* **L-mw** (no phase-rule rows) Every name enters with its front end in Lb; the text calls fail
+  only at link until Lc's runtime defines their symbols (L-lf's reading), so no `not supported
+  yet` row is added and 259 stays unreachable.
+* **L-mx** (private helpers) `_sea_str_make(bytes, len, site)` is `rt_str.s`'s existing private
+  helper exported under that name (arm64 `Lrt_str_from` → `_sea_str_make`, `.private_extern`;
+  x86_64 `.Lrt_str_of` → `sea_str_make`, `.hidden`; renamed, not duplicated, its callers in
+  `rt_str.s` updated); it, the parse and split scanners in `rt_text.s`, and `READ_LINES`'s use of
+  `rt_file.s`'s private routines are target-local, none a contract; `rt_args.s` may later use
+  `_sea_str_make` (no behaviour change, not required by this phase).

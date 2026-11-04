@@ -221,11 +221,15 @@ W4 296; port-only, no pass or runtime change; `make test` passes (programs 2 441
 2 + 6) and `make cross` passes 1 235 cases (default 1 002, `sse2` 1 002, once-only 231; host 2 235
 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); lead decisions L-ma–L-md; DESIGN.md §6.3
 "Measured at 9d"; the gate after phase 9 passes every program with no relief, §2.7 "Measured at the
-gate after phase 9"). **Phase 9 is complete.** **Next:** the library sub-phase the user agreed on
-2026-11-02 (`read_lines`, `split`, `parse_i64`/`parse_f64`, i64 bitwise operations; LANGUAGE.md
-§10.13) and the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log
-that a Sea port reads, decodes and plots); both are still to be specified and both come before
-phase 10.
+gate after phase 9"). **Phase 9 is complete.** **Phase L** (text library, DESIGN.md §8 row L) **is
+specified** (La, agreed 2026-11-03 after one independent review: Decisions 143–149 each option
+(a), Decision 150 (the user's rulings: blanks and `0x` rejected by the parse functions, `shl` drops
+bits, `+`/space ignored with `%x`), lead decisions L-me–L-mx; DESIGN.md §2.15, §8 rows La–Lc, §9):
+`read_lines`, `split`, `substr`, `parse_i64`/`parse_f64`, the bitwise functions `bitand bitor
+bitxor bitnot shl shr sar`, `%x`/`%X`, runtime entries 83–87, errors 30–35. **Next:** Lb
+(WP-CONTRACT first and alone, DESIGN.md §2.15.9), then Lc; W8 (an ESP32 controller sketch
+simulated on the host, writing a CAN log that a Sea port reads, decodes and plots) is specified
+after phase L, before phase 10.
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
