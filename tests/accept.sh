@@ -1,23 +1,28 @@
 #!/bin/sh
 # tests/accept.sh -- the phase-6 acceptance programs: the ports (docs/DESIGN.md 6.3). POSIX sh, Mac.
 #
-# For each ports/NAME.sea (NAME a workload name, with NAME.tokens): in a fresh temporary
-# directory T, `sea build -o T/run/NAME` (in ports/, with the prelude) under the compile
-# timeout, then run T/run/NAME in the working directory T/run with --export-reference,
-# SEA_HEAP_CHECK=1 and standard input /dev/null under a 120-second timeout; standard output goes
-# to T/report.txt and standard error to T/stderr.txt. The status must be 0, standard error
-# exactly `heap: 0 live objects` and LF, and T/run must hold NAME.json and nothing else but the
-# executable. Then
+# For each ports/NAME.sea (NAME a workload name, with NAME.tokens and NAME.struct): in a fresh
+# temporary directory T, `sea build -o T/run/NAME` (in ports/, with the prelude) under the compile
+# timeout, then run T/run/NAME once in the working directory T/run with --export-reference
+# --figures (phase 9, DESIGN.md 2.14.9 "Acceptance", L-kz: the report and JSON checks are those of
+# a run without --figures, and the figure is built from the same values), SEA_HEAP_CHECK=1 and
+# standard input /dev/null under a 120-second timeout; standard output goes to T/report.txt and
+# standard error to T/stderr.txt. The status must be 0, standard error exactly
+# `heap: 0 live objects` and LF, and T/run must hold NAME.json, output/NAME.svg and nothing else but
+# the executable. Then
 #     uv run --no-project --with numpy python <workloads>/reference_py/compare.py \
 #         --candidate T/run NAME
 #     uv run --no-project --with numpy python <workloads>/reference_py/compare_report.py \
 #         NAME T/report.txt ports/NAME.tokens --candidate-json T/run/NAME.json
-# must both exit 0. <workloads> is sea/workloads (a directory of the sea repo).
+#     uv run --no-project python tests/plot_struct.py ports/NAME.struct T/run
+# must all exit 0 (the last is 6.3 step 4: the figure's structure, from the MATLAB script; a
+# missing ports/NAME.struct is a failure). <workloads> is sea/workloads (a directory of the sea repo).
 #
 # usage: sh tests/accept.sh [-v] [--save-out DIR] [PATTERN...]
 #   -v              show the comparers' reports for failures
-#   --save-out DIR  also copy the standard output of every passing case to DIR/NAME.out and its
-#                   NAME.json to DIR/NAME.json (used by tests/cross_pack.sh)
+#   --save-out DIR  also copy the standard output of every passing case to DIR/NAME.out, its
+#                   NAME.json to DIR/NAME.json and its output/NAME.svg to DIR/output/NAME.svg
+#                   (used by tests/cross_pack.sh)
 #   PATTERN         a substring of the test name (ports/NAME)
 # Environment: BUILD (default build/), SEA (default $BUILD/sea), WORKLOADS (default
 # sea/workloads), SEA_COMPILE_TIMEOUT (seconds per compilation, default 120),
@@ -51,9 +56,11 @@ COMPARE=$WORKLOADS/reference_py/compare.py
 COMPARE_REPORT=$WORKLOADS/reference_py/compare_report.py
 [ -x "$SEA" ] || { echo "accept.sh: driver '$SEA' not found or not executable; run 'make' first" >&2; exit 2; }
 command -v uv >/dev/null 2>&1 || { echo "accept.sh: uv not found (it runs compare.py)" >&2; exit 2; }
+PLOT_STRUCT=$ROOT/tests/plot_struct.py
+[ -f "$PLOT_STRUCT" ] || { echo "accept.sh: '$PLOT_STRUCT' not found" >&2; exit 2; }
 [ -f "$COMPARE" ] || { echo "accept.sh: '$COMPARE' not found (is the sea/workloads directory there?)" >&2; exit 2; }
 [ -f "$COMPARE_REPORT" ] || { echo "accept.sh: '$COMPARE_REPORT' not found" >&2; exit 2; }
-if [ -n "$SAVE" ]; then mkdir -p "$SAVE" || { echo "accept.sh: cannot create '$SAVE'" >&2; exit 2; }; fi
+if [ -n "$SAVE" ]; then mkdir -p "$SAVE/output" || { echo "accept.sh: cannot create '$SAVE'" >&2; exit 2; }; fi
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea-accept6.XXXXXX") || exit 2
 trap 'rm -rf "$TMP"' EXIT; trap 'exit 130' INT; trap 'exit 143' TERM
@@ -104,6 +111,7 @@ for src in "$ROOT"/ports/*.sea; do
     selected "$name" || continue
     base=${src%.sea}
     if [ ! -f "$base.tokens" ]; then fail "$name" "missing $nm.tokens"; continue; fi
+    if [ ! -f "$base.struct" ]; then fail "$name" "missing $nm.struct"; continue; fi
     d=$(mktemp -d "$TMP/case.XXXXXX") || exit 2
     mkdir "$d/run"
     run_limited "$CTIMEOUT" "$ROOT/ports" "$SEA" build "$nm.sea" -o "$d/run/$nm" >"$d/c.out" 2>"$d/c.err"
@@ -112,7 +120,7 @@ for src in "$ROOT"/ports/*.sea; do
         fail "$name" "compile failed (status $st): $(head -3 "$d/c.err" | tr '\n' ' ')"; rm -rf "$d"; continue
     fi
     SEA_HEAP_CHECK=1; export SEA_HEAP_CHECK
-    run_limited "$TIMEOUT" "$d/run" "$d/run/$nm" --export-reference >"$d/report.txt" 2>"$d/stderr.txt"
+    run_limited "$TIMEOUT" "$d/run" "$d/run/$nm" --export-reference --figures >"$d/report.txt" 2>"$d/stderr.txt"
     st=$?
     unset SEA_HEAP_CHECK
     ok=1
@@ -121,10 +129,14 @@ for src in "$ROOT"/ports/*.sea; do
         fail "$name" "standard error is not exactly 'heap: 0 live objects': $(head -3 "$d/stderr.txt" | tr '\n' ' ')"; ok=0
     fi
     if [ $ok = 1 ]; then
-        extra=$(cd "$d/run" && /bin/ls -A | grep -v -x -F -e "$nm" -e "$nm.json")
+        # every file and directory below T/run, by relative path: exactly the executable, NAME.json,
+        # the directory output and output/NAME.svg
+        extra=$(cd "$d/run" && find . -mindepth 1 | sed 's|^\./||' \
+            | grep -v -x -F -e "$nm" -e "$nm.json" -e output -e "output/$nm.svg")
         if [ -n "$extra" ]; then fail "$name" "the program wrote unexpected files: $(echo "$extra" | tr '\n' ' ')"; ok=0; fi
     fi
     if [ $ok = 1 ] && [ ! -f "$d/run/$nm.json" ]; then fail "$name" "the program did not write $nm.json"; ok=0; fi
+    if [ $ok = 1 ] && [ ! -f "$d/run/output/$nm.svg" ]; then fail "$name" "the program did not write output/$nm.svg"; ok=0; fi
     if [ $ok = 1 ]; then
         run_limited "$TIMEOUT" "$d" uv run --no-project --with numpy python "$COMPARE" --candidate "$d/run" "$nm" >"$d/cmp.out" 2>&1
         st=$?
@@ -144,8 +156,19 @@ for src in "$ROOT"/ports/*.sea; do
             ok=0
         fi
     fi
+    if [ $ok = 1 ]; then
+        # 6.3 step 4 (2.14.9, L-kz): the figure's structure against ports/NAME.struct
+        run_limited "$TIMEOUT" "$d" uv run --no-project python "$PLOT_STRUCT" "$base.struct" "$d/run" >"$d/st.out" 2>&1
+        st=$?
+        if [ $st -ne 0 ]; then
+            fail "$name" "plot_struct.py exit status $st: $(head -3 "$d/st.out" | tr '\n' ' ')"
+            if [ "$VERBOSE" = 1 ]; then sed 's/^/    /' "$d/st.out" | head -60; fi
+            ok=0
+        fi
+    fi
     if [ $ok = 1 ] && [ -n "$SAVE" ]; then
         /bin/cp -f "$d/report.txt" "$SAVE/$nm.out" && /bin/cp -f "$d/run/$nm.json" "$SAVE/$nm.json" \
+            && /bin/cp -f "$d/run/output/$nm.svg" "$SAVE/output/$nm.svg" \
             || { echo "accept.sh: cannot write to '$SAVE'" >&2; exit 2; }
     fi
     rm -rf "$d"

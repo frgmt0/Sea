@@ -4,10 +4,10 @@
 #
 # usage: sh tests/cross_accept.sh [-v] BUNDLE_DIR KEPT_B64 REPORT
 #   -v          show the comparers' reports for failures
-#   BUNDLE_DIR  the bundle tests/cross_pack.sh made for the run (its cases/ports/NAME.meta, NAME.out
-#               and NAME.expect/NAME.json are the Mac's packed results)
-#   KEPT_B64    the base64 text of the tar of the host's kept runs (ports/NAME.VARIANT.out and
-#               .json); an empty file when the host kept nothing
+#   BUNDLE_DIR  the bundle tests/cross_pack.sh made for the run (its cases/ports/NAME.meta, NAME.out,
+#               NAME.expect/NAME.json and NAME.expect/output/NAME.svg are the Mac's packed results)
+#   KEPT_B64    the base64 text of the tar of the host's kept runs (ports/NAME.VARIANT.out, .json
+#               and .svg); an empty file when the host kept nothing
 #   REPORT      the host's text report: each line `DEFER ports/NAME (VARIANT)` is one deferred run
 #
 # Environment: WORKLOADS (default sea/workloads), SEA_ACCEPT_TIMEOUT (seconds per comparison,
@@ -24,14 +24,23 @@
 # packed NAME.expect/NAME.json (same keys in the same order; numbers compared as their printed
 # text), and every line of the kept output without its `Compute time` line (the host's
 # filter=compute-time) is byte-identical to the same line of the packed NAME.out, except the lines
-# of NAME.out that the regex of a token-map entry naming K1, K2, ... (rule `json K`) matches. A
-# deferred run whose kept files are missing fails.
+# of NAME.out that the regex of a token-map entry naming K1, K2, ... (rule `json K`) matches.
+# Then the kept SVG (phase 9, DESIGN.md 2.14.9 "Cross", Decision 138) is judged against the bundle's
+# NAME.expect/output/NAME.svg: byte for byte, unless the NAME.meta line ends with ` svg=approx`
+# (the mode reader takes it off before reading `except=`); with it, in T/run/output/NAME.svg,
+#     uv run --no-project python tests/plot_struct.py ports/NAME.struct T/run
+#     uv run --no-project python tests/svg_skeleton.py NAME.expect/output/NAME.svg KEPT_SVG
+# must both exit 0 (the structure, and Decision 138 (a)'s skeleton comparison: every number of an
+# attribute value but href's replaced by `#` byte-identical, the numbers then exact, or within one
+# hundredth as integers for two-fraction-digit numbers). A deferred run whose kept files (the
+# .out, the .json or the .svg) are missing fails.
 #
 # Output: `PASS ports/NAME (VARIANT)` or `FAIL ports/NAME (VARIANT): <first difference>` per run,
 # then `----` and `passed: P  failed: F`.
 # Exit status: 0 every run passed, 1 a failure, 2 setup error (no uv, no workloads, unreadable
 # arguments, a base64 or tar failure, a DEFER line for a port the bundle does not mark, a kept file
-# no DEFER line names, a bad token map).
+# no DEFER line names, a bad token map, a missing ports/NAME.struct or packed SVG, a setup error of
+# plot_struct.py or svg_skeleton.py).
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 WORKLOADS=${WORKLOADS:-$ROOT/workloads}
@@ -56,6 +65,10 @@ COMPARE_REPORT=$WORKLOADS/reference_py/compare_report.py
 command -v uv >/dev/null 2>&1 || setup_fail "uv not found (it runs compare.py)"
 [ -f "$COMPARE" ] || setup_fail "'$COMPARE' not found (is the sea/workloads directory there?)"
 [ -f "$COMPARE_REPORT" ] || setup_fail "'$COMPARE_REPORT' not found"
+PLOT_STRUCT=$ROOT/tests/plot_struct.py
+SVG_SKELETON=$ROOT/tests/svg_skeleton.py
+[ -f "$PLOT_STRUCT" ] || setup_fail "'$PLOT_STRUCT' not found"
+[ -f "$SVG_SKELETON" ] || setup_fail "'$SVG_SKELETON' not found"
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/sea-crossacc.XXXXXX") || setup_fail "cannot create temporary directory"
 trap 'rm -rf "$TMP"' EXIT
@@ -78,6 +91,7 @@ while IFS= read -r f; do
     case $f in
     ports/*.out) r=${f#ports/}; r=${r%.out} ;;
     ports/*.json) r=${f#ports/}; r=${r%.json} ;;
+    ports/*.svg) r=${f#ports/}; r=${r%.svg} ;;
     *) setup_fail "unexpected kept file '$f'" ;;
     esac
     grep -q -x -F "${r%.*} ${r##*.}" "$TMP/runs" || setup_fail "kept file '$f' belongs to no DEFER line of the host"
@@ -173,12 +187,15 @@ run_limited() {
 PASS=0
 FAIL=0
 FAILED=""
-fail() { FAIL=$((FAIL + 1)); FAILED="$FAILED $1"; echo "FAIL $1: $2"; }
+fail() { FAIL=$((FAIL + 1)); FAILED="$FAILED $1"; printf 'FAIL %s: %s\n' "$1" "$2"; }
 
 while read -r nm var; do
     label="ports/$nm ($var)"
     pb=$BUNDLE/cases/ports/$nm
     mode=$(sed -n 's/^compare=//p' "$pb.meta" 2>/dev/null | head -1)
+    # a trailing ` svg=approx` (2.14.9, Decision 138) selects the skeleton comparison of the SVG
+    svg=exact
+    case $mode in *" svg=approx") svg=approx; mode=${mode% svg=approx} ;; esac
     case $mode in
     accept) keys= ;;
     "accept except="*) keys=${mode#accept except=} ;;
@@ -188,7 +205,9 @@ while read -r nm var; do
     [ -f "$tokens" ] || setup_fail "missing ports/$nm.tokens"
     ko=$TMP/kept/ports/$nm.$var.out
     kj=$TMP/kept/ports/$nm.$var.json
+    ks=$TMP/kept/ports/$nm.$var.svg
     if [ ! -f "$ko" ] || [ ! -f "$kj" ]; then fail "$label" "no kept files (ports/$nm.$var.out and .json)"; continue; fi
+    if [ ! -f "$ks" ]; then fail "$label" "no kept SVG (ports/$nm.$var.svg)"; continue; fi
     d=$(mktemp -d "$TMP/case.XXXXXX") || setup_fail "cannot create a case directory"
     mkdir "$d/run" && /bin/cp -f "$kj" "$d/run/$nm.json" && /bin/cp -f "$ko" "$d/report.txt" \
         || setup_fail "cannot prepare $d"
@@ -220,6 +239,37 @@ while read -r nm var; do
         1) fail "$label" "not identical outside $keys: $(head -1 "$d/id.out")"; ok=0 ;;
         *) setup_fail "the identity check of $label failed (status $st): $(head -3 "$d/id.out" | tr '\n' ' ')" ;;
         esac
+    fi
+    # the kept SVG against the Mac's (2.14.9 "Cross"): byte for byte, or with svg=approx the
+    # structure (ports/NAME.struct) and Decision 138 (a)'s skeleton comparison
+    if [ $ok = 1 ]; then
+        pe=$pb.expect/output/$nm.svg
+        [ -f "$pe" ] || setup_fail "the bundle lacks $nm.expect/output/$nm.svg"
+        if [ $svg = exact ]; then
+            if ! cmp -s "$pe" "$ks"; then
+                fail "$label" "output/$nm.svg differs from the Mac's: $(cmp "$pe" "$ks" 2>&1 | head -1)"; ok=0
+            fi
+        else
+            [ -f "$ROOT/ports/$nm.struct" ] || setup_fail "missing ports/$nm.struct"
+            mkdir -p "$d/run/output" && /bin/cp -f "$ks" "$d/run/output/$nm.svg" || setup_fail "cannot prepare $d/run/output"
+            run_limited "$TIMEOUT" "$d" uv run --no-project python "$PLOT_STRUCT" "$ROOT/ports/$nm.struct" "$d/run" >"$d/st.out" 2>&1
+            st=$?
+            case $st in
+            0) ;;
+            1) fail "$label" "plot_struct.py: $(head -1 "$d/st.out")"; ok=0
+               if [ "$VERBOSE" = 1 ]; then sed 's/^/    /' "$d/st.out" | head -60; fi ;;
+            *) setup_fail "plot_struct.py on $label failed (status $st): $(head -3 "$d/st.out" | tr '\n' ' ')" ;;
+            esac
+            if [ $ok = 1 ]; then
+                run_limited "$TIMEOUT" "$d" uv run --no-project python "$SVG_SKELETON" "$pe" "$ks" >"$d/sk.out" 2>&1
+                st=$?
+                case $st in
+                0) ;;
+                1) fail "$label" "output/$nm.svg against the Mac's (svg=approx): $(head -1 "$d/sk.out")"; ok=0 ;;
+                *) setup_fail "svg_skeleton.py on $label failed (status $st): $(head -3 "$d/sk.out" | tr '\n' ' ')" ;;
+                esac
+            fi
+        fi
     fi
     rm -rf "$d"
     if [ $ok = 1 ]; then PASS=$((PASS + 1)); echo "PASS $label"; fi

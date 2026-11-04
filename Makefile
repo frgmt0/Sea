@@ -23,7 +23,8 @@
 #   make test-fusion      tests/fusion.sh   allocations per iteration of W1's grid bisection and W4's red-black
 #                         iteration under SEA_HEAP_CHECK=count (2.12.10, the temporaries check)
 #   make test-accept      tests/accept4.sh  phase-4 acceptance programs against compare.py --keys (needs uv)
-#                         then tests/accept.sh: the ports W1, W4, W5 and W7 (compare.py, compare_report.py)
+#                         then tests/accept.sh: the ports W1, W2, W3, W4, W5 and W7 (compare.py,
+#                         compare_report.py, and with --figures plot_struct.py on ports/NAME.struct)
 #   make test-protocol    tests/protocol.sh pass protocol: missing #end, driver #end check
 #   make test-driver      tests/driver_check.sh  the driver without passes
 #   make test-lib         tests/lib_check.sh    the shared pass modules

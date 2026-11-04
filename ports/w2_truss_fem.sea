@@ -1,10 +1,17 @@
 // w2_truss_fem.sea -- X-braced 2D bridge truss: sizing, load-angle sweep, damage study
 //
 // Sea port of sea/workloads/w2_truss_fem.m (Sea acceptance workload 2). Same model, same
-// numbers, no figures (DESIGN.md 2.13.9). Options:
+// numbers (DESIGN.md 2.13.9; the figures are 2.14.3). Options:
 //   --export-reference   write w2_truss_fem.json to the working directory
+//   --figures            write output/w2_truss_fem.svg
 //
-// cross: compare=accept
+// Figure readings (MATLAB 225-262; DESIGN.md 2.14.3, L-ky): a1 draws every member `el` (0-based,
+// nodes `conn[el, 0]`, `conn[el, 1]`) twice: grey undeformed, then deformed by `scale * u0`
+// (blue for `N0[el] < 0`, red otherwise, width by `Acat[el] / max(Acat)`), 2 * nElem lines; a2
+// plots `utilSweep` and `1 / fosSweep` against `theta` in degrees; a3 is `utilRemoved` as bars
+// at MATLAB's positions 1 ... nElem.
+//
+// cross: compare=accept svg=approx
 //
 // Faithfulness notes (each checked against the MATLAB script):
 // * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
@@ -45,16 +52,18 @@
 //   `x(mask) = ...` and `conn(keep, :)` are mask selections.
 // * Errors keep MATLAB's messages without the message identifiers (`w2:config`, ...); none fires.
 // * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
-//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` are not needed: the
+//   SEA_SAVE_FIGURES together are `--figures`. `wlName`/`wlDir` are not needed: the
 //   JSON goes to the working directory (LANGUAGE.md 11.3) and the export record (MATLAB's `ref`,
 //   a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
 // * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` and `bool`
 //   values.
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -265,6 +274,45 @@ printf("Member removal: %d mechanisms, %d cases overstressed, worst utilisation 
     nnz(mechanism), nOverstressed, utilRemWorst)
 printf("(remove member %d, %s)\n", rWorst + 1, groupName[group[rWorst] - 1])
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W2 truss")
+
+    let a1 = panel(fig, 0, 0, colspan: 2)
+    let scale = 0.25 * height / max(abs(u0))
+    for el in 0..nElem {
+        let n1 = conn[el, 0]
+        let n2 = conn[el, 1]
+        plot(a1, [xy[n1, 0], xy[n2, 0]], [xy[n1, 1], xy[n2, 1]], color: "#bfbfbf")
+        let xd = [xy[n1, 0], xy[n2, 0]] + scale * u0[[2 * n1, 2 * n2]]
+        let yd = [xy[n1, 1], xy[n2, 1]] + scale * u0[[2 * n1 + 1, 2 * n2 + 1]]
+        if N0[el] < 0 {
+            plot(a1, xd, yd, style: "b-", width: 0.5 + 3 * Acat[el] / max(Acat))
+        } else {
+            plot(a1, xd, yd, style: "r-", width: 0.5 + 3 * Acat[el] / max(Acat))
+        }
+    }
+    axis_equal(a1)
+    title(a1, format("Deformed shape (x%.0f), red tension, blue compression", scale))
+    xlabel(a1, "x [m]"); ylabel(a1, "y [m]")
+
+    let a2 = panel(fig, 1, 0)
+    plot(a2, theta * 180 / pi, utilSweep, label: "max utilisation")
+    plot(a2, theta * 180 / pi, 1 / fosSweep, label: "1 / min FOS")
+    grid(a2); xlim(a2, 0, 360)
+    xlabel(a2, "Load angle [deg]"); ylabel(a2, "[-]")
+    legend(a2)
+    title(a2, "Load-angle sweep")
+
+    let a3 = panel(fig, 1, 1)
+    bar(a3, (1..=nElem), utilRemoved)
+    xlabel(a3, "Removed member"); ylabel(a3, "Max utilisation")
+    title(a3, "Single-member removal")
+
+    make_dir("output")
+    save_svg(fig, "output/w2_truss_fem.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

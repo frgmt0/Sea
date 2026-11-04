@@ -30,11 +30,18 @@
 # summary names the counts of each variant: `variant <v>: passed P  failed F`, then
 # `once (build, rt, math): passed P  failed F`, then the totals.
 #
-# Deferred ports (phase 8, DESIGN.md 2.13.9, Decision 127): a ports case whose NAME.meta has the line
-# `compare=accept` or `compare=accept except=KEY,KEY` (accepted for the kind ports only) is run under
-# each variant as every port (heap check, status 0, empty standard error, NAME.json written and no
-# other file) but compared with nothing: its standard output and its JSON are copied to
-# KEEP/ports/NAME.VARIANT.out and KEEP/ports/NAME.VARIANT.json, `DEFER ports/NAME (VARIANT)` is
+# Ports (phase 6; phase 9, DESIGN.md 2.14.9 "Cross", L-la): a ports case runs with the arguments of its
+# NAME.args (--export-reference --figures) and has NAME.expect/NAME.json and
+# NAME.expect/output/NAME.svg; a port that is not deferred compares both byte for byte (the
+# NAME.expect/ mechanism) under both variants.
+#
+# Deferred ports (phase 8, DESIGN.md 2.13.9, Decision 127; phase 9, 2.14.9): a ports case whose
+# NAME.meta has the line `compare=accept`, then optionally ` except=KEY[,KEY...]`, then optionally
+# ` svg=approx` (accepted for the kind ports only) is run under each variant as every port (heap
+# check, status 0, empty standard error, NAME.json and output/NAME.svg written and no other file)
+# but compared with nothing: its standard output, its JSON and its SVG are copied to
+# KEEP/ports/NAME.VARIANT.out, KEEP/ports/NAME.VARIANT.json and KEEP/ports/NAME.VARIANT.svg,
+# `DEFER ports/NAME (VARIANT)` is
 # printed and the run counts as deferred, neither passed nor failed (tests/cross_accept.sh judges it
 # on the Mac). The kept output is the run's standard output as written, the `Compute time` line
 # included: compare_report.py needs that line at its place (it skips it itself), and
@@ -204,11 +211,13 @@ check_meta() {
         env=SEA_HEAP_CHECK=*) ;;
         filter=compute-time) [ "$2" = ports ] && continue
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
-        compare=accept) [ "$2" = ports ] && continue
+        compare=accept | "compare=accept svg=approx") [ "$2" = ports ] && continue
             echo "cross_run.sh: $(basename "$1").meta: unknown line '$_l'" >&2; exit 2 ;;
         compare=accept\ except=*)
-            # the deferred comparison with excepted keys (2.13.9): KEY[,KEY...], each a JSON key name
+            # the deferred comparison with excepted keys (2.13.9): KEY[,KEY...], each a JSON key name,
+            # then optionally ` svg=approx` (2.14.9, Decision 138)
             _x=${_l#compare=accept except=}
+            _x=${_x% svg=approx}
             if [ "$2" = ports ] && [ -n "$_x" ]; then
                 case ",$_x," in
                 *,,* | *[!A-Za-z0-9_,]*) ;;
@@ -354,7 +363,8 @@ do_case() {
     errors) [ -f "$base.err" ] && [ -f "$base.status" ] || { fail "$name" "missing $_n.err or $_n.status"; return; } ;;
     passes) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
     accept) [ -f "$base.out" ] || { fail "$name" "missing $_n.out"; return; } ;;
-    ports) [ -f "$base.out" ] && [ -f "$base.expect/$_n.json" ] || { fail "$name" "missing $_n.out or $_n.expect/$_n.json"; return; } ;;
+    ports) [ -f "$base.out" ] && [ -f "$base.expect/$_n.json" ] && [ -f "$base.expect/output/$_n.svg" ] \
+        || { fail "$name" "missing $_n.out, $_n.expect/$_n.json or $_n.expect/output/$_n.svg"; return; } ;;
     plots) [ -f "$base.out" ] && [ -d "$base.expect" ] || { fail "$name" "missing $_n.out or $_n.expect/"; return; } ;;
     esac
     asm_link "$name" "$base.s" "" || return
@@ -393,10 +403,12 @@ keep_dir() {
     mkdir -p "$KEEP/ports" || { echo "cross_run.sh: cannot create $KEEP/ports" >&2; exit 2; }
 }
 
-# defer_variant NAME BASE : a deferred port run (2.13.9, Decision 127), after run_prog under the
-# variant CURV. The run must pass the checks of every port (status 0, the heap line, empty standard
-# error, NAME.json written and no other file); its standard output and JSON are then kept as
-# KEEP/ports/NAME.CURV.out and .json and the run is counted as deferred.
+# defer_variant NAME BASE : a deferred port run (2.13.9, Decision 127; 2.14.9 "Cross", L-la), after
+# run_prog under the variant CURV. The run must pass the checks of every port (status 0, the heap
+# line, empty standard error, exactly NAME.json and output/NAME.svg written and no other file); its
+# standard output, JSON and SVG are then kept as KEEP/ports/NAME.CURV.out, .json and .svg (the SVG
+# beside the other two, for tests/cross_accept.sh to judge on the Mac) and the run is counted as
+# deferred.
 defer_variant() {
     name=$1; base=$2
     _pn=$(basename "$base")
@@ -405,11 +417,13 @@ defer_variant() {
     [ -n "$LEAK" ] && { fail "$name" "$LEAK"; return; }
     same "$TMP/empty" "$TMP/r.err" "stderr" "$name" || return
     [ -f "$WORK/$_pn.json" ] || { fail "$name" "the program did not write $_pn.json"; return; }
+    [ -f "$WORK/output/$_pn.svg" ] || { fail "$name" "the program did not write output/$_pn.svg"; return; }
     for _r in $(relfiles "$WORK"); do
-        [ "$_r" = "$_pn.json" ] || { fail "$name" "unexpected file $_r"; return; }
+        [ "$_r" = "$_pn.json" ] || [ "$_r" = "output/$_pn.svg" ] || { fail "$name" "unexpected file $_r"; return; }
     done
     keep_dir
     /bin/cp -f "$TMP/r.out" "$KEEP/ports/$_pn.$CURV.out" && /bin/cp -f "$WORK/$_pn.json" "$KEEP/ports/$_pn.$CURV.json" \
+        && /bin/cp -f "$WORK/output/$_pn.svg" "$KEEP/ports/$_pn.$CURV.svg" \
         || { echo "cross_run.sh: cannot write to $KEEP/ports" >&2; exit 2; }
     DEFER=$((DEFER + 1))
     echo "DEFER $name ($CURV)"

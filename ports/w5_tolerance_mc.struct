@@ -1,0 +1,37 @@
+# w5_tolerance_mc.struct -- written from workloads/w5_tolerance_mc.m and DESIGN.md 2.14.9; never
+# from the Sea output.
+file output/w5_tolerance_mc.svg
+canvas 960 720
+heading W5 tolerance stack-up
+panels 4
+panel 0
+title Cold end-play histogram
+xlabel Cold end play [mm]
+ylabel Count
+ylabel2 -
+count bars 1
+count xline 2
+count legend 0
+panel 1
+title Contributors
+xlabel Variance share [%]
+ylabel -
+ylabel2 -
+count bars 1
+count legend 0
+panel 2
+title Yield vs tolerance scale
+xlabel Tolerance scale [-]
+ylabel Yield [%]
+ylabel2 -
+count line 1
+count markers 1
+count legend 0
+panel 3
+title Cpk vs tolerance scale
+xlabel Tolerance scale [-]
+ylabel Cpk [-]
+ylabel2 -
+count line 1
+count markers 1
+count legend 0

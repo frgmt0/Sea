@@ -3,9 +3,9 @@
 # the spec, never from the compiler's output. Format: see tests/shape.sh's header.
 program ports/w4_heat_plate.sea
 
-# 2.12.10: rb_half_sweep (lines 254-263 of the port: its fn line to its closing brace) is inlined
+# 2.12.10: rb_half_sweep (lines 289-298 of the port: its fn line to its closing brace) is inlined
 # into the main program at both call sites (class (c) of LANGUAGE.md 8.6), and inlined code keeps
 # its callee's lines (L-fl). Its fused selection store T[1..ny-1, :] = where(colorIn, Tn, Tc)
 # (F1 (3), (5)) runs in a 2-lane loop on arm64 and in both the 4-lane and the 2-lane loop on x86_64.
-vector arm64 .main 261 261 sel
-vector x86_64 .main 261 261 sel
+vector arm64 .main 296 296 sel
+vector x86_64 .main 296 296 sel

@@ -1,8 +1,14 @@
 // w4_heat_plate.sea -- 2D steady heat conduction in a cooled plate by finite differences
 //
 // Sea port of sea/workloads/w4_heat_plate.m (Sea acceptance workload 4). Same model, same
-// numbers, no figures (DESIGN.md 2.12.10). Options:
+// numbers (DESIGN.md 2.12.10; the figures are 2.14.3). Options:
 //   --export-reference   write w4_heat_plate.json to the working directory
+//   --figures            write output/w4_heat_plate.svg
+//
+// Figure readings (MATLAB 197-225; DESIGN.md 2.14.3, L-ky): a1 is the image and the 20 contour
+// levels of `T` over `x` and `y`; a2 plots `profX` against `x` and `profY` against `y`; a3 is
+// the four heat flows `Qbot, Qtop, Qhole, Qgen` as bars at the category positions 0 ... 3
+// (MATLAB's 1 ... 4), labelled by `x_ticks`.
 //
 // Faithfulness notes (each checked against the MATLAB script):
 // * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
@@ -40,16 +46,18 @@
 //   `Thot(~unknown) = -Inf` are masked assignments of a scalar.
 // * Errors keep MATLAB's messages without the message identifier (`w4:config`); neither fires.
 // * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
-//   SEA_SAVE_FIGURES and the figures section are not ported (DESIGN.md 2.12.10). `wlName`/`wlDir`
+//   SEA_SAVE_FIGURES together are `--figures`. `wlName`/`wlDir`
 //   are not needed: the JSON goes to the working directory (LANGUAGE.md 11.3) and the export
 //   record (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB reference in
 //   its order.
 // * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` values.
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -213,6 +221,33 @@ for s in 0..len(flowLabel) {
 }
 printf("Peak heat flux %.4e W/m^2 at (x, y) = (%.4f, %.4f) m\n", qMax, xq, yq)
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W4 heat plate")
+
+    let a1 = panel(fig, 0, 0, rowspan: 2)
+    image(a1, x, y, T, colorbar: true); axis_equal(a1)
+    contour(a1, x, y, T, levels: 20, color: "#000000")
+    xlabel(a1, "x [m]"); ylabel(a1, "y [m]")
+    title(a1, "Temperature [degC]")
+
+    let a2 = panel(fig, 0, 1)
+    plot(a2, x, profX, label: "horizontal centerline")
+    plot(a2, y, profY, label: "vertical centerline")
+    grid(a2); xlabel(a2, "Position [m]"); ylabel(a2, "T [degC]")
+    legend(a2)
+    title(a2, "Centerline profiles")
+
+    let a3 = panel(fig, 1, 1)
+    bar(a3, [0.0, 1, 2, 3], [Qbot, Qtop, Qhole, Qgen])
+    x_ticks(a3, ["bottom", "top", "coolant", "source"])
+    ylabel(a3, "Heat flow into plate [W]")
+    title(a3, format("Balance error %.2e W", Qbalance))
+
+    make_dir("output")
+    save_svg(fig, "output/w4_heat_plate.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

@@ -876,7 +876,7 @@ program's header comment, never from a run, and no object may be live at the end
 
 | Test | Spec |
 |------|------|
-| `w1_bisect` | K 2, **0** per iteration (Decision 105): `ports/w1_shaft_design.sea`'s structs, configuration, 90 × 120 grid, `pGrid` and the vectorized bisection (port lines 244–257) unchanged but `for it in 0..k`, with `make_params`, `surface_factor`, `reliability_factor`, `shaft_safety`; the loop body is one F2 group (§2.12.4's example: every node quiet, the space and plain-copy tests hold, `lo`/`hi` reused by F2 (6) with a `cow` that copies nothing, `mid`, `nfv`, `nyv`, `up` never stored) |
+| `w1_bisect` | K 2, **0** per iteration (Decision 105): `ports/w1_shaft_design.sea`'s structs, configuration, 90 × 120 grid, `pGrid` and the vectorized bisection (port lines 244–257 at 7f; 252–265 since 9d's longer header) unchanged but `for it in 0..k`, with `make_params`, `surface_factor`, `reliability_factor`, `shaft_safety`; the loop body is one F2 group (§2.12.4's example: every node quiet, the space and plain-copy tests hold, `lo`/`hi` reused by F2 (6) with a `cow` that copies nothing, `mid`, `nfv`, `nyv`, `up` never stored) |
 | `w4_rb` | K 2, **6** per iteration (Decision 105): `ports/w4_heat_plate.sea`'s inputs, 161 × 241 plate, masks, `T0`, `omega` and solver 2 with `rb_half_sweep` as LANGUAGE.md §2.4 writes it, unchanged but `maxIt = k`; per call `Tp` (F4: a concatenation of folded slices, one result), the stored group locals `Tc` and `Tn` (F2: `Tc tgs Tn dMax` one group with the masked `max` fused by F3, `tgs` never stored), the selection store in place (F1 (3), (5)) with a `cow` of the unique `T` that copies nothing; two calls per iteration |
 
 ## plots/ (DESIGN.md §2.14.8, run by `tests/plots.sh`; target `make test-plots`)

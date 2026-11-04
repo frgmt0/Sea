@@ -2,8 +2,14 @@
 // cross: compare=accept except=f_nat,c_best
 //
 // Sea port of sea/workloads/w3_quarter_car.m (Sea acceptance workload 3). Same model, same
-// numbers, no figures (DESIGN.md 2.13.9). Options:
+// numbers (DESIGN.md 2.13.9; the figures are 2.14.3). Options:
 //   --export-reference   write w3_quarter_car.json to the working directory
+//   --figures            write output/w3_quarter_car.svg
+//
+// Figure readings (MATLAB 170-200; DESIGN.md 2.14.3, L-ky): `kRef` (7, MATLAB's 8) is the damping
+// case of the time histories, so a1 plots `refZs` and every second sample of `zBump` (MATLAB's
+// `zBump(1:2:end)` is `zBump[0..$ step 2]`) and a2 `refRoughAcc`; a3 is `rmsAcc` on the left
+// axes and `rmsTire` on `twin_y`; a4 is `settle` as bars at `cSweep`.
 //
 // Faithfulness notes (each checked against the MATLAB script):
 // * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8): the
@@ -51,7 +57,7 @@
 //   script adds after `g`, computed in the literal from the same masses and `g`. simulate returns
 //   the tuple `(Y, acc, Ft, bsOn)`; the bump run, which asks for three outputs, discards bsOn.
 // * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT,
-//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` and
+//   SEA_SAVE_FIGURES together are `--figures`. `wlName`/`wlDir` and
 //   write_reference are not needed: the JSON goes to the working directory (LANGUAGE.md 11.3)
 //   and the export record (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB
 //   reference in its order.
@@ -71,9 +77,11 @@ struct Car {
 }
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -231,6 +239,39 @@ printf("Bump run: wheel off the ground for up to %.3f s; bump stop reached for c
 printf("\nBest compromise: c = %.1f N s/m on the grid (J = %.4f), refined c* = %.1f N s/m\n",
     cSweep[iBest], Jmin, cBest)
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W3 quarter car")
+
+    let a1 = panel(fig, 0, 0)
+    plot(a1, t, refZs * 1e3, label: "body")
+    plot(a1, t, zBump[0..$ step 2] * 1e3, label: "road")
+    grid(a1); xlim(a1, tBump - 0.2, tBump + 2.5)
+    xlabel(a1, "Time [s]"); ylabel(a1, "[mm]")
+    legend(a1)
+    title(a1, format("Bump response, c = %.0f N s/m", cSweep[kRef]))
+
+    let a2 = panel(fig, 0, 1)
+    plot(a2, t, refRoughAcc)
+    grid(a2); xlabel(a2, "Time [s]"); ylabel(a2, "Body acceleration [m/s^2]")
+    title(a2, "Rough road")
+
+    let a3 = panel(fig, 1, 0)
+    plot(a3, cSweep, rmsAcc, style: "-o"); ylabel(a3, "RMS acc [m/s^2]")
+    let a3r = twin_y(a3)
+    plot(a3r, cSweep, rmsTire, style: "-s"); ylabel(a3r, "RMS dyn. tire load [-]")
+    grid(a3); xlabel(a3, "Compression damping [N s/m]")
+    title(a3, "Ride vs road holding")
+
+    let a4 = panel(fig, 1, 1)
+    bar(a4, cSweep, settle)
+    xlabel(a4, "Compression damping [N s/m]"); ylabel(a4, "Settling time [s]")
+    title(a4, "Settling after bump (2 % band)")
+
+    make_dir("output")
+    save_svg(fig, "output/w3_quarter_car.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

@@ -212,8 +212,20 @@ defect; 8 more `tests/plots/` programs (34), 16 more `r_plot_*` errors, `plot9_c
 the `.struct` keys `clabel`, `segment` and `pixels`, rt 256 cases on arm64 and 228 on x86_64;
 `make test` passes (programs 2 441, plots 34) and `make cross` passes 1 235 cases (default
 1 002, `sse2` 1 002, once-only 231; host 2 235 passed, 0 failed, 4 deferred; Mac 4 passed, 0
-failed); lead decisions L-lr–L-lz). **Next:** 9d (the
-ports' figures, acceptance, close-out; DESIGN.md §2.14.10).
+failed); lead decisions L-lr–L-lz). **9d is done** (2026-11-03: the six ports' `--figures` blocks
+and their `ports/NAME.struct` files; `tests/accept.sh` runs each port once with `--export-reference
+--figures` and checks the run directory and `plot_struct.py`; the cross case kind `ports` packs the
+SVGs, `cross_accept.sh` compares W3's byte for byte and W2's by Decision 138 (a) through the new
+`tests/svg_skeleton.py` (header key `svg=approx`); the `vector` shape lines moved to W1 259–265 and
+W4 296; port-only, no pass or runtime change; `make test` passes (programs 2 441, plots 34, accept
+2 + 6) and `make cross` passes 1 235 cases (default 1 002, `sse2` 1 002, once-only 231; host 2 235
+passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); lead decisions L-ma–L-md; DESIGN.md §6.3
+"Measured at 9d"; the gate after phase 9 passes every program with no relief, §2.7 "Measured at the
+gate after phase 9"). **Phase 9 is complete.** **Next:** the library sub-phase the user agreed on
+2026-11-02 (`read_lines`, `split`, `parse_i64`/`parse_f64`, i64 bitwise operations; LANGUAGE.md
+§10.13) and the W8 workload (an ESP32 controller sketch simulated on the host, writing a CAN log
+that a Sea port reads, decodes and plots); both are still to be specified and both come before
+phase 10.
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -247,7 +259,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders,
   MATMUL on exact data, and LU, CHOL, the solves, RCOND and EIG (DESIGN.md §2.13.8) under every
   usable variant, with the header `tests/la/gen_consts.sh` writes;
-  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-plots` (`sh tests/plots.sh [-v] [pattern]`: the `tests/plots/` programs run under the heap check, then `tests/plot_struct.py` on each `NAME.struct`; needs `uv`; DESIGN.md §2.14.8), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`; needs `uv`). Each group is also its own target.
+  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-plots` (`sh tests/plots.sh [-v] [pattern]`: the `tests/plots/` programs run under the heap check, then `tests/plot_struct.py` on each `NAME.struct`; needs `uv`; DESIGN.md §2.14.8), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`, and with `--figures` against `plot_struct.py` and each `ports/NAME.struct`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.
@@ -275,7 +287,9 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   compare=accept [except=KEY,…]` (W2, W3; Decision 127) is run on the host under both variants but
   deferred (`DEFER ports/NAME (VARIANT)`, its output and JSON kept and sent back after the line
   `#sea-cross-files N` as base64 tar); `tests/cross_accept.sh` judges the kept runs on the Mac
-  (`compare.py`, `compare_report.py`, byte equality outside the excepted keys; needs `uv`), and
+  (`compare.py`, `compare_report.py`, byte equality outside the excepted keys, and the kept SVG:
+  byte for byte, or with the header's ` svg=approx` (W2) `plot_struct.py` and `tests/svg_skeleton.py`;
+  needs `uv`), and
   `make cross` ends with `host: P passed, F failed, D deferred; Mac: P2 passed, F2 failed`
   (DESIGN.md §2.13.9, §6.6.1).
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.

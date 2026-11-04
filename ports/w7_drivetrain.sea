@@ -2,8 +2,16 @@
 // two-stage spur reduction design-space search
 //
 // Sea port of sea/workloads/w7_drivetrain.m (Sea acceptance workload 7). Same model, same
-// numbers, no figures (DESIGN.md 6.3 "W7 acceptance"). Options:
+// numbers (DESIGN.md 6.3 "W7 acceptance"; the figures are 2.14.3). Options:
 //   --export-reference   write w7_drivetrain.json to the working directory
+//   --figures            write output/w7_drivetrain.svg
+//
+// Figure readings (MATLAB 404-432; DESIGN.md 2.14.3, L-ky): a1 and a2 are one line per CVT `c`
+// (0-based) over `Gsweep`: `sweep[0].t[c, :]` (MATLAB's `tDist(:, :, 1)`, the first rolling-
+// resistance case) and `vTop[c, :]`; MATLAB's `'MarkerSize', 3` is left out (6 px markers,
+// Decision 131); a3 is `traceStock` against time, titled with `cvt[0].name` and
+// `Gsweep[iBest[0, 0]]` (MATLAB's `cvt(1)`, `iBest(1, 1)`); a4 is `massSorted` against the
+// rank 1 ... nFeas.
 //
 // Faithfulness notes (each checked against the MATLAB script):
 // * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8): the
@@ -49,7 +57,7 @@
 //   the results and stores them; driveline returns early from its clutch branches, as MATLAB.
 // * Errors keep MATLAB's messages without the message identifiers (`w7:config`, ...); none fires.
 // * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT and
-//   SEA_SAVE_FIGURES and the figures section are not ported. `wlName`/`wlDir` are not needed: the
+//   SEA_SAVE_FIGURES together are `--figures`. `wlName`/`wlDir` are not needed: the
 //   JSON goes to the working directory (LANGUAGE.md 11.3) and the export record (MATLAB's `ref`,
 //   a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
 // * Report. The format strings are MATLAB's fprintf formats, each written as one literal.
@@ -131,9 +139,11 @@ struct Sweep {
 }
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -523,6 +533,41 @@ for k in 0..2 {
         k + 1, blA[k], blBandA[k] + 1, blM[k], blBandM[k] + 1, blMin[k], blMax[k])
 }
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W7 drivetrain")
+
+    let a1 = panel(fig, 0, 0)
+    for c in 0..nCfg {
+        plot(a1, Gsweep, sweep[0].t[c, :], style: "-o", label: cvt[c].name)
+    }
+    grid(a1); xlabel(a1, "Gearbox reduction [-]")
+    ylabel(a1, format("Time to %.0f m [s]", runCfg.dist))
+    legend(a1, loc: "north")
+    title(a1, "Acceleration run")
+
+    let a2 = panel(fig, 0, 1)
+    for c in 0..nCfg {
+        plot(a2, Gsweep, vTop[c, :], style: "-", label: cvt[c].name)
+    }
+    grid(a2); xlabel(a2, "Gearbox reduction [-]"); ylabel(a2, "Top speed [m/s]")
+    legend(a2)
+    title(a2, "Steady-state top speed")
+
+    let a3 = panel(fig, 1, 0)
+    plot(a3, (1..=len(traceStock)) * runCfg.dt, traceStock)
+    grid(a3); xlabel(a3, "Time [s]"); ylabel(a3, "Speed [m/s]")
+    title(a3, format("%s CVT, G = %.2f", cvt[0].name, Gsweep[iBest[0, 0]]))
+
+    let a4 = panel(fig, 1, 1)
+    plot(a4, (1..=nFeas), massSorted, style: "-")
+    grid(a4); xlabel(a4, "Rank"); ylabel(a4, "Blank volume [cm^3]")
+    title(a4, format("%d feasible gear designs", nFeas))
+
+    make_dir("output")
+    save_svg(fig, "output/w7_drivetrain.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

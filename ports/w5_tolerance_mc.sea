@@ -3,6 +3,13 @@
 // Sea port of sea/workloads/w5_tolerance_mc.m (Sea acceptance workload 5). Same model, same
 // numbers. Options:
 //   --export-reference   write w5_tolerance_mc.json to the working directory
+//   --figures            write output/w5_tolerance_mc.svg
+//
+// Figure readings (MATLAB 197-225; DESIGN.md 2.14.3, L-ky): the histogram is bar(a1, ...) of
+// `counts` at the bin centres `edges[0..$-1] + binW / 2`, with xline at LSL and USL; the
+// contributors are barh(a2, ...) of `100 * contrib[rnk]` (largest first, names from
+// `dims[rnk].name`, top row first); a3 and a4 plot `100 * yieldScale` and `cpkScale` against
+// `scale`.
 
 struct Dim {
     name: str
@@ -14,9 +21,11 @@ struct Dim {
 }
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -185,6 +194,38 @@ printf("Histogram: %d bins of %.3f mm, underflow %d, overflow %d, fullest bin %d
     nBin, binW, underflow, overflow, max(counts))
 printf("Largest tolerance scale with yield >= %.2f %%: %.2f\n", 100 * yieldTarget, scaleMax)
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W5 tolerance stack-up")
+
+    let a1 = panel(fig, 0, 0)
+    bar(a1, edges[0..$-1] + binW / 2, counts, width: 1)
+    xline(a1, LSL, style: "r--")
+    xline(a1, USL, style: "r--")
+    xlabel(a1, "Cold end play [mm]"); ylabel(a1, "Count")
+    title(a1, "Cold end-play histogram")
+
+    let a2 = panel(fig, 0, 1)
+    barh(a2, 100 * contrib[rnk])
+    y_ticks(a2, dims[rnk].name)
+    y_reverse(a2)
+    xlabel(a2, "Variance share [%]")
+    title(a2, "Contributors")
+
+    let a3 = panel(fig, 1, 0)
+    plot(a3, scale, 100 * yieldScale, style: "-o")
+    grid(a3); xlabel(a3, "Tolerance scale [-]"); ylabel(a3, "Yield [%]")
+    title(a3, "Yield vs tolerance scale")
+
+    let a4 = panel(fig, 1, 1)
+    plot(a4, scale, cpkScale, style: "-s")
+    grid(a4); xlabel(a4, "Tolerance scale [-]"); ylabel(a4, "Cpk [-]")
+    title(a4, "Cpk vs tolerance scale")
+
+    make_dir("output")
+    save_svg(fig, "output/w5_tolerance_mc.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

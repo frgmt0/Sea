@@ -1,0 +1,40 @@
+# w1_shaft_design.struct -- written from workloads/w1_shaft_design.m (its figures section and the
+# sizes its data fix) and DESIGN.md 2.14.9; never from the Sea output.
+file output/w1_shaft_design.svg
+canvas 960 720
+heading W1 shaft design
+panels 4
+panel 0
+title Safety factor vs diameter
+xlabel Diameter [mm]
+ylabel Safety factor [-]
+ylabel2 -
+count line 5
+legend CS-low
+legend CS-med
+legend AS-QT1
+legend AS-QT2
+legend target
+panel 1
+title Required diameter [mm]
+xlabel Speed [rpm]
+ylabel Power [kW]
+ylabel2 -
+count contour 1
+count legend 0
+panel 2
+title Design cases
+xlabel Standard diameter [mm]
+ylabel -
+ylabel2 -
+count bars 1
+count legend 0
+panel 3
+title Diameter vs speed
+xlabel Speed [rpm]
+ylabel Required diameter [mm]
+ylabel2 -
+count line 3
+legend~ [0-9]+\.[0-9] kW
+legend~ [0-9]+\.[0-9] kW
+legend~ [0-9]+\.[0-9] kW

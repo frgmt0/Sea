@@ -30,8 +30,8 @@
 # la/la_check and la/la_link (phase 8, DESIGN.md 2.13.8): tests/la/{gen_consts.sh,la_check.c,la_link.sh},
 # with the marker files la_check.case / la_link.case, and cases/la/la_mm_exact.s for la_link.
 # ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
-# NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference), NAME.meta
-# (filter=compute-time) and NAME.expect/NAME.json.
+# NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference and, from phase 9,
+# --figures), NAME.meta (filter=compute-time) and NAME.expect/NAME.json and NAME.expect/output/NAME.svg.
 # fusion/NAME (phase 7, DESIGN.md 2.12.10): every tests/fusion/NAME.sea compiled like a program case, with
 # the sidecar NAME.fusion (lines `k=K` and `per_iteration=N`, from the program's header lines
 # `// fusion K: K` and `// Allocations per iteration: N.`, as tests/fusion.sh reads them); the host runs
@@ -329,13 +329,21 @@ for src in "$ROOT"/tests/accept/*.sea; do
 done
 
 # ports/NAME (DESIGN.md 6.3, 6.6.1, L-cn): the Mac builds and runs the port and checks it with
-# tests/accept.sh (heap check, compare.py, compare_report.py); its standard output, without the
-# lines matching `^Compute time: .* s$`, is packed as NAME.out with the meta line
-# filter=compute-time and the argument --export-reference (NAME.args); its NAME.json is packed
-# as NAME.expect/NAME.json. A Mac run that fails its check is a pack failure (NAME.packfail).
-# Phase 8 (DESIGN.md 2.13.9, Decision 127): a port whose header (its leading `//` lines) has the line
-# `// cross: compare=accept` or `// cross: compare=accept except=KEY,KEY` gets that line's value as a
-# second NAME.meta line; the host then defers the comparison to tests/cross_accept.sh.
+# tests/accept.sh (heap check, compare.py, compare_report.py, plot_struct.py on ports/NAME.struct);
+# its standard output, without the lines matching `^Compute time: .* s$`, is packed as NAME.out with
+# the meta line filter=compute-time and the arguments --export-reference and --figures (NAME.args,
+# one per line; phase 9, DESIGN.md 2.14.9 "Cross", L-la); its NAME.json is packed as
+# NAME.expect/NAME.json and its output/NAME.svg as NAME.expect/output/NAME.svg, for every port, the
+# deferred ones included (the host compares a non-deferred port's SVG byte for byte through the
+# NAME.expect/ mechanism and keeps a deferred one's for tests/cross_accept.sh). A Mac run that fails
+# its check is a pack failure (NAME.packfail).
+# Phase 8 (DESIGN.md 2.13.9, Decision 127) and phase 9 (2.14.9 "The `// cross:` header grammar",
+# Decision 138): a port whose header (its leading `//` lines) has the line `// cross: ` followed by
+# `compare=accept`, then optionally ` except=KEY[,KEY...]`, then optionally ` svg=approx`, in that
+# order (`compare=accept`, `compare=accept except=f_nat,c_best`, `compare=accept svg=approx`,
+# `compare=accept except=a,b svg=approx`), gets that line's value as a second NAME.meta line; the host
+# then defers the comparison to tests/cross_accept.sh (svg=approx: the kept SVG is judged by the
+# structure and skeleton comparison of Decision 138, else byte for byte).
 
 # cross_header SRC : print the value of SRC's `// cross: ` header line (nothing without one); a
 # malformed or repeated `// cross:` header line is a corpus mistake (setup error)
@@ -344,7 +352,7 @@ cross_header() {
     !/^\/\// { exit }
     /^\/\/ *cross:/ {
         v = $0; sub(/^\/\/ cross: /, "", v)
-        if (n++ || v == $0 || v !~ /^compare=accept( except=[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*)?$/) {
+        if (n++ || v == $0 || v !~ /^compare=accept( except=[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*)?( svg=approx)?$/) {
             print "cross_pack.sh: " f ": bad or repeated header line '\''" $0 "'\''" > "/dev/stderr"; bad = 1; exit
         }
         val = v
@@ -361,15 +369,16 @@ for src in "$ROOT"/ports/*.sea; do
     SEA="$SEA" sh "$ROOT/tests/accept.sh" --save-out "$TMP/acc" "ports/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
     st=$?
     if [ $st -eq 2 ]; then setup_fail "tests/accept.sh: $(head -3 "$TMP/acc.err" | tr '\n' ' ')"; fi
-    if [ $st -eq 0 ] && [ -f "$TMP/acc/$nm.out" ] && [ -f "$TMP/acc/$nm.json" ]; then
+    if [ $st -eq 0 ] && [ -f "$TMP/acc/$nm.out" ] && [ -f "$TMP/acc/$nm.json" ] && [ -f "$TMP/acc/output/$nm.svg" ]; then
         if pack_sea ports "$ROOT/ports" "$nm"; then
             dest=$BUNDLE/cases/ports/$nm
             grep -v '^Compute time: .* s$' "$TMP/acc/$nm.out" > "$dest.out"
             [ $? -le 1 ] || setup_fail "cannot write $nm.out"
-            mkdir -p "$dest.expect" && /bin/cp -f "$TMP/acc/$nm.json" "$dest.expect/$nm.json" || setup_fail "cannot write $nm.expect"
+            mkdir -p "$dest.expect/output" && /bin/cp -f "$TMP/acc/$nm.json" "$dest.expect/$nm.json" \
+                && /bin/cp -f "$TMP/acc/output/$nm.svg" "$dest.expect/output/$nm.svg" || setup_fail "cannot write $nm.expect"
             printf 'filter=compute-time\n' > "$dest.meta" || setup_fail "cannot write $nm.meta"
             if [ -n "$xc" ]; then printf '%s\n' "$xc" >> "$dest.meta" || setup_fail "cannot write $nm.meta"; fi
-            printf '%s\n' --export-reference > "$dest.args" || setup_fail "cannot write $nm.args"
+            printf '%s\n' --export-reference --figures > "$dest.args" || setup_fail "cannot write $nm.args"
         fi
     else
         cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"

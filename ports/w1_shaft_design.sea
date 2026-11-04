@@ -1,8 +1,16 @@
 // w1_shaft_design.sea -- Gear-shaft sizing study (scalar-heavy design calculation + sweeps)
 //
 // Sea port of sea/workloads/w1_shaft_design.m (Sea acceptance workload 1). Same model, same
-// numbers, no figures (DESIGN.md 2.11.8, Decision 80). Options:
+// numbers (DESIGN.md 2.11.8, Decision 80; the figures are 2.14.3). Options:
 //   --export-reference   write w1_shaft_design.json to the working directory
+//   --figures            write output/w1_shaft_design.svg
+//
+// Figure readings (MATLAB 233-275; DESIGN.md 2.14.3, L-ky): a1 is one line per material m
+// (`nfCurve`/`nyCurve` row m against `dSweep`, labelled `mats[m].name`) and the dashed target
+// line from `dSweep[0]` to `dSweep[$ - 1]`; a2 contours `dGrid` over `gridRpm` and `gridP`; a3 is
+// `barh` of `res.dStd` with `caseLabel` as y ticks; a4 plots three rows of `dGrid`: the last
+// row (MATLAB's `end`), the 0-based row `idiv(rows(dGrid) + 1, 2) - 1` (MATLAB's `round(end/2)`
+// = 45 of 90, so row 44) and row 0, each labelled `"%.1f kW"` of its `gridP` entry.
 //
 // Faithfulness notes (each checked against the MATLAB script):
 // * Operation order. Every arithmetic line keeps MATLAB's association (LANGUAGE.md 6.8):
@@ -39,7 +47,7 @@
 //   two-output calls of three- and five-result functions discard the rest with `_`.
 // * Errors keep MATLAB's messages without the message identifiers (`w1:config`, …); none fires.
 // * Flags. SEA_EXPORT_REFERENCE is `--export-reference`, read with `args()`; SEA_PLOT and
-//   SEA_SAVE_FIGURES and the figures section are not ported (Decision 80). `wlName`/`wlDir` are
+//   SEA_SAVE_FIGURES together are `--figures`. `wlName`/`wlDir` are
 //   not needed: the JSON goes to the working directory (LANGUAGE.md 11.3) and the export record
 //   (MATLAB's `ref`, a Sea keyword) is `out`, with the keys of the MATLAB reference in its order.
 // * Report. The format strings are MATLAB's fprintf formats; `%d` receives `i64` values or
@@ -88,9 +96,11 @@ struct Params {
 }
 
 var exportRef = false
+var figures = false
 for a in args() {
     match a {
         "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
         _ => { error("unknown option \"%s\"", a) }
     }
 }
@@ -302,6 +312,48 @@ printf("  yield-limited points: %.2f %%   total bisection iterations: %d\n",
     100 * fracYield, sum(itGrid.flat))
 printf("  scalar vs vectorized bisection max difference: %.3e m\n", vecMaxDiff)
 printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W1 shaft design")
+
+    let a1 = panel(fig, 0, 0)
+    for m in 0..nMat {
+        plot(a1, dSweep * 1e3, min(nfCurve[m, :], nyCurve[m, :]), width: 1.2, label: mats[m].name)
+    }
+    plot(a1, [dSweep[0], dSweep[$ - 1]] * 1e3, cfg.nTarget * [1.0, 1.0], style: "k--",
+        label: "target")
+    ylim(a1, 0, 6); grid(a1)
+    xlabel(a1, "Diameter [mm]"); ylabel(a1, "Safety factor [-]")
+    legend(a1, loc: "northwest")
+    title(a1, "Safety factor vs diameter")
+
+    let a2 = panel(fig, 0, 1)
+    contour(a2, gridRpm, gridP / 1e3, dGrid * 1e3, levels: 15, labels: true)
+    xlabel(a2, "Speed [rpm]"); ylabel(a2, "Power [kW]")
+    title(a2, "Required diameter [mm]")
+
+    let a3 = panel(fig, 1, 0)
+    barh(a3, res.dStd * 1e3)
+    y_ticks(a3, caseLabel)
+    xlabel(a3, "Standard diameter [mm]")
+    title(a3, "Design cases")
+
+    // MATLAB's rows end, round(end/2) and 1 of dGrid, as 0-based indices
+    let rMid = idiv(rows(dGrid) + 1, 2) - 1
+    let a4 = panel(fig, 1, 1)
+    plot(a4, gridRpm, dGrid[rows(dGrid) - 1, :] * 1e3,
+        label: format("%.1f kW", gridP[rows(dGrid) - 1] / 1e3))
+    plot(a4, gridRpm, dGrid[rMid, :] * 1e3, label: format("%.1f kW", gridP[rMid] / 1e3))
+    plot(a4, gridRpm, dGrid[0, :] * 1e3, label: format("%.1f kW", gridP[0] / 1e3))
+    grid(a4)
+    xlabel(a4, "Speed [rpm]"); ylabel(a4, "Required diameter [mm]")
+    legend(a4)
+    title(a4, "Diameter vs speed")
+
+    make_dir("output")
+    save_svg(fig, "output/w1_shaft_design.svg")
+}
 
 // ---------------------------------------------------------------- reference export
 if exportRef {

@@ -30,7 +30,8 @@
 # The return path (DESIGN.md 2.13.9, Decision 127): after cross_run.sh ends with status 0 or 1 the
 # remote script writes one line `#sea-cross-files N` and then `tar -C D/keep -cf - . | base64`, N
 # being the byte count of that base64 text (N = 0 and nothing after the marker when no run was
-# kept); nothing follows. An awk splitter copies every line before the marker to the standard output
+# kept); nothing follows. The tar holds every file of D/keep, so each deferred run's kept SVG
+# (ports/NAME.VARIANT.svg, phase 9, DESIGN.md 2.14.9 "Cross") comes back beside its .out and .json. An awk splitter copies every line before the marker to the standard output
 # and writes the rest to $TMP/kept.b64, whose length must be N (else a setup error). When the host
 # deferred a run or returned files, tests/cross_accept.sh judges the kept runs on the Mac (it prints
 # `PASS`/`FAIL ports/NAME (VARIANT)` lines and its own `passed:` line). The last line is

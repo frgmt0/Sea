@@ -1,0 +1,29 @@
+# w2_truss_fem.struct -- written from workloads/w2_truss_fem.m and DESIGN.md 2.14.9; never from the
+# Sea output. Panel 0's 602 lines are 2 x nElem, nElem = 2 nPanel + (nPanel + 1) + 2 nPanel = 301
+# for nPanel = 60 (script lines 22, 52-65).
+file output/w2_truss_fem.svg
+canvas 960 720
+heading W2 truss
+panels 3
+panel 0
+title~ Deformed shape \(x[0-9]+\), red tension, blue compression
+xlabel x [m]
+ylabel y [m]
+ylabel2 -
+count line 602
+count legend 0
+panel 1
+title Load-angle sweep
+xlabel Load angle [deg]
+ylabel [-]
+ylabel2 -
+count line 2
+legend max utilisation
+legend 1 / min FOS
+panel 2
+title Single-member removal
+xlabel Removed member
+ylabel Max utilisation
+ylabel2 -
+count bars 1
+count legend 0

@@ -1,0 +1,36 @@
+# w3_quarter_car.struct -- written from workloads/w3_quarter_car.m and DESIGN.md 2.14.9; never from
+# the Sea output.
+file output/w3_quarter_car.svg
+canvas 960 720
+heading W3 quarter car
+panels 4
+panel 0
+title~ Bump response, c = [0-9]+ N s/m
+xlabel Time [s]
+ylabel [mm]
+ylabel2 -
+count line 2
+legend body
+legend road
+panel 1
+title Rough road
+xlabel Time [s]
+ylabel Body acceleration [m/s^2]
+ylabel2 -
+count line 1
+count legend 0
+panel 2
+title Ride vs road holding
+xlabel Compression damping [N s/m]
+ylabel RMS acc [m/s^2]
+ylabel2 RMS dyn. tire load [-]
+count line 2
+count markers 2
+count legend 0
+panel 3
+title Settling after bump (2 % band)
+xlabel Compression damping [N s/m]
+ylabel Settling time [s]
+ylabel2 -
+count bars 1
+count legend 0
