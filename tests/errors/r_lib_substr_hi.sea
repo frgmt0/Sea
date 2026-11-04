@@ -1,0 +1,4 @@
+// r_lib_substr_hi -- substr("ab", 0, 3): lo is inside, hi - 1 = 2 is outside, so index 2 (LANGUAGE.md 10.9)
+printf("start\n")
+let r = substr("ab", 0, 3)
+printf("never %s\n", r)

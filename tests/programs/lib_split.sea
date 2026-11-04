@@ -1,0 +1,32 @@
+// lib_split -- split (LANGUAGE.md 10.9): the examples of the text, a separator longer than s, equal to s (two empty
+// fields), a multi-byte separator with a partial match at the end, non-overlapping matches left to right, empty fields
+// kept and nothing trimmed. Each result is printed as its count and its fields in brackets
+fn show(f: str[]) {
+    printf("%d:", len(f))
+    for x in f {
+        printf(" [%s]", x)
+    }
+    printf("\n")
+}
+show(split("a,,b", ","))
+show(split(",a,", ","))
+show(split("", ","))
+show(split("abc", ","))
+show(split("aaa", "aa"))
+show(split("a::b", "::"))
+show(split("ab", "abc"))
+show(split("", "abc"))
+show(split("abc", "abc"))
+show(split("a-->b--", "-->"))
+show(split("a-->b-", "-->"))
+show(split("a--", "-->"))
+show(split("abab", "ab"))
+show(split("aaaa", "aa"))
+show(split("aaaaa", "aa"))
+show(split("abcabc", "cabc"))
+show(split("ababab", "bab"))
+show(split("XaXbX", "X"))
+show(split("a b", " "))
+show(split("a  b", " "))
+show(split("  ", " "))
+show(split("XX", "X"))

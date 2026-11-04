@@ -1,0 +1,21 @@
+// lib_read_lines_crlf -- the line rule of DESIGN.md 2.15.2 on files c1 ... c8: an LF ends a line, one CR before it goes
+// too, one CR at the very end of the file goes, every other CR stays. c1 "a\r\nb\r\n" -> a b; c2 "a\r\r\n" -> "a\r";
+// c3 "a\rb" -> "a\rb"; c4 "a\r" -> a; c5 "a\n\n" -> a ""; c6 "a\r\nb\r" -> a b; c7 "\r\r" -> "\r"; c8 "x\r\n\r\ny" -> x "" y.
+// Per file: the line count found and wanted, then each line's length and whether it equals the wanted line.
+fn show(path: str, want: str[]) {
+    let lines = read_lines(path)
+    printf("%s count %d want %d\n", path, len(lines), len(want))
+    if len(lines) == len(want) {
+        for k in 0..len(want) {
+            printf("  %d len %d same %d\n", k, len(lines[k]), lines[k] == want[k])
+        }
+    }
+}
+show("c1", ["a", "b"])
+show("c2", ["a\r"])
+show("c3", ["a\rb"])
+show("c4", ["a"])
+show("c5", ["a", ""])
+show("c6", ["a", "b"])
+show("c7", ["\r"])
+show("c8", ["x", "", "y"])

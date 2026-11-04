@@ -1,0 +1,4 @@
+// r_lib_read_unused -- read_lines of a missing file whose result is never used still reports the error (DESIGN.md 2.15.2, L-me)
+printf("start\n")
+let u = read_lines("missing.txt")
+printf("never\n")

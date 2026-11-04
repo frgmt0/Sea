@@ -237,10 +237,24 @@ the runners and the cross scripts; the text calls compile and are dumped but the
 not run until Lc; `make test` passes (rt 258, stage 1 354, programs 2 498, plots 34, accept 2 + 6,
 `lib_check` 366) and `make cross` passes 1 250 cases (default 1 015, `sse2` 1 015, once-only 233;
 host 2 263 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed); measured: `seacheck` 7 360 built
-lines, `sealoop` 6 721, `sealower` 6 943, no relief, DESIGN.md §2.7 "Measured after Lb"). **Next:**
-Lc (the text runtime, its tests, the gate after phase L, DESIGN.md §2.15.9); W8 (an ESP32 controller sketch
-simulated on the host, writing a CAN log that a Sea port reads, decodes and plots) is specified
-after phase L, before phase 10.
+lines, `sealoop` 6 721, `sealower` 6 943, no relief, DESIGN.md §2.7 "Measured after Lb"). **Lc is
+done** (2026-11-04: the text runtime in both runtimes, `rt_text.s` (`SPLIT`, `PARSE_I64`,
+`PARSE_F64`, `SUBSTR`; 500 lines on arm64, 596 on x86_64), `READ_LINES` in `rt_file.s` and the
+exported `_sea_str_make` in `rt_str.s` (about 741 and 896 lines added), no pass, contract file or
+code generator changed; `parse_f64` is one correctly rounded `strtod`, confirmed against Python's
+`float()` on both hosts (L-mj); the generator `tests/vectors/libL_cases.py` with its known-answer
+files, 391 rt cases per target, the programs `lib_read_lines_*`, `lib_split`, `lib_substr`,
+`lib_parse_*` (two known-answer programs of 416 and 187 texts) and `lib_candump`, 25 more
+`r_lib_*` errors, 47 rt tests on arm64 and 52 on x86_64; not tested: the `ARRAY_SIZE` and line-length
+`OUT_OF_MEMORY` of `READ_LINES` (files over 2 GiB), the capacity-above-2⁶² branch, the `strtod`
+`end` guard, and on arm64 the `_sea_alloc` out-of-memory paths; stack depths in DESIGN.md §4.8
+(deepest `PARSE_F64`, 1 344 bytes on arm64, 1 592 on x86_64); `make test` passes (rt 305, stage 1
+354, programs 2 536, plots 34, accept 2 + 6, `lib_check` 366) and `make cross` passes 1 340 cases
+(default 1 053, `sse2` 1 053, once-only 285; host 2 391 passed, 0 failed, 4 deferred; Mac 4
+passed, 0 failed); lead decisions L-mz–L-ne; the gate after phase L passes every program with no
+relief, DESIGN.md §2.7 "Measured at the gate after phase L"). **Phase L is complete.**
+**Next:** the specification of W8 (an ESP32 controller sketch simulated on the host, writing a CAN
+log that a Sea port reads, decodes and plots), then phase 10 (benchmarks).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).

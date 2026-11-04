@@ -12,6 +12,9 @@
 #   sea_str_i64    (v, site) -> a new string of v in decimal
 #   sea_str_f64    (x in %xmm0, site in %rdi) -> a new string: nan, inf,
 #                  -inf, or C's %.17g of x
+# Defines (.globl + .hidden: internal to libsea, L-mx):
+#   sea_str_make   (bytes, len, site) -> a new string of a copy of the
+#                  bytes (for rt_text.s and READ_LINES in rt_file.s)
 # Uses: sea_alloc and sea_live (rt_mem.s), sea_err (rt_err.s), glibc
 #   memcpy, memcmp, snprintf through the PLT.
 #
@@ -79,7 +82,13 @@
     ud2
 
 # ---------------------------------------------------------------------
-# .Lrt_str_of -- a new string holding a copy of some bytes.
+# sea_str_make -- a new string holding a copy of some bytes (internal:
+#   .globl + .hidden, DESIGN.md 2.15.5, L-mx; used by this file,
+#   rt_text.s and READ_LINES in rt_file.s).
+#   Purpose : a new counted string (count 1, SEA_TAG_STR, header bytes
+#             9-15 zero, sea_live + 1) of len bytes copied from bytes; a
+#             length above SEA_LIM_STR_BYTES or no memory is
+#             sea_err(SEA_E_OUT_OF_MEMORY, site).
 #   Inputs  : %rdi = bytes, %rsi = length, %rdx = site
 #   Outputs : %rax = the string
 #   Clobbers: all caller-saved registers
@@ -87,8 +96,11 @@
 #             %r13 = the string, %rbp = frame pointer
 #   Frame   : 32 bytes (%rbp %rbx %r12 %r13); %rsp = 0 (mod 16) at calls
 # ---------------------------------------------------------------------
+    .globl sea_str_make
+    .hidden sea_str_make
+    .type sea_str_make, @function
     .p2align 4
-.Lrt_str_of:
+sea_str_make:
     pushq %rbp
     movq %rsp, %rbp
     pushq %rbx
@@ -112,6 +124,7 @@
     popq %rbx
     popq %rbp
     ret
+    .size sea_str_make, . - sea_str_make
 
 # ---------------------------------------------------------------------
 # sea_str_cat -- entry STR_CAT (DESIGN.md 4.8).
@@ -292,7 +305,7 @@ sea_str_i64:
     leaq RT_STR_TBUF(%rsp), %rsi
     subq %r8, %rsi                  # its length
     movq %r9, %rdx
-    call .Lrt_str_of
+    call sea_str_make
     movq %rbp, %rsp
     popq %rbp
     ret
@@ -352,7 +365,7 @@ sea_str_f64:
     movslq %eax, %rsi               # the text's length (<= 24)
 .Lrt_str_f64_make:
     movq %rbx, %rdx
-    call .Lrt_str_of
+    call sea_str_make
     addq $(RT_STR_TBUF + 8), %rsp
     popq %rbx
     popq %rbp

@@ -1,0 +1,21 @@
+// lib_substr -- substr (LANGUAGE.md 10.9): the whole string, a single byte, the last byte, an empty range with lo = hi, an
+// empty range with lo > hi and both positions out of range (never an error), "(1.5)" -> "1.5". Each result is printed in
+// brackets with its length
+printf("[%s] %d\n", substr("hello", 0, 5), len(substr("hello", 0, 5)))
+printf("[%s] %d\n", substr("hello", 1, 4), len(substr("hello", 1, 4)))
+printf("[%s] %d\n", substr("hello", 0, 1), len(substr("hello", 0, 1)))
+printf("[%s] %d\n", substr("hello", 4, 5), len(substr("hello", 4, 5)))
+printf("[%s] %d\n", substr("hello", 2, 2), len(substr("hello", 2, 2)))
+printf("[%s] %d\n", substr("hello", 4, 2), len(substr("hello", 4, 2)))
+printf("[%s] %d\n", substr("hello", 9, 2), len(substr("hello", 9, 2)))
+printf("[%s] %d\n", substr("hello", -3, -5), len(substr("hello", -3, -5)))
+printf("[%s] %d\n", substr("hello", 100, -100), len(substr("hello", 100, -100)))
+printf("[%s] %d\n", substr("hello", 5, 5), len(substr("hello", 5, 5)))
+printf("[%s] %d\n", substr("hello", 7, 7), len(substr("hello", 7, 7)))
+printf("[%s] %d\n", substr("", 0, 0), len(substr("", 0, 0)))
+printf("[%s] %d\n", substr("", 3, 1), len(substr("", 3, 1)))
+printf("[%s] %d\n", substr("(1.5)", 1, 4), len(substr("(1.5)", 1, 4)))
+printf("[%s] %d\n", substr("a", 0, 1), len(substr("a", 0, 1)))
+printf("[%s] %d\n", substr("ab", 1, 2), len(substr("ab", 1, 2)))
+let w = "hello"
+printf("[%s]\n", substr(w, len(w) - 1, len(w)))

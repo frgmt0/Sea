@@ -1,0 +1,7 @@
+// lib_read_lines_basic -- read_lines of in.txt = "a\nbb\n\nccc" (no final LF): four lines, the third empty, the last
+// kept without a terminator (DESIGN.md 2.15.2); each printed with its index and its length
+let lines = read_lines("in.txt")
+printf("count %d\n", len(lines))
+for k in 0..len(lines) {
+    printf("%d: [%s] %d\n", k, lines[k], len(lines[k]))
+}

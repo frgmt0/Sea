@@ -18,6 +18,7 @@
 #   sea_json_str  (s, site)           an escaped string
 #   sea_json_vec  (a, site)           a dynamic vector as a flat array
 #   sea_json_mat  (a, site)           a dynamic matrix as an array of rows
+#   sea_read_lines (path, site)       a file's lines as a new str[]
 # Defines (.globl + .hidden: internal to libsea, DESIGN.md 4.5):
 #   sea_json_abort ()                 for sea_err (rt_err.s), step 3 of
 #                  LANGUAGE.md 9.2: if a JSON file is open (the state
@@ -33,8 +34,9 @@
 #                  freed unless cap is 0 (DESIGN.md 2.14.6, L-lc, L-ld;
 #                  for SAVE_SVG). See its header below.
 # Uses: sea_alloc, sea_free_block, sea_retain, sea_release (rt_mem.s),
-#   sea_write_all (rt_out.s), sea_err (rt_err.s); glibc memcpy, memchr,
-#   mkdir, open, close, snprintf, __errno_location through the PLT.
+#   sea_write_all (rt_out.s), sea_err (rt_err.s), sea_str_make (rt_str.s),
+#   sea_arr_new (rt_arr.s); glibc memcpy, memchr, mkdir, open, read,
+#   close, snprintf, __errno_location through the PLT.
 #
 # MAKE_DIR (DESIGN.md 4.8 entry 25, Decision 89, L-cb). The path's
 # bytes are copied into a new NUL-terminated block (a path holding a NUL
@@ -95,6 +97,12 @@
 # byte in the path: EINVAL) frees the state and then reports CANNOT_OPEN
 # with the path (still valid: the caller holds it) and the errno.
 #
+# READ_LINES (DESIGN.md 2.15.5, 2.15.6; L-mf, L-mg): see its header
+# below. It reuses .Lrt_file_cpath, .Lrt_file_raise and the host
+# constants; its scratch blocks (the path copy, the file buffer) are
+# uncounted and freed with their exact sizes before it returns or makes
+# a report of its own.
+#
 # Linux values (DESIGN.md 4.7.1; private to the runtime, not rt.inc):
 # O_RDONLY 0, O_WRONLY 1, O_CREAT 0x40, O_TRUNC 0x200, O_DIRECTORY
 # 0x10000; EINVAL comes from errors.inc's errno table (linux column);
@@ -118,6 +126,13 @@ SEA_ERRNO_LIST RT_FILE_ERRNO_PICK
 .ifndef RT_FILE_EINVAL
     .error "rt_file: EINVAL is not in the errno table of errors.inc"
 .endif
+.equ RT_FILE_EINTR,       4         # EINTR (Darwin's and Linux's value; never printed)
+# READ_LINES (L-mg, L-mu: local equates, no output depends on them): the
+# first buffer, the cap of one read request, the largest capacity that
+# may still be doubled (2 * it = 2^62).
+.equ RTT_CHUNK,           65536
+.equ RTT_RDMAX,           0x40000000
+.equ RT_FILE_RL_MAXCAP,   0x2000000000000000
 .equ RT_FILE_DIR_MODE,    0777      # mkdir mode, before the umask
 .equ RT_FILE_JSON_MODE,   0666      # JSON file mode, before the umask
 
@@ -1371,6 +1386,272 @@ sea_file_put:
     movq %rbp, %rsp
     popq %rbp
 1:  ret
+
+# ---------------------------------------------------------------------
+# sea_read_lines -- entry READ_LINES (DESIGN.md 2.15.5, 2.15.6; L-mf,
+#   L-mg; LANGUAGE.md 10.10).
+#   Purpose : the file's lines as a new str[] (rank 1), by the rule of
+#             LANGUAGE.md 3.1: a line ends at each LF (not part of it),
+#             a CR right before that LF is removed; the bytes after the
+#             last LF, if any, are one more line, one CR at the very end
+#             of the file removed; an empty file gives no line; every
+#             other byte is kept. Steps: (1) .Lrt_file_cpath; a NUL in
+#             the path frees the copy and is CANNOT_OPEN {path, EINVAL};
+#             (2) open(copy, O_RDONLY), the errno read at once, the copy
+#             freed, a failure CANNOT_OPEN {path, errno}; (3) the whole
+#             file read into one uncounted buffer B (RTT_CHUNK bytes,
+#             doubled when full, a capacity above 2^62 OUT_OF_MEMORY) in
+#             requests of at most RTT_RDMAX bytes, EINTR retried, any
+#             other failure closes fd, frees B and is CANNOT_READ {path,
+#             errno}; close(fd), its result ignored; (4) the count: 0 for
+#             no byte, else the LFs plus 1 when the last byte is not LF;
+#             a count above SEA_LIM_EXTENT frees B and is ARRAY_SIZE
+#             {count} (ARR_NEW's check, made first so that B is freed
+#             before the report, L-mg); (5) the vector, then each line a
+#             new string (sea_str_make); a line longer than
+#             SEA_LIM_STR_BYTES frees B and is OUT_OF_MEMORY; (6) B freed.
+#   Inputs  : %rdi = the path string (borrowed), %rsi = site
+#   Outputs : %rax = the new str[] (count 1)
+#   Clobbers: all caller-saved registers
+#   Callee-saved used (saved and restored): %rbx = the path, %r12 =
+#             site, %r13 = the copy, then the descriptor, then the
+#             vector, %r14 = B, %r15 = B's capacity, %rbp = frame
+#             pointer; locals: 0(%rsp) = u (bytes in B), 8(%rsp) = the
+#             line count, 16(%rsp) = the line start b, 24(%rsp) = the
+#             element index k, 32(%rsp) = the saved errno
+#   Frame   : 48 bytes (%rbp %rbx %r12-%r15) + 40 = 88 bytes; %rsp = 0
+#             (mod 16) at every call
+# ---------------------------------------------------------------------
+    .globl sea_read_lines
+    .type sea_read_lines, @function
+    .p2align 4
+sea_read_lines:
+    pushq %rbp
+    movq %rsp, %rbp
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
+    subq $40, %rsp                  # %rsp = 0 (mod 16)
+    movq %rdi, %rbx
+    movq %rsi, %r12
+    # 1. The NUL-terminated path (out of memory at the site).
+    call .Lrt_file_cpath            # (%rdi = path, %rsi = site)
+    movq %rax, %r13
+    movq $RT_FILE_EINVAL, 32(%rsp)  # a NUL byte in the path: EINVAL
+    testq %rdx, %rdx
+    jnz .Lrt_file_rl_openfail
+    # 2. open(copy, O_RDONLY); the errno at once on a failure.
+    movq %r13, %rdi
+    movl $RT_FILE_O_RDONLY, %esi
+    xorl %eax, %eax                 # variadic: no vector registers
+    call open@PLT
+    movslq %eax, %rax
+    movq %rax, 32(%rsp)             # the descriptor for now
+    testq %rax, %rax
+    jns 1f
+    call __errno_location@PLT
+    movslq (%rax), %rax
+    movq %rax, 32(%rsp)             # the errno of open, saved first
+    jmp .Lrt_file_rl_openfail
+1:  movq %r13, %rdi                 # opened: free the copy
+    movq SEA_STR_LEN(%rbx), %rsi
+    incq %rsi
+    call sea_free_block
+    movq 32(%rsp), %r13             # %r13 = the descriptor from here on
+    # 3. The buffer B: RTT_CHUNK bytes to start with, u = 0.
+    movl $RTT_CHUNK, %edi
+    movq %r12, %rsi
+    call sea_alloc                  # out of memory at the site
+    movq %rax, %r14
+    movl $RTT_CHUNK, %r15d
+    movq $0, 0(%rsp)
+    movq $0, 8(%rsp)                # the count: 0 marks "fd still open"
+.Lrt_file_rl_read:
+    movq 0(%rsp), %rax
+    cmpq %r15, %rax
+    jb 2f                           # room left in B
+    # B is full: a block of twice the capacity, the bytes copied.
+    movabsq $RT_FILE_RL_MAXCAP, %rax
+    cmpq %rax, %r15
+    ja .Lrt_file_rl_toobig          # 2 * capacity would be above 2^62
+    leaq (%r15,%r15), %rdi
+    movq %r12, %rsi
+    call sea_alloc                  # out of memory at the site
+    movq %rax, 16(%rsp)             # the new block, for now
+    movq %rax, %rdi
+    movq %r14, %rsi
+    movq 0(%rsp), %rdx
+    call memcpy@PLT                 # the u bytes read so far
+    movq %r14, %rdi
+    movq %r15, %rsi
+    call sea_free_block             # the old block
+    movq 16(%rsp), %r14
+    addq %r15, %r15                 # capacity doubled
+    # r = read(fd, B + u, min(capacity - u, RTT_RDMAX)).
+2:  movq %r15, %rdx
+    subq 0(%rsp), %rdx
+    movl $RTT_RDMAX, %eax
+    cmpq %rax, %rdx
+    cmovaq %rax, %rdx               # each request capped at RTT_RDMAX
+    movl %r13d, %edi
+    movq %r14, %rsi
+    addq 0(%rsp), %rsi
+    call read@PLT
+    testq %rax, %rax
+    jz .Lrt_file_rl_eof             # 0: the end of the file
+    js 3f                           # < 0: a failure
+    addq %rax, 0(%rsp)              # u += r
+    jmp .Lrt_file_rl_read
+3:  call __errno_location@PLT
+    movslq (%rax), %rax
+    cmpq $RT_FILE_EINTR, %rax
+    je .Lrt_file_rl_read            # interrupted: the same read again
+    movq %rax, 32(%rsp)             # the errno of read
+    movl %r13d, %edi
+    call close@PLT                  # result ignored
+    call .Lrt_file_rl_freeb         # B freed before the report
+    movl $SEA_E_CANNOT_READ, %edi
+    movq %r12, %rsi
+    movq %rbx, %rdx                 # the path, as given
+    movq 32(%rsp), %rcx
+    call .Lrt_file_raise            # noreturn
+    ud2
+.Lrt_file_rl_eof:
+    movl %r13d, %edi
+    call close@PLT                  # result ignored: nothing was written
+    # 4. The count: the LFs, plus 1 when the last byte is not LF.
+    movq $0, 8(%rsp)
+    movq 0(%rsp), %rax
+    testq %rax, %rax
+    jz .Lrt_file_rl_vec             # an empty file: no line
+    xorl %r13d, %r13d               # the scan position
+4:  leaq (%r14,%r13), %rdi
+    movl $10, %esi                  # LF
+    movq 0(%rsp), %rdx
+    subq %r13, %rdx
+    call memchr@PLT
+    testq %rax, %rax
+    jz 5f                           # no LF after the position
+    incq 8(%rsp)                    # one more LF
+    subq %r14, %rax
+    leaq 1(%rax), %r13              # go on after it
+    cmpq 0(%rsp), %r13
+    jb 4b
+    jmp .Lrt_file_rl_vec            # the last byte is a LF
+5:  incq 8(%rsp)                    # the bytes after the last LF: a line
+.Lrt_file_rl_vec:
+    movq 8(%rsp), %rax
+    cmpq $SEA_LIM_EXTENT, %rax
+    jbe 6f
+    call .Lrt_file_rl_freeb         # too many lines: B freed, then ...
+    movq 8(%rsp), %rax
+    movq %rax, 16(%rsp)             # ... the slot of `invalid array size`
+    movl $SEA_E_ARRAY_SIZE, %edi
+    movq %r12, %rsi
+    leaq 16(%rsp), %rdx
+    call sea_err                    # noreturn
+    ud2
+    # 5. The vector of that count, then the lines in order.
+6:  movl $SEA_EK_STR, %edi
+    movl $1, %esi
+    movq 8(%rsp), %rdx
+    movl $1, %ecx
+    movq %r12, %r8
+    call sea_arr_new                # elements null until filled
+    movq %rax, %r13                 # %r13 = the vector from here on
+    movq $0, 16(%rsp)               # b = 0
+    movq $0, 24(%rsp)               # k = 0
+.Lrt_file_rl_line:
+    movq 24(%rsp), %rax
+    cmpq 8(%rsp), %rax
+    jae .Lrt_file_rl_done           # every line made
+    # e = the next LF at or after b, or u for a last line without one.
+    movq 16(%rsp), %rdi
+    addq %r14, %rdi
+    movl $10, %esi
+    movq 0(%rsp), %rdx
+    subq 16(%rsp), %rdx
+    call memchr@PLT
+    movq 0(%rsp), %rcx              # e = u when there is no LF
+    testq %rax, %rax
+    jz 7f
+    movq %rax, %rcx
+    subq %r14, %rcx                 # e = the LF's position
+7:  movq %rcx, 32(%rsp)             # e, for the next b
+    movq 16(%rsp), %rsi
+    cmpq %rsi, %rcx
+    jbe 8f                          # an empty line
+    cmpb $13, -1(%r14,%rcx)         # B[e - 1] = CR?
+    jne 8f
+    decq %rcx                       # removed
+8:  subq %rsi, %rcx                 # the line's length e - b
+    cmpq $SEA_LIM_STR_BYTES, %rcx
+    ja .Lrt_file_rl_toobig          # longer than a str may be
+    leaq (%r14,%rsi), %rdi          # B + b
+    movq %rcx, %rsi
+    movq %r12, %rdx
+    call sea_str_make
+    movq SEA_ARR_DATA(%r13), %rcx
+    movq 24(%rsp), %rdx
+    movq %rax, (%rcx,%rdx,8)        # element k
+    incq 24(%rsp)
+    movq 32(%rsp), %rax
+    incq %rax
+    movq %rax, 16(%rsp)             # b = e + 1
+    jmp .Lrt_file_rl_line
+    # 6. B freed; the vector returned.
+.Lrt_file_rl_done:
+    call .Lrt_file_rl_freeb
+    movq %r13, %rax
+    addq $40, %rsp
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %rbx
+    popq %rbp
+    ret
+.Lrt_file_rl_openfail:
+    movq %r13, %rdi                 # the copy, freed before the report
+    movq SEA_STR_LEN(%rbx), %rsi
+    incq %rsi
+    call sea_free_block
+    movl $SEA_E_CANNOT_OPEN, %edi
+    movq %r12, %rsi
+    movq %rbx, %rdx                 # the path, as given
+    movq 32(%rsp), %rcx             # the saved errno
+    call .Lrt_file_raise            # noreturn
+    ud2
+.Lrt_file_rl_toobig:
+    # A capacity above 2^62 (fd still open: closed first) or a line
+    # longer than SEA_LIM_STR_BYTES (fd closed): B freed, OUT_OF_MEMORY.
+    cmpq $0, 8(%rsp)
+    jne 9f                          # past the read loop: fd closed
+    movl %r13d, %edi
+    call close@PLT                  # result ignored
+9:  call .Lrt_file_rl_freeb
+    movl $SEA_E_OUT_OF_MEMORY, %edi
+    movq %r12, %rsi
+    xorl %edx, %edx                 # no argument slots
+    call sea_err                    # noreturn
+    ud2
+    .size sea_read_lines, . - sea_read_lines
+
+# .Lrt_file_rl_freeb -- sea_read_lines's helper: sea_free_block(B,
+#   capacity) with B in %r14 and the capacity in %r15 (its frame's
+#   registers). Clobbers: all caller-saved registers. Frame: 8 (%rbp);
+#   %rsp = 0 (mod 16) at the call.
+    .p2align 4
+.Lrt_file_rl_freeb:
+    pushq %rbp                      # %rsp = 0 (mod 16)
+    movq %rsp, %rbp
+    movq %r14, %rdi
+    movq %r15, %rsi
+    call sea_free_block
+    popq %rbp
+    ret
 
 # ---------------------------------------------------------------------
 # Constant data.

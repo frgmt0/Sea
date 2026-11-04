@@ -1,0 +1,4 @@
+// r_lib_parse_i64_prefix -- parse_i64 of "0x1F" in base 16 (no 0x prefix) (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_i64("0x1F", base: 16)
+printf("never %d\n", v)

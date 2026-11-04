@@ -1,0 +1,20 @@
+// lib_read_lines_big -- read_lines of a generated 200 003-byte file (DESIGN.md 2.15.2, 2.15.8): the CR at offset 65 535 is followed by its
+// LF at 65 536 (a CRLF split by the first 64 KiB chunk), one line crosses each of the offsets 65 536, 131 072
+// and 196 608, there are NUL, 0xFF, BOM bytes and lone CRs inside lines, a line ends in CR before CRLF
+// ("x\r\r\n" is "x\r"), and the last line has no terminator. Prints the line count, the sum of the lengths, the
+// first and last lines, and the lines at the boundaries. Fixture and output written by tests/vectors/libL_cases.py
+let lines = read_lines("big.txt")
+var total = 0
+for ln in lines {
+    total = total + len(ln)
+}
+printf("lines %d\ntotal %d\n", len(lines), total)
+printf("first [%s]\nlast [%s]\n", lines[0], lines[len(lines) - 1])
+printf("line %d len %d [%s]\n", 430, len(lines[430]), lines[430])
+printf("line %d len %d [%s]\n", 875, len(lines[875]), lines[875])
+printf("line %d len %d [%s]\n", 1307, len(lines[1307]), lines[1307])
+printf("line %d len %d\n", 429, len(lines[429]))
+printf("line %d len %d\n", 431, len(lines[431]))
+printf("line %d len %d\n", 1328, len(lines[1328]))
+printf("line %d len %d\n", 1329, len(lines[1329]))
+printf("line %d len %d\n", 1330, len(lines[1330]))

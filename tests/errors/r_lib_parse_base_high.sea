@@ -1,0 +1,4 @@
+// r_lib_parse_base_high -- parse_i64 with base 37 (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_i64("1", base: 37)
+printf("never %d\n", v)

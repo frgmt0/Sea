@@ -1,0 +1,4 @@
+// r_lib_parse_f64_empty -- parse_f64 of the empty text (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_f64("")
+printf("never %d\n", v)

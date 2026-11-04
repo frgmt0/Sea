@@ -1,0 +1,5 @@
+// r_lib_read_dir -- read_lines of a directory (a fixture directory logs/ holding one file): open succeeds and read fails
+// with EISDIR on Darwin and Linux: cannot read 'logs': Is a directory (DESIGN.md 2.15.2)
+printf("start\n")
+let l = read_lines("logs")
+printf("never %d\n", len(l))

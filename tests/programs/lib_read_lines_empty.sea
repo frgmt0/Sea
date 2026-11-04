@@ -1,0 +1,16 @@
+// lib_read_lines_empty -- empty and nearly empty files (DESIGN.md 2.15.2): e0 "" -> 0 lines; e1 "\n" -> one empty line;
+// e2 "\r\n" -> one empty line; e3 "\n\n" -> two; e4 "\r" (a CR at the very end) -> one empty line; e5 "\r\n\r\n" -> two
+fn report(path: str) {
+    let lines = read_lines(path)
+    var total = 0
+    for s in lines {
+        total = total + len(s)
+    }
+    printf("%s: %d lines, %d bytes\n", path, len(lines), total)
+}
+report("e0")
+report("e1")
+report("e2")
+report("e3")
+report("e4")
+report("e5")

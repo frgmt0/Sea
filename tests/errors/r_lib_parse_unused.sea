@@ -1,0 +1,4 @@
+// r_lib_parse_unused -- parse_i64 whose result is never used still reports the error (DESIGN.md 2.15.2, L-me)
+printf("start\n")
+let u = parse_i64("x")
+printf("never\n")

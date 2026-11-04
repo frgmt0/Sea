@@ -1,0 +1,4 @@
+// r_lib_parse_i64_hexdigit -- parse_i64 of "1G" in base 16 (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_i64("1G", base: 16)
+printf("never %d\n", v)

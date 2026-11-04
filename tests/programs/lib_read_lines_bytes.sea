@@ -1,0 +1,8 @@
+// lib_read_lines_bytes -- every other byte is kept as it is (DESIGN.md 2.15.2): b.bin holds the lines "a", NUL, "b"; the
+// bytes FF FE; a UTF-8 byte order mark EF BB BF then "hi"; a lone NUL; a lone 80 with no final LF. Each line is printed with
+// %s between brackets, after its index and its length
+let lines = read_lines("b.bin")
+printf("count %d\n", len(lines))
+for k in 0..len(lines) {
+    printf("%d len %d [%s]\n", k, len(lines[k]), lines[k])
+}

@@ -1,0 +1,11 @@
+read_lines in.txt: ok
+read_lines mid.txt: ok
+split a;b;;c: ok
+split aaa aa: ok
+parse_i64 -2^63: -9223372036854775808 ok
+parse_i64 zz base 36: 1295 ok
+parse_f64 1.5: 4609434218613702656 ok
+parse_f64 300 digits: 9080133147627747248 ok
+parse_f64 inf: 9218868437227405312 ok
+substr hello 1 4: ok
+substr hello 3 1: ok

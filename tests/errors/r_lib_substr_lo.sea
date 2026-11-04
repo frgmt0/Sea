@@ -1,0 +1,4 @@
+// r_lib_substr_lo -- substr("ab", 2, 3): lo is outside 0 ... 1, so index 2 (LANGUAGE.md 10.9)
+printf("start\n")
+let r = substr("ab", 2, 3)
+printf("never %s\n", r)

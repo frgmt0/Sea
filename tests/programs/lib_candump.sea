@@ -1,0 +1,81 @@
+// lib_candump -- DESIGN.md 2.15.3's program verbatim (read_lines, split, substr, parse_i64, parse_f64, the bitwise
+// functions) on the fixture can.log; the expected output is the one written there, derived by hand
+struct Frame {
+    t: f64          // timestamp [s]
+    id: i64         // identifier, 11 or 29 bits
+    ext: bool       // extended (29-bit) identifier
+    rtr: bool       // remote transmission request
+    dlc: i64        // data length [bytes], 0 ... 8
+    data: i64[]     // the dlc data bytes, each 0 ... 255
+}
+
+// One candump -L line: "(1700000000.123456) can0 123#DEADBEEF", "... 18FF50E5#01020304",
+// "... 7FF#" (no data) or "... 321#R" (remote frame, as W8's simulator writes it; a
+// candump that writes the data length after R, "321#R4", stops at parse_i64 below).
+fn decode_line(line: str) -> Frame {
+    let f = split(line, " ")
+    if len(f) != 3 {
+        error("not a candump -L line: \"%s\"", line)
+    }
+    let ts = f[0]
+    let nt = len(ts)
+    if nt < 3 || substr(ts, 0, 1) != "(" || substr(ts, nt - 1, nt) != ")" {
+        error("bad timestamp \"%s\"", ts)
+    }
+    let t = parse_f64(substr(ts, 1, nt - 1))
+    let p = split(f[2], "#")
+    if len(p) != 2 {
+        error("bad frame \"%s\"", f[2])
+    }
+    let ext = len(p[0]) == 8
+    if !ext && len(p[0]) != 3 {
+        error("bad identifier \"%s\"", p[0])
+    }
+    let id = parse_i64(p[0], base: 16)
+    let idMax = if ext { 0x1FFFFFFF } else { 0x7FF }
+    if id < 0 || id > idMax {
+        error("identifier out of range \"%s\"", p[0])
+    }
+    let d = p[1]
+    let rtr = d == "R"
+    var dlc = 0
+    if !rtr {
+        if len(d) % 2 != 0 || len(d) > 16 {
+            error("bad data \"%s\"", d)
+        }
+        dlc = idiv(len(d), 2)
+    }
+    var data = filled(0, dlc)
+    for k in 0..dlc {
+        data[k] = parse_i64(substr(d, 2 * k, 2 * k + 2), base: 16)
+        if data[k] < 0 {
+            error("bad data byte in \"%s\"", d)
+        }
+    }
+    return Frame { t: t, id: id, ext: ext, rtr: rtr, dlc: dlc, data: data }
+}
+
+// A little-endian signed 16-bit signal in data bytes k and k + 1, times scale [unit per bit].
+fn signal_s16le(fr: Frame, k: i64, scale: f64) -> f64 {
+    if k < 0 || k + 1 >= fr.dlc {
+        error("frame %d: no bytes %d-%d in %d data bytes", fr.id, k, k + 1, fr.dlc)
+    }
+    let raw = bitor(fr.data[k], shl(fr.data[k + 1], 8))   // 0 ... 65535
+    let v = sar(shl(raw, 48), 48)                         // sign-extended: -32768 ... 32767
+    return v * scale
+}
+
+for line in read_lines("can.log") {
+    if len(line) == 0 {
+        continue
+    }
+    let fr = decode_line(line)
+    printf("%.6f id %d ext %d rtr %d dlc %d", fr.t, fr.id, fr.ext, fr.rtr, fr.dlc)
+    if fr.dlc >= 4 {
+        printf(" signal %.2f", signal_s16le(fr, 2, 0.1))
+    }
+    if fr.ext {   // J1939 fields of a 29-bit identifier: priority, PGN (PDU2 form), source
+        printf(" prio %d pgn %d src %d", shr(fr.id, 26), bitand(shr(fr.id, 8), 0x3FFFF), bitand(fr.id, 0xFF))
+    }
+    print("\n")
+}

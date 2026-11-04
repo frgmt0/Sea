@@ -1,0 +1,21 @@
+c1 count 2 want 2
+  0 len 1 same 1
+  1 len 1 same 1
+c2 count 1 want 1
+  0 len 2 same 1
+c3 count 1 want 1
+  0 len 3 same 1
+c4 count 1 want 1
+  0 len 1 same 1
+c5 count 2 want 2
+  0 len 1 same 1
+  1 len 0 same 1
+c6 count 2 want 2
+  0 len 1 same 1
+  1 len 1 same 1
+c7 count 1 want 1
+  0 len 1 same 1
+c8 count 3 want 3
+  0 len 1 same 1
+  1 len 0 same 1
+  2 len 1 same 1

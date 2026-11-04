@@ -1,0 +1,4 @@
+// r_lib_parse_order -- parse_i64 with a bad base and a bad text: the base is checked first and reported (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_i64("x!", base: 0)
+printf("never %d\n", v)

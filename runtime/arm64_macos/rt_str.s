@@ -11,6 +11,10 @@
 //   _sea_str_i64   (v, site)     -> a new string: v in decimal
 //   _sea_str_f64   (d0 = x, x0 = site) -> a new string: nan, inf, -inf
 //                                   or C's %.17g of x
+// and (.private_extern, used by rt_text.s and rt_file.s; DESIGN.md
+// 2.15.5, L-mx):
+//   _sea_str_make  (bytes, len, site) -> a new string of len bytes copied
+//                                   from bytes
 // Uses: _sea_alloc, _sea_live (rt_mem.s), _sea_err (rt_err.s); memcpy,
 //       memcmp, snprintf (libSystem).
 //
@@ -61,7 +65,8 @@ Lrt_str_make:
     ret
 
 // ---------------------------------------------------------------------
-// Lrt_str_from -- a new string holding a copy of a byte range.
+// _sea_str_make -- a new string holding a copy of a byte range (private to
+//   the runtime: used by rt_text.s and READ_LINES in rt_file.s; L-mx).
 //   Inputs  : x0 = bytes, x1 = length (<= SEA_LIM_STR_BYTES), x2 = site
 //   Outputs : x0 = the string
 //   Clobbers: x0-x17, d0-d7, d16-d31, flags
@@ -69,7 +74,8 @@ Lrt_str_make:
 //   Frame   : 48 bytes (frame record + x19..x21, pad)
 // ---------------------------------------------------------------------
     .p2align 2
-Lrt_str_from:
+    .private_extern _sea_str_make
+_sea_str_make:
     stp x29, x30, [sp, #-48]!       // frame record
     mov x29, sp
     stp x19, x20, [sp, #16]
@@ -220,7 +226,7 @@ _sea_str_i64:
     stp x29, x30, [sp, #-16]!       // frame record
     mov x29, sp
     sub sp, sp, #RT_STR_DEC_BYTES
-    mov x2, x1                      // site, for Lrt_str_from
+    mov x2, x1                      // site, for _sea_str_make
     // Magnitude as an unsigned value (2^63 for INT64_MIN is exact).
     cmp x0, #0
     cset w11, lt                    // negative?
@@ -239,7 +245,7 @@ _sea_str_i64:
 2:  add x1, sp, #RT_STR_DEC_BYTES
     sub x1, x1, x9                  // length
     mov x0, x9
-    bl Lrt_str_from
+    bl _sea_str_make
     add sp, sp, #RT_STR_DEC_BYTES
     ldp x29, x30, [sp], #16
     ret
@@ -297,7 +303,7 @@ Lrt_str_f64_inf:
     mov x1, #3
 Lrt_str_f64_make:
     mov x2, x19
-    bl Lrt_str_from
+    bl _sea_str_make
     add sp, sp, #(16 + RT_STR_G17_BYTES)
     ldr x19, [sp, #16]
     ldp x29, x30, [sp], #32

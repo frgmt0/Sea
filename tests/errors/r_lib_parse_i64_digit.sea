@@ -1,0 +1,4 @@
+// r_lib_parse_i64_digit -- parse_i64 of "12a" in base 10 (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_i64("12a")
+printf("never %d\n", v)

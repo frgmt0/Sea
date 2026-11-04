@@ -1,0 +1,4 @@
+// r_lib_split_empty -- split with an empty separator: empty separator (LANGUAGE.md 10.9)
+printf("start\n")
+let f = split("abc", "")
+printf("never %d\n", len(f))

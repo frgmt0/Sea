@@ -1,7 +1,8 @@
 // =====================================================================
-// sea/runtime/arm64_macos/rt_file.s -- make_dir and the JSON emitter
-// (LANGUAGE.md 10.10, 11.3, 11.4, 9.2; DESIGN.md 4.8 entries 25, 27-38,
-// 2.11.6; lead decisions L-bz, L-ca, L-cb, L-co).
+// sea/runtime/arm64_macos/rt_file.s -- make_dir, the JSON emitter and
+// read_lines (LANGUAGE.md 10.10, 11.3, 11.4, 9.2; DESIGN.md 4.8 entries
+// 25, 27-38, 83, 2.11.6, 2.15.5, 2.15.6; lead decisions L-bz, L-ca,
+// L-cb, L-co, L-mf, L-mg).
 //
 // Defines (global, rt.inc SEA_ENTRY_LIST):
 //   _sea_make_dir   (path, site)    create one directory level
@@ -17,6 +18,7 @@
 //   _sea_json_str   (s, site)       an escaped string
 //   _sea_json_vec   (a, site)       a dynamic vector as a flat array
 //   _sea_json_mat   (a, site)       a dynamic matrix as an array of rows
+//   _sea_read_lines (path, site)    a new str[] of the file's lines
 // and (.private_extern, used by rt_plot.s; DESIGN.md 2.14.6, L-ld):
 //   _sea_file_put   (path, bytes, len, site, cap)  write a new file
 // and (.private_extern, used by rt_err.s):
@@ -24,7 +26,8 @@
 //                                   ignoring failures (L-ca)
 //   _sea_json_st                    ptr: the emitter's state, 0 if none
 // Uses: _sea_alloc, _sea_free_block, _sea_retain, _sea_release (rt_mem.s),
-//       _sea_write_all (rt_out.s), _sea_err (rt_err.s); open, close,
+//       _sea_write_all (rt_out.s), _sea_err (rt_err.s), _sea_arr_new
+//       (rt_arr.s), _sea_str_make (rt_str.s); open, read, close,
 //       mkdir, memcpy, memchr, snprintf, __error (libSystem).
 //
 // Every argument is borrowed. A failing entry calls _sea_err and never
@@ -78,6 +81,9 @@
 .equ RT_FILE_O_DIRECTORY, 0x100000  /* <fcntl.h> O_DIRECTORY on Darwin */
 .equ RT_FILE_MODE_FILE,   0666      /* open mode of a JSON file, before the umask */
 .equ RT_FILE_MODE_DIR,    0777      /* mkdir mode, before the umask */
+.equ RT_FILE_EINTR,       4         /* <errno.h> EINTR (Darwin and Linux); never printed, so not in the errno table */
+.equ RTT_CHUNK,           65536     /* READ_LINES: the first buffer size (L-mu; not a contract value) */
+.equ RTT_RDMAX,           0x40000000 /* READ_LINES: the largest read request, 2^30 (Darwin may refuse above INT_MAX) */
 
 // EINVAL's host value on this target, from the errno table.
 .macro RT_FILE_ERRNO_PICK id, name, darwin, linux, text
@@ -252,6 +258,226 @@ Lrt_file_mkdir_fail:
     mov x2, x19
     mov x3, x22
     bl Lrt_file_fail                // noreturn
+
+// ---------------------------------------------------------------------
+// _sea_read_lines -- the entry READ_LINES (DESIGN.md 2.15.5, 2.15.6;
+//   LANGUAGE.md 10.10; L-mf, L-mg).
+//   Purpose : (1) the path copied by Lrt_file_cpath; a NUL byte in it
+//             frees the copy and is CANNOT_OPEN (path, EINVAL). (2) fd =
+//             open(copy, O_RDONLY); on failure the errno is read at once;
+//             the copy is freed; a failure is CANNOT_OPEN (path, errno).
+//             (3) The whole file into the uncounted buffer B (RTT_CHUNK
+//             bytes, doubled when full: the bytes copied, the old block
+//             freed; a capacity above 2^62 is OUT_OF_MEMORY) with
+//             requests of min(capacity - used, RTT_RDMAX) bytes until
+//             read returns 0; EINTR repeats the read; another failure
+//             closes fd, frees B and is CANNOT_READ (path, errno); then
+//             close(fd), its result ignored. (4) The count: 0 for an
+//             empty file, else the LF bytes plus 1 when the last byte is
+//             not LF; above SEA_LIM_EXTENT, B is freed and ARR_NEW
+//             reports ARRAY_SIZE (count). (5) The vector; each line's
+//             bytes [b, e) (to the next LF, or to the end for a last line
+//             without LF) lose one CR at e - 1; a length above
+//             SEA_LIM_STR_BYTES frees B and is OUT_OF_MEMORY; element k =
+//             a new string of the bytes (_sea_str_make). (6) B freed; the
+//             vector returned. A path is a host path ("-" is a file).
+//   Inputs  : x0 = path (string object), x1 = site
+//   Outputs : x0 = a new str[] (rank 1) of the lines
+//   Clobbers: x0-x17, d0-d7, d16-d31, flags
+//   Callee-saved used: x19 = path, x20 = site, x21 = the path copy,
+//             then fd, then the next line's start, x22 = B, x23 = B's
+//             capacity, x24 = bytes used u, x25 = the line count, then
+//             the vector, x26 = b (the current line's start), x27 = k
+//             (the line index), x28 = an errno, the next block, a line's
+//             end e
+//   Frame   : 96 bytes (frame record + x19..x28)
+// ---------------------------------------------------------------------
+    .globl _sea_read_lines
+    .p2align 2
+_sea_read_lines:
+    stp x29, x30, [sp, #-96]!       // frame record
+    mov x29, sp
+    stp x19, x20, [sp, #16]
+    stp x21, x22, [sp, #32]
+    stp x23, x24, [sp, #48]
+    stp x25, x26, [sp, #64]
+    stp x27, x28, [sp, #80]
+    mov x19, x0
+    mov x20, x1
+
+    // (1), (2) The path and open.
+    bl Lrt_file_cpath               // x0 = the copy, x1 = holds a NUL
+    mov x21, x0
+    mov x28, #RT_FILE_EINVAL
+    cbnz x1, Lrt_file_rl_openfail   // a NUL byte: EINVAL
+    mov x0, x21
+    mov w1, #RT_FILE_O_RDONLY
+    bl _open                        // fd, or -1 and errno
+    mov x22, x0                     // kept across the errno read
+    tbz w0, #31, 1f
+    bl Lrt_file_errno
+    mov x28, x0                     // the errno of open, read at once
+    b Lrt_file_rl_openfail
+1:  mov x0, x21
+    ldr x1, [x19, #SEA_STR_LEN]
+    add x1, x1, #1
+    bl _sea_free_block              // the copy is no longer needed
+    sxtw x21, w22                   // x21 = fd
+
+    // (3) Read the whole file.
+    mov x0, #RTT_CHUNK
+    mov x1, x20
+    bl _sea_alloc                   // noreturn on failure
+    mov x22, x0                     // B
+    mov x23, #RTT_CHUNK             // its capacity
+    mov x24, #0                     // u
+Lrt_file_rl_read:
+    cmp x24, x23
+    b.lo 2f                         // room left
+    // Full: a block of twice the capacity.
+    lsl x9, x23, #1
+    movz x10, #0x4000, lsl #48      // 2^62
+    cmp x9, x10
+    b.hi Lrt_file_rl_toobig
+    mov x0, x9
+    mov x1, x20
+    bl _sea_alloc                   // noreturn on failure
+    mov x28, x0
+    mov x1, x22                     // the bytes so far
+    mov x2, x24
+    bl _memcpy
+    mov x0, x22
+    mov x1, x23
+    bl _sea_free_block              // the old block
+    mov x22, x28
+    lsl x23, x23, #1
+2:  sub x2, x23, x24                // the free space ...
+    mov x9, #RTT_RDMAX
+    cmp x2, x9
+    csel x2, x2, x9, ls             // ... capped at RTT_RDMAX
+    mov w0, w21                     // fd
+    add x1, x22, x24
+    bl _read                        // bytes read, 0 at the end, or -1
+    cmp x0, #0
+    b.lt 3f
+    b.eq Lrt_file_rl_eof
+    add x24, x24, x0                // r bytes more
+    b Lrt_file_rl_read
+3:  bl Lrt_file_errno
+    cmp x0, #RT_FILE_EINTR
+    b.eq Lrt_file_rl_read           // interrupted: the same read again
+    mov x28, x0                     // the errno of read
+    mov w0, w21
+    bl _close                       // result ignored
+    mov x0, x22
+    mov x1, x23
+    bl _sea_free_block              // B, before the report
+    mov w0, #SEA_E_CANNOT_READ
+    mov x1, x20
+    mov x2, x19
+    mov x3, x28
+    bl Lrt_file_fail                // noreturn
+Lrt_file_rl_eof:
+    mov w0, w21
+    bl _close                       // nothing was written: result ignored
+
+    // (4) The count of lines.
+    mov x25, #0
+    cbz x24, 5f                     // an empty file: no line
+    mov x9, #0
+4:  ldrb w10, [x22, x9]
+    cmp w10, #0x0A
+    cinc x25, x25, eq               // one line per LF
+    add x9, x9, #1
+    cmp x9, x24
+    b.lo 4b
+    cmp w10, #0x0A                  // the last byte
+    cinc x25, x25, ne               // not LF: one more line
+5:  mov x9, #SEA_LIM_EXTENT
+    cmp x25, x9
+    b.ls 6f
+    mov x0, x22                     // too many: B freed, ARR_NEW reports
+    mov x1, x23
+    bl _sea_free_block
+6:  mov x0, #SEA_EK_STR
+    mov x1, #1                      // rank 1
+    mov x2, x25                     // rows = the count
+    mov x3, #1                      // cols 1: a vector
+    mov x4, x20
+    bl _sea_arr_new
+    mov x25, x0
+
+    // (5) The lines.
+    mov x26, #0                     // b
+    mov x27, #0                     // k
+    ldr x9, [x25, #SEA_ARR_ROWS]
+    cbz x9, Lrt_file_rl_done
+Lrt_file_rl_line:
+    add x0, x22, x26
+    mov w1, #0x0A
+    sub x2, x24, x26
+    bl _memchr                      // the next LF, or 0
+    sub x28, x0, x22                // its offset e ...
+    cmp x0, #0
+    csel x28, x28, x24, ne          // ... or u: the last line, no LF
+    add x9, x28, #1
+    csel x21, x9, x24, ne           // the next line's start
+    cmp x28, x26
+    b.ls 7f                         // an empty line
+    sub x10, x28, #1
+    ldrb w11, [x22, x10]
+    cmp w11, #0x0D
+    csel x28, x10, x28, eq          // one CR before e removed
+7:  sub x1, x28, x26                // the length
+    mov x9, #SEA_LIM_STR_BYTES
+    cmp x1, x9
+    b.hi Lrt_file_rl_long
+    add x0, x22, x26
+    mov x2, x20
+    bl _sea_str_make
+    ldr x9, [x25, #SEA_ARR_DATA]
+    str x0, [x9, x27, lsl #3]       // element k
+    add x27, x27, #1
+    mov x26, x21                    // b = the next line's start
+    ldr x9, [x25, #SEA_ARR_ROWS]
+    cmp x27, x9
+    b.lo Lrt_file_rl_line
+
+    // (6) B freed.
+Lrt_file_rl_done:
+    mov x0, x22
+    mov x1, x23
+    bl _sea_free_block
+    mov x0, x25
+    ldp x27, x28, [sp, #80]
+    ldp x25, x26, [sp, #64]
+    ldp x23, x24, [sp, #48]
+    ldp x21, x22, [sp, #32]
+    ldp x19, x20, [sp, #16]
+    ldp x29, x30, [sp], #96
+    ret
+
+Lrt_file_rl_openfail:
+    mov x0, x21
+    ldr x1, [x19, #SEA_STR_LEN]
+    add x1, x1, #1
+    bl _sea_free_block              // the copy, before the report
+    mov w0, #SEA_E_CANNOT_OPEN
+    mov x1, x20
+    mov x2, x19
+    mov x3, x28
+    bl Lrt_file_fail                // noreturn
+Lrt_file_rl_toobig:
+    mov w0, w21
+    bl _close                       // result ignored
+Lrt_file_rl_long:
+    mov x0, x22
+    mov x1, x23
+    bl _sea_free_block              // B, before the report
+    mov w0, #SEA_E_OUT_OF_MEMORY
+    mov x1, x20                     // the site
+    mov x2, #0
+    bl _sea_err                     // noreturn
 
 // ---------------------------------------------------------------------
 // Lrt_json_wfail -- a write of the JSON file failed: report it.

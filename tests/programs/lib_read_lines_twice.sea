@@ -1,0 +1,10 @@
+// lib_read_lines_twice -- the same file read twice gives two independent arrays of independent strings (DESIGN.md 2.15.2:
+// every result is new): changing a line of the first (and appending to another) leaves the second unchanged
+var a = read_lines("t.txt")
+let b = read_lines("t.txt")
+printf("a %d b %d\n", len(a), len(b))
+a[0] = "ONE"
+a[2] = a[2] + "!"
+for k in 0..3 {
+    printf("%s %s\n", a[k], b[k])
+}

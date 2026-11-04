@@ -1,0 +1,4 @@
+// r_lib_substr_neg -- substr("ab", -1, 1): lo = -1 is outside, so index -1 (LANGUAGE.md 10.9)
+printf("start\n")
+let r = substr("ab", -1, 1)
+printf("never %s\n", r)

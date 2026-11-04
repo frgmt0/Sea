@@ -1,0 +1,8 @@
+split without a match: ok
+split three fields: ok
+split two-byte separator: ok
+substr whole range: ok
+substr one byte: ok
+substr empty range: ok
+read_lines three lines: ok
+parse_i64 and parse_f64: ok

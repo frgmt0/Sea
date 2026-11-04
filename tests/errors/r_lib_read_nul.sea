@@ -1,0 +1,5 @@
+// r_lib_read_nul -- read_lines of a path holding a NUL byte: cannot open with the reason Invalid argument, the NUL written as is
+// in the message (DESIGN.md 2.15.2)
+printf("start\n")
+let l = read_lines("a\0b")
+printf("never %d\n", len(l))

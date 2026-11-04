@@ -1,0 +1,10 @@
+read_lines in.txt: ok
+split one-byte separator: ok
+split two-byte separator: ok
+parse_i64 -2^63: ok
+parse_i64 base 36: ok
+parse_f64 short: ok
+parse_f64 long: ok
+parse_f64 word: ok
+substr range: ok
+substr empty: ok

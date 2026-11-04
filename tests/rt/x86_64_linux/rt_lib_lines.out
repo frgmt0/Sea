@@ -1,0 +1,50 @@
+l01.txt: 2
+  [1] a
+  [1] b
+l02.txt: 2
+  [1] a
+  [1] b
+l03.txt: 2
+  [1] a
+  [1] b
+l04.txt: 2
+  [1] a
+  [0] 
+l05.txt: 1
+  [0] 
+l06.txt: 1
+  [2] a\x0d
+l07.txt: 1
+  [3] a\x0db
+l08.txt: 1
+  [1] a
+l09.txt: 0
+l10.txt: 1
+  [0] 
+l11.txt: 1
+  [0] 
+l12.txt: 1
+  [1] \x0d
+l13.txt: 3
+  [1] x
+  [0] 
+  [2] \x0dy
+l14.txt: 3
+  [2] \x00a
+  [2] \xff\xfe
+  [6] \xef\xbb\xbfBOM
+l15.txt: 2
+  [1] a
+  [0] 
+l16.txt: 3
+  [0] 
+  [0] 
+  [0] 
+l17.txt: 1
+  [13] tab\x09here\x5c "q"
+big.txt: 855
+  sum 199078
+  line 0: [99] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  line 654: [135] abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcde
+  line 854: [335] ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+checks: ok

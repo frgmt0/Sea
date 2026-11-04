@@ -1,0 +1,4 @@
+// r_lib_parse_f64_hex -- parse_f64 of the hexadecimal float "0x1p3" (LANGUAGE.md 10.9)
+printf("start\n")
+let v = parse_f64("0x1p3")
+printf("never %d\n", v)
