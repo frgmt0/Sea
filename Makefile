@@ -61,6 +61,14 @@
 #   make cross-includes   the same check with GNU as on the Linux host
 #                         (tests/cross_includes.sh; HOST=... to override)
 #   make clean            remove build/
+#   make w8-sim           build/w8/w8sim, the W8 host simulator (DESIGN.md 2.16.5-2.16.7; xcrun c++)
+#   make w8-log           build w8sim twice (-O2, and -O0 with the sanitizers), run the car and the
+#                         bench run with each, cmp against the committed w8_ev_can.log, serial.txt
+#                         and bench_serial.txt, and run the floating-point checks (2.16.7)
+#   make w8-log-update    the same builds and checks, then overwrite the three committed files
+#                         (only with the user's agreement after W8b: a new log needs a new MATLAB run)
+#   make w8-sketch        arduino-cli compile of the sketch for esp32:esp32:esp32, no warning in it
+#                         (none of the w8-* targets is part of make test or make cross, L-nx)
 #
 # BAYSICK is the Baysick checkout (default: the parent repository, Sea being its submodule
 # at sea/); its build/baysick and build/libbaysickrt.a must exist for the passes (run make
@@ -106,7 +114,8 @@ BAYSICK_INC := $(wildcard $(BAYSICK)/include/runtime.inc $(BAYSICK)/include/limi
 .PHONY: all runtime tools passes install check-baysick FORCE \
         test test-programs test-accept test-rt test-stage test-shape test-fusion test-protocol test-driver test-lib test-arith test-math test-la test-plots math-tables \
         check-data lines check-limits clean \
-        check-includes check-contracts cross-includes cross cross-pack
+        check-includes check-contracts cross-includes cross cross-pack \
+        w8-sim w8-log w8-log-update w8-sketch
 .DEFAULT_GOAL := all
 
 all: install runtime tools passes
@@ -366,3 +375,141 @@ cross-pack: all
 
 cross: all
 	SEA=$(BUILD)/sea BAYSICK=$(BAYSICK) sh tests/cross.sh -H $(CROSS_HOST)
+
+# ---- W8: the EV CAN workload's host simulator and committed log (DESIGN.md 2.16.5-2.16.7) ---
+# Developer targets on the Mac only, never part of make test or make cross (L-nx). The
+# simulator is C++20 built with xcrun c++; the sketch is compiled unmodified through
+# host/sketch.cpp. Both builds use -Wfloat-conversion -Wdouble-promotion -Werror, and the
+# second runs under the undefined-behaviour and address sanitizers (L-nf).
+W8DIR   := workloads/w8_ev_can
+W8HOST  := $(W8DIR)/host
+W8BUILD := $(BUILD)/w8
+W8CXX   := xcrun c++
+W8WARN  := -Wall -Wextra -Wfloat-conversion -Wdouble-promotion -Werror -I $(W8HOST)/include
+W8SRCS  := $(W8HOST)/main.cpp $(W8HOST)/mock_core.cpp $(W8HOST)/mock_twai.cpp \
+           $(W8HOST)/model.cpp $(W8HOST)/sketch.cpp
+W8DEPS  := $(W8SRCS) $(W8HOST)/sim.h $(W8HOST)/model.h $(W8HOST)/include/Arduino.h \
+           $(W8HOST)/include/driver/twai.h $(W8DIR)/w8_ev_can/w8_ev_can.ino \
+           $(W8DIR)/w8_ev_can/w8_can_msgs.h Makefile
+W8SKETCH_RE := (w8_ev_can\.ino|w8_can_msgs\.h):[0-9]+:[0-9]+: warning
+
+# The floating-literal check of DESIGN.md 2.16.7 (2): comments and string and character
+# literals are stripped (state kept across lines for block comments), hexadecimal integer
+# literals are replaced by 0, and no line may then match [0-9]\.[0-9]|[0-9][eE][+-]?[0-9].
+# (\047 is the single quote.) A quote between two digits (a C++14 digit separator) is removed
+# first, so 1'000.5 is caught. Prints each offending line and exits 1 if there is one.
+define W8_FLOATLIT_AWK
+FNR == 1 { st = 0 }
+{
+    if (st != 2) st = 0
+    s = $$0; out = ""
+    while (match(s, /[0-9]\047[0-9]/)) s = substr(s, 1, RSTART) substr(s, RSTART + 2)
+    n = length(s); i = 1
+    while (i <= n) {
+        c = substr(s, i, 1); d = substr(s, i + 1, 1)
+        if (st == 2) { if (c == "*" && d == "/") { st = 0; out = out " "; i += 2 } else i++; continue }
+        if (st == 3 || st == 4) {
+            if (c == "\\") { i += 2; continue }
+            if ((st == 3 && c == "\"") || (st == 4 && c == "\047")) st = 0
+            i++; continue
+        }
+        if (c == "/" && d == "/") break
+        if (c == "/" && d == "*") { st = 2; i += 2; continue }
+        if (c == "\"") { st = 3; out = out " "; i++; continue }
+        if (c == "\047") { st = 4; out = out " "; i++; continue }
+        out = out c; i++
+    }
+    gsub(/0[xX][0-9a-fA-F]+/, "0", out)
+    if (out ~ /[0-9]\.[0-9]|[0-9][eE][+-]?[0-9]/) { print FILENAME ":" FNR ": " $$0; bad = 1 }
+}
+END { exit bad }
+endef
+export W8_FLOATLIT_AWK
+
+# The floating-point checks (1) and (2) over the sketch, its header and every host file;
+# check (3) is the -Werror flags of both builds.
+define w8-float-checks
+@files="$(W8DIR)/w8_ev_can/w8_ev_can.ino $(W8DIR)/w8_ev_can/w8_can_msgs.h $$(find $(W8HOST) -type f | LC_ALL=C sort)"; \
+if grep -n -w -e float -e double $$files; then \
+  echo "w8: float or double found (DESIGN.md 2.16.7)" >&2; exit 1; \
+fi; \
+if ! LC_ALL=C awk "$$W8_FLOATLIT_AWK" $$files; then \
+  echo "w8: decimal floating literal found (DESIGN.md 2.16.7)" >&2; exit 1; \
+fi; \
+echo "w8: floating-point checks pass (no float, double or floating literal)"
+endef
+
+w8-sim: $(W8BUILD)/w8sim
+
+$(W8BUILD)/w8sim: $(W8DEPS)
+	@mkdir -p $(W8BUILD)
+	$(W8CXX) -std=c++20 -O2 $(W8WARN) -o $@ $(W8SRCS)
+
+$(W8BUILD)/w8sim_san: $(W8DEPS)
+	@mkdir -p $(W8BUILD)
+	$(W8CXX) -std=c++20 -O0 -g -fsanitize=undefined,address -fno-sanitize-recover=all $(W8WARN) -o $@ $(W8SRCS)
+
+# Run both builds, the car run (120 s, with its bus log) and the bench run (5 s, Serial only),
+# into the temporary directory $$t: $$t/<build>.log, .serial and .bench.
+define w8-run-both
+for b in w8sim w8sim_san; do \
+  : > "$$t/$$b.err"; \
+  $(W8BUILD)/$$b --seconds 120 --log "$$t/$$b.log" --serial "$$t/$$b.serial" 2>>"$$t/$$b.err" && \
+  $(W8BUILD)/$$b --bench --seconds 5 --serial "$$t/$$b.bench" 2>>"$$t/$$b.err" || { cat "$$t/$$b.err" >&2; echo "w8: $$b failed" >&2; st=1; break; }; \
+  if [ -s "$$t/$$b.err" ]; then cat "$$t/$$b.err" >&2; echo "w8: $$b wrote to stderr (frames lost or a warning)" >&2; st=1; break; fi; \
+done
+endef
+
+w8-log: $(W8BUILD)/w8sim $(W8BUILD)/w8sim_san
+	$(w8-float-checks)
+	@t=$$(mktemp -d "$${TMPDIR:-/tmp}/sea-w8.XXXXXX") || exit 1; st=0; \
+	$(w8-run-both); \
+	if [ $$st -eq 0 ]; then \
+	  for b in w8sim w8sim_san; do \
+	    for pair in "log:w8_ev_can.log" "serial:serial.txt" "bench:bench_serial.txt"; do \
+	      if ! cmp -s "$$t/$$b.$${pair%%:*}" "$(W8DIR)/$${pair#*:}"; then \
+	        echo "w8-log: $(W8DIR)/$${pair#*:} differs (build $$b)"; st=1; break 2; \
+	      fi; \
+	    done; \
+	  done; \
+	fi; \
+	rm -rf "$$t"; \
+	if [ $$st -ne 0 ]; then exit 1; fi; \
+	echo "w8-log: identical ($$(wc -l < $(W8DIR)/w8_ev_can.log | tr -d ' ') lines, $$(wc -c < $(W8DIR)/w8_ev_can.log | tr -d ' ') bytes)"
+
+w8-log-update: $(W8BUILD)/w8sim $(W8BUILD)/w8sim_san
+	$(w8-float-checks)
+	@t=$$(mktemp -d "$${TMPDIR:-/tmp}/sea-w8.XXXXXX") || exit 1; st=0; \
+	$(w8-run-both); \
+	if [ $$st -eq 0 ]; then \
+	  for x in log serial bench; do \
+	    if ! cmp -s "$$t/w8sim.$$x" "$$t/w8sim_san.$$x"; then \
+	      echo "w8-log-update: the two builds disagree ($$x)" >&2; st=1; break; \
+	    fi; \
+	  done; \
+	fi; \
+	if [ $$st -eq 0 ]; then \
+	  d="$(W8DIR)"; \
+	  if /bin/cp -f "$$t/w8sim.log" "$$d/.w8tmp.log" && \
+	     /bin/cp -f "$$t/w8sim.serial" "$$d/.w8tmp.serial" && \
+	     /bin/cp -f "$$t/w8sim.bench" "$$d/.w8tmp.bench"; then \
+	    /bin/mv -f "$$d/.w8tmp.log" "$$d/w8_ev_can.log" && \
+	    /bin/mv -f "$$d/.w8tmp.serial" "$$d/serial.txt" && \
+	    /bin/mv -f "$$d/.w8tmp.bench" "$$d/bench_serial.txt" || st=1; \
+	  else st=1; fi; \
+	  /bin/rm -f "$$d/.w8tmp.log" "$$d/.w8tmp.serial" "$$d/.w8tmp.bench"; \
+	fi; \
+	rm -rf "$$t"; \
+	if [ $$st -ne 0 ]; then exit 1; fi; \
+	echo "w8-log-update: wrote $(W8DIR)/w8_ev_can.log ($$(wc -l < $(W8DIR)/w8_ev_can.log | tr -d ' ') lines, $$(wc -c < $(W8DIR)/w8_ev_can.log | tr -d ' ') bytes), serial.txt, bench_serial.txt"
+
+# Compile only (no upload): exit 0 and no warning located in the sketch or its header (a
+# warning inside the core's own files does not fail it).
+w8-sketch:
+	@out=$$(arduino-cli compile --fqbn esp32:esp32:esp32:UploadSpeed=115200 --warnings all $(W8DIR)/w8_ev_can 2>&1); st=$$?; \
+	printf '%s\n' "$$out"; \
+	if [ $$st -ne 0 ]; then echo "w8-sketch: arduino-cli failed (exit $$st)" >&2; exit 1; fi; \
+	if printf '%s\n' "$$out" | grep -E '$(W8SKETCH_RE)'; then \
+	  echo "w8-sketch: warnings in the sketch" >&2; exit 1; \
+	fi; \
+	echo "w8-sketch: compiles, no warning in the sketch or w8_can_msgs.h"

@@ -1,2 +1,4 @@
 # test inputs and expected outputs are byte-exact: never convert line endings
 tests/** -text
+# the W8 bus log, Serial outputs, sketch and simulator are byte-exact (DESIGN.md 2.16.7)
+workloads/w8_ev_can/** -text

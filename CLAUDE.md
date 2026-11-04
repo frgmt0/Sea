@@ -253,11 +253,11 @@ files, 391 rt cases per target, the programs `lib_read_lines_*`, `lib_split`, `l
 (default 1 053, `sse2` 1 053, once-only 285; host 2 391 passed, 0 failed, 4 deferred; Mac 4
 passed, 0 failed); lead decisions L-mz–L-ne; the gate after phase L passes every program with no
 relief, DESIGN.md §2.7 "Measured at the gate after phase L"). **Phase L is complete.**
-**W8a agreed; next W8b** (2026-11-04, revised after one independent review; DESIGN.md §2.16, §8
+**W8a agreed; W8b built** (2026-11-04, revised after one independent review; DESIGN.md §2.16, §8
 rows W8a–W8d: the workload W8 `w8_ev_can`, an ESP32 controller sketch simulated on the host,
 writing a CAN log that a Sea port reads, decodes and plots; Decisions 151–160 each decided by the
 user as option (a), lead decisions L-nf–L-ny agreed; W8 joins the acceptance set, now seven
-workloads). Then W8c, W8d and phase 10 (benchmarks).
+workloads). W8b built (2026-11-04), awaiting the user's review of the sketch; then W8c.
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -324,6 +324,15 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   needs `uv`), and
   `make cross` ends with `host: P passed, F failed, D deferred; Mac: P2 passed, F2 failed`
   (DESIGN.md §2.13.9, §6.6.1).
+- W8 (DESIGN.md §2.16.5–§2.16.7; Mac only, developer targets, never part of `make test` or
+  `make cross`, L-nx): `make w8-sim` builds the host simulator `build/w8/w8sim` (`xcrun c++
+  -std=c++20 -O2 … -Werror`) from `workloads/w8_ev_can/host/` and the unmodified sketch;
+  `make w8-log` builds it twice (`-O2`, and `-O0` with the undefined-behaviour and address
+  sanitizers), runs the car run and the bench run with each, `cmp`s against the committed
+  `workloads/w8_ev_can/w8_ev_can.log`, `serial.txt` and `bench_serial.txt`, and runs the
+  floating-point checks; `make w8-log-update` overwrites those three files (only with the user's
+  agreement: a new log needs a new MATLAB run); `make w8-sketch` is the `arduino-cli compile`
+  check for `esp32:esp32:esp32` (no warning in the sketch or `w8_can_msgs.h`; no upload).
 - Never set a bogus `SDKROOT`/`DEVELOPER_DIR` on the Mac. Python, if ever needed, via `uv` only.
 
 ## Repo layout (DESIGN.md §2.10)

@@ -1,0 +1,8 @@
+# w8_ev_can 1.0 car
+# MCU L fw 2.19 serial 4C0A1001
+# MCU R fw 2.18 serial 4C0A1002
+# 0.500000 state RUN
+# 72.050000 state FAULT_FB
+# 74.440000 state RUN
+# 95.090000 state FAULT_APPS
+# 97.450000 state RUN
