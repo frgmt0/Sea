@@ -14,6 +14,8 @@
 #            Makefile.linux, include/*.inc and src/runtime_x86_64_linux/*.s go to the bundle
 #   SEA_COMPILE_TIMEOUT  seconds per compilation (default 120)
 #   LIRCHK   the sea.lir validator (default: tools/lirchk beside the driver, i.e. build/tools/lirchk)
+#   PORTS    the directory of the ports (default: ports/ of the Sea repository), passed on to
+#            tests/accept.sh; fixture paths stay relative to the Sea repository
 #
 # Every x86_64 sea.lir a case is compiled through (the driver's, seavec's output, a hand-written
 # pass-4 input) is validated with lirchk (Decision 116, the vector classes and LF records
@@ -31,7 +33,8 @@
 # with the marker files la_check.case / la_link.case, and cases/la/la_mm_exact.s for la_link.
 # ports/NAME (phase 6): the Mac builds and checks the port with tests/accept.sh; the case is the port with
 # NAME.out (stdout without the "Compute time" line), NAME.args (--export-reference and, from phase 9,
-# --figures), NAME.meta (filter=compute-time) and NAME.expect/NAME.json and NAME.expect/output/NAME.svg.
+# --figures), NAME.meta (filter=compute-time) and NAME.expect/NAME.json and NAME.expect/output/NAME.svg,
+# and NAME.files/ holding the port's `// fixture:` files (Decision 158 (a)).
 # fusion/NAME (phase 7, DESIGN.md 2.12.10): every tests/fusion/NAME.sea compiled like a program case, with
 # the sidecar NAME.fusion (lines `k=K` and `per_iteration=N`, from the program's header lines
 # `// fusion K: K` and `// Allocations per iteration: N.`, as tests/fusion.sh reads them); the host runs
@@ -49,6 +52,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 SEA=${SEA:-$ROOT/build/sea}
 BAYSICK=${BAYSICK:-$(cd "$ROOT/.." && pwd)}
 CTIMEOUT=${SEA_COMPILE_TIMEOUT:-120}
+PORTS=${PORTS:-$ROOT/ports}
 BUNDLE=
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -67,6 +71,7 @@ setup_fail() { echo "cross_pack.sh: $1" >&2; exit 2; }
 [ -n "$BUNDLE" ] || setup_fail "usage: sh tests/cross_pack.sh -o BUNDLE_DIR [PATTERN...]"
 case $SEA in /*) ;; *) SEA=$(pwd)/$SEA ;; esac
 case $BAYSICK in /*) ;; *) BAYSICK=$(pwd)/$BAYSICK ;; esac
+case $PORTS in /*) ;; *) PORTS=$(pwd)/$PORTS ;; esac
 [ -x "$SEA" ] || setup_fail "driver '$SEA' not found or not executable; run 'make' first"
 SEADIR=${SEA_HOME:-$(dirname "$SEA")}
 LIRCHK=${LIRCHK:-$(dirname "$SEA")/tools/lirchk}
@@ -344,6 +349,18 @@ done
 # `compare=accept except=a,b svg=approx`), gets that line's value as a second NAME.meta line; the host
 # then defers the comparison to tests/cross_accept.sh (svg=approx: the kept SVG is judged by the
 # structure and skeleton comparison of Decision 138, else byte for byte).
+# W8d (Decision 158 (a), DESIGN.md 2.16.9 "Where the log comes from"): each `// fixture: PATH` line of
+# the port's header names a file by a PATH relative to the sea directory; accept.sh copies it into the
+# run directory and checks the lines (a malformed, repeated or clashing line or a missing source is
+# its setup error, which is this script's too); each fixture is packed under its base name into the
+# case's NAME.files/, which tests/cross_run.sh copies into the fresh work directory and whose files
+# its check_files accepts there unchanged (the 3.6 MB W8 log travels in the bundle this way).
+
+# port_fixtures SRC : print the PATH of every `// fixture: PATH` line of SRC's header (its leading
+# `//` lines), one per line; the lines were checked by tests/accept.sh before
+port_fixtures() {
+    awk '!/^\/\// { exit } /^\/\/ fixture: / { p = $0; sub(/^\/\/ fixture: /, "", p); print p }' "$1"
+}
 
 # cross_header SRC : print the value of SRC's `// cross: ` header line (nothing without one); a
 # malformed or repeated `// cross:` header line is a corpus mistake (setup error)
@@ -360,17 +377,17 @@ cross_header() {
     END { if (bad) exit 2; if (val != "") print val }' "$1"
 }
 
-for src in "$ROOT"/ports/*.sea; do
+for src in "$PORTS"/*.sea; do
     [ -e "$src" ] || continue
     nm=$(basename "$src" .sea)
     selected "ports/$nm" || continue
     xc=$(cross_header "$src") || exit 2
     rm -rf "$TMP/acc"
-    SEA="$SEA" sh "$ROOT/tests/accept.sh" --save-out "$TMP/acc" "ports/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
+    SEA="$SEA" PORTS="$PORTS" sh "$ROOT/tests/accept.sh" --save-out "$TMP/acc" "ports/$nm" >"$TMP/acc.out" 2>"$TMP/acc.err"
     st=$?
     if [ $st -eq 2 ]; then setup_fail "tests/accept.sh: $(head -3 "$TMP/acc.err" | tr '\n' ' ')"; fi
     if [ $st -eq 0 ] && [ -f "$TMP/acc/$nm.out" ] && [ -f "$TMP/acc/$nm.json" ] && [ -f "$TMP/acc/output/$nm.svg" ]; then
-        if pack_sea ports "$ROOT/ports" "$nm"; then
+        if pack_sea ports "$PORTS" "$nm"; then
             dest=$BUNDLE/cases/ports/$nm
             grep -v '^Compute time: .* s$' "$TMP/acc/$nm.out" > "$dest.out"
             [ $? -le 1 ] || setup_fail "cannot write $nm.out"
@@ -379,6 +396,14 @@ for src in "$ROOT"/ports/*.sea; do
             printf 'filter=compute-time\n' > "$dest.meta" || setup_fail "cannot write $nm.meta"
             if [ -n "$xc" ]; then printf '%s\n' "$xc" >> "$dest.meta" || setup_fail "cannot write $nm.meta"; fi
             printf '%s\n' --export-reference --figures > "$dest.args" || setup_fail "cannot write $nm.args"
+            # the port's fixtures (Decision 158 (a)), already checked by accept.sh, as NAME.files/
+            fx=$(port_fixtures "$src")
+            if [ -n "$fx" ]; then
+                mkdir -p "$dest.files" || setup_fail "cannot create $nm.files"
+                for p in $fx; do
+                    /bin/cp -f "$ROOT/$p" "$dest.files/${p##*/}" || setup_fail "cannot copy fixture $p into $nm.files"
+                done
+            fi
         fi
     else
         cat "$TMP/acc.out" "$TMP/acc.err" > "$TMP/acc.all"

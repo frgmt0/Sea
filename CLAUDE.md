@@ -257,7 +257,10 @@ relief, DESIGN.md §2.7 "Measured at the gate after phase L"). **Phase L is comp
 rows W8a–W8d: the workload W8 `w8_ev_can`, an ESP32 controller sketch simulated on the host,
 writing a CAN log that a Sea port reads, decodes and plots; Decisions 151–160 each decided by the
 user as option (a), lead decisions L-nf–L-ny agreed; W8 joins the acceptance set, now seven
-workloads). W8c done (2026-11-04); next W8d (the Sea port and its acceptance).
+workloads). W8c done (2026-11-04); W8d done (2026-11-04); **W8 is complete** (accepted on both
+targets); next phase 10 (benchmarks). `make test` passes (rt 305, stage 1 354, programs 2 536, plots
+34, accept 2 + 7, `lib_check` 366) and `make cross` passes 1 341 cases (default 1 054, `sse2` 1 054,
+once-only 285; host 2 393 passed, 0 failed, 4 deferred; Mac 4 passed, 0 failed).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).
@@ -291,7 +294,7 @@ Versions 0.y.z are alpha; 1.0.0 = v1
   `test-la` (`tests/la/la_check.c`, GEMV and VECMAT bit for bit against the pinned orders,
   MATMUL on exact data, and LU, CHOL, the solves, RCOND and EIG (DESIGN.md §2.13.8) under every
   usable variant, with the header `tests/la/gen_consts.sh` writes;
-  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-plots` (`sh tests/plots.sh [-v] [pattern]`: the `tests/plots/` programs run under the heap check, then `tests/plot_struct.py` on each `NAME.struct`; needs `uv`; DESIGN.md §2.14.8), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5 and W7 against `compare.py` and `compare_report.py`, and with `--figures` against `plot_struct.py` and each `ports/NAME.struct`; needs `uv`). Each group is also its own target.
+  then `tests/la/la_link.sh`, the link map; DESIGN.md §2.13.8), `test-programs` (`sh tests/run.sh [-v] [pattern]`: programs/, errors/ and the passes/ dumps), `test-plots` (`sh tests/plots.sh [-v] [pattern]`: the `tests/plots/` programs run under the heap check, then `tests/plot_struct.py` on each `NAME.struct`; needs `uv`; DESIGN.md §2.14.8), `test-accept` (`tests/accept4.sh` then `tests/accept.sh`: the phase-4 acceptance programs and the ports W1, W2, W3, W4, W5, W7 and W8 against `compare.py` and `compare_report.py`, and with `--figures` against `plot_struct.py` and each `ports/NAME.struct`; needs `uv`). Each group is also its own target.
 - Math: `make test-math` (part of `make test`; `xcrun cc -O1 -ffp-contract=off` against
   `build/libsea.a`); `make math-tables` (developer check, not in `make test`: `timeout 120 uv run
   --with mpmath python tools/math_tables.py --check`); `uv run --with mpmath python tests/vectors/math_vectors.py --check-format` checks the vector files.

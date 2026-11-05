@@ -1,0 +1,896 @@
+// w8_ev_can.sea -- EV CAN log analysis: dual-motor torque vectoring controller on a 500 kbit/s bus
+//
+// fixture: workloads/w8_ev_can/w8_ev_can.log
+//
+// Sea port of sea/workloads/w8_ev_can.m (Sea acceptance workload 8). Same analysis A1-A11, same
+// numbers (DESIGN.md 2.16.8, 2.16.9, 6.3 "W8 acceptance"). Options:
+//   --export-reference   write w8_ev_can.json to the working directory
+//   --figures            write output/w8_ev_can.svg
+//   --log PATH           read PATH instead of w8_ev_can.log (a bench or hardware log; L-no)
+//
+// Faithfulness notes (each checked against the MATLAB script):
+// * Exact integers (L-nl). Every time, field, count and sum is an i64 (times in microseconds,
+//   about 1.8e15, as MATLAB holds them exactly in doubles); every sum is an i64 loop sum, never an
+//   f64 sum. Each derived float is the script's one division (an i64 / i64 converts both operands
+//   and divides once, LANGUAGE.md 6.5), multiplication by a constant or sqrt, in its order:
+//   (t_last - t_first) / (1000 * (n - 1)), busBits / (0.5 * span), winBits / 50000,
+//   100 * (sxy / sxx), sqrt(se / n) / 1000, cost / (10 * n), and so on.
+// * Truncating division. The law's fix(a / b) is tdiv below (idiv on the magnitude, L-nm).
+// * Data layout (L-nm). The frames are parallel arrays t, id, rtr, dlc, lineNo and the n x 8 byte
+//   matrix data, allocated once to the number of lines and cut to the frame count; the signals
+//   are whole columns decoded like the script's (elemental le16 and s16); per-identifier lists
+//   are masks and find; the gap, state-change and split lists are preallocated and cut.
+// * A1 decoding without a float parse (L-nk): the timestamp is split at '.' and each part is
+//   checked digit by digit (the script's decLut/hexLut) before parse_i64 reads it, so a bad
+//   character stops the program with the script's message naming the line, never parse_i64's.
+//   The script checks each condition over all lines in turn; the port checks line by line, so
+//   with several malformed lines it may name a different (still malformed) line. The committed
+//   logs have none.
+// * A6 (L-oj, L-ok, L-ol): one pass in log order keeps the last 0x101, 0x102 and 0x120 frames
+//   and, per motor, the TorqueCmd of the 0x101/0x102 frame before the last one (prevL/prevR);
+//   each 0x121 frame is a cycle, matched when all three exist and their counters equal its own.
+//   A9 is accumulated over the same matched cycles.
+// * A8: h(t_i - lag) by a merge of the (non-decreasing) command and feedback times, per lag; the
+//   script's count_le sorts, with a command counted at an equal time, as here (tc <= tq).
+// * Indices are exported 1-based (bus_load_max_win); delays are i64 milliseconds
+//   ((lBest * 1000) / 1000 is exact).
+// * Empty sets (L-on, L-no): a maximum over no frame is 0, a ratio with a zero denominator NaN,
+//   W = 0 gives an empty bus_load_win, so a bench log without feedback runs to the end.
+// * Flags. SEA_EXPORT_REFERENCE is --export-reference, SEA_PLOT with SEA_SAVE_FIGURES is
+//   --figures; the export record (MATLAB's `ref`) is `out`, with the reference's keys in order.
+// * Report. The format strings are MATLAB's fprintf formats, each written as one literal.
+
+// ---------------------------------------------------------------- message set (DESIGN.md 2.16.3)
+const ID_IMU = 0x0A0
+const ID_CMD_L = 0x101
+const ID_CMD_R = 0x102
+const ID_DRV = 0x120
+const ID_YAW = 0x121
+const ID_FB_L = 0x181
+const ID_FB_R = 0x182
+const ID_INFO_L = 0x381
+const ID_INFO_R = 0x382
+const CRC_POLY = 0x4599         // CRC-15 polynomial
+const GAP_LIMIT_US = 12000      // a feedback interval above this is a gap event [us]
+const WIN_US = 100000           // bus load window [us]
+const LAG_STEP_US = 1000        // dead-time search step [us]
+const N_LAG = 51                // lags 0, 1 ms, ..., 50 ms
+const MAX_SECONDS = 9007199254  // seconds below this keep t below 2^53 us (the script's bound)
+
+var exportRef = false
+var figures = false
+var logPath = "w8_ev_can.log"
+let argv = args()
+var ia = 0
+while ia < len(argv) {
+    match argv[ia] {
+        "--export-reference" => { exportRef = true }
+        "--figures" => { figures = true }
+        "--log" => {
+            if ia + 1 >= len(argv) {
+                error("option --log needs a path")
+            }
+            ia += 1
+            logPath = argv[ia]
+        }
+        _ => { error("unknown option \"%s\"", argv[ia]) }
+    }
+    ia += 1
+}
+
+let ids = [ID_IMU, ID_CMD_L, ID_CMD_R, ID_DRV, ID_YAW, ID_FB_L, ID_FB_R, ID_INFO_L, ID_INFO_R,
+    0x710]                      // ascending; 0x710 is the VCU heartbeat
+let nId = len(ids)
+
+let tCompute = now()
+
+// ---------------------------------------------------------------- A1 decode
+let allLines = read_lines(logPath)
+let nL = len(allLines)
+var t = filled(0, nL)           // end-of-frame time [us]
+var id = filled(0, nL)          // 11-bit identifier
+var rtr = filled(false, nL)     // remote frame
+var dlc = filled(0, nL)         // data bytes D (0 for a remote frame)
+var data = filled(0, nL, 8)     // the data bytes, zero beyond D
+var lineNo = filled(0, nL)      // 1-based line number of each frame in the file
+var nSkipped = 0
+var nFrames = 0
+var iface = ""
+for k in 0..nL {
+    let line = allLines[k]
+    if len(line) == 0 {
+        continue                            // empty lines are ignored
+    }
+    if substr(line, 0, 1) != "(" {
+        nSkipped += 1                       // banner, boot messages: skipped and counted
+        continue
+    }
+    let ln = k + 1
+    let fld = split(line, " ")
+    if len(fld) != 3 {
+        bad_line(ln, "not a candump -L line", line)
+    }
+
+    // Timestamp "(<seconds>.<microseconds>)": the seconds and exactly six microsecond digits.
+    let ts = fld[0]
+    let nt = len(ts)
+    if nt < 3 || substr(ts, nt - 1, nt) != ")" {
+        bad_line(ln, "bad timestamp", line)
+    }
+    let tp = split(substr(ts, 1, nt - 1), ".")
+    if (len(tp) != 2 || len(tp[0]) < 1 || len(tp[1]) != 6 || !all_digits(tp[0], false) ||
+            !all_digits(tp[1], false)) {
+        bad_line(ln, "bad timestamp", line)
+    }
+    // Leading zeros of the seconds are dropped first, so a long run of them cannot overflow.
+    let secText = tp[0]
+    var z = 0
+    while z < len(secText) - 1 && substr(secText, z, z + 1) == "0" {
+        z += 1
+    }
+    if len(secText) - z > 10 {
+        bad_line(ln, "timestamp too large", line)
+    }
+    let secs = parse_i64(substr(secText, z, len(secText)))
+    if secs >= MAX_SECONDS {
+        bad_line(ln, "timestamp too large", line)
+    }
+    let tt = secs * 1000000 + parse_i64(tp[1])
+
+    // Frame "<ID>#<DATA>": three hex digits, then R or 0-8 bytes as two hex digits each.
+    let fp = split(fld[2], "#")
+    if len(fp) != 2 {
+        bad_line(ln, "bad frame", line)
+    }
+    if len(fp[0]) != 3 || !all_digits(fp[0], true) {
+        bad_line(ln, "bad identifier", line)
+    }
+    let idv = parse_i64(fp[0], base: 16)
+    if idv > 2047 {
+        bad_line(ln, "identifier out of range", line)
+    }
+    let d = fp[1]
+    let isR = d == "R"
+    let nData = if isR { 0 } else { len(d) }
+    if nData % 2 != 0 || nData > 16 {
+        bad_line(ln, "bad data", line)
+    }
+    if !isR && !all_digits(d, true) {
+        bad_line(ln, "bad data byte", line)
+    }
+    // The bytes from at most two parses of up to eight hex digits (32 bits each).
+    let nb = idiv(nData, 2)
+    if nb > 0 {
+        let h = min(nb, 4)
+        let v0 = parse_i64(substr(d, 0, 2 * h), base: 16)
+        for j in 0..h {
+            data[nFrames, j] = bitand(shr(v0, 8 * (h - 1 - j)), 255)
+        }
+        if nb > 4 {
+            let v1 = parse_i64(substr(d, 8, nData), base: 16)
+            for j in 4..nb {
+                data[nFrames, j] = bitand(shr(v1, 8 * (nb - 1 - j)), 255)
+            }
+        }
+    }
+
+    // One interface on every frame; times never earlier than the line before.
+    if nFrames == 0 {
+        iface = fld[1]
+    } else if fld[1] != iface {
+        bad_line(ln, "second interface", line)
+    }
+    if nFrames > 0 && tt < t[nFrames - 1] {
+        bad_line(ln, "time earlier than the line before", line)
+    }
+    t[nFrames] = tt
+    id[nFrames] = idv
+    rtr[nFrames] = isR
+    dlc[nFrames] = nb
+    lineNo[nFrames] = ln
+    nFrames += 1
+}
+if nFrames == 0 {
+    error("%s: no frame lines", logPath)
+}
+let n = nFrames
+t = t[0..n]
+id = id[0..n]
+rtr = rtr[0..n]
+dlc = dlc[0..n]
+data = data[0..n, :]
+lineNo = lineNo[0..n]
+let tRel = t - t[0]
+let span = tRel[n - 1]
+let spanS = span / 1000000
+
+// ---------------------------------------------------------------- signals (DESIGN.md 2.16.3)
+let isData = !rtr
+let isImu = id == ID_IMU & isData
+let isCmdL = id == ID_CMD_L & isData
+let isCmdR = id == ID_CMD_R & isData
+let isDrv = id == ID_DRV & isData
+let isYaw = id == ID_YAW & isData
+let isFbL = id == ID_FB_L & isData
+let isFbR = id == ID_FB_R & isData
+
+// A frame too short for a signal the analysis reads from it is an error naming its line (L-on):
+// 0x0A0 and 0x101/0x102 up to byte 2, 0x121 and 0x181/0x182 up to byte 6, 0x120 all 8 bytes,
+// and the first data frame of 0x381/0x382 (firmware and serial) up to byte 5.
+var needBytes = filled(0, n)
+needBytes[isImu | isCmdL | isCmdR] = 3
+needBytes[isYaw | isFbL | isFbR] = 7
+needBytes[isDrv] = 8
+for infoId in [ID_INFO_L, ID_INFO_R] {
+    let first = find_first(id == infoId & isData)
+    if first >= 0 {
+        needBytes[first] = 6
+    }
+}
+let tooShort = find_first(dlc < needBytes)
+if tooShort >= 0 {
+    bad_line(lineNo[tooShort], "frame too short for its signals", allLines[lineNo[tooShort] - 1])
+}
+
+let b0 = data[:, 0]
+let b1 = data[:, 1]
+let b2 = data[:, 2]
+let b3 = data[:, 3]
+let b4 = data[:, 4]
+let b5 = data[:, 5]
+let b6 = data[:, 6]
+let b7 = data[:, 7]
+// TQ_CMD_L/R: TorqueCmd (Intel s16, bytes 0-1), Counter (byte 2 bits 0-3)
+let tqCmd = s16(le16(b0, b1))
+let ctr4b2 = bitand(b2, 15)
+// VCU_DRIVER: the Intel word of bytes 0-1 holds PedalPos (bits 0-9), State (10-11), Counter
+// (12-15); TorqueReq, SteerAngle, VehSpeed (Intel s16 in bytes 2-3, 4-5, 6-7)
+let drvWord = le16(b0, b1)
+let pedal = bitand(drvWord, 1023)
+let drvState = bitand(shr(drvWord, 10), 3)
+let drvCtr = shr(drvWord, 12)
+let tqReq = s16(le16(b2, b3))
+let steer = s16(le16(b4, b5))
+let vehSpeed = s16(le16(b6, b7))
+// VCU_YAW: YawRateDes, YawRateMeas, TorqueSplit (Intel s16), byte 6: Counter (bits 0-3),
+// YawLimit (bit 7)
+let rDesLog = tqCmd             // the same Intel s16 of bytes 0-1
+let rMeasLog = tqReq            // bytes 2-3
+let splitLog = steer            // bytes 4-5
+let ctr4b6 = bitand(b6, 15)
+let yawLimLog = bitand(shr(b6, 7), 1)
+// MCU_FB_L/R (Motorola): TorqueAct (s16, byte 0 high), Speed (s16, byte 2 high), DcCurrent
+// (12 bits signed: byte 4 = bits 11-4, byte 5 bits 4-7 = bits 3-0), Status (byte 5 bits 0-3)
+let tqAct = s16(le16(b1, b0))
+let speedFb = s16(le16(b3, b2))
+let curRaw = b4 * 16 + shr(b5, 4)
+let curFb = where(curRaw >= 2048, curRaw - 4096, curRaw)
+let statFb = bitand(b5, 15)
+
+// ---------------------------------------------------------------- A2 counts and periods
+var frameCounts = filled(0, nId)
+var remoteCounts = filled(0, nId)
+var periodMs = filled(nan, nId)
+var maxGapMs = zeros(nId)
+var known = filled(false, n)
+for i in 0..nId {
+    let isId = id == ids[i]
+    known = known | isId
+    let td = t[isId & isData]
+    let nd = len(td)
+    frameCounts[i] = nd
+    remoteCounts[i] = nnz(isId & rtr)
+    if nd >= 2 {
+        periodMs[i] = (td[nd - 1] - td[0]) / (1000 * (nd - 1))
+        maxGapMs[i] = max(td[1..nd] - td[0..nd - 1]) / 1000
+    }
+}
+let nUnknown = n - nnz(known)
+
+// ---------------------------------------------------------------- A3 bus
+// Per frame the unstuffed bits SOF .. last data bit (most significant bit first in every
+// field: SOF 0, identifier, RTR, IDE 0, r0 0, the DLC code, the data), the CRC-15 over them
+// (register 0), its 15 bits, then the stuff bits over SOF .. CRC: after five equal bits (a stuff
+// bit counting as the previous bit) one stuff bit of the opposite value, which starts a new run.
+// L = n0 + stuff + 10 (CRC delimiter, ACK, EOF), B = L + 3 (intermission).
+var frameLen = filled(0, n)
+var busBits = 0
+var stuffBits = 0
+var bits = filled(0, 98)
+for i in 0..n {
+    let nb = dlc[i]
+    var code = nb               // DLC code on the wire: the table's code for a remote frame
+    if rtr[i] && (id[i] == ID_INFO_L || id[i] == ID_INFO_R) {
+        code = 6
+    }
+    bits[0] = 0
+    for b in 0..11 {
+        bits[1 + b] = bitand(shr(id[i], 10 - b), 1)
+    }
+    bits[12] = if rtr[i] { 1 } else { 0 }
+    bits[13] = 0
+    bits[14] = 0
+    for b in 0..4 {
+        bits[15 + b] = bitand(shr(code, 3 - b), 1)
+    }
+    for j in 0..nb {
+        for b in 0..8 {
+            bits[19 + 8 * j + b] = bitand(shr(data[i, j], 7 - b), 1)
+        }
+    }
+    let nPre = 19 + 8 * nb      // bits before the CRC
+    var crc = 0
+    for k in 0..nPre {
+        let nx = bitxor(bits[k], bitand(shr(crc, 14), 1))
+        crc = bitand(shl(crc, 1), 32767)
+        if nx == 1 {
+            crc = bitxor(crc, CRC_POLY)
+        }
+    }
+    for q in 0..15 {
+        bits[nPre + q] = bitand(shr(crc, 14 - q), 1)
+    }
+    let n0 = nPre + 15          // the unstuffed frame: 34 + 8 D bits
+    var prevBit = bits[0]
+    var runLen = 1
+    var stuff = 0
+    for k in 1..n0 {
+        if bits[k] == prevBit {
+            runLen += 1
+        } else {
+            prevBit = bits[k]
+            runLen = 1
+        }
+        if runLen == 5 {
+            stuff += 1
+            prevBit = 1 - prevBit
+            runLen = 1
+        }
+    }
+    frameLen[i] = n0 + stuff + 10
+    busBits += frameLen[i] + 3
+    stuffBits += stuff
+}
+let busLoad = if span > 0 { busBits / (0.5 * span) } else { nan }   // one instant: NaN (L-on)
+let nWin = idiv(span, WIN_US)
+var winBits = filled(0, nWin)
+for i in 0..n {
+    let w = idiv(tRel[i], WIN_US)
+    if w < nWin {
+        winBits[w] += frameLen[i] + 3
+    }
+}
+let busLoadWin = winBits / 50000
+var busLoadMax = 0.0
+var iMaxWin = 0                 // 1-based window of the first maximum; 0 when W = 0
+if nWin > 0 {
+    busLoadMax = max(busLoadWin)
+    iMaxWin = argmax(busLoadWin) + 1
+}
+var busOverlaps = 0
+for i in 1..n {
+    if t[i] - 2 * frameLen[i] < t[i - 1] + 6 {
+        busOverlaps += 1
+    }
+}
+
+// ---------------------------------------------------------------- A4 checksums
+// S = (id & 0xFF) + (id >> 8) + bytes b0 .. b(D-2), CS = (S & 0xFF) xor 0xFF in the last byte;
+// a checksummed data frame without data fails (L-on).
+var csBad = filled(false, n)
+for i in 0..n {
+    if !rtr[i] && has_checksum(id[i]) {
+        let nb = dlc[i]
+        if nb == 0 {
+            csBad[i] = true
+        } else {
+            var s = bitand(id[i], 255) + shr(id[i], 8)
+            for j in 0..nb - 1 {
+                s += data[i, j]
+            }
+            csBad[i] = data[i, nb - 1] != bitxor(bitand(s, 255), 255)
+        }
+    }
+}
+var badChecksum = filled(0, nId)
+for i in 0..nId {
+    badChecksum[i] = nnz(csBad & id == ids[i])
+}
+
+// ---------------------------------------------------------------- A5 counters, drops, late frames
+let vcuCounterGaps = counter_gaps(ctr4b2[isCmdL]) + counter_gaps(ctr4b2[isCmdR]) +
+    counter_gaps(drvCtr[isDrv]) + counter_gaps(ctr4b6[isYaw])
+let cImu = b2[isImu]
+var imuDropped = 0
+for k in 1..len(cImu) {
+    imuDropped += (cImu[k] - cImu[k - 1]) % 256 - 1
+}
+let (fbDroppedL, fbLateL, gapTL, gapMsL) = feedback_gaps(ctr4b6[isFbL], t[isFbL], tRel[isFbL])
+let (fbDroppedR, fbLateR, gapTR, gapMsR) = feedback_gaps(ctr4b6[isFbR], t[isFbR], tRel[isFbR])
+
+// ---------------------------------------------------------------- A6 VCU cycles and the law
+// (with A9's sums over the same matched cycles)
+let nYaw = nnz(isYaw)
+var vcuCycles = 0
+var cycleMismatch = 0
+var lawTreq = 0
+var lawRdes = 0
+var lawDt = 0
+var lawCmd = 0
+var splitN = 0
+var sxx = 0
+var sxy = 0
+var nRunCyc = 0
+var se = 0
+var yawLimitCycles = 0
+var xs = filled(0, nYaw)        // A9's x (YawRateDes) and y (TorqueCmd R - L), cut to splitN
+var ys = filled(0, nYaw)
+var lastL = -1                  // the last 0x101, 0x102 and 0x120 frames (-1: none yet)
+var lastR = -1
+var lastD = -1
+var prevBeforeL = 0             // TorqueCmd of the 0x101 (0x102) frame before lastL (lastR), 0 first
+var prevBeforeR = 0
+for i in 0..n {
+    if isCmdL[i] {
+        prevBeforeL = if lastL >= 0 { tqCmd[lastL] } else { 0 }
+        lastL = i
+    } else if isCmdR[i] {
+        prevBeforeR = if lastR >= 0 { tqCmd[lastR] } else { 0 }
+        lastR = i
+    } else if isDrv[i] {
+        lastD = i
+    } else if isYaw[i] {
+        vcuCycles += 1
+        let c = ctr4b6[i]
+        if (lastL < 0 || lastR < 0 || lastD < 0 || ctr4b2[lastL] != c || ctr4b2[lastR] != c ||
+                drvCtr[lastD] != c) {
+            cycleMismatch += 1
+            continue
+        }
+        // Logged fields of the matched cycle.
+        let st = drvState[lastD]
+        let p = pedal[lastD]
+        let treq = tqReq[lastD]
+        let delta = steer[lastD]
+        let vcs = vehSpeed[lastD]
+        let rdes = rDesLog[i]
+        let rmeas = rMeasLog[i]
+        let dT = splitLog[i]
+        let yawLim = yawLimLog[i]
+        let cmdL = tqCmd[lastL]
+        let cmdR = tqCmd[lastR]
+        let prevL = prevBeforeL
+        let prevR = prevBeforeR
+        let isRun = st == 1
+        // Step 6: torque request.
+        let pd = if p >= 50 { tdiv((p - 50) * 1000, 950) } else { 0 }
+        var treqLaw = 0
+        if isRun && pd > 0 {
+            treqLaw = 2 * pd
+        } else if isRun && pd == 0 && vcs > 300 {
+            treqLaw = -200
+        }
+        if treq != treqLaw {
+            lawTreq += 1
+        }
+        // Step 7: yaw-rate demand with the lateral limit above 1 m/s.
+        var rdesLaw = tdiv(vcs * 10 * delta, 2400)
+        var ylimLaw = 0
+        if vcs > 100 {
+            let rLim = tdiv(800000, vcs)
+            let rClamp = min(max(rdesLaw, -rLim), rLim)
+            if rClamp != rdesLaw {
+                ylimLaw = 1
+            }
+            rdesLaw = rClamp
+        }
+        if rdes != rdesLaw || yawLim != ylimLaw {
+            lawRdes += 1
+        }
+        // Step 8: split from the logged yaw-rate demand and measurement.
+        var dtLaw = 0
+        if isRun {
+            dtLaw = min(max(tdiv(200 * rdes + 600 * (rdes - rmeas), 1000), -400), 400)
+        }
+        if dT != dtLaw {
+            lawDt += 1
+        }
+        // Steps 9 and 10: wheel targets from the logged request and split, then the rate limit.
+        let tRLaw = min(max(tdiv(treq + dT, 2), -1000), 1000)
+        let tLLaw = min(max(tdiv(treq - dT, 2), -1000), 1000)
+        let cmdLLaw = prevL + min(max(tLLaw - prevL, -50), 50)
+        let cmdRLaw = prevR + min(max(tRLaw - prevR, -50), 50)
+        if cmdL != cmdLLaw || cmdR != cmdRLaw {
+            lawCmd += 1
+        }
+        // A9: the torque-vectoring fit (RUN, |YawRateDes| >= 50) and the yaw error (RUN).
+        if isRun && abs(rdes) >= 50 {
+            xs[splitN] = rdes
+            ys[splitN] = cmdR - cmdL
+            sxx += rdes * rdes
+            sxy += rdes * (cmdR - cmdL)
+            splitN += 1
+        }
+        if isRun {
+            let e = rdes - rmeas
+            se += e * e
+            nRunCyc += 1
+        }
+        if yawLim == 1 {
+            yawLimitCycles += 1
+        }
+    }
+}
+xs = xs[0..splitN]
+ys = ys[0..splitN]
+let splitGain = if sxx != 0 { 100 * (sxy / sxx) } else { nan }
+let yawErrRms = if nRunCyc > 0 { sqrt(se / nRunCyc) / 1000 } else { nan }
+
+// ---------------------------------------------------------------- A7 states
+let stAll = drvState[isDrv]
+let tDrvRel = tRel[isDrv]
+var stateCycles = filled(0, 4)
+for s in 0..4 {
+    stateCycles[s] = nnz(stAll == s)
+}
+var stateChangeT = zeros(len(stAll))
+var stateChangeTo = filled(0, len(stAll))
+var nChange = 0
+for k in 1..len(stAll) {
+    if stAll[k] != stAll[k - 1] {
+        stateChangeT[nChange] = tDrvRel[k] / 1000000
+        stateChangeTo[nChange] = stAll[k]
+        nChange += 1
+    }
+}
+stateChangeT = stateChangeT[0..nChange]
+stateChangeTo = stateChangeTo[0..nChange]
+
+// ---------------------------------------------------------------- A8 torque tracking
+var lagCost = filled(0, 2, N_LAG)
+var delayMs = filled(0, 2)
+var trackErr = filled(nan, 2)
+var torqueCmdMax = zeros(2)
+var torqueActMax = zeros(2)
+var speedMaxRpm = filled(0, 2)
+var currentMaxA = zeros(2)
+var derateFrames = filled(0, 2)
+var cmdTimeoutFrames = filled(0, 2)
+for m in 0..2 {
+    let isCmd = if m == 0 { isCmdL } else { isCmdR }
+    let isFb = if m == 0 { isFbL } else { isFbR }
+    let vc = tqCmd[isCmd]
+    let valid = isFb & !csBad           // checksum-valid feedback frames only (L-om)
+    let af = tqAct[valid]
+    let nm = len(af)
+    let cost = lag_costs(t[isCmd], vc, t[valid], af)
+    lagCost[m, :] = cost
+    let lBest = argmin(cost)            // the first smallest cost (L-nt)
+    delayMs[m] = idiv(lBest * LAG_STEP_US, 1000)
+    if nm > 0 {
+        trackErr[m] = cost[lBest] / (10 * nm)
+    }
+    if len(vc) > 0 {
+        torqueCmdMax[m] = max(abs(vc)) / 10
+    }
+    if nm > 0 {
+        torqueActMax[m] = max(abs(af)) / 10
+        speedMaxRpm[m] = max(abs(speedFb[valid]))
+        currentMaxA[m] = max(abs(curFb[valid])) / 2
+    }
+    let stv = statFb[valid]
+    derateFrames[m] = nnz(bitand(stv, 2) != 0)
+    cmdTimeoutFrames[m] = nnz(bitand(stv, 4) != 0)
+}
+
+// ---------------------------------------------------------------- A10 motor controllers
+var rtrRequests = filled(0, 2)
+var rtrAnswered = filled(0, 2)
+var rtrLatencyMax = filled(0, 2)
+var mcuFw = filled(0, 2)
+var mcuSerial = filled(0, 2)
+for m in 0..2 {
+    let infoRows = find(id == (if m == 0 { ID_INFO_L } else { ID_INFO_R }))
+    let nr = len(infoRows)
+    var firstData = -1
+    for k in 0..nr {
+        let r = infoRows[k]
+        if rtr[r] {
+            rtrRequests[m] += 1
+            // answered by the next frame of the identifier when that is a data frame (L-on)
+            if k + 1 < nr && !rtr[infoRows[k + 1]] {
+                rtrAnswered[m] += 1
+                rtrLatencyMax[m] = max(rtrLatencyMax[m], t[infoRows[k + 1]] - t[r])
+            }
+        } else if firstData < 0 {
+            firstData = r
+        }
+    }
+    if firstData >= 0 {
+        let bd = data[firstData, :]
+        mcuFw[m] = le16(bd[0], bd[1])
+        mcuSerial[m] = le16(bd[2], bd[3]) + 65536 * le16(bd[4], bd[5])
+    }
+}
+
+// ---------------------------------------------------------------- A11 speed
+let vDrv = vehSpeed[isDrv]
+var vMax = 0.0
+if len(vDrv) > 0 {
+    vMax = max(vDrv) / 100
+}
+
+let computeSeconds = now() - tCompute
+
+// ---------------------------------------------------------------- report
+let stateName = ["INIT", "RUN", "FAULT_FB", "FAULT_APPS"]
+let sideName = ["left", "right"]
+printf("\n=== W8  EV CAN log: dual-motor torque vectoring ===\n")
+printf("Log: %d frames on %s over %.6f s; %d other lines skipped, %d unknown identifiers\n",
+    n, iface, spanS, nSkipped, nUnknown)
+printf("Bus 500 kbit/s: %d bits incl. %d stuff bits, mean load %.3f %%, peak %.3f %% in window %d of %d (100 ms); overlaps %d\n",
+    busBits, stuffBits, 100 * busLoad, 100 * busLoadMax, iMaxWin, nWin, busOverlaps)
+printf("%5s %8s %7s %11s %12s %7s\n", "ID", "frames", "remote", "period[ms]", "max-gap[ms]", "bad-cs")
+for i in 0..nId {
+    let csText = if has_checksum(ids[i]) { format("%d", badChecksum[i]) } else { "-" }
+    printf("%5s %8d %7d %11.3f %12.3f %7s\n", format("%03X", ids[i]), frameCounts[i], remoteCounts[i],
+        periodMs[i], maxGapMs[i], csText)
+}
+printf("Feedback: left dropped %d late %d, right dropped %d late %d; IMU dropped %d; VCU counter gaps %d\n",
+    fbDroppedL, fbLateL, fbDroppedR, fbLateR, imuDropped, vcuCounterGaps)
+for m in 0..2 {
+    printf("MCU %-5s firmware %d.%02d serial %08X, %d of %d remote requests answered, max latency %d us\n",
+        sideName[m], shr(mcuFw[m], 8), bitand(mcuFw[m], 255), mcuSerial[m], rtrAnswered[m],
+        rtrRequests[m], rtrLatencyMax[m])
+}
+printf("VCU: %d cycles, %d mismatched; law mismatches: request %d, yaw demand %d, split %d, commands %d\n",
+    vcuCycles, cycleMismatch, lawTreq, lawRdes, lawDt, lawCmd)
+printf("Cycles per state: INIT %d, RUN %d, FAULT_FB %d, FAULT_APPS %d\n", stateCycles[0],
+    stateCycles[1], stateCycles[2], stateCycles[3])
+for k in 0..nChange {
+    printf("  state %-10s from %10.6f s\n", stateName[stateChangeTo[k]], stateChangeT[k])
+}
+printf("%-6s %9s %13s %12s %12s %8s %8s %9s\n", "motor", "delay[ms]", "mean-err[Nm]",
+    "max-cmd[Nm]", "max-act[Nm]", "derated", "max-rpm", "max-I[A]")
+for m in 0..2 {
+    printf("%-6s %9d %13.4f %12.1f %12.1f %8d %8d %9.1f\n", sideName[m], delayMs[m], trackErr[m],
+        torqueCmdMax[m], torqueActMax[m], derateFrames[m], speedMaxRpm[m], currentMaxA[m])
+}
+printf("Torque vectoring: %d cycles, gain %.4f N m per rad/s; yaw error RMS %.5f rad/s; yaw limit in %d cycles\n",
+    splitN, splitGain, yawErrRms, yawLimitCycles)
+printf("Top speed %.2f m/s\n", vMax)
+printf("Compute time: %.3f s\n", computeSeconds)
+
+// ---------------------------------------------------------------- figures
+if figures {
+    let fig = figure(2, 2, name: "W8 EV CAN log")
+
+    // Panel 0: commands and valid feedback of both motors over 49 s <= t_rel < 59 s.
+    let a0 = panel(fig, 0, 0)
+    let inPlot = tRel >= 49000000 & tRel < 59000000
+    let validL = isFbL & !csBad & inPlot
+    let validR = isFbR & !csBad & inPlot
+    plot(a0, tRel[isCmdL & inPlot] / 1000000, tqCmd[isCmdL & inPlot] / 10, style: "-",
+        label: "L command")
+    plot(a0, tRel[validL] / 1000000, tqAct[validL] / 10, style: "-", label: "L measured")
+    plot(a0, tRel[isCmdR & inPlot] / 1000000, tqCmd[isCmdR & inPlot] / 10, style: "-",
+        label: "R command")
+    plot(a0, tRel[validR] / 1000000, tqAct[validR] / 10, style: "-", label: "R measured")
+    legend(a0)
+    xlabel(a0, "Time [s]")
+    ylabel(a0, "Torque [N m]")
+    title(a0, format("Torque tracking, delay L %d ms, R %d ms", delayMs[0], delayMs[1]))
+    grid(a0)
+
+    // Panel 1: torque split against yaw-rate demand (every fourth cycle) and the fitted line.
+    let a1 = panel(fig, 0, 1)
+    let xr = xs / 1000
+    let yn = ys / 10
+    plot(a1, xr[0..$ step 4], yn[0..$ step 4], style: ".", label: "cycles")
+    if splitN > 0 {
+        let xmin = min(xr)
+        let xmax = max(xr)
+        plot(a1, [xmin, xmax], [splitGain * xmin, splitGain * xmax], style: "-", label: "fit")
+    } else {
+        plot(a1, zeros(0), zeros(0), style: "-", label: "fit")   // MATLAB's plot([], [])
+    }
+    legend(a1)
+    xlabel(a1, "Yaw rate demand [rad/s]")
+    ylabel(a1, "Torque split R-L [N m]")
+    title(a1, "Torque split vs yaw demand")
+    grid(a1)
+
+    // Panel 2: bus load per 100 ms window (left axis) and feedback gaps (right axis).
+    let a2 = panel(fig, 1, 0)
+    plot(a2, (0..nWin) * WIN_US / 1000000, 100 * busLoadWin, style: "-", label: "bus load")
+    ylabel(a2, "Load per 100 ms [%]")
+    let a2r = twin_y(a2)
+    plot(a2r, gapTL, gapMsL, style: "o", label: "left gaps")
+    plot(a2r, gapTR, gapMsR, style: "s", label: "right gaps")
+    ylabel(a2r, "Feedback gap [ms]")
+    legend(a2)
+    xlabel(a2, "Time [s]")
+    title(a2, format("Bus load, mean %.2f %%", 100 * busLoad))
+    grid(a2)
+
+    // Panel 3: data frames per identifier, at the category positions 0 ... 9 (L-ky).
+    let a3 = panel(fig, 1, 1)
+    bar(a3, (0..nId) * 1.0, frameCounts)
+    var idLabels = filled("", nId)
+    for i in 0..nId {
+        idLabels[i] = format("%03X", ids[i])
+    }
+    x_ticks(a3, idLabels)
+    xlabel(a3, "Identifier")
+    ylabel(a3, "Data frames")
+    title(a3, format("%d frames in %.1f s", n, spanS))
+
+    make_dir("output")
+    save_svg(fig, "output/w8_ev_can.svg")
+}
+
+// ---------------------------------------------------------------- reference export
+if exportRef {
+    let out = {
+        workload: "w8_ev_can",
+        iface: iface,
+        n_frames: n,
+        n_skipped: nSkipped,
+        n_unknown: nUnknown,
+        span_s: spanS,
+        ids: ids,
+        frame_counts: frameCounts,
+        remote_counts: remoteCounts,
+        period_ms: periodMs,
+        max_gap_ms: maxGapMs,
+        bad_checksum: badChecksum,
+        bus_bits: busBits,
+        stuff_bits: stuffBits,
+        bus_load: busLoad,
+        bus_load_win: busLoadWin,
+        bus_load_max: busLoadMax,
+        bus_load_max_win: iMaxWin,
+        bus_overlaps: busOverlaps,
+        vcu_counter_gaps: vcuCounterGaps,
+        imu_dropped: imuDropped,
+        fb_dropped: [fbDroppedL, fbDroppedR],
+        fb_late: [fbLateL, fbLateR],
+        gap_t_L: gapTL,
+        gap_ms_L: gapMsL,
+        gap_t_R: gapTR,
+        gap_ms_R: gapMsR,
+        vcu_cycles: vcuCycles,
+        cycle_mismatch: cycleMismatch,
+        law_treq_mismatch: lawTreq,
+        law_rdes_mismatch: lawRdes,
+        law_dt_mismatch: lawDt,
+        law_cmd_mismatch: lawCmd,
+        state_cycles: stateCycles,
+        state_change_t: stateChangeT,
+        state_change_to: stateChangeTo,
+        delay_ms: delayMs,
+        lag_cost: lagCost,
+        track_err: trackErr,
+        torque_cmd_max: torqueCmdMax,
+        torque_act_max: torqueActMax,
+        speed_max_rpm: speedMaxRpm,
+        current_max_A: currentMaxA,
+        derate_frames: derateFrames,
+        cmd_timeout_frames: cmdTimeoutFrames,
+        split_n: splitN,
+        split_gain: splitGain,
+        yaw_err_rms: yawErrRms,
+        yaw_limit_cycles: yawLimitCycles,
+        rtr_requests: rtrRequests,
+        rtr_answered: rtrAnswered,
+        rtr_latency_max_us: rtrLatencyMax,
+        mcu_fw: mcuFw,
+        mcu_serial: mcuSerial,
+        v_max: vMax,
+    }
+    write_json("w8_ev_can.json", out)
+}
+
+// ================================================================ functions
+
+// Stops the program with the script's message for a malformed frame line: its 1-based line
+// number in the file, the kind of defect and the line's text.
+fn bad_line(ln: i64, what: str, line: str) {
+    error("line %d: %s: \"%s\"", ln, what, line)
+}
+
+// True when every byte of s is a decimal digit (hex false) or a hexadecimal digit of either case
+// (hex true): the script's decLut/hexLut test, made before parse_i64 reads the text.
+fn all_digits(s: str, hex: bool) -> bool {
+    for k in 0..len(s) {
+        let c = substr(s, k, k + 1)
+        let dec = c >= "0" && c <= "9"
+        if !(dec || (hex && ((c >= "A" && c <= "F") || (c >= "a" && c <= "f")))) {
+            return false
+        }
+    }
+    return true
+}
+
+// Truncation toward zero of a / b for b > 0 (MATLAB's fix(a / b)).
+fn tdiv(a: i64, b: i64) -> i64 {
+    return if a >= 0 { idiv(a, b) } else { -idiv(-a, b) }
+}
+
+// The unsigned 16-bit word of a low and a high byte.
+elemental fn le16(lo: i64, hi: i64) -> i64 {
+    return lo + 256 * hi
+}
+
+// Sign extension of an unsigned 16-bit word.
+elemental fn s16(u: i64) -> i64 {
+    return if u >= 32768 { u - 65536 } else { u }
+}
+
+// The five identifiers whose last data byte is a checksum (A4).
+fn has_checksum(x: i64) -> bool {
+    return x == ID_CMD_L || x == ID_CMD_R || x == ID_YAW || x == ID_FB_L || x == ID_FB_R
+}
+
+// The number of consecutive pairs of 4-bit rolling counters c whose difference modulo 16 is not
+// 1 (A5's VCU counter gaps).
+fn counter_gaps(c: i64[]) -> i64 {
+    var g = 0
+    for k in 1..len(c) {
+        if (c[k] - c[k - 1]) % 16 != 1 {
+            g += 1
+        }
+    }
+    return g
+}
+
+// A5 for one motor's feedback frames (all of them, valid checksum or not): their counters c,
+// times tm and relative times tr [us]. Returns the dropped frames (sum of counter steps modulo
+// 16 minus 1), the late frames (a step of 1 after more than 12 ms), and every gap event (an
+// interval above 12 ms) as its time t_rel / 1e6 [s] and its length / 1000 [ms], in time order.
+fn feedback_gaps(c: i64[], tm: i64[], tr: i64[]) -> (i64, i64, f64[], f64[]) {
+    let nf = len(c)
+    var dropped = 0
+    var late = 0
+    var gapT = zeros(nf)
+    var gapMs = zeros(nf)
+    var ng = 0
+    for k in 1..nf {
+        let g = (c[k] - c[k - 1]) % 16
+        let dtm = tm[k] - tm[k - 1]
+        dropped += g - 1
+        if dtm > GAP_LIMIT_US {
+            if g == 1 {
+                late += 1
+            }
+            gapT[ng] = tr[k] / 1000000
+            gapMs[ng] = dtm / 1000
+            ng += 1
+        }
+    }
+    return (dropped, late, gapT[0..ng], gapMs[0..ng])
+}
+
+// A8's cost per lag l = 0 ... N_LAG - 1: the sum over the feedback frames (times tf, TorqueAct af)
+// of |af_i - h(tf_i - l * LAG_STEP_US)|, h(tau) the TorqueCmd vc of the last command with time
+// tc <= tau (0 before the first). Both time lists are in log order (non-decreasing), so the
+// command index kc only moves forward within one lag.
+fn lag_costs(tc: i64[], vc: i64[], tf: i64[], af: i64[]) -> i64[] {
+    let nc = len(tc)
+    var cost = filled(0, N_LAG)
+    for l in 0..N_LAG {
+        let lag = l * LAG_STEP_US
+        var kc = 0
+        var s = 0
+        for i in 0..len(tf) {
+            let tq = tf[i] - lag
+            while kc < nc && tc[kc] <= tq {
+                kc += 1
+            }
+            let h = if kc > 0 { vc[kc - 1] } else { 0 }
+            s += abs(af[i] - h)
+        }
+        cost[l] = s
+    }
+    return cost
+}

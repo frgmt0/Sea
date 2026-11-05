@@ -1,0 +1,53 @@
+# w8_ev_can.struct -- written from workloads/w8_ev_can.m (figure code, lines 531-590) and DESIGN.md
+# 2.16.8; never from the Sea output. Panels in tiledlayout order: torque tracking, torque split,
+# bus load with feedback gaps on the twin axis, frame counts per identifier.
+file output/w8_ev_can.svg
+canvas 960 720
+heading W8 EV CAN log
+panels 4
+panel 0
+title~ Torque tracking, delay L [0-9]+ ms, R [0-9]+ ms
+xlabel Time [s]
+ylabel Torque [N m]
+ylabel2 -
+count line 4
+legend L command
+legend L measured
+legend R command
+legend R measured
+panel 1
+title Torque split vs yaw demand
+xlabel Yaw rate demand [rad/s]
+ylabel Torque split R-L [N m]
+ylabel2 -
+count markers 1
+count line 1
+legend cycles
+legend fit
+panel 2
+title~ Bus load, mean [0-9]+\.[0-9]{2} %
+xlabel Time [s]
+ylabel Load per 100 ms [%]
+ylabel2 Feedback gap [ms]
+count line 1
+count markers 2
+legend bus load
+legend left gaps
+legend right gaps
+panel 3
+title~ [0-9]+ frames in [0-9]+\.[0-9] s
+xlabel Identifier
+ylabel Data frames
+ylabel2 -
+count bars 1
+count legend 0
+xtick 0A0
+xtick 101
+xtick 102
+xtick 120
+xtick 121
+xtick 181
+xtick 182
+xtick 381
+xtick 382
+xtick 710

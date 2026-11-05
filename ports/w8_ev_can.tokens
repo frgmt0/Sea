@@ -1,0 +1,106 @@
+# Token map for the W8 report (DESIGN.md 6.4, 2.16.8). Written from the fprintf formats of
+# workloads/w8_ev_can.m and the rules of reference_py/compare.py (RULES["w8_ev_can"]), never from
+# Sea output. Format: <line regex> <token number> <rule>. Tokens count from 1 on blank-separated
+# fields. By 2.16.8 every integer-valued token (counts, the window index and count, the delays,
+# the latencies, the format's constants 500 and 100), the numeric hex identifiers and both
+# firmware parts are `exact`, because the default rule (one unit of the last printed digit) would
+# let 101 pass for 102; each float token is `json <key>`, the percentages `num 0 1e-15` (the
+# 1e-15 relative rule of bus_load / bus_load_max, which a percentage keeps, L-eg). No numeric
+# token is left to the default rule. Every token is expected to be identical to MATLAB's.
+#
+# Tokens that are not numeric are compared as text by compare_report.py (so exactly) and cannot
+# be named here: the hex identifier 0A0 (letters), the serial `%08X` (4C0A1001, 4C0A1002), the
+# interface name, the state names, and `-` in the bad-cs column.
+#
+# The heading line and the two table headings print no number.
+#
+# 'Log: %d frames on %s over %.6f s; %d other lines skipped, %d unknown identifiers':
+# 2 n_frames, 7 span_s, 9 n_skipped, 13 n_unknown.
+^Log:   2    exact
+^Log:   7    json span_s
+^Log:   9    exact
+^Log:   13   exact
+#
+# 'Bus 500 kbit/s: %d bits incl. %d stuff bits, mean load %.3f %%, peak %.3f %% in window %d of
+# %d (100 ms); overlaps %d': 2 the constant 500, 4 bus_bits, 7 stuff_bits, 12 100*bus_load,
+# 15 100*bus_load_max, 19 bus_load_max_win, 21 the window count W, 22 '(100' (the constant 100
+# after the leading '(' is stripped), 25 bus_overlaps.
+^Bus[[:space:]]   2    exact
+^Bus[[:space:]]   4    exact
+^Bus[[:space:]]   7    exact
+^Bus[[:space:]]   12   num 0 1e-15
+^Bus[[:space:]]   15   num 0 1e-15
+^Bus[[:space:]]   19   exact
+^Bus[[:space:]]   21   exact
+^Bus[[:space:]]   22   exact
+^Bus[[:space:]]   25   exact
+#
+# Identifier rows '%5s %8d %7d %11.3f %12.3f %7s' (the row regex needs three upper-case hex
+# digits, which the heading 'ID' does not have): 2 frame_counts, 3 remote_counts, 4 period_ms,
+# 5 max_gap_ms. Token 1 is the identifier: exact where it is numeric (every identifier but 0A0,
+# which is text). Token 6 is bad_checksum on the five checksummed identifiers, `-` otherwise.
+^[[:space:]]+[0-9A-F][0-9A-F][0-9A-F][[:space:]]   2    exact
+^[[:space:]]+[0-9A-F][0-9A-F][0-9A-F][[:space:]]   3    exact
+^[[:space:]]+[0-9A-F][0-9A-F][0-9A-F][[:space:]]   4    json period_ms
+^[[:space:]]+[0-9A-F][0-9A-F][0-9A-F][[:space:]]   5    json max_gap_ms
+^[[:space:]]+[0-9][0-9][0-9][[:space:]]   1    exact
+^[[:space:]]+(101|102|121|181|182)[[:space:]]   6    exact
+#
+# 'Feedback: left dropped %d late %d, right dropped %d late %d; IMU dropped %d; VCU counter
+# gaps %d': 4 fb_dropped(1), 6 fb_late(1), 9 fb_dropped(2), 11 fb_late(2), 14 imu_dropped,
+# 18 vcu_counter_gaps.
+^Feedback:   4    exact
+^Feedback:   6    exact
+^Feedback:   9    exact
+^Feedback:   11   exact
+^Feedback:   14   exact
+^Feedback:   18   exact
+#
+# 'MCU %-5s firmware %d.%02d serial %08X, %d of %d remote requests answered, max latency %d us':
+# 4 the firmware 'major.minor' (mcu_fw: both parts exact, the token judged as the one number it
+# prints), 7 rtr_answered, 9 rtr_requests, 15 rtr_latency_max_us. Token 6 is the serial (text).
+^MCU[[:space:]]   4    exact
+^MCU[[:space:]]   7    exact
+^MCU[[:space:]]   9    exact
+^MCU[[:space:]]   15   exact
+#
+# 'VCU: %d cycles, %d mismatched; law mismatches: request %d, yaw demand %d, split %d, commands
+# %d': 2 vcu_cycles, 4 cycle_mismatch, 9 law_treq_mismatch, 12 law_rdes_mismatch,
+# 14 law_dt_mismatch, 16 law_cmd_mismatch.
+^VCU:   2    exact
+^VCU:   4    exact
+^VCU:   9    exact
+^VCU:   12   exact
+^VCU:   14   exact
+^VCU:   16   exact
+#
+# 'Cycles per state: INIT %d, RUN %d, FAULT_FB %d, FAULT_APPS %d': state_cycles at 5, 7, 9, 11.
+^Cycles[[:space:]]per[[:space:]]state:   5    exact
+^Cycles[[:space:]]per[[:space:]]state:   7    exact
+^Cycles[[:space:]]per[[:space:]]state:   9    exact
+^Cycles[[:space:]]per[[:space:]]state:   11   exact
+#
+# State changes '  state %-10s from %10.6f s': 4 state_change_t (the name, token 2, is text).
+^[[:space:]][[:space:]]state[[:space:]]   4    json state_change_t
+#
+# Motor rows '%-6s %9d %13.4f %12.1f %12.1f %8d %8d %9.1f': 2 delay_ms, 3 track_err,
+# 4 torque_cmd_max, 5 torque_act_max, 6 derate_frames, 7 speed_max_rpm, 8 current_max_A.
+^(left|right)[[:space:]]   2    exact
+^(left|right)[[:space:]]   3    json track_err
+^(left|right)[[:space:]]   4    json torque_cmd_max
+^(left|right)[[:space:]]   5    json torque_act_max
+^(left|right)[[:space:]]   6    exact
+^(left|right)[[:space:]]   7    exact
+^(left|right)[[:space:]]   8    json current_max_A
+#
+# 'Torque vectoring: %d cycles, gain %.4f N m per rad/s; yaw error RMS %.5f rad/s; yaw limit in
+# %d cycles': 3 split_n, 6 split_gain, 14 yaw_err_rms, 19 yaw_limit_cycles.
+^Torque[[:space:]]vectoring:   3    exact
+^Torque[[:space:]]vectoring:   6    json split_gain
+^Torque[[:space:]]vectoring:   14   json yaw_err_rms
+^Torque[[:space:]]vectoring:   19   exact
+#
+# 'Top speed %.2f m/s': 3 v_max.
+^Top[[:space:]]speed   3    json v_max
+#
+# 'Compute time: %.3f s' is not compared (6.4).
