@@ -257,7 +257,7 @@ relief, DESIGN.md §2.7 "Measured at the gate after phase L"). **Phase L is comp
 rows W8a–W8d: the workload W8 `w8_ev_can`, an ESP32 controller sketch simulated on the host,
 writing a CAN log that a Sea port reads, decodes and plots; Decisions 151–160 each decided by the
 user as option (a), lead decisions L-nf–L-ny agreed; W8 joins the acceptance set, now seven
-workloads). W8b done (2026-11-04); W8c in progress: traces retuned (Decision 161).
+workloads). W8c done (2026-11-04); next W8d (the Sea port and its acceptance).
 
 Versions 0.y.z are alpha; 1.0.0 = v1
 (Decision 79).

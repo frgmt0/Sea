@@ -134,7 +134,8 @@ timing is `reference/baseline_timings_matlab_w8_ev_can.json`, written by
 `run_all(false, 5, 'default', {'w8_ev_can'})`, which also writes `reference/w8_ev_can.json` and
 `w8_ev_can.txt`. The script reads the committed log `w8_ev_can/w8_ev_can.log` relative to its own
 folder, so `run_all` passes it nothing. The figure is saved by `run_all(true, 1, 'default',
-{'w8_ev_can'})`. The measured timing is recorded here and in DESIGN.md §1.2 once the user has run it.
+{'w8_ev_can'})`. The measured timing (2026-11-04: compute first 1.114 s, median 0.629 s, best 0.617 s; total best
+0.626 s) is recorded here and in DESIGN.md §1.2.
 
 `run_all(makePlots, nRepeat, threads)` runs each script in its own function workspace with
 `SEA_EXPORT_REFERENCE = true`. Arguments: `makePlots` (default `false`), `nRepeat` (default
@@ -424,7 +425,7 @@ MATLAB R2026a, compute time per workload is expected to be about 0.5-5 s:
 | W5 | 11M scalar LCG steps, 1M-element sort and vector arithmetic | 0.5-2 s |
 | W6 | 376 sparse assemblies and Cholesky solves of ~10k DOF, ~18k `conv2` filter calls | 3-8 s |
 | W7 | ~2.5M time steps (wheel, vehicle and CVT ratio), each calling four small functions and `interp1` (scalar `interp1` calls are slow in MATLAB); 327k gear candidates in nested loops | measured: 8.6 s compute (best of 5, M2 Pro) |
-| W8 | one pass over 85,621 log lines (text parsing, checksum and bit-stuffing recomputation per frame), then per-message scans and an exact delay search | to be measured by the user (W8c) |
+| W8 | one pass over 85,621 log lines (text parsing, checksum and bit-stuffing recomputation per frame), then per-message scans and an exact delay search | measured: 0.63 s median, 0.62 s best compute (best of 5, M2 Pro) |
 
 For comparison, the NumPy cross-checks take 0.5-4 s each on an M2 Pro (Python 3.12,
 NumPy 2.5). Those times are not a baseline for Sea.

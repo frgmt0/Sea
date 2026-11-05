@@ -1,0 +1,31 @@
+
+=== W8  EV CAN log: dual-motor torque vectoring ===
+Log: 85621 frames on can0 over 119.994908 s; 0 other lines skipped, 0 unknown identifiers
+Bus 500 kbit/s: 8694587 bits incl. 515344 stuff bits, mean load 14.492 %, peak 15.780 % in window 1 of 1199 (100 ms); overlaps 0
+   ID   frames  remote  period[ms]  max-gap[ms]  bad-cs
+  0A0    12000       0      10.000       10.008       -
+  101    11999       0      10.000       10.010       0
+  102    11999       0      10.000       10.016       0
+  120    11999       0      10.000       10.016       -
+  121    11999       0      10.000       10.024       0
+  181    11983       0      10.014       20.006      12
+  182    11963       0      10.031      130.004      14
+  381      120     120    1000.000     1000.018       -
+  382      120     120    1000.000     1000.018       -
+  710     1199       0     100.000      100.032       -
+Feedback: left dropped 17 late 23, right dropped 37 late 30; IMU dropped 0; VCU counter gaps 0
+MCU left  firmware 2.19 serial 4C0A1001, 120 of 120 remote requests answered, max latency 792 us
+MCU right firmware 2.18 serial 4C0A1002, 120 of 120 remote requests answered, max latency 900 us
+VCU: 11999 cycles, 0 mismatched; law mismatches: request 0, yaw demand 0, split 0, commands 0
+Cycles per state: INIT 49, RUN 11502, FAULT_FB 217, FAULT_APPS 231
+  state RUN        from   0.498346 s
+  state FAULT_FB   from  72.048336 s
+  state RUN        from  74.218324 s
+  state FAULT_APPS from  95.088328 s
+  state RUN        from  97.398316 s
+motor  delay[ms]  mean-err[Nm]  max-cmd[Nm]  max-act[Nm]  derated  max-rpm  max-I[A]
+left          10        4.4240        100.0         90.3      893     8701      93.5
+right          8        4.4193        100.0         90.3      890     8701      93.5
+Torque vectoring: 4200 cycles, gain 34.0077 N m per rad/s; yaw error RMS 0.04526 rad/s; yaw limit in 250 cycles
+Top speed 30.36 m/s
+Compute time: 0.619 s
