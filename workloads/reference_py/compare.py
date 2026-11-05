@@ -193,6 +193,37 @@ RULES = {
         "backlash_band_a": ("exact",), "backlash_band_m": ("exact",),
         "backlash_min": ("exact",), "backlash_max": ("exact",),
     },
+    # W8: every value is derived from the committed log by integer arithmetic; the derived
+    # floats come from a short fixed sequence of IEEE operations on exact integers (DESIGN.md
+    # §2.16.8), so the integer keys are exact and the floats carry a last-bit bound only.
+    "w8_ev_can": {
+        "workload": ("exact",), "iface": ("exact",), "n_frames": ("exact",),
+        "n_skipped": ("exact",), "n_unknown": ("exact",), "span_s": ("num", 0.0, 1e-15),
+        "ids": ("exact",), "frame_counts": ("exact",), "remote_counts": ("exact",),
+        "period_ms": ("num", 0.0, 1e-15), "max_gap_ms": ("num", 0.0, 1e-15),
+        "bad_checksum": ("exact",),
+        "bus_bits": ("exact",), "stuff_bits": ("exact",), "bus_load": ("num", 0.0, 1e-15),
+        "bus_load_win": ("num", 0.0, 1e-15), "bus_load_max": ("num", 0.0, 1e-15),
+        "bus_load_max_win": ("exact",), "bus_overlaps": ("exact",),
+        "vcu_counter_gaps": ("exact",), "imu_dropped": ("exact",),
+        "fb_dropped": ("exact",), "fb_late": ("exact",),
+        "gap_t_L": ("num", 0.0, 1e-15), "gap_ms_L": ("num", 0.0, 1e-15),
+        "gap_t_R": ("num", 0.0, 1e-15), "gap_ms_R": ("num", 0.0, 1e-15),
+        "vcu_cycles": ("exact",), "cycle_mismatch": ("exact",),
+        "law_treq_mismatch": ("exact",), "law_rdes_mismatch": ("exact",),
+        "law_dt_mismatch": ("exact",), "law_cmd_mismatch": ("exact",),
+        "state_cycles": ("exact",), "state_change_t": ("num", 0.0, 1e-15),
+        "state_change_to": ("exact",),
+        "delay_ms": ("exact",), "lag_cost": ("exact",), "track_err": ("num", 0.0, 1e-15),
+        "torque_cmd_max": ("num", 0.0, 1e-15), "torque_act_max": ("num", 0.0, 1e-15),
+        "speed_max_rpm": ("exact",), "current_max_A": ("num", 0.0, 1e-15),
+        "derate_frames": ("exact",), "cmd_timeout_frames": ("exact",),
+        "split_n": ("exact",), "split_gain": ("num", 0.0, 1e-15),
+        "yaw_err_rms": ("num", 0.0, 1e-15), "yaw_limit_cycles": ("exact",),
+        "rtr_requests": ("exact",), "rtr_answered": ("exact",),
+        "rtr_latency_max_us": ("exact",), "mcu_fw": ("exact",), "mcu_serial": ("exact",),
+        "v_max": ("num", 0.0, 1e-15),
+    },
 }
 
 NAMES = list(RULES)

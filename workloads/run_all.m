@@ -7,9 +7,9 @@ function run_all(makePlots, nRepeat, threads, names)
 %   run_all(false, N, 1)       the same with MATLAB limited to one computational thread
 %   run_all(false, N, 'default')  the default (all threads); same as leaving it out
 %   run_all(false, N, T, NAMES)   only the workloads in the cell array NAMES, e.g.
-%                                 {'w6_topopt'}; 'all' = W1-W7. Leaving NAMES out runs the
-%                                 six v1 acceptance workloads W1-W5 and W7 (DESIGN.md
-%                                 §1.2).
+%                                 {'w6_topopt'}; 'all' = W1-W8. Leaving NAMES out runs the
+%                                 six default workloads W1-W5 and W7 (DESIGN.md §1.2); W8
+%                                 is named explicitly: {'w8_ev_can'}.
 %
 %   Works from any current folder: all paths are relative to this file. Each workload runs
 %   in its own workspace with SEA_EXPORT_REFERENCE = true, so reference/<name>.json is
@@ -30,7 +30,8 @@ function run_all(makePlots, nRepeat, threads, names)
 %   gets the suffix _<name1>_<name2>... (baseline_timings_matlab_w6_topopt.json,
 %   baseline_timings_matlab_1thread_w6_topopt.json), so the committed default baseline is not
 %   overwritten. The committed baseline files cover W1-W5; W7's timing is the separate file
-%   baseline_timings_matlab_w7_drivetrain.json, from run_all(false, 5, 'default', {'w7_drivetrain'}).
+%   baseline_timings_matlab_w7_drivetrain.json, from run_all(false, 5, 'default', {'w7_drivetrain'});
+%   W8's is baseline_timings_matlab_w8_ev_can.json, from run_all(false, 5, 'default', {'w8_ev_can'}).
 %   With a single workload, jsonencode writes the per-workload timing fields as flat arrays
 %   (total_seconds, compute_seconds) and plain numbers (the medians and bests) instead of
 %   arrays of rows.
@@ -53,8 +54,10 @@ if nargin < 1, makePlots = false; end
 if nargin < 2, nRepeat = 5; end
 if nargin < 3, threads = 'default'; end
 allNames = {'w1_shaft_design', 'w2_truss_fem', 'w3_quarter_car', 'w4_heat_plate', ...
-            'w5_tolerance_mc', 'w6_topopt', 'w7_drivetrain'};
-v1Names = allNames([1:5, 7]);     % the v1 acceptance set: W1-W5 and W7
+            'w5_tolerance_mc', 'w6_topopt', 'w7_drivetrain', 'w8_ev_can'};
+% The default set: W1-W5 and W7, whose committed baseline stays untouched. W8 is in the
+% acceptance set too (Decision 157) but is named explicitly, so it gets its own timing file.
+v1Names = allNames([1:5, 7]);
 if nargin < 4
     names = v1Names;
 elseif (ischar(names) && strcmp(names, 'all')) ...
